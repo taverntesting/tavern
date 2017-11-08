@@ -1,0 +1,91 @@
+---
+name: Test schema
+desc: Matches test blocks
+
+# http://www.kuwata-lab.com/kwalify/ruby/users-guide.01.html
+# https://pykwalify.readthedocs.io/en/unstable/validation-rules.html
+
+type: map
+mapping:
+  test_name:
+    required: true
+    type: str
+
+  includes:
+    required: false
+    type: seq
+    sequence:
+      - type: map
+        required: false
+        mapping:
+          name:
+            required: true
+            type: str
+
+          description:
+            required: true
+            type: str
+
+          variables:
+            type: map
+            required: false
+            mapping:
+              re;(.*):
+                type: any
+
+  stages:
+    type: seq
+    required: true
+    sequence:
+      - type: map
+        required: true
+        mapping:
+          name:
+            type: str
+            required: true
+            unique: true
+
+          request:
+            type: map
+            required: true
+            mapping:
+              url:
+                type: str
+                required: true
+
+              re;(json|params|data|headers): &any_map_with_ext_function
+                # Anchor matches any key: value, and if there's an $ext function
+                # in it it will check that it can be loaded at schema validation
+                # time instead of run time. This means there can be both
+                # checking for key: value matches as well as passing it to a
+                # function for more advanced manipulation
+                func: validate_extensions
+                type: map
+                required: false
+                mapping:
+                  re;(.*):
+                    type: any
+
+              method:
+                type: str
+                enum:
+                  - GET
+                  - PUT
+                  - POST
+                  - DELETE
+
+          response:
+            type: map
+            required: true
+            mapping:
+              status_code:
+                type: int
+
+              re;(body|headers|redirect_query_params):
+                <<: *any_map_with_ext_function
+
+              save:
+                <<: *any_map_with_ext_function
+                mapping:
+                  re;(\$ext|body|headers|redirect_query_params):
+                    type: any
