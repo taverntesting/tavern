@@ -7,7 +7,7 @@ python:
   - "3.5"
   - "3.6"
 install:
-  - pip install tox-travis
+  - pip install tox-travis setuptools --upgrade
 # command to run tests
 script:
   - tox
