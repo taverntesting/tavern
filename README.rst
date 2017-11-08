@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/taverntesting/tavern.svg?branch=master
+    :target: https://travis-ci.org/taverntesting/tavern
+
 Restful API testing
 ===================
 
