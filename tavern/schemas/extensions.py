@@ -43,7 +43,7 @@ def import_ext_function(entrypoint):
     return function
 
 
-def get_wrapped_ext_function(ext):
+def get_wrapped_response_function(ext):
     """Wraps a ext function with arguments given in the test file
 
     This is similar to functools.wrap, but this makes sure that 'response' is
@@ -63,6 +63,22 @@ def get_wrapped_ext_function(ext):
     @functools.wraps(func)
     def inner(response):
         return func(response, *args, **kwargs)
+
+    inner.func = func
+
+    return inner
+
+
+def get_wrapped_create_function(ext):
+    """Same as above, but don't require a response
+    """
+    args = ext.get("extra_args") or ()
+    kwargs = ext.get("extra_kwargs") or {}
+    func = import_ext_function(ext["function"])
+
+    @functools.wraps(func)
+    def inner():
+        return func(*args, **kwargs)
 
     inner.func = func
 

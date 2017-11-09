@@ -4,6 +4,7 @@ import logging
 
 from .util import exceptions
 from .util.dict_util import format_keys
+from .schemas.extensions import get_wrapped_create_function
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +70,14 @@ def get_request_args(rspec, test_block_config):
 
     add_request_args(required_in_file, False)
     add_request_args(optional_in_file, True)
+
+    for key in optional_in_file:
+        try:
+            func = get_wrapped_create_function(request_args[key].pop("$ext"))
+        except KeyError:
+            pass
+        else:
+            request_args[key] = func()
 
     # TODO
     # requests takes all of these - we need to parse the input to get them

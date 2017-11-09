@@ -109,3 +109,26 @@ class TestRequests:
         args = get_request_args(req, includes)
 
         assert args["headers"]["content-type"] == "application/x-www-form-urlencoded"
+
+
+class TestExtFunctions:
+
+    def test_get_from_function(self, req, includes):
+        """Make sure ext functions work in request
+
+        This is a bit of a silly example because we're passing a dictionary
+        instead of a string like it would be from the test, but it saves us
+        having to define another external function just for this test
+        """
+        to_copy = {"thing": "value"}
+
+        req["data"] = {
+            "$ext": {
+                "function": "copy:copy",
+                "extra_args": [to_copy],
+            }
+        }
+
+        args = get_request_args(req, includes)
+
+        assert args["data"] == to_copy

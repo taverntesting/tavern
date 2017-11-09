@@ -6,7 +6,7 @@ import copy
 
 from urllib.parse import urlparse, parse_qs
 
-from .schemas.extensions import get_wrapped_ext_function
+from .schemas.extensions import get_wrapped_response_function
 from .util.dict_util import format_keys, recurse_access_key, deep_dict_merge
 from .util.exceptions import TestFailError
 
@@ -30,7 +30,7 @@ class TResponse:
         body = expected.get("body") or {}
 
         if "$ext" in body:
-            self.validate_function = get_wrapped_ext_function(body["$ext"])
+            self.validate_function = get_wrapped_response_function(body["$ext"])
         else:
             self.validate_function = None
 
@@ -120,7 +120,7 @@ class TResponse:
         saved.update(self._save_value("redirect_query_params", qp_as_dict))
 
         try:
-            wrapped = get_wrapped_ext_function(self.expected["save"]["$ext"])
+            wrapped = get_wrapped_response_function(self.expected["save"]["$ext"])
         except KeyError:
             logger.debug("No save function")
             pass
