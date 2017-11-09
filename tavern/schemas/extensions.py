@@ -1,4 +1,5 @@
 import logging
+import functools
 import importlib
 
 from tavern.util.exceptions import BadSchemaError
@@ -59,6 +60,7 @@ def get_wrapped_ext_function(ext):
     kwargs = ext.get("extra_kwargs") or {}
     func = import_ext_function(ext["function"])
 
+    @functools.wraps(func)
     def inner(response):
         return func(response, *args, **kwargs)
 
