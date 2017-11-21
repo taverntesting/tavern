@@ -134,3 +134,15 @@ def validate_extensions(value, rule_obj, path):
             raise BadSchemaError("Expected a dict of extra_kwargs, got {}".format(type(extra_args)))
 
     return True
+
+
+def validate_json_with_extensions(value, rule_obj, path):
+    """ Performs the above match, but also matches a dict or a list. This it
+    just because it seems like you can't match a dict OR a list in pykwalify
+    """
+    validate_extensions(value, rule_obj, path)
+
+    if not isinstance(value, (list, dict)):
+        raise BadSchemaError("Error at {} - expected a list or dict".format(path))
+
+    return True

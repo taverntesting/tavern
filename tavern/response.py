@@ -19,6 +19,17 @@ def _indent_err_text(err):
     return textwrap.indent(err, " "*4)
 
 
+def yield_keyvals(block):
+    if isinstance(block, dict):
+        for joined_key, expected_val in block.items():
+            split_key = joined_key.split(".")
+            yield split_key, joined_key, expected_val
+    else:
+        for idx, val in enumerate(block):
+            sidx = str(idx)
+            yield [sidx], sidx, val
+
+
 class TResponse:
 
     def __init__(self, name, expected, test_block_config):
@@ -123,7 +134,6 @@ class TResponse:
             wrapped = get_wrapped_response_function(self.expected["save"]["$ext"])
         except KeyError:
             logger.debug("No save function")
-            pass
         else:
             try:
                 to_save = wrapped(response)
@@ -159,12 +169,17 @@ class TResponse:
         except KeyError:
             expected_block = {}
 
-        special = ["$ext"]
-        for s in special:
-            try:
-                expected_block.pop(s)
-            except KeyError:
-                pass
+        if isinstance(expected_block, dict):
+            special = ["$ext"]
+            # This has to be a dict at the moment - might be possible at some
+            # point in future to allow a list of multiple ext functions as well
+            # but would require some changes in init. Probably need to abtract
+            # out the 'checking' a bit more.
+            for s in special:
+                try:
+                    expected_block.pop(s)
+                except KeyError:
+                    pass
 
         logger.debug("Validating %s for %s", blockname, expected_block)
 
@@ -176,9 +191,7 @@ class TResponse:
                     self.expected[blockname], blockname)
             else:
                 logger.debug("block = %s", expected_block)
-                for joined_key, expected_val in expected_block.items():
-                    split_key = joined_key.split(".")
-
+                for split_key, joined_key, expected_val in yield_keyvals(expected_block):
                     try:
                         actual_val = recurse_access_key(block, split_key)
                     except KeyError as e:

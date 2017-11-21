@@ -53,7 +53,7 @@ mapping:
                 type: str
                 required: true
 
-              re;(json|params|data|headers): &any_map_with_ext_function
+              re;(params|data|headers): &any_map_with_ext_function
                 # Anchor matches any key: value, and if there's an $ext function
                 # in it it will check that it can be loaded at schema validation
                 # time instead of run time. This means there can be both
@@ -65,6 +65,12 @@ mapping:
                 mapping:
                   re;(.*):
                     type: any
+
+              json: &any_map_or_list_with_ext_function
+                # Similar, but we want to match lists or dicts
+                func: validate_json_with_extensions
+                type: any
+                required: false
 
               method:
                 type: str
@@ -81,8 +87,11 @@ mapping:
               status_code:
                 type: int
 
-              re;(body|headers|redirect_query_params):
+              re;(headers|redirect_query_params):
                 <<: *any_map_with_ext_function
+
+              body:
+                <<: *any_map_or_list_with_ext_function
 
               save:
                 <<: *any_map_with_ext_function

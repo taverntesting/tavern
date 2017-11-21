@@ -124,6 +124,30 @@ class TestValidate:
 
         assert not r.errors
 
+    def test_validate_list_body(self, resp, includes):
+        """Make sure a list response can be validated
+        """
+
+        resp["body"] = ["a", 1, "b"]
+
+        r = TResponse("Test 1", resp, includes)
+
+        r._validate_block("body", resp["body"])
+
+        assert not r.errors
+
+    def test_validate_list_body_wrong_order(self, resp, includes):
+        """Order of list items matters
+        """
+
+        resp["body"] = ["a", 1, "b"]
+
+        r = TResponse("Test 1", resp, includes)
+
+        r._validate_block("body", resp["body"][::-1])
+
+        assert r.errors
+
     def test_validate_nested_body(self, resp, includes):
         """Make sure a nested value comparison works
         """
