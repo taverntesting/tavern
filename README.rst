@@ -1,6 +1,9 @@
 .. image:: https://travis-ci.org/taverntesting/tavern.svg?branch=master
     :target: https://travis-ci.org/taverntesting/tavern
 
+.. image:: https://img.shields.io/pypi/v/tavern.svg
+    :target: https://pypi.org/project/tavern/
+
 Restful API testing
 ===================
 
