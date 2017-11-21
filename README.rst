@@ -4,7 +4,7 @@
 Restful API testing
 ===================
 
-Tavern is a pytest plugin, command-line tool and Python library for
+Tavern is a pytest plugin, command-line tool and Python 3 library for
 automated testing of RESTful APIs, with a simple, concise and flexible
 YAML-based syntax. It's very simple to get started, and highly
 customisable for complex tests.
@@ -28,6 +28,9 @@ repo <https://github.com/taverntesting/tavern>`__.
 
 Quickstart
 ----------
+
+Note that Tavern **only** supports Python 3, and at the time of writing is only
+tested against Python 3.3-3.6.
 
 ::
 
