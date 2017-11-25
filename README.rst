@@ -105,7 +105,7 @@ to a better developer experience:
 Developed and maintained by Overlock
 ------------------------------------
 
-Overlock helps developers quickly find and fix bugs in distributed systems such as IoT deployments by gathering together exception information from end devices, gateways or servers. We’re currently in beta - find out more at overlock.io
+Overlock helps developers quickly find and fix bugs in distributed systems such as IoT deployments by gathering together exception information from end devices, gateways or servers. We’re currently in beta - find out more at `overlock.io <https://overlock.io>`__.
 
 Acknowledgements
 ----------------
