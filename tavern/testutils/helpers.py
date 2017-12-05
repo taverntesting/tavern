@@ -80,4 +80,4 @@ def validate_pykwalify(response, schema):
         schema (dict): Schema for response
     """
     with wrapfile(response.json()) as rdump, wrapfile(schema) as sdump:
-        verify_generic(rdump.name, sdump.name)
+        verify_generic(rdump, sdump)
