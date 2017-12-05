@@ -71,8 +71,6 @@ def requires_jwt(endpoint):
         try:
             jwt.decode(token, SECRET, audience=SERVERNAME, algorithms=["HS256"])
         except:
-            import logging
-            logging.exception("R")
             return jsonify({"error": "Invalid token"}), 401
 
         return endpoint(*args, **kwargs)
