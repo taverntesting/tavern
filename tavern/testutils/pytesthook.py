@@ -71,7 +71,10 @@ class YamlItem(pytest.Item):
     def runtest(self):
         global_cfg = self.config.getoption("tavern_global_cfg") or {}
 
-        run_test(self.path, self.spec, global_cfg)
+        with open(global_cfg, "r") as gfileobj:
+            contents = yaml.load(gfileobj)
+
+        run_test(self.path, self.spec, contents)
 
     def repr_failure(self, excinfo):
         """ called when self.runtest() raises an exception.
