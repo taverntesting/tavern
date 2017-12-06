@@ -71,8 +71,11 @@ class YamlItem(pytest.Item):
     def runtest(self):
         global_cfg = self.config.getoption("tavern_global_cfg") or {}
 
-        with open(global_cfg, "r") as gfileobj:
-            contents = yaml.load(gfileobj)
+        if global_cfg:
+            with open(global_cfg, "r") as gfileobj:
+                contents = yaml.load(gfileobj)
+        else:
+            contents = {}
 
         run_test(self.path, self.spec, contents)
 
