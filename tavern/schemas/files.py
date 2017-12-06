@@ -47,16 +47,18 @@ def wrapfile(to_wrap):
         to_wrap (dict): Dictionary to write to temporary file
 
     Yields:
-        file: temporary file object that will be destroyed at the end of the
+        filename: name of temporary file object that will be destroyed at the end of the
             context manager
     """
-    with tempfile.NamedTemporaryFile(suffix=".yaml") as wrapped_tmp:
+    with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as wrapped_tmp:
         # put into a file
         dumped = yaml.dump(to_wrap, default_flow_style=False)
         wrapped_tmp.write(dumped.encode("utf8"))
-        wrapped_tmp.seek(0)
+        wrapped_tmp.close()
 
-        yield wrapped_tmp
+        yield wrapped_tmp.name
+
+        os.remove(wrapped_tmp.name)
 
 
 def verify_tests(test_spec):
@@ -75,4 +77,4 @@ def verify_tests(test_spec):
         here = os.path.dirname(os.path.abspath(__file__))
         schema_filename = os.path.join(here, "tests.schema.yaml")
 
-        verify_generic(test_tmp.name, schema_filename)
+        verify_generic(test_tmp, schema_filename)
