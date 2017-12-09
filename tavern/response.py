@@ -4,6 +4,9 @@ import textwrap
 import logging
 import copy
 
+from future.standard_library import install_aliases
+install_aliases()
+
 from urllib.parse import urlparse, parse_qs
 
 from .schemas.extensions import get_wrapped_response_function
@@ -61,7 +64,7 @@ class TResponse:
         else:
             return "<Not run yet>"
 
-    def _adderr(self, msg, *args, e=None):
+    def _adderr(self, msg, e=None, *args):
         if e:
             logger.exception(msg, *args)
         else:

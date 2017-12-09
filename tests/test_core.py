@@ -1,5 +1,8 @@
+from future.standard_library import install_aliases
+install_aliases()
+
 import json
-from unittest.mock import patch, Mock
+from mock import patch, Mock
 
 import pytest
 import requests

@@ -3,6 +3,8 @@ import tempfile
 import logging
 import contextlib
 
+from future.utils import raise_from
+
 import yaml
 from pykwalify.core import Core
 import pykwalify
@@ -36,7 +38,7 @@ def verify_generic(to_verify, schema_filename):
         verifier.validate()
     except pykwalify.errors.PyKwalifyException as e:
         logger.exception("Error validating %s", to_verify)
-        raise BadSchemaError() from e
+        raise_from(BadSchemaError(), e)
 
 
 @contextlib.contextmanager
