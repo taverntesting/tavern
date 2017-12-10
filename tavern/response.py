@@ -64,7 +64,9 @@ class TResponse:
         else:
             return "<Not run yet>"
 
-    def _adderr(self, msg, e=None, *args):
+    def _adderr(self, msg, *args, **kwargs):
+        e = kwargs.get('e')
+
         if e:
             logger.exception(msg, *args)
         else:

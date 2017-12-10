@@ -2,6 +2,7 @@ import logging
 
 import yaml
 
+from .util import python_2_util
 from .util import exceptions
 from .util.loader import IncludeLoader
 from .util.env_vars import check_env_var_settings
@@ -10,6 +11,7 @@ from .response import TResponse
 from .printer import log_pass, log_fail
 
 from .schemas.files import verify_tests
+
 
 logger = logging.getLogger(__name__)
 
