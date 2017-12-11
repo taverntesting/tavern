@@ -1,0 +1,14 @@
+[MASTER]
+disable=R,C,W
+
+ignore=tests
+
+[REPORTS]
+reports=no
+
+[SIMILARITIES]
+min-similarity-lines=6
+ignore-imports=yes
+
+[TYPECHECK]
+ignored-classes=RememberComposer
