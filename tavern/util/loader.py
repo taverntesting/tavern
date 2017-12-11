@@ -81,7 +81,7 @@ class IncludeLoader(with_metaclass(LoaderMeta, Reader, Scanner, Parser, Remember
         extension = os.path.splitext(filename)[1].lstrip('.')
 
         if extension not in ('yaml', 'yml'):
-            from tavern.exceptions import BadSchemaError
+            from tavern.util.exceptions import BadSchemaError
             raise BadSchemaError("Unknown filetype '{}'".format(filename))
 
         with open(filename, 'r') as f:
