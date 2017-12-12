@@ -26,7 +26,7 @@ def format_keys(val, variables):
         try:
             formatted = val.format(**variables)
         except KeyError as e:
-            raise_from(MissingFormatError, e)
+            raise_from(MissingFormatError(e.args), e)
 
     return formatted
 

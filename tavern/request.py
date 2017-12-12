@@ -54,8 +54,8 @@ def get_request_args(rspec, test_block_config):
 
     try:
         fspec = format_keys(rspec, test_block_config["variables"])
-    except exceptions.MissingFormatError:
-        logger.error("Key not found in format")
+    except exceptions.MissingFormatError as e:
+        logger.error("Key(s) not found in format: %s", e.args)
         raise
 
     def add_request_args(keys, optional):
