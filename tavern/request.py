@@ -1,6 +1,7 @@
-import requests
 import functools
 import logging
+
+import requests
 
 from .util import exceptions
 from .util.dict_util import format_keys
@@ -53,7 +54,7 @@ def get_request_args(rspec, test_block_config):
 
     try:
         fspec = format_keys(rspec, test_block_config["variables"])
-    except exceptions.MissingFormatError as e:
+    except exceptions.MissingFormatError:
         logger.error("Key not found in format")
         raise
 
@@ -93,6 +94,7 @@ def get_request_args(rspec, test_block_config):
 
 
 class TRequest:
+
     def __init__(self, rspec, test_block_config):
         """Prepare request
 

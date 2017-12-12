@@ -48,6 +48,7 @@ class TResponse:
         self.expected = deep_dict_merge(defaults, expected)
         self.response = None
         self.test_block_config = test_block_config
+        self.status_code = None
 
         # all errors in this response
         self.errors = []
@@ -105,7 +106,7 @@ class TResponse:
         if self.validate_function:
             try:
                 self.validate_function(response)
-            except Exception as e:
+            except Exception as e: #pylint: disable=broad-except
                 self._adderr("Error calling validate function '%s':\n%s",
                     self.validate_function.func,
                     _indent_err_text(traceback.format_exc()),
@@ -124,7 +125,7 @@ class TResponse:
         else:
             parsed = urlparse(redirect_url)
             qp = parsed.query
-            qp_as_dict = {i:j[0] for i,j in parse_qs(qp).items()}
+            qp_as_dict = {i:j[0] for i, j in parse_qs(qp).items()}
 
         saved.update(self._save_value("body", body))
         saved.update(self._save_value("headers", response.headers))
@@ -137,7 +138,7 @@ class TResponse:
         else:
             try:
                 to_save = wrapped(response)
-            except Exception as e:
+            except Exception as e: #pylint: disable=broad-except
                 self._adderr("Error calling save function '%s':\n%s",
                     wrapped.func,
                     _indent_err_text(traceback.format_exc()),

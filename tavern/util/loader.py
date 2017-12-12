@@ -1,9 +1,9 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
 
-import yaml
 import uuid
 import os.path
 
+import yaml
 from yaml.reader import Reader
 from yaml.scanner import Scanner
 from yaml.parser import Parser
@@ -13,16 +13,17 @@ from yaml.resolver import Resolver
 
 
 def makeuuid(loader, node):
+    # pylint: disable=unused-argument
     return str(uuid.uuid4())
 
 
 class LoaderMeta(type):
 
-    def __new__(metacls, __name__, __bases__, __dict__):
+    def __new__(mcs, name, bases, attrs):
         """Add include constructer to class."""
 
         # register the include constructor on the class
-        cls = super().__new__(metacls, __name__, __bases__, __dict__)
+        cls = super().__new__(mcs, name, bases, attrs)
         cls.add_constructor('!include', cls.construct_include)
         cls.add_constructor('!uuid', makeuuid)
 
@@ -50,7 +51,7 @@ class RememberComposer(Composer):
 
         return node
 
-
+# pylint: disable=too-many-ancestors
 class IncludeLoader(Reader, Scanner, Parser, RememberComposer, SafeConstructor,
    Resolver, metaclass=LoaderMeta):
     """YAML Loader with `!include` constructor."""

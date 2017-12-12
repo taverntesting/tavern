@@ -32,7 +32,7 @@ def import_ext_function(entrypoint):
     try:
         module = importlib.import_module(module)
     except ImportError:
-        logger.exception("Error importing module {}".format(module))
+        logger.exception("Error importing module %s", module)
         raise
 
     function = getattr(module, funcname, None)
@@ -103,6 +103,7 @@ def validate_extensions(value, rule_obj, path):
     Raises:
         BadSchemaError: Something in the validation function spec was wrong
     """
+    # pylint: disable=unused-argument
     if "$ext" in value:
         expected_keys = {
             "function",

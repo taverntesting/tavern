@@ -61,7 +61,7 @@ def main():
         "formatters": {
             "default": {
                 "format": "{asctime:s} [{levelname:s}]: ({name:s}:{lineno:d}) {message:s}",
-                "style": "{" ,
+                "style": "{",
             },
         },
         "handlers": {
