@@ -8,7 +8,7 @@ from .core import run
 class TavernArgParser(ArgumentParser):
 
     def __init__(self):
-        super().__init__(
+        super(TavernArgParser, self).__init__(
             description="""Parse yaml + make requests against an API""",
             formatter_class=argparse.RawDescriptionHelpFormatter,
         )

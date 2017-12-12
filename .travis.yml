@@ -4,6 +4,8 @@ language: python
 cache: pip
 matrix:
   include:
+    - python: 2.7
+      env: TOXENV=py27
     - python: 3.3
       env: TOXENV=py33
     - python: 3.4
@@ -12,8 +14,11 @@ matrix:
       env: TOXENV=py35
     - python: 3.6
       env: TOXENV=py36
+
+    - python: 2.7
+      env: TOXENV=py27lint
     - python: 3.6
-      env: TOXENV=pylint
+      env: TOXENV=py36lint
 install:
   - pip install tox-travis setuptools --upgrade
 # command to run tests

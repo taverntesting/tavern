@@ -1,14 +1,17 @@
 import json
 import traceback
-import textwrap
 import logging
 import copy
 
-from urllib.parse import urlparse, parse_qs
+try:
+    from urllib.parse import urlparse, parse_qs
+except ImportError:
+    from urlparse import urlparse, parse_qs
 
 from .schemas.extensions import get_wrapped_response_function
 from .util.dict_util import format_keys, recurse_access_key, deep_dict_merge
 from .util.exceptions import TestFailError
+from .util.python_2_util import indent
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +19,7 @@ logger = logging.getLogger(__name__)
 def _indent_err_text(err):
     if err == "null":
         err = "<No body>"
-    return textwrap.indent(err, " "*4)
+    return indent(err, " "*4)
 
 
 def yield_keyvals(block):
@@ -30,7 +33,7 @@ def yield_keyvals(block):
             yield [sidx], sidx, val
 
 
-class TResponse:
+class TResponse(object):
 
     def __init__(self, name, expected, test_block_config):
         defaults = {
@@ -62,7 +65,9 @@ class TResponse:
         else:
             return "<Not run yet>"
 
-    def _adderr(self, msg, *args, e=None):
+    def _adderr(self, msg, *args, **kwargs):
+        e = kwargs.get('e')
+
         if e:
             logger.exception(msg, *args)
         else:

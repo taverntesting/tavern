@@ -3,3 +3,4 @@ pykwalify
 requests
 pyjwt
 python-box
+future

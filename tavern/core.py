@@ -11,6 +11,7 @@ from .printer import log_pass, log_fail
 
 from .schemas.files import verify_tests
 
+
 logger = logging.getLogger(__name__)
 
 

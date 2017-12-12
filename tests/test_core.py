@@ -1,5 +1,5 @@
 import json
-from unittest.mock import patch, Mock
+from mock import patch, Mock
 
 import pytest
 import requests

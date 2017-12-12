@@ -2,6 +2,8 @@ import logging
 import functools
 import importlib
 
+from future.utils import raise_from
+
 from tavern.util.exceptions import BadSchemaError
 
 
@@ -122,8 +124,8 @@ def validate_extensions(value, rule_obj, path):
 
         try:
             import_ext_function(validate_keys["function"])
-        except Exception as e:
-            raise BadSchemaError("Couldn't load {}".format(validate_keys["function"])) from e
+        except Exception as e: # pylint: disable=broad-except
+            raise_from(BadSchemaError("Couldn't load {}".format(validate_keys["function"])), e)
 
         extra_args = validate_keys.get("extra_args")
         extra_kwargs = validate_keys.get("extra_kwargs")

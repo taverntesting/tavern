@@ -3,6 +3,8 @@
 import uuid
 import os.path
 
+from future.utils import with_metaclass
+
 import yaml
 from yaml.reader import Reader
 from yaml.scanner import Scanner
@@ -23,7 +25,7 @@ class LoaderMeta(type):
         """Add include constructer to class."""
 
         # register the include constructor on the class
-        cls = super().__new__(mcs, name, bases, attrs)
+        cls = super(LoaderMeta, mcs).__new__(mcs, name, bases, attrs)
         cls.add_constructor('!include', cls.construct_include)
         cls.add_constructor('!uuid', makeuuid)
 
@@ -51,13 +53,16 @@ class RememberComposer(Composer):
 
         return node
 
+
 # pylint: disable=too-many-ancestors
-class IncludeLoader(Reader, Scanner, Parser, RememberComposer, SafeConstructor,
-   Resolver, metaclass=LoaderMeta):
+class IncludeLoader(with_metaclass(LoaderMeta, Reader, Scanner, Parser, RememberComposer, SafeConstructor,
+   Resolver)):
     """YAML Loader with `!include` constructor."""
 
     def __init__(self, stream):
         """Initialise Loader."""
+
+        # pylint: disable=non-parent-init-called
 
         try:
             self._root = os.path.split(stream.name)[0]

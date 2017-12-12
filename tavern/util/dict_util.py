@@ -1,5 +1,7 @@
 import collections
 
+from future.utils import raise_from
+
 from .exceptions import MissingFormatError
 
 
@@ -22,9 +24,9 @@ def format_keys(val, variables):
             formatted[key] = format_keys(val[key], variables)
     elif isinstance(val, str):
         try:
-            formatted = val.format_map(variables)
+            formatted = val.format(**variables)
         except KeyError as e:
-            raise MissingFormatError from e
+            raise_from(MissingFormatError, e)
 
     return formatted
 

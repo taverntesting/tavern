@@ -93,7 +93,7 @@ def get_request_args(rspec, test_block_config):
     return request_args
 
 
-class TRequest:
+class TRequest(object):
 
     def __init__(self, rspec, test_block_config):
         """Prepare request
