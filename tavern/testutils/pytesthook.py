@@ -94,4 +94,5 @@ class YamlItem(pytest.Item):
         return super().repr_failure(excinfo)
 
     def reportinfo(self):
+        # pylint: disable=missing-format-attribute
         return self.fspath, 0, "{self.path}::{self.name:s}".format(self=self)
