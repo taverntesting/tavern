@@ -2,7 +2,6 @@ import logging
 
 import yaml
 
-from .util import python_2_util
 from .util import exceptions
 from .util.loader import IncludeLoader
 from .util.env_vars import check_env_var_settings

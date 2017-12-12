@@ -24,7 +24,7 @@ def format_keys(val, variables):
             formatted[key] = format_keys(val[key], variables)
     elif isinstance(val, str):
         try:
-            formatted = val.format_map(variables)
+            formatted = val.format(**variables)
         except KeyError as e:
             raise_from(MissingFormatError, e)
 
@@ -80,7 +80,7 @@ def deep_dict_merge(initial_dct, merge_dct):
     """
     dct = initial_dct.copy()
 
-    for k, v in merge_dct.items():
+    for k in merge_dct:
         if (k in dct and isinstance(dct[k], dict)
                 and isinstance(merge_dct[k], collections.Mapping)):
             dct[k] = deep_dict_merge(dct[k], merge_dct[k])

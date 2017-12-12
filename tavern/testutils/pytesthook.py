@@ -64,7 +64,7 @@ class YamlItem(pytest.Item):
     """
 
     def __init__(self, name, parent, spec, path):
-        super().__init__(name, parent)
+        super(YamlItem, self).__init__(name, parent)
         self.path = path
         self.spec = spec
 
@@ -79,7 +79,7 @@ class YamlItem(pytest.Item):
 
         run_test(self.path, self.spec, contents)
 
-    def repr_failure(self, excinfo):
+    def repr_failure(self, excinfo): # pylint: disable=no-self-use
         """ called when self.runtest() raises an exception.
 
         Todo:
@@ -89,9 +89,10 @@ class YamlItem(pytest.Item):
         """
 
         if not issubclass(excinfo.type, TavernException):
-            return super().repr_failure(excinfo)
+            return super(YamlItem, self).repr_failure(excinfo)
 
-        return super().repr_failure(excinfo)
+        return super(YamlItem, self).repr_failure(excinfo)
 
     def reportinfo(self):
+        # pylint: disable=missing-format-attribute
         return self.fspath, 0, "{self.path}::{self.name:s}".format(self=self)

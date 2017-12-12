@@ -1,6 +1,3 @@
-from future.standard_library import install_aliases
-install_aliases()
-
 import json
 from mock import patch, Mock
 

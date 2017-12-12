@@ -16,9 +16,9 @@ matrix:
       env: TOXENV=py36
 
     - python: 2.7
-      env: TOXENV=pylint
+      env: TOXENV=py27lint
     - python: 3.6
-      env: TOXENV=pylint
+      env: TOXENV=py36lint
 install:
   - pip install tox-travis setuptools --upgrade
 # command to run tests

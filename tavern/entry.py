@@ -2,14 +2,13 @@ import logging
 import argparse
 from argparse import ArgumentParser #, ArgumentTypeError
 
-from .util import python_2_util
 from .core import run
 
 
 class TavernArgParser(ArgumentParser):
 
     def __init__(self):
-        super().__init__(
+        super(TavernArgParser, self).__init__(
             description="""Parse yaml + make requests against an API""",
             formatter_class=argparse.RawDescriptionHelpFormatter,
         )
@@ -62,7 +61,7 @@ def main():
         "formatters": {
             "default": {
                 "format": "{asctime:s} [{levelname:s}]: ({name:s}:{lineno:d}) {message:s}",
-                "style": "{" ,
+                "style": "{",
             },
         },
         "handlers": {
