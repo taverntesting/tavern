@@ -1,9 +1,10 @@
 from mock import patch
+import json
 
 try:
-    from urllib.parse import urlencode
+    from urllib.parse import quote_plus
 except ImportError:
-    from urllib import urlencode
+    from urllib import quote_plus
 
 import pytest
 
@@ -126,7 +127,7 @@ class TestRequests:
 
         args = get_request_args(req, includes)
 
-        assert args["params"]["a"] == urlencode(req["params"]["a"])
+        assert args["params"]["a"] == "%7B%22b%22%3A+%7B%22c%22%3A+%22d%22%7D%7D"
 
 
 class TestExtFunctions:

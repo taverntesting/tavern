@@ -1,10 +1,11 @@
 import functools
+import json
 import logging
 
 try:
-    from urllib.parse import urlencode
+    from urllib.parse import quote_plus
 except ImportError:
-    from urllib import urlencode
+    from urllib import quote_plus
 
 import requests
 
@@ -98,7 +99,7 @@ def get_request_args(rspec, test_block_config):
     # > up being form-urlencoded when passed as an OAuth parameter)
     for key, value in request_args.get("params", {}).items():
         if isinstance(value, dict):
-            request_args["params"][key] = urlencode(value)
+            request_args["params"][key] = quote_plus(json.dumps(value))
 
     for key, val in optional_with_default.items():
         request_args[key] = fspec.get(key, val)
