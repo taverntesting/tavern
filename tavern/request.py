@@ -43,6 +43,10 @@ def get_request_args(rspec, test_block_config):
         "headers",
     ]
 
+    optional_with_default = {
+        "verify": True,
+    }
+
     if "method" not in rspec:
         logger.debug("Using default GET method")
         rspec["method"] = "GET"
@@ -80,6 +84,9 @@ def get_request_args(rspec, test_block_config):
         else:
             request_args[key] = func()
 
+    for key, val in optional_with_default.items():
+        request_args[key] = fspec.get(key, val)
+
     # TODO
     # requests takes all of these - we need to parse the input to get them
     # "files",
@@ -112,13 +119,14 @@ class TRequest(object):
             "method",
             "url",
             "headers",
-            "files",
             "data",
             "params",
             "auth",
-            "cookies",
-            "hooks",
             "json",
+            "verify",
+            # "files",
+            # "cookies",
+            # "hooks",
         }
 
         keyset = set(rspec)

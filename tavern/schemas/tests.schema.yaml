@@ -80,6 +80,10 @@ mapping:
                   - POST
                   - DELETE
 
+              verify:
+                type: bool
+                required: false
+
           response:
             type: map
             required: true

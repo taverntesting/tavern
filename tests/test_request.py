@@ -132,3 +132,20 @@ class TestExtFunctions:
         args = get_request_args(req, includes)
 
         assert args["data"] == to_copy
+
+
+class TestOptionalDefaults:
+
+    @pytest.mark.parametrize("verify", (
+        True,
+        False
+    ))
+    def test_passthrough_verify(self, req, includes, verify):
+        """Should be able to pass 'verify' through to requests.request
+        """
+
+        req["verify"] = verify
+
+        args = get_request_args(req, includes)
+
+        assert args["verify"] == verify
