@@ -23,6 +23,8 @@ def pytest_collect_file(parent, path):
     if path.strpath.endswith(".tavern.yaml") and path.basename.startswith("test"):
         return YamlFile(path, parent)
 
+    return None
+
 
 def pytest_addoption(parser):
     """Add an option to pass in a global config file for tavern
