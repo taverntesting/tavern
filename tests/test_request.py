@@ -1,5 +1,10 @@
 from mock import patch
 
+try:
+    from urllib.parse import urlencode
+except ImportError:
+    from urllib import urlencode
+
 import pytest
 
 from tavern.request import TRequest, get_request_args
@@ -109,6 +114,19 @@ class TestRequests:
         args = get_request_args(req, includes)
 
         assert args["headers"]["content-type"] == "application/x-www-form-urlencoded"
+
+    def test_nested_params_encoded(self, req, includes):
+        req["params"] = {
+            "a": {
+                "b": {
+                    "c": "d",
+                }
+            }
+        }
+
+        args = get_request_args(req, includes)
+
+        assert args["params"]["a"] == urlencode(req["params"]["a"])
 
 
 class TestExtFunctions:

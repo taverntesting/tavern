@@ -1,6 +1,11 @@
 import functools
 import logging
 
+try:
+    from urllib.parse import urlencode
+except ImportError:
+    from urllib import urlencode
+
 import requests
 
 from .util import exceptions
@@ -83,6 +88,17 @@ def get_request_args(rspec, test_block_config):
             pass
         else:
             request_args[key] = func()
+
+    # If there's any nested json in parameters, urlencode it
+    # if you pass nested json to 'params' then requests silently fails and just
+    # passes the 'top level' key, ignoring all the nested json. I don't think
+    # there's a standard way to do this, but urlencoding it seems sensible
+    # eg https://openid.net/specs/openid-connect-core-1_0.html#ClaimsParameter
+    # > ...represented in an OAuth 2.0 request as UTF-8 encoded JSON (which ends
+    # > up being form-urlencoded when passed as an OAuth parameter)
+    for key, value in request_args.get("params", {}).items():
+        if isinstance(value, dict):
+            request_args["params"][key] = urlencode(value)
 
     for key, val in optional_with_default.items():
         request_args[key] = fspec.get(key, val)
