@@ -112,7 +112,7 @@ def run(in_file, tavern_global_cfg):
         # Multiple documents per file => multiple test paths per file
         for test_spec in yaml.load_all(infile, Loader=IncludeLoader):
             if not test_spec:
-                logger.warning("Empty document in input file '%s'", self.fspath)
+                logger.warning("Empty document in input file '%s'", in_file)
                 continue
 
             try:
