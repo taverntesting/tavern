@@ -60,8 +60,8 @@ def main():
         "version": 1,
         "formatters": {
             "default": {
-                "format": "{asctime:s} [{levelname:s}]: ({name:s}:{lineno:d}) {message:s}",
-                "style": "{",
+                "format": "%(asctime)s [%(levelname)s]: (%(name)s:%(lineno)d) %(message)s",
+                "style": "%",
             },
         },
         "handlers": {

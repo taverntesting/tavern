@@ -4,8 +4,8 @@ formatters:
     default:
         # colorlog is really useful
         (): colorlog.ColoredFormatter
-        format: "{asctime:s} [{bold:s}{log_color:s}{levelname:s}{reset:s}]: ({bold:s}{name:s}:{lineno:d}{reset:s}) {message:s}"
-        style: "{"
+        format: "%(asctime)s [%(bold)s%(log_color)s%(levelname)s%(reset)s]: (%(bold)s%(name)s:%(lineno)d%(reset)s) %(message)s"
+        style: "%"
         datefmt: "%X"
         log_colors:
             DEBUG:    cyan
