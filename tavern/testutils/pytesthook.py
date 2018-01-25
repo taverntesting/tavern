@@ -48,6 +48,10 @@ class YamlFile(pytest.File):
             YamlItem: Essentially an individual pytest 'test object'
         """
         for test_spec in yaml.load_all(self.fspath.open(), Loader=IncludeLoader):
+            if not test_spec:
+                logger.warning("Empty document in input file '%s'", self.fspath)
+                continue
+
             verify_tests(test_spec)
             yield YamlItem(test_spec["test_name"], self, test_spec, self.fspath)
 
