@@ -1,4 +1,5 @@
-from mock import patch
+from mock import patch, Mock
+import requests
 import json
 
 try:
@@ -38,7 +39,7 @@ class TestRequests:
         req["fodokfowe"] = "Hello"
 
         with pytest.raises(exceptions.UnexpectedKeysError):
-            TRequest(req, includes)
+            TRequest(Mock(), req, includes)
 
     def test_missing_format(self, req, includes):
         """All format variables should be present
@@ -46,7 +47,7 @@ class TestRequests:
         del includes["variables"]["code"]
 
         with pytest.raises(exceptions.MissingFormatError):
-            TRequest(req, includes)
+            TRequest(Mock(), req, includes)
 
     def test_bad_get_body(self, req, includes):
         """Can't add a body with a GET request
@@ -54,17 +55,17 @@ class TestRequests:
         req["method"] = "GET"
 
         with pytest.raises(exceptions.BadSchemaError):
-            TRequest(req, includes)
+            TRequest(Mock(), req, includes)
 
     def test_session_called_no_redirects(self, req, includes):
         """Always disable redirects
         """
 
-        with patch("tavern.request.requests.Session.request") as rmock:
-            TRequest(req, includes).run()
+        rmock = Mock(spec=requests.Session)
+        TRequest(rmock, req, includes).run()
 
-        assert rmock.called
-        assert rmock.call_args[1]["allow_redirects"] == False
+        assert rmock.request.called
+        assert rmock.request.call_args[1]["allow_redirects"] == False
 
     def test_default_method(self, req, includes):
         del req["method"]
