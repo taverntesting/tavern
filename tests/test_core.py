@@ -41,7 +41,7 @@ def fix_mock_response_args(fulltest):
     content = response["body"]
 
     args = {
-        "spec": requests.Request,
+        "spec": requests.Response,
         "content": json.dumps(content).encode("utf8"),
         "status_code": response["status_code"],
         "json": lambda: content,
