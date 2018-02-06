@@ -90,6 +90,8 @@ class TResponse(object):
         Raises:
             TestFailError: Something went wrong with validating the response
         """
+        # pylint: disable=too-many-statements
+
         self.response = response
         self.status_code = response.status_code
 
