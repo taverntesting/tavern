@@ -136,6 +136,10 @@ class TResponse(object):
         saved.update(self._save_value("headers", response.headers))
         saved.update(self._save_value("redirect_query_params", qp_as_dict))
 
+        for cookie in self.expected.get("cookies", []):
+            if cookie not in response.cookies:
+                self._adderr("No cookie named '%s' in response", cookie)
+
         try:
             wrapped = get_wrapped_response_function(self.expected["save"]["$ext"])
         except KeyError:
