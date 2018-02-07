@@ -33,9 +33,9 @@ matrix:
       env: TOXENV=pypy3 TOXCFG=tox-integration.ini
 
     - python: 2.7
-      env: TOXENV=py27lint
+      env: TOXENV=py27lint TOXCFG=tox.ini
     - python: 3.6
-      env: TOXENV=py36lint
+      env: TOXENV=py36lint TOXCFG=tox.ini
 install:
   - pip install tox-travis setuptools --upgrade
 # command to run tests
