@@ -105,7 +105,6 @@ def get_request_args(rspec, test_block_config):
     # TODO
     # requests takes all of these - we need to parse the input to get them
     # "files",
-    # "auth",
     # "cookies",
 
     if request_args["method"] == "GET":

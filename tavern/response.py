@@ -216,7 +216,8 @@ class TResponse(object):
                         assert actual_val == expected_val
                     except AssertionError as e:
                         if expected_val != None:
-                            self._adderr("Value mismatch: '%s' vs '%s'", actual_val, expected_val, e=e)
+                            self._adderr("Value mismatch: got '%s' (type: %s), expected '%s' (type: %s)",
+                                actual_val, type(actual_val), expected_val, type(expected_val), e=e)
                         else:
                             logger.debug("Key %s was present", joined_key)
 

@@ -1,26 +1,43 @@
 ---
-sudo: false
+sudo: required
 language: python
 cache: pip
+services:
+  - docker
 matrix:
   include:
     - python: 2.7
-      env: TOXENV=py27
-    - python: 3.3
-      env: TOXENV=py33
+      env: TOXENV=py27 TOXCFG=tox.ini
     - python: 3.4
-      env: TOXENV=py34
+      env: TOXENV=py34 TOXCFG=tox.ini
     - python: 3.5
-      env: TOXENV=py35
+      env: TOXENV=py35 TOXCFG=tox.ini
     - python: 3.6
-      env: TOXENV=py36
+      env: TOXENV=py36 TOXCFG=tox.ini
+    - python: pypy
+      env: TOXENV=pypy TOXCFG=tox.ini
+    - python: pypy3
+      env: TOXENV=pypy3 TOXCFG=tox.ini
 
     - python: 2.7
-      env: TOXENV=py27lint
+      env: TOXENV=py27 TOXCFG=tox-integration.ini
+    - python: 3.4
+      env: TOXENV=py34 TOXCFG=tox-integration.ini
+    - python: 3.5
+      env: TOXENV=py35 TOXCFG=tox-integration.ini
     - python: 3.6
-      env: TOXENV=py36lint
+      env: TOXENV=py36 TOXCFG=tox-integration.ini
+    - python: pypy
+      env: TOXENV=pypy TOXCFG=tox-integration.ini
+    - python: pypy3
+      env: TOXENV=pypy3 TOXCFG=tox-integration.ini
+
+    - python: 2.7
+      env: TOXENV=py27lint TOXCFG=tox.ini
+    - python: 3.6
+      env: TOXENV=py36lint TOXCFG=tox.ini
 install:
   - pip install tox-travis setuptools --upgrade
 # command to run tests
 script:
-  - tox
+  - tox -c ${TOXCFG}
