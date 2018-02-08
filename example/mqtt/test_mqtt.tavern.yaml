@@ -2,6 +2,15 @@
 
 test_name: Make sure posting sends mqtt message
 
+mqtt: &mqtt_spec
+  tls:
+    enable: true
+  connect:
+    host: localhost
+    port: 9001
+  client:
+    transport: websockets
+
 stages:
   - name: step 1 - post message trigger
     request:
@@ -12,21 +21,72 @@ stages:
       method: POST
       headers:
         content-type: application/json
+    response:
+      status_code: 200
+      body:
+        message: "success"
+      headers:
+        content-type: application/json
     mqtt_response:
       topic: /device/123
       payload: "hello"
+      timeout: 5
 
 ---
 
-test_name: Make sure sending mqtt message triggers another message
+test_name: Test mqtt message response
+
+mqtt: *mqtt_spec
 
 stages:
-  - name: step 1 - post message trigger
-    mqtt_request:
-      topic: /device/123
-      payload: "ping"
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /device/123/ping
+      payload: ping
     mqtt_response:
-      topic: /device/123/response
-      payload: "pong"
-      message_timeout: 5
+      topic: /device/123/pong
+      payload: pong
+      timeout: 5
 
+---
+
+test_name: Test posting mqtt message updates state on server
+
+mqtt: *mqtt_spec
+
+stages:
+  - name: step 1 - get device state with lights off
+    request:
+      url: "{host}/get_device_state"
+      json:
+        device_id: 123
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      body:
+        lights: "off"
+      headers:
+        content-type: application/json
+
+  - name: step 2 - send mqtt message saying that the lights are now on
+    mqtt_publish:
+      topic: /device/123/lights
+      qos: 1
+      payload: "on"
+
+  - name: step 1 - get device state, lights now on
+    request:
+      url: "{host}/get_device_state"
+      json:
+        device_id: 123
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      body:
+        lights: "on"
+      headers:
+        content-type: application/json
