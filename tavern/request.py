@@ -10,6 +10,7 @@ except ImportError:
 import requests
 
 from .util import exceptions
+from .util.keys import check_expected_keys
 from .util.dict_util import format_keys
 from .schemas.extensions import get_wrapped_create_function
 
@@ -145,14 +146,7 @@ class TRequest(object):
             # "hooks",
         }
 
-        keyset = set(rspec)
-
-        if not keyset <= expected:
-            unexpected = keyset - expected
-
-            msg = "Unexpected keys {}".format(unexpected)
-            logger.error(msg)
-            raise exceptions.UnexpectedKeysError(msg)
+        check_expected_keys(expected, rspec)
 
         request_args = get_request_args(rspec, test_block_config)
 

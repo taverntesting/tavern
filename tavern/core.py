@@ -41,15 +41,15 @@ def run_test(in_file, test_spec, global_cfg):
     if "variables" not in test_block_config:
         test_block_config["variables"] = {}
 
+    if not test_spec:
+        logger.warning("Empty test block in %s", in_file)
+        return
+
     if test_spec.get("includes"):
         for included in test_spec["includes"]:
             if "variables" in included:
                 check_env_var_settings(included["variables"])
                 test_block_config["variables"].update(included["variables"])
-
-    if not test_spec:
-        logger.warning("Empty test block in %s", in_file)
-        return
 
     test_block_name = test_spec["test_name"]
 
