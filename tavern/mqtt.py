@@ -91,7 +91,7 @@ class MQTTClient(object):
         except Full:
             logger.exception("message queue full")
 
-    def expect_message(self, topic, payload, timeout=1):
+    def message_received(self, topic, payload, timeout=1):
         """Check that a message is in the message queue
 
         Args:
@@ -99,6 +99,9 @@ class MQTTClient(object):
             payload (str, dict): expected payload - can be a str or a dict...?
             timeout (int): How long to wait before signalling that the message
                 was not received.
+
+        Returns:
+            bool: whether the message was received within the timeout
 
         Todo:
             Allow regexes for topic names? Better validation for mqtt payloads
