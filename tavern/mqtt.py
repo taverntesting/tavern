@@ -7,7 +7,7 @@ try:
 except ImportError:
     from Queue import Queue, Full, Empty
 
-from paho.mqtt import Client
+from paho.mqtt.client import Client
 
 from .util.keys import check_expected_keys
 from .util import exceptions
