@@ -1,5 +1,11 @@
 import logging
+import time
 import functools
+
+try:
+    from queue import Queue, Full, Empty
+except ImportError:
+    from Queue import Queue, Full, Empty
 
 from paho.mqtt import Client
 
@@ -63,6 +69,64 @@ class MQTTClient(object):
 
         if self._enable_tls:
             self._client.tls_set(**self._tls_args)
+
+        # Arbitrary number, could just be 1 and only accept 1 message per stages
+        # but we might want to raise an error if more than 1 message is received
+        # during a test stage.
+        self._message_queue = Queue(maxsize=10)
+        self._userdata = {
+            "queue": self._message_queue,
+        }
+        self._client.user_data_set(self._userdata)
+
+    @staticmethod
+    def _on_message(client, userdata, message):
+        """Add any messages received to the queue
+
+        Todo:
+            If the queue is faull trigger an error in main thread somehow
+        """
+        try:
+            userdata["queue"].put(message)
+        except Full:
+            logger.exception("message queue full")
+
+    def expect_message(self, topic, payload, timeout=1):
+        """Check that a message is in the message queue
+
+        Args:
+            topic (str): topic message should have been on
+            payload (str, dict): expected payload - can be a str or a dict...?
+            timeout (int): How long to wait before signalling that the message
+                was not received.
+
+        Todo:
+            Allow regexes for topic names? Better validation for mqtt payloads
+        """
+
+        time_spent = 0
+
+        while time_spent < timeout:
+            t1 = time.time()
+            try:
+                msg = self._message_queue.get(block=True, timeout=timeout)
+            except Empty:
+                time_spent += timeout
+            else:
+                time_spent += time.time() - t1
+                if msg.payload != payload and msg.topic != topic:
+                    # TODO
+                    # Error?
+                    logger.warning("Got unexpected message in '%s' with payload '%s'",
+                        msg.topic, msg.payload)
+                else:
+                    logger.warning("Got expected message in '%s' with payload '%s'",
+                        msg.topic, msg.payload)
+
+                    return True
+
+        logger.error("Message not received in time")
+        return False
 
     def __enter__(self):
         self._client.connect_async(**self._connect_args)
