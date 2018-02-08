@@ -20,6 +20,12 @@ class UnexpectedKeysError(TavernException):
     pass
 
 
+class MissingKeysError(TavernException):
+    """Missing key in request specification
+    """
+    pass
+
+
 class MissingFormatError(TavernException):
     """Tried to use a variable in a format string but it was not in the
     available variables
