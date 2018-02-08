@@ -1,0 +1,32 @@
+---
+
+test_name: Make sure posting sends mqtt message
+
+stages:
+  - name: step 1 - post message trigger
+    request:
+      url: "{host}/send_mqtt_message"
+      json:
+        device_id: 123
+        payload: "hello"
+      method: POST
+      headers:
+        content-type: application/json
+    mqtt_response:
+      topic: /device/123
+      payload: "hello"
+
+---
+
+test_name: Make sure sending mqtt message triggers another message
+
+stages:
+  - name: step 1 - post message trigger
+    mqtt_request:
+      topic: /device/123
+      payload: "ping"
+    mqtt_response:
+      topic: /device/123/response
+      payload: "pong"
+      message_timeout: 5
+

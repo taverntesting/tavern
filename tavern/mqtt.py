@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class MQTTClient(object):
-    
+
     def __init__(self, **kwargs):
         expected_main = {
             "client",
