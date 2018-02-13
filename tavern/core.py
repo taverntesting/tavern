@@ -65,15 +65,15 @@ def run_test(in_file, test_spec, global_cfg):
             mqtt_client = None
 
         # Run tests in a path in order
-        for test in test_spec["stages"]:
-            name = test["name"]
-            rspec = test["request"]
-            expected = test["response"]
+        for stage in test_spec["stages"]:
+            name = stage["name"]
+            rspec = stage["request"]
+            expected = stage["response"]
 
             try:
                 r = TRequest(rspec, test_block_config)
             except exceptions.MissingFormatError:
-                log_fail(test, None, expected)
+                log_fail(stage, None, expected)
                 raise
 
             logger.info("Running stage : %s", name)
@@ -87,10 +87,10 @@ def run_test(in_file, test_spec, global_cfg):
             try:
                 saved = verifier.verify(response)
             except exceptions.TavernException:
-                log_fail(test, verifier, expected)
+                log_fail(stage, verifier, expected)
                 raise
             else:
-                log_pass(test, verifier)
+                log_pass(stage, verifier)
                 test_block_config["variables"].update(saved)
 
 
