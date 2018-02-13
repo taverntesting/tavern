@@ -91,7 +91,7 @@ mapping:
 
           request:
             type: map
-            required: true
+            required: false
             mapping:
               url:
                 type: str
@@ -128,9 +128,25 @@ mapping:
                 type: bool
                 required: false
 
+          mqtt_publish:
+            type: map
+            required: false
+            mapping:
+              topic:
+                type: str
+                required: true
+              payload:
+                # XXX
+                # could be json or a string
+                type: any
+                required: false
+              qos:
+                type: int
+                required: false
+
           response:
             type: map
-            required: true
+            required: false
             mapping:
               status_code:
                 type: int
@@ -146,3 +162,17 @@ mapping:
                 mapping:
                   re;(\$ext|body|headers|redirect_query_params):
                     type: any
+
+          mqtt_response:
+            type: map
+            required: false
+            mapping:
+              topic:
+                type: str
+                required: true
+              payload:
+                type: any
+                required: false
+              timeout:
+                type: int
+                required: false
