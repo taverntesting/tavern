@@ -107,13 +107,11 @@ def run_test(in_file, test_spec, global_cfg):
 
             response = r.run()
 
-            logger.info("Response: '%s' (%s)", response, response.content.decode("utf8"))
-
             verifiers = []
             if expected:
                 verifiers.append(TResponse(name, expected, test_block_config))
             if mqtt_expected:
-                verifiers.append(MQTTResponse(mqtt_client, name, expected, test_block_config))
+                verifiers.append(MQTTResponse(mqtt_client, name, mqtt_expected, test_block_config))
 
             for v in verifiers:
                 try:

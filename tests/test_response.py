@@ -191,6 +191,7 @@ class TestFull:
 
         class FakeResponse:
             headers = resp["headers"]
+            content = "test".encode("utf8")
             def json(self):
                 return resp["body"]
             status_code = resp["status_code"]
@@ -206,6 +207,7 @@ class TestFull:
 
         class FakeResponse:
             headers = resp["headers"]
+            content = "test".encode("utf8")
             def json(self):
                 return resp["body"]
             status_code = 400

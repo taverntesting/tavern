@@ -66,6 +66,9 @@ class TResponse(BaseResponse):
         Raises:
             TestFailError: Something went wrong with validating the response
         """
+
+        logger.info("Response: '%s' (%s)", response, response.content.decode("utf8"))
+
         self.response = response
         self.status_code = response.status_code
 

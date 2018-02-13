@@ -23,3 +23,12 @@ class MQTTResponse(BaseResponse):
         self.expected = expected
 
         self.errors = []
+
+    def verify(self, response):
+        """Ensure mqtt message has arrived
+
+        Args:
+            response: not used
+        """
+
+        _ = response
