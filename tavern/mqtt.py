@@ -28,8 +28,10 @@ class MQTTClient(object):
             "client": {
                 "client_id",
                 "clean_session",
-                "userdata",
-                "protocol",
+                # Can't really use this easily...
+                # "userdata",
+                # Force mqttv311 - fix if this becomes an issue
+                # "protocol",
                 "transport",
             },
             "connect": {

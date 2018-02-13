@@ -11,6 +11,50 @@ mapping:
     required: true
     type: str
 
+  mqtt:
+    required: false
+    type: map
+    mapping:
+
+      client:
+        required: false
+        type: map
+        mapping:
+          client_id:
+            type: str
+            required: false
+          clean_session:
+            type: bool
+            required: false
+          transport:
+            type: str
+            required: false
+            enum:
+              - tcp
+              - websockets
+
+      connect:
+        required: true
+        type: map
+        mapping:
+          host:
+            required: true
+            type: str
+          port:
+            required: false
+            type: int
+          keepalive:
+            required: false
+            type: int
+
+      tls:
+        required: false
+        type: map
+        mapping:
+          enable:
+            required: false
+            type: bool
+
   includes:
     required: false
     type: seq
