@@ -1,6 +1,9 @@
 ---
 
-test_name: Make sure posting sends mqtt message
+test_name: Test mqtt message response
+
+includes:
+  - !include common.yaml
 
 mqtt: &mqtt_spec
   tls:
@@ -10,6 +13,25 @@ mqtt: &mqtt_spec
     port: 9001
   client:
     transport: websockets
+
+stages:
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /device/123/ping
+      payload: ping
+    mqtt_response:
+      topic: /device/123/pong
+      payload: pong
+      timeout: 5
+
+---
+
+test_name: Make sure posting sends mqtt message
+
+includes:
+  - !include common.yaml
+
+mqtt: *mqtt_spec
 
 stages:
   - name: step 1 - post message trigger
@@ -34,23 +56,10 @@ stages:
 
 ---
 
-test_name: Test mqtt message response
-
-mqtt: *mqtt_spec
-
-stages:
-  - name: step 1 - ping/pong
-    mqtt_publish:
-      topic: /device/123/ping
-      payload: ping
-    mqtt_response:
-      topic: /device/123/pong
-      payload: pong
-      timeout: 5
-
----
-
 test_name: Test posting mqtt message updates state on server
+
+includes:
+  - !include common.yaml
 
 mqtt: *mqtt_spec
 
