@@ -14,6 +14,8 @@ from tavern.util.keys import check_expected_keys
 from tavern.util.dict_util import format_keys
 from tavern.schemas.extensions import get_wrapped_create_function
 
+from .base import BaseRequest
+
 logger = logging.getLogger(__name__)
 
 
@@ -117,7 +119,7 @@ def get_request_args(rspec, test_block_config):
     return request_args
 
 
-class TRequest(object):
+class TRequest(BaseRequest):
 
     def __init__(self, rspec, test_block_config):
         """Prepare request

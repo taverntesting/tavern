@@ -11,15 +11,9 @@ except ImportError:
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util.dict_util import format_keys, recurse_access_key, deep_dict_merge
 from tavern.util.exceptions import TestFailError
-from tavern.util.python_2_util import indent
+from .base import BaseResponse, indent_err_text
 
 logger = logging.getLogger(__name__)
-
-
-def _indent_err_text(err):
-    if err == "null":
-        err = "<No body>"
-    return indent(err, " "*4)
 
 
 def yield_keyvals(block):
@@ -33,7 +27,7 @@ def yield_keyvals(block):
             yield [sidx], sidx, val
 
 
-class TResponse(object):
+class TResponse(BaseResponse):
 
     def __init__(self, name, expected, test_block_config):
         defaults = {
@@ -55,24 +49,6 @@ class TResponse(object):
 
         # all errors in this response
         self.errors = []
-
-    def _str_errors(self):
-        return "- " + "\n- ".join(self.errors)
-
-    def __str__(self):
-        if self.response:
-            return self.response.text.strip()
-        else:
-            return "<Not run yet>"
-
-    def _adderr(self, msg, *args, **kwargs):
-        e = kwargs.get('e')
-
-        if e:
-            logger.exception(msg, *args)
-        else:
-            logger.error(msg, *args)
-        self.errors += [(msg % args)]
 
     def verify(self, response):
         """Verify response against expected values and returns any values that
@@ -102,7 +78,7 @@ class TResponse(object):
             if 400 <= response.status_code < 500:
                 self._adderr("Status code was %s, expected %s:\n%s",
                     response.status_code, self.expected["status_code"],
-                    _indent_err_text(json.dumps(body)),
+                    indent_err_text(json.dumps(body)),
                     )
             else:
                 self._adderr("Status code was %s, expected %s",
@@ -114,7 +90,7 @@ class TResponse(object):
             except Exception as e: #pylint: disable=broad-except
                 self._adderr("Error calling validate function '%s':\n%s",
                     self.validate_function.func,
-                    _indent_err_text(traceback.format_exc()),
+                    indent_err_text(traceback.format_exc()),
                     e=e)
 
         # Get any keys to save
@@ -146,7 +122,7 @@ class TResponse(object):
             except Exception as e: #pylint: disable=broad-except
                 self._adderr("Error calling save function '%s':\n%s",
                     wrapped.func,
-                    _indent_err_text(traceback.format_exc()),
+                    indent_err_text(traceback.format_exc()),
                     e=e)
             else:
                 if isinstance(to_save, dict):
