@@ -4,12 +4,11 @@ import yaml
 
 from contextlib2 import ExitStack
 
-from .mqtt import MQTTClient
 from .util import exceptions
 from .util.loader import IncludeLoader
 from .util.env_vars import check_env_var_settings
-from .request import TRequest
-from .response import TResponse
+from .request import TRequest, MQTTRequest
+from .response import TResponse, MQTTResponse
 from .printer import log_pass, log_fail
 
 from .schemas.files import verify_tests
@@ -60,6 +59,7 @@ def run_test(in_file, test_spec, global_cfg):
 
     with ExitStack() as stack:
         if "mqtt" in test_spec:
+            from .mqtt import MQTTClient
             mqtt_client = stack.enter_context(MQTTClient(**test_spec["mqtt"]))
         else:
             mqtt_client = None
@@ -67,14 +67,37 @@ def run_test(in_file, test_spec, global_cfg):
         # Run tests in a path in order
         for stage in test_spec["stages"]:
             name = stage["name"]
-            rspec = stage["request"]
-            expected = stage["response"]
 
-            try:
-                r = TRequest(rspec, test_block_config)
-            except exceptions.MissingFormatError:
-                log_fail(stage, None, expected)
-                raise
+            mqtt_expected = None
+            expected = None
+
+            # FIXME
+            # This can be simplified somehow
+
+            if "request" in stage:
+                expected = stage["response"]
+                rspec = stage["request"]
+
+                try:
+                    r = TRequest(rspec, test_block_config)
+                except exceptions.MissingFormatError:
+                    log_fail(stage, None, expected)
+                    raise
+            elif "mqtt" in stage:
+                if not mqtt_client:
+                    logger.error("No mqtt settings but stage wanted to send an mqtt message")
+                    log_fail(stage, None, expected)
+                    raise exceptions.MissingSettingsError
+
+                # mqtt response is not required
+                mqtt_expected = stage.get("mqtt_response")
+                rspec = stage["mqtt_publish"]
+
+                try:
+                    r = MQTTRequest(mqtt_client, rspec, test_block_config)
+                except exceptions.MissingFormatError:
+                    log_fail(stage, None, expected)
+                    raise
 
             logger.info("Running stage : %s", name)
 
@@ -82,16 +105,22 @@ def run_test(in_file, test_spec, global_cfg):
 
             logger.info("Response: '%s' (%s)", response, response.content.decode("utf8"))
 
-            verifier = TResponse(name, expected, test_block_config)
+            verifiers = []
+            if expected:
+                verifiers.append(TResponse(name, expected, test_block_config))
+            if mqtt_expected:
+                verifiers.append(MQTTResponse(mqtt_client, name, expected, test_block_config))
 
-            try:
-                saved = verifier.verify(response)
-            except exceptions.TavernException:
-                log_fail(stage, verifier, expected)
-                raise
-            else:
-                log_pass(stage, verifier)
-                test_block_config["variables"].update(saved)
+            for v in verifiers:
+                try:
+                    saved = v.verify(response)
+                except exceptions.TavernException:
+                    log_fail(stage, v, expected)
+                    raise
+                else:
+                    test_block_config["variables"].update(saved)
+
+            log_pass(stage, verifiers)
 
 
 def run(in_file, tavern_global_cfg):

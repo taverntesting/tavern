@@ -31,3 +31,8 @@ class MissingFormatError(TavernException):
     available variables
     """
     pass
+
+
+class MissingSettingsError(TavernException):
+    """Wanted to send an MQTT message but no settings were given
+    """

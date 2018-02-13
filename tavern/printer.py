@@ -4,8 +4,8 @@ logger = logging.getLogger(__name__)
 
 
 def log_pass(test, response):
-    fmt = "PASSED: {:s} [{:d}]"
-    formatted = fmt.format(test["name"], response.status_code)
+    fmt = "PASSED: {:s}"
+    formatted = fmt.format(test["name"])
     logger.info(formatted)
 
 
