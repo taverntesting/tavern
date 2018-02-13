@@ -83,7 +83,7 @@ def run_test(in_file, test_spec, global_cfg):
                 except exceptions.MissingFormatError:
                     log_fail(stage, None, expected)
                     raise
-            elif "mqtt" in stage:
+            elif "mqtt_publish" in stage:
                 if not mqtt_client:
                     logger.error("No mqtt settings but stage wanted to send an mqtt message")
                     log_fail(stage, None, expected)
@@ -98,6 +98,10 @@ def run_test(in_file, test_spec, global_cfg):
                 except exceptions.MissingFormatError:
                     log_fail(stage, None, expected)
                     raise
+            else:
+                logger.error("Need to specify either 'request' or 'mqtt_publish'")
+                log_fail(stage, None, expected)
+                raise exceptions.MissingKeysError
 
             logger.info("Running stage : %s", name)
 

@@ -50,7 +50,7 @@ class MQTTClient(object):
 
         # then check constructor/connect/tls_set args
         self._client_args = kwargs.pop("client", {})
-        check_expected_keys(expected_main, self._client_args)
+        check_expected_keys(expected_blocks["client"], self._client_args)
 
         self._connect_args = kwargs.pop("connect", {})
         check_expected_keys(expected_blocks["connect"], self._connect_args)
@@ -131,6 +131,10 @@ class MQTTClient(object):
 
         logger.error("Message not received in time")
         return False
+
+    def publish(self, topic, *args, **kwargs):
+        logger.debug("Publishing on %s", topic)
+        self._client.publish(topic, *args, **kwargs)
 
     def __enter__(self):
         self._client.connect_async(**self._connect_args)
