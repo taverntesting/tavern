@@ -32,3 +32,5 @@ class MQTTResponse(BaseResponse):
         """
 
         _ = response
+
+        return {}

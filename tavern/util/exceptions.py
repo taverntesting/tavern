@@ -36,3 +36,8 @@ class MissingFormatError(TavernException):
 class MissingSettingsError(TavernException):
     """Wanted to send an MQTT message but no settings were given
     """
+
+
+class MQTTError(TavernException):
+    """Some kind of error returned from paho library
+    """

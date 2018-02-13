@@ -6,10 +6,32 @@ try:
 except ImportError:
     from Queue import Queue, Full, Empty
 
-from paho.mqtt.client import Client
+from paho.mqtt.client import Client, error_string
 
 from .util.keys import check_expected_keys
 from .util import exceptions
+
+
+# MQTT error values
+_err_vals = {
+    -1: "MQTT_ERR_AGAIN",
+    0: "MQTT_ERR_SUCCESS",
+    1: "MQTT_ERR_NOMEM",
+    2: "MQTT_ERR_PROTOCOL",
+    3: "MQTT_ERR_INVAL",
+    4: "MQTT_ERR_NO_CONN",
+    5: "MQTT_ERR_CONN_REFUSED",
+    6: "MQTT_ERR_NOT_FOUND",
+    7: "MQTT_ERR_CONN_LOST",
+    8: "MQTT_ERR_TLS",
+    9: "MQTT_ERR_PAYLOAD_SIZE",
+    10: "MQTT_ERR_NOT_SUPPORTED",
+    11: "MQTT_ERR_AUTH",
+    12: "MQTT_ERR_ACL_DENIED",
+    13: "MQTT_ERR_UNKNOWN",
+    14: "MQTT_ERR_ERRNO",
+    15: "MQTT_ERR_QUEUE_SIZE",
+}
 
 
 logger = logging.getLogger(__name__)
@@ -133,12 +155,20 @@ class MQTTClient(object):
         return False
 
     def publish(self, topic, *args, **kwargs):
+        """publish message using paho library
+        """
         logger.debug("Publishing on %s", topic)
-        self._client.publish(topic, *args, **kwargs)
+        msg = self._client.publish(topic, *args, **kwargs)
+
+        if not msg.is_published:
+            raise exceptions.MQTTError("err {:s}: {:s}".format(_err_vals[msg.rc], error_string(msg.rc)))
 
     def __enter__(self):
         self._client.connect_async(**self._connect_args)
         self._client.loop_start()
+
+        # TODO
+        # check connection status
 
         return self
 
