@@ -8,10 +8,10 @@ try:
 except ImportError:
     from urlparse import urlparse, parse_qs
 
-from .schemas.extensions import get_wrapped_response_function
-from .util.dict_util import format_keys, recurse_access_key, deep_dict_merge
-from .util.exceptions import TestFailError
-from .util.python_2_util import indent
+from tavern.schemas.extensions import get_wrapped_response_function
+from tavern.util.dict_util import format_keys, recurse_access_key, deep_dict_merge
+from tavern.util.exceptions import TestFailError
+from tavern.util.python_2_util import indent
 
 logger = logging.getLogger(__name__)
 

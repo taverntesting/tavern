@@ -1,5 +1,4 @@
 from mock import patch
-import json
 
 try:
     from urllib.parse import quote_plus
@@ -60,7 +59,7 @@ class TestRequests:
         """Always disable redirects
         """
 
-        with patch("tavern.request.requests.Session.request") as rmock:
+        with patch("tavern.request.rest.requests.Session.request") as rmock:
             TRequest(req, includes).run()
 
         assert rmock.called

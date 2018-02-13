@@ -9,10 +9,10 @@ except ImportError:
 
 import requests
 
-from .util import exceptions
-from .util.keys import check_expected_keys
-from .util.dict_util import format_keys
-from .schemas.extensions import get_wrapped_create_function
+from tavern.util import exceptions
+from tavern.util.keys import check_expected_keys
+from tavern.util.dict_util import format_keys
+from tavern.schemas.extensions import get_wrapped_create_function
 
 logger = logging.getLogger(__name__)
 

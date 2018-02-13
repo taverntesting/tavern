@@ -1,6 +1,5 @@
 import logging
 import time
-import functools
 
 try:
     from queue import Queue, Full, Empty
@@ -145,25 +144,3 @@ class MQTTClient(object):
     # on_message callback and then have a expected_message method which checks
     # that a certain message was received. Also need a clear_queue or something
     # to run at the beginning of each stage to clear this queue.
-
-
-class MQTTRequest(object):
-    """Wrapper for a single mqtt request on a client
-
-    Similar to TRequest, publishes a single message.
-    """
-
-    def __init__(self, client, mqtt_block_config):
-        expected = {
-            "topic",
-            "payload",
-            "qos",
-            # TODO retain?
-        }
-
-        check_expected_keys(expected, mqtt_block_config)
-
-        self._prepared = functools.partial(client.publish, **mqtt_block_config)
-
-    def run(self):
-        return self._prepared()
