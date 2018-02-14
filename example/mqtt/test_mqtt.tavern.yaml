@@ -47,7 +47,7 @@ stages:
     response:
       status_code: 200
       body:
-        message: "success"
+        topic: "/device/123"
       headers:
         content-type: application/json
     mqtt_response:
@@ -68,9 +68,9 @@ stages:
   - name: step 1 - get device state with lights off
     request:
       url: "{host}/get_device_state"
-      json:
+      params:
         device_id: 123
-      method: POST
+      method: GET
       headers:
         content-type: application/json
     response:
@@ -86,12 +86,12 @@ stages:
       qos: 1
       payload: "on"
 
-  - name: step 1 - get device state, lights now on
+  - name: step 3 - get device state, lights now on
     request:
       url: "{host}/get_device_state"
-      json:
+      params:
         device_id: 123
-      method: POST
+      method: GET
       headers:
         content-type: application/json
     response:
