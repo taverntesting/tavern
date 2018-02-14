@@ -60,7 +60,8 @@ def run_test(in_file, test_spec, global_cfg):
     with ExitStack() as stack:
         if "mqtt" in test_spec:
             from .mqtt import MQTTClient
-            mqtt_client = stack.enter_context(MQTTClient(**test_spec["mqtt"]))
+            _client = MQTTClient(**test_spec["mqtt"])
+            mqtt_client = stack.enter_context(_client)
         else:
             mqtt_client = None
 
