@@ -22,7 +22,7 @@ class MQTTResponse(BaseResponse):
 
         self.expected = expected
 
-        super(TResponse, self).__init__()
+        super(MQTTResponse, self).__init__()
 
     def __str__(self):
         if self.response:
@@ -38,5 +38,7 @@ class MQTTResponse(BaseResponse):
         """
 
         self.response = response
+
+        # TODO
 
         return {}
