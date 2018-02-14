@@ -16,3 +16,10 @@ services:
       - "1883:1883"
     volumes:
       - "./mosquitto.conf:/mosquitto/config/mosquitto.conf"
+
+  fluent:
+    image: fluent/fluentd
+    ports:
+      - "24224:24224"
+    volumes:
+      - "./fluent.conf:/fluentd/etc/fluent.conf"
