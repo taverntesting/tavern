@@ -14,14 +14,12 @@ def indent_err_text(err):
 
 class BaseResponse(object):
 
+    def __init__(self):
+        # all errors in this response
+        self.errors = []
+
     def _str_errors(self):
         return "- " + "\n- ".join(self.errors)
-
-    def __str__(self):
-        if self.response:
-            return self.response.text.strip()
-        else:
-            return "<Not run yet>"
 
     def _adderr(self, msg, *args, **kwargs):
         e = kwargs.get('e')

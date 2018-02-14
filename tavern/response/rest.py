@@ -47,8 +47,13 @@ class TResponse(BaseResponse):
         self.test_block_config = test_block_config
         self.status_code = None
 
-        # all errors in this response
-        self.errors = []
+        super(TResponse, self).__init__()
+
+    def __str__(self):
+        if self.response:
+            return self.response.text.strip()
+        else:
+            return "<Not run yet>"
 
     def verify(self, response):
         """Verify response against expected values and returns any values that

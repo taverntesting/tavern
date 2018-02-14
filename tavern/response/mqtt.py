@@ -22,7 +22,13 @@ class MQTTResponse(BaseResponse):
 
         self.expected = expected
 
-        self.errors = []
+        super(TResponse, self).__init__()
+
+    def __str__(self):
+        if self.response:
+            return self.response.payload
+        else:
+            return "<Not run yet>"
 
     def verify(self, response):
         """Ensure mqtt message has arrived
@@ -31,6 +37,6 @@ class MQTTResponse(BaseResponse):
             response: not used
         """
 
-        _ = response
+        self.response = response
 
         return {}
