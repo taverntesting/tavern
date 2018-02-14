@@ -1,4 +1,5 @@
 import sqlite3
+import os
 import logging
 import logging.config
 import yaml
@@ -12,49 +13,25 @@ app = Flask(__name__)
 application = app
 
 
-DATABASE = "/tmp/test_db"
-
-
-def on_message_callback(client, userdata, message):
-    db = get_db()
-
-    device_id = message.topic.split("/")[-1]
-    payload = message.payload
-
-    logging.info("payload = %s", payload)
-
-    if payload.decode("utf8") == "on":
-        with db:
-            db.execute("UPDATE devices_table SET lights_on = 1 WHERE device_id IS (?)", device_id)
-    elif payload.decode("utf8") == "off":
-        with db:
-            db.execute("UPDATE devices_table SET lights_on = 0 WHERE device_id IS (?)", device_id)
+DATABASE = os.environ.get("DB_NAME")
 
 
 def get_client():
-    mqtt_client = getattr(g, "_mqtt_client", None)
-
-    if mqtt_client is None:
-        mqtt_client = paho.Client(transport="websockets", client_id="test-mqtt-server")
-        mqtt_client.enable_logger()
-        mqtt_client.connect_async(host="broker", port=9001)
-        mqtt_client.loop_start()
-        mqtt_client.on_message = on_message_callback
-        g._mqtt_client = mqtt_client
+    mqtt_client = paho.Client(transport="websockets")
+    mqtt_client.enable_logger()
+    mqtt_client.connect_async(host="broker", port=9001)
 
     return mqtt_client
 
 
 def get_db():
+     return sqlite3.connect(DATABASE)
+
+
+def get_cached_db():
     db = getattr(g, '_database', None)
     if db is None:
-        db = g._database = sqlite3.connect(DATABASE)
-
-        with db:
-            try:
-                db.execute("CREATE TABLE devices_table (device_id TEXT NOT NULL, lights_on INTEGER NOT NULL)")
-            except:
-                pass
+        db = g._database = get_db()
 
     return db
 
@@ -74,7 +51,7 @@ handlers:
     fluent:
         class: fluent.handler.FluentHandler
         formatter: fluent_fmt
-        tag: example
+        tag: server
         port: 24224
         host: fluent
 loggers:
@@ -102,13 +79,6 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
-    try:
-        mqtt_client = g._mqtt_client
-    except AttributeError:
-        pass
-    else:
-        mqtt_client.loop_stop()
-
 
 @app.route("/send_mqtt_message", methods=["POST"])
 def send_message():
@@ -121,6 +91,7 @@ def send_message():
         return jsonify({"error": "missing key"}), 400
 
     mqtt_client = get_client()
+    mqtt_client.loop_start()
 
     topic = "/device/{}".format(r["device_id"])
 
@@ -134,6 +105,9 @@ def send_message():
     except Exception:
         return jsonify({"error": topic}), 500
 
+    mqtt_client.disconnect()
+    mqtt_client.loop_stop()
+
     return jsonify({"topic": topic}), 200
 
 
@@ -146,7 +120,7 @@ def get_device():
     except (KeyError, TypeError):
         return jsonify({"error": "missing key"}), 400
 
-    db = get_db()
+    db = get_cached_db()
 
     with db:
         row = db.execute("SELECT * FROM devices_table WHERE device_id IS :device_id", r)
@@ -166,7 +140,7 @@ def get_device():
 
 @app.route("/reset", methods=["POST"])
 def reset_db():
-    db = get_db()
+    db = get_cached_db()
 
     with db:
         db.execute("DELETE FROM numbers_table")

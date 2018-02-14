@@ -5,9 +5,22 @@ services:
   server:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: server.Dockerfile
     ports:
       - "5000:5000"
+    environment:
+      DB_NAME: /data/db
+    volumes:
+      - db-volume:/data/
+
+  listener:
+    build:
+      context: .
+      dockerfile: listener.Dockerfile
+    environment:
+      DB_NAME: /data/db
+    volumes:
+      - db-volume:/data/
 
   broker:
     image: eclipse-mosquitto:1.4.12
@@ -23,3 +36,6 @@ services:
       - "24224:24224"
     volumes:
       - "./fluent.conf:/fluentd/etc/fluent.conf"
+
+volumes:
+  db-volume:
