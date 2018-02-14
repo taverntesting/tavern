@@ -6,8 +6,7 @@ try:
 except ImportError:
     from Queue import Queue, Full, Empty
 
-from paho.mqtt.client import Client, error_string
-import paho.mqtt.client as paho_base
+import paho.mqtt.client as paho
 
 from .util.keys import check_expected_keys
 from .util import exceptions
@@ -92,7 +91,7 @@ class MQTTClient(object):
         # don't want to pass this through to tls_set
         self._tls_args.pop("enable", None)
 
-        self._client = Client(**self._client_args)
+        self._client = paho.Client(**self._client_args)
 
         if self._enable_tls:
             self._client.tls_set(**self._tls_args)
@@ -165,7 +164,7 @@ class MQTTClient(object):
         msg = self._client.publish(topic, *args, **kwargs)
 
         if not msg.is_published:
-            raise exceptions.MQTTError("err {:s}: {:s}".format(_err_vals[msg.rc], error_string(msg.rc)))
+            raise exceptions.MQTTError("err {:s}: {:s}".format(_err_vals[msg.rc], paho.error_string(msg.rc)))
 
     def __enter__(self):
         self._client.connect_async(**self._connect_args)
@@ -179,7 +178,7 @@ class MQTTClient(object):
             time.sleep(0.25)
             elapsed += 0.25
 
-            if self._client._state == paho_base.mqtt_cs_connected:
+            if self._client._state == paho.mqtt_cs_connected:
                 logger.debug("Connected to broker at %s", self._connect_args["host"])
                 return self
             else:
