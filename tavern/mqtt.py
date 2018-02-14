@@ -93,6 +93,7 @@ class MQTTClient(object):
 
         logger.debug("Paho client args: %s", self._client_args)
         self._client = paho.Client(**self._client_args)
+        self._client.enable_logger()
 
         if self._enable_tls:
             self._client.tls_set(**self._tls_args)
@@ -161,11 +162,19 @@ class MQTTClient(object):
     def publish(self, topic, *args, **kwargs):
         """publish message using paho library
         """
-        logger.debug("Publishing on %s", topic)
+        logger.debug("Publishing on '%s'", topic)
         msg = self._client.publish(topic, *args, **kwargs)
 
         if not msg.is_published:
             raise exceptions.MQTTError("err {:s}: {:s}".format(_err_vals[msg.rc], paho.error_string(msg.rc)))
+
+    def subscribe(self, topic, *args, **kwargs):
+        """Subcribe to topic
+
+        should be called for every expected message in mqtt_response
+        """
+        logger.debug("subscribing to topic '%s'", topic)
+        self._client.subscribe(topic, *args, **kwargs)
 
     def __enter__(self):
         self._client.connect_async(**self._connect_args)

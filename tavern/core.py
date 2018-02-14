@@ -96,6 +96,9 @@ def run_test(in_file, test_spec, global_cfg):
 
                 # mqtt response is not required
                 mqtt_expected = stage.get("mqtt_response")
+                if mqtt_expected:
+                    mqtt_client.subscribe(mqtt_expected["topic"])
+
                 rspec = stage["mqtt_publish"]
 
                 try:
