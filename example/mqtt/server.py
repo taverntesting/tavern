@@ -35,7 +35,8 @@ def get_client():
     mqtt_client = getattr(g, "_mqtt_client", None)
 
     if mqtt_client is None:
-        mqtt_client = paho.Client(transport="websockets")
+        mqtt_client = paho.Client(transport="websockets", client_id="test-mqtt-server")
+        mqtt_client.enable_logger()
         mqtt_client.connect_async(host="broker", port=9001)
         mqtt_client.loop_start()
         mqtt_client.on_message = on_message_callback
@@ -77,6 +78,11 @@ handlers:
         port: 24224
         host: fluent
 loggers:
+    paho:
+        handlers:
+            - fluent
+        level: DEBUG
+        propagate: true
     '':
         handlers:
             - fluent
