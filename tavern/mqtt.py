@@ -91,6 +91,7 @@ class MQTTClient(object):
         # don't want to pass this through to tls_set
         self._tls_args.pop("enable", None)
 
+        logger.debug("Paho client args: %s", self._client_args)
         self._client = paho.Client(**self._client_args)
 
         if self._enable_tls:

@@ -6,8 +6,8 @@ includes:
   - !include common.yaml
 
 mqtt: &mqtt_spec
-  tls:
-    enable: true
+  # tls:
+  #   enable: true
   connect:
     host: localhost
     port: 9001
