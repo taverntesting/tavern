@@ -189,6 +189,7 @@ class MQTTClient(object):
         raise exceptions.MQTTError
 
     def __exit__(self, *args):
+        self._client.disconnect()
         self._client.loop_stop()
 
     # TODO
