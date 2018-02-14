@@ -60,8 +60,12 @@ def run_test(in_file, test_spec, global_cfg):
     with ExitStack() as stack:
         if "mqtt" in test_spec:
             from .mqtt import MQTTClient
-            _client = MQTTClient(**test_spec["mqtt"])
-            mqtt_client = stack.enter_context(_client)
+            try:
+                _client = MQTTClient(**test_spec["mqtt"])
+                mqtt_client = stack.enter_context(_client)
+            except exceptions.MQTTError:
+                log_fail({"name": "initializing mqtt"}, None, None)
+                raise
         else:
             mqtt_client = None
 
