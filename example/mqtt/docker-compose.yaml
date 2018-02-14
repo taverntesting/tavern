@@ -3,6 +3,13 @@ version: '2'
 
 services:
   server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+
+  broker:
     image: eclipse-mosquitto:1.4.12
     ports:
       - "9001:9001"
