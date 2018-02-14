@@ -46,6 +46,9 @@ mapping:
           keepalive:
             required: false
             type: int
+          timeout:
+            required: false
+            type: int
 
       tls:
         required: false

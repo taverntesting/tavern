@@ -7,6 +7,7 @@ except ImportError:
     from Queue import Queue, Full, Empty
 
 from paho.mqtt.client import Client, error_string
+import paho.mqtt.client as paho_base
 
 from .util.keys import check_expected_keys
 from .util import exceptions
@@ -60,6 +61,7 @@ class MQTTClient(object):
                 "host",
                 "port",
                 "keepalive",
+                "timeout",
             },
             "tls": {
                 "enable",
@@ -81,6 +83,8 @@ class MQTTClient(object):
             msg = "Need 'host' in 'connect' block for mqtt"
             logger.error(msg)
             raise exceptions.MissingKeysError(msg)
+
+        self._connect_timeout = self._connect_args.pop("timeout", 3)
 
         # If there is any tls kwarg (including 'enable'), enable tls
         self._tls_args = kwargs.pop("tls", {})
@@ -167,10 +171,22 @@ class MQTTClient(object):
         self._client.connect_async(**self._connect_args)
         self._client.loop_start()
 
-        # TODO
-        # check connection status
+        elapsed = 0
 
-        return self
+        while elapsed < self._connect_timeout:
+            # TODO
+            # configurable?
+            time.sleep(0.25)
+            elapsed += 0.25
+
+            if self._client._state == paho_base.mqtt_cs_connected:
+                logger.debug("Connected to broker at %s", self._connect_args["host"])
+                return self
+            else:
+                logger.debug("Not connected after %s seconds - waiting", elapsed)
+
+        logger.error("Could not connect to broker after %s seconds", self._connect_timeout)
+        raise exceptions.MQTTError
 
     def __exit__(self, *args):
         self._client.loop_stop()

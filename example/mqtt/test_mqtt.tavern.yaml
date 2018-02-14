@@ -11,6 +11,7 @@ mqtt: &mqtt_spec
   connect:
     host: localhost
     port: 9001
+    timeout: 3
   client:
     transport: websockets
 
