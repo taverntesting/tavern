@@ -7,8 +7,8 @@ from contextlib2 import ExitStack
 from .util import exceptions
 from .util.loader import IncludeLoader
 from .util.env_vars import check_env_var_settings
-from .request import TRequest, MQTTRequest
-from .response import TResponse, MQTTResponse
+from .request import RestRequest, MQTTRequest
+from .response import RestResponse, MQTTResponse
 from .printer import log_pass, log_fail
 
 from .schemas.files import verify_tests
@@ -79,7 +79,7 @@ def run_test(in_file, test_spec, global_cfg):
                 rspec = stage["request"]
 
                 try:
-                    r = TRequest(rspec, test_block_config)
+                    r = RestRequest(rspec, test_block_config)
                 except exceptions.MissingFormatError:
                     log_fail(stage, None, expected)
                     raise
@@ -109,7 +109,7 @@ def run_test(in_file, test_spec, global_cfg):
 
             verifiers = []
             if expected:
-                verifiers.append(TResponse(name, expected, test_block_config))
+                verifiers.append(RestResponse(name, expected, test_block_config))
             if mqtt_expected:
                 verifiers.append(MQTTResponse(mqtt_client, name, mqtt_expected, test_block_config))
 

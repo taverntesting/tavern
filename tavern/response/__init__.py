@@ -1,7 +1,7 @@
-from .rest import TResponse
+from .rest import RestResponse
 from .mqtt import MQTTResponse
 
 __all__ = [
-    "TResponse",
+    "RestResponse",
     "MQTTResponse",
 ]

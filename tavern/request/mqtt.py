@@ -30,7 +30,7 @@ def get_publish_args(rspec, test_block_config):
 class MQTTRequest(BaseRequest):
     """Wrapper for a single mqtt request on a client
 
-    Similar to TRequest, publishes a single message.
+    Similar to RestRequest, publishes a single message.
     """
 
     def __init__(self, client, rspec, test_block_config):

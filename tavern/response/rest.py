@@ -27,7 +27,7 @@ def yield_keyvals(block):
             yield [sidx], sidx, val
 
 
-class TResponse(BaseResponse):
+class RestResponse(BaseResponse):
 
     def __init__(self, name, expected, test_block_config):
         defaults = {
@@ -47,7 +47,7 @@ class TResponse(BaseResponse):
         self.test_block_config = test_block_config
         self.status_code = None
 
-        super(TResponse, self).__init__()
+        super(RestResponse, self).__init__()
 
     def __str__(self):
         if self.response:

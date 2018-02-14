@@ -7,7 +7,7 @@ except ImportError:
 
 import pytest
 
-from tavern.request import TRequest, get_request_args
+from tavern.request import RestRequest, get_request_args
 from tavern.util import exceptions
 
 
@@ -37,7 +37,7 @@ class TestRequests:
         req["fodokfowe"] = "Hello"
 
         with pytest.raises(exceptions.UnexpectedKeysError):
-            TRequest(req, includes)
+            RestRequest(req, includes)
 
     def test_missing_format(self, req, includes):
         """All format variables should be present
@@ -45,7 +45,7 @@ class TestRequests:
         del includes["variables"]["code"]
 
         with pytest.raises(exceptions.MissingFormatError):
-            TRequest(req, includes)
+            RestRequest(req, includes)
 
     def test_bad_get_body(self, req, includes):
         """Can't add a body with a GET request
@@ -53,14 +53,14 @@ class TestRequests:
         req["method"] = "GET"
 
         with pytest.raises(exceptions.BadSchemaError):
-            TRequest(req, includes)
+            RestRequest(req, includes)
 
     def test_session_called_no_redirects(self, req, includes):
         """Always disable redirects
         """
 
         with patch("tavern.request.rest.requests.Session.request") as rmock:
-            TRequest(req, includes).run()
+            RestRequest(req, includes).run()
 
         assert rmock.called
         assert rmock.call_args[1]["allow_redirects"] == False

@@ -1,8 +1,8 @@
-from .rest import TRequest, get_request_args
+from .rest import RestRequest, get_request_args
 from .mqtt import MQTTRequest
 
 __all__ = [
-    "TRequest",
+    "RestRequest",
     "get_request_args",
     "MQTTRequest",
 ]
