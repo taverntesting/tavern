@@ -1,3 +1,4 @@
+import json
 import logging
 import time
 
@@ -169,6 +170,10 @@ class MQTTClient(object):
         """
         logger.debug("Publishing on '%s'", topic)
         self._client.subscribe(topic, qos=1)
+
+        if isinstance(payload, (dict, list)):
+            payload = json.dumps(payload)
+
         msg = self._client.publish(topic, payload, *args, **kwargs)
 
         if not msg.is_published:
