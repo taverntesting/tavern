@@ -73,6 +73,7 @@ class RestResponse(BaseResponse):
         """
 
         logger.info("Response: '%s' (%s)", response, response.content.decode("utf8"))
+        # pylint: disable=too-many-statements
 
         self.response = response
         self.status_code = response.status_code
@@ -119,6 +120,10 @@ class RestResponse(BaseResponse):
         saved.update(self._save_value("body", body))
         saved.update(self._save_value("headers", response.headers))
         saved.update(self._save_value("redirect_query_params", qp_as_dict))
+
+        for cookie in self.expected.get("cookies", []):
+            if cookie not in response.cookies:
+                self._adderr("No cookie named '%s' in response", cookie)
 
         try:
             wrapped = get_wrapped_response_function(self.expected["save"]["$ext"])

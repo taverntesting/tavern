@@ -41,3 +41,10 @@ class MissingSettingsError(TavernException):
 class MQTTError(TavernException):
     """Some kind of error returned from paho library
     """
+
+
+class MissingCookieError(TavernException):
+    """Tried to use a cookie in a request that was not present in the session
+    cookie jar
+    """
+    pass

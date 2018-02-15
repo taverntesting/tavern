@@ -1,6 +1,7 @@
 import logging
 
 import yaml
+import requests
 
 from contextlib2 import ExitStack
 
@@ -69,6 +70,8 @@ def run_test(in_file, test_spec, global_cfg):
         else:
             mqtt_client = None
 
+        session = stack.enter_context(requests.Session())
+
         # Run tests in a path in order
         for stage in test_spec["stages"]:
             name = stage["name"]
@@ -84,7 +87,7 @@ def run_test(in_file, test_spec, global_cfg):
                 rspec = stage["request"]
 
                 try:
-                    r = RestRequest(rspec, test_block_config)
+                    r = RestRequest(session, rspec, test_block_config)
                 except exceptions.MissingFormatError:
                     log_fail(stage, None, expected)
                     raise

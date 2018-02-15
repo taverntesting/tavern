@@ -154,6 +154,13 @@ mapping:
               status_code:
                 type: int
 
+              cookies:
+                type: seq
+                required: False
+                sequence:
+                  - type: str
+                    unique: True
+
               re;(headers|redirect_query_params):
                 <<: *any_map_with_ext_function
 

@@ -7,8 +7,6 @@ try:
 except ImportError:
     from urllib import quote_plus
 
-import requests
-
 from tavern.util import exceptions
 from tavern.util.keys import check_expected_keys
 from tavern.util.dict_util import format_keys
@@ -121,7 +119,7 @@ def get_request_args(rspec, test_block_config):
 
 class RestRequest(BaseRequest):
 
-    def __init__(self, rspec, test_block_config):
+    def __init__(self, session, rspec, test_block_config):
         """Prepare request
 
         Args:
@@ -160,8 +158,7 @@ class RestRequest(BaseRequest):
         # not follow redicrects, so instead we have to do this. This also means
         # that we can't have the 'pre-request' hook any more because we don't
         # create a prepared request.
-        self._session = requests.Session()
-        self._prepared = functools.partial(self._session.request, **request_args)
+        self._prepared = functools.partial(session.request, **request_args)
 
     def run(self):
         """ Runs the prepared request and times it

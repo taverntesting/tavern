@@ -1,4 +1,5 @@
-from mock import patch
+from mock import patch, Mock
+import requests
 
 try:
     from urllib.parse import quote_plus
@@ -31,13 +32,13 @@ def fix_example_request():
 
 
 class TestRequests:
-    def test_unknown_fields(self, req, includes): 
+    def test_unknown_fields(self, req, includes):
         """Unkown args should raise an error
         """
         req["fodokfowe"] = "Hello"
 
         with pytest.raises(exceptions.UnexpectedKeysError):
-            RestRequest(req, includes)
+            RestRequest(Mock(), req, includes)
 
     def test_missing_format(self, req, includes):
         """All format variables should be present
@@ -45,7 +46,7 @@ class TestRequests:
         del includes["variables"]["code"]
 
         with pytest.raises(exceptions.MissingFormatError):
-            RestRequest(req, includes)
+            RestRequest(Mock(), req, includes)
 
     def test_bad_get_body(self, req, includes):
         """Can't add a body with a GET request
@@ -53,17 +54,17 @@ class TestRequests:
         req["method"] = "GET"
 
         with pytest.raises(exceptions.BadSchemaError):
-            RestRequest(req, includes)
+            RestRequest(Mock(), req, includes)
 
     def test_session_called_no_redirects(self, req, includes):
         """Always disable redirects
         """
 
-        with patch("tavern.request.rest.requests.Session.request") as rmock:
-            RestRequest(req, includes).run()
+        rmock = Mock(spec=requests.Session)
+        RestRequest(rmock, req, includes).run()
 
-        assert rmock.called
-        assert rmock.call_args[1]["allow_redirects"] == False
+        assert rmock.request.called
+        assert rmock.request.call_args[1]["allow_redirects"] == False
 
     def test_default_method(self, req, includes):
         del req["method"]
