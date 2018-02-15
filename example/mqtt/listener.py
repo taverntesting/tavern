@@ -2,9 +2,8 @@ import sqlite3
 import os
 import logging
 import logging.config
+
 import yaml
-
-
 import paho.mqtt.client as paho
 
 

@@ -95,6 +95,8 @@ class MQTTClient(object):
         self._client = paho.Client(**self._client_args)
         self._client.enable_logger()
 
+        self._client.on_message = self._on_message
+
         if self._enable_tls:
             self._client.tls_set(**self._tls_args)
 
@@ -114,6 +116,8 @@ class MQTTClient(object):
         Todo:
             If the queue is faull trigger an error in main thread somehow
         """
+        logger.info("Received mqtt message on %s", message.topic)
+
         try:
             userdata["queue"].put(message)
         except Full:
@@ -139,6 +143,7 @@ class MQTTClient(object):
 
         while time_spent < timeout:
             t1 = time.time()
+
             try:
                 msg = self._message_queue.get(block=True, timeout=timeout)
             except Empty:
@@ -156,7 +161,7 @@ class MQTTClient(object):
 
                     return True
 
-        logger.error("Message not received in time")
+        logger.error("Message not received after %d seconds", timeout)
         return False
 
     def publish(self, topic, *args, **kwargs):
