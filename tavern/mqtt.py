@@ -41,12 +41,6 @@ logger = logging.getLogger(__name__)
 class MQTTClient(object):
 
     def __init__(self, **kwargs):
-        expected_main = {
-            "client",
-            "tls",
-            "connect",
-        }
-
         expected_blocks = {
             "client": {
                 "client_id",
@@ -70,7 +64,7 @@ class MQTTClient(object):
         }
 
         # check main block first
-        check_expected_keys(expected_main, kwargs)
+        check_expected_keys(expected_blocks.keys(), kwargs)
 
         # then check constructor/connect/tls_set args
         self._client_args = kwargs.pop("client", {})
