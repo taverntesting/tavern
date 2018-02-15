@@ -164,14 +164,20 @@ class MQTTClient(object):
         logger.error("Message not received after %d seconds", timeout)
         return False
 
-    def publish(self, topic, *args, **kwargs):
+    def publish(self, topic, payload, *args, **kwargs):
         """publish message using paho library
         """
         logger.debug("Publishing on '%s'", topic)
-        msg = self._client.publish(topic, *args, **kwargs)
+        self._client.subscribe(topic, qos=1)
+        msg = self._client.publish(topic, payload, *args, **kwargs)
 
         if not msg.is_published:
             raise exceptions.MQTTError("err {:s}: {:s}".format(_err_vals[msg.rc], paho.error_string(msg.rc)))
+
+        if not self.message_received(topic, payload):
+            raise exceptions.MQTTError("Message was not publish successfully on {}".format(topic))
+
+        self._client.unsubscribe(topic)
 
         return msg
 
