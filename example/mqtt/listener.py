@@ -11,7 +11,7 @@ DATABASE = os.environ.get("DB_NAME")
 
 
 def get_client():
-    mqtt_client = paho.Client(transport="websockets")
+    mqtt_client = paho.Client(transport="websockets", client_id="listener")
     mqtt_client.enable_logger()
     mqtt_client.connect_async(host="broker", port=9001)
 

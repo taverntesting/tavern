@@ -1,4 +1,5 @@
 import sqlite3
+import contextlib
 import os
 import logging
 import logging.config
@@ -16,12 +17,18 @@ application = app
 DATABASE = os.environ.get("DB_NAME")
 
 
+@contextlib.contextmanager
 def get_client():
-    mqtt_client = paho.Client(transport="websockets")
+    mqtt_client = paho.Client(transport="websockets", client_id="server")
     mqtt_client.enable_logger()
-    mqtt_client.connect_async(host="broker", port=9001)
+    mqtt_client.connect(host="broker", port=9001)
 
-    return mqtt_client
+    try:
+        mqtt_client.loop_start()
+        yield mqtt_client
+    finally:
+        mqtt_client.disconnect()
+        mqtt_client.loop_stop()
 
 
 def get_db():
@@ -90,23 +97,19 @@ def send_message():
     except (KeyError, TypeError):
         return jsonify({"error": "missing key"}), 400
 
-    mqtt_client = get_client()
-    mqtt_client.loop_start()
-
     topic = "/device/{}".format(r["device_id"])
 
+    logging.debug("Publishing '%s' on '%s'", r["payload"], topic)
+
     try:
-        logging.debug("Publishing '%s' on '%s'", r["payload"], topic)
-        mqtt_client.publish(
-            topic,
-            r["payload"],
-            r.get("qos", 0)
-        )
+        with get_client() as mqtt_client:
+            mqtt_client.publish(
+                topic,
+                r["payload"],
+                r.get("qos", 0)
+            )
     except Exception:
         return jsonify({"error": topic}), 500
-
-    mqtt_client.disconnect()
-    mqtt_client.loop_stop()
 
     return jsonify({"topic": topic}), 200
 

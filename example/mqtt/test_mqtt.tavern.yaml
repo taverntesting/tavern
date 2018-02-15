@@ -14,6 +14,7 @@ mqtt: &mqtt_spec
     timeout: 3
   client:
     transport: websockets
+    client_id: tavern-tester
 
 stages:
   - name: step 1 - ping/pong
