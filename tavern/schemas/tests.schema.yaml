@@ -58,6 +58,18 @@ mapping:
             required: false
             type: bool
 
+      auth:
+        required: false
+        type: map
+        mapping:
+          username:
+            type: str
+            required: true
+
+          password:
+            type: str
+            required: false
+
   includes:
     required: false
     type: seq

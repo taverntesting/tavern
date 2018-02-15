@@ -60,7 +60,11 @@ class MQTTClient(object):
             "tls": {
                 "enable",
                 # TODO custom ca certs etc.
-            }
+            },
+            "auth": {
+                "username",
+                "password",
+            },
         }
 
         # check main block first
@@ -72,6 +76,9 @@ class MQTTClient(object):
 
         self._connect_args = kwargs.pop("connect", {})
         check_expected_keys(expected_blocks["connect"], self._connect_args)
+
+        self._auth_args = kwargs.pop("auth", {})
+        check_expected_keys(expected_blocks["auth"], self._auth_args)
 
         if "host" not in self._connect_args:
             msg = "Need 'host' in 'connect' block for mqtt"
@@ -89,6 +96,9 @@ class MQTTClient(object):
         logger.debug("Paho client args: %s", self._client_args)
         self._client = paho.Client(**self._client_args)
         self._client.enable_logger()
+
+        if self._auth_args:
+            self._client.username_pw_set(**self._auth_args)
 
         self._client.on_message = self._on_message
 
