@@ -145,6 +145,7 @@ def reset_db():
     db = get_cached_db()
 
     with db:
-        db.execute("DELETE FROM numbers_table")
+        db.execute("DELETE FROM devices_table")
+        db.execute("INSERT INTO devices_table VALUES ('123', 0)")
 
     return "", 204

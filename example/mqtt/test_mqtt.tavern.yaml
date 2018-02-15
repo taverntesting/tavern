@@ -66,6 +66,15 @@ includes:
 mqtt: *mqtt_spec
 
 stages:
+  - name: step 0 - reset devices
+    request:
+      url: "{host}/reset"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 204
+
   - name: step 1 - get device state with lights off
     request:
       url: "{host}/get_device_state"
