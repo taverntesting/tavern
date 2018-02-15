@@ -101,4 +101,9 @@ if __name__ == "__main__":
         except:
             pass
 
+        try:
+            db.execute("INSERT INTO devices_table VALUES ('123', 0)")
+        except:
+            pass
+
     wait_for_messages()

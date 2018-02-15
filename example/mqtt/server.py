@@ -128,12 +128,11 @@ def get_device():
     try:
         status = next(row)[1]
     except StopIteration:
-        with db:
-            db.execute("INSERT INTO devices_table VALUES (:device_id, 0)", r)
-            row = db.execute("SELECT * FROM devices_table WHERE device_id IS :device_id", r)
-        status = next(row)[1]
+        return jsonify({"error": "bad device id"}), 400
 
     onoff = "on" if status else "off"
+
+    logging.info("Lights are %s", onoff)
 
     return jsonify({"lights": onoff})
 
