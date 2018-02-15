@@ -61,7 +61,7 @@ loggers:
 def handle_lights_topic(message):
     db = get_db()
 
-    device_id = message.topic.split("/")[-1]
+    device_id = message.topic.split("/")[-2]
 
     if message.payload.decode("utf8") == "on":
         logging.info("Lights have been turned on")
@@ -74,7 +74,7 @@ def handle_lights_topic(message):
 
 
 def handle_ping_topic(client, message):
-    device_id = message.topic.split("/")[-1]
+    device_id = message.topic.split("/")[-2]
 
     client.publish(
         "/device/{}/pong".format(device_id),
@@ -84,8 +84,6 @@ def handle_ping_topic(client, message):
 
 def on_message_callback(client, userdata, message):
     logging.info("Received message on %s", message.topic)
-
-    logging.critical(message.topic.split("/"))
 
     if "lights" in message.topic:
         handle_lights_topic(message)
