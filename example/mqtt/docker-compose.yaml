@@ -12,6 +12,9 @@ services:
       DB_NAME: /data/db
     volumes:
       - db-volume:/data/
+    depends_on:
+      - broker
+      - fluent
 
   listener:
     build:
@@ -21,6 +24,9 @@ services:
       DB_NAME: /data/db
     volumes:
       - db-volume:/data/
+    depends_on:
+      - broker
+      - fluent
 
   broker:
     image: eclipse-mosquitto:1.4.12
