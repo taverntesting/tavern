@@ -1,9 +1,8 @@
 import logging
 
 from tavern.schemas.extensions import get_wrapped_response_function
-from tavern.util.dict_util import format_keys, recurse_access_key, deep_dict_merge
 from tavern.util.exceptions import TestFailError
-from .base import BaseResponse, indent_err_text
+from .base import BaseResponse
 
 logger = logging.getLogger(__name__)
 
