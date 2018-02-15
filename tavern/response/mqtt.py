@@ -22,6 +22,8 @@ class MQTTResponse(BaseResponse):
 
         self.expected = expected
 
+        self._client = client
+
         super(MQTTResponse, self).__init__()
 
     def __str__(self):
@@ -39,6 +41,18 @@ class MQTTResponse(BaseResponse):
 
         self.response = response
 
-        # TODO
+        etopic = self.expected["topic"]
+        epayload = self.expected["payload"]
+
+        received = self._client.message_received(**self.expected)
+
+        logger.debug(received)
+
+        if not received:
+            self._adderr("Expected '%s' on topic '%s' but no such message received",
+                epayload, etopic)
+
+        if self.errors:
+            raise TestFailError("Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()))
 
         return {}
