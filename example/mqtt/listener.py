@@ -58,22 +58,39 @@ loggers:
     logging.info("Logging set up")
 
 
-def on_message_callback(client, userdata, message):
+def handle_lights_topic(message):
     db = get_db()
 
     device_id = message.topic.split("/")[-1]
-    payload = message.payload
 
-    logging.info("payload = %s", payload)
-
-    if payload.decode("utf8") == "on":
+    if message.payload.decode("utf8") == "on":
         logging.info("Lights have been turned on")
         with db:
             db.execute("UPDATE devices_table SET lights_on = 1 WHERE device_id IS (?)", (device_id,))
-    elif payload.decode("utf8") == "off":
+    elif message.payload.decode("utf8") == "off":
         logging.info("Lights have been turned off")
         with db:
             db.execute("UPDATE devices_table SET lights_on = 0 WHERE device_id IS (?)", (device_id,))
+
+
+def handle_ping_topic(client, message):
+    device_id = message.topic.split("/")[-1]
+
+    client.publish(
+        "/device/{}/pong".format(device_id),
+        "pong",
+    )
+
+
+def on_message_callback(client, userdata, message):
+    logging.info("Received message on %s", message.topic)
+
+    logging.critical(message.topic.split("/"))
+
+    if "lights" in message.topic:
+        handle_lights_topic(message)
+    elif "ping" in message.topic:
+        handle_ping_topic(client, message)
 
 
 def wait_for_messages():
@@ -82,11 +99,15 @@ def wait_for_messages():
     mqtt_client.on_message = on_message_callback
     mqtt_client.reconnect()
 
-    device_topic = "/device/{}/lights".format(123)
+    topics = [
+        "lights",
+        "ping",
+    ]
 
-    logging.info("Subscribing to '%s'", device_topic)
-
-    mqtt_client.subscribe(device_topic)
+    for t in topics:
+        device_topic = "/device/{}/{}".format(123, t)
+        logging.debug("Subscribing to '%s'", device_topic)
+        mqtt_client.subscribe(device_topic)
 
     mqtt_client.loop_forever()
 
