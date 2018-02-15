@@ -25,3 +25,10 @@ class MissingFormatError(TavernException):
     available variables
     """
     pass
+
+
+class MissingCookieError(TavernException):
+    """Tried to use a cookie in a request that was not present in the session
+    cookie jar
+    """
+    pass

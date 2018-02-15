@@ -1,6 +1,7 @@
 import logging
 
 import yaml
+import requests
 
 from .util import exceptions
 from .util.loader import IncludeLoader
@@ -55,34 +56,35 @@ def run_test(in_file, test_spec, global_cfg):
 
     logger.info("Running test : %s", test_block_name)
 
-    # Run tests in a path in order
-    for test in test_spec["stages"]:
-        name = test["name"]
-        rspec = test["request"]
-        expected = test["response"]
+    with requests.Session() as session:
+        # Run tests in a path in order
+        for test in test_spec["stages"]:
+            name = test["name"]
+            rspec = test["request"]
+            expected = test["response"]
 
-        try:
-            r = TRequest(rspec, test_block_config)
-        except exceptions.MissingFormatError:
-            log_fail(test, None, expected)
-            raise
+            try:
+                r = TRequest(session, rspec, test_block_config)
+            except exceptions.MissingFormatError:
+                log_fail(test, None, expected)
+                raise
 
-        logger.info("Running stage : %s", name)
+            logger.info("Running stage : %s", name)
 
-        response = r.run()
+            response = r.run()
 
-        logger.info("Response: '%s' (%s)", response, response.content.decode("utf8"))
+            logger.info("Response: '%s' (%s)", response, response.content.decode("utf8"))
 
-        verifier = TResponse(name, expected, test_block_config)
+            verifier = TResponse(name, expected, test_block_config)
 
-        try:
-            saved = verifier.verify(response)
-        except exceptions.TavernException:
-            log_fail(test, verifier, expected)
-            raise
-        else:
-            log_pass(test, verifier)
-            test_block_config["variables"].update(saved)
+            try:
+                saved = verifier.verify(response)
+            except exceptions.TavernException:
+                log_fail(test, verifier, expected)
+                raise
+            else:
+                log_pass(test, verifier)
+                test_block_config["variables"].update(saved)
 
 
 def run(in_file, tavern_global_cfg):
