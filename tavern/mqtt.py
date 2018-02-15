@@ -168,6 +168,8 @@ class MQTTClient(object):
         if not msg.is_published:
             raise exceptions.MQTTError("err {:s}: {:s}".format(_err_vals[msg.rc], paho.error_string(msg.rc)))
 
+        return msg
+
     def subscribe(self, topic, *args, **kwargs):
         """Subcribe to topic
 
