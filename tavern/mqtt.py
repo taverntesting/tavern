@@ -222,9 +222,3 @@ class MQTTClient(object):
     def __exit__(self, *args):
         self._client.disconnect()
         self._client.loop_stop()
-
-    # TODO
-    # collect message received - have a queue that collects messages with
-    # on_message callback and then have a expected_message method which checks
-    # that a certain message was received. Also need a clear_queue or something
-    # to run at the beginning of each stage to clear this queue.
