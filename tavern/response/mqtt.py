@@ -20,6 +20,7 @@ class MQTTResponse(BaseResponse):
             self.validate_function = None
 
         self.expected = expected
+        self.response = None
 
         self._client = client
 
