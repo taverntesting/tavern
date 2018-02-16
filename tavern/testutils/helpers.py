@@ -83,17 +83,24 @@ def validate_pykwalify(response, schema):
     with wrapfile(response.json()) as rdump, wrapfile(schema) as sdump:
         verify_generic(rdump, sdump)
 
-def validate_regex(response, expression, expected_matches):
+def validate_regex(response, expression):
     """Make sure the response body matches a regex expression
 
     Args:
         response (Response): reqeusts.Response object
         expression (str): Regex expression to use
-        expected_matches (list): list of strings to compare to matched groups
+    Returns:
+        dict: dictionary of regex: boxed full_match, and list of matched groups
     """
-    matched = re.match(expression, response.text).groups()
-    for i in range(len(expected_matches)):
-        if not expected_matches[i] == matched[i]:
-            raise Exception(
-                "regex validation failed: got {}, expected {}".format(
-                    matched[i], expected_matches[i]))
+    match = re.search(expression, response.text)
+
+    assert match
+
+    full_match = match.group(0)
+    groups = [group for group in match.groups()]
+    return {
+        "regex": Box({
+            'full_match': full_match,
+            'groups': groups
+        })
+    }
