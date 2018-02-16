@@ -7,6 +7,9 @@ try:
 except ImportError:
     from urllib import quote_plus
 
+import requests
+from future.utils import raise_from
+
 from tavern.util import exceptions
 from tavern.util.keys import check_expected_keys
 from tavern.util.dict_util import format_keys
@@ -170,4 +173,8 @@ class RestRequest(BaseRequest):
             requests.Response: response object
         """
 
-        return self._prepared()
+        try:
+            return self._prepared()
+        except requests.exceptions.RequestException as e:
+            logger.exception("Error running prepared request")
+            raise_from(exceptions.RestRequestException, e)

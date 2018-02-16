@@ -1,6 +1,8 @@
 import logging
 import functools
 
+from future.utils import raise_from
+
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys
 from tavern.util.keys import check_expected_keys
@@ -48,4 +50,8 @@ class MQTTRequest(BaseRequest):
         self._prepared = functools.partial(client.publish, **publish_args)
 
     def run(self):
-        return self._prepared()
+        try:
+            return self._prepared()
+        except ValueError as e:
+            logger.exception("Error publishing")
+            raise_from(exceptions.MQTTRequestException, e)

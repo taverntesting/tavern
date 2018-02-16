@@ -54,3 +54,13 @@ class MissingCookieError(TavernException):
     cookie jar
     """
     pass
+
+
+class RestRequestException(TavernException):
+    """Error making requests in RestRequest()
+    """
+
+
+class MQTTRequestException(TavernException):
+    """Error making requests in MQTTRequest()
+    """

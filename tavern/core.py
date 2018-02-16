@@ -80,7 +80,11 @@ def run_test(in_file, test_spec, global_cfg):
 
             logger.info("Running stage : %s", name)
 
-            response = r.run()
+            try:
+                response = r.run()
+            except exceptions.TavernException:
+                log_fail(stage, None, expected)
+                raise
 
             verifiers = get_verifiers(stage, test_block_config, sessions, expected)
 
