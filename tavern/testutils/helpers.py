@@ -1,8 +1,8 @@
 import json
 import importlib
 import logging
-import jwt
 import re
+import jwt
 from box import Box
 
 from tavern.schemas.files import wrapfile, verify_generic

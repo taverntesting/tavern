@@ -5,7 +5,7 @@ test_name: Make sure server response matches regex
 stages:
   - name: simple match
     request:
-      url: http://localhost:5000/text
+      url: http://localhost:5000/token
       method: GET
     response:
       status_code: 200
@@ -17,7 +17,7 @@ stages:
 
   - name: save groups
     request:
-      url: http://localhost:5000/text
+      url: http://localhost:5000/token
       method: GET
     response:
       status_code: 200
