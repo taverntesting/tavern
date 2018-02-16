@@ -39,6 +39,7 @@ logger = logging.getLogger(__name__)
 
 
 class MQTTClient(object):
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, **kwargs):
         expected_blocks = {
@@ -121,6 +122,8 @@ class MQTTClient(object):
         Todo:
             If the queue is faull trigger an error in main thread somehow
         """
+        # pylint: disable=unused-argument
+
         logger.info("Received mqtt message on %s", message.topic)
 
         try:
@@ -210,6 +213,7 @@ class MQTTClient(object):
             time.sleep(0.25)
             elapsed += 0.25
 
+            # pylint: disable=protected-access
             if self._client._state == paho.mqtt_cs_connected:
                 logger.debug("Connected to broker at %s", self._connect_args["host"])
                 return self

@@ -35,9 +35,11 @@ def run_test(in_file, test_spec, global_cfg):
     Raises:
         TavernException: If any of the tests failed
     """
+
+    # pylint: disable=too-many-locals
+
     # Initialise test config for this test with the global configuration before
     # starting
-
     test_block_config = dict(global_cfg)
 
     if "variables" not in test_block_config:
@@ -75,9 +77,6 @@ def run_test(in_file, test_spec, global_cfg):
             except exceptions.MissingFormatError:
                 log_fail(stage, None, expected)
                 raise
-
-            # FIXME
-            # This can be simplified somehow
 
             logger.info("Running stage : %s", name)
 

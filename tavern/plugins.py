@@ -23,9 +23,10 @@ def get_extra_sessions(test_spec):
         dict: mapping of name: session. Session should be a context manager.
     """
 
-    sessions = { }
+    sessions = {}
 
-    if 1: # always used at the moment
+    if 1: # pylint: disable=using-constant-test
+        # always used at the moment
         requests_session = requests.Session()
         sessions["requests"] = requests_session
 
@@ -67,7 +68,7 @@ def get_request_type(stage, test_block_config, sessions):
     if len(set(keys) & set(stage)) > 1:
         logger.error("Can only specify 1 request type")
         raise exceptions.DuplicateKeysError
-    elif len(set(keys) & set(stage)) == 0:
+    elif not list(set(keys) & set(stage)):
         logger.error("Need to specify one of '%s'", keys.keys())
         raise exceptions.MissingKeysError
 
@@ -105,7 +106,7 @@ def get_expected(stage, sessions):
         dict: mapping of request type: expected response dict
     """
 
-    expected = { }
+    expected = {}
 
     if "request" in stage:
         r_expected = stage["response"]

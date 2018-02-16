@@ -30,6 +30,8 @@ def yield_keyvals(block):
 class RestResponse(BaseResponse):
 
     def __init__(self, session, name, expected, test_block_config):
+        # pylint: disable=unused-argument
+
         defaults = {
             'status_code': 200
         }
@@ -71,9 +73,9 @@ class RestResponse(BaseResponse):
         Raises:
             TestFailError: Something went wrong with validating the response
         """
+        # pylint: disable=too-many-statements
 
         logger.info("Response: '%s' (%s)", response, response.content.decode("utf8"))
-        # pylint: disable=too-many-statements
 
         self.response = response
         self.status_code = response.status_code
