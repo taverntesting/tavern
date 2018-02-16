@@ -20,6 +20,12 @@ class UnexpectedKeysError(TavernException):
     pass
 
 
+class DuplicateKeysError(TavernException):
+    """Duplicate key in request specification
+    """
+    pass
+
+
 class MissingKeysError(TavernException):
     """Missing key in request specification
     """

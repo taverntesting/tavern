@@ -1,16 +1,15 @@
 import logging
 
 import yaml
-import requests
 
 from contextlib2 import ExitStack
 
 from .util import exceptions
 from .util.loader import IncludeLoader
 from .util.env_vars import check_env_var_settings
-from .request import RestRequest, MQTTRequest
-from .response import RestResponse, MQTTResponse
 from .printer import log_pass, log_fail
+
+from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
 
 from .schemas.files import verify_tests
 
@@ -59,70 +58,32 @@ def run_test(in_file, test_spec, global_cfg):
     logger.info("Running test : %s", test_block_name)
 
     with ExitStack() as stack:
-        if "mqtt" in test_spec:
-            from .mqtt import MQTTClient
-            try:
-                _client = MQTTClient(**test_spec["mqtt"])
-                mqtt_client = stack.enter_context(_client)
-            except exceptions.MQTTError:
-                log_fail({"name": "initializing mqtt"}, None, None)
-                raise
-        else:
-            mqtt_client = None
+        sessions = get_extra_sessions(test_spec)
 
-        session = stack.enter_context(requests.Session())
+        for name, session in sessions.items():
+            logger.debug("Entering context for %s", name)
+            stack.enter_context(session)
 
         # Run tests in a path in order
         for stage in test_spec["stages"]:
             name = stage["name"]
 
-            mqtt_expected = None
-            expected = None
+            expected = get_expected(stage, sessions)
+
+            try:
+                r = get_request_type(stage, test_block_config, sessions)
+            except exceptions.MissingFormatError:
+                log_fail(stage, None, expected)
+                raise
 
             # FIXME
             # This can be simplified somehow
-
-            if "request" in stage:
-                expected = stage["response"]
-                rspec = stage["request"]
-
-                try:
-                    r = RestRequest(session, rspec, test_block_config)
-                except exceptions.MissingFormatError:
-                    log_fail(stage, None, expected)
-                    raise
-            elif "mqtt_publish" in stage:
-                if not mqtt_client:
-                    logger.error("No mqtt settings but stage wanted to send an mqtt message")
-                    log_fail(stage, None, expected)
-                    raise exceptions.MissingSettingsError
-
-                # mqtt response is not required
-                mqtt_expected = stage.get("mqtt_response")
-                if mqtt_expected:
-                    mqtt_client.subscribe(mqtt_expected["topic"])
-
-                rspec = stage["mqtt_publish"]
-
-                try:
-                    r = MQTTRequest(mqtt_client, rspec, test_block_config)
-                except exceptions.MissingFormatError:
-                    log_fail(stage, None, expected)
-                    raise
-            else:
-                logger.error("Need to specify either 'request' or 'mqtt_publish'")
-                log_fail(stage, None, expected)
-                raise exceptions.MissingKeysError
 
             logger.info("Running stage : %s", name)
 
             response = r.run()
 
-            verifiers = []
-            if expected:
-                verifiers.append(RestResponse(session, name, expected, test_block_config))
-            if mqtt_expected:
-                verifiers.append(MQTTResponse(mqtt_client, name, mqtt_expected, test_block_config))
+            verifiers = get_verifiers(stage, test_block_config, sessions, expected)
 
             for v in verifiers:
                 try:

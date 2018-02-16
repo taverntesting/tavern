@@ -59,7 +59,7 @@ class TestRunStages:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.core.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
             run_test("heif", fulltest, includes)
 
         assert pmock.called
@@ -72,7 +72,7 @@ class TestRunStages:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.core.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
             with pytest.raises(exceptions.TestFailError):
                 run_test("heif", fulltest, includes)
 
@@ -86,7 +86,7 @@ class TestRunStages:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.core.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
             with pytest.raises(exceptions.TestFailError):
                 run_test("heif", fulltest, includes)
 
@@ -100,7 +100,7 @@ class TestRunStages:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.core.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
             with pytest.raises(exceptions.TestFailError):
                 run_test("heif", fulltest, includes)
 
