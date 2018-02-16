@@ -2,6 +2,7 @@ import json
 import importlib
 import logging
 import jwt
+import re
 from box import Box
 
 from tavern.schemas.files import wrapfile, verify_generic
@@ -81,3 +82,18 @@ def validate_pykwalify(response, schema):
     """
     with wrapfile(response.json()) as rdump, wrapfile(schema) as sdump:
         verify_generic(rdump, sdump)
+
+def validate_regex(response, expression, expected_matches):
+    """Make sure the response body matches a regex expression
+
+    Args:
+        response (Response): reqeusts.Response object
+        expression (str): Regex expression to use
+        expected_matches (list): list of strings to compare to matched groups
+    """
+    matched = re.match(expression, response.text).groups()
+    for i in range(len(expected_matches)):
+        if not expected_matches[i] == matched[i]:
+            raise Exception(
+                "regex validation failed: got {}, expected {}".format(
+                    matched[i], expected_matches[i]))

@@ -1,0 +1,21 @@
+---
+
+test_name: Make sure server response matches regex
+
+stages:
+  - name: Make sure number is returned correctly
+    request:
+      url: http://localhost:5000/text
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tavern.testutils.helpers:validate_regex
+          extra_kwargs:
+            expression: '^(.*)@(.*)\.(.*)'
+            expected_matches:
+              - text
+              - example
+              - com
+
