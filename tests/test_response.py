@@ -1,4 +1,5 @@
 import pytest
+from mock import Mock
 
 from tavern.response import RestResponse
 from tavern.util import exceptions
@@ -28,7 +29,7 @@ class TestSave:
         """
         resp["save"] = {"body": {"test_code": "code"}}
 
-        r = RestResponse("Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", resp, includes)
 
         saved = r._save_value("body", resp["body"])
 
@@ -46,7 +47,7 @@ class TestSave:
             }
         }
 
-        r = RestResponse("Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", resp, includes)
 
         saved = r._save_value("body", resp["body"])
 
@@ -67,7 +68,7 @@ class TestSave:
             }
         }
 
-        r = RestResponse("Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", resp, includes)
 
         saved = r._save_value("body", resp["body"])
 
@@ -78,7 +79,7 @@ class TestSave:
         """
         resp["save"] = {"headers": {"next_location": "location"}}
 
-        r = RestResponse("Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", resp, includes)
 
         saved = r._save_value("headers", resp["headers"])
 
@@ -89,7 +90,7 @@ class TestSave:
         """
         resp["save"] = {"redirect_query_params": {"test_search": "search"}}
 
-        r = RestResponse("Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", resp, includes)
 
         saved = r._save_value("redirect_query_params", {"search": "breadsticks"})
 
@@ -103,7 +104,7 @@ class TestSave:
     def test_bad_save(self, save_from, resp, includes):
         resp["save"] = {save_from: {"abc": "123"}}
 
-        r = RestResponse("Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", resp, includes)
 
         saved = r._save_value(save_from, {})
 
@@ -118,7 +119,7 @@ class TestValidate:
         """Make sure a simple value comparison works
         """
 
-        r = RestResponse("Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", resp, includes)
 
         r._validate_block("body", resp["body"])
 
@@ -130,7 +131,7 @@ class TestValidate:
 
         resp["body"] = ["a", 1, "b"]
 
-        r = RestResponse("Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", resp, includes)
 
         r._validate_block("body", resp["body"])
 
@@ -142,7 +143,7 @@ class TestValidate:
 
         resp["body"] = ["a", 1, "b"]
 
-        r = RestResponse("Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", resp, includes)
 
         r._validate_block("body", resp["body"][::-1])
 
@@ -154,7 +155,7 @@ class TestValidate:
         
         resp["body"]["nested"] = { "subthing": "blah" }
 
-        r = RestResponse("Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", resp, includes)
 
         r._validate_block("body", resp["body"])
 
@@ -164,7 +165,7 @@ class TestValidate:
         """Make sure a simple value comparison works
         """
 
-        r = RestResponse("Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", resp, includes)
 
         r._validate_block("headers", resp["headers"])
 
@@ -174,7 +175,7 @@ class TestValidate:
         """Make sure a simple value comparison works
         """
 
-        r = RestResponse("Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", resp, includes)
 
         r._validate_block("redirect_query_params", {"search": "breadsticks"})
 
@@ -187,7 +188,7 @@ class TestFull:
         """Test full verification + return saved values
         """
         resp["save"] = {"body": {"test_code": "code"}}
-        r = RestResponse("Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", resp, includes)
 
         class FakeResponse:
             headers = resp["headers"]
@@ -203,7 +204,7 @@ class TestFull:
     def test_incorrect_status_code(self, resp, includes):
         """Test full verification + return saved values
         """
-        r = RestResponse("Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", resp, includes)
 
         class FakeResponse:
             headers = resp["headers"]

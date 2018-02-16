@@ -120,7 +120,7 @@ def run_test(in_file, test_spec, global_cfg):
 
             verifiers = []
             if expected:
-                verifiers.append(RestResponse(name, expected, test_block_config))
+                verifiers.append(RestResponse(session, name, expected, test_block_config))
             if mqtt_expected:
                 verifiers.append(MQTTResponse(mqtt_client, name, mqtt_expected, test_block_config))
 

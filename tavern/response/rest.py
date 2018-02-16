@@ -29,7 +29,7 @@ def yield_keyvals(block):
 
 class RestResponse(BaseResponse):
 
-    def __init__(self, name, expected, test_block_config):
+    def __init__(self, session, name, expected, test_block_config):
         defaults = {
             'status_code': 200
         }
