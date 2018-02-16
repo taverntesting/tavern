@@ -45,10 +45,10 @@ mapping:
             type: int
           keepalive:
             required: false
-            type: int
+            type: float
           timeout:
             required: false
-            type: int
+            type: float
 
       tls:
         required: false
@@ -196,5 +196,5 @@ mapping:
                 type: any
                 required: false
               timeout:
-                type: int
+                type: float
                 required: false
