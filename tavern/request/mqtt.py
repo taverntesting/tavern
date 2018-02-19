@@ -1,4 +1,5 @@
 import logging
+import json
 import functools
 
 from future.utils import raise_from
@@ -26,6 +27,12 @@ def get_publish_args(rspec, test_block_config):
         logger.error("Key(s) not found in format: %s", e.args)
         raise
 
+    if "json" in rspec:
+        if "payload" in rspec:
+            raise exceptions.BadSchemaError("Can only specify one of 'payload' or 'json' in MQTT request")
+
+        fspec["payload"] = json.dumps(rspec["json"])
+
     return fspec
 
 
@@ -39,6 +46,7 @@ class MQTTRequest(BaseRequest):
         expected = {
             "topic",
             "payload",
+            "json",
             "qos",
             # TODO retain?
         }

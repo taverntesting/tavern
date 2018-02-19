@@ -151,10 +151,11 @@ mapping:
                 type: str
                 required: true
               payload:
-                # XXX
-                # could be json or a string
-                type: any
+                # Only a string
+                type: str
                 required: false
+              json:
+                <<: *any_map_or_list_with_ext_function
               qos:
                 type: int
                 required: false
