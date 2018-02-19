@@ -21,6 +21,8 @@ class RestResponse(BaseResponse):
     def __init__(self, session, name, expected, test_block_config):
         # pylint: disable=unused-argument
 
+        super(RestResponse, self).__init__()
+
         defaults = {
             'status_code': 200
         }
@@ -37,8 +39,6 @@ class RestResponse(BaseResponse):
         self.response = None
         self.test_block_config = test_block_config
         self.status_code = None
-
-        super(RestResponse, self).__init__()
 
     def __str__(self):
         if self.response:

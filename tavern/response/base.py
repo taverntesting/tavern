@@ -19,6 +19,9 @@ class BaseResponse(object):
         # all errors in this response
         self.errors = []
 
+        # None by default?
+        self.test_block_config = {}
+
     def _str_errors(self):
         return "- " + "\n- ".join(self.errors)
 

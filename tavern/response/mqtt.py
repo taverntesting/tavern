@@ -14,6 +14,8 @@ class MQTTResponse(BaseResponse):
     def __init__(self, client, name, expected, test_block_config):
         # pylint: disable=unused-argument
 
+        super(MQTTResponse, self).__init__()
+
         self.name = name
 
         payload = expected.get("payload")
@@ -27,8 +29,6 @@ class MQTTResponse(BaseResponse):
         self.response = None
 
         self._client = client
-
-        super(MQTTResponse, self).__init__()
 
     def __str__(self):
         if self.response:
