@@ -188,8 +188,8 @@ class MQTTClient(object):
         if not msg.is_published:
             raise exceptions.MQTTError("err {:s}: {:s}".format(_err_vals[msg.rc], paho.error_string(msg.rc)))
 
-        if not self.message_received(topic, payload):
-            raise exceptions.MQTTError("Message was not publish successfully on {}".format(topic))
+        # if not self.message_received(topic, payload):
+        #     raise exceptions.MQTTError("Message was not publish successfully on {}".format(topic))
 
         self._client.unsubscribe(topic)
 
