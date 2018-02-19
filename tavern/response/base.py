@@ -2,6 +2,7 @@ import logging
 from abc import abstractmethod
 
 from tavern.util.python_2_util import indent
+from tavern.util.dict_util import format_keys, recurse_access_key, yield_keyvals
 
 logger = logging.getLogger(__name__)
 

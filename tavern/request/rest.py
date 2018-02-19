@@ -11,8 +11,7 @@ import requests
 from future.utils import raise_from
 
 from tavern.util import exceptions
-from tavern.util.keys import check_expected_keys
-from tavern.util.dict_util import format_keys
+from tavern.util.dict_util import format_keys, check_expected_keys
 from tavern.schemas.extensions import get_wrapped_create_function
 
 from .base import BaseRequest

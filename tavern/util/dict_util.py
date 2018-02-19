@@ -1,8 +1,12 @@
 import collections
+import logging
 
 from future.utils import raise_from
 
-from .exceptions import MissingFormatError
+from . import exceptions
+
+
+logger = logging.getLogger(__name__)
 
 
 def format_keys(val, variables):
@@ -26,7 +30,7 @@ def format_keys(val, variables):
         try:
             formatted = val.format(**variables)
         except KeyError as e:
-            raise_from(MissingFormatError(e.args), e)
+            raise_from(exceptions.MissingFormatError(e.args), e)
 
     return formatted
 
@@ -88,3 +92,26 @@ def deep_dict_merge(initial_dct, merge_dct):
             dct[k] = merge_dct[k]
 
     return dct
+
+
+def check_expected_keys(expected, actual):
+
+    keyset = set(actual)
+
+    if not keyset <= expected:
+        unexpected = keyset - expected
+
+        msg = "Unexpected keys {}".format(unexpected)
+        logger.error(msg)
+        raise exceptions.UnexpectedKeysError(msg)
+
+
+def yield_keyvals(block):
+    if isinstance(block, dict):
+        for joined_key, expected_val in block.items():
+            split_key = joined_key.split(".")
+            yield split_key, joined_key, expected_val
+    else:
+        for idx, val in enumerate(block):
+            sidx = str(idx)
+            yield [sidx], sidx, val

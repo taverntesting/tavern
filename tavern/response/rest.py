@@ -9,22 +9,11 @@ except ImportError:
     from urlparse import urlparse, parse_qs
 
 from tavern.schemas.extensions import get_wrapped_response_function
-from tavern.util.dict_util import format_keys, recurse_access_key, deep_dict_merge
+from tavern.util.dict_util import recurse_access_key, deep_dict_merge
 from tavern.util.exceptions import TestFailError
 from .base import BaseResponse, indent_err_text
 
 logger = logging.getLogger(__name__)
-
-
-def yield_keyvals(block):
-    if isinstance(block, dict):
-        for joined_key, expected_val in block.items():
-            split_key = joined_key.split(".")
-            yield split_key, joined_key, expected_val
-    else:
-        for idx, val in enumerate(block):
-            sidx = str(idx)
-            yield [sidx], sidx, val
 
 
 class RestResponse(BaseResponse):

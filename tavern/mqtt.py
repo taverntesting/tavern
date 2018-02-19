@@ -8,7 +8,7 @@ except ImportError:
 
 import paho.mqtt.client as paho
 
-from .util.keys import check_expected_keys
+from .util.dict_util import check_expected_keys
 from .util import exceptions
 
 
