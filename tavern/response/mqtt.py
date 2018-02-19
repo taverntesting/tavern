@@ -1,4 +1,5 @@
 import logging
+import time
 import json
 
 from tavern.schemas.extensions import get_wrapped_response_function
@@ -59,6 +60,8 @@ class MQTTResponse(BaseResponse):
         time_spent = 0
 
         while time_spent < timeout:
+            t0 = time.time()
+
             msg = self._client.message_received(timeout - time_spent)
 
             if not msg:
@@ -76,6 +79,8 @@ class MQTTResponse(BaseResponse):
             else:
                 logger.info("Got expected message in '%s' with payload '%s'",
                     msg.topic, msg.payload)
+
+            time_spent += time.time() - t0
 
         if not msg:
             self._adderr("Expected '%s' on topic '%s' but no such message received",
