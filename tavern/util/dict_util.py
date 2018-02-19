@@ -95,7 +95,15 @@ def deep_dict_merge(initial_dct, merge_dct):
 
 
 def check_expected_keys(expected, actual):
+    """Check that a set of expected keys is a superset of the actual keys
 
+    Args:
+        expected (list, set, dict): keys we expect
+        actual (list, set, dict): keys we have got from the input
+
+    Raises:
+        UnexpectedKeysError: If not actual <= expected
+    """
     keyset = set(actual)
 
     if not keyset <= expected:
@@ -107,6 +115,18 @@ def check_expected_keys(expected, actual):
 
 
 def yield_keyvals(block):
+    """Return indexes, keys and expected values for matching recursive keys
+
+    Given a list or dict, return a 3-tuple of the 'split' key (key split on
+    dots), the original key, and the expected value. If the input is a list, it
+    is enumerated so the 'keys' are just [0, 1, 2, ...]
+
+    Args:
+        block (dict, list): input matches
+
+    Yields:
+        (list, str, str): key split on dots, key, expected value
+    """
     if isinstance(block, dict):
         for joined_key, expected_val in block.items():
             split_key = joined_key.split(".")
