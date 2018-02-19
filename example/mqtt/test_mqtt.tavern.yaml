@@ -28,7 +28,7 @@ stages:
 
 ---
 
-test_name: Make sure posting sends mqtt message
+test_name: Make sure posting publishes mqtt message
 
 includes:
   - !include common.yaml
@@ -90,7 +90,7 @@ stages:
       headers:
         content-type: application/json
 
-  - name: step 2 - send mqtt message saying that the lights are now on
+  - name: step 2 - publish an mqtt message saying that the lights are now on
     mqtt_publish:
       topic: /device/123/lights
       qos: 1
