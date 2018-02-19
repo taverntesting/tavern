@@ -30,7 +30,7 @@ def get_publish_args(rspec, test_block_config):
         if "payload" in rspec:
             raise exceptions.BadSchemaError("Can only specify one of 'payload' or 'json' in MQTT request")
 
-        fspec["payload"] = json.dumps(rspec["json"])
+        fspec["payload"] = json.dumps(fspec.pop("json"))
 
     return fspec
 
