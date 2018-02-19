@@ -38,6 +38,16 @@ class BaseResponse(object):
         """
 
     def recurse_check_key_match(self, expected_block, block, blockname):
+        """Valid returned data against expected data
+
+        Todo:
+            Optionally use a validation library too
+
+        Args:
+            expected_block (dict): expected data
+            block (dict): actual data
+            blockname (str): 'name' of this block (params, mqtt, etc) for error messages
+        """
 
         if expected_block:
             expected_block = format_keys(expected_block, self.test_block_config["variables"])
