@@ -1,7 +1,8 @@
 import logging
+import json
 
 from tavern.schemas.extensions import get_wrapped_response_function
-from tavern.util.exceptions import TestFailError
+from tavern.util import exceptions
 from .base import BaseResponse
 
 logger = logging.getLogger(__name__)
@@ -44,8 +45,16 @@ class MQTTResponse(BaseResponse):
         self.response = response
 
         topic = self.expected["topic"]
-        payload = self.expected["payload"]
         timeout = response.get("timeout", 1)
+
+        # TODO move this check to initialisation/schema checking
+        if "json" in self.expected:
+            if "payload" in self.expected:
+                raise exceptions.BadSchemaError("Can only specify one of 'payload' or 'json' in MQTT request")
+
+            payload = json.loads(self.expected["json"])
+        else:
+            payload = self.expected["payload"]
 
         time_spent = 0
 
@@ -73,6 +82,7 @@ class MQTTResponse(BaseResponse):
                 payload, topic)
 
         if self.errors:
-            raise TestFailError("Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()))
+            raise exceptions.TestFailError("Test '{:s}' failed:\n{:s}".format(
+                self.name, self._str_errors()))
 
         return {}

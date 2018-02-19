@@ -196,6 +196,8 @@ mapping:
               payload:
                 type: any
                 required: false
+              json:
+                <<: *any_map_or_list_with_ext_function
               timeout:
                 type: float
                 required: false
