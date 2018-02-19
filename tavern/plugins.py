@@ -25,10 +25,9 @@ def get_extra_sessions(test_spec):
 
     sessions = {}
 
-    if 1: # pylint: disable=using-constant-test
-        # always used at the moment
-        requests_session = requests.Session()
-        sessions["requests"] = requests_session
+    # always used at the moment
+    requests_session = requests.Session()
+    sessions["requests"] = requests_session
 
     if "mqtt" in test_spec:
         # FIXME
