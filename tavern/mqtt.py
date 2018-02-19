@@ -130,12 +130,10 @@ class MQTTClient(object):
         except Full:
             logger.exception("message queue full")
 
-    def message_received(self, topic, payload, timeout=1):
+    def message_received(self, timeout=1):
         """Check that a message is in the message queue
 
         Args:
-            topic (str): topic message should have been on
-            payload (str, dict): expected payload - can be a str or a dict...?
             timeout (int): How long to wait before signalling that the message
                 was not received.
 
@@ -146,32 +144,13 @@ class MQTTClient(object):
             Allow regexes for topic names? Better validation for mqtt payloads
         """
 
-        time_spent = 0
-
-        while time_spent < timeout:
-            t1 = time.time()
-
-            try:
-                msg = self._message_queue.get(block=True, timeout=timeout)
-            except Empty:
-                time_spent += timeout
-            else:
-                time_spent += time.time() - t1
-
-                if msg.payload != payload:
-                    logger.warning("Got unexpected payload on topic '%s': '%s' (expected '%s')",
-                        msg.topic, msg.payload, payload)
-                elif msg.topic != topic:
-                    logger.warning("Got unexpected message in '%s' with payload '%s'",
-                        msg.topic, msg.payload)
-                else:
-                    logger.info("Got expected message in '%s' with payload '%s'",
-                        msg.topic, msg.payload)
-
-                    return True
-
-        logger.error("Message not received after %d seconds", timeout)
-        return False
+        try:
+            msg = self._message_queue.get(block=True, timeout=timeout)
+        except Empty:
+            logger.error("Message not received after %d seconds", timeout)
+            return None
+        else:
+            return msg
 
     def publish(self, topic, payload, *args, **kwargs):
         """publish message using paho library

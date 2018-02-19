@@ -43,16 +43,34 @@ class MQTTResponse(BaseResponse):
 
         self.response = response
 
-        etopic = self.expected["topic"]
-        epayload = self.expected["payload"]
+        topic = self.expected["topic"]
+        payload = self.expected["payload"]
+        timeout = response.get("timeout", 1)
 
-        received = self._client.message_received(**self.expected)
+        time_spent = 0
 
-        logger.debug(received)
+        while time_spent < timeout:
+            msg = self._client.message_received(timeout - time_spent)
 
-        if not received:
+            if not msg:
+                # timed out
+                break
+
+            logger.debug(msg)
+
+            if msg.payload != payload:
+                logger.warning("Got unexpected payload on topic '%s': '%s' (expected '%s')",
+                    msg.topic, msg.payload, payload)
+            elif msg.topic != topic:
+                logger.warning("Got unexpected message in '%s' with payload '%s'",
+                    msg.topic, msg.payload)
+            else:
+                logger.info("Got expected message in '%s' with payload '%s'",
+                    msg.topic, msg.payload)
+
+        if not msg:
             self._adderr("Expected '%s' on topic '%s' but no such message received",
-                epayload, etopic)
+                payload, topic)
 
         if self.errors:
             raise TestFailError("Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()))
