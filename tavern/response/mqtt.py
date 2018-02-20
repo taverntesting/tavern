@@ -30,6 +30,8 @@ class MQTTResponse(BaseResponse):
 
         self._client = client
 
+        self.received_messages = []
+
     def __str__(self):
         if self.response:
             return self.response.payload
@@ -67,6 +69,8 @@ class MQTTResponse(BaseResponse):
             if not msg:
                 # timed out
                 break
+
+            self.received_messages.append(msg)
 
             logger.debug(msg)
 
