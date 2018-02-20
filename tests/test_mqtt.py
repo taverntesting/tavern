@@ -1,24 +1,24 @@
 import pytest
-from mock import patch
+from mock import patch, Mock
 import paho.mqtt.client as paho
 
 from tavern.mqtt import MQTTClient
 from tavern.util import exceptions
-
-
-@pytest.fixture(name="fake_client")
-def fix_fake_client():
-    args = {
-        "connect": {
-            "host": "localhost",
-        }
-    }
-
-    return MQTTClient(**args)
+from tavern.response.mqtt import MQTTResponse
 
 
 class TestClient(object):
-    
+
+    @pytest.fixture(name="fake_client")
+    def fix_fake_client(self):
+        args = {
+            "connect": {
+                "host": "localhost",
+            }
+        }
+
+        return MQTTClient(**args)
+
     def test_host_required(self):
         """Always needs a host, but it's the only required key"""
         with pytest.raises(exceptions.MissingKeysError):
