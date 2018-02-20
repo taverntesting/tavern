@@ -16,7 +16,7 @@ def test_nothing_returned_fails():
 
     expected = {
         "topic": "/a/b/c",
-        "payload": "hello".encode("utf8"),
+        "payload": "hello",
     }
 
     verifier = MQTTResponse(fake_client, "Test stage", expected, {})
@@ -69,12 +69,12 @@ class TestResponse(object):
 
         expected = {
             "topic": "/a/b/c",
-            "payload": "hello".encode("utf8"),
+            "payload": "hello",
         }
 
         fake_message = FakeMessage({
             "topic": "/a/b/c",
-            "payload": "goodbye".encode("utf8"),
+            "payload": "goodbye",
         })
 
         verifier = self._get_fake_verifier(expected, [fake_message])
@@ -90,7 +90,7 @@ class TestResponse(object):
 
         expected = {
             "topic": "/a/b/c",
-            "payload": "hello".encode("utf8"),
+            "payload": "hello",
         }
 
         fake_message = FakeMessage(expected)
@@ -107,13 +107,13 @@ class TestResponse(object):
 
         expected = {
             "topic": "/a/b/c",
-            "payload": "hello".encode("utf8"),
+            "payload": "hello",
         }
 
         fake_message_good = FakeMessage(expected)
         fake_message_bad = FakeMessage({
             "topic": "/a/b/c",
-            "payload": "goodbye".encode("utf8"),
+            "payload": "goodbye",
         })
 
         verifier = self._get_fake_verifier(expected, [fake_message_bad, fake_message_good])

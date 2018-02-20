@@ -56,6 +56,12 @@ class MQTTRequest(BaseRequest):
 
         self._prepared = functools.partial(client.publish, **publish_args)
 
+        # TODO
+        # From paho:
+        # > raise TypeError('payload must be a string, bytearray, int, float or None.')
+        # Need to be able to take all of these somehow, and also match these
+        # against any payload received on the topic
+
     def run(self):
         try:
             return self._prepared()
