@@ -104,6 +104,7 @@ def check_expected_keys(expected, actual):
     Raises:
         UnexpectedKeysError: If not actual <= expected
     """
+    expected = set(expected)
     keyset = set(actual)
 
     if not keyset <= expected:
