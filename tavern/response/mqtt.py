@@ -20,10 +20,10 @@ class MQTTResponse(BaseResponse):
 
         payload = expected.get("payload")
 
-        if "$ext" in payload:
-            self.validate_function = get_wrapped_response_function(payload["$ext"])
-        else:
-            self.validate_function = None
+        self.validate_function = None
+        if isinstance(payload, dict):
+            if "$ext" in payload:
+                self.validate_function = get_wrapped_response_function(payload["$ext"])
 
         self.expected = expected
         self.response = None
