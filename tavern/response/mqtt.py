@@ -83,7 +83,9 @@ class MQTTResponse(BaseResponse):
             else:
                 logger.info("Got expected message in '%s' with payload '%s'",
                     msg.topic, msg.payload)
+                break
 
+            msg = None
             time_spent += time.time() - t0
 
         if not msg:
