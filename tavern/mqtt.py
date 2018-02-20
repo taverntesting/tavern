@@ -185,17 +185,17 @@ class MQTTClient(object):
         elapsed = 0
 
         while elapsed < self._connect_timeout:
-            # TODO
-            # configurable?
-            time.sleep(0.25)
-            elapsed += 0.25
-
             # pylint: disable=protected-access
             if self._client._state == paho.mqtt_cs_connected:
                 logger.debug("Connected to broker at %s", self._connect_args["host"])
                 return self
             else:
                 logger.debug("Not connected after %s seconds - waiting", elapsed)
+
+            # TODO
+            # configurable?
+            time.sleep(0.25)
+            elapsed += 0.25
 
         logger.error("Could not connect to broker after %s seconds", self._connect_timeout)
         raise exceptions.MQTTError
