@@ -160,7 +160,7 @@ class MQTTClient(object):
         msg = self._client.publish(topic, payload, *args, **kwargs)
 
         if not msg.is_published:
-            raise exceptions.MQTTError("err {:s}: {:s}".format(_err_vals[msg.rc], paho.error_string(msg.rc)))
+            raise exceptions.MQTTError("err {:s}: {:s}".format(_err_vals.get(msg.rc), paho.error_string(msg.rc)))
 
         return msg
 
