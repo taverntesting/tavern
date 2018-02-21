@@ -48,7 +48,7 @@ class MQTTResponse(BaseResponse):
         self.response = response
 
         topic = self.expected["topic"]
-        timeout = response.get("timeout", 1)
+        timeout = self.expected.get("timeout", 1)
 
         # TODO move this check to initialisation/schema checking
         if "json" in self.expected:
