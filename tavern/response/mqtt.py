@@ -55,7 +55,7 @@ class MQTTResponse(BaseResponse):
             if "payload" in self.expected:
                 raise exceptions.BadSchemaError("Can only specify one of 'payload' or 'json' in MQTT request")
 
-            payload = json.loads(self.expected["json"])
+            payload = self.expected["json"]
         else:
             payload = self.expected["payload"]
 
