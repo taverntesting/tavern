@@ -1,6 +1,5 @@
 import logging
 import time
-import json
 
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util import exceptions
