@@ -6,6 +6,8 @@ significantly if/when a proper plugin system is implemented!
 import logging
 import requests
 
+from future.utils import raise_from
+
 from .util import exceptions
 from .request import RestRequest, MQTTRequest
 from .response import RestResponse, MQTTResponse
@@ -79,11 +81,12 @@ def get_request_type(stage, test_block_config, sessions):
         r = RestRequest(session, rspec, test_block_config)
     elif "mqtt_publish" in stage:
         session = sessions["mqtt"]
-        mqtt_client = sessions.get("mqtt")
 
-        if not mqtt_client:
+        try:
+            mqtt_client = sessions["mqtt"]
+        except KeyError as e:
             logger.error("No mqtt settings but stage wanted to send an mqtt message")
-            raise exceptions.MissingSettingsError
+            raise_from(exceptions.MissingSettingsError, e)
 
         rspec = stage["mqtt_publish"]
 
