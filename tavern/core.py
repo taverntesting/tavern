@@ -5,6 +5,7 @@ import yaml
 from contextlib2 import ExitStack
 
 from .util import exceptions
+from .util.delay import delay
 from .util.loader import IncludeLoader
 from .util.env_vars import check_env_var_settings
 from .printer import log_pass, log_fail
@@ -82,6 +83,8 @@ def run_test(in_file, test_spec, global_cfg):
                 log_fail(stage, None, expected)
                 raise
 
+            delay(stage, "before")
+
             logger.info("Running stage : %s", name)
 
             try:
@@ -102,6 +105,8 @@ def run_test(in_file, test_spec, global_cfg):
                     test_block_config["variables"].update(saved)
 
             log_pass(stage, verifiers)
+
+            delay(stage, "after")
 
 
 def run(in_file, tavern_global_cfg):
