@@ -30,7 +30,7 @@ def test_nothing_returned_fails():
 class FakeMessage:
     def __init__(self, returned):
         self.topic = returned["topic"]
-        self.payload = returned["payload"]
+        self.payload = returned["payload"].encode("utf8")
 
 
 class TestResponse(object):
