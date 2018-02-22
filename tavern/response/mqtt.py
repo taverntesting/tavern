@@ -6,6 +6,12 @@ from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util import exceptions
 from .base import BaseResponse
 
+try:
+    LoadException = json.decoder.JSONDecodeError
+except AttributeError:
+    # python 2 raises ValueError on json loads() error instead
+    LoadException = ValueError
+
 logger = logging.getLogger(__name__)
 
 
@@ -77,7 +83,7 @@ class MQTTResponse(BaseResponse):
             if json_payload:
                 try:
                     msg.payload = json.loads(msg.payload.decode("utf8"))
-                except json.decoder.JSONDecodeError:
+                except LoadException:
                     logger.warning("Expected a json payload but got '%s'", msg.payload)
                     msg = None
                     continue
