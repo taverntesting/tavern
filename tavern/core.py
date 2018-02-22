@@ -70,7 +70,7 @@ def run_test(in_file, test_spec, global_cfg):
         for stage in test_spec["stages"]:
             name = stage["name"]
 
-            expected = get_expected(stage, sessions)
+            expected = get_expected(stage, test_block_config, sessions)
 
             try:
                 r = get_request_type(stage, test_block_config, sessions)

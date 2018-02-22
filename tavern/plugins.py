@@ -8,6 +8,7 @@ import requests
 
 from future.utils import raise_from
 
+from .util.dict_util import format_keys
 from .util import exceptions
 from .request import RestRequest, MQTTRequest
 from .response import RestResponse, MQTTResponse
@@ -95,10 +96,14 @@ def get_request_type(stage, test_block_config, sessions):
     return r
 
 
-def get_expected(stage, sessions):
+def get_expected(stage, test_block_config, sessions):
     """Get expected responses for each type of request
 
-    Though only 1 request can be made, it can cause multiple responses
+    Though only 1 request can be made, it can cause multiple responses.
+
+    Because we need to subcribe to MQTT topics, which might be formatted from
+    keys from included files, the 'expected'/'response' needs to be formatted
+    BEFORE running the request.
 
     Args:
         stage (dict): test stage
@@ -112,15 +117,20 @@ def get_expected(stage, sessions):
 
     if "request" in stage:
         r_expected = stage["response"]
-        expected["requests"] = r_expected
+        f_expected = format_keys(r_expected, test_block_config["variables"])
+        expected["requests"] = f_expected
 
     if "mqtt_response" in stage:
         # mqtt response is not required
         m_expected = stage.get("mqtt_response")
         if m_expected:
+            # format so we can subscribe to the right topic
+            f_expected = format_keys(m_expected, test_block_config["variables"])
             mqtt_client = sessions["mqtt"]
-            mqtt_client.subscribe(m_expected["topic"])
-        expected["mqtt"] = m_expected
+            mqtt_client.subscribe(f_expected["topic"])
+            expected["mqtt"] = f_expected
+        else:
+            expected["mqtt"] = m_expected
 
     return expected
 
