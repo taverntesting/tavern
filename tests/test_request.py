@@ -53,7 +53,7 @@ class TestRequests:
         """
         req["method"] = "GET"
 
-        with pytest.raises(exceptions.BadSchemaError):
+        with pytest.warns(RuntimeWarning):
             RestRequest(Mock(), req, includes)
 
     def test_session_called_no_redirects(self, req, includes):
@@ -84,7 +84,7 @@ class TestRequests:
 
         req[body_key] = {"a": "b"}
 
-        with pytest.raises(exceptions.BadSchemaError):
+        with pytest.warns(RuntimeWarning):
             get_request_args(req, includes)
 
     def test_no_override_method(self, req, includes):

@@ -1,6 +1,7 @@
 import functools
 import json
 import logging
+import warnings
 
 try:
     from urllib.parse import quote_plus
@@ -108,9 +109,9 @@ def get_request_args(rspec, test_block_config):
     # "files",
     # "cookies",
 
-    if request_args["method"] == "GET":
+    if request_args["method"] in ["GET", "HEAD", "OPTIONS"]:
         if any(i in request_args for i in ["json", "data"]):
-            raise exceptions.BadSchemaError("Can't add json or urlencoded data to a GET request - use query parameters instead?")
+            warnings.warn("You are trying to send a body with a HTTP verb that has no semantic use for it", RuntimeWarning)
 
     return request_args
 

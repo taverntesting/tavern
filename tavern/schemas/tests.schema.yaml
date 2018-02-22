@@ -149,7 +149,6 @@ mapping:
                   - POST
                   - DELETE
                   - PATCH
-                  - PUT
                   - OPTIONS
                   - HEAD
 

@@ -1,5 +1,24 @@
 ---
 
+test_name: Check OPTIONS
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Run OPTIONS on login endpoint
+    request:
+      url: "{host}/login"
+      method: OPTIONS
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      headers:
+        content-type: text/html; charset=utf-8
+
+---
+
 test_name: Make sure jwt returned has the expected aud value
 
 includes:
