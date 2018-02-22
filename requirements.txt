@@ -4,3 +4,4 @@ requests
 pyjwt
 python-box
 future
+contextlib2

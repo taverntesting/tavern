@@ -7,9 +7,14 @@ try:
 except ImportError:
     from urllib import quote_plus
 
-from .util import exceptions
-from .util.dict_util import format_keys
-from .schemas.extensions import get_wrapped_create_function
+import requests
+from future.utils import raise_from
+
+from tavern.util import exceptions
+from tavern.util.dict_util import format_keys, check_expected_keys
+from tavern.schemas.extensions import get_wrapped_create_function
+
+from .base import BaseRequest
 
 logger = logging.getLogger(__name__)
 
@@ -60,11 +65,7 @@ def get_request_args(rspec, test_block_config):
         if "content-type" not in [h.lower() for h in headers.keys()]:
             rspec["headers"]["content-type"] = "application/json"
 
-    try:
-        fspec = format_keys(rspec, test_block_config["variables"])
-    except exceptions.MissingFormatError as e:
-        logger.error("Key(s) not found in format: %s", e.args)
-        raise
+    fspec = format_keys(rspec, test_block_config["variables"])
 
     def add_request_args(keys, optional):
         for key in keys:
@@ -83,7 +84,7 @@ def get_request_args(rspec, test_block_config):
     for key in optional_in_file:
         try:
             func = get_wrapped_create_function(request_args[key].pop("$ext"))
-        except KeyError:
+        except (KeyError, TypeError):
             pass
         else:
             request_args[key] = func()
@@ -114,7 +115,7 @@ def get_request_args(rspec, test_block_config):
     return request_args
 
 
-class TRequest(object):
+class RestRequest(BaseRequest):
 
     def __init__(self, session, rspec, test_block_config):
         """Prepare request
@@ -143,14 +144,7 @@ class TRequest(object):
             # "hooks",
         }
 
-        keyset = set(rspec)
-
-        if not keyset <= expected:
-            unexpected = keyset - expected
-
-            msg = "Unexpected keys {}".format(unexpected)
-            logger.error(msg)
-            raise exceptions.UnexpectedKeysError(msg)
+        check_expected_keys(expected, rspec)
 
         request_args = get_request_args(rspec, test_block_config)
 
@@ -174,4 +168,8 @@ class TRequest(object):
             requests.Response: response object
         """
 
-        return self._prepared()
+        try:
+            return self._prepared()
+        except requests.exceptions.RequestException as e:
+            logger.exception("Error running prepared request")
+            raise_from(exceptions.RestRequestException, e)

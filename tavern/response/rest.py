@@ -8,34 +8,21 @@ try:
 except ImportError:
     from urlparse import urlparse, parse_qs
 
-from .schemas.extensions import get_wrapped_response_function
-from .util.dict_util import format_keys, recurse_access_key, deep_dict_merge
-from .util.exceptions import TestFailError
-from .util.python_2_util import indent
+from tavern.schemas.extensions import get_wrapped_response_function
+from tavern.util.dict_util import recurse_access_key, deep_dict_merge
+from tavern.util.exceptions import TestFailError
+from .base import BaseResponse, indent_err_text
 
 logger = logging.getLogger(__name__)
 
 
-def _indent_err_text(err):
-    if err == "null":
-        err = "<No body>"
-    return indent(err, " "*4)
+class RestResponse(BaseResponse):
 
+    def __init__(self, session, name, expected, test_block_config):
+        # pylint: disable=unused-argument
 
-def yield_keyvals(block):
-    if isinstance(block, dict):
-        for joined_key, expected_val in block.items():
-            split_key = joined_key.split(".")
-            yield split_key, joined_key, expected_val
-    else:
-        for idx, val in enumerate(block):
-            sidx = str(idx)
-            yield [sidx], sidx, val
+        super(RestResponse, self).__init__()
 
-
-class TResponse(object):
-
-    def __init__(self, name, expected, test_block_config):
         defaults = {
             'status_code': 200
         }
@@ -53,26 +40,11 @@ class TResponse(object):
         self.test_block_config = test_block_config
         self.status_code = None
 
-        # all errors in this response
-        self.errors = []
-
-    def _str_errors(self):
-        return "- " + "\n- ".join(self.errors)
-
     def __str__(self):
         if self.response:
             return self.response.text.strip()
         else:
             return "<Not run yet>"
-
-    def _adderr(self, msg, *args, **kwargs):
-        e = kwargs.get('e')
-
-        if e:
-            logger.exception(msg, *args)
-        else:
-            logger.error(msg, *args)
-        self.errors += [(msg % args)]
 
     def verify(self, response):
         """Verify response against expected values and returns any values that
@@ -92,6 +64,8 @@ class TResponse(object):
         """
         # pylint: disable=too-many-statements
 
+        logger.info("Response: '%s' (%s)", response, response.content.decode("utf8"))
+
         self.response = response
         self.status_code = response.status_code
 
@@ -104,7 +78,7 @@ class TResponse(object):
             if 400 <= response.status_code < 500:
                 self._adderr("Status code was %s, expected %s:\n%s",
                     response.status_code, self.expected["status_code"],
-                    _indent_err_text(json.dumps(body)),
+                    indent_err_text(json.dumps(body)),
                     )
             else:
                 self._adderr("Status code was %s, expected %s",
@@ -116,7 +90,7 @@ class TResponse(object):
             except Exception as e: #pylint: disable=broad-except
                 self._adderr("Error calling validate function '%s':\n%s",
                     self.validate_function.func,
-                    _indent_err_text(traceback.format_exc()),
+                    indent_err_text(traceback.format_exc()),
                     e=e)
 
         # Get any keys to save
@@ -152,7 +126,7 @@ class TResponse(object):
             except Exception as e: #pylint: disable=broad-except
                 self._adderr("Error calling save function '%s':\n%s",
                     wrapped.func,
-                    _indent_err_text(traceback.format_exc()),
+                    indent_err_text(traceback.format_exc()),
                     e=e)
             else:
                 if isinstance(to_save, dict):
@@ -195,31 +169,7 @@ class TResponse(object):
 
         logger.debug("Validating %s for %s", blockname, expected_block)
 
-        if expected_block:
-            expected_block = format_keys(expected_block, self.test_block_config["variables"])
-
-            if block is None:
-                self._adderr("expected %s in the %s, but there was no response body",
-                    self.expected[blockname], blockname)
-            else:
-                logger.debug("block = %s", expected_block)
-                for split_key, joined_key, expected_val in yield_keyvals(expected_block):
-                    try:
-                        actual_val = recurse_access_key(block, split_key)
-                    except KeyError as e:
-                        self._adderr("Key not present: %s", joined_key, e=e)
-                        continue
-
-                    logger.debug("%s: %s vs %s", joined_key, expected_val, actual_val)
-
-                    try:
-                        assert actual_val == expected_val
-                    except AssertionError as e:
-                        if expected_val != None:
-                            self._adderr("Value mismatch: got '%s' (type: %s), expected '%s' (type: %s)",
-                                actual_val, type(actual_val), expected_val, type(expected_val), e=e)
-                        else:
-                            logger.debug("Key %s was present", joined_key)
+        self.recurse_check_key_match(expected_block, block, blockname)
 
     def _save_value(self, key, to_check):
         """Save a value in the response for use in future tests

@@ -1,0 +1,113 @@
+---
+
+test_name: Test mqtt message response
+
+includes:
+  - !include common.yaml
+
+mqtt: &mqtt_spec
+  # tls:
+  #   enable: true
+  connect:
+    host: localhost
+    port: 9001
+    timeout: 3
+  client:
+    transport: websockets
+    client_id: tavern-tester
+
+stages:
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /device/123/ping
+      payload: ping
+    mqtt_response:
+      topic: /device/123/pong
+      payload: pong
+      timeout: 5
+
+---
+
+test_name: Make sure posting publishes mqtt message
+
+includes:
+  - !include common.yaml
+
+mqtt: *mqtt_spec
+
+stages:
+  - name: step 1 - post message trigger
+    request:
+      url: "{host}/send_mqtt_message"
+      json:
+        device_id: 123
+        payload: "hello"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      body:
+        topic: "/device/123"
+      headers:
+        content-type: application/json
+    mqtt_response:
+      topic: /device/123
+      payload: "hello"
+      timeout: 5
+
+---
+
+test_name: Test posting mqtt message updates state on server
+
+includes:
+  - !include common.yaml
+
+mqtt: *mqtt_spec
+
+stages:
+  - name: step 0 - reset devices
+    request:
+      url: "{host}/reset"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 204
+
+  - name: step 1 - get device state with lights off
+    request:
+      url: "{host}/get_device_state"
+      params:
+        device_id: 123
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      body:
+        lights: "off"
+      headers:
+        content-type: application/json
+
+  - name: step 2 - publish an mqtt message saying that the lights are now on
+    mqtt_publish:
+      topic: /device/123/lights
+      qos: 1
+      payload: "on"
+    delay_after: 2
+
+  - name: step 3 - get device state, lights now on
+    request:
+      url: "{host}/get_device_state"
+      params:
+        device_id: 123
+      method: GET
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      body:
+        lights: "on"
+      headers:
+        content-type: application/json

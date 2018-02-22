@@ -1,14 +1,16 @@
 import logging
 
 import yaml
-import requests
+
+from contextlib2 import ExitStack
 
 from .util import exceptions
+from .util.delay import delay
 from .util.loader import IncludeLoader
 from .util.env_vars import check_env_var_settings
-from .request import TRequest
-from .response import TResponse
 from .printer import log_pass, log_fail
+
+from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
 
 from .schemas.files import verify_tests
 
@@ -34,13 +36,19 @@ def run_test(in_file, test_spec, global_cfg):
     Raises:
         TavernException: If any of the tests failed
     """
+
+    # pylint: disable=too-many-locals
+
     # Initialise test config for this test with the global configuration before
     # starting
-
     test_block_config = dict(global_cfg)
 
     if "variables" not in test_block_config:
         test_block_config["variables"] = {}
+
+    if not test_spec:
+        logger.warning("Empty test block in %s", in_file)
+        return
 
     if test_spec.get("includes"):
         for included in test_spec["includes"]:
@@ -48,43 +56,57 @@ def run_test(in_file, test_spec, global_cfg):
                 check_env_var_settings(included["variables"])
                 test_block_config["variables"].update(included["variables"])
 
-    if not test_spec:
-        logger.warning("Empty test block in %s", in_file)
-        return
-
     test_block_name = test_spec["test_name"]
 
     logger.info("Running test : %s", test_block_name)
 
-    with requests.Session() as session:
+    with ExitStack() as stack:
+        sessions = get_extra_sessions(test_spec)
+
+        for name, session in sessions.items():
+            logger.debug("Entering context for %s", name)
+            stack.enter_context(session)
+
         # Run tests in a path in order
-        for test in test_spec["stages"]:
-            name = test["name"]
-            rspec = test["request"]
-            expected = test["response"]
+        for stage in test_spec["stages"]:
+            name = stage["name"]
 
             try:
-                r = TRequest(session, rspec, test_block_config)
-            except exceptions.MissingFormatError:
-                log_fail(test, None, expected)
+                expected = get_expected(stage, test_block_config, sessions)
+            except exceptions.TavernException:
+                log_fail(stage, None, expected)
                 raise
+
+            try:
+                r = get_request_type(stage, test_block_config, sessions)
+            except exceptions.MissingFormatError:
+                log_fail(stage, None, expected)
+                raise
+
+            delay(stage, "before")
 
             logger.info("Running stage : %s", name)
 
-            response = r.run()
-
-            logger.info("Response: '%s' (%s)", response, response.content.decode("utf8"))
-
-            verifier = TResponse(name, expected, test_block_config)
-
             try:
-                saved = verifier.verify(response)
+                response = r.run()
             except exceptions.TavernException:
-                log_fail(test, verifier, expected)
+                log_fail(stage, None, expected)
                 raise
-            else:
-                log_pass(test, verifier)
-                test_block_config["variables"].update(saved)
+
+            verifiers = get_verifiers(stage, test_block_config, sessions, expected)
+
+            for v in verifiers:
+                try:
+                    saved = v.verify(response)
+                except exceptions.TavernException:
+                    log_fail(stage, v, expected)
+                    raise
+                else:
+                    test_block_config["variables"].update(saved)
+
+            log_pass(stage, verifiers)
+
+            delay(stage, "after")
 
 
 def run(in_file, tavern_global_cfg):

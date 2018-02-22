@@ -59,7 +59,7 @@ class TestRunStages:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.core.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
             run_test("heif", fulltest, includes)
 
         assert pmock.called
@@ -72,7 +72,7 @@ class TestRunStages:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.core.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
             with pytest.raises(exceptions.TestFailError):
                 run_test("heif", fulltest, includes)
 
@@ -86,7 +86,7 @@ class TestRunStages:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.core.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
             with pytest.raises(exceptions.TestFailError):
                 run_test("heif", fulltest, includes)
 
@@ -100,8 +100,39 @@ class TestRunStages:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.core.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
             with pytest.raises(exceptions.TestFailError):
                 run_test("heif", fulltest, includes)
 
         assert pmock.called
+
+
+class TestDelay:
+
+    def test_sleep_before(self, fulltest, mockargs, includes):
+        """Should sleep with delay_before in stage spec"""
+
+        fulltest["stages"][0]["delay_before"] = 2
+
+        mock_response = Mock(**mockargs)
+
+        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+            with patch("tavern.util.delay.time.sleep") as smock:
+                run_test("heif", fulltest, includes)
+
+        assert pmock.called
+        smock.assert_called_with(2)
+
+    def test_sleep_after(self, fulltest, mockargs, includes):
+        """Should sleep with delay_after in stage spec"""
+
+        fulltest["stages"][0]["delay_after"] = 2
+
+        mock_response = Mock(**mockargs)
+
+        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+            with patch("tavern.util.delay.time.sleep") as smock:
+                run_test("heif", fulltest, includes)
+
+        assert pmock.called
+        smock.assert_called_with(2)
