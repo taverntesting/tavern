@@ -21,6 +21,10 @@ handlers:
         formatter: default
 
 loggers:
+    paho:
+        handlers:
+            - stderr
+        level: DEBUG
     tavern:
         handlers:
             - stderr

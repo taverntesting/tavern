@@ -11,6 +11,65 @@ mapping:
     required: true
     type: str
 
+  mqtt:
+    required: false
+    type: map
+    mapping:
+
+      client:
+        required: false
+        type: map
+        mapping:
+          client_id:
+            type: str
+            required: false
+          clean_session:
+            type: bool
+            required: false
+          transport:
+            type: str
+            required: false
+            enum:
+              - tcp
+              - websockets
+
+      connect:
+        required: true
+        type: map
+        mapping:
+          host:
+            required: true
+            type: str
+          port:
+            required: false
+            type: int
+          keepalive:
+            required: false
+            type: float
+          timeout:
+            required: false
+            type: float
+
+      tls:
+        required: false
+        type: map
+        mapping:
+          enable:
+            required: false
+            type: bool
+
+      auth:
+        required: false
+        type: map
+        mapping:
+          username:
+            type: str
+            required: true
+
+          password:
+            type: str
+            required: false
+
   includes:
     required: false
     type: seq
@@ -45,9 +104,19 @@ mapping:
             required: true
             unique: true
 
+          delay_before:
+            type: int
+            required: false
+            unique: true
+
+          delay_after:
+            type: int
+            required: false
+            unique: true
+
           request:
             type: map
-            required: true
+            required: false
             mapping:
               url:
                 type: str
@@ -88,9 +157,26 @@ mapping:
                 type: bool
                 required: false
 
+          mqtt_publish:
+            type: map
+            required: false
+            mapping:
+              topic:
+                type: str
+                required: true
+              payload:
+                # Only a string
+                type: str
+                required: false
+              json:
+                <<: *any_map_or_list_with_ext_function
+              qos:
+                type: int
+                required: false
+
           response:
             type: map
-            required: true
+            required: false
             mapping:
               status_code:
                 type: int
@@ -113,3 +199,19 @@ mapping:
                 mapping:
                   re;(\$ext|body|headers|redirect_query_params):
                     type: any
+
+          mqtt_response:
+            type: map
+            required: false
+            mapping:
+              topic:
+                type: str
+                required: true
+              payload:
+                type: any
+                required: false
+              json:
+                <<: *any_map_or_list_with_ext_function
+              timeout:
+                type: float
+                required: false
