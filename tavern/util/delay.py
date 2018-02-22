@@ -13,9 +13,9 @@ def delay(stage, when):
     """
 
     try:
-        delay = stage["delay_{}".format(when)]
+        length = stage["delay_{}".format(when)]
     except KeyError:
         pass
     else:
-        logger.debug("Delaying %s request for %d seconds", when, delay)
-        time.sleep(delay)
+        logger.debug("Delaying %s request for %d seconds", when, length)
+        time.sleep(length)
