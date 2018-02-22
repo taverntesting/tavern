@@ -25,13 +25,13 @@ stages:
         $ext:
           function: tavern.testutils.helpers:validate_regex
           extra_kwargs:
-            expression: '<a src=\"(.*)\?token=(.*)\">'
+            expression: '<a src=\"(?P<url>.*)\?token=(?P<token>.*)\">'
 
   - name: send saved
     request:
-      url: "{regex.groups[0]}"
+      url: "{regex.url}"
       method: GET
       params:
-        token: "{regex.groups[1]}"
+        token: "{regex.token}"
     response:
       status_code: 200
