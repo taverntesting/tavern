@@ -116,7 +116,12 @@ def get_expected(stage, test_block_config, sessions):
     expected = {}
 
     if "request" in stage:
-        r_expected = stage["response"]
+        try:
+            r_expected = stage["response"]
+        except KeyError as e:
+            logger.error("Need a 'response' block if a 'request' is being sent")
+            raise_from(exceptions.MissingSettingsError, e)
+
         f_expected = format_keys(r_expected, test_block_config["variables"])
         expected["requests"] = f_expected
 
