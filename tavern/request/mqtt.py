@@ -20,11 +20,7 @@ def get_publish_args(rspec, test_block_config):
         Anything else to do here?
     """
 
-    try:
-        fspec = format_keys(rspec, test_block_config["variables"])
-    except exceptions.MissingFormatError as e:
-        logger.error("Key(s) not found in format: %s", e.args)
-        raise
+    fspec = format_keys(rspec, test_block_config["variables"])
 
     if "json" in rspec:
         if "payload" in rspec:

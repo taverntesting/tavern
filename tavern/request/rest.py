@@ -65,11 +65,7 @@ def get_request_args(rspec, test_block_config):
         if "content-type" not in [h.lower() for h in headers.keys()]:
             rspec["headers"]["content-type"] = "application/json"
 
-    try:
-        fspec = format_keys(rspec, test_block_config["variables"])
-    except exceptions.MissingFormatError as e:
-        logger.error("Key(s) not found in format: %s", e.args)
-        raise
+    fspec = format_keys(rspec, test_block_config["variables"])
 
     def add_request_args(keys, optional):
         for key in keys:

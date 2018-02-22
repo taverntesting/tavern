@@ -30,6 +30,7 @@ def format_keys(val, variables):
         try:
             formatted = val.format(**variables)
         except KeyError as e:
+            logger.error("Key(s) not found in format: %s", e.args)
             raise_from(exceptions.MissingFormatError(e.args), e)
 
     return formatted
