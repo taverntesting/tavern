@@ -80,9 +80,11 @@ class MQTTResponse(BaseResponse):
 
             self.received_messages.append(msg)
 
+            msg.payload = msg.payload.decode("utf8")
+
             if json_payload:
                 try:
-                    msg.payload = json.loads(msg.payload.decode("utf8"))
+                    msg.payload = json.loads(msg.payload)
                 except LoadException:
                     logger.warning("Expected a json payload but got '%s'", msg.payload)
                     msg = None
