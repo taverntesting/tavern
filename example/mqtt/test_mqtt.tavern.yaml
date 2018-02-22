@@ -95,6 +95,7 @@ stages:
       topic: /device/123/lights
       qos: 1
       payload: "on"
+    delay_after: 2
 
   - name: step 3 - get device state, lights now on
     request:
