@@ -90,17 +90,12 @@ def validate_regex(response, expression):
         response (Response): reqeusts.Response object
         expression (str): Regex expression to use
     Returns:
-        dict: dictionary of regex: boxed full_match, and list of matched groups
+        dict: dictionary of regex: boxed name capture groups
     """
     match = re.search(expression, response.text)
 
     assert match
 
-    full_match = match.group(0)
-    groups = [group for group in match.groups()]
     return {
-        "regex": Box({
-            'full_match': full_match,
-            'groups': groups
-        })
+        "regex": Box(match.groupdict())
     }
