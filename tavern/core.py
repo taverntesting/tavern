@@ -70,7 +70,11 @@ def run_test(in_file, test_spec, global_cfg):
         for stage in test_spec["stages"]:
             name = stage["name"]
 
-            expected = get_expected(stage, test_block_config, sessions)
+            try:
+                expected = get_expected(stage, test_block_config, sessions)
+            except exceptions.TavernException:
+                log_fail(stage, None, expected)
+                raise
 
             try:
                 r = get_request_type(stage, test_block_config, sessions)
