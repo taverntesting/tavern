@@ -1,4 +1,5 @@
 import logging
+import json
 import time
 
 from tavern.schemas.extensions import get_wrapped_response_function
@@ -55,8 +56,10 @@ class MQTTResponse(BaseResponse):
                 raise exceptions.BadSchemaError("Can only specify one of 'payload' or 'json' in MQTT request")
 
             payload = self.expected["json"]
+            json_payload = True
         else:
             payload = self.expected["payload"]
+            json_payload = False
 
         time_spent = 0
 
@@ -71,7 +74,13 @@ class MQTTResponse(BaseResponse):
 
             self.received_messages.append(msg)
 
-            logger.debug(msg)
+            if json_payload:
+                try:
+                    msg.payload = json.loads(msg.payload.decode("utf8"))
+                except json.decoder.JSONDecodeError:
+                    logger.warning("Expected a json payload but got '%s'", msg.payload)
+                    msg = None
+                    continue
 
             if msg.payload != payload:
                 logger.warning("Got unexpected payload on topic '%s': '%s' (expected '%s')",
