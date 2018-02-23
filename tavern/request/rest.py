@@ -109,6 +109,9 @@ def get_request_args(rspec, test_block_config):
     # "files",
     # "cookies",
 
+    # These verbs _can_ send a body but the body _should_ be ignored according
+    # to the specs - some info here:
+    # https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
     if request_args["method"] in ["GET", "HEAD", "OPTIONS"]:
         if any(i in request_args for i in ["json", "data"]):
             warnings.warn("You are trying to send a body with a HTTP verb that has no semantic use for it", RuntimeWarning)
