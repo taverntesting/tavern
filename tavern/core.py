@@ -87,8 +87,6 @@ def run_test(in_file, test_spec, global_cfg):
 
             tavern_box.update(request_vars=r.request_vars)
 
-            logger.critical(test_block_config)
-
             try:
                 expected = get_expected(stage, test_block_config, sessions)
             except exceptions.TavernException:
