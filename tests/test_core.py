@@ -1,4 +1,5 @@
 import json
+import os
 from mock import patch, Mock
 
 import pytest
@@ -136,3 +137,32 @@ class TestDelay:
 
         assert pmock.called
         smock.assert_called_with(2)
+
+
+class TestTavernMetaFormat:
+
+    def test_format_env_keys(self, fulltest, mockargs, includes):
+        """Should be able to get variables from the environment and use them in
+        test responses"""
+
+        env_key = "SPECIAL_CI_MAGIC_COMMIT_TAG"
+
+        fulltest["stages"][0]["request"]["params"] = {"a_format_key": "{tavern.env_vars.%s}" % env_key}
+
+        mock_response = Mock(**mockargs)
+
+        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+            with patch.dict(os.environ, {env_key: "bleuihg"}):
+                run_test("heif", fulltest, includes)
+
+        assert pmock.called
+
+    def test_format_env_keys_missing_failure(self, fulltest, mockargs, includes):
+        """Fails if key is not present"""
+
+        env_key = "SPECIAL_CI_MAGIC_COMMIT_TAG"
+
+        fulltest["stages"][0]["request"]["params"] = {"a_format_key": "{tavern.env_vars.%s}" % env_key}
+
+        with pytest.raises(exceptions.MissingFormatError):
+            run_test("heif", fulltest, includes)

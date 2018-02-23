@@ -1,7 +1,9 @@
 import logging
+import os
 
 import yaml
 
+from box import Box
 from contextlib2 import ExitStack
 
 from .util import exceptions
@@ -45,6 +47,10 @@ def run_test(in_file, test_spec, global_cfg):
 
     if "variables" not in test_block_config:
         test_block_config["variables"] = {}
+
+    test_block_config["variables"]["tavern"] = Box({
+        "env_vars": dict(os.environ),
+    })
 
     if not test_spec:
         logger.warning("Empty test block in %s", in_file)
