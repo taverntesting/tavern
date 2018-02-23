@@ -51,9 +51,12 @@ class MQTTRequest(BaseRequest):
 
         publish_args = get_publish_args(rspec, test_block_config)
 
-        self._publish_args = publish_args
-
         self._prepared = functools.partial(client.publish, **publish_args)
+
+        # Need to do this here because get_publish_args will modify the original
+        # input, which we might want to use to format. No error handling because
+        # all the error handling is done in the previous call
+        self._original_publish_args = format_keys(rspec, test_block_config)
 
         # TODO
         # From paho:
@@ -70,4 +73,4 @@ class MQTTRequest(BaseRequest):
 
     @property
     def request_vars(self):
-        return Box(self._publish_args)
+        return Box(self._original_publish_args)
