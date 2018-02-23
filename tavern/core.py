@@ -3,8 +3,8 @@ import os
 
 import yaml
 
-from box import Box
 from contextlib2 import ExitStack
+from box import Box
 
 from .util import exceptions
 from .util.delay import delay

@@ -3,6 +3,7 @@ import json
 import functools
 
 from future.utils import raise_from
+from box import Box
 
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys, check_expected_keys
@@ -50,7 +51,7 @@ class MQTTRequest(BaseRequest):
 
         publish_args = get_publish_args(rspec, test_block_config)
 
-        self._request_args = publish_args
+        self._publish_args = publish_args
 
         self._prepared = functools.partial(client.publish, **publish_args)
 
@@ -66,3 +67,7 @@ class MQTTRequest(BaseRequest):
         except ValueError as e:
             logger.exception("Error publishing")
             raise_from(exceptions.MQTTRequestException, e)
+
+    @property
+    def request_vars(self):
+        return Box(self._publish_args)
