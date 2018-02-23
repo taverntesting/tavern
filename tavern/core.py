@@ -1,8 +1,10 @@
 import logging
+import os
 
 import yaml
 
 from contextlib2 import ExitStack
+from box import Box
 
 from .util import exceptions
 from .util.delay import delay
@@ -46,6 +48,12 @@ def run_test(in_file, test_spec, global_cfg):
     if "variables" not in test_block_config:
         test_block_config["variables"] = {}
 
+    tavern_box = Box({
+        "env_vars": dict(os.environ),
+    })
+
+    test_block_config["variables"]["tavern"] = tavern_box
+
     if not test_spec:
         logger.warning("Empty test block in %s", in_file)
         return
@@ -72,15 +80,17 @@ def run_test(in_file, test_spec, global_cfg):
             name = stage["name"]
 
             try:
-                expected = get_expected(stage, test_block_config, sessions)
-            except exceptions.TavernException:
-                log_fail(stage, None, expected)
-                raise
-
-            try:
                 r = get_request_type(stage, test_block_config, sessions)
             except exceptions.MissingFormatError:
-                log_fail(stage, None, expected)
+                log_fail(stage, None, None)
+                raise
+
+            tavern_box.update(request_vars=r.request_vars)
+
+            try:
+                expected = get_expected(stage, test_block_config, sessions)
+            except exceptions.TavernException:
+                log_fail(stage, None, None)
                 raise
 
             delay(stage, "before")
@@ -106,6 +116,7 @@ def run_test(in_file, test_spec, global_cfg):
 
             log_pass(stage, verifiers)
 
+            tavern_box.pop("request_vars")
             delay(stage, "after")
 
 

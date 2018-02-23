@@ -59,7 +59,7 @@ class BaseResponse(object):
                 self._adderr("expected %s in the %s, but there was no response body",
                     expected_block, blockname)
             else:
-                logger.debug("block = %s", expected_block)
+                logger.debug("expected = %s, actual = %s", expected_block, block)
                 for split_key, joined_key, expected_val in yield_keyvals(expected_block):
                     try:
                         actual_val = recurse_access_key(block, split_key)

@@ -8,8 +8,9 @@ try:
 except ImportError:
     from urllib import quote_plus
 
-import requests
 from future.utils import raise_from
+import requests
+from box import Box
 
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys, check_expected_keys
@@ -156,6 +157,8 @@ class RestRequest(BaseRequest):
 
         request_args.update(allow_redirects=False)
 
+        self._request_args = request_args
+
         # There is no way using requests to make a prepared request that will
         # not follow redicrects, so instead we have to do this. This also means
         # that we can't have the 'pre-request' hook any more because we don't
@@ -177,3 +180,7 @@ class RestRequest(BaseRequest):
         except requests.exceptions.RequestException as e:
             logger.exception("Error running prepared request")
             raise_from(exceptions.RestRequestException, e)
+
+    @property
+    def request_vars(self):
+        return Box(self._request_args)

@@ -3,6 +3,7 @@ import json
 import functools
 
 from future.utils import raise_from
+from box import Box
 
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys, check_expected_keys
@@ -52,6 +53,11 @@ class MQTTRequest(BaseRequest):
 
         self._prepared = functools.partial(client.publish, **publish_args)
 
+        # Need to do this here because get_publish_args will modify the original
+        # input, which we might want to use to format. No error handling because
+        # all the error handling is done in the previous call
+        self._original_publish_args = format_keys(rspec, test_block_config)
+
         # TODO
         # From paho:
         # > raise TypeError('payload must be a string, bytearray, int, float or None.')
@@ -64,3 +70,7 @@ class MQTTRequest(BaseRequest):
         except ValueError as e:
             logger.exception("Error publishing")
             raise_from(exceptions.MQTTRequestException, e)
+
+    @property
+    def request_vars(self):
+        return Box(self._original_publish_args)
