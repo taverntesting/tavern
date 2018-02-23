@@ -1,11 +1,13 @@
 import json
 import uuid
 import os
-from mock import patch, Mock
+from mock import patch, Mock, MagicMock
 
 import pytest
 import requests
+import paho.mqtt.client as paho
 
+from tavern.mqtt import MQTTClient
 from tavern.core import run_test
 from tavern.util import exceptions
 
@@ -168,6 +170,9 @@ class TestTavernMetaFormat:
         with pytest.raises(exceptions.MissingFormatError):
             run_test("heif", fulltest, includes)
 
+
+class TestFormatRequestVars:
+
     @pytest.mark.parametrize("request_key", (
         "params",
         "json",
@@ -217,6 +222,117 @@ class TestTavernMetaFormat:
         mock_response = Mock(**mockargs)
 
         with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+            run_test("heif", fulltest, includes)
+
+        assert pmock.called
+
+
+class TestFormatMQTTVarsJson:
+    """Test that formatting request vars from mqtt works as well, with json payload
+    """
+
+    @pytest.fixture(name="fulltest")
+    def fix_mqtt_publish_test(self):
+        spec = {
+            "test_name": "An mqtt test with a single stage",
+            "mqtt": {
+                "connect": "localhost",
+            },
+            "stages": [
+                {
+                    "name": "step 1",
+                    "mqtt_publish": {
+                        "topic": "/abc/123",
+                        "json": {
+                            "message": str(uuid.uuid4()),
+                        }
+                    },
+                    "mqtt_response": {
+                        "topic": "{tavern.request_vars.topic}",
+                        "json": {
+                            "echo": "{tavern.request_vars.json.message}",
+                        },
+                    }
+                }
+            ]
+        }
+
+        return spec
+
+    def test_format_request_var_dict(self, fulltest, includes):
+        """Variables from request should be available to format in response -
+        this is the original keys in the input file, NOT the formatted ones
+        where 'json' is converted to 'payload' in the actual MQTT publish"""
+
+        stage = fulltest["stages"][0]
+        sent = stage["mqtt_publish"]["json"]
+
+        mockargs = {
+            "spec": paho.MQTTMessage,
+            "payload": json.dumps({"echo": sent["message"]}).encode("utf8"),
+            "topic": stage["mqtt_publish"]["topic"],
+        }
+        mock_response = Mock(**mockargs)
+
+        fake_client = MagicMock(
+            spec=MQTTClient,
+            message_received=Mock(return_value=mock_response),
+        )
+
+        with patch("tavern.mqtt.paho.Client", fake_client), \
+        patch("tavern.core.get_extra_sessions", return_value={"mqtt": fake_client}) as pmock:
+            run_test("heif", fulltest, includes)
+
+        assert pmock.called
+
+
+class TestFormatMQTTVarsPlain:
+    """Test that formatting request vars from mqtt works as well, with normal payload
+    """
+
+    @pytest.fixture(name="fulltest")
+    def fix_mqtt_publish_test(self):
+        spec = {
+            "test_name": "An mqtt test with a single stage",
+            "mqtt": {
+                "connect": "localhost",
+            },
+            "stages": [
+                {
+                    "name": "step 1",
+                    "mqtt_publish": {
+                        "topic": "/abc/123",
+                        "payload": "hello",
+                    },
+                    "mqtt_response": {
+                        "topic": "{tavern.request_vars.topic}",
+                        "payload": "{tavern.request_vars.payload}",
+                    }
+                }
+            ]
+        }
+
+        return spec
+
+    def test_format_request_var_value(self, fulltest, includes):
+        """Same as above but with plain keys"""
+        stage = fulltest["stages"][0]
+        sent = stage["mqtt_publish"]["payload"]
+
+        mockargs = {
+            "spec": paho.MQTTMessage,
+            "payload": sent.encode("utf8"),
+            "topic": stage["mqtt_publish"]["topic"],
+        }
+        mock_response = Mock(**mockargs)
+
+        fake_client = MagicMock(
+            spec=MQTTClient,
+            message_received=Mock(return_value=mock_response),
+        )
+
+        with patch("tavern.mqtt.paho.Client", fake_client), \
+        patch("tavern.core.get_extra_sessions", return_value={"mqtt": fake_client}) as pmock:
             run_test("heif", fulltest, includes)
 
         assert pmock.called
