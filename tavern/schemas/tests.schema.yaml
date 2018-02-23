@@ -148,6 +148,9 @@ mapping:
                   - PUT
                   - POST
                   - DELETE
+                  - PATCH
+                  - OPTIONS
+                  - HEAD
 
               verify:
                 type: bool
