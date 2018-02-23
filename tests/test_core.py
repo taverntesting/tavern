@@ -1,4 +1,5 @@
 import json
+import uuid
 import os
 from mock import patch, Mock
 
@@ -166,3 +167,56 @@ class TestTavernMetaFormat:
 
         with pytest.raises(exceptions.MissingFormatError):
             run_test("heif", fulltest, includes)
+
+    @pytest.mark.parametrize("request_key", (
+        "params",
+        "json",
+        "headers",
+    ))
+    def test_format_request_var_dict(self, fulltest, mockargs, includes, request_key):
+        """Variables from request should be available to format in response"""
+
+        sent_value = str(uuid.uuid4())
+
+        fulltest["stages"][0]["request"]["method"] = "POST"
+        fulltest["stages"][0]["request"][request_key] = {"a_format_key": sent_value}
+
+        if request_key == "json":
+            resp_key = "body"
+            mockargs[request_key] = lambda: {"returned": sent_value}
+        else:
+            resp_key = request_key
+            mockargs[request_key] = {"returned": sent_value}
+
+        fulltest["stages"][0]["response"][resp_key] = {"returned": "{tavern.request_vars.%s.a_format_key:s}" % request_key}
+
+        mock_response = Mock(**mockargs)
+
+        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+            run_test("heif", fulltest, includes)
+
+        assert pmock.called
+
+    @pytest.mark.parametrize("request_key", (
+        "url",
+        "method",
+    ))
+    def test_format_request_var_value(self, fulltest, mockargs, includes, request_key):
+        """Variables from request should be available to format in response"""
+
+        sent_value = str(uuid.uuid4())
+
+        fulltest["stages"][0]["request"]["method"] = "POST"
+        fulltest["stages"][0]["request"][request_key] = sent_value
+
+        resp_key = request_key
+        mockargs[request_key] = {"returned": sent_value}
+
+        fulltest["stages"][0]["response"][resp_key] = {"returned": "{tavern.request_vars.%s:s}" % request_key}
+
+        mock_response = Mock(**mockargs)
+
+        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+            run_test("heif", fulltest, includes)
+
+        assert pmock.called

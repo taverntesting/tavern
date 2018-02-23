@@ -150,17 +150,17 @@ class RestRequest(BaseRequest):
 
         check_expected_keys(expected, rspec)
 
-        request_args = get_request_args(rspec, test_block_config)
+        self._request_args = get_request_args(rspec, test_block_config)
 
-        logger.debug("Request args: %s", request_args)
+        logger.debug("Request args: %s", self._request_args)
 
-        request_args.update(allow_redirects=False)
+        self._request_args.update(allow_redirects=False)
 
         # There is no way using requests to make a prepared request that will
         # not follow redicrects, so instead we have to do this. This also means
         # that we can't have the 'pre-request' hook any more because we don't
         # create a prepared request.
-        self._prepared = functools.partial(session.request, **request_args)
+        self._prepared = functools.partial(session.request, **self._request_args)
 
     def run(self):
         """ Runs the prepared request and times it

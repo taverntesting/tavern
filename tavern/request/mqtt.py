@@ -50,6 +50,8 @@ class MQTTRequest(BaseRequest):
 
         publish_args = get_publish_args(rspec, test_block_config)
 
+        self._request_args = publish_args
+
         self._prepared = functools.partial(client.publish, **publish_args)
 
         # TODO
