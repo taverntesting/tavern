@@ -111,6 +111,8 @@ def check_expected_keys(expected, actual):
     if not keyset <= expected:
         unexpected = keyset - expected
 
+        logger.debug("Valid keys = %s, actual keys = %s", expected, keyset)
+
         msg = "Unexpected keys {}".format(unexpected)
         logger.error(msg)
         raise exceptions.UnexpectedKeysError(msg)
