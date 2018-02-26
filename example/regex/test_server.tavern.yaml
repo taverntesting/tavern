@@ -1,0 +1,37 @@
+---
+
+test_name: Make sure server response matches regex
+
+stages:
+  - name: simple match
+    request:
+      url: http://localhost:5000/token
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tavern.testutils.helpers:validate_regex
+          extra_kwargs:
+            expression: '<a src=\".*\">'
+
+  - name: save groups
+    request:
+      url: http://localhost:5000/token
+      method: GET
+    response:
+      status_code: 200
+      save:
+        $ext:
+          function: tavern.testutils.helpers:validate_regex
+          extra_kwargs:
+            expression: '<a src=\"(?P<url>.*)\?token=(?P<token>.*)\">'
+
+  - name: send saved
+    request:
+      url: "{regex.url}"
+      method: GET
+      params:
+        token: "{regex.token}"
+    response:
+      status_code: 200

@@ -1,6 +1,7 @@
 import json
 import importlib
 import logging
+import re
 import jwt
 from box import Box
 
@@ -81,3 +82,20 @@ def validate_pykwalify(response, schema):
     """
     with wrapfile(response.json()) as rdump, wrapfile(schema) as sdump:
         verify_generic(rdump, sdump)
+
+def validate_regex(response, expression):
+    """Make sure the response body matches a regex expression
+
+    Args:
+        response (Response): reqeusts.Response object
+        expression (str): Regex expression to use
+    Returns:
+        dict: dictionary of regex: boxed name capture groups
+    """
+    match = re.search(expression, response.text)
+
+    assert match
+
+    return {
+        "regex": Box(match.groupdict())
+    }
