@@ -87,3 +87,42 @@ class TestClient(object):
         patch.object(fake_client._client, "publish", return_value=FakeMessage()):
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")
+
+
+class TestTLS(object):
+
+    def test_disabled_tls(self):
+        """Even if there are other invalid options, disable tls and early exit
+        without checking other args
+        """
+        args = {
+            "connect": {
+                "host": "localhost",
+            },
+            "tls": {
+                "certfile": "/lcliueurhug/ropko3kork32",
+            }
+        }
+
+        with pytest.raises(exceptions.MQTTTLSError):
+            MQTTClient(**args)
+
+        args["tls"]["enable"] = False
+
+        c = MQTTClient(**args)
+        assert not c._enable_tls
+
+    def test_invalid_tls_ver(self):
+        """Bad tls versions raise exception
+        """
+        args = {
+            "connect": {
+                "host": "localhost",
+            },
+            "tls": {
+                "tls_version": "custom_tls",
+            }
+        }
+
+        with pytest.raises(exceptions.MQTTTLSError):
+            MQTTClient(**args)

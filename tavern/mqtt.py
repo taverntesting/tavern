@@ -1,11 +1,15 @@
 import logging
+import ssl
 import time
 
 try:
     from queue import Queue, Full, Empty
+    LoadError = IOError
 except ImportError:
     from Queue import Queue, Full, Empty
+    LoadError = FileNotFoundError # pylint: disable=undefined-variable
 
+from future.utils import raise_from
 import paho.mqtt.client as paho
 
 from .util.dict_util import check_expected_keys
@@ -59,7 +63,12 @@ class MQTTClient(object):
             },
             "tls": {
                 "enable",
-                # TODO custom ca certs etc.
+                "ca_certs",
+                "cert_reqs",
+                "certfile",
+                "keyfile",
+                "tls_version",
+                "ciphers",
             },
             "auth": {
                 "username",
@@ -89,9 +98,9 @@ class MQTTClient(object):
 
         # If there is any tls kwarg (including 'enable'), enable tls
         self._tls_args = kwargs.pop("tls", {})
-        self._enable_tls = bool(self._tls_args)
-        # don't want to pass this through to tls_set
-        self._tls_args.pop("enable", None)
+        check_expected_keys(expected_blocks["tls"], self._tls_args)
+        self._handle_tls_args()
+        logger.debug("TLS is %s", "enabled" if self._enable_tls else "disabled")
 
         logger.debug("Paho client args: %s", self._client_args)
         self._client = paho.Client(**self._client_args)
@@ -103,7 +112,14 @@ class MQTTClient(object):
         self._client.on_message = self._on_message
 
         if self._enable_tls:
-            self._client.tls_set(**self._tls_args)
+            try:
+                self._client.tls_set(**self._tls_args)
+            except ValueError as e:
+                # tls_set only raises ValueErrors directly
+                raise_from(exceptions.MQTTTLSError("Unexpected error enabling TLS", e))
+            except ssl.SSLError as e:
+                # incorrect cipher, etc.
+                raise_from(exceptions.MQTTTLSError("Unexpected SSL error enabling TLS", e))
 
         # Arbitrary number, could just be 1 and only accept 1 message per stages
         # but we might want to raise an error if more than 1 message is received
@@ -113,6 +129,57 @@ class MQTTClient(object):
             "queue": self._message_queue,
         }
         self._client.user_data_set(self._userdata)
+
+    def _handle_tls_args(self):
+        """Make sure TLS options are valid
+        """
+
+        if self._tls_args:
+            # If _any_ options are specified, first assume we DO want it enabled
+            self._enable_tls = True
+        else:
+            self._enable_tls = False
+            return
+
+        if "enable" in self._tls_args:
+            if not self._tls_args.pop("enable"):
+                # if enable=false, return immediately
+                self._enable_tls = False
+                return
+
+        if "keyfile" in self._tls_args and "certfile" not in self._tls_args:
+            raise exceptions.MQTTTLSError("If specifying a TLS keyfile, a certfile also needs to be specified")
+
+        def check_file_exists(key):
+            try:
+                with open(self._tls_args[key], "r"):
+                    pass
+            except LoadError as e:
+                raise_from(exceptions.MQTTTLSError("Couldn't load '{}' from '{}'".format(
+                    key, self._tls_args[key])), e)
+            except KeyError:
+                pass
+
+        # could be moved to schema validation stage
+        check_file_exists("cert_reqs")
+        check_file_exists("certfile")
+        check_file_exists("keyfile")
+
+        # This shouldn't raise an AttributeError because it's enumerated
+        try:
+            self._tls_args["cert_reqs"] = getattr(ssl, self._tls_args["cert_reqs"])
+        except KeyError:
+            pass
+
+        try:
+            self._tls_args["tls_version"] = getattr(ssl, self._tls_args["tls_version"])
+        except AttributeError as e:
+            raise_from(exceptions.MQTTTLSError("Error getting TLS version from "
+                "ssl module - ssl module had no attribute '{}'. Check the "
+                "documentation for the version of python you're using to see "
+                "if this a valid option.".format(self._tls_args["tls_version"])), e)
+        except KeyError:
+            pass
 
     @staticmethod
     def _on_message(client, userdata, message):
