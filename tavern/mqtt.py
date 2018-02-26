@@ -160,7 +160,6 @@ class MQTTClient(object):
             except KeyError:
                 pass
 
-        # TODO
         # could be moved to schema validation stage
         check_file_exists("cert_reqs")
         check_file_exists("certfile")
