@@ -52,7 +52,6 @@ class YamlFile(pytest.File):
                 logger.warning("Empty document in input file '%s'", self.fspath)
                 continue
 
-            verify_tests(test_spec)
             yield YamlItem(test_spec["test_name"], self, test_spec, self.fspath)
 
 
@@ -75,6 +74,8 @@ class YamlItem(pytest.Item):
         self.spec = spec
 
     def runtest(self):
+        verify_tests(self.spec)
+
         global_cfg = self.config.getoption("tavern_global_cfg") or {}
 
         if global_cfg:
