@@ -83,6 +83,7 @@ def validate_pykwalify(response, schema):
     with wrapfile(response.json()) as rdump, wrapfile(schema) as sdump:
         verify_generic(rdump, sdump)
 
+
 def validate_regex(response, expression):
     """Make sure the response body matches a regex expression
 
