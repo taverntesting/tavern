@@ -6,7 +6,7 @@ from tavern.testutils.helpers import validate_regex
 class FakeResponse:
     def __init__(self, text):
         self.text = text
-            
+
 
 class TestRegex:
 
