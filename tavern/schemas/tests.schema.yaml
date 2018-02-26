@@ -58,6 +58,37 @@ mapping:
             required: false
             type: bool
 
+          ca_certs:
+            required: false
+            type: str
+
+          certfile:
+            required: false
+            type: str
+
+          keyfile:
+            required: false
+            type: str
+
+          cert_reqs:
+            required: false
+            type: str
+            enum:
+              - CERT_NONE
+              - CERT_OPTIONAL
+              - CERT_REQUIRED
+
+          tls_version:
+            required: false
+            type: str
+            # This could be an enum but there's lots of them, and which ones are
+            # actually valid changes based on which version of python you're
+            # using. Just let any ssl errors propagate through
+
+          ciphers:
+            required: false
+            type: str
+
       auth:
         required: false
         type: map
