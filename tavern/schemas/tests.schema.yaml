@@ -156,6 +156,13 @@ mapping:
                 type: bool
                 required: false
 
+              meta:
+                type: seq
+                required: false
+                sequence:
+                  - type: str
+                    unique: True
+
           mqtt_publish:
             type: map
             required: false
