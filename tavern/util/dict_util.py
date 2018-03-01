@@ -32,6 +32,8 @@ def format_keys(val, variables):
         except KeyError as e:
             logger.error("Key(s) not found in format: %s", e.args)
             raise_from(exceptions.MissingFormatError(e.args), e)
+    elif isinstance(val, (list, tuple)):
+        formatted = [format_keys(item, variables) for item in val]
 
     return formatted
 
