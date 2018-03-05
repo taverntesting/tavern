@@ -20,17 +20,17 @@ matrix:
       env: TOXENV=pypy3 TOXCFG=tox.ini
 
     - python: 2.7
-      env: TOXENV=py27 TOXCFG=tox-integration.ini
+      env: TOXENV=py27-cookies TOXCFG=tox-integration.ini
     - python: 3.4
-      env: TOXENV=py34 TOXCFG=tox-integration.ini
+      env: TOXENV=py34-cookies TOXCFG=tox-integration.ini
     - python: 3.5
-      env: TOXENV=py35 TOXCFG=tox-integration.ini
+      env: TOXENV=py35-cookies TOXCFG=tox-integration.ini
     - python: 3.6
-      env: TOXENV=py36 TOXCFG=tox-integration.ini
+      env: TOXENV=py36-cookies TOXCFG=tox-integration.ini
     - python: pypy
-      env: TOXENV=pypy TOXCFG=tox-integration.ini
+      env: TOXENV=pypy-cookies TOXCFG=tox-integration.ini
     - python: pypy3
-      env: TOXENV=pypy3 TOXCFG=tox-integration.ini
+      env: TOXENV=pypy3-cookies TOXCFG=tox-integration.ini
 
     - python: 2.7
       env: TOXENV=py27lint TOXCFG=tox.ini
