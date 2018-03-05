@@ -1,0 +1,22 @@
+---
+
+test_name: Make sure server doubles number properly
+pytest:
+  fixtures:
+    input: number
+    expected: double
+
+
+stages:
+  - name: Make sure number is returned correctly
+    request:
+      url: http://localhost:5000/double
+      json:
+        number: "{input:d}"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      body:
+        double: "{expected:d}"

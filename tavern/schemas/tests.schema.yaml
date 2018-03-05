@@ -11,6 +11,17 @@ mapping:
     required: true
     type: str
 
+  pytest:
+    required: false
+    type: map
+    mapping:
+      fixtures:
+        type: map
+        required: false
+        mapping:
+          re;(.*):
+            type: any
+
   mqtt:
     required: false
     type: map
