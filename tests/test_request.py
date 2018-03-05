@@ -25,6 +25,10 @@ def fix_example_request():
             "a_thing":  "authorization_code",
             "code":  "{code:s}",
             "url":  "{callback_url:s}",
+            "array": [
+                "{code:s}",
+                "{code:s}",
+            ]
         },
     }
 
@@ -128,6 +132,11 @@ class TestRequests:
         args = get_request_args(req, includes)
 
         assert args["params"]["a"] == "%7B%22b%22%3A+%7B%22c%22%3A+%22d%22%7D%7D"
+
+    def test_array_substitution(self, req, includes):
+        args = get_request_args(req, includes)
+
+        assert args['data']['array'] == ['def456', 'def456']
 
 
 class TestExtFunctions:

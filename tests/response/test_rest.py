@@ -22,6 +22,50 @@ def fix_example_response():
     return spec.copy()
 
 
+@pytest.fixture(name='nested_response')
+def fix_nested_response():
+    # https://github.com/taverntesting/tavern/issues/45
+    spec = {
+        "status_code": 200,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "body": {
+            "users": [
+                {
+                    "u": {
+                        "user_id": "def456"
+                    }
+                }
+            ]
+        }
+    }
+
+    return spec.copy()
+
+
+@pytest.fixture(name='nested_schema')
+def fix_nested_schema():
+    # https://github.com/taverntesting/tavern/issues/45
+    spec = {
+        "status_code": 200,
+        "headers": {
+            "Content-Type": "application/json"
+        },
+        "body": {
+            "users": [
+                {
+                    "u": {
+                        "user_id": "{code}"
+                    }
+                }
+            ]
+        }
+    }
+
+    return spec.copy()
+
+
 class TestSave:
 
     def test_save_body(self, resp, includes):
@@ -217,3 +261,16 @@ class TestFull:
             r.verify(FakeResponse())
 
         assert r.errors
+
+    def test_saved_value_in_validate(self, nested_response, nested_schema,
+                                     includes):
+        r = RestResponse(Mock(), "Test 1", nested_schema, includes)
+
+        class FakeResponse:
+            headers = nested_response["headers"]
+            content = "test".encode("utf8")
+            def json(self):
+                return nested_response["body"]
+            status_code = nested_response["status_code"]
+
+        r.verify(FakeResponse())
