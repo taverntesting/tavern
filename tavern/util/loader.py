@@ -19,6 +19,19 @@ def makeuuid(loader, node):
     return str(uuid.uuid4())
 
 
+class TypeConvertToken(object):
+    def __init__(self, constructor, value):
+        self.constructor = constructor
+        self.value = value
+
+
+def construct_type_convert(constructor):
+    def callback(loader, node):
+        value = loader.construct_scalar(node)
+        return TypeConvertToken(constructor, value)
+    return callback
+
+
 class LoaderMeta(type):
 
     def __new__(mcs, name, bases, attrs):
@@ -28,6 +41,8 @@ class LoaderMeta(type):
         cls = super(LoaderMeta, mcs).__new__(mcs, name, bases, attrs)
         cls.add_constructor('!include', cls.construct_include)
         cls.add_constructor('!uuid', makeuuid)
+        cls.add_constructor('!int', construct_type_convert(int))
+        cls.add_constructor('!float', construct_type_convert(float))
 
         return cls
 

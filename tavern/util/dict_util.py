@@ -3,6 +3,7 @@ import logging
 
 from future.utils import raise_from
 
+from tavern.util.loader import TypeConvertToken
 from . import exceptions
 
 
@@ -34,6 +35,9 @@ def format_keys(val, variables):
             raise_from(exceptions.MissingFormatError(e.args), e)
     elif isinstance(val, (list, tuple)):
         formatted = [format_keys(item, variables) for item in val]
+    elif isinstance(val, TypeConvertToken):
+        value = format_keys(val.value, variables)
+        formatted = val.constructor(value)
 
     return formatted
 
