@@ -1,6 +1,8 @@
 import logging
 
 import pytest
+from _pytest import fixtures
+from _pytest.mark import MarkInfo, Mark
 
 import yaml
 
@@ -72,6 +74,36 @@ class YamlItem(pytest.Item):
         super(YamlItem, self).__init__(name, parent)
         self.path = path
         self.spec = spec
+        self.fixture_spec = {}
+        self.fixture_data = {}
+        self._init_fixtures()
+
+    def _init_fixtures(self):
+        pytest_spec = self.spec.pop('pytest', None)
+        if pytest_spec:
+            pytest_fixtures = pytest_spec.get('fixtures')
+            if pytest_fixtures:
+                self.fixture_spec = pytest_fixtures
+
+        self.cls = None
+        self.obj = object()
+        self.funcargs = {}
+        self.usefixtures = MarkInfo(
+            Mark(name='usefixtures',
+                 args=tuple(self.fixture_spec.values()),
+                 kwargs={})
+        )
+        self._fixtureinfo = self.session._fixturemanager.getfixtureinfo(
+            self.parent, self, self.cls, funcargs=False)
+        self._request = fixtures.FixtureRequest(self)
+
+    def setup(self):
+        super(YamlItem, self).setup()
+        fixtures.fillfixtures(self)
+        self.fixture_data = {
+            name: self.funcargs[fixture]
+            for name, fixture in self.fixture_spec.items()
+        }
 
     def runtest(self):
         verify_tests(self.spec)
@@ -83,6 +115,8 @@ class YamlItem(pytest.Item):
                 contents = yaml.load(gfileobj)
         else:
             contents = {}
+
+        contents.setdefault('variables', {}).update(self.fixture_data)
 
         run_test(self.path, self.spec, contents)
 
