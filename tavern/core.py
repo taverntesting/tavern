@@ -6,6 +6,7 @@ import yaml
 from contextlib2 import ExitStack
 from box import Box
 
+from .util.general import load_global_config
 from .util import exceptions
 from .util.delay import delay
 from .util.loader import IncludeLoader
@@ -127,6 +128,15 @@ def run(in_file, tavern_global_cfg):
     There currently isn't something like pytest's `-x` flag which exits on first
     failure.
 
+    Todo:
+        the tavern_global_cfg argument should ideally be called
+        'global_cfg_paths', but it would break the API so we just rename it below
+
+    Note:
+        This function DOES NOT read from the pytest config file. This is NOT a
+        pytest-reliant part of the code! If you specify global config in
+        pytest.ini this will not be used here!
+
     Args:
         in_file (str): file to run tests on
         tavern_global_cfg (str): file containing Global config for all tests
@@ -137,11 +147,8 @@ def run(in_file, tavern_global_cfg):
 
     passed = True
 
-    if tavern_global_cfg:
-        with open(tavern_global_cfg, "r") as gfileobj:
-            global_cfg = yaml.load(gfileobj)
-    else:
-        global_cfg = {}
+    global_cfg_paths = tavern_global_cfg
+    global_cfg = load_global_config(global_cfg_paths)
 
     with open(in_file, "r") as infile:
         # Multiple documents per file => multiple test paths per file
