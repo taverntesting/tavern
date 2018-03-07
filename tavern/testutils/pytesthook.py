@@ -86,7 +86,7 @@ class YamlItem(pytest.Item):
         verify_tests(self.spec)
 
         # Load ini first
-        ini_global_cfg_paths = self.config.getini("tavern_global_cfg") or None
+        ini_global_cfg_paths = self.config.getini("tavern-global-cfg") or None
         ini_global_cfg = load_global_config(ini_global_cfg_paths)
 
         # THEN load command line, to allow overwriting of values
