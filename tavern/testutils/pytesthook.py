@@ -40,7 +40,7 @@ def pytest_addoption(parser):
     parser.addini(
         "tavern-global-cfg",
         help="One or more global configuration files to include in every test",
-        type="pathlist",
+        type="linelist",
         default=[]
     )
 
