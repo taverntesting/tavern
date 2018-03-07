@@ -8,7 +8,6 @@ from tavern.core import run_test
 from tavern.util.general import load_global_config
 from tavern.util.exceptions import TavernException
 from tavern.util.loader import IncludeLoader
-from tavern.util.dict_util import deep_dict_merge
 from tavern.schemas.files import verify_tests
 
 
@@ -86,9 +85,9 @@ class YamlItem(pytest.Item):
         verify_tests(self.spec)
 
         # Load ini first
-        ini_global_cfg_paths = self.config.getini("tavern-global-cfg") or None
+        ini_global_cfg_paths = self.config.getini("tavern-global-cfg") or []
         # THEN load command line, to allow overwriting of values
-        cmdline_global_cfg_paths = self.config.getoption("tavern_global_cfg") or None
+        cmdline_global_cfg_paths = self.config.getoption("tavern_global_cfg") or []
 
         all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
         global_cfg = load_global_config(all_paths)
