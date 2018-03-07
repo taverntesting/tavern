@@ -87,15 +87,11 @@ class YamlItem(pytest.Item):
 
         # Load ini first
         ini_global_cfg_paths = self.config.getini("tavern-global-cfg") or None
-        ini_global_cfg = load_global_config(ini_global_cfg_paths)
-
         # THEN load command line, to allow overwriting of values
         cmdline_global_cfg_paths = self.config.getoption("tavern_global_cfg") or None
-        cmdline_global_cfg = load_global_config(cmdline_global_cfg_paths)
 
-        global_cfg = {}
-        deep_dict_merge(global_cfg, ini_global_cfg)
-        deep_dict_merge(global_cfg, cmdline_global_cfg)
+        all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
+        global_cfg = load_global_config(all_paths)
 
         run_test(self.path, self.spec, global_cfg)
 
