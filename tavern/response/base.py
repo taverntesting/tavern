@@ -92,7 +92,7 @@ class BaseResponse(object):
                 if expected_val is None:
                     warnings.warn("Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.", RuntimeWarning)
                 elif expected_val is ANYTHING:
-                    logger.debug("Actual value = %s - matches !anything")
+                    logger.debug("Actual value = '{}' - matches !anything".format(actual_val))
                 else:
                     raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err(), e)))
 
