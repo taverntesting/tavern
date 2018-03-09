@@ -20,17 +20,17 @@ matrix:
       env: TOXENV=pypy3 TOXCFG=tox.ini
 
     - python: 2.7
-      env: TOXENV=py27 TOXCFG=tox-integration.ini
+      env: TOXENV=py27-cookies TOXCFG=tox-integration.ini
     - python: 3.4
-      env: TOXENV=py34 TOXCFG=tox-integration.ini
+      env: TOXENV=py34-cookies TOXCFG=tox-integration.ini
     - python: 3.5
-      env: TOXENV=py35 TOXCFG=tox-integration.ini
+      env: TOXENV=py35-cookies TOXCFG=tox-integration.ini
     - python: 3.6
-      env: TOXENV=py36 TOXCFG=tox-integration.ini
+      env: TOXENV=py36-cookies TOXCFG=tox-integration.ini
     - python: pypy
-      env: TOXENV=pypy TOXCFG=tox-integration.ini
+      env: TOXENV=pypy-cookies TOXCFG=tox-integration.ini
     - python: pypy3
-      env: TOXENV=pypy3 TOXCFG=tox-integration.ini
+      env: TOXENV=pypy3-cookies TOXCFG=tox-integration.ini
 
     - python: 2.7
       env: TOXENV=py27lint TOXCFG=tox.ini
@@ -41,3 +41,15 @@ install:
 # command to run tests
 script:
   - tox -c ${TOXCFG}
+
+
+deploy:
+  provider: pypi
+  user: michaelboulton
+  password:
+    secure: "OBnRGStdCmXpAIenI28wxhQ00R/2nUkxHxjpaCao4wa3+saTYQ9syobY4alSB6rdUmeemK8T/r14ikq1kmhX7aPTyrFbRMHCRfNqupU3GZox3pDsnQZd8B3ufBpda38i+OAk8z0FSrOAkH/cmODo13LljrELFh/5WDTjvqgZ0E3xosj+TgtAS2hCFZpI2dvlymd2lkC4RWE0GL4knq6pVsJELK2UrxQGEFTEv1oJeH61hecrCoJeCgo8E1iFo5yyn77Fp07rbLHXvK3gS6Nx/PkvAOQw8bUfmTP+V/8HkdG1ZHSzwUS9PCssQm6hlVy1Dh129Z395LjVV/q4MY7QtkKTSpIMoNkaaX1wLCWiVEItWzgpJQlosZ7BVh7GuWsXvLn0FgBjDB/e4CUJ8+NAzON438DcYrGrEcaYiVaxTvbwGolFIhgM+1x/LBgsjMXN9/ihuL+w1XSDwI9KV2W3SXtJOTVmFuPBzKkcR4eWn8cnjitbiXYQrXgj9QQFtGz8Hnm2T2Wp8hHYhHIPWVazrlSQA49GK5cxlF59xAc8ghTth9rzt0/7TOZoW9Y9YzfO5RyMZR+qcLeathQsqEeZtoYAvSWIOvt2uiu57hvlKONiWBuYLltHLov6OLs0MNJDdaiabQKvktjU8Nl5lDfIj6x59QXp5+ly7/DwG0gMwpc="
+  on:
+    tags: true
+    python: 3.6
+  edge:
+    branch: twine-user-install

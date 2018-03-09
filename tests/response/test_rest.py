@@ -2,10 +2,11 @@ import pytest
 from mock import Mock
 
 from tavern.response import RestResponse
+from tavern.util.loader import ANYTHING
 from tavern.util import exceptions
 
 
-@pytest.fixture(name="resp")
+@pytest.fixture(name="example_response")
 def fix_example_response():
     spec = {
         "status_code": 302,
@@ -68,73 +69,73 @@ def fix_nested_schema():
 
 class TestSave:
 
-    def test_save_body(self, resp, includes):
+    def test_save_body(self, example_response, includes):
         """Save a key from the body into the right name
         """
-        resp["save"] = {"body": {"test_code": "code"}}
+        example_response["save"] = {"body": {"test_code": "code"}}
 
-        r = RestResponse(Mock(), "Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        saved = r._save_value("body", resp["body"])
+        saved = r._save_value("body", example_response["body"])
 
-        assert saved == {"test_code": resp["body"]["code"]}
+        assert saved == {"test_code": example_response["body"]["code"]}
 
-    def test_save_body_nested(self, resp, includes):
+    def test_save_body_nested(self, example_response, includes):
         """Save a key from the body into the right name
         """
-        resp["body"]["nested"] = {
+        example_response["body"]["nested"] = {
             "subthing": "blah"
         }
-        resp["save"] = {
+        example_response["save"] = {
             "body": {
                 "test_nested_thing": "nested.subthing"
             }
         }
 
-        r = RestResponse(Mock(), "Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        saved = r._save_value("body", resp["body"])
+        saved = r._save_value("body", example_response["body"])
 
-        assert saved == {"test_nested_thing": resp["body"]["nested"]["subthing"]}
+        assert saved == {"test_nested_thing": example_response["body"]["nested"]["subthing"]}
 
-    def test_save_body_nested_list(self, resp, includes):
+    def test_save_body_nested_list(self, example_response, includes):
         """Save a key from the body into the right name
         """
-        resp["body"]["nested"] = {
+        example_response["body"]["nested"] = {
             "subthing": [
                 "abc",
                 "def",
             ]
         }
-        resp["save"] = {
+        example_response["save"] = {
             "body": {
                 "test_nested_thing": "nested.subthing.0"
             }
         }
 
-        r = RestResponse(Mock(), "Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        saved = r._save_value("body", resp["body"])
+        saved = r._save_value("body", example_response["body"])
 
-        assert saved == {"test_nested_thing": resp["body"]["nested"]["subthing"][0]}
+        assert saved == {"test_nested_thing": example_response["body"]["nested"]["subthing"][0]}
 
-    def test_save_header(self, resp, includes):
+    def test_save_header(self, example_response, includes):
         """Save a key from the headers into the right name
         """
-        resp["save"] = {"headers": {"next_location": "location"}}
+        example_response["save"] = {"headers": {"next_location": "location"}}
 
-        r = RestResponse(Mock(), "Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        saved = r._save_value("headers", resp["headers"])
+        saved = r._save_value("headers", example_response["headers"])
 
-        assert saved == {"next_location": resp["headers"]["location"]}
+        assert saved == {"next_location": example_response["headers"]["location"]}
 
-    def test_save_redirect_query_param(self, resp, includes):
+    def test_save_redirect_query_param(self, example_response, includes):
         """Save a key from the query parameters of the redirect location
         """
-        resp["save"] = {"redirect_query_params": {"test_search": "search"}}
+        example_response["save"] = {"redirect_query_params": {"test_search": "search"}}
 
-        r = RestResponse(Mock(), "Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
 
         saved = r._save_value("redirect_query_params", {"search": "breadsticks"})
 
@@ -145,10 +146,10 @@ class TestSave:
         "headers",
         "redirect_query_params",
     ))
-    def test_bad_save(self, save_from, resp, includes):
-        resp["save"] = {save_from: {"abc": "123"}}
+    def test_bad_save(self, save_from, example_response, includes):
+        example_response["save"] = {save_from: {"abc": "123"}}
 
-        r = RestResponse(Mock(), "Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
 
         saved = r._save_value(save_from, {})
 
@@ -159,102 +160,155 @@ class TestSave:
 
 class TestValidate:
 
-    def test_simple_validate_body(self, resp, includes):
+    def test_simple_validate_body(self, example_response, includes):
         """Make sure a simple value comparison works
         """
 
-        r = RestResponse(Mock(), "Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        r._validate_block("body", resp["body"])
+        r._validate_block("body", example_response["body"])
 
         assert not r.errors
 
-    def test_validate_list_body(self, resp, includes):
+    def test_validate_list_body(self, example_response, includes):
         """Make sure a list response can be validated
         """
 
-        resp["body"] = ["a", 1, "b"]
+        example_response["body"] = ["a", 1, "b"]
 
-        r = RestResponse(Mock(), "Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        r._validate_block("body", resp["body"])
+        r._validate_block("body", example_response["body"])
 
         assert not r.errors
 
-    def test_validate_list_body_wrong_order(self, resp, includes):
+    def test_validate_list_body_wrong_order(self, example_response, includes):
         """Order of list items matters
         """
 
-        resp["body"] = ["a", 1, "b"]
+        example_response["body"] = ["a", 1, "b"]
 
-        r = RestResponse(Mock(), "Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        r._validate_block("body", resp["body"][::-1])
+        r._validate_block("body", example_response["body"][::-1])
 
         assert r.errors
 
-    def test_validate_nested_body(self, resp, includes):
+    def test_validate_nested_body(self, example_response, includes):
         """Make sure a nested value comparison works
         """
-        
-        resp["body"]["nested"] = { "subthing": "blah" }
 
-        r = RestResponse(Mock(), "Test 1", resp, includes)
+        example_response["body"]["nested"] = { "subthing": "blah" }
 
-        r._validate_block("body", resp["body"])
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        assert not r.errors
-
-    def test_simple_validate_headers(self, resp, includes):
-        """Make sure a simple value comparison works
-        """
-
-        r = RestResponse(Mock(), "Test 1", resp, includes)
-
-        r._validate_block("headers", resp["headers"])
+        r._validate_block("body", example_response["body"])
 
         assert not r.errors
 
-    def test_simple_validate_redirect_query_params(self, resp, includes):
+    def test_simple_validate_headers(self, example_response, includes):
         """Make sure a simple value comparison works
         """
 
-        r = RestResponse(Mock(), "Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        r._validate_block("headers", example_response["headers"])
+
+        assert not r.errors
+
+    def test_simple_validate_redirect_query_params(self, example_response, includes):
+        """Make sure a simple value comparison works
+        """
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
 
         r._validate_block("redirect_query_params", {"search": "breadsticks"})
 
         assert not r.errors
 
 
+class TestNestedValidate:
+
+    def test_validate_nested_null(self, example_response, includes):
+        """Check that nested 'null' comparisons work
+
+        This will be removed in a future version
+        """
+
+        example_response["body"] = {
+            "nested": {
+                "subthing": None
+            }
+        }
+
+        expected = {
+            "nested": {
+                "subthing": "blah",
+            }
+        }
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        with pytest.warns(RuntimeWarning):
+            r._validate_block("body", expected)
+
+        assert not r.errors
+
+    def test_validate_nested_anything(self, example_response, includes):
+        """Check that nested 'anything' comparisons work
+
+        This is a bit hacky because we're directly checking the ANYTHING
+        comparison - need to add an integration test too
+        """
+
+        example_response["body"] = {
+            "nested": {
+                "subthing": ANYTHING,
+            }
+        }
+
+        expected = {
+            "nested": {
+                "subthing": "blah",
+            }
+        }
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        r._validate_block("body", expected)
+
+        assert not r.errors
+
+
 class TestFull:
 
-    def test_validate_and_save(self, resp, includes):
+    def test_validate_and_save(self, example_response, includes):
         """Test full verification + return saved values
         """
-        resp["save"] = {"body": {"test_code": "code"}}
-        r = RestResponse(Mock(), "Test 1", resp, includes)
+        example_response["save"] = {"body": {"test_code": "code"}}
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
 
         class FakeResponse:
-            headers = resp["headers"]
+            headers = example_response["headers"]
             content = "test".encode("utf8")
             def json(self):
-                return resp["body"]
-            status_code = resp["status_code"]
+                return example_response["body"]
+            status_code = example_response["status_code"]
 
         saved = r.verify(FakeResponse())
 
-        assert saved == {"test_code": resp["body"]["code"]}
+        assert saved == {"test_code": example_response["body"]["code"]}
 
-    def test_incorrect_status_code(self, resp, includes):
+    def test_incorrect_status_code(self, example_response, includes):
         """Test full verification + return saved values
         """
-        r = RestResponse(Mock(), "Test 1", resp, includes)
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
 
         class FakeResponse:
-            headers = resp["headers"]
+            headers = example_response["headers"]
             content = "test".encode("utf8")
             def json(self):
-                return resp["body"]
+                return example_response["body"]
             status_code = 400
 
         with pytest.raises(exceptions.TestFailError):

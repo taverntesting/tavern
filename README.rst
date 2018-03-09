@@ -4,13 +4,14 @@
 .. image:: https://img.shields.io/pypi/v/tavern.svg
     :target: https://pypi.org/project/tavern/
 
-Restful API testing
-===================
+Easier API testing
+==================
 
-Tavern is a pytest plugin, command-line tool and Python library for
-automated testing of RESTful APIs, with a simple, concise and flexible
+Tavern is a pytest plugin, command-line tool and Python 3 library for
+automated testing of APIs, with a simple, concise and flexible
 YAML-based syntax. It's very simple to get started, and highly
-customisable for complex tests.
+customisable for complex tests. Tavern supports testing RESTful APIs as
+well as MQTT based APIs.
 
 The best way to use Tavern is with
 `pytest <https://docs.pytest.org/en/latest/>`__. Tavern comes with a
@@ -24,16 +25,13 @@ You can also integrate Tavern into your own test framework or continuous
 integration setup using the Python library, or use the command line
 tool, ``tavern-ci`` with bash scripts and cron jobs.
 
-To learn more, check out the `examples <https://taverntesting.github.io/examples>`__ or the complete
-`documentation <https://taverntesting.github.io/documentation>`__. If you're interested in contributing
+To learn more, check out the `examples </examples>`__ or the complete
+`documentation </documentation>`__. If you're interested in contributing
 to the project take a look at the `GitHub
 repo <https://github.com/taverntesting/tavern>`__.
 
 Quickstart
 ----------
-
-Note that Tavern **only** supports Python 2.7 and up, and at the time of writing is only
-tested against Python 2.7/3.4-3.6.
 
 ::
 
@@ -61,7 +59,7 @@ tested against Python 2.7/3.4-3.6.
           body:
             id: 1
 
-::
+.. code:: bash
 
     $ tavern-ci --stdout minimal_test.tavern.yaml
     2017-11-08 16:17:00,152 [INFO]: (tavern.core:55) Running test : Get some fake data from the JSON placeholder API
@@ -78,34 +76,55 @@ Why not Postman, Insomnia or pyresttest etc?
 --------------------------------------------
 
 Tavern is a focused tool which does one thing well: automated testing of
-RESTful APIs.
+APIs.
 
 **Postman** and **Insomnia** are excellent tools which cover a wide
-range of use-cases, and indeed we use Tavern alongside Postman. However,
-specifically with regards to automated testing, Tavern has several
-advantages over Postman: - A full-featured Python environment for
-writing custom validation functions - Seamless integration with pytest
-to keep all your tests in one place - A simpler, less verbose and
-clearer testing language
+range of use-cases for RESTful APIs, and indeed we use Tavern alongside
+Postman. However, specifically with regards to automated testing, Tavern
+has several advantages over Postman: - A full-featured Python
+environment for writing easily reusable custom validation functions -
+Testing of MQTT based systems in tandem with RESTful APIS. - Seamless
+integration with pytest to keep all your tests in one place - A simpler,
+less verbose and clearer testing language
 
 Tavern does not do many of the things Postman and Insomnia do. For
 example, Tavern does not have a GUI nor does it do API monitoring or
 mock servers. On the other hand, Tavern is free and open-source and is a
 more powerful tool for developers to automate tests.
 
-**pyresttest** is similar to Tavern but is no longer actively developed.
-Tavern also has several advantages over PyRestTest which overall add up
-to a better developer experience:
+**pyresttest** is a similar tool to Tavern for testing RESTful APIs, but
+is no longer actively developed. On top of MQTT testing, Tavern has
+several other advantages over PyRestTest which overall add up to a
+better developer experience:
 
 -  Cleaner test syntax which is more intuitive, especially for
    non-developers
 -  Validation function are more flexible and easier to use
 -  Better explanations of why a test failed
 
-Developed and maintained by Overlock
-------------------------------------
+Hacking on Tavern
+-----------------
 
-Overlock helps developers quickly find and fix bugs in distributed systems such as IoT deployments by gathering together exception information from end devices, gateways or servers. We’re currently in beta - find out more at `overlock.io <https://overlock.io>`__.
+If you want to add a feature to Tavern or just play around with it
+locally, it's a good plan to first create a local development
+environment (`this
+page <http://docs.python-guide.org/en/latest/dev/virtualenvs/>`__ has a
+good primer for working with development environments with Python).
+After you've created your development environment, just
+``pip install tox`` and run ``tox`` to run the unit tests. If you want
+to run the integration tests, make sure you have
+`docker <https://www.docker.com/>`__ installed and run
+``tox -c tox-integraton.ini``. It's that simple!
+
+If you want to add a feature to get merged back into mainline Tavern,
+then simply add the feature and some tests (probably just unit tests -
+adding integration tests is a bit more involved as it requires
+implementing the behaviour you're testing) and open a `pull
+request <https://github.com/taverntesting/tavern/pulls>`__. Note that
+Tavern supports Python 2.7 (for the time being), so any code you add has
+to be compatible with it. We currently use the
+`future <https://pypi.python.org/pypi/future>`__ library to provide
+backwards compatibility.
 
 Acknowledgements
 ----------------
@@ -124,3 +143,13 @@ Tavern makes use of several excellent open-source projects:
    Tokens
 -  `colorlog <https://github.com/borntyping/python-colorlog>`__, for
    formatting terminal outputs
+-  `paho-mqtt <https://github.com/eclipse/paho.mqtt.python>`__, for
+   sending MQTT messages
+
+Developed and maintained by `Overlock <https://overlock.io>`__
+--------------------------------------------------------------
+
+Overlock helps developers quickly find and fix bugs in distributed
+systems such as IoT deployments by gathering together exception
+information from end devices, gateways or servers. We're currently in
+beta - find out more at `overlock.io <https://overlock.io>`__
