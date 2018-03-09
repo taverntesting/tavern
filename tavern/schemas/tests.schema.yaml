@@ -166,6 +166,16 @@ mapping:
                   re;(.*):
                     type: any
 
+              auth:
+                func: validate_extensions
+                type: seq
+                required: false
+                sequence:
+                  - type: str
+                    required: true
+                  - type: str
+                    required: true
+
               json: &any_map_or_list_with_ext_function
                 # Similar, but we want to match lists or dicts
                 func: validate_json_with_extensions
