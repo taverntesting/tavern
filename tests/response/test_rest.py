@@ -197,7 +197,7 @@ class TestValidate:
     def test_validate_nested_body(self, example_response, includes):
         """Make sure a nested value comparison works
         """
-        
+
         example_response["body"]["nested"] = { "subthing": "blah" }
 
         r = RestResponse(Mock(), "Test 1", example_response, includes)
@@ -234,7 +234,7 @@ class TestNestedValidate:
 
         This will be removed in a future version
         """
-        
+
         example_response["body"] = {
             "nested": {
                 "subthing": None
@@ -260,7 +260,7 @@ class TestNestedValidate:
         This is a bit hacky because we're directly checking the ANYTHING
         comparison - need to add an integration test too
         """
-        
+
         example_response["body"] = {
             "nested": {
                 "subthing": ANYTHING,
