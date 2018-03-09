@@ -157,8 +157,11 @@ def run(in_file, tavern_global_cfg):
                 logger.warning("Empty document in input file '%s'", in_file)
                 continue
 
+            import ipdb; ipdb.set_trace()
+
             try:
                 verify_tests(test_spec)
+                pass
             except exceptions.BadSchemaError:
                 passed = False
                 continue
