@@ -2,6 +2,7 @@ import pytest
 from mock import Mock
 
 from tavern.response import RestResponse
+from tavern.util.loader import ANYTHING
 from tavern.util import exceptions
 
 
@@ -222,6 +223,59 @@ class TestValidate:
         r = RestResponse(Mock(), "Test 1", example_response, includes)
 
         r._validate_block("redirect_query_params", {"search": "breadsticks"})
+
+        assert not r.errors
+
+
+class TestNestedValidate:
+
+    def test_validate_nested_null(self, example_response, includes):
+        """Check that nested 'null' comparisons work
+
+        This will be removed in a future version
+        """
+        
+        example_response["body"] = {
+            "nested": {
+                "subthing": None
+            }
+        }
+
+        expected = {
+            "nested": {
+                "subthing": "blah",
+            }
+        }
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        with pytest.warns(RuntimeWarning):
+            r._validate_block("body", expected)
+
+        assert not r.errors
+
+    def test_validate_nested_anything(self, example_response, includes):
+        """Check that nested 'anything' comparisons work
+
+        This is a bit hacky because we're directly checking the ANYTHING
+        comparison - need to add an integration test too
+        """
+        
+        example_response["body"] = {
+            "nested": {
+                "subthing": ANYTHING,
+            }
+        }
+
+        expected = {
+            "nested": {
+                "subthing": "blah",
+            }
+        }
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        r._validate_block("body", expected)
 
         assert not r.errors
 

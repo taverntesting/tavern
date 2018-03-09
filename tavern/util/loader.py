@@ -19,6 +19,12 @@ def makeuuid(loader, node):
     return str(uuid.uuid4())
 
 
+ANYTHING = object()
+def anything(loader, node):
+    # pylint: disable=unused-argument
+    return ANYTHING
+
+
 class LoaderMeta(type):
 
     def __new__(mcs, name, bases, attrs):
@@ -28,6 +34,7 @@ class LoaderMeta(type):
         cls = super(LoaderMeta, mcs).__new__(mcs, name, bases, attrs)
         cls.add_constructor('!include', cls.construct_include)
         cls.add_constructor('!uuid', makeuuid)
+        cls.add_constructor('!anything', anything)
 
         return cls
 
