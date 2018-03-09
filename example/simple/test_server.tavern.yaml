@@ -46,3 +46,49 @@ stages:
       status_code: 400
       body:
         error: no number passed
+
+---
+
+test_name: Make sure server doubles number properly in series
+
+stages:
+  - name: Double the initial number
+    request:
+      url: http://localhost:5000/double
+      json:
+        number: 5
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      save:
+        body:
+          value: double
+
+  - name: Double the number again and save the result
+    request:
+      url: http://localhost:5000/double
+      json:
+        number: !int "{value:d}"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      save:
+        body:
+          doubled_value: double
+
+  - name: Make sure number is the same as before
+    request:
+      url: http://localhost:5000/double
+      json:
+        number: !int "{value:d}"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      body:
+        double: !int "{doubled_value:d}"

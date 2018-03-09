@@ -1,42 +1,42 @@
 class TavernException(Exception):
-    pass
+    """Base exception
+    """
 
 
 class BadSchemaError(TavernException):
     """Schema mismatch
     """
-    pass
 
 
 class TestFailError(TavernException):
     """Test failed somehow
     """
-    pass
+
+
+class KeyMismatchError(TavernException):
+    """Mismatch found while validating keys in response
+    """
 
 
 class UnexpectedKeysError(TavernException):
     """Unexpected keys used in request specification
     """
-    pass
 
 
 class DuplicateKeysError(TavernException):
     """Duplicate key in request specification
     """
-    pass
 
 
 class MissingKeysError(TavernException):
     """Missing key in request specification
     """
-    pass
 
 
 class MissingFormatError(TavernException):
     """Tried to use a variable in a format string but it was not in the
     available variables
     """
-    pass
 
 
 class MissingSettingsError(TavernException):
@@ -53,7 +53,6 @@ class MissingCookieError(TavernException):
     """Tried to use a cookie in a request that was not present in the session
     cookie jar
     """
-    pass
 
 
 class RestRequestException(TavernException):

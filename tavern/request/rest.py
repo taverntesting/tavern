@@ -52,6 +52,10 @@ def get_request_args(rspec, test_block_config):
         "data",
         "params",
         "headers",
+        # Ideally this would just be passed through but requests seems to error
+        # if we pass a list instead of a tuple, so we have to manually convert
+        # it further down
+        # "auth",
     ]
 
     optional_with_default = {
@@ -82,6 +86,9 @@ def get_request_args(rspec, test_block_config):
 
     add_request_args(required_in_file, False)
     add_request_args(optional_in_file, True)
+
+    if "auth" in fspec:
+        request_args["auth"] = tuple(fspec["auth"])
 
     for key in optional_in_file:
         try:
