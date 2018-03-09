@@ -31,7 +31,7 @@ def construct_type_convert(constructor):
         return TypeConvertToken(constructor, value)
     return callback
 
-  
+
 ANYTHING = object()
 def anything(loader, node):
     # pylint: disable=unused-argument
