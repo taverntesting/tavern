@@ -159,7 +159,7 @@ stages:
   - name: double it
     request:
       url: "{host}/double"
-      verify: False
+      verify: false
       json:
         name: whatnumber
       method: POST
