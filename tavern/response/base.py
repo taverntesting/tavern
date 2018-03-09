@@ -60,22 +60,28 @@ class BaseResponse(object):
             actual_val (dict, str): actual value
         """
 
-        def _format_err(which):
-            return "{}{}".format(which, "".join('["{}"]'.format(key) for key in keys))
+        def full_err():
+            """Get error in the format:
 
-        e_formatted = _format_err("expected")
-        a_formatted = _format_err("actual")
-        full_err = "{} = '{}', {} = '{}'".format(e_formatted, expected_val,
-            a_formatted, actual_val)
+            a["b"]["c"] = 4, b["b"]["c"] = {'key': 'value'}
+
+            """
+            def _format_err(which):
+                return "{}{}".format(which, "".join('["{}"]'.format(key) for key in keys))
+
+            e_formatted = _format_err("expected")
+            a_formatted = _format_err("actual")
+            return "{} = '{}', {} = '{}'".format(e_formatted, expected_val,
+                a_formatted, actual_val)
 
         actual_is_dict = isinstance(actual_val, dict)
         expected_is_dict = isinstance(expected_val, dict)
         if (actual_is_dict and not expected_is_dict) or (expected_is_dict and not actual_is_dict):
-            raise exceptions.KeyMismatchError("Structure of returned data was different than expected ({})".format(full_err))
+            raise exceptions.KeyMismatchError("Structure of returned data was different than expected ({})".format(full_err()))
 
         if isinstance(expected_val, dict):
             if set(expected_val.keys()) != set(actual_val.keys()):
-                raise exceptions.KeyMismatchError("Structure of returned data was different than expected ({})".format(full_err))
+                raise exceptions.KeyMismatchError("Structure of returned data was different than expected ({})".format(full_err()))
 
             for key in expected_val:
                 self._check_response_keys_recursive(expected_val[key], actual_val[key], keys + [key])
@@ -88,7 +94,7 @@ class BaseResponse(object):
                 elif expected_val is ANYTHING:
                     logger.debug("Actual value = %s - matches !anything")
                 else:
-                    raise_from(exceptions.KeyMismatchError, e)
+                    raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err(), e)))
 
     def recurse_check_key_match(self, expected_block, block, blockname):
         """Valid returned data against expected data
