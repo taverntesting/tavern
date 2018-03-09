@@ -94,7 +94,7 @@ class BaseResponse(object):
                 elif expected_val is ANYTHING:
                     logger.debug("Actual value = '{}' - matches !anything".format(actual_val))
                 else:
-                    raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err(), e)))
+                    raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)
 
     def recurse_check_key_match(self, expected_block, block, blockname):
         """Valid returned data against expected data
