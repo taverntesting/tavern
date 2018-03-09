@@ -3,6 +3,7 @@ import logging
 
 from future.utils import raise_from
 
+from tavern.util.loader import TypeConvertToken
 from . import exceptions
 
 
@@ -34,6 +35,9 @@ def format_keys(val, variables):
         except KeyError as e:
             logger.error("Key(s) not found in format: %s", e.args)
             raise_from(exceptions.MissingFormatError(e.args), e)
+    elif isinstance(val, TypeConvertToken):
+        value = format_keys(val.value, variables)
+        formatted = val.constructor(value)
 
     return formatted
 
