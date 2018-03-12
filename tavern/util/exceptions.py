@@ -67,3 +67,7 @@ class MQTTRequestException(TavernException):
 
 class MQTTTLSError(TavernException):
     """Error with TLS arguments to MQTT client"""
+
+
+class PluginLoadError(TavernException):
+    """Error loading a plugin"""

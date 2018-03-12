@@ -6,6 +6,7 @@ significantly if/when a proper plugin system is implemented!
 import logging
 import requests
 
+import stevedore
 from future.utils import raise_from
 
 from .util.dict_util import format_keys
@@ -14,6 +15,66 @@ from .request import RestRequest, MQTTRequest
 from .response import RestResponse, MQTTResponse
 
 logger = logging.getLogger(__name__)
+
+
+def plugin_load_error(mgr, entry_point, err):
+    """ Handle import errors
+    """
+    msg = "Error loading plugin {} - {}".format(entry_point, err)
+    raise_from(exceptions.PluginLoadError(msg), err)
+
+
+def is_valid_reqresp_plugin(ext):
+    """Whether this is a valid 'reqresp' plugin
+
+    Requires certain functions/variables to be present
+
+    Todo:
+        Not all of these are required for all request/response types probably
+    """
+    required = [
+        # MQTTClient, requests.Session
+        "session_type",
+        # RestRequest, MQTTRequest
+        "request_type",
+        # request, mqtt_publish
+        "request_block_name",
+        # Some function that returns a dict
+        "get_expected_from_request",
+        # MQTTResponse, RestResponse
+        "verifier_type",
+        # response, mqtt_response
+        "response_block_name",
+        # dictionary with pykwalify schema
+        "schema",
+    ]
+
+    return all(hasattr(ext.plugin, i) for i in required)
+
+
+def load_plugins(name="reqresp"):
+    """Load plugins from the 'tavern' entrypoint namespace
+
+    This can be a module or a class as long as it defines the right things
+
+    Todo:
+        - Limit which plugins are loaded based on some config/command line
+          option
+        - Different plugin names
+
+    Args:
+        name (str): name to load plugins. Has to be 'reqresp' at the moment
+    """
+    if name != "reqresp":
+        raise NotImplementedError
+
+    manager = stevedore.NamedExtensionManager(
+        namespace="tavern",
+        name=name,
+        verify_requirements=True,
+        on_load_failure_callback=plugin_load_error,
+    )
+    manager.propagate_map_exceptions = True
 
 
 def get_extra_sessions(test_spec):
