@@ -5,6 +5,7 @@ import pytest
 import yaml
 
 from tavern.core import run_test
+from tavern.util.general import load_global_config
 from tavern.util.exceptions import TavernException
 from tavern.util.loader import IncludeLoader
 from tavern.schemas.files import verify_tests
@@ -31,8 +32,15 @@ def pytest_addoption(parser):
     """
     parser.addoption(
         "--tavern-global-cfg",
+        help="One or more global configuration files to include in every test",
         required=False,
-        help="Global configuration file to include in every test",
+        nargs="+",
+    )
+    parser.addini(
+        "tavern-global-cfg",
+        help="One or more global configuration files to include in every test",
+        type="linelist",
+        default=[]
     )
 
 
@@ -76,15 +84,15 @@ class YamlItem(pytest.Item):
     def runtest(self):
         verify_tests(self.spec)
 
-        global_cfg = self.config.getoption("tavern_global_cfg") or {}
+        # Load ini first
+        ini_global_cfg_paths = self.config.getini("tavern-global-cfg") or []
+        # THEN load command line, to allow overwriting of values
+        cmdline_global_cfg_paths = self.config.getoption("tavern_global_cfg") or []
 
-        if global_cfg:
-            with open(global_cfg, "r") as gfileobj:
-                contents = yaml.load(gfileobj)
-        else:
-            contents = {}
+        all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
+        global_cfg = load_global_config(all_paths)
 
-        run_test(self.path, self.spec, contents)
+        run_test(self.path, self.spec, global_cfg)
 
     def repr_failure(self, excinfo): # pylint: disable=no-self-use
         """ called when self.runtest() raises an exception.

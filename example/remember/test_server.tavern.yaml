@@ -1,0 +1,71 @@
+---
+test_name: test after browser close
+
+stages:
+  - name: login
+    request:
+      url: http://localhost:5000/login
+      method: POST
+      json:
+        username: mark
+        password: password
+    response:
+      cookies:
+        - session
+        - remember
+      status_code: 200
+
+  - name: get regular
+    request:
+      url: http://localhost:5000/regular
+      method: GET
+      meta:
+        - clear_session_cookies # Simulate browser close before request.
+    response:
+      body:
+        regular: foo
+      status_code: 200
+
+  - name: get protected stale
+    request:
+      url: http://localhost:5000/protected
+      method: GET
+    response:
+      status_code: 401
+
+---
+test_name: test without browser close
+
+stages:
+  - name: login again
+    request:
+      url: http://localhost:5000/login
+      method: POST
+      json:
+        username: mark
+        password: password
+    response:
+      cookies:
+        - session
+        - remember
+      status_code: 200
+
+  - name: get protected fresh
+    request:
+      url: http://localhost:5000/protected
+      method: GET
+    response:
+      body:
+        protected: bar
+      status_code: 200
+
+---
+test_name: test without login
+
+stages:
+  - name: get regular
+    request:
+      url: http://localhost:5000/regular
+      method: GET
+    response:
+      status_code: 401

@@ -144,31 +144,3 @@ stages:
         error: Unknown number
       headers:
         content-type: application/json
-
----
-
-test_name: Check trying to double a number that we didnt post before returns a 404
-
-includes:
-  - !include common.yaml
-
-stages:
-  - *reset_request
-  - *login_request
-
-  - name: double it
-    request:
-      url: "{host}/double"
-      verify: False
-      json:
-        name: whatnumber
-      method: POST
-      headers:
-        content-type: application/json
-        Authorization: "bearer {test_login_token:s}"
-    response:
-      status_code: 404
-      body:
-        error: Unknown number
-      headers:
-        content-type: application/json

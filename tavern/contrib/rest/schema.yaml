@@ -14,6 +14,16 @@ request:
       re;(params|data|headers):
         include: any_map_with_ext_function
 
+      auth:
+        func: validate_extensions
+        type: seq
+        required: false
+        sequence:
+          - type: str
+            required: true
+          - type: str
+            required: true
+
       json:
         include: any_map_or_list_with_ext_function
 
@@ -31,6 +41,13 @@ request:
       verify:
         type: bool
         required: false
+
+      meta:
+        type: seq
+        required: false
+        sequence:
+          - type: str
+            unique: True
 
 response:
   response:

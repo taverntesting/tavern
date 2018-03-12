@@ -21,7 +21,8 @@ class TavernArgParser(ArgumentParser):
         self.add_argument(
             "--tavern-global-cfg",
             required=False,
-            help="Global configuration file to include in every test",
+            nargs="+",
+            help="One or more global configuration files to include in every test",
         )
 
         self.add_argument(
