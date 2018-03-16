@@ -1,5 +1,5 @@
 import pytest
-from mock import Mock
+from mock import Mock, patch
 
 from tavern.response import RestResponse
 from tavern.util.loader import ANYTHING
@@ -328,3 +328,14 @@ class TestFull:
             status_code = nested_response["status_code"]
 
         r.verify(FakeResponse())
+
+
+def test_status_code_warns(example_response, includes):
+    """Should continue if the status code is nonexistent
+    """
+    example_response["status_code"] = 231234
+
+    with patch("tavern.response.rest.logger.warning") as wmock:
+        RestResponse(Mock(), "Test 1", example_response, includes)
+
+    assert wmock.called
