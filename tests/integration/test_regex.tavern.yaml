@@ -2,6 +2,9 @@
 
 test_name: Make sure server response matches regex
 
+includes:
+  - !include common.yaml
+
 stages:
   - name: simple match
     request:
