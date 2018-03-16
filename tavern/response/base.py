@@ -5,7 +5,7 @@ from abc import abstractmethod
 from future.utils import raise_from
 
 from tavern.util import exceptions
-from tavern.util.loader import ANYTHING, TypeConvertToken
+from tavern.util.loader import ANYTHING
 from tavern.util.python_2_util import indent
 from tavern.util.dict_util import format_keys, recurse_access_key, yield_keyvals
 
@@ -89,13 +89,10 @@ class BaseResponse(object):
             try:
                 assert actual_val == expected_val
             except AssertionError as e:
-                if expected_val is ANYTHING:
-                    logger.debug("Actual value = '%s' - matches !anything", actual_val)
-                elif isinstance(expected_val, TypeConvertToken):
-                    if isinstance(actual_val, expected_val.constructor):
-                        logger.debug("Actual val = '%s' - matches expected !%s", actual_val, expected_val.constructor)
-                elif expected_val is None:
+                if expected_val is None:
                     warnings.warn("Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.", FutureWarning)
+                elif expected_val is ANYTHING:
+                    logger.debug("Actual value = '%s' - matches !anything", actual_val)
                 else:
                     raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)
 
