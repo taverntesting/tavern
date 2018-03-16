@@ -249,7 +249,7 @@ class TestNestedValidate:
 
         r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        with pytest.warns(RuntimeWarning):
+        with pytest.warns(FutureWarning):
             r._validate_block("body", expected)
 
         assert not r.errors

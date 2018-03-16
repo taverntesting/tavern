@@ -90,7 +90,7 @@ class BaseResponse(object):
                 assert actual_val == expected_val
             except AssertionError as e:
                 if expected_val is None:
-                    warnings.warn("Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.", RuntimeWarning)
+                    warnings.warn("Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.", FutureWarning)
                 elif expected_val is ANYTHING:
                     logger.debug("Actual value = '%s' - matches !anything", actual_val)
                 else:
