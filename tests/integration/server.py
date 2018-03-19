@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 
 app = Flask(__name__)
@@ -14,3 +14,23 @@ def verify():
         return '', 200
     else:
         return '', 401
+
+
+@app.route("/fake_dictionary", methods=["GET"])
+def get_fake_dictionary():
+    fake = {
+        "top": {
+            "Thing": "value",
+            "nested": {
+                "doubly": {
+                    "inner": "value",
+                }
+            }
+        },
+        "second": {
+            "an_integer": 123,
+            "a_string": "abc",
+        }
+    }
+
+    return jsonify(fake), 200

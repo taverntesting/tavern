@@ -1,0 +1,26 @@
+# This is what we expect:
+# second:
+#   a_string: abc
+#   an_integer: 123
+# top:
+#   Thing: value
+#   nested:
+#     doubly:
+#       inner: value
+
+---
+
+test_name: Test 'anything' token will match any response
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match top level
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        top: !anything
