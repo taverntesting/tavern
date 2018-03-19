@@ -1,7 +1,6 @@
+import re
 import logging
-
 import pytest
-
 import yaml
 
 from tavern.core import run_test
@@ -13,15 +12,17 @@ from tavern.schemas.files import verify_tests
 
 logger = logging.getLogger(__name__)
 
+match_tavern_file = re.compile(r'.+\.tavern\.ya?ml$').match
+
 
 def pytest_collect_file(parent, path):
-    """On collecting files, get any files that end in .tavern.yaml as tavern
+    """On collecting files, get any files that end in .tavern.yaml or .tavern.yml as tavern
     test files
 
     Todo:
         Change this to .tyaml or something?
     """
-    if path.strpath.endswith(".tavern.yaml") and path.basename.startswith("test"):
+    if path.basename.startswith("test") and match_tavern_file(path.strpath):
         return YamlFile(path, parent)
 
     return None
