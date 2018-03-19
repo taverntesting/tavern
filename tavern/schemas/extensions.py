@@ -105,6 +105,11 @@ def validate_extensions(value, rule_obj, path):
     Raises:
         BadSchemaError: Something in the validation function spec was wrong
     """
+    try:
+        iter(value)
+    except TypeError as e:
+        raise BadSchemaError("Invalid value for key - things like body/params/headers have to be a dictionary or a list, not a single value") from e
+
     # pylint: disable=unused-argument
     if "$ext" in value:
         expected_keys = {
