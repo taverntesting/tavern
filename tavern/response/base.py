@@ -5,7 +5,7 @@ from abc import abstractmethod
 from future.utils import raise_from
 
 from tavern.util import exceptions
-from tavern.util.loader import ANYTHING
+from tavern.util.loader import ANYTHING, TypeSentinel
 from tavern.util.python_2_util import indent
 from tavern.util.dict_util import format_keys, recurse_access_key, yield_keyvals
 
@@ -75,7 +75,7 @@ class BaseResponse(object):
                 a_formatted, actual_val)
 
         actual_is_dict = isinstance(actual_val, dict)
-        expected_is_dict = isinstance(expected_val, dict)
+        expected_is_dict = isinstance(expected_val, (dict, type(ANYTHING)))
         if (actual_is_dict and not expected_is_dict) or (expected_is_dict and not actual_is_dict):
             raise exceptions.KeyMismatchError("Structure of returned data was different than expected ({})".format(full_err()))
 
@@ -91,6 +91,10 @@ class BaseResponse(object):
             except AssertionError as e:
                 if expected_val is None:
                     warnings.warn("Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.", FutureWarning)
+                elif isinstance(expected_val, TypeSentinel):
+                    if not isinstance(actual_val, expected_val.expected_type):
+                        raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)
+                    logger.debug("Actual value = '%s' - matches !any%s", actual_val, expected_val.expected_type)
                 elif expected_val is ANYTHING:
                     logger.debug("Actual value = '%s' - matches !anything", actual_val)
                 else:

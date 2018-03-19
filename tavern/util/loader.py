@@ -13,16 +13,34 @@ from yaml.composer import Composer
 from yaml.constructor import SafeConstructor
 from yaml.resolver import Resolver
 
+from tavern.util.exceptions import BadSchemaError
+
 
 def makeuuid(loader, node):
     # pylint: disable=unused-argument
     return str(uuid.uuid4())
 
 
-class TypeConvertToken(object):
+class YamlSentinel(object):
+    def __str__(self):
+        return "<Tavern YAML sentinel - '!{}'>".format(self.constructor)
+
+
+class TypeConvertToken(YamlSentinel):
     def __init__(self, constructor, value):
         self.constructor = constructor
         self.value = value
+
+
+class TypeSentinel(YamlSentinel):
+    def __init__(self, constructor):
+        self.constructor = constructor
+
+
+class AnythingSentinel(YamlSentinel):
+    constructor = "anything"
+
+ANYTHING = AnythingSentinel()
 
 
 def construct_type_convert(constructor):
@@ -32,7 +50,19 @@ def construct_type_convert(constructor):
     return callback
 
 
-ANYTHING = object()
+def construct_type_sentinel(constructor):
+    """Similar to above but don't implicitly convert a value
+
+    Only used for checking return values
+    """
+    def callback(loader, node):
+        value = loader.construct_scalar(node)
+        if value:
+            raise BadSchemaError("Can't use '{}' with a value - this should only be used in a response to signify the expected type of a returned value".format("TODO"))
+        return TypeSentinel(constructor)
+    return callback
+
+
 def anything(loader, node):
     # pylint: disable=unused-argument
     return ANYTHING
@@ -50,6 +80,9 @@ class LoaderMeta(type):
         cls.add_constructor('!int', construct_type_convert(int))
         cls.add_constructor('!float', construct_type_convert(float))
         cls.add_constructor('!anything', anything)
+        cls.add_constructor('!anyint', construct_type_sentinel(int))
+        cls.add_constructor('!anyfloat', construct_type_sentinel(float))
+        cls.add_constructor('!anystr', construct_type_sentinel(str))
 
         return cls
 
@@ -107,7 +140,6 @@ class IncludeLoader(with_metaclass(LoaderMeta, Reader, Scanner, Parser, Remember
         extension = os.path.splitext(filename)[1].lstrip('.')
 
         if extension not in ('yaml', 'yml'):
-            from tavern.util.exceptions import BadSchemaError
             raise BadSchemaError("Unknown filetype '{}'".format(filename))
 
         with open(filename, 'r') as f:
