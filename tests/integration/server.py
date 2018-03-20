@@ -27,10 +27,8 @@ def get_fake_dictionary():
                 }
             }
         },
-        "second": {
-            "an_integer": 123,
-            "a_string": "abc",
-        }
+        "an_integer": 123,
+        "a_string": "abc",
     }
 
     return jsonify(fake), 200
