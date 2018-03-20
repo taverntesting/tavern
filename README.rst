@@ -25,8 +25,8 @@ You can also integrate Tavern into your own test framework or continuous
 integration setup using the Python library, or use the command line
 tool, ``tavern-ci`` with bash scripts and cron jobs.
 
-To learn more, check out the `examples </example>`__ or the complete
-`documentation </documentation>`__. If you're interested in contributing
+To learn more, check out the `examples <https://taverntesting.github.io/examples>`__ or the complete
+`documentation <https://taverntesting.github.io/documentation>`__. If you're interested in contributing
 to the project take a look at the `GitHub
 repo <https://github.com/taverntesting/tavern>`__.
 
