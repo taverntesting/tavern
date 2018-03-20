@@ -8,7 +8,7 @@ try:
 except ImportError:
     from urlparse import urlparse, parse_qs
 
-import requests
+from requests.status_codes import _codes
 
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util.dict_util import recurse_access_key, deep_dict_merge
@@ -42,7 +42,7 @@ class RestResponse(BaseResponse):
         self.test_block_config = test_block_config
         self.status_code = None
 
-        if self.expected["status_code"] not in requests.codes:
+        if self.expected["status_code"] not in _codes:
             logger.warning("Unexpected status code '%s'", self.expected["status_code"])
 
     def __str__(self):
