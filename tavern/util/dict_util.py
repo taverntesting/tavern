@@ -131,6 +131,32 @@ def yield_keyvals(block):
     dots), the original key, and the expected value. If the input is a list, it
     is enumerated so the 'keys' are just [0, 1, 2, ...]
 
+    Example:
+
+        Matching a dictionary with a couple of keys:
+
+        >>> gen = yield_keyvals({"a": {"b": "c"}, "d": "e"})
+        >>> next(gen)
+        (['a'], 'a', {'b': 'c'})
+        >>> next(gen)
+        (['d'], 'd', 'e')
+
+        Matching nested key access:
+
+        >>> gen = yield_keyvals({"a.b.c": "d"})
+        >>> next(gen)
+        (['a', 'b', 'c'], 'a.b.c', 'd')
+
+        Matching a list of items:
+
+        >>> gen = yield_keyvals(["a", "b", "c"])
+        >>> next(gen)
+        (['0'], '0', 'a')
+        >>> next(gen)
+        (['1'], '1', 'b')
+        >>> next(gen)
+        (['2'], '2', 'c')
+
     Args:
         block (dict, list): input matches
 
