@@ -64,7 +64,6 @@ class BaseResponse(object):
             """Get error in the format:
 
             a["b"]["c"] = 4, b["b"]["c"] = {'key': 'value'}
-
             """
             def _format_err(which):
                 return "{}{}".format(which, "".join('["{}"]'.format(key) for key in keys))
