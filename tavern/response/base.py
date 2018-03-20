@@ -91,9 +91,9 @@ class BaseResponse(object):
                 if expected_val is None:
                     warnings.warn("Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.", FutureWarning)
                 elif isinstance(expected_val, TypeSentinel):
-                    if not isinstance(actual_val, expected_val.expected_type):
+                    if not isinstance(actual_val, expected_val.constructor):
                         raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)
-                    logger.debug("Actual value = '%s' - matches !any%s", actual_val, expected_val.expected_type)
+                    logger.debug("Actual value = '%s' - matches !any%s", actual_val, expected_val.constructor)
                 elif expected_val is ANYTHING:
                     logger.debug("Actual value = '%s' - matches !anything", actual_val)
                 else:
