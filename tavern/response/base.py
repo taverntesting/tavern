@@ -1,13 +1,9 @@
 import logging
-import warnings
 from abc import abstractmethod
 
-from future.utils import raise_from
-
 from tavern.util import exceptions
-from tavern.util.loader import ANYTHING
 from tavern.util.python_2_util import indent
-from tavern.util.dict_util import format_keys, recurse_access_key, yield_keyvals
+from tavern.util.dict_util import format_keys, recurse_access_key, yield_keyvals, check_keys_match_recursive
 
 logger = logging.getLogger(__name__)
 
@@ -45,56 +41,6 @@ class BaseResponse(object):
         we wanted to save for use in future requests
         """
 
-    def _check_response_keys_recursive(self, expected_val, actual_val, keys):
-        """Utility to recursively check response values
-
-        expected and actual both have to be of the same type or it will raise an
-        error.
-
-        Todo:
-            This could be turned into a single-dispatch function for cleaner
-            code and to remove a load of the isinstance checks
-
-        Args:
-            expected_val (dict, str): expected value
-            actual_val (dict, str): actual value
-        """
-
-        def full_err():
-            """Get error in the format:
-
-            a["b"]["c"] = 4, b["b"]["c"] = {'key': 'value'}
-            """
-            def _format_err(which):
-                return "{}{}".format(which, "".join('["{}"]'.format(key) for key in keys))
-
-            e_formatted = _format_err("expected")
-            a_formatted = _format_err("actual")
-            return "{} = '{}', {} = '{}'".format(e_formatted, expected_val,
-                a_formatted, actual_val)
-
-        actual_is_dict = isinstance(actual_val, dict)
-        expected_is_dict = isinstance(expected_val, dict)
-        if (actual_is_dict and not expected_is_dict) or (expected_is_dict and not actual_is_dict):
-            raise exceptions.KeyMismatchError("Structure of returned data was different than expected ({})".format(full_err()))
-
-        if isinstance(expected_val, dict):
-            if set(expected_val.keys()) != set(actual_val.keys()):
-                raise exceptions.KeyMismatchError("Structure of returned data was different than expected ({})".format(full_err()))
-
-            for key in expected_val:
-                self._check_response_keys_recursive(expected_val[key], actual_val[key], keys + [key])
-        else:
-            try:
-                assert actual_val == expected_val
-            except AssertionError as e:
-                if expected_val is None:
-                    warnings.warn("Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.", FutureWarning)
-                elif expected_val is ANYTHING:
-                    logger.debug("Actual value = '%s' - matches !anything", actual_val)
-                else:
-                    raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)
-
     def recurse_check_key_match(self, expected_block, block, blockname):
         """Valid returned data against expected data
 
@@ -130,7 +76,7 @@ class BaseResponse(object):
             logger.debug("%s: %s vs %s", joined_key, expected_val, actual_val)
 
             try:
-                self._check_response_keys_recursive(expected_val, actual_val, [])
+                check_keys_match_recursive(expected_val, actual_val, [])
             except exceptions.KeyMismatchError as e:
                 logger.error("Key mismatch on %s", joined_key)
                 self._adderr("Value mismatch: got '%s' (type: %s), expected '%s' (type: %s)",
