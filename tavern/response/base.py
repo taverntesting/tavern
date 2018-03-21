@@ -21,7 +21,7 @@ class BaseResponse(object):
         self.errors = []
 
         # None by default?
-        self.test_block_config = {}
+        self.test_block_config = {"variables": {}}
 
     def _str_errors(self):
         return "- " + "\n- ".join(self.errors)
