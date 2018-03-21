@@ -56,7 +56,13 @@ class YamlFile(pytest.File):
         Yields:
             YamlItem: Essentially an individual pytest 'test object'
         """
-        for test_spec in yaml.load_all(self.fspath.open(), Loader=IncludeLoader):
+        try:
+            # Convert to a list so we can catch parser exceptions
+            all_tests = list(yaml.load_all(self.fspath.open(), Loader=IncludeLoader))
+        except yaml.parser.ParserError as e:
+            raise exceptions.BadSchemaError from e
+
+        for test_spec in all_tests:
             if not test_spec:
                 logger.warning("Empty document in input file '%s'", self.fspath)
                 continue
