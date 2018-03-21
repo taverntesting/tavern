@@ -51,12 +51,24 @@ class YamlFile(pytest.File):
     """Custom `File` class that loads each test block as a different test
     """
 
+    def __init__(self, *args, **kwargs):
+        super(YamlFile, self).__init__(*args, **kwargs)
+
+        # This (and the FakeObj below) are to make pytest-pspec not error out.
+        # The 'doctstring' for this is the filename, the 'docstring' for each
+        # individual test is the actual test name.
+        class FakeObj(object):
+            __doc__ = self.fspath
+
+        self.obj = FakeObj
+
     def collect(self):
         """Load each document in the given input file into a different test
 
         Yields:
             YamlItem: Essentially an individual pytest 'test object'
         """
+
         try:
             # Convert to a list so we can catch parser exceptions
             all_tests = list(yaml.load_all(self.fspath.open(), Loader=IncludeLoader))
@@ -91,6 +103,11 @@ class YamlItem(pytest.Item):
         super(YamlItem, self).__init__(name, parent)
         self.path = path
         self.spec = spec
+
+        class FakeObj(object):
+            __doc__ = name
+
+        self.obj = FakeObj
 
     def runtest(self):
         verify_tests(self.spec)
