@@ -2,6 +2,7 @@ import re
 import logging
 import pytest
 import yaml
+from future.utils import raise_from
 
 from tavern.core import run_test
 from tavern.util.general import load_global_config
@@ -60,7 +61,7 @@ class YamlFile(pytest.File):
             # Convert to a list so we can catch parser exceptions
             all_tests = list(yaml.load_all(self.fspath.open(), Loader=IncludeLoader))
         except yaml.parser.ParserError as e:
-            raise exceptions.BadSchemaError from e
+            raise_from(exceptions.BadSchemaError, e)
 
         for test_spec in all_tests:
             if not test_spec:
