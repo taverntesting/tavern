@@ -5,7 +5,7 @@ import yaml
 
 from tavern.core import run_test
 from tavern.util.general import load_global_config
-from tavern.util.exceptions import TavernException
+from tavern.util import exceptions
 from tavern.util.loader import IncludeLoader
 from tavern.schemas.files import verify_tests
 
@@ -61,7 +61,10 @@ class YamlFile(pytest.File):
                 logger.warning("Empty document in input file '%s'", self.fspath)
                 continue
 
-            yield YamlItem(test_spec["test_name"], self, test_spec, self.fspath)
+            try:
+                yield YamlItem(test_spec["test_name"], self, test_spec, self.fspath)
+            except (TypeError, KeyError) as e:
+                verify_tests(test_spec)
 
 
 class YamlItem(pytest.Item):
@@ -104,7 +107,7 @@ class YamlItem(pytest.Item):
             failed rather than a traceback
         """
 
-        if not issubclass(excinfo.type, TavernException):
+        if not issubclass(excinfo.type, exceptions.TavernException):
             return super(YamlItem, self).repr_failure(excinfo)
 
         return super(YamlItem, self).repr_failure(excinfo)
