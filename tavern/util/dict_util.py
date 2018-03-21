@@ -135,11 +135,9 @@ def yield_keyvals(block):
 
         Matching a dictionary with a couple of keys:
 
-        >>> gen = yield_keyvals({"a": {"b": "c"}, "d": "e"})
+        >>> gen = yield_keyvals({"a": {"b": "c"}})
         >>> next(gen)
         (['a'], 'a', {'b': 'c'})
-        >>> next(gen)
-        (['d'], 'd', 'e')
 
         Matching nested key access:
 
