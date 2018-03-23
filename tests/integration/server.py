@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 
 
 app = Flask(__name__)
@@ -14,3 +14,13 @@ def verify():
         return '', 200
     else:
         return '', 401
+
+
+@app.route("/fake_list", methods=["GET"])
+def list_response():
+    list_response = [
+        "a",
+        "b",
+        "c",
+    ]
+    return jsonify(list_response), 200
