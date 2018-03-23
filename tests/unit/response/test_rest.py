@@ -226,6 +226,42 @@ class TestValidate:
 
         assert not r.errors
 
+    def test_validate_missing_list_key(self, example_response, includes):
+        """If we expect 4 items and 3 were returned, catch error"""
+
+        example_response["body"] = ["a", 1, "b", "c"]
+        bad_expected = example_response["body"][:-1]
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        r._validate_block("body", bad_expected)
+
+        assert r.errors
+
+    def test_validate_wrong_list_dict(self, example_response, includes):
+        """We expected a list, but we got a dict in the response"""
+
+        example_response["body"] = ["a", 1, "b", "c"]
+        bad_expected = {"a": "b"}
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        r._validate_block("body", bad_expected)
+
+        assert r.errors
+
+    def test_validate_wrong_dict_list(self, example_response, includes):
+        """We expected a dict, but we got a list in the response"""
+
+        example_response["body"] = {"a": "b"}
+        bad_expected = ["a", "b", "c"]
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        r._validate_block("body", bad_expected)
+
+        assert r.errors
+
 
 class TestNestedValidate:
 
