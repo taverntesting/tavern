@@ -66,6 +66,22 @@ class BaseResponse(object):
 
         logger.debug("expected = %s, actual = %s", expected_block, block)
 
+        if not isinstance(expected_block, type(block)):
+            if isinstance(block, list):
+                block_type = "list"
+            else:
+                block_type = "dict"
+
+            if isinstance(expected_block, list):
+                expected_type = "list"
+            else:
+                expected_type = "dict"
+
+            self._adderr("Expected %s to be returned, but a %s was returned",
+                block_type, expected_type)
+            # Fatal
+            return
+
         for split_key, joined_key, expected_val in yield_keyvals(expected_block):
             try:
                 actual_val = recurse_access_key(block, list(split_key))
@@ -76,21 +92,6 @@ class BaseResponse(object):
                 self._adderr("Expected returned list to be of at least length %s but length was %s",
                         int(joined_key) + 1, len(block), e=e)
                 continue
-            except TypeError as e:
-                if isinstance(block, list):
-                    block_type = "list"
-                else:
-                    block_type = "dict"
-
-                if isinstance(split_key[0], int):
-                    expected_type = "list"
-                else:
-                    expected_type = "dict"
-
-                self._adderr("Expected %s to be returned, but a %s was returned",
-                        block_type, expected_type, e=e)
-                # This is a fairly fatal error - immediately exit
-                break
 
             logger.debug("%s: %s vs %s", joined_key, expected_val, actual_val)
 
