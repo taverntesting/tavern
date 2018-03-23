@@ -72,6 +72,10 @@ class BaseResponse(object):
             except KeyError as e:
                 self._adderr("Key not present: %s", joined_key, e=e)
                 continue
+            except IndexError as e:
+                self._adderr("Expected returned list to be of at least length %s but length was %s",
+                        int(joined_key) + 1, len(block), e=e)
+                continue
 
             logger.debug("%s: %s vs %s", joined_key, expected_val, actual_val)
 
