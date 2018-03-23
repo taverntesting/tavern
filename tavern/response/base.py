@@ -66,7 +66,7 @@ class BaseResponse(object):
 
         logger.debug("expected = %s, actual = %s", expected_block, block)
 
-        if not isinstance(expected_block, type(block)):
+        if blockname == "body" and (not isinstance(expected_block, type(block))):
             if isinstance(block, list):
                 block_type = "list"
             else:
