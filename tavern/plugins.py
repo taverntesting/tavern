@@ -199,19 +199,14 @@ def get_verifiers(stage, test_block_config, sessions, expected):
         BaseResponse: response validator object with a verify(response) method
     """
 
-    # keys = {
-    #     "request": RestResponse,
-    #     "mqtt_publish": MQTTResponse,
-    # }
+    plugins = load_plugins()
 
     verifiers = []
 
-    if "response" in stage:
-        session = sessions["requests"]
-        verifiers.append(RestResponse(session, stage["name"], expected["requests"], test_block_config))
-
-    if "mqtt_response" in stage:
-        mqtt_client = sessions["mqtt"]
-        verifiers.append(MQTTResponse(mqtt_client, stage["name"], expected["mqtt"], test_block_config))
+    for p in plugins:
+        if p.plugin.request_block_name in stage:
+            session = sessions[p.name]
+            verifier = p.plugin.verifier_type(session, stage["name"], expected[p.name], test_block_config)
+            verifiers.append(verifier)
 
     return verifiers
