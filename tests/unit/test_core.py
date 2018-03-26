@@ -279,7 +279,7 @@ class TestFormatMQTTVarsJson:
             message_received=Mock(return_value=mock_response),
         )
 
-        with patch("tavern.mqtt.paho.Client", fake_client), \
+        with patch("tavern.contrib.mqtt.client.paho.Client", fake_client), \
         patch("tavern.core.get_extra_sessions", return_value={"mqtt": fake_client}) as pmock:
             run_test("heif", fulltest, includes)
 
@@ -331,7 +331,7 @@ class TestFormatMQTTVarsPlain:
             message_received=Mock(return_value=mock_response),
         )
 
-        with patch("tavern.mqtt.paho.Client", fake_client), \
+        with patch("tavern.contrib.mqtt.client.paho.Client", fake_client), \
         patch("tavern.core.get_extra_sessions", return_value={"mqtt": fake_client}) as pmock:
             run_test("heif", fulltest, includes)
 
