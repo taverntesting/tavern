@@ -127,10 +127,12 @@ def get_request_type(stage, test_block_config, sessions):
         BaseRequest: request object with a run() method
     """
 
-    keys = {
-        "request": RestRequest,
-        "mqtt_publish": MQTTRequest,
-    }
+    plugins = load_plugins()
+
+    keys = {}
+
+    for p in plugins:
+        keys[p.plugin.request_block_name] = p.plugin.request_type
 
     if len(set(keys) & set(stage)) > 1:
         logger.error("Can only specify 1 request type")
@@ -139,26 +141,21 @@ def get_request_type(stage, test_block_config, sessions):
         logger.error("Need to specify one of '%s'", keys.keys())
         raise exceptions.MissingKeysError
 
-    if "request" in stage:
-        rspec = stage["request"]
-
-        session = sessions["requests"]
-
-        r = RestRequest(session, rspec, test_block_config)
-    elif "mqtt_publish" in stage:
-        session = sessions["mqtt"]
-
+    # We've validated that 1 and only 1 is there, so just loop until the first
+    # one is found
+    for p in plugins:
         try:
-            mqtt_client = sessions["mqtt"]
-        except KeyError as e:
-            logger.error("No mqtt settings but stage wanted to send an mqtt message")
-            raise_from(exceptions.MissingSettingsError, e)
+            request_args = stage[p.plugin.request_block_name]
+        except KeyError:
+            pass
+        else:
+            session = sessions[p.name]
+            request_class = p.plugin.request_type
+            break
 
-        rspec = stage["mqtt_publish"]
+    request_maker = request_class(session, request_args, test_block_config)
 
-        r = MQTTRequest(mqtt_client, rspec, test_block_config)
-
-    return r
+    return request_maker
 
 
 def get_expected(stage, test_block_config, sessions):
