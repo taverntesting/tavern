@@ -1,7 +1,7 @@
 import logging
-import yaml
 from os.path import join, abspath, dirname
 
+import yaml
 import requests
 
 from tavern.util.dict_util import format_keys

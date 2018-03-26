@@ -1,7 +1,7 @@
 import logging
-import yaml
 from os.path import join, abspath, dirname
 
+import yaml
 import requests
 from future.utils import raise_from
 
@@ -24,6 +24,7 @@ class TavernRestPlugin(PluginHelperBase):
 
     @staticmethod
     def get_expected_from_request(stage, test_block_config, session):
+        # pylint: disable=unused-argument
         try:
             r_expected = stage["response"]
         except KeyError as e:

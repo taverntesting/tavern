@@ -4,13 +4,11 @@ This is here mainly to make MQTT easier, this will almost defintiely change
 significantly if/when a proper plugin system is implemented!
 """
 import logging
-import requests
 
 import yaml
 import stevedore
 from future.utils import raise_from
 
-from .util.dict_util import format_keys
 from .util import exceptions
 # from .request import RestRequest, MQTTRequest
 # from .response import RestResponse, MQTTResponse
@@ -25,6 +23,7 @@ class PluginHelperBase(object):
 def plugin_load_error(mgr, entry_point, err):
     """ Handle import errors
     """
+    # pylint: disable=unused-argument
     msg = "Error loading plugin {} - {}".format(entry_point, err)
     raise_from(exceptions.PluginLoadError(msg), err)
 
@@ -85,10 +84,11 @@ def load_plugins():
         - Different plugin names
     """
     def enabled(ext):
+        # pylint: disable=unused-argument
         return True
         # Is this at all useful for testing...?
-        if ext.name not in ["http", "mqtt"]:
-            raise NotImplementedError("Currently only supports 'http' and 'mqtt' blocks")
+        # if ext.name not in ["http", "mqtt"]:
+        #     raise NotImplementedError("Currently only supports 'http' and 'mqtt' blocks")
 
     manager = stevedore.EnabledExtensionManager(
         namespace="tavern",
