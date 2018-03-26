@@ -90,3 +90,6 @@ ENV/
 
 tags
 .pytest_cache
+
+# Sublimetext
+*.sublime-*

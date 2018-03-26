@@ -1,9 +1,10 @@
 import collections
+import warnings
 import logging
 
 from future.utils import raise_from
 
-from tavern.util.loader import TypeConvertToken
+from tavern.util.loader import TypeConvertToken, ANYTHING
 from . import exceptions
 
 
@@ -131,6 +132,30 @@ def yield_keyvals(block):
     dots), the original key, and the expected value. If the input is a list, it
     is enumerated so the 'keys' are just [0, 1, 2, ...]
 
+    Example:
+
+        Matching a dictionary with a couple of keys:
+
+        >>> gen = yield_keyvals({"a": {"b": "c"}})
+        >>> next(gen)
+        (['a'], 'a', {'b': 'c'})
+
+        Matching nested key access:
+
+        >>> gen = yield_keyvals({"a.b.c": "d"})
+        >>> next(gen)
+        (['a', 'b', 'c'], 'a.b.c', 'd')
+
+        Matching a list of items:
+
+        >>> gen = yield_keyvals(["a", "b", "c"])
+        >>> next(gen)
+        (['0'], '0', 'a')
+        >>> next(gen)
+        (['1'], '1', 'b')
+        >>> next(gen)
+        (['2'], '2', 'c')
+
     Args:
         block (dict, list): input matches
 
@@ -145,3 +170,66 @@ def yield_keyvals(block):
         for idx, val in enumerate(block):
             sidx = str(idx)
             yield [sidx], sidx, val
+
+
+def check_keys_match_recursive(expected_val, actual_val, keys):
+    """Utility to recursively check response values
+
+    expected and actual both have to be of the same type or it will raise an
+    error.
+
+    Example:
+
+        >>> check_keys_match_recursive({"a": {"b": "c"}}, {"a": {"b": "c"}}, []) is None
+        True
+        >>> check_keys_match_recursive({"a": {"b": "c"}}, {"a": {"b": "d"}}, []) # doctest: +IGNORE_EXCEPTION_DETAIL
+        Traceback (most recent call last):
+          File "/home/michael/code/tavern/tavern/tavern/util/dict_util.py", line 223, in check_keys_match_recursive
+        tavern.util.exceptions.KeyMismatchError: Key mismatch: (expected["a"]["b"] = 'c', actual["a"]["b"] = 'd')
+
+    Todo:
+        This could be turned into a single-dispatch function for cleaner
+        code and to remove a load of the isinstance checks
+
+    Args:
+        expected_val (dict, str): expected value
+        actual_val (dict, str): actual value
+
+    Raises:
+        KeyMismatchError: expected_val and actual_val did not match
+    """
+
+    def full_err():
+        """Get error in the format:
+
+        a["b"]["c"] = 4, b["b"]["c"] = {'key': 'value'}
+        """
+        def _format_err(which):
+            return "{}{}".format(which, "".join('["{}"]'.format(key) for key in keys))
+
+        e_formatted = _format_err("expected")
+        a_formatted = _format_err("actual")
+        return "{} = '{}', {} = '{}'".format(e_formatted, expected_val,
+            a_formatted, actual_val)
+
+    actual_is_dict = isinstance(actual_val, dict)
+    expected_is_dict = isinstance(expected_val, dict)
+    if (actual_is_dict and not expected_is_dict) or (expected_is_dict and not actual_is_dict):
+        raise exceptions.KeyMismatchError("Structure of returned data was different than expected ({})".format(full_err()))
+
+    if isinstance(expected_val, dict):
+        if set(expected_val.keys()) != set(actual_val.keys()):
+            raise exceptions.KeyMismatchError("Structure of returned data was different than expected ({})".format(full_err()))
+
+        for key in expected_val:
+            check_keys_match_recursive(expected_val[key], actual_val[key], keys + [key])
+    else:
+        try:
+            assert actual_val == expected_val
+        except AssertionError as e:
+            if expected_val is None:
+                warnings.warn("Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.", FutureWarning)
+            elif expected_val is ANYTHING:
+                logger.debug("Actual value = '%s' - matches !anything", actual_val)
+            else:
+                raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)

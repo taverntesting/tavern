@@ -67,11 +67,11 @@ mapping:
             unique: true
 
           delay_before:
-            type: int
+            type: float
             required: false
             unique: true
 
           delay_after:
-            type: int
+            type: float
             required: false
             unique: true

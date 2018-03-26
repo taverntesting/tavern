@@ -1,5 +1,5 @@
 import pytest
-from mock import Mock
+from mock import Mock, patch
 
 from tavern.response import RestResponse
 from tavern.util.loader import ANYTHING
@@ -226,6 +226,42 @@ class TestValidate:
 
         assert not r.errors
 
+    def test_validate_missing_list_key(self, example_response, includes):
+        """If we expect 4 items and 3 were returned, catch error"""
+
+        example_response["body"] = ["a", 1, "b", "c"]
+        bad_expected = example_response["body"][:-1]
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        r._validate_block("body", bad_expected)
+
+        assert r.errors
+
+    def test_validate_wrong_list_dict(self, example_response, includes):
+        """We expected a list, but we got a dict in the response"""
+
+        example_response["body"] = ["a", 1, "b", "c"]
+        bad_expected = {"a": "b"}
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        r._validate_block("body", bad_expected)
+
+        assert r.errors
+
+    def test_validate_wrong_dict_list(self, example_response, includes):
+        """We expected a dict, but we got a list in the response"""
+
+        example_response["body"] = {"a": "b"}
+        bad_expected = ["a", "b", "c"]
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        r._validate_block("body", bad_expected)
+
+        assert r.errors
+
 
 class TestNestedValidate:
 
@@ -249,7 +285,7 @@ class TestNestedValidate:
 
         r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        with pytest.warns(RuntimeWarning):
+        with pytest.warns(FutureWarning):
             r._validate_block("body", expected)
 
         assert not r.errors
@@ -328,3 +364,14 @@ class TestFull:
             status_code = nested_response["status_code"]
 
         r.verify(FakeResponse())
+
+
+def test_status_code_warns(example_response, includes):
+    """Should continue if the status code is nonexistent
+    """
+    example_response["status_code"] = 231234
+
+    with patch("tavern.response.rest.logger.warning") as wmock:
+        RestResponse(Mock(), "Test 1", example_response, includes)
+
+    assert wmock.called

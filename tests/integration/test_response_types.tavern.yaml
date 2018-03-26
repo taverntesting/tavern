@@ -1,0 +1,26 @@
+---
+
+test_name: Make sure it can handle list responses
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match line notation
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        - a
+        - b
+        - c
+
+  - name: match json notation
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      body: [a, b, c]
