@@ -180,8 +180,9 @@ def get_expected(stage, test_block_config, sessions):
     expected = {}
 
     for p in plugins:
-        plugin_expected = p.plugin.get_expected_from_request(stage, test_block_config, sessions[p.name])
-        expected[p.name] = plugin_expected
+        if p.name in sessions:
+            plugin_expected = p.plugin.get_expected_from_request(stage, test_block_config, sessions[p.name])
+            expected[p.name] = plugin_expected
 
     return expected
 
