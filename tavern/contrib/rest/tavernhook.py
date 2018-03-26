@@ -1,4 +1,5 @@
 import logging
+import yaml
 from os.path import join, abspath, dirname
 
 import requests
@@ -36,3 +37,5 @@ class TavernRestPlugin(PluginHelperBase):
     response_block_name = "response"
 
     schema_path = join(abspath(dirname(__file__)), "schema.yaml")
+    with open(schema_path, "r") as schema_file:
+        schema = yaml.load(schema_file)
