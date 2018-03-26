@@ -29,6 +29,23 @@ def plugin_load_error(mgr, entry_point, err):
     raise_from(exceptions.PluginLoadError(msg), err)
 
 
+def load_schema_plugins(schema_filename):
+    """Load base schema with plugin schemas"""
+
+    plugins = load_plugins()
+
+    with open(schema_filename, "r") as base_schema_file:
+        base_schema = yaml.load(base_schema_file)
+
+    for p in plugins:
+        plugin_schema = p.plugin.schema
+        base_schema["mapping"].update(plugin_schema.get("init", {}))
+        base_schema["mapping"]["stages"]["sequence"][0]["mapping"].update(plugin_schema.get("request"))
+        base_schema["mapping"]["stages"]["sequence"][0]["mapping"].update(plugin_schema.get("response"))
+
+    return base_schema
+
+
 def is_valid_reqresp_plugin(ext):
     """Whether this is a valid 'reqresp' plugin
 
