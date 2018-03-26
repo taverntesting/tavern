@@ -22,7 +22,7 @@ class TavernRestPlugin(PluginHelperBase):
     request_block_name = "request"
 
     @staticmethod
-    def get_expected_from_request(stage, test_block_config):
+    def get_expected_from_request(stage, test_block_config, session):
         try:
             r_expected = stage["response"]
         except KeyError as e:

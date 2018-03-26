@@ -18,7 +18,7 @@ session_type = requests.Session
 request_type = MQTTRequest
 request_block_name = "mqtt_publish"
 
-def get_expected_from_request(session, stage, test_block_config):
+def get_expected_from_request(stage, test_block_config, session):
     # mqtt response is not required
     m_expected = stage.get("mqtt_response")
     if m_expected:

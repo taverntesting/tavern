@@ -175,29 +175,13 @@ def get_expected(stage, test_block_config, sessions):
         dict: mapping of request type: expected response dict
     """
 
+    plugins = load_plugins()
+
     expected = {}
 
-    if "request" in stage:
-        try:
-            r_expected = stage["response"]
-        except KeyError as e:
-            logger.error("Need a 'response' block if a 'request' is being sent")
-            raise_from(exceptions.MissingSettingsError, e)
-
-        f_expected = format_keys(r_expected, test_block_config["variables"])
-        expected["requests"] = f_expected
-
-    if "mqtt_response" in stage:
-        # mqtt response is not required
-        m_expected = stage.get("mqtt_response")
-        if m_expected:
-            # format so we can subscribe to the right topic
-            f_expected = format_keys(m_expected, test_block_config["variables"])
-            mqtt_client = sessions["mqtt"]
-            mqtt_client.subscribe(f_expected["topic"])
-            expected["mqtt"] = f_expected
-        else:
-            expected["mqtt"] = m_expected
+    for p in plugins:
+        plugin_expected = p.plugin.get_expected_from_request(stage, test_block_config, sessions[p.name])
+        expected[p.name] = plugin_expected
 
     return expected
 
