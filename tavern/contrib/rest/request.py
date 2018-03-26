@@ -16,7 +16,7 @@ from tavern.util import exceptions
 from tavern.util.dict_util import format_keys, check_expected_keys
 from tavern.schemas.extensions import get_wrapped_create_function
 
-from .base import BaseRequest
+from tavern.request.base import BaseRequest
 
 logger = logging.getLogger(__name__)
 

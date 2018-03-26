@@ -3,7 +3,7 @@ from mock import Mock
 
 from tavern.contrib.mqtt.client import MQTTClient
 from tavern.util import exceptions
-from tavern.response.mqtt import MQTTResponse
+from tavern.contrib.mqtt.response import MQTTResponse
 
 
 

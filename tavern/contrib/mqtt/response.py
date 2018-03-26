@@ -4,7 +4,7 @@ import time
 
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util import exceptions
-from .base import BaseResponse
+from tavern.response.base import BaseResponse
 
 try:
     LoadException = json.decoder.JSONDecodeError

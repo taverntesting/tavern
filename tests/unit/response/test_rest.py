@@ -1,7 +1,7 @@
 import pytest
 from mock import Mock, patch
 
-from tavern.response import RestResponse
+from tavern.contrib.rest.response import RestResponse
 from tavern.util.loader import ANYTHING
 from tavern.util import exceptions
 

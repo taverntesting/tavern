@@ -13,7 +13,7 @@ from requests.status_codes import _codes
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util.dict_util import recurse_access_key, deep_dict_merge
 from tavern.util.exceptions import TestFailError
-from .base import BaseResponse, indent_err_text
+from tavern.response.base import BaseResponse, indent_err_text
 
 logger = logging.getLogger(__name__)
 

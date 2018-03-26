@@ -8,7 +8,7 @@ from box import Box
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys, check_expected_keys
 
-from .base import BaseRequest
+from tavern.request.base import BaseRequest
 
 
 logger = logging.getLogger(__name__)

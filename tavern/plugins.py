@@ -12,8 +12,8 @@ from future.utils import raise_from
 
 from .util.dict_util import format_keys
 from .util import exceptions
-from .request import RestRequest, MQTTRequest
-from .response import RestResponse, MQTTResponse
+# from .request import RestRequest, MQTTRequest
+# from .response import RestResponse, MQTTResponse
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +62,7 @@ def is_valid_reqresp_plugin(ext):
     return all(hasattr(ext.plugin, i) for i in required)
 
 
-def load_plugins(name="reqresp"):
+def load_plugins(name="http"):
     """Load plugins from the 'tavern' entrypoint namespace
 
     This can be a module or a class as long as it defines the right things
@@ -75,16 +75,22 @@ def load_plugins(name="reqresp"):
     Args:
         name (str): name to load plugins. Has to be 'reqresp' at the moment
     """
-    if name != "reqresp":
-        raise NotImplementedError
+    if name not in ["http", "mqtt"]:
+        raise NotImplementedError("Currently only supports 'http' and 'mqtt' blocks")
 
-    manager = stevedore.NamedExtensionManager(
+    # FIXME
+    # This will have to be a configurable thing - we want to be able to specify
+    # different "backends" for the same thing. EG a flask test backend for
+    # testing flask servers
+    manager = stevedore.DriverManager(
         namespace="tavern",
         name=name,
         verify_requirements=True,
         on_load_failure_callback=plugin_load_error,
     )
     manager.propagate_map_exceptions = True
+
+    return manager.plugin
 
 
 def get_extra_sessions(test_spec):
