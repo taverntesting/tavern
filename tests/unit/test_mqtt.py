@@ -2,7 +2,7 @@ import pytest
 from mock import patch
 import paho.mqtt.client as paho
 
-from tavern.mqtt import MQTTClient
+from tavern.contrib.mqtt.client import MQTTClient
 from tavern.util import exceptions
 
 

@@ -7,7 +7,7 @@ import pytest
 import requests
 import paho.mqtt.client as paho
 
-from tavern.mqtt import MQTTClient
+from tavern.contrib.mqtt.client import MQTTClient
 from tavern.core import run_test
 from tavern.util import exceptions
 
