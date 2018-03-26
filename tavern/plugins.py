@@ -19,12 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class PluginHelperBase(object):
-    def __init__(self):
-        try:
-            with open(self.schema_path, "r") as schema_file:
-                self.schema = yaml.load(schema_file)
-        except AttributeError as e:
-            raise_from(exceptions.PluginLoadError("No file '{}' to load schema from".format(self.schema_path)))
+    """Base for plugins"""
 
 
 def plugin_load_error(mgr, entry_point, err):
