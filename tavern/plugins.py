@@ -62,7 +62,7 @@ def is_valid_reqresp_plugin(ext):
     return all(hasattr(ext.plugin, i) for i in required)
 
 
-def load_plugins(name="http"):
+def load_plugins():
     """Load plugins from the 'tavern' entrypoint namespace
 
     This can be a module or a class as long as it defines the right things
@@ -71,26 +71,24 @@ def load_plugins(name="http"):
         - Limit which plugins are loaded based on some config/command line
           option
         - Different plugin names
-
-    Args:
-        name (str): name to load plugins. Has to be 'reqresp' at the moment
     """
-    if name not in ["http", "mqtt"]:
-        raise NotImplementedError("Currently only supports 'http' and 'mqtt' blocks")
+    def enabled(ext):
+        return True
+        # Is this at all useful for testing...?
+        if ext.name not in ["http", "mqtt"]:
+            raise NotImplementedError("Currently only supports 'http' and 'mqtt' blocks")
 
-    # FIXME
-    # This will have to be a configurable thing - we want to be able to specify
-    # different "backends" for the same thing. EG a flask test backend for
-    # testing flask servers
-    manager = stevedore.DriverManager(
+    manager = stevedore.EnabledExtensionManager(
         namespace="tavern",
-        name=name,
+        check_func=enabled,
         verify_requirements=True,
         on_load_failure_callback=plugin_load_error,
     )
     manager.propagate_map_exceptions = True
 
-    return manager.plugin
+    manager.map(is_valid_reqresp_plugin)
+
+    return manager
 
 
 def get_extra_sessions(test_spec):
@@ -105,22 +103,12 @@ def get_extra_sessions(test_spec):
 
     sessions = {}
 
-    # always used at the moment
-    requests_session = requests.Session()
-    sessions["requests"] = requests_session
+    plugins = load_plugins()
 
-    if "mqtt" in test_spec:
-        # FIXME
-        # this makes it hard to patch out, will need fixing when prooper plugin
-        # system is put in
-        from .mqtt import MQTTClient
-        try:
-            mqtt_client = MQTTClient(**test_spec["mqtt"])
-        except exceptions.MQTTError:
-            logger.exception("Error initializing mqtt connection")
-            raise
-
-        sessions["mqtt"] = mqtt_client
+    for p in plugins:
+        # TODO
+        # change to test_spec["plugins"].get(....)
+        sessions[p.name] = p.plugin.session_type(**test_spec.get(p.name, {}))
 
     return sessions
 
