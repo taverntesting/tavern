@@ -41,9 +41,6 @@ install:
 # command to run tests
 script:
   - tox -c ${TOXCFG}
-branches:
-  except:
-    - feature/plugins
 
 
 deploy:
