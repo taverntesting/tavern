@@ -1,2 +1,4 @@
 include tavern/schemas/tests.schema.yaml
+include tavern/contrib/mqtt/schema.yaml
+include tavern/contrib/rest/schema.yaml
 include LICENSE
