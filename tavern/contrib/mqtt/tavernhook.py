@@ -2,18 +2,18 @@ import logging
 from os.path import join, abspath, dirname
 
 import yaml
-import requests
 
 from tavern.util.dict_util import format_keys
 
 from .request import MQTTRequest
 from .response import MQTTResponse
+from .client import MQTTClient
 
 
 logger = logging.getLogger(__name__)
 
 
-session_type = requests.Session
+session_type = MQTTClient
 
 request_type = MQTTRequest
 request_block_name = "mqtt_publish"
