@@ -28,7 +28,7 @@ def get_expected_from_request(stage, test_block_config, session):
         mqtt_client.subscribe(f_expected["topic"])
         expected = f_expected
     else:
-        expected = m_expected
+        expected = {}
 
     return expected
 

@@ -118,7 +118,7 @@ def get_extra_sessions(test_spec):
     plugins = load_plugins()
 
     for p in plugins:
-        if any(p.plugin.request_block_name in i for i in test_spec["stages"]):
+        if any((p.plugin.request_block_name in i or p.plugin.response_block_name in i) for i in test_spec["stages"]):
             logger.debug("Initialising session for %s (%s)", p.name, p.plugin.session_type)
             sessions[p.name] = p.plugin.session_type(**test_spec.get(p.name, {}))
 
@@ -193,7 +193,7 @@ def get_expected(stage, test_block_config, sessions):
     expected = {}
 
     for p in plugins:
-        if any(p.plugin.request_block_name in i for i in stage):
+        if p.plugin.response_block_name in stage:
             logger.debug("Getting expected response for %s", p.name)
             plugin_expected = p.plugin.get_expected_from_request(stage, test_block_config, sessions[p.name])
             expected[p.name] = plugin_expected
@@ -219,7 +219,7 @@ def get_verifiers(stage, test_block_config, sessions, expected):
     verifiers = []
 
     for p in plugins:
-        if p.plugin.request_block_name in stage:
+        if p.plugin.response_block_name in stage:
             session = sessions[p.name]
             logger.debug("Initialising verifier for %s (%s)", p.name, p.plugin.verifier_type)
             verifier = p.plugin.verifier_type(session, stage["name"], expected[p.name], test_block_config)
