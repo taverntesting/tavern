@@ -1,9 +1,9 @@
 import pytest
 from mock import Mock
 
-from tavern.contrib.mqtt.client import MQTTClient
+from tavern._plugins.mqtt.client import MQTTClient
 from tavern.util import exceptions
-from tavern.contrib.mqtt.response import MQTTResponse
+from tavern._plugins.mqtt.response import MQTTResponse
 
 
 
