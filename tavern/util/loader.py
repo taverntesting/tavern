@@ -23,7 +23,7 @@ def makeuuid(loader, node):
 
 class YamlSentinel(object):
     def __str__(self):
-        return "<Tavern YAML sentinel - '!{}'>".format(self.constructor)
+        return "<Tavern YAML sentinel - '!{}'>".format(self.constructor) # pylint: disable=no-member
 
 
 class TypeConvertToken(YamlSentinel):

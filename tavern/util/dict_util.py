@@ -212,9 +212,9 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
         return "{} = '{}', {} = '{}'".format(e_formatted, expected_val,
             a_formatted, actual_val)
 
-    actual_is_dict = isinstance(actual_val, dict)
-    expected_is_dict = isinstance(expected_val, (dict, type(ANYTHING)))
-    if (actual_is_dict and not expected_is_dict) or (expected_is_dict and not actual_is_dict):
+    actual_type = type(actual_val)
+    expected_matches = isinstance(expected_val, (actual_type, type(ANYTHING)))
+    if not expected_matches and expected_val is not None:
         raise exceptions.KeyMismatchError("Structure of returned data was different than expected ({})".format(full_err()))
 
     if isinstance(expected_val, dict):
