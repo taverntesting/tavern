@@ -23,8 +23,7 @@ def import_ext_function(entrypoint):
         function: function loaded from entrypoint
 
     Raises:
-        ImportError: If the module or function did not exist
-        ValueError: If the entrypoint was malformed
+        InvalidExtFunctionError: If the module or function did not exist
     """
     try:
         module, funcname = entrypoint.split(":")
