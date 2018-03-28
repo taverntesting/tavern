@@ -1,4 +1,7 @@
 import logging
+from os.path import join, abspath, dirname
+
+import yaml
 
 from tavern.util.dict_util import format_keys
 
@@ -31,3 +34,7 @@ def get_expected_from_request(stage, test_block_config, session):
 
 verifier_type = MQTTResponse
 response_block_name = "mqtt_response"
+
+schema_path = join(abspath(dirname(__file__)), "schema.yaml")
+with open(schema_path, "r") as schema_file:
+    schema = yaml.load(schema_file)
