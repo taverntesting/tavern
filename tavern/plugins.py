@@ -5,7 +5,6 @@ significantly if/when a proper plugin system is implemented!
 """
 import logging
 
-import yaml
 import stevedore
 from future.utils import raise_from
 
@@ -26,23 +25,6 @@ def plugin_load_error(mgr, entry_point, err):
     # pylint: disable=unused-argument
     msg = "Error loading plugin {} - {}".format(entry_point, err)
     raise_from(exceptions.PluginLoadError(msg), err)
-
-
-def load_schema_plugins(schema_filename):
-    """Load base schema with plugin schemas"""
-
-    plugins = load_plugins()
-
-    with open(schema_filename, "r") as base_schema_file:
-        base_schema = yaml.load(base_schema_file)
-
-    for p in plugins:
-        plugin_schema = p.plugin.schema
-        base_schema["mapping"].update(plugin_schema.get("init", {}))
-        base_schema["mapping"]["stages"]["sequence"][0]["mapping"].update(plugin_schema.get("request"))
-        base_schema["mapping"]["stages"]["sequence"][0]["mapping"].update(plugin_schema.get("response"))
-
-    return base_schema
 
 
 def is_valid_reqresp_plugin(ext):
@@ -66,14 +48,12 @@ def is_valid_reqresp_plugin(ext):
         "verifier_type",
         # response, mqtt_response
         "response_block_name",
-        # dictionary with pykwalify schema
-        "schema",
     ]
 
     return all(hasattr(ext.plugin, i) for i in required)
 
 
-def load_plugins():
+def load_plugins(namespace):
     """Load plugins from the 'tavern' entrypoint namespace
 
     This can be a module or a class as long as it defines the right things
@@ -83,15 +63,18 @@ def load_plugins():
           option
         - Different plugin names
     """
+
     def enabled(ext):
         # pylint: disable=unused-argument
-        return True
-        # Is this at all useful for testing...?
-        # if ext.name not in ["http", "mqtt"]:
-        #     raise NotImplementedError("Currently only supports 'http' and 'mqtt' blocks")
+        # TODO
+        # Check that this was passed in on the command line
+        pass
+
+    if namespace not in ["http", "mqtt"]:
+        raise NotImplementedError("Tavern currently only supports http and mqtt backends")
 
     manager = stevedore.EnabledExtensionManager(
-        namespace="tavern",
+        namespace=namespace,
         check_func=enabled,
         verify_requirements=True,
         on_load_failure_callback=plugin_load_error,

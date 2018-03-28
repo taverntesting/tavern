@@ -1,7 +1,5 @@
 import logging
-from os.path import join, abspath, dirname
 
-import yaml
 import requests
 from future.utils import raise_from
 
@@ -36,7 +34,3 @@ class TavernRestPlugin(PluginHelperBase):
 
     verifier_type = RestResponse
     response_block_name = "response"
-
-    schema_path = join(abspath(dirname(__file__)), "schema.yaml")
-    with open(schema_path, "r") as schema_file:
-        schema = yaml.load(schema_file)
