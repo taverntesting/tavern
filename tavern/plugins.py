@@ -70,6 +70,7 @@ def load_plugins(test_block_config):
         namespace = "tavern_{}".format(backend)
 
         def enabled(ext):
+            # pylint: disable=cell-var-from-loop
             return ext.name == test_block_config["backends"][backend]
 
         manager = stevedore.EnabledExtensionManager(
