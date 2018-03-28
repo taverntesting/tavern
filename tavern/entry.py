@@ -40,7 +40,7 @@ class TavernArgParser(ArgumentParser):
             default=False,
         )
 
-        add_parser_options(self)
+        add_parser_options(self.add_argument)
 
 
 def main():

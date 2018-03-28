@@ -29,23 +29,23 @@ def pytest_collect_file(parent, path):
     return None
 
 
-def add_parser_options(parser):
+def add_parser_options(parser_addoption):
     """Add argparse options
 
     This is shared between the CLI and pytest (for now)
     """
-    parser.addoption(
+    parser_addoption(
         "--tavern-global-cfg",
         help="One or more global configuration files to include in every test",
         required=False,
         nargs="+",
     )
-    parser.addoption(
+    parser_addoption(
         "--tavern-http-backend",
         help="Which http backend to use",
         default="requests",
     )
-    parser.addoption(
+    parser_addoption(
         "--tavern-mqtt-backend",
         help="Which mqtt backend to use",
         default="paho-mqtt",
@@ -55,7 +55,7 @@ def add_parser_options(parser):
 def pytest_addoption(parser):
     """Add an option to pass in a global config file for tavern
     """
-    add_parser_options(parser)
+    add_parser_options(parser.addoption)
 
     parser.addini(
         "tavern-global-cfg",
@@ -149,14 +149,17 @@ class YamlItem(pytest.Item):
         all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
         global_cfg = load_global_config(all_paths)
 
+        global_cfg["backends"] = {}
         backends = ["http", "mqtt"]
         for b in backends:
             # FIXME
             # this logic is broken
             ini_opt = self.config.getini("tavern-{}-backend".format(b))
-            cli_opt = self.config.getoption("tavern-{}-backend".format(b))
+            cli_opt = self.config.getoption("tavern_{}_backend".format(b))
             if cli_opt != ini_opt:
                 opt = cli_opt
+            else:
+                opt = ini_opt
 
             global_cfg["backends"][b] = opt
 

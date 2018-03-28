@@ -150,8 +150,10 @@ def run(in_file, tavern_global_cfg, tavern_http_backend, tavern_mqtt_backend):
     global_cfg_paths = tavern_global_cfg
     global_cfg = load_global_config(global_cfg_paths)
 
-    global_cfg["backends"]["http"] = tavern_http_backend
-    global_cfg["backends"]["mqtt"] = tavern_mqtt_backend
+    global_cfg["backends"] = {
+        "http": tavern_http_backend,
+        "mqtt": tavern_mqtt_backend,
+    }
 
     with open(in_file, "r") as infile:
         # Multiple documents per file => multiple test paths per file
