@@ -280,7 +280,7 @@ class TestFormatMQTTVarsJson:
         )
 
         with patch("tavern._plugins.mqtt.client.paho.Client", fake_client), \
-        patch("tavern.core.get_extra_sessions", return_value={"mqtt": fake_client}) as pmock:
+        patch("tavern.core.get_extra_sessions", return_value={"paho-mqtt": fake_client}) as pmock:
             run_test("heif", fulltest, includes)
 
         assert pmock.called
@@ -332,7 +332,7 @@ class TestFormatMQTTVarsPlain:
         )
 
         with patch("tavern._plugins.mqtt.client.paho.Client", fake_client), \
-        patch("tavern.core.get_extra_sessions", return_value={"mqtt": fake_client}) as pmock:
+        patch("tavern.core.get_extra_sessions", return_value={"paho-mqtt": fake_client}) as pmock:
             run_test("heif", fulltest, includes)
 
         assert pmock.called

@@ -70,7 +70,7 @@ def run_test(in_file, test_spec, global_cfg):
     logger.info("Running test : %s", test_block_name)
 
     with ExitStack() as stack:
-        sessions = get_extra_sessions(test_spec)
+        sessions = get_extra_sessions(test_spec, test_block_config)
 
         for name, session in sessions.items():
             logger.debug("Entering context for %s", name)
@@ -121,7 +121,7 @@ def run_test(in_file, test_spec, global_cfg):
             delay(stage, "after")
 
 
-def run(in_file, tavern_global_cfg):
+def run(in_file, tavern_global_cfg, tavern_http_backend, tavern_mqtt_backend):
     """Run all tests contained in a file
 
     For each test this makes sure it matches the expected schema, then runs it.
@@ -149,6 +149,9 @@ def run(in_file, tavern_global_cfg):
 
     global_cfg_paths = tavern_global_cfg
     global_cfg = load_global_config(global_cfg_paths)
+
+    global_cfg["backends"]["http"] = tavern_http_backend
+    global_cfg["backends"]["mqtt"] = tavern_mqtt_backend
 
     with open(in_file, "r") as infile:
         # Multiple documents per file => multiple test paths per file

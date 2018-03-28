@@ -149,6 +149,17 @@ class YamlItem(pytest.Item):
         all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
         global_cfg = load_global_config(all_paths)
 
+        backends = ["http", "mqtt"]
+        for b in backends:
+            # FIXME
+            # this logic is broken
+            ini_opt = self.config.getini("tavern-{}-backend".format(b))
+            cli_opt = self.config.getoption("tavern-{}-backend".format(b))
+            if cli_opt != ini_opt:
+                opt = cli_opt
+
+            global_cfg["backends"][b] = opt
+
         run_test(self.path, self.spec, global_cfg)
 
     def repr_failure(self, excinfo): # pylint: disable=no-self-use

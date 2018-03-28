@@ -53,7 +53,7 @@ def is_valid_reqresp_plugin(ext):
     return all(hasattr(ext.plugin, i) for i in required)
 
 
-def load_plugins(namespace):
+def load_plugins(test_block_config):
     """Load plugins from the 'tavern' entrypoint namespace
 
     This can be a module or a class as long as it defines the right things
@@ -64,29 +64,33 @@ def load_plugins(namespace):
         - Different plugin names
     """
 
-    def enabled(ext):
-        # pylint: disable=unused-argument
-        # TODO
-        # Check that this was passed in on the command line
-        pass
+    plugins = []
 
-    if namespace not in ["http", "mqtt"]:
-        raise NotImplementedError("Tavern currently only supports http and mqtt backends")
+    for backend in ["http", "mqtt"]:
+        namespace = "tavern_{}".format(backend)
 
-    manager = stevedore.EnabledExtensionManager(
-        namespace=namespace,
-        check_func=enabled,
-        verify_requirements=True,
-        on_load_failure_callback=plugin_load_error,
-    )
-    manager.propagate_map_exceptions = True
+        def enabled(ext):
+            return ext.name == test_block_config["backends"][backend]
 
-    manager.map(is_valid_reqresp_plugin)
+        manager = stevedore.EnabledExtensionManager(
+            namespace=namespace,
+            check_func=enabled,
+            verify_requirements=True,
+            on_load_failure_callback=plugin_load_error,
+        )
+        manager.propagate_map_exceptions = True
 
-    return manager
+        manager.map(is_valid_reqresp_plugin)
+
+        if len(manager.extensions) != 1:
+            raise exceptions.MissingSettingsError("Expected exactly one entrypoint in 'tavern-{}' namespace but got {}".format(backend, len(manager.extensions)))
+
+        plugins.extend(manager.extensions)
+
+    return plugins
 
 
-def get_extra_sessions(test_spec):
+def get_extra_sessions(test_spec, test_block_config):
     """Get extra 'sessions' for any extra test types
 
     Args:
@@ -98,7 +102,7 @@ def get_extra_sessions(test_spec):
 
     sessions = {}
 
-    plugins = load_plugins()
+    plugins = load_plugins(test_block_config)
 
     for p in plugins:
         if any((p.plugin.request_block_name in i or p.plugin.response_block_name in i) for i in test_spec["stages"]):
@@ -122,7 +126,7 @@ def get_request_type(stage, test_block_config, sessions):
         BaseRequest: request object with a run() method
     """
 
-    plugins = load_plugins()
+    plugins = load_plugins(test_block_config)
 
     keys = {}
 
@@ -171,7 +175,7 @@ def get_expected(stage, test_block_config, sessions):
         dict: mapping of request type: expected response dict
     """
 
-    plugins = load_plugins()
+    plugins = load_plugins(test_block_config)
 
     expected = {}
 
@@ -197,7 +201,7 @@ def get_verifiers(stage, test_block_config, sessions, expected):
         BaseResponse: response validator object with a verify(response) method
     """
 
-    plugins = load_plugins()
+    plugins = load_plugins(test_block_config)
 
     verifiers = []
 

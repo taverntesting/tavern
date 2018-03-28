@@ -9,6 +9,10 @@ def fix_example_includes():
             "test_auth_token": "abc123",
             "code": "def456",
             "callback_url": "www.yahoo.co.uk",
+        },
+        "backends": {
+            "mqtt": "paho-mqtt",
+            "http": "requests",
         }
     }
 
