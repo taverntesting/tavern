@@ -71,3 +71,7 @@ class MQTTTLSError(TavernException):
 
 class PluginLoadError(TavernException):
     """Error loading a plugin"""
+
+
+class InvalidExtFunctionError(TavernException):
+    """Error loading an external function for validation/plugin use"""
