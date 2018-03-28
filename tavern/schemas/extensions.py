@@ -108,7 +108,7 @@ def validate_extensions(value, rule_obj, path):
     try:
         iter(value)
     except TypeError as e:
-        raise BadSchemaError("Invalid value for key - things like body/params/headers have to be a dictionary or a list, not a single value") from e
+        raise_from(BadSchemaError("Invalid value for key - things like body/params/headers have to be a dictionary or a list, not a single value"), e)
 
     # pylint: disable=unused-argument
     if "$ext" in value:

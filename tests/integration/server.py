@@ -32,3 +32,13 @@ def get_fake_dictionary():
     }
 
     return jsonify(fake), 200
+
+
+@app.route("/fake_list", methods=["GET"])
+def list_response():
+    list_response = [
+        "a",
+        "b",
+        "c",
+    ]
+    return jsonify(list_response), 200
