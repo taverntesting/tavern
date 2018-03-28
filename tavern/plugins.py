@@ -76,42 +76,60 @@ def is_valid_reqresp_plugin(ext):
     return all(hasattr(ext.plugin, i) for i in required)
 
 
-def load_plugins(test_block_config):
-    """Load plugins from the 'tavern' entrypoint namespace
+class _PluginCache(object):
+    def __init__(self):
+        self.plugins = {}
 
-    This can be a module or a class as long as it defines the right things
+    def __call__(self, config=None):
+        if not config and not self.plugins:
+            raise exceptions.PluginLoadError("No config to load plugins from")
+        elif self.plugins:
+            return self.plugins
+        elif not self.plugins and config:
+            # FIXME
+            # Do we want to reload this every time we get a new config or cache it?
+            self.plugins = self._load_plugins(config)
+            return self.plugins
 
-    Todo:
-        - Limit which plugins are loaded based on some config/command line
-          option
-        - Different plugin names
-    """
+    def _load_plugins(self, test_block_config):
+        """Load plugins from the 'tavern' entrypoint namespace
 
-    plugins = []
+        This can be a module or a class as long as it defines the right things
 
-    for backend in ["http", "mqtt"]:
-        namespace = "tavern_{}".format(backend)
+        Todo:
+            - Limit which plugins are loaded based on some config/command line
+              option
+            - Different plugin names
+        """
 
-        def enabled(ext):
-            # pylint: disable=cell-var-from-loop
-            return ext.name == test_block_config["backends"][backend]
+        plugins = []
 
-        manager = stevedore.EnabledExtensionManager(
-            namespace=namespace,
-            check_func=enabled,
-            verify_requirements=True,
-            on_load_failure_callback=plugin_load_error,
-        )
-        manager.propagate_map_exceptions = True
+        for backend in ["http", "mqtt"]:
+            namespace = "tavern_{}".format(backend)
 
-        manager.map(is_valid_reqresp_plugin)
+            def enabled(ext):
+                # pylint: disable=cell-var-from-loop
+                return ext.name == test_block_config["backends"][backend]
 
-        if len(manager.extensions) != 1:
-            raise exceptions.MissingSettingsError("Expected exactly one entrypoint in 'tavern-{}' namespace but got {}".format(backend, len(manager.extensions)))
+            manager = stevedore.EnabledExtensionManager(
+                namespace=namespace,
+                check_func=enabled,
+                verify_requirements=True,
+                on_load_failure_callback=plugin_load_error,
+            )
+            manager.propagate_map_exceptions = True
 
-        plugins.extend(manager.extensions)
+            manager.map(is_valid_reqresp_plugin)
 
-    return plugins
+            if len(manager.extensions) != 1:
+                raise exceptions.MissingSettingsError("Expected exactly one entrypoint in 'tavern-{}' namespace but got {}".format(backend, len(manager.extensions)))
+
+            plugins.extend(manager.extensions)
+
+        return plugins
+
+
+load_plugins = _PluginCache()
 
 
 def get_extra_sessions(test_spec, test_block_config):

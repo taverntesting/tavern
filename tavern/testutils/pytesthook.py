@@ -4,6 +4,7 @@ import pytest
 import yaml
 from future.utils import raise_from
 
+from tavern.plugins import load_plugins
 from tavern.core import run_test
 from tavern.util.general import load_global_config
 from tavern.util import exceptions
@@ -140,8 +141,6 @@ class YamlItem(pytest.Item):
         self.obj = FakeObj
 
     def runtest(self):
-        verify_tests(self.spec)
-
         # Load ini first
         ini_global_cfg_paths = self.config.getini("tavern-global-cfg") or []
         # THEN load command line, to allow overwriting of values
@@ -163,6 +162,10 @@ class YamlItem(pytest.Item):
                 opt = ini_opt
 
             global_cfg["backends"][b] = opt
+
+        load_plugins(global_cfg)
+
+        verify_tests(self.spec)
 
         run_test(self.path, self.spec, global_cfg)
 
