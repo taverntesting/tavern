@@ -1,14 +1,18 @@
 import os
 import tempfile
+import functools
 import logging
 import contextlib
 
 from future.utils import raise_from
 
 import yaml
-from pykwalify.core import Core
+from pykwalify import core
 import pykwalify
 from tavern.util.exceptions import BadSchemaError
+
+from tavern.util.loader import IncludeLoader
+core.yaml.safe_load = functools.partial(yaml.load, Loader=IncludeLoader)
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +32,7 @@ def verify_generic(to_verify, schema_filename):
     here = os.path.dirname(os.path.abspath(__file__))
     extension_module_filename = os.path.join(here, "extensions.py")
 
-    verifier = Core(
+    verifier = core.Core(
         to_verify,
         [schema_filename],
         extensions=[extension_module_filename],
