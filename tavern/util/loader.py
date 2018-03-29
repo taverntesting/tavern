@@ -21,45 +21,16 @@ def makeuuid(loader, node):
     return str(uuid.uuid4())
 
 
-class YamlSentinel(object):
-    def __str__(self):
-        return "<Tavern YAML sentinel - '!{}'>".format(self.constructor) # pylint: disable=no-member
-
-
-class TypeConvertToken(YamlSentinel):
+class TypeConvertToken(object):
     def __init__(self, constructor, value):
         self.constructor = constructor
         self.value = value
-
-
-class TypeSentinel(YamlSentinel):
-    def __init__(self, constructor):
-        self.constructor = constructor
-
-
-class AnythingSentinel(YamlSentinel):
-    constructor = "anything"
-
-ANYTHING = AnythingSentinel()
 
 
 def construct_type_convert(constructor):
     def callback(loader, node):
         value = loader.construct_scalar(node)
         return TypeConvertToken(constructor, value)
-    return callback
-
-
-def construct_type_sentinel(constructor):
-    """Similar to above but don't implicitly convert a value
-
-    Only used for checking return values
-    """
-    def callback(loader, node):
-        value = loader.construct_scalar(node)
-        if value:
-            raise BadSchemaError("Can't use '{}' with a value - this should only be used in a response to signify the expected type of a returned value".format("TODO"))
-        return TypeSentinel(constructor)
     return callback
 
 
@@ -79,10 +50,6 @@ class LoaderMeta(type):
         cls.add_constructor('!uuid', makeuuid)
         cls.add_constructor('!int', construct_type_convert(int))
         cls.add_constructor('!float', construct_type_convert(float))
-        cls.add_constructor('!anything', anything)
-        cls.add_constructor('!anyint', construct_type_sentinel(int))
-        cls.add_constructor('!anyfloat', construct_type_sentinel(float))
-        cls.add_constructor('!anystr', construct_type_sentinel(str))
 
         return cls
 
@@ -144,3 +111,52 @@ class IncludeLoader(with_metaclass(LoaderMeta, Reader, Scanner, Parser, Remember
 
         with open(filename, 'r') as f:
             return yaml.load(f, IncludeLoader)
+
+
+class TypeSentinel(yaml.YAMLObject):
+    yaml_loader = IncludeLoader
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        return cls()
+
+
+class IntSentinel(TypeSentinel):
+    yaml_tag = "!anyint"
+    constructor = int
+
+class FloatSentinel(TypeSentinel):
+    yaml_tag = "!anyfloat"
+    constructor = float
+
+class StringSentinel(TypeSentinel):
+    yaml_tag = "!anystr"
+    constructor = str
+
+class AnythingSentinel(TypeSentinel):
+    yaml_tag = "!anything"
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        return ANYTHING
+
+
+# One instance of this
+ANYTHING = AnythingSentinel()
+
+
+def represent_type_sentinel(sentinel_type):
+    """Similar to above but don't implicitly convert a value
+
+    Only used for checking return values
+    """
+
+    def callback(self, tag, style=None):
+        # pylint: disable=unused-argument
+        node = yaml.nodes.ScalarNode(sentinel_type.yaml_tag, "", style=style)
+        return node
+
+    return callback
+
+# Could also just use a metaclass for this like with IncludeLoader
+yaml.representer.Representer.add_representer(AnythingSentinel, represent_type_sentinel)

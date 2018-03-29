@@ -212,10 +212,15 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
         return "{} = '{}', {} = '{}'".format(e_formatted, expected_val,
             a_formatted, actual_val)
 
-    actual_type = type(actual_val)
-    expected_matches = isinstance(expected_val, (actual_type, type(ANYTHING)))
-    if not expected_matches and expected_val is not None:
-        raise exceptions.KeyMismatchError("Structure of returned data was different than expected ({})".format(full_err()))
+    if expected_val != ANYTHING:
+        actual_type = type(actual_val)
+        if isinstance(expected_val, TypeSentinel):
+            expected_matches = expected_val.constructor == actual_type
+        else:
+            expected_matches = isinstance(expected_val, actual_type)
+
+        if not expected_matches and expected_val is not None:
+            raise exceptions.KeyMismatchError("Structure of returned data was different than expected ({})".format(full_err()))
 
     if isinstance(expected_val, dict):
         if set(expected_val.keys()) != set(actual_val.keys()):
@@ -229,11 +234,11 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
         except AssertionError as e:
             if expected_val is None:
                 warnings.warn("Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.", FutureWarning)
+            elif expected_val is ANYTHING:
+                logger.debug("Actual value = '%s' - matches !anything", actual_val)
             elif isinstance(expected_val, TypeSentinel):
                 if not isinstance(actual_val, expected_val.constructor):
                     raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)
                 logger.debug("Actual value = '%s' - matches !any%s", actual_val, expected_val.constructor)
-            elif expected_val is ANYTHING:
-                logger.debug("Actual value = '%s' - matches !anything", actual_val)
             else:
                 raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)
