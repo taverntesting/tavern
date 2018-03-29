@@ -120,6 +120,9 @@ class TypeSentinel(yaml.YAMLObject):
     def from_yaml(cls, loader, node):
         return cls()
 
+    def __str__(self):
+        return "<Tavern YAML sentinel for {}>".format(self.constructor) # pylint: disable=no-member
+
 
 class IntSentinel(TypeSentinel):
     yaml_tag = "!anyint"
