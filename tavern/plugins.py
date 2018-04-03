@@ -77,6 +77,8 @@ def is_valid_reqresp_plugin(ext):
 
 
 class _PluginCache(object):
+    # pylint: disable=inconsistent-return-statements
+
     def __init__(self):
         self.plugins = {}
 
@@ -101,6 +103,7 @@ class _PluginCache(object):
               option
             - Different plugin names
         """
+        # pylint: disable=no-self-use
 
         plugins = []
 
