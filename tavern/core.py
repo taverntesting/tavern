@@ -8,9 +8,9 @@ from box import Box
 
 from .util.general import load_global_config
 from .util import exceptions
+from .util.dict_util import format_keys
 from .util.delay import delay
 from .util.loader import IncludeLoader
-from .util.env_vars import check_env_var_settings
 from .printer import log_pass, log_fail
 
 from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
@@ -62,8 +62,8 @@ def run_test(in_file, test_spec, global_cfg):
     if test_spec.get("includes"):
         for included in test_spec["includes"]:
             if "variables" in included:
-                check_env_var_settings(included["variables"])
-                test_block_config["variables"].update(included["variables"])
+                formatted_include = format_keys(included["variables"], {"tavern": tavern_box})
+                test_block_config["variables"].update(formatted_include)
 
     test_block_name = test_spec["test_name"]
 
