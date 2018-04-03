@@ -13,6 +13,8 @@ from yaml.composer import Composer
 from yaml.constructor import SafeConstructor
 from yaml.resolver import Resolver
 
+from tavern.util.exceptions import BadSchemaError
+
 
 def makeuuid(loader, node):
     # pylint: disable=unused-argument
@@ -32,7 +34,6 @@ def construct_type_convert(constructor):
     return callback
 
 
-ANYTHING = object()
 def anything(loader, node):
     # pylint: disable=unused-argument
     return ANYTHING
@@ -49,7 +50,6 @@ class LoaderMeta(type):
         cls.add_constructor('!uuid', makeuuid)
         cls.add_constructor('!int', construct_type_convert(int))
         cls.add_constructor('!float', construct_type_convert(float))
-        cls.add_constructor('!anything', anything)
 
         return cls
 
@@ -107,8 +107,59 @@ class IncludeLoader(with_metaclass(LoaderMeta, Reader, Scanner, Parser, Remember
         extension = os.path.splitext(filename)[1].lstrip('.')
 
         if extension not in ('yaml', 'yml'):
-            from tavern.util.exceptions import BadSchemaError
             raise BadSchemaError("Unknown filetype '{}'".format(filename))
 
         with open(filename, 'r') as f:
             return yaml.load(f, IncludeLoader)
+
+
+class TypeSentinel(yaml.YAMLObject):
+    yaml_loader = IncludeLoader
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        return cls()
+
+    def __str__(self):
+        return "<Tavern YAML sentinel for {}>".format(self.constructor) # pylint: disable=no-member
+
+
+class IntSentinel(TypeSentinel):
+    yaml_tag = "!anyint"
+    constructor = int
+
+class FloatSentinel(TypeSentinel):
+    yaml_tag = "!anyfloat"
+    constructor = float
+
+class StringSentinel(TypeSentinel):
+    yaml_tag = "!anystr"
+    constructor = str
+
+class AnythingSentinel(TypeSentinel):
+    yaml_tag = "!anything"
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        return ANYTHING
+
+
+# One instance of this
+ANYTHING = AnythingSentinel()
+
+
+def represent_type_sentinel(sentinel_type):
+    """Similar to above but don't implicitly convert a value
+
+    Only used for checking return values
+    """
+
+    def callback(self, tag, style=None):
+        # pylint: disable=unused-argument
+        node = yaml.nodes.ScalarNode(sentinel_type.yaml_tag, "", style=style)
+        return node
+
+    return callback
+
+# Could also just use a metaclass for this like with IncludeLoader
+yaml.representer.Representer.add_representer(AnythingSentinel, represent_type_sentinel)

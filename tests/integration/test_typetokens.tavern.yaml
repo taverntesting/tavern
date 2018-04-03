@@ -1,0 +1,98 @@
+# This is what we expect:
+# top:
+#   Thing: value
+#   nested:
+#     doubly:
+#       inner: value
+# an_integer: 123
+# a_string: abc
+
+---
+
+test_name: Test 'anything' token will match any response
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match top level
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        top: !anything
+
+---
+
+test_name: Test integer type match
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match explicitly
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        an_integer: 123
+
+  - name: match top level
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        an_integer: !anyint
+
+---
+
+test_name: Test string type match
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match explicitly
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        a_string: "abc"
+
+  - name: match top level
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        a_string: !anystr
+
+---
+
+test_name: Test all at once
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match top level
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        top:
+          Thing: !anystr
+          nested: !anything
+        an_integer: !anyint
+        a_string: !anystr

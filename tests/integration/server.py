@@ -16,6 +16,24 @@ def verify():
         return '', 401
 
 
+@app.route("/fake_dictionary", methods=["GET"])
+def get_fake_dictionary():
+    fake = {
+        "top": {
+            "Thing": "value",
+            "nested": {
+                "doubly": {
+                    "inner": "value",
+                }
+            }
+        },
+        "an_integer": 123,
+        "a_string": "abc",
+    }
+
+    return jsonify(fake), 200
+
+
 @app.route("/fake_list", methods=["GET"])
 def list_response():
     list_response = [
