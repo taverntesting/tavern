@@ -4,3 +4,5 @@ description: used for testing against local server
 
 variables:
   host: http://localhost:5000
+  first_part: "nested"
+  second_part: "{tavern.env_vars.SECOND_URL_PART}"
