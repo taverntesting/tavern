@@ -1,10 +1,11 @@
 import collections
 import warnings
 import logging
+from builtins import str as ustr
 
 from future.utils import raise_from
 
-from tavern.util.loader import TypeConvertToken, ANYTHING
+from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
 from . import exceptions
 
 
@@ -212,10 +213,30 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
         return "{} = '{}', {} = '{}'".format(e_formatted, expected_val,
             a_formatted, actual_val)
 
-    actual_is_dict = isinstance(actual_val, dict)
-    expected_is_dict = isinstance(expected_val, dict)
-    if (actual_is_dict and not expected_is_dict) or (expected_is_dict and not actual_is_dict):
-        raise exceptions.KeyMismatchError("Structure of returned data was different than expected ({})".format(full_err()))
+    # Check required because of python 2/3 unicode compatability when loading yaml
+    if isinstance(actual_val, ustr):
+        actual_type = str
+    else:
+        actual_type = type(actual_val)
+
+    if expected_val == ANYTHING:
+        # Match anything. We could just early exit here but having the debug
+        # logging below is useful
+        expected_matches = True
+    elif isinstance(expected_val, TypeSentinel):
+        # If the 'expected' type is actually just a sentinel for another type,
+        # then it should match
+        expected_matches = expected_val.constructor == actual_type
+    else:
+        # Normal matching
+        expected_matches = isinstance(expected_val, actual_type)
+
+    if expected_val != ANYTHING:
+        # NOTE
+        # Second part of this check will be removed in future - see deprecation
+        # warning below for details
+        if not expected_matches and expected_val is not None:
+            raise exceptions.KeyMismatchError("Type of returned data was different than expected ({})".format(full_err()))
 
     if isinstance(expected_val, dict):
         if set(expected_val.keys()) != set(actual_val.keys()):
@@ -231,5 +252,13 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
                 warnings.warn("Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.", FutureWarning)
             elif expected_val is ANYTHING:
                 logger.debug("Actual value = '%s' - matches !anything", actual_val)
+            elif isinstance(expected_val, TypeSentinel):
+                if not expected_matches:
+                    raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)
+                logger.debug("Actual value = '%s' - matches !any%s", actual_val, expected_val.constructor)
             else:
                 raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)
+
+    # TODO
+    # If expected/actual is a list, compare list items to see if there were
+    # missing items, if they were in the wrong order, etc.
