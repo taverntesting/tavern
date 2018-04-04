@@ -76,6 +76,8 @@ class MQTTClient(object):
             },
         }
 
+        logger.debug("Initialising MQTT client with %s", kwargs)
+
         # check main block first
         check_expected_keys(expected_blocks.keys(), kwargs)
 

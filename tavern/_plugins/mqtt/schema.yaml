@@ -3,7 +3,7 @@ name: MQTT schemas
 desc: pykwalify schemas for 'mqtt' plugin block, mqtt_publish, and mqtt_response
 
 initialisation:
-  mqtt:
+  paho-mqtt:
     required: false
     type: map
     mapping:
