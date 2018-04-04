@@ -42,3 +42,11 @@ def list_response():
         "c",
     ]
     return jsonify(list_response), 200
+
+
+@app.route("/nested/again", methods=["GET"])
+def nested_response():
+    response = {
+        "status": "OK",
+    }
+    return jsonify(response), 200
