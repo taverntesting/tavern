@@ -7,6 +7,7 @@ from contextlib2 import ExitStack
 from box import Box
 
 from .util.general import load_global_config
+from .plugins import load_plugins
 from .util import exceptions
 from .util.delay import delay
 from .util.loader import IncludeLoader
@@ -154,6 +155,8 @@ def run(in_file, tavern_global_cfg, tavern_http_backend, tavern_mqtt_backend):
         "http": tavern_http_backend,
         "mqtt": tavern_mqtt_backend,
     }
+
+    load_plugins(global_cfg)
 
     with open(in_file, "r") as infile:
         # Multiple documents per file => multiple test paths per file
