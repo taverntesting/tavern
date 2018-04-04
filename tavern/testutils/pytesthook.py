@@ -84,6 +84,7 @@ class YamlFile(pytest.File):
                 yield YamlItem(test_spec["test_name"], self, test_spec, self.fspath)
             except (TypeError, KeyError):
                 verify_tests(test_spec)
+                raise
 
 
 class YamlItem(pytest.Item):
