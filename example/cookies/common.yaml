@@ -3,4 +3,4 @@ name: test includes
 description: used for testing against local server
 
 variables:
-  host: http://localhost:5000
+  host: http://localhost:5001
