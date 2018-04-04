@@ -41,7 +41,7 @@ def load_schema_plugins(schema_filename):
             plugin_schema = p.plugin.schema
         except AttributeError:
             # Don't require a schema
-            pass
+            logger.debug("No schema defined for %s", p.name)
         else:
             base_schema["mapping"].update(plugin_schema.get("initialisation", {}))
 
