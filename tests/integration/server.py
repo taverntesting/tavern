@@ -40,6 +40,12 @@ def list_response():
         "a",
         "b",
         "c",
+        1,
+        2,
+        3,
+        -1.0,
+        -2.0,
+        -3.0,
     ]
     return jsonify(list_response), 200
 
