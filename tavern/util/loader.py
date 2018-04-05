@@ -84,9 +84,6 @@ def construct_include(loader, node):
 class TypeSentinel(yaml.YAMLObject):
     yaml_loader = IncludeLoader
 
-    def __init__(self, value):
-        self.value = value
-
     @classmethod
     def from_yaml(cls, loader, node):
         return cls()
@@ -116,7 +113,7 @@ class AnythingSentinel(TypeSentinel):
 
 
 # One instance of this
-ANYTHING = AnythingSentinel(None)
+ANYTHING = AnythingSentinel()
 
 
 def represent_type_sentinel(sentinel_type):
@@ -132,27 +129,11 @@ def represent_type_sentinel(sentinel_type):
     return callback
 
 
-def construct_type_sentinel(sentinel_type):
-    """Construct a type sentinel from yaml
-    """
-
-    def callback(loader, node):
-        # pylint: disable=unused-argument
-        value = loader.construct_scalar(node)
-        return sentinel_type(value)
-
-    return callback
-
-
 # Could also just use a metaclass for this like with IncludeLoader
 yaml.representer.Representer.add_representer(AnythingSentinel, represent_type_sentinel)
 
 yaml.loader.Loader.add_constructor("!include", construct_include)
 yaml.loader.Loader.add_constructor("!uuid", makeuuid)
-
-yaml.loader.Loader.add_constructor("!anyint", construct_type_sentinel(IntSentinel))
-yaml.loader.Loader.add_constructor("!anyfloat", construct_type_sentinel(FloatSentinel))
-yaml.loader.Loader.add_constructor("!anystr", construct_type_sentinel(StrSentinel))
 
 
 class TypeConvertToken(object):
