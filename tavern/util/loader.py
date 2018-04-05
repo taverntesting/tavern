@@ -150,9 +150,32 @@ yaml.representer.Representer.add_representer(AnythingSentinel, represent_type_se
 yaml.loader.Loader.add_constructor("!include", construct_include)
 yaml.loader.Loader.add_constructor("!uuid", makeuuid)
 
-yaml.loader.Loader.add_constructor("!int", construct_type_sentinel(IntSentinel))
 yaml.loader.Loader.add_constructor("!anyint", construct_type_sentinel(IntSentinel))
-yaml.loader.Loader.add_constructor("!float", construct_type_sentinel(FloatSentinel))
 yaml.loader.Loader.add_constructor("!anyfloat", construct_type_sentinel(FloatSentinel))
-yaml.loader.Loader.add_constructor("!str", construct_type_sentinel(StrSentinel))
 yaml.loader.Loader.add_constructor("!anystr", construct_type_sentinel(StrSentinel))
+
+
+class TypeConvertToken(object):
+    def __init__(self, value):
+        self.value = value
+
+
+class IntToken(TypeConvertToken):
+    constructor = int
+
+
+class FloatToken(TypeConvertToken):
+    constructor = float
+
+
+def construct_type_convert(sentinel_type):
+
+    def callback(loader, node):
+        value = loader.construct_scalar(node)
+        return sentinel_type(value)
+
+    return callback
+
+
+yaml.loader.Loader.add_constructor("!int", construct_type_convert(IntSentinel))
+yaml.loader.Loader.add_constructor("!float", construct_type_convert(FloatSentinel))
