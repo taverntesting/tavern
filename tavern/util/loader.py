@@ -129,11 +129,11 @@ def represent_type_sentinel(sentinel_type):
     return callback
 
 
-# Could also just use a metaclass for this like with IncludeLoader
+# Could also just use a metaclass for this
 yaml.representer.Representer.add_representer(AnythingSentinel, represent_type_sentinel)
 
-yaml.loader.Loader.add_constructor("!include", construct_include)
-yaml.loader.Loader.add_constructor("!uuid", makeuuid)
+IncludeLoader.add_constructor("!include", construct_include)
+IncludeLoader.add_constructor("!uuid", makeuuid)
 
 
 class TypeConvertToken(object):
