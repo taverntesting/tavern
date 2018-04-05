@@ -182,6 +182,13 @@ mapping:
                 type: any
                 required: false
 
+              files: 
+                required: false
+                type: map 
+                mapping:
+                  re;(.*):
+                    type: str
+
               method:
                 type: str
                 enum:
