@@ -105,6 +105,7 @@ class StrSentinel(TypeSentinel):
 
 class AnythingSentinel(TypeSentinel):
     yaml_tag = "!anything"
+    constructor = "anything"
 
     @classmethod
     def from_yaml(cls, loader, node):
