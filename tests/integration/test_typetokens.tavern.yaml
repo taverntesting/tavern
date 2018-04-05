@@ -96,3 +96,65 @@ stages:
           nested: !anything
         an_integer: !anyint
         a_string: !anystr
+
+---
+
+test_name: Match list item responses
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match generic types
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        - a
+        - b
+        - !anystr
+        - 1
+        - 2
+        - !anyint
+        - -1.0
+        - -2.0
+        - !anyfloat
+
+---
+
+test_name: Match whole list 'anything'
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match with anything
+    request:
+      url: "{host}/nested_list"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        top: !anything
+
+---
+
+test_name: Match list items anything
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match with anything
+    request:
+      url: "{host}/nested_list"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        top:
+          - a
+          - !anystr
+          - !anything

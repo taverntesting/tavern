@@ -50,8 +50,22 @@ def list_response():
     return jsonify(list_response), 200
 
 
+@app.route("/nested_list", methods=["GET"])
+def nested_list_response():
+    response = {
+        "top": [
+            "a",
+            "b",
+            {
+                "key": "val",
+            }
+        ]
+    }
+    return jsonify(response), 200
+
+
 @app.route("/nested/again", methods=["GET"])
-def nested_response():
+def multiple_path_items_response():
     response = {
         "status": "OK",
     }

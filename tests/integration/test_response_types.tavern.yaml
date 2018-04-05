@@ -30,20 +30,3 @@ stages:
     response:
       status_code: 200
       body: [a, b, c, 1, 2, 3, -1.0, -2.0, -3.0]
-
-  - name: Match generic types
-    request:
-      url: "{host}/fake_list"
-      method: GET
-    response:
-      status_code: 200
-      body:
-        - a
-        - b
-        - !anystr
-        - 1
-        - 2
-        - !anyint
-        - -1.0
-        - -2.0
-        - !anyfloat
