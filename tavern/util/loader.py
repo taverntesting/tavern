@@ -45,7 +45,8 @@ class RememberComposer(Composer):
 
 # pylint: disable=too-many-ancestors
 class IncludeLoader(Reader, Scanner, Parser, RememberComposer, SafeConstructor, Resolver):
-    """YAML Loader with `!include` constructor."""
+    """YAML Loader with `!include` constructor and which can remember anchors
+    between documents"""
 
     def __init__(self, stream):
         """Initialise Loader."""
@@ -63,6 +64,21 @@ class IncludeLoader(Reader, Scanner, Parser, RememberComposer, SafeConstructor, 
         RememberComposer.__init__(self)
         SafeConstructor.__init__(self)
         Resolver.__init__(self)
+
+
+def construct_include(loader, node):
+    """Include file referenced at node."""
+
+    filename = os.path.abspath(os.path.join(
+        loader._root, loader.construct_scalar(node)
+    ))
+    extension = os.path.splitext(filename)[1].lstrip('.')
+
+    if extension not in ('yaml', 'yml'):
+        raise BadSchemaError("Unknown filetype '{}'".format(filename))
+
+    with open(filename, 'r') as f:
+        return yaml.load(f, IncludeLoader)
 
 
 class TypeSentinel(yaml.YAMLObject):
@@ -101,21 +117,6 @@ class AnythingSentinel(TypeSentinel):
 
 # One instance of this
 ANYTHING = AnythingSentinel(None)
-
-
-def construct_include(loader, node):
-    """Include file referenced at node."""
-
-    filename = os.path.abspath(os.path.join(
-        loader._root, loader.construct_scalar(node)
-    ))
-    extension = os.path.splitext(filename)[1].lstrip('.')
-
-    if extension not in ('yaml', 'yml'):
-        raise BadSchemaError("Unknown filetype '{}'".format(filename))
-
-    with open(filename, 'r') as f:
-        return yaml.load(f, IncludeLoader)
 
 
 def represent_type_sentinel(sentinel_type):
