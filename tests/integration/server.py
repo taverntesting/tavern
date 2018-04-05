@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify
+import os
 
 
 app = Flask(__name__)
@@ -62,6 +63,21 @@ def nested_list_response():
         ]
     }
     return jsonify(response), 200
+
+
+@app.route("/fake_upload_file", methods=["POST"])
+def upload_fake_file():
+    if not request.files:
+        return '', 401
+
+    # Try to download each of the files downloaded to /tmp and
+    # then remove them
+    for key in request.files:
+        file_to_save = request.files[key]
+        path = os.path.join("/tmp", file_to_save.filename)
+        file_to_save.save(path)
+
+    return '', 200
 
 
 @app.route("/nested/again", methods=["GET"])

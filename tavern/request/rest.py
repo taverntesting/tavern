@@ -52,6 +52,7 @@ def get_request_args(rspec, test_block_config):
         "data",
         "params",
         "headers",
+        "files"
         # Ideally this would just be passed through but requests seems to error
         # if we pass a list instead of a tuple, so we have to manually convert
         # it further down
@@ -112,9 +113,12 @@ def get_request_args(rspec, test_block_config):
     for key, val in optional_with_default.items():
         request_args[key] = fspec.get(key, val)
 
+    # Open file handlers for all files
+    for key, value in request_args.get("files", {}).items():
+        request_args["files"][key] = open(value, "rb")
+
     # TODO
     # requests takes all of these - we need to parse the input to get them
-    # "files",
     # "cookies",
 
     # These verbs _can_ send a body but the body _should_ be ignored according
@@ -156,7 +160,7 @@ class RestRequest(BaseRequest):
             "auth",
             "json",
             "verify",
-            # "files",
+            "files",
             # "cookies",
             # "hooks",
         }
