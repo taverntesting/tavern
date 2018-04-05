@@ -3,8 +3,6 @@
 import uuid
 import os.path
 
-from future.utils import with_metaclass
-
 import yaml
 from yaml.reader import Reader
 from yaml.scanner import Scanner
@@ -69,6 +67,7 @@ class IncludeLoader(Reader, Scanner, Parser, RememberComposer, SafeConstructor, 
 def construct_include(loader, node):
     """Include file referenced at node."""
 
+    # pylint: disable=protected-access
     filename = os.path.abspath(os.path.join(
         loader._root, loader.construct_scalar(node)
     ))
