@@ -5,7 +5,7 @@ from builtins import str as ustr
 
 from future.utils import raise_from
 
-from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
+from tavern.util.loader import ANYTHING, TypeSentinel
 from . import exceptions
 
 
@@ -37,9 +37,12 @@ def format_keys(val, variables):
         except KeyError as e:
             logger.error("Key(s) not found in format: %s", e.args)
             raise_from(exceptions.MissingFormatError(e.args), e)
-    elif isinstance(val, TypeConvertToken):
-        value = format_keys(val.value, variables)
-        formatted = val.constructor(value)
+    elif isinstance(val, TypeSentinel):
+        if val is ANYTHING:
+            formatted = val
+        else:
+            value = format_keys(val.value, variables)
+            formatted = val.constructor(value)
 
     return formatted
 
