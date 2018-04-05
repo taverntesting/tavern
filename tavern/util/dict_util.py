@@ -244,6 +244,25 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
 
         for key in expected_val:
             check_keys_match_recursive(expected_val[key], actual_val[key], keys + [key])
+    elif isinstance(expected_val, list):
+        if len(expected_val) != len(actual_val):
+            raise exceptions.KeyMismatchError("Length of returned list was different than expected ({})".format(full_err()))
+
+        # TODO
+        # Check things in the wrong order?
+
+        try:
+            # Do a simple check first because they might be identical
+            assert actual_val == expected_val
+        except AssertionError as e:
+            for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
+                try:
+                    check_keys_match_recursive(e_val, a_val, keys + [i])
+                except exceptions.KeyMismatchError as sub_e:
+                    # This will still raise an error, but it will be more
+                    # obvious where the error came from (in python 3 at least)
+                    # and will take ANYTHING into account
+                    raise_from(sub_e, e)
     else:
         try:
             assert actual_val == expected_val
@@ -258,7 +277,3 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
                 logger.debug("Actual value = '%s' - matches !any%s", actual_val, expected_val.constructor)
             else:
                 raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)
-
-    # TODO
-    # If expected/actual is a list, compare list items to see if there were
-    # missing items, if they were in the wrong order, etc.

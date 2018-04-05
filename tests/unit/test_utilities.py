@@ -1,8 +1,10 @@
 import pytest
+import copy
 
 from tavern.schemas.extensions import validate_extensions
 from tavern.util import exceptions
-from tavern.util.dict_util import deep_dict_merge
+from tavern.util.loader import ANYTHING
+from tavern.util.dict_util import deep_dict_merge, check_keys_match_recursive
 
 
 class TestValidateFunctions:
@@ -115,3 +117,87 @@ class TestDictMerge:
                 'deep_key_3': 'new_value_3'
             }
         }
+
+
+class TestMatchRecursive:
+
+    def test_match_dict(self):
+        a = {
+            "a": [
+                {
+                    "b": "val",
+                },
+            ]
+        }
+        b = copy.deepcopy(a)
+
+        check_keys_match_recursive(a, b, [])
+
+    def test_match_dict_mismatch(self):
+        a = {
+            "a": [
+                {
+                    "b": "val",
+                },
+            ]
+        }
+        b = copy.deepcopy(a)
+
+        b["a"][0]["b"] = "wrong"
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+    def test_match_nested_list(self):
+        a = {
+            "a": [
+                "val"
+            ]
+        }
+        b = copy.deepcopy(a)
+
+        b["a"][0] = "wrong"
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+    def test_match_nested_list_length(self):
+        a = {
+            "a": [
+                "val"
+            ]
+        }
+        b = copy.deepcopy(a)
+
+        b["a"].append("wrong")
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+    # These ones are testing 'internal' behaviour, might break in future
+
+    def test_match_nested_anything_dict(self):
+        a = {
+            "a": [
+                {
+                    "b": ANYTHING,
+                },
+            ]
+        }
+        b = copy.deepcopy(a)
+
+        b["a"][0]["b"] = "wrong"
+
+        check_keys_match_recursive(a, b, [])
+
+    def test_match_nested_anything_list(self):
+        a = {
+            "a": [
+                ANYTHING,
+            ]
+        }
+        b = copy.deepcopy(a)
+
+        b["a"][0] = "wrong"
+
+        check_keys_match_recursive(a, b, [])
