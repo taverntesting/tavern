@@ -179,13 +179,10 @@ class RestRequest(BaseRequest):
         def prepared_request():
             # If there are open files, create a context manager around each so
             # they will be closed at the end of the request.
-            if "files" in self._request_args:
-                with ExitStack() as stack:
-                    for key, filepath in self._request_args["files"].items():
-                        self._request_args["files"][key] = stack.enter_context(
-                                open(filepath, "rb"))
-                    return session.request(**self._request_args)
-            else:
+            with ExitStack() as stack:
+                for key, filepath in self._request_args.get("files", {}).items():
+                    self._request_args["files"][key] = stack.enter_context(
+                            open(filepath, "rb"))
                 return session.request(**self._request_args)
 
         self._prepared = prepared_request
