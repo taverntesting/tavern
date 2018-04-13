@@ -240,7 +240,19 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
 
     if isinstance(expected_val, dict):
         if set(expected_val.keys()) != set(actual_val.keys()):
-            raise exceptions.KeyMismatchError("Structure of returned data was different than expected ({})".format(full_err()))
+            akeys = set(actual_val.keys())
+            ekeys = set(expected_val.keys())
+
+            extra_actual_keys = akeys - ekeys
+            extra_expected_keys = ekeys - akeys
+
+            msg = ""
+            if extra_actual_keys:
+                msg += "- Extra keys in response: {}".format(extra_actual_keys)
+            if extra_expected_keys:
+                msg += "- Keys missing from response: {}".format(extra_expected_keys)
+
+            raise exceptions.KeyMismatchError("Structure of returned data was different than expected {} ({})".format(msg, full_err()))
 
         for key in expected_val:
             check_keys_match_recursive(expected_val[key], actual_val[key], keys + [key])
