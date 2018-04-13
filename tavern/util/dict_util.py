@@ -200,6 +200,8 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
         KeyMismatchError: expected_val and actual_val did not match
     """
 
+    # pylint: disable=too-many-locals,too-many-statements
+
     def full_err():
         """Get error in the format:
 
