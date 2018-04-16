@@ -84,7 +84,7 @@ def validate_pykwalify(response, schema):
         verify_generic(rdump, sdump)
 
 
-def validate_regex(response, expression, header):
+def validate_regex(response, expression, header=None):
     """Make sure the response matches a regex expression
 
     Args:
