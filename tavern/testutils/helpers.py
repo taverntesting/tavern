@@ -98,7 +98,7 @@ def validate_regex(response, expression, header=None):
         content = response.headers[header]
     else:
         content = response.text
-        
+
     match = re.search(expression, content)
     assert match
 
