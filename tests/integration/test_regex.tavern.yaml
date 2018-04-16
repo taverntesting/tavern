@@ -38,3 +38,16 @@ stages:
         token: "{regex.token}"
     response:
       status_code: 200
+
+  - name: simple header match
+    request:
+      url: "{host}/headers"
+      method: GET
+    response:
+      status_code: 200
+      headers:
+        $ext:
+          function: tavern.testutils.helpers:validate_regex
+          extra_kwargs:
+            expression: '(?<=Hello)[wW]orld\d+$'
+            header: X-Integration-Value

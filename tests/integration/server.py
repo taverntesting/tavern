@@ -9,6 +9,12 @@ app = Flask(__name__)
 def token():
     return '<div><a src="http://127.0.0.1:5003/verify?token=c9bb34ba-131b-11e8-b642-0ed5f89f718b">Link</a></div>', 200
 
+
+@app.route("/headers", methods=["GET"])
+def headers():
+    return 'OK', 200, {'X-Integration-Value': "_HelloWorld1"}
+
+
 @app.route("/verify", methods=["GET"])
 def verify():
     if request.args.get('token') == 'c9bb34ba-131b-11e8-b642-0ed5f89f718b':
