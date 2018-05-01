@@ -233,42 +233,44 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
         # Normal matching
         expected_matches = isinstance(expected_val, actual_type)
 
-    if expected_val != ANYTHING:
-        # NOTE
-        # Second part of this check will be removed in future - see deprecation
-        # warning below for details
-        if not expected_matches and expected_val is not None:
-            raise exceptions.KeyMismatchError("Type of returned data was different than expected ({})".format(full_err()))
+    try:
+        assert actual_val == expected_val
+    except AssertionError as e:
+        # At this point, there is likely to be an error unless we're using any
+        # of the type sentinels
 
-    if isinstance(expected_val, dict):
-        if set(expected_val.keys()) != set(actual_val.keys()):
-            akeys = set(actual_val.keys())
-            ekeys = set(expected_val.keys())
+        if expected_val != ANYTHING:
+            # NOTE
+            # Second part of this check will be removed in future - see deprecation
+            # warning below for details
+            if not expected_matches and expected_val is not None:
+                raise_from(exceptions.KeyMismatchError("Type of returned data was different than expected ({})".format(full_err())), e)
 
-            extra_actual_keys = akeys - ekeys
-            extra_expected_keys = ekeys - akeys
+        if isinstance(expected_val, dict):
+            if set(expected_val.keys()) != set(actual_val.keys()):
+                akeys = set(actual_val.keys())
+                ekeys = set(expected_val.keys())
 
-            msg = ""
-            if extra_actual_keys:
-                msg += "- Extra keys in response: {}".format(extra_actual_keys)
-            if extra_expected_keys:
-                msg += "- Keys missing from response: {}".format(extra_expected_keys)
+                extra_actual_keys = akeys - ekeys
+                extra_expected_keys = ekeys - akeys
 
-            raise exceptions.KeyMismatchError("Structure of returned data was different than expected {} ({})".format(msg, full_err()))
+                msg = ""
+                if extra_actual_keys:
+                    msg += "- Extra keys in response: {}".format(extra_actual_keys)
+                if extra_expected_keys:
+                    msg += "- Keys missing from response: {}".format(extra_expected_keys)
 
-        for key in expected_val:
-            check_keys_match_recursive(expected_val[key], actual_val[key], keys + [key])
-    elif isinstance(expected_val, list):
-        if len(expected_val) != len(actual_val):
-            raise exceptions.KeyMismatchError("Length of returned list was different than expected ({})".format(full_err()))
+                raise_from(exceptions.KeyMismatchError("Structure of returned data was different than expected {} ({})".format(msg, full_err())), e)
 
-        # TODO
-        # Check things in the wrong order?
+            for key in expected_val:
+                check_keys_match_recursive(expected_val[key], actual_val[key], keys + [key])
+        elif isinstance(expected_val, list):
+            if len(expected_val) != len(actual_val):
+                raise_from(exceptions.KeyMismatchError("Length of returned list was different than expected ({})".format(full_err())), e)
 
-        try:
-            # Do a simple check first because they might be identical
-            assert actual_val == expected_val
-        except AssertionError as e:
+            # TODO
+            # Check things in the wrong order?
+
             for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
                 try:
                     check_keys_match_recursive(e_val, a_val, keys + [i])
@@ -277,17 +279,11 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
                     # obvious where the error came from (in python 3 at least)
                     # and will take ANYTHING into account
                     raise_from(sub_e, e)
-    else:
-        try:
-            assert actual_val == expected_val
-        except AssertionError as e:
-            if expected_val is None:
-                warnings.warn("Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.", FutureWarning)
-            elif expected_val is ANYTHING:
-                logger.debug("Actual value = '%s' - matches !anything", actual_val)
-            elif isinstance(expected_val, TypeSentinel):
-                if not expected_matches:
-                    raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)
-                logger.debug("Actual value = '%s' - matches !any%s", actual_val, expected_val.constructor)
-            else:
-                raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)
+        elif expected_val is None:
+            warnings.warn("Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.", FutureWarning)
+        elif expected_val is ANYTHING:
+            logger.debug("Actual value = '%s' - matches !anything", actual_val)
+        elif isinstance(expected_val, TypeSentinel) and expected_matches:
+            logger.debug("Actual value = '%s' - matches !any%s", actual_val, expected_val.constructor)
+        else:
+            raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)
