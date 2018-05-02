@@ -104,8 +104,8 @@ class StrSentinel(TypeSentinel):
     constructor = str
 
 class BoolSentiel(TypeSentinel):
-     yaml_tag = "!anybool"
-     constructor = bool
+    yaml_tag = "!anybool"
+    constructor = bool
 
 class AnythingSentinel(TypeSentinel):
     yaml_tag = "!anything"
