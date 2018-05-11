@@ -1,5 +1,6 @@
 import logging
 import os
+import io
 
 import yaml
 
@@ -150,7 +151,7 @@ def run(in_file, tavern_global_cfg):
     global_cfg_paths = tavern_global_cfg
     global_cfg = load_global_config(global_cfg_paths)
 
-    with open(in_file, "r", encoding="utf-8") as infile:
+    with io.open(in_file, "r", encoding="utf-8") as infile:
         # Multiple documents per file => multiple test paths per file
         for test_spec in yaml.load_all(infile, Loader=IncludeLoader):
             if not test_spec:
