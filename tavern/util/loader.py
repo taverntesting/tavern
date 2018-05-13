@@ -153,10 +153,10 @@ def construct_type_convert(sentinel_type):
 
     def callback(loader, node):
         value = loader.construct_scalar(node)
-        return sentinel_type(value)
+        return sentinel_type.constructor(value)
 
     return callback
 
 
-yaml.loader.Loader.add_constructor("!int", construct_type_convert(IntSentinel))
-yaml.loader.Loader.add_constructor("!float", construct_type_convert(FloatSentinel))
+IncludeLoader.add_constructor("!int", construct_type_convert(IntSentinel))
+IncludeLoader.add_constructor("!float", construct_type_convert(FloatSentinel))
