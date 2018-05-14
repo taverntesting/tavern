@@ -1,7 +1,10 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
 
+import logging
 import uuid
 import os.path
+import pytest
+from future.utils import raise_from
 
 import yaml
 from yaml.reader import Reader
@@ -12,6 +15,9 @@ from yaml.constructor import SafeConstructor
 from yaml.resolver import Resolver
 
 from tavern.util.exceptions import BadSchemaError
+
+
+logger = logging.getLogger(__name__)
 
 
 def makeuuid(loader, node):
@@ -160,3 +166,26 @@ def construct_type_convert(sentinel_type):
 
 yaml.loader.Loader.add_constructor("!int", construct_type_convert(IntSentinel))
 yaml.loader.Loader.add_constructor("!float", construct_type_convert(FloatSentinel))
+
+
+def construct_approx(loader, node):
+    try:
+        val = float(node.value)
+    except TypeError as e:
+        logger.error("Could not coerce '%s' to a float for use with !approx", type(node.value))
+        raise_from(BadSchemaError, e)
+
+    return pytest.approx(val)
+
+
+def dump_approx(representer, tag, style=None):
+    return yaml.nodes.ScalarNode("!approx", str(tag.expected), style=style)
+
+
+IncludeLoader.add_constructor("!approx", construct_approx)
+yaml.loader.Loader.add_constructor("!approx", construct_approx)
+
+# Sort-of hack to try and avoid future API changes
+ApproxScalar = type(pytest.approx(1.0))
+yaml.dumper.Dumper.add_representer(ApproxScalar, dump_approx)
+yaml.dumper.SafeDumper.add_representer(ApproxScalar, dump_approx)
