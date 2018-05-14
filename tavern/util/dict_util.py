@@ -239,7 +239,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
         # At this point, there is likely to be an error unless we're using any
         # of the type sentinels
 
-        if not (expected_val is ANYTHING):
+        if not (expected_val is ANYTHING): # pylint: disable=superfluous-parens
             # NOTE
             # Second part of this check will be removed in future - see deprecation
             # warning below for details

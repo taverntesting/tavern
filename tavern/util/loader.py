@@ -169,6 +169,7 @@ yaml.loader.Loader.add_constructor("!float", construct_type_convert(FloatSentine
 
 
 def construct_approx(loader, node):
+    # pylint: disable=unused-argument
     try:
         val = float(node.value)
     except TypeError as e:
@@ -179,6 +180,7 @@ def construct_approx(loader, node):
 
 
 def dump_approx(representer, tag, style=None):
+    # pylint: disable=unused-argument
     return yaml.nodes.ScalarNode("!approx", str(tag.expected), style=style)
 
 
