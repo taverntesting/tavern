@@ -1,5 +1,6 @@
-from flask import Flask, request, jsonify
+import math
 import os
+from flask import Flask, request, jsonify
 
 
 app = Flask(__name__)
@@ -90,5 +91,13 @@ def upload_fake_file():
 def multiple_path_items_response():
     response = {
         "status": "OK",
+    }
+    return jsonify(response), 200
+
+
+@app.route("/pi", methods=["GET"])
+def return_fp_number():
+    response = {
+        "pi": math.pi
     }
     return jsonify(response), 200
