@@ -22,6 +22,7 @@ def fix_test_yaml():
           url: http://localhost:5000/double
           json:
             number: !int '5'
+            return_float: !bool "True"
           method: POST
           headers:
             content-type: application/json
@@ -237,3 +238,4 @@ class TestCustomTokens:
 
         assert isinstance(stages['request']['json']['number'], int)
         assert isinstance(stages['response']['body']['double'], float)
+        assert isinstance(stages['request']['json']['return_float'], bool)
