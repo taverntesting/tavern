@@ -1,10 +1,37 @@
+from textwrap import dedent
+
 import pytest
+import yaml
 import copy
 
 from tavern.schemas.extensions import validate_extensions
 from tavern.util import exceptions
-from tavern.util.loader import ANYTHING
+from tavern.util.loader import ANYTHING, IncludeLoader
 from tavern.util.dict_util import deep_dict_merge, check_keys_match_recursive
+
+
+@pytest.fixture(name="test_yaml")
+def fix_test_yaml():
+    text = dedent("""
+    ---
+    test_name: Make sure server doubles number properly
+
+    stages:
+      - name: Make sure number is returned correctly
+        request:
+          url: http://localhost:5000/double
+          json:
+            number: !int '5'
+          method: POST
+          headers:
+            content-type: application/json
+        response:
+          status_code: 200
+          body:
+            double: !float 10
+    """)
+
+    return text
 
 
 class TestValidateFunctions:
@@ -201,3 +228,12 @@ class TestMatchRecursive:
         b["a"][0] = "wrong"
 
         check_keys_match_recursive(a, b, [])
+
+
+class TestCustomTokens:
+
+    def test_conversion(self, test_yaml):
+        stages = yaml.load(test_yaml, Loader=IncludeLoader)['stages'][0]
+
+        assert isinstance(stages['request']['json']['number'], int)
+        assert isinstance(stages['response']['body']['double'], float)

@@ -109,6 +109,10 @@ class StrSentinel(TypeSentinel):
     yaml_tag = "!anystr"
     constructor = str
 
+class BoolSentinel(TypeSentinel):
+    yaml_tag = "!anybool"
+    constructor = bool
+
 class AnythingSentinel(TypeSentinel):
     yaml_tag = "!anything"
     constructor = "anything"
@@ -159,13 +163,13 @@ def construct_type_convert(sentinel_type):
 
     def callback(loader, node):
         value = loader.construct_scalar(node)
-        return sentinel_type(value)
+        return sentinel_type.constructor(value)
 
     return callback
 
 
-yaml.loader.Loader.add_constructor("!int", construct_type_convert(IntSentinel))
-yaml.loader.Loader.add_constructor("!float", construct_type_convert(FloatSentinel))
+IncludeLoader.add_constructor("!int", construct_type_convert(IntSentinel))
+IncludeLoader.add_constructor("!float", construct_type_convert(FloatSentinel))
 
 
 def construct_approx(loader, node):
