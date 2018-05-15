@@ -36,6 +36,7 @@ def get_fake_dictionary():
         },
         "an_integer": 123,
         "a_string": "abc",
+        "a_bool": True,
     }
 
     return jsonify(fake), 200
