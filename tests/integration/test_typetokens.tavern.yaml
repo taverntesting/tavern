@@ -193,12 +193,22 @@ includes:
   - !include common.yaml
 
 stages:
-  - name: Convert integer
+  - name: Convert integer from a formatted string
     request:
       url: "{host}/expect_dtype"
       method: POST
       json:
         value: !int "{v_int}"
+        dtype: int
+    response:
+      status_code: 200
+
+  - name: Convert integer from a string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !int "1"
         dtype: int
     response:
       status_code: 200
@@ -223,7 +233,7 @@ includes:
   - !include common.yaml
 
 stages:
-  - name: Convert integer
+  - name: Convert integer from a formatted string
     request:
       url: "{host}/expect_dtype"
       method: POST
@@ -233,12 +243,32 @@ stages:
     response:
       status_code: 200
 
-  - name: Convert float
+  - name: Convert integer from a string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !float "1"
+        dtype: float
+    response:
+      status_code: 200
+
+  - name: Convert float from a formatted string
     request:
       url: "{host}/expect_dtype"
       method: POST
       json:
         value: !float "{v_float}"
+        dtype: float
+    response:
+      status_code: 200
+
+  - name: Convert float from a string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !float "5.67"
         dtype: float
     response:
       status_code: 200
