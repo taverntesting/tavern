@@ -30,3 +30,22 @@ stages:
     response:
       status_code: 200
       body: [a, b, c, 1, 2, 3, -1.0, -2.0, -3.0]
+
+---
+
+test_name: Test unicode responses
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: 手机号格式不正确
+    response:
+      status_code: 200
+      body:
+        value: 手机号格式不正确

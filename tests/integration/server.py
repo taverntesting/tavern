@@ -117,3 +117,10 @@ def expect_type():
         return "", 400
 
     return "", 200
+
+
+@app.route("/echo", methods=["POST"])
+def echo_values():
+    body = request.get_json()
+    response = body
+    return jsonify(response), 200
