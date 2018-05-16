@@ -184,3 +184,59 @@ stages:
           - a
           - !anystr
           - !anything
+
+---
+
+test_name: Test conversion to an integer from included files
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Convert integer
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !int "{v_int}"
+        dtype: int
+    response:
+      status_code: 200
+
+  - name: Convert float
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !int "{v_float}"
+        dtype: int
+    response:
+      status_code: 200
+
+---
+
+test_name: Test conversion to an float from included files
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Convert integer
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !float "{v_int}"
+        dtype: float
+    response:
+      status_code: 200
+
+  - name: Convert float
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !float "{v_float}"
+        dtype: float
+    response:
+      status_code: 200

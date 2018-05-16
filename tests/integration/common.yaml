@@ -6,3 +6,9 @@ variables:
   host: http://localhost:5003
   first_part: "nested"
   second_part: "{tavern.env_vars.SECOND_URL_PART}"
+
+  # Type conversion tests
+  v_int: 123
+  v_str: "abc"
+  v_float: 4.56
+  v_bool: false

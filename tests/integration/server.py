@@ -93,3 +93,17 @@ def multiple_path_items_response():
         "status": "OK",
     }
     return jsonify(response), 200
+
+
+@app.route("/expect_dtype", methods=["GET"])
+def expect_type():
+    value = request.args.get("value")
+    dtype = request.args.get("dtype")
+
+    if not value and dtype:
+        return "", 400
+
+    if str(type(value)) != "<class '{}'>".format(dtype):
+        return "", 400
+
+    return "", 200
