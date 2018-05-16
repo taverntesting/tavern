@@ -26,6 +26,32 @@ stages:
 
 ---
 
+test_name: Test bool type match
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match explicitly
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        a_bool: true
+
+  - name: match top level
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        a_bool: !anybool
+
+---
+
 test_name: Test integer type match
 
 includes:
@@ -96,3 +122,185 @@ stages:
           nested: !anything
         an_integer: !anyint
         a_string: !anystr
+
+---
+
+test_name: Match list item responses
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match generic types
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        - a
+        - b
+        - !anystr
+        - 1
+        - 2
+        - !anyint
+        - -1.0
+        - -2.0
+        - !anyfloat
+
+---
+
+test_name: Match whole list 'anything'
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match with anything
+    request:
+      url: "{host}/nested_list"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        top: !anything
+
+---
+
+test_name: Match list items anything
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match with anything
+    request:
+      url: "{host}/nested_list"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        top:
+          - a
+          - !anystr
+          - !anything
+
+---
+
+test_name: Test conversion to an integer from included files
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Convert integer from a formatted string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !int "{v_int}"
+        dtype: int
+    response:
+      status_code: 200
+
+  - name: Convert integer from a string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !int "1"
+        dtype: int
+    response:
+      status_code: 200
+
+  # This will actually not work because it tries to convert from a string, which
+  # doesn't work in python (eg int("4.56"))
+  # - name: Convert float
+  #   request:
+  #     url: "{host}/expect_dtype"
+  #     method: POST
+  #     json:
+  #       value: !int "{v_float}"
+  #       dtype: int
+  #   response:
+  #     status_code: 200
+
+---
+
+test_name: Test conversion to an float from included files
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Convert integer from a formatted string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !float "{v_int}"
+        dtype: float
+    response:
+      status_code: 200
+
+  - name: Convert integer from a string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !float "1"
+        dtype: float
+    response:
+      status_code: 200
+
+  - name: Convert float from a formatted string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !float "{v_float}"
+        dtype: float
+    response:
+      status_code: 200
+
+  - name: Convert float from a string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !float "5.67"
+        dtype: float
+    response:
+      status_code: 200
+
+---
+
+test_name: Test saving specific types between stages
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Convert and post a float, then save the echoed value
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: !float "{v_int}"
+    response:
+      status_code: 200
+      body:
+        value: !float "{tavern.request_vars.json.value}"
+      save:
+        body:
+          saved_float_value: value
+
+  - name: Try to use it again and make sure it can be converted to the correct type
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !float "{saved_float_value}"
+        dtype: float
+    response:
+      status_code: 200

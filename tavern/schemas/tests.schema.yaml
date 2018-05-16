@@ -131,6 +131,13 @@ mapping:
               json:
                 include: any_map_or_list_with_ext_function
 
+              files: 
+                required: false
+                type: map 
+                mapping:
+                  re;(.*):
+                    type: str
+
               method:
                 type: str
                 enum:

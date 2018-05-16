@@ -67,10 +67,20 @@ def main():
                 "formatter": "default",
                 "stream": "ext://sys.stdout",
             },
+            "nothing": {
+                "class": "logging.NullHandler",
+            }
         },
         "loggers": {
             "tavern": {
                 "handlers": [
+                    "nothing",
+                ],
+                "level": log_level,
+            },
+            "": {
+                "handlers": [
+                    "nothing",
                 ],
                 "level": log_level,
             }

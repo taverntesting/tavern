@@ -1,5 +1,6 @@
 import logging
 import os
+import io
 
 import yaml
 
@@ -158,7 +159,7 @@ def run(in_file, tavern_global_cfg, tavern_http_backend, tavern_mqtt_backend):
 
     load_plugins(global_cfg)
 
-    with open(in_file, "r") as infile:
+    with io.open(in_file, "r", encoding="utf-8") as infile:
         # Multiple documents per file => multiple test paths per file
         for test_spec in yaml.load_all(infile, Loader=IncludeLoader):
             if not test_spec:

@@ -1,0 +1,17 @@
+---
+
+test_name: Test files can be uploaded with tavern
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Upload multiple files
+    request:
+      url: "{host}/fake_upload_file"
+      method: POST
+      files:
+        test_files: "test_files.tavern.yaml"
+        common: "common.yaml"
+    response:
+      status_code: 200

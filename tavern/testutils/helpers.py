@@ -84,17 +84,22 @@ def validate_pykwalify(response, schema):
         verify_generic(rdump, sdump)
 
 
-def validate_regex(response, expression):
-    """Make sure the response body matches a regex expression
+def validate_regex(response, expression, header=None):
+    """Make sure the response matches a regex expression
 
     Args:
         response (Response): reqeusts.Response object
         expression (str): Regex expression to use
+        header (str): Match against a particular header instead of the body
     Returns:
         dict: dictionary of regex: boxed name capture groups
     """
-    match = re.search(expression, response.text)
+    if header:
+        content = response.headers[header]
+    else:
+        content = response.text
 
+    match = re.search(expression, content)
     assert match
 
     return {

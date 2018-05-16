@@ -1,4 +1,3 @@
-import functools
 import json
 import logging
 import warnings
@@ -8,6 +7,7 @@ try:
 except ImportError:
     from urllib import quote_plus
 
+from contextlib2 import ExitStack
 from future.utils import raise_from
 import requests
 from box import Box
@@ -52,6 +52,7 @@ def get_request_args(rspec, test_block_config):
         "data",
         "params",
         "headers",
+        "files"
         # Ideally this would just be passed through but requests seems to error
         # if we pass a list instead of a tuple, so we have to manually convert
         # it further down
@@ -114,7 +115,6 @@ def get_request_args(rspec, test_block_config):
 
     # TODO
     # requests takes all of these - we need to parse the input to get them
-    # "files",
     # "cookies",
 
     # These verbs _can_ send a body but the body _should_ be ignored according
@@ -156,7 +156,7 @@ class RestRequest(BaseRequest):
             "auth",
             "json",
             "verify",
-            # "files",
+            "files",
             # "cookies",
             # "hooks",
         }
@@ -172,10 +172,20 @@ class RestRequest(BaseRequest):
         self._request_args = request_args
 
         # There is no way using requests to make a prepared request that will
-        # not follow redicrects, so instead we have to do this. This also means
+        # not follow redirects, so instead we have to do this. This also means
         # that we can't have the 'pre-request' hook any more because we don't
         # create a prepared request.
-        self._prepared = functools.partial(session.request, **request_args)
+
+        def prepared_request():
+            # If there are open files, create a context manager around each so
+            # they will be closed at the end of the request.
+            with ExitStack() as stack:
+                for key, filepath in self._request_args.get("files", {}).items():
+                    self._request_args["files"][key] = stack.enter_context(
+                            open(filepath, "rb"))
+                return session.request(**self._request_args)
+
+        self._prepared = prepared_request
 
     def run(self):
         """ Runs the prepared request and times it
