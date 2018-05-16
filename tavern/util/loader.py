@@ -178,3 +178,8 @@ class IntToken(TypeConvertToken):
 class FloatToken(TypeConvertToken):
     yaml_tag = "!float"
     constructor = float
+
+
+class BoolToken(TypeConvertToken):
+    yaml_tag = "!bool"
+    constructor = bool
