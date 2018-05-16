@@ -193,6 +193,36 @@ includes:
   - !include common.yaml
 
 stages:
+  - name: Convert bool from a formatted string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !bool "{v_bool}"
+        dtype: bool
+    response:
+      status_code: 200
+
+  # We could use strtobool from distutils to make this pass, but it's a bit
+  # of magic
+  # - name: Convert bool from a string
+  #   request:
+  #     url: "{host}/expect_dtype"
+  #     method: POST
+  #     json:
+  #       value: !bool "true"
+  #       dtype: bool
+  #   response:
+  #     status_code: 200
+
+---
+
+test_name: Test conversion to an bool from included files
+
+includes:
+  - !include common.yaml
+
+stages:
   - name: Match pi approximately
     request:
       url: "{host}/pi"

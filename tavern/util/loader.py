@@ -186,6 +186,11 @@ class FloatToken(TypeConvertToken):
     constructor = float
 
 
+class BoolToken(TypeConvertToken):
+    yaml_tag = "!bool"
+    constructor = bool
+
+
 # Sort-of hack to try and avoid future API changes
 ApproxScalar = type(pytest.approx(1.0))
 
