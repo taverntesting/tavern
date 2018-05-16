@@ -158,7 +158,7 @@ class TypeConvertToken(yaml.YAMLObject):
 
         try:
             # See if it's already a valid value (eg, if we do `!int "2"`)
-            converted = cls.constructor(value)
+            converted = cls.constructor(value) # pylint: disable=no-member
         except ValueError:
             # If not (eg, `!int "{int_value:d}"`)
             return cls(value)
