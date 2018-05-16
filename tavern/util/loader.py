@@ -140,27 +140,27 @@ IncludeLoader.add_constructor("!include", construct_include)
 IncludeLoader.add_constructor("!uuid", makeuuid)
 
 
-class TypeConvertToken(object):
+class TypeConvertToken(yaml.YAMLObject):
+    yaml_loader = IncludeLoader
+
     def __init__(self, value):
         self.value = value
 
+    @classmethod
+    def from_yaml(cls, loader, node):
+        value = loader.construct_scalar(node)
+        return cls(value)
+
+    @classmethod
+    def to_yaml(cls, dumper, data):
+        return yaml.nodes.ScalarNode(cls.yaml_tag, data.value, style=cls.yaml_flow_style)
+
 
 class IntToken(TypeConvertToken):
+    yaml_tag = "!int"
     constructor = int
 
 
 class FloatToken(TypeConvertToken):
+    yaml_tag = "!float"
     constructor = float
-
-
-def construct_type_convert(sentinel_type):
-
-    def callback(loader, node):
-        value = loader.construct_scalar(node)
-        return sentinel_type.constructor(value)
-
-    return callback
-
-
-IncludeLoader.add_constructor("!int", construct_type_convert(IntSentinel))
-IncludeLoader.add_constructor("!float", construct_type_convert(FloatSentinel))
