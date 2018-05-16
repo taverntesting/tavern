@@ -80,7 +80,16 @@ def construct_include(loader, node):
         return yaml.load(f, IncludeLoader)
 
 
+IncludeLoader.add_constructor("!include", construct_include)
+IncludeLoader.add_constructor("!uuid", makeuuid)
+
+
 class TypeSentinel(yaml.YAMLObject):
+    """This is a sentinel for expecting a type in a response. Any value
+    associated with these is going to be ignored - these are only used as a
+    'hint' to the validator that it should expect a specific type in the
+    response.
+    """
     yaml_loader = IncludeLoader
 
     @classmethod
@@ -115,29 +124,14 @@ class AnythingSentinel(TypeSentinel):
     def from_yaml(cls, loader, node):
         return ANYTHING
 
+    @classmethod
+    def to_yaml(cls, dumper, data):
+        node = yaml.nodes.ScalarNode(cls.yaml_tag, "", style=cls.yaml_flow_style)
+        return node
+
 
 # One instance of this
 ANYTHING = AnythingSentinel()
-
-
-def represent_type_sentinel(sentinel_type):
-    """Represent a type sentinel so it can be dumped in a format such that it
-    can be read again later
-    """
-
-    def callback(representer, tag, style=None):
-        # pylint: disable=unused-argument
-        node = yaml.nodes.ScalarNode(sentinel_type.yaml_tag, "", style=style)
-        return node
-
-    return callback
-
-
-# Could also just use a metaclass for this
-yaml.representer.Representer.add_representer(AnythingSentinel, represent_type_sentinel)
-
-IncludeLoader.add_constructor("!include", construct_include)
-IncludeLoader.add_constructor("!uuid", makeuuid)
 
 
 class TypeConvertToken(yaml.YAMLObject):
