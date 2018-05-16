@@ -272,3 +272,35 @@ stages:
         dtype: float
     response:
       status_code: 200
+
+---
+
+test_name: Test saving specific types between stages
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Convert and post a float, then save the echoed value
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: !float "{v_int}"
+    response:
+      status_code: 200
+      body:
+        value: !float "{tavern.request_vars.json.value}"
+      save:
+        body:
+          saved_float_value: value
+
+  - name: Try to use it again and make sure it can be converted to the correct type
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !float "{saved_float_value}"
+        dtype: float
+    response:
+      status_code: 200
