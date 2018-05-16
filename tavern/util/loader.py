@@ -141,6 +141,18 @@ IncludeLoader.add_constructor("!uuid", makeuuid)
 
 
 class TypeConvertToken(yaml.YAMLObject):
+    """This is a sentinel for something that should be converted to a different
+    type. The rough load order is:
+
+    1. Test data is loaded for schema validation
+    2. Test data is dumped again so that pykwalify can read it (the actual
+        values don't matter at all at this point, because we're just checking
+        that the structure is correct)
+    3. Test data is loaded and formatted
+
+    So this preserves the actual value that the type should be up until the
+    point that it actually needs to be formatted
+    """
     yaml_loader = IncludeLoader
 
     def __init__(self, value):
@@ -149,7 +161,15 @@ class TypeConvertToken(yaml.YAMLObject):
     @classmethod
     def from_yaml(cls, loader, node):
         value = loader.construct_scalar(node)
-        return cls(value)
+
+        try:
+            # See if it's already a valid value (eg, if we do `!int "2"`)
+            converted = cls.constructor(value)
+        except ValueError:
+            # If not (eg, `!int "{int_value:d}"`)
+            return cls(value)
+        else:
+            return converted
 
     @classmethod
     def to_yaml(cls, dumper, data):
