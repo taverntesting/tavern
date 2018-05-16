@@ -201,3 +201,91 @@ stages:
       status_code: 200
       body:
         pi: !approx 3.1415926
+
+---
+
+test_name: Test conversion to an integer from included files
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Convert integer from a formatted string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !int "{v_int}"
+        dtype: int
+    response:
+      status_code: 200
+
+  - name: Convert integer from a string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !int "1"
+        dtype: int
+    response:
+      status_code: 200
+
+  # This will actually not work because it tries to convert from a string, which
+  # doesn't work in python (eg int("4.56"))
+  # - name: Convert float
+  #   request:
+  #     url: "{host}/expect_dtype"
+  #     method: POST
+  #     json:
+  #       value: !int "{v_float}"
+  #       dtype: int
+  #   response:
+  #     status_code: 200
+
+---
+
+test_name: Test conversion to an float from included files
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Convert integer from a formatted string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !float "{v_int}"
+        dtype: float
+    response:
+      status_code: 200
+
+  - name: Convert integer from a string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !float "1"
+        dtype: float
+    response:
+      status_code: 200
+
+  - name: Convert float from a formatted string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !float "{v_float}"
+        dtype: float
+    response:
+      status_code: 200
+
+  - name: Convert float from a string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !float "5.67"
+        dtype: float
+    response:
+      status_code: 200

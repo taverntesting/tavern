@@ -102,3 +102,18 @@ def return_fp_number():
         "pi": math.pi
     }
     return jsonify(response), 200
+
+
+@app.route("/expect_dtype", methods=["POST"])
+def expect_type():
+    body = request.get_json()
+    value = body.get("value")
+    dtype = body.get("dtype")
+
+    if not value and dtype:
+        return "", 400
+
+    if str(type(value)) != "<class '{}'>".format(dtype):
+        return "", 400
+
+    return "", 200

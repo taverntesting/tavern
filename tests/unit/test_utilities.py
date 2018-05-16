@@ -10,30 +10,6 @@ from tavern.util.loader import ANYTHING, IncludeLoader
 from tavern.util.dict_util import deep_dict_merge, check_keys_match_recursive
 
 
-@pytest.fixture(name="test_yaml")
-def fix_test_yaml():
-    text = dedent("""
-    ---
-    test_name: Make sure server doubles number properly
-
-    stages:
-      - name: Make sure number is returned correctly
-        request:
-          url: http://localhost:5000/double
-          json:
-            number: !int '5'
-          method: POST
-          headers:
-            content-type: application/json
-        response:
-          status_code: 200
-          body:
-            double: !float 10
-    """)
-
-    return text
-
-
 class TestValidateFunctions:
 
     def test_get_extension(self):
@@ -228,6 +204,30 @@ class TestMatchRecursive:
         b["a"][0] = "wrong"
 
         check_keys_match_recursive(a, b, [])
+
+
+@pytest.fixture(name="test_yaml")
+def fix_test_yaml():
+    text = dedent("""
+    ---
+    test_name: Make sure server doubles number properly
+
+    stages:
+      - name: Make sure number is returned correctly
+        request:
+          url: http://localhost:5000/double
+          json:
+            number: !int '5'
+          method: POST
+          headers:
+            content-type: application/json
+        response:
+          status_code: 200
+          body:
+            double: !float 10
+    """)
+
+    return text
 
 
 class TestCustomTokens:
