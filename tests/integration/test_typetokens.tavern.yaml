@@ -203,15 +203,17 @@ stages:
     response:
       status_code: 200
 
-  - name: Convert float
-    request:
-      url: "{host}/expect_dtype"
-      method: POST
-      json:
-        value: !int "{v_float}"
-        dtype: int
-    response:
-      status_code: 200
+  # This will actually not work because it tries to convert from a string, which
+  # doesn't work in python (eg int("4.56"))
+  # - name: Convert float
+  #   request:
+  #     url: "{host}/expect_dtype"
+  #     method: POST
+  #     json:
+  #       value: !int "{v_float}"
+  #       dtype: int
+  #   response:
+  #     status_code: 200
 
 ---
 

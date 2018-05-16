@@ -95,10 +95,11 @@ def multiple_path_items_response():
     return jsonify(response), 200
 
 
-@app.route("/expect_dtype", methods=["GET"])
+@app.route("/expect_dtype", methods=["POST"])
 def expect_type():
-    value = request.args.get("value")
-    dtype = request.args.get("dtype")
+    body = request.get_json()
+    value = body.get("value")
+    dtype = body.get("dtype")
 
     if not value and dtype:
         return "", 400
