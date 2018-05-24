@@ -56,7 +56,7 @@ class MQTTRequest(BaseRequest):
         # Need to do this here because get_publish_args will modify the original
         # input, which we might want to use to format. No error handling because
         # all the error handling is done in the previous call
-        self._original_publish_args = format_keys(rspec, test_block_config)
+        self._original_publish_args = format_keys(rspec, test_block_config["variables"])
 
         # TODO
         # From paho:
