@@ -15,3 +15,23 @@ stages:
         common: "common.yaml"
     response:
       status_code: 200
+
+---
+
+test_name: Test extra headers don't break content-type
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Upload multiple files
+    request:
+      url: "{host}/fake_upload_file"
+      method: POST
+      headers:
+        x-test-header: chorp
+      files:
+        test_files: "test_files.tavern.yaml"
+        common: "common.yaml"
+    response:
+      status_code: 200

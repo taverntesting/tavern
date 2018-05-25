@@ -35,7 +35,7 @@ def fix_example_request():
     return spec.copy()
 
 
-class TestRequests:
+class TestRequests(object):
     def test_unknown_fields(self, req, includes):
         """Unkown args should raise an error
         """
@@ -69,6 +69,9 @@ class TestRequests:
 
         assert rmock.request.called
         assert rmock.request.call_args[1]["allow_redirects"] == False
+
+
+class TestRequestArgs(object):
 
     def test_default_method(self, req, includes):
         del req["method"]
@@ -137,6 +140,26 @@ class TestRequests:
         args = get_request_args(req, includes)
 
         assert args['data']['array'] == ['def456', 'def456']
+
+    def test_file_and_data_fails(self, req, includes):
+        """Can't send json/form data and files at once"""
+        req["files"] = ["abc"]
+
+        with pytest.raises(exceptions.BadSchemaError):
+            get_request_args(req, includes)
+
+    @pytest.mark.parametrize("extra_headers", (
+        {},
+        {"x-cool-header": "plark"}
+    ))
+    def test_headers_no_content_type_change(self, req, includes, extra_headers):
+        """Sending a file doesn't set the content type as json"""
+        del req["data"]
+        req["files"] = ["abc"]
+
+        args = get_request_args(req, includes)
+
+        assert "content-type" not in [i.lower() for i in args["headers"].keys()]
 
 
 class TestExtFunctions:

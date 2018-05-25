@@ -39,6 +39,8 @@ def get_request_args(rspec, test_block_config):
         BadSchemaError: Tried to pass a body in a GET request
     """
 
+    # pylint: disable=too-many-locals
+
     request_args = {}
 
     # Ones that are required and are enforced to be present by the schema
@@ -67,9 +69,24 @@ def get_request_args(rspec, test_block_config):
         logger.debug("Using default GET method")
         rspec["method"] = "GET"
 
-    headers = rspec.get("headers")
-    if headers:
-        if "content-type" not in [h.lower() for h in headers.keys()]:
+    content_keys = [
+        "data",
+        "json",
+    ]
+
+    headers = rspec.get("headers", {})
+    has_content_header = "content-type" in [h.lower() for h in headers.keys()]
+
+    if "files" in rspec:
+        if any(ckey in rspec for ckey in content_keys):
+            raise exceptions.BadSchemaError("Tried to send non-file content alongside a file")
+
+        if has_content_header:
+            logger.warning("Tried to specify a content-type header while sending a file - this will be ignored")
+            rspec["headers"] = {i: j for i, j in headers.items() if i.lower() != "content-type"}
+    elif headers:
+        # This should only be hit if we aren't sending a file
+        if not has_content_header:
             rspec["headers"]["content-type"] = "application/json"
 
     fspec = format_keys(rspec, test_block_config["variables"])
