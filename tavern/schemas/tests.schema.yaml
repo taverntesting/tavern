@@ -135,6 +135,14 @@ mapping:
             required: true
             unique: true
 
+          skip:
+            type: bool
+            required: false
+
+          only:
+            type: bool
+            required: false
+
           delay_before:
             type: float
             required: false
