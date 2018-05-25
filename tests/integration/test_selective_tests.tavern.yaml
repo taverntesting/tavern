@@ -1,0 +1,28 @@
+---
+
+test_name: Test 'only' keyword for test isolation
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: This is the only test that should run
+    only: yes
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+  - name: This should be ignored
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 999
+  - name: This should also be ignored because it's not the first 'only' test
+    only: yes
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 999
