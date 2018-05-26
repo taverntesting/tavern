@@ -39,8 +39,6 @@ def get_request_args(rspec, test_block_config):
         BadSchemaError: Tried to pass a body in a GET request
     """
 
-    # pylint: disable=too-many-locals
-
     request_args = {}
 
     # Ones that are required and are enforced to be present by the schema
@@ -69,25 +67,19 @@ def get_request_args(rspec, test_block_config):
         logger.debug("Using default GET method")
         rspec["method"] = "GET"
 
-    content_keys = [
-        "data",
-        "json",
-    ]
+    headers = rspec.get("headers")
 
-    headers = rspec.get("headers", {})
-    has_content_header = "content-type" in [h.lower() for h in headers.keys()]
-
-    if "files" in rspec:
-        if any(ckey in rspec for ckey in content_keys):
-            raise exceptions.BadSchemaError("Tried to send non-file content alongside a file")
-
-        if has_content_header:
-            logger.warning("Tried to specify a content-type header while sending a file - this will be ignored")
-            rspec["headers"] = {i: j for i, j in headers.items() if i.lower() != "content-type"}
-    elif headers:
-        # This should only be hit if we aren't sending a file
-        if not has_content_header:
+    if headers:
+        has_explicit_content_type = "content-type" in [h.lower() for h in headers.keys()]
+        is_multipart_request = rspec.get("files") is not None
+        if not has_explicit_content_type and not is_multipart_request:
             rspec["headers"]["content-type"] = "application/json"
+        elif has_explicit_content_type and is_multipart_request:
+            warnings.warn("You are trying to send a request with files and set it's content-type at the same time. "
+                          "This is not supported. When files are present, "
+                          "the multipart/form-data content-type is used automatically"
+                          "Do not set the Content-Type in the yaml, too",
+                          RuntimeWarning)
 
     fspec = format_keys(rspec, test_block_config["variables"])
 
