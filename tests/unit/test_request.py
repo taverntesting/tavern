@@ -15,7 +15,7 @@ from tavern.util import exceptions
 @pytest.fixture(name="req")
 def fix_example_request():
     spec = {
-        "url":  "{request_url:s}",
+        "url":  "{request.prefix:s}{request.url:s}",
         "method":  "POST",
         "headers": {
             "Content-Type": "application/x-www-form-urlencoded",

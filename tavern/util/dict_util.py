@@ -4,6 +4,7 @@ import logging
 from builtins import str as ustr
 
 from future.utils import raise_from
+from box import Box
 
 from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
 from . import exceptions
@@ -23,22 +24,25 @@ def format_keys(val, variables):
         dict: recursively formatted dictionary
     """
     formatted = val
+    box_vars = Box(variables)
 
     if isinstance(val, dict):
         formatted = {}
-        #formatted = {key: format_keys(val[key], variables) for key in val}
+        #formatted = {key: format_keys(val[key], box_vars) for key in val}
         for key in val:
-            formatted[key] = format_keys(val[key], variables)
+            formatted[key] = format_keys(val[key], box_vars)
     elif isinstance(val, (list, tuple)):
-        formatted = [format_keys(item, variables) for item in val]
+        formatted = [format_keys(item, box_vars) for item in val]
     elif isinstance(val, str):
         try:
-            formatted = val.format(**variables)
+            formatted = val.format(**box_vars)
         except KeyError as e:
+            logger.error("Failed to resolve string [%s] with variables [%s]",
+                         val, box_vars)
             logger.error("Key(s) not found in format: %s", e.args)
             raise_from(exceptions.MissingFormatError(e.args), e)
     elif isinstance(val, TypeConvertToken):
-        value = format_keys(val.value, variables)
+        value = format_keys(val.value, box_vars)
         formatted = val.constructor(value)
 
     return formatted

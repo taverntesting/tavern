@@ -5,7 +5,10 @@ import pytest
 def fix_example_includes():
     includes = {
         "variables": {
-            "request_url": "www.google.com",
+            "request": {
+                "prefix": "www.",
+                "url": "google.com",
+            },
             "test_auth_token": "abc123",
             "code": "def456",
             "callback_url": "www.yahoo.co.uk",
