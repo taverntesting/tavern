@@ -141,19 +141,21 @@ to run the integration tests, make sure you have
 ``tox -c tox-integraton.ini`` (bear in mind this might take a while.)
 It's that simple!
 
-If you want to add a feature to get merged back into mainline Tavern: -
-Add the feature you want - Add some tests for your feature: - If you are
-adding some utility functionality such as improving verification of
-responses, adding some unit tests might be best. These are in the
-``tests/unit/`` folder and are written using Pytest. - If you are adding
-more advanced functionality like extra validation functions, or some
-functionality that directly depends on the format of the input YAML, it
-might also be useful to add some integration tests. At the time of
-writing, this is done by adding an example flask endpoint in
-``tests/integration/server.py`` and a corresponding Tavern YAML test
-file in the same directory. This will be cleaned up a bit once we have a
-proper plugin system implemented. - Open a `pull
-request <https://github.com/taverntesting/tavern/pulls>`__.
+If you want to add a feature to get merged back into mainline Tavern:
+
+-  Add the feature you want
+-  Add some tests for your feature:
+-  If you are adding some utility functionality such as improving verification
+   of responses, adding some unit tests might be best. These are in the
+   ``tests/unit/`` folder and are written using Pytest.
+-  If you are adding more advanced functionality like extra validation
+   functions, or some functionality that directly depends on the format of the
+   input YAML, it might also be useful to add some integration tests. At the
+   time of writing, this is done by adding an example flask endpoint in
+   ``tests/integration/server.py`` and a corresponding Tavern YAML test file in
+   the same directory. This will be cleaned up a bit once we have a proper
+   plugin system implemented.
+-  Open a `pull request <https://github.com/taverntesting/tavern/pulls>`__.
 
 Note that Tavern supports Python 2.7 (for the time being), so any code
 you add has to be compatible with it. We currently use the

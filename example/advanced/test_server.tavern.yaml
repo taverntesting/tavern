@@ -9,7 +9,7 @@ stages:
   - &login_request
     name: login
     request:
-      url: "{host}/login"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/login"
       json:
         user: test-user
         password: correct-password
@@ -48,7 +48,7 @@ stages:
   - &reset_request
     name: reset database for test
     request:
-      url: "{host}/reset"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/reset"
       method: POST
     response:
       status_code: 204
@@ -57,7 +57,7 @@ stages:
 
   - name: post a number
     request:
-      url: "{host}/numbers"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/numbers"
       json:
         name: smallnumber
         number: 123
@@ -72,7 +72,7 @@ stages:
 
   - name: Make sure its in the db
     request:
-      url: "{host}/numbers"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/numbers"
       params:
         name: smallnumber
       method: GET
@@ -88,7 +88,7 @@ stages:
 
   - name: double it
     request:
-      url: "{host}/double"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/double"
       json:
         name: smallnumber
       method: POST
@@ -104,7 +104,7 @@ stages:
 
   - name: Make sure db has been updated properly
     request:
-      url: "{host}/numbers"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/numbers"
       params:
         name: smallnumber
       method: GET
@@ -131,7 +131,7 @@ stages:
 
   - name: double it
     request:
-      url: "{host}/numbers"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/numbers"
       params:
         name: whatnumber
       method: GET
