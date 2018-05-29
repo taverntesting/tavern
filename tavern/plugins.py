@@ -10,8 +10,6 @@ import stevedore
 from future.utils import raise_from
 
 from .util import exceptions
-# from .request import RestRequest, MQTTRequest
-# from .response import RestResponse, MQTTResponse
 
 logger = logging.getLogger(__name__)
 
