@@ -7,7 +7,7 @@ import pytest
 import requests
 import paho.mqtt.client as paho
 
-from tavern.mqtt import MQTTClient
+from tavern._plugins.mqtt.client import MQTTClient
 from tavern.core import run_test
 from tavern.util import exceptions
 
@@ -63,7 +63,7 @@ class TestRunStages:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
             run_test("heif", fulltest, includes)
 
         assert pmock.called
@@ -76,7 +76,7 @@ class TestRunStages:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
             with pytest.raises(exceptions.TestFailError):
                 run_test("heif", fulltest, includes)
 
@@ -90,7 +90,7 @@ class TestRunStages:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
             with pytest.raises(exceptions.TestFailError):
                 run_test("heif", fulltest, includes)
 
@@ -104,7 +104,7 @@ class TestRunStages:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
             with pytest.raises(exceptions.TestFailError):
                 run_test("heif", fulltest, includes)
 
@@ -120,7 +120,7 @@ class TestDelay:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
             with patch("tavern.util.delay.time.sleep") as smock:
                 run_test("heif", fulltest, includes)
 
@@ -134,7 +134,7 @@ class TestDelay:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
             with patch("tavern.util.delay.time.sleep") as smock:
                 run_test("heif", fulltest, includes)
 
@@ -154,7 +154,7 @@ class TestTavernMetaFormat:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
             with patch.dict(os.environ, {env_key: "bleuihg"}):
                 run_test("heif", fulltest, includes)
 
@@ -197,7 +197,7 @@ class TestFormatRequestVars:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
             run_test("heif", fulltest, includes)
 
         assert pmock.called
@@ -221,7 +221,7 @@ class TestFormatRequestVars:
 
         mock_response = Mock(**mockargs)
 
-        with patch("tavern.plugins.requests.Session.request", return_value=mock_response) as pmock:
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
             run_test("heif", fulltest, includes)
 
         assert pmock.called
@@ -279,8 +279,8 @@ class TestFormatMQTTVarsJson:
             message_received=Mock(return_value=mock_response),
         )
 
-        with patch("tavern.mqtt.paho.Client", fake_client), \
-        patch("tavern.core.get_extra_sessions", return_value={"mqtt": fake_client}) as pmock:
+        with patch("tavern._plugins.mqtt.client.paho.Client", fake_client), \
+        patch("tavern.core.get_extra_sessions", return_value={"paho-mqtt": fake_client}) as pmock:
             run_test("heif", fulltest, includes)
 
         assert pmock.called
@@ -331,8 +331,8 @@ class TestFormatMQTTVarsPlain:
             message_received=Mock(return_value=mock_response),
         )
 
-        with patch("tavern.mqtt.paho.Client", fake_client), \
-        patch("tavern.core.get_extra_sessions", return_value={"mqtt": fake_client}) as pmock:
+        with patch("tavern._plugins.mqtt.client.paho.Client", fake_client), \
+        patch("tavern.core.get_extra_sessions", return_value={"paho-mqtt": fake_client}) as pmock:
             run_test("heif", fulltest, includes)
 
         assert pmock.called

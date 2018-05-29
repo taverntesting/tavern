@@ -1,7 +1,8 @@
 pyyaml
-pykwalify
+pykwalify>=1.6.1
 requests
 pyjwt
 python-box
 future
 contextlib2
+stevedore

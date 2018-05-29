@@ -13,6 +13,10 @@ def fix_example_includes():
             "code": "def456",
             "callback_url": "www.yahoo.co.uk",
             "request_topic": "/abc"
+        },
+        "backends": {
+            "mqtt": "paho-mqtt",
+            "http": "requests",
         }
     }
 

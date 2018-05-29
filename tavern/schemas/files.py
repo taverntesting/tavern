@@ -10,6 +10,7 @@ import yaml
 from pykwalify import core
 import pykwalify
 from tavern.util.exceptions import BadSchemaError
+from tavern.plugins import load_schema_plugins
 
 from tavern.util.loader import IncludeLoader
 core.yaml.safe_load = functools.partial(yaml.load, Loader=IncludeLoader)
@@ -83,4 +84,9 @@ def verify_tests(test_spec):
         here = os.path.dirname(os.path.abspath(__file__))
         schema_filename = os.path.join(here, "tests.schema.yaml")
 
-        verify_generic(test_tmp, schema_filename)
+        # TODO
+        # cache this
+        schema_with_plugins = load_schema_plugins(schema_filename)
+
+        with wrapfile(schema_with_plugins) as schema_tmp:
+            verify_generic(test_tmp, schema_tmp)

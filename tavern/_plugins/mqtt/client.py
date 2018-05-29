@@ -12,8 +12,8 @@ except ImportError:
 from future.utils import raise_from
 import paho.mqtt.client as paho
 
-from .util.dict_util import check_expected_keys
-from .util import exceptions
+from tavern.util.dict_util import check_expected_keys
+from tavern.util import exceptions
 
 
 # MQTT error values
@@ -75,6 +75,8 @@ class MQTTClient(object):
                 "password",
             },
         }
+
+        logger.debug("Initialising MQTT client with %s", kwargs)
 
         # check main block first
         check_expected_keys(expected_blocks.keys(), kwargs)

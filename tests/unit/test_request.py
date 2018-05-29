@@ -8,7 +8,7 @@ except ImportError:
 
 import pytest
 
-from tavern.request import RestRequest, get_request_args
+from tavern._plugins.rest.request import RestRequest, get_request_args
 from tavern.util import exceptions
 
 

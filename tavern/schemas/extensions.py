@@ -5,6 +5,7 @@ import importlib
 from future.utils import raise_from
 
 from tavern.util.exceptions import BadSchemaError
+from tavern.util import exceptions
 
 
 logger = logging.getLogger(__name__)
@@ -22,25 +23,28 @@ def import_ext_function(entrypoint):
         function: function loaded from entrypoint
 
     Raises:
-        ImportError: If the module or function did not exist
-        ValueError: If the entrypoint was malformed
+        InvalidExtFunctionError: If the module or function did not exist
     """
     try:
         module, funcname = entrypoint.split(":")
-    except ValueError:
-        logger.exception("No colon in entrypoint")
-        raise
+    except ValueError as e:
+        msg = "Expected entrypoint in the form module.submodule:function"
+        logger.exception(msg)
+        raise_from(exceptions.InvalidExtFunctionError(msg), e)
 
     try:
         module = importlib.import_module(module)
-    except ImportError:
-        logger.exception("Error importing module %s", module)
-        raise
+    except ImportError as e:
+        msg = "Error importing module {}".format(module)
+        logger.exception(msg)
+        raise_from(exceptions.InvalidExtFunctionError(msg), e)
 
-    function = getattr(module, funcname, None)
-
-    if not function:
-        raise ImportError("No function named {} in {}".format(funcname, module))
+    try:
+        function = getattr(module, funcname)
+    except AttributeError as e:
+        msg = "No function named {} in {}".format(funcname, module)
+        logger.exception(msg)
+        raise_from(exceptions.InvalidExtFunctionError(msg), e)
 
     return function
 

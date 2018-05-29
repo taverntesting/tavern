@@ -8,6 +8,7 @@ from contextlib2 import ExitStack
 from box import Box
 
 from .util.general import load_global_config
+from .plugins import load_plugins
 from .util import exceptions
 from .util.dict_util import format_keys
 from .util.delay import delay
@@ -71,7 +72,7 @@ def run_test(in_file, test_spec, global_cfg):
     logger.info("Running test : %s", test_block_name)
 
     with ExitStack() as stack:
-        sessions = get_extra_sessions(test_spec)
+        sessions = get_extra_sessions(test_spec, test_block_config)
 
         for name, session in sessions.items():
             logger.debug("Entering context for %s", name)
@@ -122,7 +123,7 @@ def run_test(in_file, test_spec, global_cfg):
             delay(stage, "after")
 
 
-def run(in_file, tavern_global_cfg):
+def run(in_file, tavern_global_cfg, tavern_http_backend, tavern_mqtt_backend):
     """Run all tests contained in a file
 
     For each test this makes sure it matches the expected schema, then runs it.
@@ -150,6 +151,13 @@ def run(in_file, tavern_global_cfg):
 
     global_cfg_paths = tavern_global_cfg
     global_cfg = load_global_config(global_cfg_paths)
+
+    global_cfg["backends"] = {
+        "http": tavern_http_backend,
+        "mqtt": tavern_mqtt_backend,
+    }
+
+    load_plugins(global_cfg)
 
     with io.open(in_file, "r", encoding="utf-8") as infile:
         # Multiple documents per file => multiple test paths per file

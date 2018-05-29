@@ -4,6 +4,7 @@ import pytest
 import yaml
 from future.utils import raise_from
 
+from tavern.plugins import load_plugins
 from tavern.core import run_test
 from tavern.util.general import load_global_config
 from tavern.util import exceptions
@@ -29,20 +30,49 @@ def pytest_collect_file(parent, path):
     return None
 
 
-def pytest_addoption(parser):
-    """Add an option to pass in a global config file for tavern
+def add_parser_options(parser_addoption):
+    """Add argparse options
+
+    This is shared between the CLI and pytest (for now)
     """
-    parser.addoption(
+    parser_addoption(
         "--tavern-global-cfg",
         help="One or more global configuration files to include in every test",
         required=False,
         nargs="+",
     )
+    parser_addoption(
+        "--tavern-http-backend",
+        help="Which http backend to use",
+        default="requests",
+    )
+    parser_addoption(
+        "--tavern-mqtt-backend",
+        help="Which mqtt backend to use",
+        default="paho-mqtt",
+    )
+
+
+def pytest_addoption(parser):
+    """Add an option to pass in a global config file for tavern
+    """
+    add_parser_options(parser.addoption)
+
     parser.addini(
         "tavern-global-cfg",
         help="One or more global configuration files to include in every test",
         type="linelist",
         default=[]
+    )
+    parser.addini(
+        "tavern-http-backend",
+        help="Which http backend to use",
+        default="requests",
+    )
+    parser.addini(
+        "tavern-mqtt-backend",
+        help="Which mqtt backend to use",
+        default="paho-mqtt",
     )
 
 
@@ -111,8 +141,6 @@ class YamlItem(pytest.Item):
         self.obj = FakeObj
 
     def runtest(self):
-        verify_tests(self.spec)
-
         # Load ini first
         ini_global_cfg_paths = self.config.getini("tavern-global-cfg") or []
         # THEN load command line, to allow overwriting of values
@@ -120,6 +148,23 @@ class YamlItem(pytest.Item):
 
         all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
         global_cfg = load_global_config(all_paths)
+
+        global_cfg["backends"] = {}
+        backends = ["http", "mqtt"]
+        for b in backends:
+            # similar logic to above - use ini, then cmdline if present
+            ini_opt = self.config.getini("tavern-{}-backend".format(b))
+            cli_opt = self.config.getoption("tavern_{}_backend".format(b))
+
+            in_use = ini_opt
+            if cli_opt and (cli_opt != ini_opt):
+                in_use = cli_opt
+
+            global_cfg["backends"][b] = in_use
+
+        load_plugins(global_cfg)
+
+        verify_tests(self.spec)
 
         run_test(self.path, self.spec, global_cfg)
 

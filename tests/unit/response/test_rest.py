@@ -1,7 +1,7 @@
 import pytest
 from mock import Mock, patch
 
-from tavern.response import RestResponse
+from tavern._plugins.rest.response import RestResponse
 from tavern.util.loader import ANYTHING
 from tavern.util import exceptions
 
@@ -371,7 +371,7 @@ def test_status_code_warns(example_response, includes):
     """
     example_response["status_code"] = 231234
 
-    with patch("tavern.response.rest.logger.warning") as wmock:
+    with patch("tavern._plugins.rest.response.logger.warning") as wmock:
         RestResponse(Mock(), "Test 1", example_response, includes)
 
     assert wmock.called
