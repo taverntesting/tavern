@@ -152,16 +152,15 @@ class YamlItem(pytest.Item):
         global_cfg["backends"] = {}
         backends = ["http", "mqtt"]
         for b in backends:
-            # FIXME
-            # this logic is broken
+            # similar logic to above - use ini, then cmdline if present
             ini_opt = self.config.getini("tavern-{}-backend".format(b))
             cli_opt = self.config.getoption("tavern_{}_backend".format(b))
-            if cli_opt != ini_opt:
-                opt = cli_opt
-            else:
-                opt = ini_opt
 
-            global_cfg["backends"][b] = opt
+            in_use = ini_opt
+            if cli_opt and (cli_opt != ini_opt):
+                in_use = cli_opt
+
+            global_cfg["backends"][b] = in_use
 
         load_plugins(global_cfg)
 
