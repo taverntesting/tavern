@@ -4,6 +4,7 @@ import logging
 from builtins import str as ustr
 
 from future.utils import raise_from
+from box import Box
 
 from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
 from . import exceptions
@@ -23,22 +24,25 @@ def format_keys(val, variables):
         dict: recursively formatted dictionary
     """
     formatted = val
+    box_vars = Box(variables)
 
     if isinstance(val, dict):
         formatted = {}
-        #formatted = {key: format_keys(val[key], variables) for key in val}
+        #formatted = {key: format_keys(val[key], box_vars) for key in val}
         for key in val:
-            formatted[key] = format_keys(val[key], variables)
+            formatted[key] = format_keys(val[key], box_vars)
     elif isinstance(val, (list, tuple)):
-        formatted = [format_keys(item, variables) for item in val]
+        formatted = [format_keys(item, box_vars) for item in val]
     elif isinstance(val, str):
         try:
-            formatted = val.format(**variables)
+            formatted = val.format(**box_vars)
         except KeyError as e:
+            logger.error("Failed to resolve string [%s] with variables [%s]",
+                         val, box_vars)
             logger.error("Key(s) not found in format: %s", e.args)
             raise_from(exceptions.MissingFormatError(e.args), e)
     elif isinstance(val, TypeConvertToken):
-        value = format_keys(val.value, variables)
+        value = format_keys(val.value, box_vars)
         formatted = val.constructor(value)
 
     return formatted
@@ -221,7 +225,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
     else:
         actual_type = type(actual_val)
 
-    if expected_val == ANYTHING:
+    if expected_val is ANYTHING:
         # Match anything. We could just early exit here but having the debug
         # logging below is useful
         expected_matches = True
@@ -239,7 +243,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
         # At this point, there is likely to be an error unless we're using any
         # of the type sentinels
 
-        if expected_val != ANYTHING:
+        if not (expected_val is ANYTHING): # pylint: disable=superfluous-parens
             # NOTE
             # Second part of this check will be removed in future - see deprecation
             # warning below for details
