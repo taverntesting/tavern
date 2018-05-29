@@ -86,8 +86,8 @@ class _PluginCache(object):
         elif self.plugins:
             return self.plugins
         elif not self.plugins and config:
-            # FIXME
-            # Do we want to reload this every time we get a new config or cache it?
+            # NOTE
+            # This is reloaded every time
             self.plugins = self._load_plugins(config)
             return self.plugins
 
