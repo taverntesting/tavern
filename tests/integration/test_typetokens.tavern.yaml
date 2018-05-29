@@ -187,7 +187,7 @@ stages:
 
 ---
 
-test_name: Test conversion to an bool from included files
+test_name: Match a number approximately
 
 includes:
   - !include common.yaml
@@ -214,6 +214,23 @@ stages:
   #       dtype: bool
   #   response:
   #     status_code: 200
+
+---
+
+test_name: Test conversion to an bool from included files
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match pi approximately
+    request:
+      url: "{host}/pi"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        pi: !approx 3.1415926
 
 ---
 

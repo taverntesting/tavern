@@ -225,7 +225,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
     else:
         actual_type = type(actual_val)
 
-    if expected_val == ANYTHING:
+    if expected_val is ANYTHING:
         # Match anything. We could just early exit here but having the debug
         # logging below is useful
         expected_matches = True
@@ -243,7 +243,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
         # At this point, there is likely to be an error unless we're using any
         # of the type sentinels
 
-        if expected_val != ANYTHING:
+        if not (expected_val is ANYTHING): # pylint: disable=superfluous-parens
             # NOTE
             # Second part of this check will be removed in future - see deprecation
             # warning below for details

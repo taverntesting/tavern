@@ -1,7 +1,10 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
 
+import logging
 import uuid
 import os.path
+import pytest
+from future.utils import raise_from
 
 import yaml
 from yaml.reader import Reader
@@ -12,6 +15,9 @@ from yaml.constructor import SafeConstructor
 from yaml.resolver import Resolver
 
 from tavern.util.exceptions import BadSchemaError
+
+
+logger = logging.getLogger(__name__)
 
 
 def makeuuid(loader, node):
@@ -183,3 +189,30 @@ class FloatToken(TypeConvertToken):
 class BoolToken(TypeConvertToken):
     yaml_tag = "!bool"
     constructor = bool
+
+
+# Sort-of hack to try and avoid future API changes
+ApproxScalar = type(pytest.approx(1.0))
+
+class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
+    yaml_tag = "!approx"
+    yaml_loader = IncludeLoader
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        # pylint: disable=unused-argument
+        try:
+            val = float(node.value)
+        except TypeError as e:
+            logger.error("Could not coerce '%s' to a float for use with !approx", type(node.value))
+            raise_from(BadSchemaError, e)
+
+        return pytest.approx(val)
+
+    @classmethod
+    def to_yaml(cls, dumper, data):
+        return yaml.nodes.ScalarNode("!approx", str(data.expected), style=cls.yaml_flow_style)
+
+
+# Apparently this isn't done automatically?
+yaml.dumper.Dumper.add_representer(ApproxScalar, ApproxSentinel.to_yaml)
