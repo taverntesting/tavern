@@ -51,6 +51,11 @@ def add_parser_options(parser_addoption, with_defaults=True):
         help="Which mqtt backend to use",
         default='paho-mqtt' if with_defaults else None,
     )
+    parser_addoption(
+        "--tavern-strict",
+        help="Default response matching strictness",
+        default=None,
+    )
 
 
 def pytest_addoption(parser):
@@ -73,6 +78,12 @@ def pytest_addoption(parser):
         "tavern-mqtt-backend",
         help="Which mqtt backend to use",
         default="paho-mqtt",
+    )
+    parser.addini(
+        "tavern-strict",
+        help="Default response matching strictness",
+        type="args",
+        default=None,
     )
 
 
@@ -151,6 +162,15 @@ class YamlItem(pytest.Item):
         all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
         global_cfg = load_global_config(all_paths)
 
+        if self.config.getini("tavern-strict") is not None:
+            strict = self.config.getini("tavern-strict")
+        elif self.config.getoption("tavern_strict") is not None:
+            strict = self.config.getoption("tavern_strict")
+        else:
+            strict = []
+
+        global_cfg["strict"] = strict
+
         global_cfg["backends"] = {}
         backends = ["http", "mqtt"]
         for b in backends:
@@ -166,9 +186,26 @@ class YamlItem(pytest.Item):
 
         load_plugins(global_cfg)
 
-        verify_tests(self.spec)
+        # INTERNAL
+        xfail = self.spec.get("_xfail", False)
 
-        run_test(self.path, self.spec, global_cfg)
+        try:
+            verify_tests(self.spec)
+            run_test(self.path, self.spec, global_cfg)
+        except exceptions.BadSchemaError:
+            if xfail == "verify":
+                logger.info("xfailing test while verifying schema")
+            else:
+                raise
+        except exceptions.TavernException:
+            if xfail == "run":
+                logger.info("xfailing test when running")
+            else:
+                raise
+        else:
+            if xfail:
+                logger.error("Expected test to fail")
+                raise exceptions.TestFailError
 
     def repr_failure(self, excinfo): # pylint: disable=no-self-use
         """ called when self.runtest() raises an exception.

@@ -177,7 +177,7 @@ def yield_keyvals(block):
             yield [sidx], sidx, val
 
 
-def check_keys_match_recursive(expected_val, actual_val, keys):
+def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
     """Utility to recursively check response values
 
     expected and actual both have to be of the same type or it will raise an
@@ -197,8 +197,14 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
         code and to remove a load of the isinstance checks
 
     Args:
-        expected_val (dict, str): expected value
-        actual_val (dict, str): actual value
+        expected_val (dict, list, str): expected value
+        actual_val (dict, list, str): actual value
+        keys (list): any keys which have been recursively parsed to get to this
+            point. Used for debug output.
+        strict (bool): Whether 'strict' key checking should be done. If this is
+            False, a mismatch in dictionary keys between the expected and the
+            actual values will not raise an error (but a mismatch in value will
+            raise an error)
 
     Raises:
         KeyMismatchError: expected_val and actual_val did not match
@@ -251,23 +257,37 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
                 raise_from(exceptions.KeyMismatchError("Type of returned data was different than expected ({})".format(full_err())), e)
 
         if isinstance(expected_val, dict):
-            if set(expected_val.keys()) != set(actual_val.keys()):
-                akeys = set(actual_val.keys())
-                ekeys = set(expected_val.keys())
+            akeys = set(actual_val.keys())
+            ekeys = set(expected_val.keys())
 
+            if akeys != ekeys:
                 extra_actual_keys = akeys - ekeys
                 extra_expected_keys = ekeys - akeys
 
                 msg = ""
                 if extra_actual_keys:
-                    msg += "- Extra keys in response: {}".format(extra_actual_keys)
+                    msg += " - Extra keys in response: {}".format(extra_actual_keys)
                 if extra_expected_keys:
-                    msg += "- Keys missing from response: {}".format(extra_expected_keys)
+                    msg += " - Keys missing from response: {}".format(extra_expected_keys)
 
-                raise_from(exceptions.KeyMismatchError("Structure of returned data was different than expected {} ({})".format(msg, full_err())), e)
+                full_msg = "Structure of returned data was different than expected {} ({})".format(msg, full_err())
 
-            for key in expected_val:
-                check_keys_match_recursive(expected_val[key], actual_val[key], keys + [key])
+                # If there are more keys in 'expected' compared to 'actual',
+                # this is still a hard error and we shouldn't continue
+                if (ekeys > akeys) or strict:
+                    raise_from(exceptions.KeyMismatchError(full_msg), e)
+                else:
+                    logger.warning(full_msg)
+
+            # If strict is True, an error will be raised above. If not, recurse
+            # through both sets of keys and just ignore missing ones
+            to_recurse = akeys | ekeys
+
+            for key in to_recurse:
+                try:
+                    check_keys_match_recursive(expected_val[key], actual_val[key], keys + [key], strict)
+                except KeyError:
+                    logger.debug("Skipping missing key")
         elif isinstance(expected_val, list):
             if len(expected_val) != len(actual_val):
                 raise_from(exceptions.KeyMismatchError("Length of returned list was different than expected ({})".format(full_err())), e)
@@ -277,7 +297,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
 
             for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
                 try:
-                    check_keys_match_recursive(e_val, a_val, keys + [i])
+                    check_keys_match_recursive(e_val, a_val, keys + [i], strict)
                 except exceptions.KeyMismatchError as sub_e:
                     # This will still raise an error, but it will be more
                     # obvious where the error came from (in python 3 at least)

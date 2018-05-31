@@ -69,6 +69,9 @@ def run_test(in_file, test_spec, global_cfg):
 
     test_block_name = test_spec["test_name"]
 
+    # Strict on body by default
+    default_strictness = test_block_config["strict"]
+
     logger.info("Running test : %s", test_block_name)
 
     with ExitStack() as stack:
@@ -82,6 +85,27 @@ def run_test(in_file, test_spec, global_cfg):
         for stage in test_spec["stages"]:
             if stage.get('skip'):
                 continue
+
+            test_block_config["strict"] = default_strictness
+
+            # Can be overridden per stage
+            # NOTE
+            # this is hardcoded to check for the 'response' block. In the far
+            # future there might not be a response block, but at the moment it
+            # is the hardcoded value for any HTTP request.
+            if stage.get("response", {}):
+                if stage.get("response").get("strict", None) is not None:
+                    stage_strictness = stage.get("response").get("strict", None)
+                elif test_spec.get("strict", None) is not None:
+                    stage_strictness = test_spec.get("strict", None)
+                else:
+                    stage_strictness = default_strictness
+
+                logger.debug("Strict key checking for this stage is '%s'", stage_strictness)
+
+                test_block_config["strict"] = stage_strictness
+            elif default_strictness:
+                logger.debug("Default strictness '%s' ignored for this stage", default_strictness)
 
             run_stage(sessions, stage, tavern_box, test_block_config)
 
@@ -131,7 +155,7 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     delay(stage, "after")
 
 
-def run(in_file, tavern_global_cfg, tavern_http_backend, tavern_mqtt_backend):
+def run(in_file, tavern_global_cfg, tavern_http_backend, tavern_mqtt_backend, tavern_strict):
     """Run all tests contained in a file
 
     For each test this makes sure it matches the expected schema, then runs it.
@@ -159,6 +183,8 @@ def run(in_file, tavern_global_cfg, tavern_http_backend, tavern_mqtt_backend):
 
     global_cfg_paths = tavern_global_cfg
     global_cfg = load_global_config(global_cfg_paths)
+
+    global_cfg["strict"] = tavern_strict
 
     global_cfg["backends"] = {
         "http": tavern_http_backend,
