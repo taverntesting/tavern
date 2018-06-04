@@ -1,7 +1,7 @@
 import json
 import uuid
 import os
-from mock import patch, Mock, MagicMock
+from mock import patch, Mock, MagicMock, ANY
 
 import pytest
 import requests
@@ -10,6 +10,7 @@ import paho.mqtt.client as paho
 from tavern._plugins.mqtt.client import MQTTClient
 from tavern.core import run_test
 from tavern.util import exceptions
+from tavern.util.testutils import inject_context
 
 
 @pytest.fixture(name="fulltest")
@@ -336,3 +337,115 @@ class TestFormatMQTTVarsPlain:
             run_test("heif", fulltest, includes)
 
         assert pmock.called
+
+
+class TestBeforeAfterHandlers:
+
+    @pytest.mark.parametrize("stage", (
+        "before",
+        "after",
+    ))
+    def test_with_kwargs(self, fulltest, mockargs, includes, stage):
+        """Should call handlers in test spec"""
+
+        fulltest["stages"][0][stage] = [
+            {
+                'function': 'tavern.util.testutils:delay',
+                'extra_kwargs': {
+                    'seconds': 2
+                }
+            }
+        ]
+
+        mock_response = Mock(**mockargs)
+
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
+            with patch("tavern.util.testutils.time.sleep") as smock:
+                run_test("heif", fulltest, includes)
+
+        assert pmock.called
+        smock.assert_called_with(2)
+
+    @pytest.mark.parametrize("stage", (
+        "before",
+        "after",
+    ))
+    def test_with_args(self, fulltest, mockargs, includes, stage):
+        """Should call handlers in test spec"""
+
+        fulltest["stages"][0][stage] = [
+            {
+                'function': 'tavern.util.testutils:delay',
+                'extra_args': [2]
+            }
+        ]
+
+        mock_response = Mock(**mockargs)
+
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
+            with patch("tavern.util.testutils.time.sleep") as smock:
+                run_test("heif", fulltest, includes)
+
+        assert pmock.called
+        smock.assert_called_with(2)
+
+    @pytest.mark.parametrize("stage", (
+        "before",
+        "after",
+    ))
+    def test_has_context(self, fulltest, mockargs, includes, stage):
+        """Should call handlers in test spec"""
+
+        fulltest["stages"][0][stage] = [
+            {
+                'function': 'tavern.util.testutils:delay',
+            }
+        ]
+
+        mock_response = Mock(**mockargs)
+
+        # apply context decorator manually
+        handler = inject_context(MagicMock())
+        assert handler._tavern_inject_context
+
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
+            with patch("tavern.util.testutils.delay", new=handler) as smock:
+                run_test("heif", fulltest, includes)
+
+        assert pmock.called
+        assert smock.called
+        handler.assert_called_with(context=ANY)
+
+    def test_preserve_context(self, fulltest, mockargs, includes):
+        """Should call handlers in test spec"""
+
+        fulltest["stages"][0]['before'] = [
+            {
+                'function': 'tavern.util.testutils:delay',
+            }
+        ]
+
+        fulltest["stages"][0]['after'] = [
+            {
+                'function': 'tavern.util.testutils:delay',
+            }
+        ]
+
+        mock_response = Mock(**mockargs)
+
+        # apply context decorator manually
+        handler = inject_context(MagicMock())
+
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
+            with patch("tavern.util.testutils.delay", new=handler) as smock:
+                run_test("heif", fulltest, includes)
+
+        assert pmock.called
+        assert smock.called
+        assert handler.call_count == 2
+
+        contexts = []
+        for args, kwargs in handler.call_args_list:
+            contexts.append(kwargs['context'])
+
+        assert contexts[0] is contexts[1], "Context object was not preserved between tests"

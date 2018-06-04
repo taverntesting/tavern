@@ -1,0 +1,21 @@
+---
+
+test_name: Make sure server doubles number properly
+
+stages:
+  - name: Make sure number is returned correctly
+    before:
+      - function: utils:timer_start
+    after:
+      - function: utils:timer_stop
+    request:
+      url: http://localhost:5001/double
+      json:
+        number: 5
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      body:
+        double: 10

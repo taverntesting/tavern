@@ -7,6 +7,7 @@ import pytest
 from contextlib2 import ExitStack
 from box import Box
 
+from .schemas.extensions import import_ext_function
 from .util import exceptions
 from .util.dict_util import format_keys
 from .util.delay import delay
@@ -76,6 +77,10 @@ def run_test(in_file, test_spec, global_cfg):
             logger.debug("Entering context for %s", name)
             stack.enter_context(session)
 
+        test_context = {
+            'variables': test_block_config['variables']
+        }
+
         # Run tests in a path in order
         for stage in test_spec["stages"]:
             if stage.get('skip'):
@@ -103,17 +108,19 @@ def run_test(in_file, test_spec, global_cfg):
                 logger.debug("Default strictness '%s' ignored for this stage", default_strictness)
 
             try:
-                run_stage(sessions, stage, tavern_box, test_block_config)
+                run_stage(sessions, stage, tavern_box, test_block_config, test_context)
             except exceptions.TavernException as e:
                 e.stage = stage
                 e.test_block_config = test_block_config
                 raise
 
+            test_context['variables'] = test_block_config['variables']
+
             if stage.get('only'):
                 break
 
 
-def run_stage(sessions, stage, tavern_box, test_block_config):
+def run_stage(sessions, stage, tavern_box, test_block_config, test_context):
     name = stage["name"]
 
     r = get_request_type(stage, test_block_config, sessions)
@@ -122,7 +129,9 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
 
     expected = get_expected(stage, test_block_config, sessions)
 
+    # Kept for compatibility reasons
     delay(stage, "before")
+    _run_stage_actions(stage, 'before', test_context)
 
     logger.info("Running stage : %s", name)
     response = r.run()
@@ -133,7 +142,9 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
         test_block_config["variables"].update(saved)
 
     tavern_box.pop("request_vars")
+    # Kept for compatibility reasons
     delay(stage, "after")
+    _run_stage_actions(stage, 'after', test_context)
 
 
 def _run_pytest(in_file, tavern_global_cfg, tavern_mqtt_backend=None, tavern_http_backend=None, tavern_strict=None, pytest_args=None, **kwargs): # pylint: disable=too-many-arguments
@@ -181,3 +192,31 @@ def run(in_file, tavern_global_cfg=None, **kwargs):
         tavern_global_cfg (dict): Extra global config
     """
     return _run_pytest(in_file, tavern_global_cfg, **kwargs)
+
+
+def _run_stage_actions(stage, when, context):
+    """Run "before" or "after" stage actions
+
+    Args:
+        stage (dict): test stage
+        when (str): 'before' or 'after'
+        context (dict): current test context
+    """
+
+    assert when in ('before', 'after')
+
+    calls = stage.get(when)
+    if not calls:
+        return
+
+    for call in calls:
+        args = call.get('extra_args', ())
+        kwargs = call.get('extra_kwargs', {})
+        func_name = call['function']
+
+        func = import_ext_function(func_name)
+
+        if hasattr(func, '_tavern_inject_context'):
+            kwargs['context'] = context
+
+        func(*args, **kwargs)

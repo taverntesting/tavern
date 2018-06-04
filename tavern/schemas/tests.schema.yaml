@@ -110,6 +110,29 @@ mapping:
             type: bool
             required: false
 
+          re;(before|after):
+            type: seq
+            required: false
+            sequence:
+              - type: map
+                required: true
+                mapping:
+                  function:
+                    type: str
+                    required: true
+                  extra_args:
+                    type: seq
+                    required: false
+                    sequence:
+                      - type: any
+                        required: false
+                  extra_kwargs:
+                    type: map
+                    required: false
+                    mapping:
+                      re;(.*):
+                        type: str
+
           delay_before:
             type: float
             required: false
