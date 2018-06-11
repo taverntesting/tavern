@@ -30,7 +30,7 @@ def pytest_collect_file(parent, path):
     return None
 
 
-def add_parser_options(parser_addoption):
+def add_parser_options(parser_addoption, with_defaults=True):
     """Add argparse options
 
     This is shared between the CLI and pytest (for now)
@@ -44,19 +44,19 @@ def add_parser_options(parser_addoption):
     parser_addoption(
         "--tavern-http-backend",
         help="Which http backend to use",
-        default="requests",
+        default='requests' if with_defaults else None,
     )
     parser_addoption(
         "--tavern-mqtt-backend",
         help="Which mqtt backend to use",
-        default="paho-mqtt",
+        default='paho-mqtt' if with_defaults else None,
     )
 
 
 def pytest_addoption(parser):
     """Add an option to pass in a global config file for tavern
     """
-    add_parser_options(parser.addoption)
+    add_parser_options(parser.addoption, with_defaults=False)
 
     parser.addini(
         "tavern-global-cfg",
