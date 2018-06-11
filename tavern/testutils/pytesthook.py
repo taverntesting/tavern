@@ -135,8 +135,10 @@ class YamlItem(pytest.Item):
         self.path = path
         self.spec = spec
 
+        stages = ["{:d}: {:s}".format(i + 1, stage["name"]) for i, stage in enumerate(spec["stages"])]
+
         class FakeObj(object):
-            __doc__ = name
+            __doc__ = name + ":\n" + "\n".join(stages)
 
         self.obj = FakeObj
 
