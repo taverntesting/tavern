@@ -80,47 +80,55 @@ def run_test(in_file, test_spec, global_cfg):
 
         # Run tests in a path in order
         for stage in test_spec["stages"]:
-            name = stage["name"]
+            if stage.get('skip'):
+                continue
 
-            try:
-                r = get_request_type(stage, test_block_config, sessions)
-            except exceptions.MissingFormatError:
-                log_fail(stage, None, None)
-                raise
+            run_stage(sessions, stage, tavern_box, test_block_config)
 
-            tavern_box.update(request_vars=r.request_vars)
+            if stage.get('only'):
+                break
 
-            try:
-                expected = get_expected(stage, test_block_config, sessions)
-            except exceptions.TavernException:
-                log_fail(stage, None, None)
-                raise
 
-            delay(stage, "before")
+def run_stage(sessions, stage, tavern_box, test_block_config):
+    name = stage["name"]
 
-            logger.info("Running stage : %s", name)
+    try:
+        r = get_request_type(stage, test_block_config, sessions)
+    except exceptions.MissingFormatError:
+        log_fail(stage, None, None)
+        raise
 
-            try:
-                response = r.run()
-            except exceptions.TavernException:
-                log_fail(stage, None, expected)
-                raise
+    tavern_box.update(request_vars=r.request_vars)
 
-            verifiers = get_verifiers(stage, test_block_config, sessions, expected)
+    try:
+        expected = get_expected(stage, test_block_config, sessions)
+    except exceptions.TavernException:
+        log_fail(stage, None, None)
+        raise
 
-            for v in verifiers:
-                try:
-                    saved = v.verify(response)
-                except exceptions.TavernException:
-                    log_fail(stage, v, expected)
-                    raise
-                else:
-                    test_block_config["variables"].update(saved)
+    delay(stage, "before")
 
-            log_pass(stage, verifiers)
+    logger.info("Running stage : %s", name)
+    try:
+        response = r.run()
+    except exceptions.TavernException:
+        log_fail(stage, None, expected)
+        raise
 
-            tavern_box.pop("request_vars")
-            delay(stage, "after")
+    verifiers = get_verifiers(stage, test_block_config, sessions, expected)
+    for v in verifiers:
+        try:
+            saved = v.verify(response)
+        except exceptions.TavernException:
+            log_fail(stage, v, expected)
+            raise
+        else:
+            test_block_config["variables"].update(saved)
+
+    log_pass(stage, verifiers)
+
+    tavern_box.pop("request_vars")
+    delay(stage, "after")
 
 
 def run(in_file, tavern_global_cfg, tavern_http_backend, tavern_mqtt_backend):

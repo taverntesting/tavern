@@ -1,0 +1,21 @@
+---
+
+test_name: Test 'skip' keyword for selectively ignoring tests
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: This test should not run
+    skip: yes
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 999
+  - name: This test should still run
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
