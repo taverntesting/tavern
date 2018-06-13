@@ -32,6 +32,12 @@ mapping:
     required: true
     type: str
 
+  _xfail:
+    type: str
+    enum:
+      - verify
+      - run
+
   includes:
     required: false
     type: seq
