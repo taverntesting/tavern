@@ -124,3 +124,11 @@ def echo_values():
     body = request.get_json()
     response = body
     return jsonify(response), 200
+
+
+@app.route("/form_data", methods=["POST"])
+def echo_form_values():
+    body = request.get_data()
+    key, _, value = body.decode("utf8").partition("=")
+    response = {key: value}
+    return jsonify(response), 200
