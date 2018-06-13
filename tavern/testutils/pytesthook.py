@@ -166,9 +166,26 @@ class YamlItem(pytest.Item):
 
         load_plugins(global_cfg)
 
-        verify_tests(self.spec)
+        # INTERNAL
+        xfail = self.spec.get("_xfail", False)
 
-        run_test(self.path, self.spec, global_cfg)
+        try:
+            verify_tests(self.spec)
+            run_test(self.path, self.spec, global_cfg)
+        except exceptions.BadSchemaError:
+            if xfail == "verify":
+                logger.info("xfailing test while verifying schema")
+            else:
+                raise
+        except exceptions.TavernException:
+            if xfail == "run":
+                logger.info("xfailing test when running")
+            else:
+                raise
+        else:
+            if xfail:
+                logger.error("Expected test to fail")
+                raise exceptions.TestFailError
 
     def repr_failure(self, excinfo): # pylint: disable=no-self-use
         """ called when self.runtest() raises an exception.
