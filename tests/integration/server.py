@@ -119,7 +119,7 @@ def expect_type():
     return "", 200
 
 
-@app.route("/status_code_return", methods=["GET"])
+@app.route("/status_code_return", methods=["POST"])
 def status_code_return():
     body = request.get_json()
     response = {}
