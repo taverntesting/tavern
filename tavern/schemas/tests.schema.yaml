@@ -179,7 +179,8 @@ mapping:
             required: false
             mapping:
               status_code:
-                type: int
+                type: any
+                func: validate_status_code_is_int_or_list_of_ints
 
               cookies:
                 type: seq
