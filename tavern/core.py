@@ -174,6 +174,10 @@ def run(in_file, tavern_global_cfg, tavern_http_backend, tavern_mqtt_backend):
                 logger.warning("Empty document in input file '%s'", in_file)
                 continue
 
+            if "_xfail" in test_spec:
+                logger.info("_xfail does not work with tavern-ci cli, skipping test")
+                continue
+
             try:
                 verify_tests(test_spec)
             except exceptions.BadSchemaError:
