@@ -32,11 +32,11 @@ Run pyflakes:
   cache:
     key: tavern-project-cache
     paths:
-      - /root/.cache/pip/
+      - ./pip-cache/
     policy: pull
 
   before_script:
-    - pip install --upgrade tox pip setuptools
+    - pip install --upgrade tox pip setuptools --cache-dir=./pip-cache/
   script:
     - tox -c ${TOXCFG} -e ${CI_JOB_NAME}
 
@@ -52,7 +52,7 @@ py27:
   cache:
     key: tavern-project-cache
     paths:
-      - /root/.cache/pip/
+      - ./pip-cache/
     policy: push
 
 py34:
@@ -97,7 +97,7 @@ py36lint:
     - docker:dind
   before_script:
     - docker info
-    - pip install --upgrade tox pip setuptools
+    - pip install --upgrade tox pip setuptools --cache-dir=./pip-cache/
 
 py27-cookies:
   <<: *inttest
