@@ -54,7 +54,6 @@ py27:
     key: tavern-project-cache
     paths:
       - ./pip-cache/
-    policy: push
 
 py34:
   <<: *basetest
