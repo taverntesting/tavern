@@ -11,16 +11,16 @@ stages:
       url: "{host}/status_code_return"
       method: POST
       json:
-        status_code: 100
+        status_code: 200
     response:
-      status_code: 100
+      status_code: 200
 
   - name: Match one of many
     request:
       url: "{host}/status_code_return"
       method: POST
       json:
-        status_code: 100
+        status_code: 200
     response:
       status_code:
         - 100
@@ -49,7 +49,7 @@ stages:
 
 ---
 
-test_name: Test using invalid status code fails at verification
+test_name: Test using invalid status code format fails at verification
 
 _xfail: verify
 
@@ -67,3 +67,24 @@ stages:
       status_code:
         first: 100
         second: 200
+
+---
+
+test_name: Test using invalid status code value fails at verification
+
+_xfail: verify
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Missing from status code list
+    request:
+      url: "{host}/status_code_return"
+      method: POST
+      json:
+        status_code: 400
+    response:
+      status_code:
+        - "200"
+        - 300

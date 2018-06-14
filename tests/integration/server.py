@@ -123,7 +123,7 @@ def expect_type():
 def status_code_return():
     body = request.get_json()
     response = {}
-    return jsonify(response), body["status_code"]
+    return jsonify(response), int(body["status_code"])
 
 
 @app.route("/echo", methods=["POST"])
