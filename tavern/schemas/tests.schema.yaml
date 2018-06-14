@@ -120,6 +120,13 @@ mapping:
               timeout:
                 type: float
                 required: false
+              qos:
+                type: int
+                required: false
+                enum:
+                  - 0
+                  - 1
+                  - 2
 
           request:
             type: map
@@ -145,9 +152,9 @@ mapping:
               json:
                 include: any_map_or_list_with_ext_function
 
-              files: 
+              files:
                 required: false
-                type: map 
+                type: map
                 mapping:
                   re;(.*):
                     type: str
