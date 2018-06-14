@@ -94,7 +94,7 @@ py36lint:
   variables:
     TOXCFG: tox-integration.ini
   services:
-    - docker
+    - docker:dind
 
 py27-cookies:
   <<: *inttest
