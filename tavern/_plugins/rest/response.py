@@ -42,8 +42,15 @@ class RestResponse(BaseResponse):
         self.test_block_config = test_block_config
         self.status_code = None
 
-        if self.expected["status_code"] not in _codes:
-            logger.warning("Unexpected status code '%s'", self.expected["status_code"])
+        def check_code(code):
+            if code not in _codes:
+                logger.warning("Unexpected status code '%s'", code)
+
+        if isinstance(self.expected["status_code"], int):
+            check_code(self.expected["status_code"])
+        else:
+            for code in self.expected["status_code"]:
+                check_code(code)
 
     def __str__(self):
         if self.response:
@@ -101,6 +108,26 @@ class RestResponse(BaseResponse):
 
         return redirect_query_params
 
+    def _check_status_code(self, status_code, body):
+        expected_code = self.expected["status_code"]
+
+        if (isinstance(expected_code, int) and status_code == expected_code) or \
+        (isinstance(expected_code, list) and (status_code in expected_code)):
+            logger.debug("Status code '%s' matched expected '%s'", status_code, expected_code)
+            return
+        else:
+            if 400 <= status_code < 500:
+                # special case if there was a bad request. This assumes that the
+                # response would contain some kind of information as to why this
+                # request was rejected.
+                self._adderr("Status code was %s, expected %s:\n%s",
+                    status_code, expected_code,
+                    indent_err_text(json.dumps(body)),
+                    )
+            else:
+                self._adderr("Status code was %s, expected %s",
+                    status_code, expected_code)
+
     def verify(self, response):
         """Verify response against expected values and returns any values that
         we wanted to save for use in future requests
@@ -129,15 +156,7 @@ class RestResponse(BaseResponse):
         except ValueError:
             body = None
 
-        if response.status_code != self.expected["status_code"]:
-            if 400 <= response.status_code < 500:
-                self._adderr("Status code was %s, expected %s:\n%s",
-                    response.status_code, self.expected["status_code"],
-                    indent_err_text(json.dumps(body)),
-                    )
-            else:
-                self._adderr("Status code was %s, expected %s",
-                    response.status_code, self.expected["status_code"])
+        self._check_status_code(response.status_code, body)
 
         if self.validate_function:
             try:

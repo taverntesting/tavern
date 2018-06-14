@@ -263,6 +263,60 @@ class TestValidate:
         assert r.errors
 
 
+class TestMatchStatusCodes:
+
+    def test_validate_single_status_code_passes(self, example_response, includes):
+        """single status code match"""
+
+        example_response["status_code"] = 100
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        r._check_status_code(100, {})
+
+        assert not r.errors
+
+    def test_validate_single_status_code_incorrect(self, example_response, includes):
+        """single status code mismatch"""
+
+        example_response["status_code"] = 100
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        r._check_status_code(102, {})
+
+        assert r.errors
+
+    def test_validate_multiple_status_codes_passes(self, example_response, includes):
+        """Check it can match mutliple status codes"""
+
+        example_response["status_code"] = [
+            100,
+            200,
+            300,
+        ]
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        r._check_status_code(100, {})
+
+        assert not r.errors
+
+    def test_validate_multiple_status_codes_missing(self, example_response, includes):
+        """Status code was not in list"""
+
+        example_response["status_code"] = [
+            100,
+            200,
+            300,
+        ]
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        r._check_status_code(103, {})
+
+        assert r.errors
+
 class TestNestedValidate:
 
     def test_validate_nested_null(self, example_response, includes):

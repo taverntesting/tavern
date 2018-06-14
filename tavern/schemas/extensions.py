@@ -149,6 +149,20 @@ def validate_extensions(value, rule_obj, path):
     return True
 
 
+def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path):
+    # pylint: disable=unused-argument
+    err_msg = "status_code has to be an integer or a list of integers (got {})".format(value)
+
+    if not isinstance(value, (int, list)):
+        raise BadSchemaError(err_msg)
+
+    if isinstance(value, list):
+        if not all(isinstance(i, int) for i in value):
+            raise BadSchemaError(err_msg)
+
+    return True
+
+
 def validate_json_with_extensions(value, rule_obj, path):
     """ Performs the above match, but also matches a dict or a list. This it
     just because it seems like you can't match a dict OR a list in pykwalify

@@ -1,0 +1,90 @@
+---
+
+test_name: Test matching one of multiple status codes
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match one status code
+    request:
+      url: "{host}/status_code_return"
+      method: POST
+      json:
+        status_code: 200
+    response:
+      status_code: 200
+
+  - name: Match one of many
+    request:
+      url: "{host}/status_code_return"
+      method: POST
+      json:
+        status_code: 200
+    response:
+      status_code:
+        - 100
+        - 200
+
+---
+
+test_name: Test missing from status code list fails
+
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Missing from status code list
+    request:
+      url: "{host}/status_code_return"
+      method: POST
+      json:
+        status_code: 400
+    response:
+      status_code:
+        - 100
+        - 200
+
+---
+
+test_name: Test using invalid status code format fails at verification
+
+_xfail: verify
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Missing from status code list
+    request:
+      url: "{host}/status_code_return"
+      method: POST
+      json:
+        status_code: 400
+    response:
+      status_code:
+        first: 100
+        second: 200
+
+---
+
+test_name: Test using invalid status code value fails at verification
+
+_xfail: verify
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Missing from status code list
+    request:
+      url: "{host}/status_code_return"
+      method: POST
+      json:
+        status_code: 400
+    response:
+      status_code:
+        - "200"
+        - 300
