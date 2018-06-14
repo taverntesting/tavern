@@ -25,7 +25,7 @@ def get_expected_from_request(stage, test_block_config, session):
         # format so we can subscribe to the right topic
         f_expected = format_keys(m_expected, test_block_config["variables"])
         mqtt_client = session
-        mqtt_client.subscribe(f_expected["topic"])
+        mqtt_client.subscribe(f_expected["topic"], f_expected.get("qos", 1))
         expected = f_expected
     else:
         expected = {}
