@@ -51,6 +51,11 @@ def add_parser_options(parser_addoption, with_defaults=True):
         help="Which mqtt backend to use",
         default='paho-mqtt' if with_defaults else None,
     )
+    parser_addoption(
+        "--tavern-strict",
+        help="Default response matching strictness",
+        default=None,
+    )
 
 
 def pytest_addoption(parser):
@@ -73,6 +78,12 @@ def pytest_addoption(parser):
         "tavern-mqtt-backend",
         help="Which mqtt backend to use",
         default="paho-mqtt",
+    )
+    parser.addini(
+        "tavern-strict",
+        help="Default response matching strictness",
+        type="args",
+        default=None,
     )
 
 
@@ -150,6 +161,15 @@ class YamlItem(pytest.Item):
 
         all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
         global_cfg = load_global_config(all_paths)
+
+        if self.config.getini("tavern-strict") is not None:
+            strict = self.config.getini("tavern-strict")
+        elif self.config.getoption("tavern_strict") is not None:
+            strict = self.config.getoption("tavern_strict")
+        else:
+            strict = []
+
+        global_cfg["strict"] = strict
 
         global_cfg["backends"] = {}
         backends = ["http", "mqtt"]

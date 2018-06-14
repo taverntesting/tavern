@@ -1,9 +1,11 @@
 import logging
+import collections
 from abc import abstractmethod
+import warnings
 
 from tavern.util import exceptions
 from tavern.util.python_2_util import indent
-from tavern.util.dict_util import format_keys, recurse_access_key, yield_keyvals, check_keys_match_recursive
+from tavern.util.dict_util import format_keys, check_keys_match_recursive
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +43,7 @@ class BaseResponse(object):
         we wanted to save for use in future requests
         """
 
-    def recurse_check_key_match(self, expected_block, block, blockname):
+    def recurse_check_key_match(self, expected_block, block, blockname, strict):
         """Valid returned data against expected data
 
         Todo:
@@ -64,42 +66,59 @@ class BaseResponse(object):
                 expected_block, blockname)
             return
 
+        if isinstance(block, collections.Mapping):
+            block = dict(block)
+
         logger.debug("expected = %s, actual = %s", expected_block, block)
 
-        if blockname == "body" and (not isinstance(expected_block, type(block))):
+        try:
+            check_keys_match_recursive(expected_block, block, [], strict)
+        except exceptions.KeyMismatchError as e:
+            # TODO
+            # This block be removed in 1.0 as it is a breaking API change, and
+            # replaced with a simple self._adderr. This is just here to maintain
+            # 'legacy' key checking which was in fact broken.
+
+            if strict:
+                logger.debug("Failing because 'strict' was true")
+                # This should always raise an error
+                self._adderr("Value mismatch in %s: %s", blockname, e)
+                return
+
+            if blockname != "body":
+                logger.debug("Failing because it isn't the body")
+                # This should always raise an error
+                self._adderr("Value mismatch in %s: %s", blockname, e)
+                return
+
+            if not isinstance(expected_block, type(block)):
+                logger.debug("Failing because it was a type mismatch")
+                # This should always raise an error
+                self._adderr("Value mismatch in %s: %s", blockname, e)
+                return
+
             if isinstance(block, list):
-                block_type = "list"
-            else:
-                block_type = "dict"
+                logger.debug("Failing because its a list")
+                # This should always raise an error
+                self._adderr("Value mismatch in %s: %s", blockname, e)
+                return
 
-            if isinstance(expected_block, list):
-                expected_type = "list"
-            else:
-                expected_type = "dict"
-
-            self._adderr("Expected %s to be returned, but a %s was returned",
-                block_type, expected_type)
-            # Fatal
-            return
-
-        for split_key, joined_key, expected_val in yield_keyvals(expected_block):
+            # At this point it will always be a dict - run the check again just
+            # matching the top level keys then run it again on each individual
+            # item, like it ran before.
+            c_expected = {i: None for i in expected_block}
+            c_actual = {i: None for i in block}
             try:
-                actual_val = recurse_access_key(block, list(split_key))
-            except KeyError as e:
-                self._adderr("Key not present: %s", joined_key, e=e)
-                continue
-            except IndexError as e:
-                self._adderr("Expected returned list to be of at least length %s but length was %s",
-                        int(joined_key) + 1, len(block), e=e)
-                continue
+                check_keys_match_recursive(c_expected, c_actual, [], strict=False)
 
-            logger.debug("%s: %s vs %s", joined_key, expected_val, actual_val)
-
-            try:
-                check_keys_match_recursive(expected_val, actual_val, [])
-            except exceptions.KeyMismatchError as e:
-                logger.error("Key mismatch on %s", joined_key)
-                self._adderr("Value mismatch: got '%s' (type: %s), expected '%s' (type: %s)",
-                    actual_val, type(actual_val), expected_val, type(expected_val), e=e)
+                # An error will be raised above if there are more expected keys
+                # than returned. At this point we might have more returned that
+                # expected, so fall back to 'legacy' behaviour
+                for k, v in expected_block.items():
+                    check_keys_match_recursive(v, block[k], [k], strict=True)
+            except exceptions.KeyMismatchError:
+                self._adderr("Value mismatch in %s: %s", blockname, e)
             else:
-                logger.debug("Key %s was present and matched", joined_key)
+                msg = "Checking keys worked using 'legacy' comparison, which will not match dictionary keys at the top level of the response. This behaviour will be changed in a future version"
+                warnings.warn(msg, FutureWarning)
+                logger.warning(msg, exc_info=True)

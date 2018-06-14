@@ -38,6 +38,10 @@ mapping:
       - verify
       - run
 
+  strict:
+    func: check_strict_key
+    type: any
+
   includes:
     required: false
     type: seq
@@ -185,6 +189,10 @@ mapping:
             type: map
             required: false
             mapping:
+              strict:
+                func: check_strict_key
+                type: any
+
               status_code:
                 type: int
 

@@ -159,3 +159,16 @@ def validate_json_with_extensions(value, rule_obj, path):
         raise BadSchemaError("Error at {} - expected a list or dict".format(path))
 
     return True
+
+
+def check_strict_key(value, rule_obj, path):
+    """Make sure the 'strict' key is either a bool or a list"""
+    # pylint: disable=unused-argument
+
+    if not isinstance(value, (bool, list)):
+        raise BadSchemaError("'strict' has to be either a boolean or a list")
+    elif isinstance(value, list):
+        if not set(["body", "headers", "redirect_query_params"]) >= set(value):
+            raise BadSchemaError("Invalid 'strict' keys passed: {}".format(value))
+
+    return True

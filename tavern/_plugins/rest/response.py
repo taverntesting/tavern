@@ -214,7 +214,15 @@ class RestResponse(BaseResponse):
 
         logger.debug("Validating %s for %s", blockname, expected_block)
 
-        self.recurse_check_key_match(expected_block, block, blockname)
+        # 'strict' could be a list, in which case we only want to enable strict
+        # key checking for that specific bit of the response
+        test_strictness = self.test_block_config["strict"]
+        if isinstance(test_strictness, list):
+            block_strictness = (blockname in test_strictness)
+        else:
+            block_strictness = test_strictness
+
+        self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
 
     def _save_value(self, key, to_check):
         """Save a value in the response for use in future tests

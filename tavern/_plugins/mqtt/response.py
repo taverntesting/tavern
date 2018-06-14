@@ -5,6 +5,7 @@ import time
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util import exceptions
 from tavern.response.base import BaseResponse
+from tavern.util.dict_util import check_keys_match_recursive
 
 try:
     LoadException = json.decoder.JSONDecodeError
@@ -93,6 +94,13 @@ class MQTTResponse(BaseResponse):
             if msg.payload != payload:
                 logger.warning("Got unexpected payload on topic '%s': '%s' (expected '%s')",
                     msg.topic, msg.payload, payload)
+
+                if json_payload:
+                    try:
+                        check_keys_match_recursive(payload, msg.payload, [])
+                    except exceptions.KeyMismatchError:
+                        # Just want to log the mismatch
+                        pass
             elif msg.topic != topic:
                 logger.warning("Got unexpected message in '%s' with payload '%s'",
                     msg.topic, msg.payload)

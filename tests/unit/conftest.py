@@ -12,12 +12,13 @@ def fix_example_includes():
             "test_auth_token": "abc123",
             "code": "def456",
             "callback_url": "www.yahoo.co.uk",
-            "request_topic": "/abc"
+            "request_topic": "/abc",
         },
         "backends": {
             "mqtt": "paho-mqtt",
             "http": "requests",
-        }
+        },
+        "strict": True,
     }
 
     return includes.copy()
