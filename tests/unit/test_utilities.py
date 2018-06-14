@@ -1,4 +1,5 @@
 from textwrap import dedent
+from collections import OrderedDict
 
 import pytest
 import yaml
@@ -204,6 +205,20 @@ class TestMatchRecursive:
         b["a"][0] = "wrong"
 
         check_keys_match_recursive(a, b, [])
+
+    def test_match_ordered(self):
+        """Should be able to match an ordereddict"""
+        first = dict(
+            a=1,
+            b=2,
+        )
+
+        second = OrderedDict(
+            b=2,
+            a=1,
+        )
+
+        check_keys_match_recursive(first, second, [])
 
 
 @pytest.fixture(name="test_yaml")

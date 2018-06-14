@@ -235,7 +235,16 @@ def check_keys_match_recursive(expected_val, actual_val, keys):
         expected_matches = expected_val.constructor == actual_type
     else:
         # Normal matching
-        expected_matches = isinstance(expected_val, actual_type)
+        expected_matches = (
+            # If they are the same type
+            isinstance(expected_val, actual_type)
+            or
+            # Handles the case where, for example, the 'actual type' returned by
+            # a custom backend returns an OrderedDict, which is a subclass of
+            # dict but will raise a confusing error if the contents are
+            # different
+            issubclass(actual_type, type(expected_val))
+        )
 
     try:
         assert actual_val == expected_val
