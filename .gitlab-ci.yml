@@ -95,6 +95,9 @@ py36lint:
     TOXCFG: tox-integration.ini
   services:
     - docker:dind
+  before_script:
+    - docker info
+    - pip install --upgrade tox pip setuptools
 
 py27-cookies:
   <<: *inttest
