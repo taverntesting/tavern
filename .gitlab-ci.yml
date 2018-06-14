@@ -36,6 +36,7 @@ Run pyflakes:
     policy: pull
 
   before_script:
+    - echo "install_command = pip install --cache-dir=./pip-cache/ {opts} {packages}" >> tox.ini
     - pip install --upgrade tox pip setuptools --cache-dir=./pip-cache/
   script:
     - tox -c ${TOXCFG} -e ${CI_JOB_NAME}
@@ -97,6 +98,7 @@ py36lint:
     - docker:dind
   before_script:
     - docker info
+    - echo "install_command = pip install --cache-dir=./pip-cache/ {opts} {packages}" >> tox-integration.ini
     - pip install --upgrade tox pip setuptools --cache-dir=./pip-cache/
 
 py27-cookies:
