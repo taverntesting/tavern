@@ -32,7 +32,7 @@ Run pyflakes:
   cache:
     key: tavern-project-cache
     paths:
-      - /root/.cache/pip
+      - /root/.cache/pip/
     policy: pull
 
   before_script:
@@ -52,7 +52,7 @@ py27:
   cache:
     key: tavern-project-cache
     paths:
-      - /root/.cache/pip
+      - /root/.cache/pip/
     policy: push
 
 py34:
