@@ -56,6 +56,7 @@ def add_parser_options(parser_addoption, with_defaults=True):
         help="Default response matching strictness",
         default=None,
         nargs="+",
+        choices=["body", "headers", "redirect_query_params"],
     )
 
 
@@ -165,6 +166,9 @@ class YamlItem(pytest.Item):
 
         if self.config.getini("tavern-strict") is not None:
             strict = self.config.getini("tavern-strict")
+            if isinstance(strict, list):
+                if any(i not in ["body", "headers", "redirect_query_params"] for i in strict):
+                    raise exceptions.UnexpectedKeysError("Invalid values for 'strict' use in config file")
         elif self.config.getoption("tavern_strict") is not None:
             strict = self.config.getoption("tavern_strict")
         else:
