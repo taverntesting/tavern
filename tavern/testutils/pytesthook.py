@@ -55,6 +55,7 @@ def add_parser_options(parser_addoption, with_defaults=True):
         "--tavern-strict",
         help="Default response matching strictness",
         default=None,
+        nargs="+",
     )
 
 
