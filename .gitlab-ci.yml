@@ -93,7 +93,7 @@ py36lint:
   <<: *basetest
   variables:
     TOXCFG: tox-integration.ini
-    DOCKER_HOST: tcp://docker:2375
+    # DOCKER_HOST: tcp://docker:2375
   services:
     - docker:dind
   before_script:
