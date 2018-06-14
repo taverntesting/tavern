@@ -112,9 +112,9 @@ class RestResponse(BaseResponse):
         expected_code = self.expected["status_code"]
 
         if (isinstance(expected_code, int) and status_code == expected_code) or \
-            (isinstance(expected_code, list) and (status_code in expected_code)):
-                logger.debug("Status code '%s' matched expected '%s'", status_code, expected_code)
-                return
+        (isinstance(expected_code, list) and (status_code in expected_code)):
+            logger.debug("Status code '%s' matched expected '%s'", status_code, expected_code)
+            return
         else:
             if 400 <= status_code < 500:
                 # special case if there was a bad request. This assumes that the
