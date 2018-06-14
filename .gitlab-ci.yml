@@ -93,12 +93,15 @@ py36lint:
   <<: *basetest
   variables:
     TOXCFG: tox-integration.ini
+    DOCKER_HOST: tcp://docker:2375
   services:
     - docker:dind
   before_script:
-    - docker info
+    - pip install --upgrade docker-compose tox pip setuptools --cache-dir=./pip-cache/
+    - mkdir -p /root/.docker/
+    - touch /root/.docker/config.json
+    - docker-compose --verbose -f ./tests/integration/docker-compose.yaml images
     - echo "install_command = pip install --cache-dir=./pip-cache/ {opts} {packages}" >> tox-integration.ini
-    - pip install --upgrade tox pip setuptools --cache-dir=./pip-cache/
 
 py27-cookies:
   <<: *inttest
