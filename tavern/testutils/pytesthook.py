@@ -149,6 +149,8 @@ class YamlFile(pytest.File):
             YamlItem: Essentially an individual pytest 'test object'
         """
 
+        # pylint: disable=too-many-locals
+
         try:
             # Convert to a list so we can catch parser exceptions
             all_tests = list(yaml.load_all(self.fspath.open(encoding="utf-8"), Loader=IncludeLoader))
