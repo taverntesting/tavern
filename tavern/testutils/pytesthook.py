@@ -192,7 +192,6 @@ class YamlFile(pytest.File):
                             extra_arg = format_keys(extra_arg, fmt_vars)
                             pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
 
-
                 # Do this after we've added all the other marks so doing
                 # things like selecting on mark names still works even
                 # after parametrization
@@ -211,6 +210,9 @@ class YamlFile(pytest.File):
 
                     # Only yield the parametrized ones
                     return
+
+                for pm in pytest_marks:
+                    item.add_marker(pm)
 
             yield item
 
