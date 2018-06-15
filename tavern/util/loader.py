@@ -75,7 +75,7 @@ class IncludeLoader(Reader, Scanner, Parser, RememberComposer, SafeConstructor, 
     def get_data(self):
         self.loaded_stages = {}
 
-        return super(__class__, self).get_data()
+        return super(self.__class__, self).get_data()
 
 
 def _get_yaml_filename(loader, node):
