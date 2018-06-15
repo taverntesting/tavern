@@ -147,11 +147,11 @@ class YamlFile(pytest.File):
                 # This should either be a string or a skipif
                 for m in marks:
                     if isinstance(m, str):
-                        format_keys(m, fmt_vars)
+                        m = format_keys(m, fmt_vars)
                         pytest_marks[m] = getattr(pytest.mark, m)
                     elif isinstance(m, dict):
                         for markname, extra_arg in m.items():
-                            format_keys(extra_arg, fmt_vars)
+                            extra_arg = format_keys(extra_arg, fmt_vars)
                             pytest_marks[markname] = getattr(pytest.mark, markname)(extra_arg)
 
                 item.keywords.update(pytest_marks)
