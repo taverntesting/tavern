@@ -23,4 +23,4 @@ stages:
     response:
       status_code: 200
       body:
-        value: "{to_send} x"
+        value: "{to_send}"
