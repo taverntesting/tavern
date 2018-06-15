@@ -1,0 +1,25 @@
+# componenets/stage_auth.yaml
+---
+
+name: Authentication stage
+description:
+  Reusable test stage for authentication
+
+stages:
+  login_get_token:
+    name: login_get_token
+    request:
+      url: "{service:s}/login"
+      json:
+        user: "{user.user:s}"
+        password: "{user.pass:s}"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      headers:
+        content-type: application/json
+      save:
+        body:
+          test_login_token: token

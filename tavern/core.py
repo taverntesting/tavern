@@ -195,7 +195,9 @@ def run(in_file, tavern_global_cfg, tavern_http_backend, tavern_mqtt_backend, ta
 
     with io.open(in_file, "r", encoding="utf-8") as infile:
         # Multiple documents per file => multiple test paths per file
+        logger.debug("loading: %s", in_file)
         for test_spec in yaml.load_all(infile, Loader=IncludeLoader):
+            logger.debug("    test_spec: : %s", test_spec)
             if not test_spec:
                 logger.warning("Empty document in input file '%s'", in_file)
                 continue

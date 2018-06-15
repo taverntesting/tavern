@@ -64,6 +64,10 @@ mapping:
               re;(.*):
                 type: any
 
+  loads:
+    required: false
+    type: any
+
   stages:
     type: seq
     required: true
