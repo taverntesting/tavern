@@ -10,6 +10,3 @@ def run_all():
     with open(os.path.join(current_dir, "logging.yaml"), "r") as spec_file:
         settings = yaml.load(spec_file)
         logging.config.dictConfig(settings)
-
-
-logging.basicConfig(level=logging.WARNING)
