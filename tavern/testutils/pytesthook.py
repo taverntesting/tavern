@@ -142,19 +142,20 @@ class YamlFile(pytest.File):
                 for i in included:
                     fmt_vars.update(**i.get("variables", {}))
 
-                pytest_marks = {}
+                pytest_marks = []
 
                 # This should either be a string or a skipif
                 for m in marks:
                     if isinstance(m, str):
                         m = format_keys(m, fmt_vars)
-                        pytest_marks[m] = getattr(pytest.mark, m)
+                        pytest_marks.append(getattr(pytest.mark, m))
                     elif isinstance(m, dict):
                         for markname, extra_arg in m.items():
                             extra_arg = format_keys(extra_arg, fmt_vars)
-                            pytest_marks[markname] = getattr(pytest.mark, markname)(extra_arg)
+                            pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
 
-                item.keywords.update(pytest_marks)
+                for pm in pytest_marks:
+                    item.add_marker(pm)
 
             yield item
 
