@@ -217,7 +217,7 @@ stages:
 
 ---
 
-test_name: Test conversion to an bool from included files
+test_name: Test approximate numbers
 
 includes:
   - !include common.yaml
@@ -234,7 +234,7 @@ stages:
 
 ---
 
-test_name: Test conversion to an integer from included files
+test_name: Test converting to an integer
 
 includes:
   - !include common.yaml
