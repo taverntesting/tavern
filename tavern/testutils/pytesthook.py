@@ -189,6 +189,9 @@ class YamlFile(pytest.File):
                         pytest_marks.append(getattr(pytest.mark, m))
                     elif isinstance(m, dict):
                         for markname, extra_arg in m.items():
+                            # NOTE
+                            # cannot do 'skipif' and rely on a parametrized
+                            # argument.
                             extra_arg = format_keys(extra_arg, fmt_vars)
                             pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
 
@@ -209,7 +212,7 @@ class YamlFile(pytest.File):
                         yield new_item
 
                     # Only yield the parametrized ones
-                    return
+                    continue
 
                 for pm in pytest_marks:
                     item.add_marker(pm)

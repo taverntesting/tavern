@@ -1,6 +1,6 @@
 ---
 
-test_name: Test echo anything
+test_name: Test echo parametrized
 
 includes:
   - !include common.yaml
@@ -24,3 +24,31 @@ stages:
       status_code: 200
       body:
         value: "{to_send}"
+
+---
+
+test_name: Test skip parametrized
+
+includes:
+  - !include common.yaml
+
+marks:
+  - skip
+  - parametrize:
+      key: to_send
+      vals:
+        - abc
+        - def
+        - "123"
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{to_send}"
+    response:
+      status_code: 503
+      body:
+        value: "klskdfiogj4iji34o"
