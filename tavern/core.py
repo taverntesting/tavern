@@ -152,7 +152,7 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     delay(stage, "after")
 
 
-def run(in_file, tavern_global_cfg=None, pytest_args=None):
+def run(in_file, tavern_global_cfg=None, pytest_args=None, **kwargs):
     """Run all tests contained in a file
 
     For each test this makes sure it matches the expected schema, then runs it.
@@ -175,6 +175,9 @@ def run(in_file, tavern_global_cfg=None, pytest_args=None):
     Returns:
         bool: Whether ALL tests passed or not
     """
+
+    if kwargs:
+        warnings.warn("Passing extra keyword args to run() is deprecated and will be removed in a future version. Settings will be read from a command line arguments or config files in future.", FutureWarning)
 
     # will be removed in future
     with ExitStack() as stack:

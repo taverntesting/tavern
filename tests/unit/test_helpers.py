@@ -56,3 +56,15 @@ class TestRunAlone:
                 run("abc", {"a": "b"})
 
         assert pmock.called
+
+    def test_extra_args(self):
+        with pytest.warns(FutureWarning):
+            with patch("tavern.core.pytest.main") as pmock:
+                run(**{
+                    'tavern_global_cfg': None,
+                    'in_file': "kfdoskdof",
+                    'tavern_http_backend': 'requests',
+                    'tavern_mqtt_backend': 'paho-mqtt'
+                })
+
+        assert pmock.called
