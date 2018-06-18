@@ -151,6 +151,9 @@ class YamlFile(pytest.File):
                         pytest_marks.append(getattr(pytest.mark, m))
                     elif isinstance(m, dict):
                         for markname, extra_arg in m.items():
+                            if markname == "parametrize":
+                                raise NotImplementedError("'parametrize' is not currently implemented")
+
                             extra_arg = format_keys(extra_arg, fmt_vars)
                             pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
 
