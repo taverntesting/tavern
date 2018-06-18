@@ -32,6 +32,18 @@ mapping:
     required: true
     type: str
 
+  marks:
+    type: seq
+    matching: "any"
+    sequence:
+      - type: str
+        # bug? in pykwalify - this doesn't work
+        # unique: true
+      - type: map
+        mapping:
+          skipif:
+            type: str
+
   _xfail:
     type: str
     enum:

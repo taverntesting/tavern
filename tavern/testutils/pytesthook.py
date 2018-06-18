@@ -9,6 +9,7 @@ from tavern.core import run_test
 from tavern.util.general import load_global_config
 from tavern.util import exceptions
 from tavern.util.loader import IncludeLoader
+from tavern.util.dict_util import format_keys
 from tavern.schemas.files import verify_tests
 
 
@@ -124,10 +125,39 @@ class YamlFile(pytest.File):
                 continue
 
             try:
-                yield YamlItem(test_spec["test_name"], self, test_spec, self.fspath)
+                item = YamlItem(test_spec["test_name"], self, test_spec, self.fspath)
             except (TypeError, KeyError):
                 verify_tests(test_spec)
                 raise
+
+            marks = test_spec.get("marks", [])
+
+            if marks:
+                # Get included variables so we can do things like:
+                # skipif: {my_integer} > 2
+                # skipif: 'https' in '{hostname}'
+                # skipif: '{hostname}'.contains('ignoreme')
+                included = test_spec.get("includes", [])
+                fmt_vars = {}
+                for i in included:
+                    fmt_vars.update(**i.get("variables", {}))
+
+                pytest_marks = []
+
+                # This should either be a string or a skipif
+                for m in marks:
+                    if isinstance(m, str):
+                        m = format_keys(m, fmt_vars)
+                        pytest_marks.append(getattr(pytest.mark, m))
+                    elif isinstance(m, dict):
+                        for markname, extra_arg in m.items():
+                            extra_arg = format_keys(extra_arg, fmt_vars)
+                            pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
+
+                for pm in pytest_marks:
+                    item.add_marker(pm)
+
+            yield item
 
 
 class YamlItem(pytest.Item):
@@ -150,10 +180,12 @@ class YamlItem(pytest.Item):
 
         stages = ["{:d}: {:s}".format(i + 1, stage["name"]) for i, stage in enumerate(spec["stages"])]
 
-        class FakeObj(object):
-            __doc__ = name + ":\n" + "\n".join(stages)
+        # This needs to be a function or skipif breaks
+        def fakefun():
+            pass
 
-        self.obj = FakeObj
+        fakefun.__doc__ = name + ":\n" + "\n".join(stages)
+        self.obj = fakefun
 
     def runtest(self):
         # Load ini first
