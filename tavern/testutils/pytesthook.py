@@ -151,6 +151,7 @@ class YamlFile(pytest.File):
                         pytest_marks.append(getattr(pytest.mark, m))
                     elif isinstance(m, dict):
                         for markname, extra_arg in m.items():
+                            # pylint: disable=too-many-nested-blocks
                             if markname == "parametrize":
                                 raise NotImplementedError("'parametrize' is not currently implemented")
 
