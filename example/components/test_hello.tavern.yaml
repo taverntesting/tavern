@@ -1,0 +1,31 @@
+---
+
+test_name: Test authenticated /hello
+
+includes:
+  - !include common.yaml
+
+loads:
+  - !load components/auth_stage.yaml
+
+stages:
+  - name: Unauthenticated /hello
+    request:
+      url: "{service:s}/hello/Jim"
+      method: GET
+    response:
+      status_code: 401
+  - !stage login_get_token
+  - name: Authenticated /hello
+    request:
+      url: "{service:s}/hello/Jim"
+      method: GET
+      headers:
+        Content-Type: application/json
+        Authorization: "Bearer {test_login_token}"
+    response:
+      status_code: 200
+      headers:
+        content-type: application/json
+      body:
+        response: "Hello, Jim"

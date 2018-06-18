@@ -1,0 +1,31 @@
+---
+
+test_name: Test authenticated /ping
+
+includes:
+  - !include common.yaml
+
+loads:
+  - !load components/auth_stage.yaml
+
+stages:
+  - name: Unauthenticated /ping
+    request:
+      url: "{service:s}/ping"
+      method: GET
+    response:
+      status_code: 401
+  - !stage login_get_token
+  - name: Authenticated /ping
+    request:
+      url: "{service:s}/ping"
+      method: GET
+      headers:
+        Content-Type: application/json
+        Authorization: "Bearer {test_login_token}"
+    response:
+      status_code: 200
+      headers:
+        content-type: application/json
+      body:
+        response: pong
