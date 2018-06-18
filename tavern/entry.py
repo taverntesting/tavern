@@ -1,9 +1,7 @@
 import argparse
+from argparse import ArgumentParser
 import logging
-import sys
-from argparse import ArgumentParser #, ArgumentTypeError
 
-from .testutils.pytesthook import add_parser_options
 from .core import run
 
 
@@ -40,8 +38,6 @@ class TavernArgParser(ArgumentParser):
             action="store_true",
             default=False,
         )
-
-        # add_parser_options(self.add_argument)
 
 
 def main():

@@ -1,25 +1,20 @@
 import logging
 import warnings
 import os
-import io
 
 import pytest
-import yaml
 
 from contextlib2 import ExitStack
 from box import Box
 
-from .util.general import load_global_config
-from .plugins import load_plugins
 from .util import exceptions
 from .util.dict_util import format_keys
 from .util.delay import delay
-from .util.loader import IncludeLoader
 from .printer import log_pass, log_fail
 
 from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
 
-from .schemas.files import verify_tests, wrapfile
+from .schemas.files import wrapfile
 
 
 logger = logging.getLogger(__name__)
@@ -157,7 +152,7 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     delay(stage, "after")
 
 
-def run(in_file, tavern_global_cfg={}, pytest_args=None):
+def run(in_file, tavern_global_cfg=None, pytest_args=None):
     """Run all tests contained in a file
 
     For each test this makes sure it matches the expected schema, then runs it.
