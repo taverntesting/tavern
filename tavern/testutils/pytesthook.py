@@ -148,6 +148,7 @@ class YamlFile(pytest.File):
         Yields:
             YamlItem: Essentially an individual pytest 'test object'
         """
+        # pylint: disable=too-many-nested-blocks
 
         # pylint: disable=too-many-locals
 
@@ -192,6 +193,9 @@ class YamlFile(pytest.File):
                             # NOTE
                             # cannot do 'skipif' and rely on a parametrized
                             # argument.
+                            if markname == "parametrize":
+                                raise NotImplementedError("'parametrize' is not currently implemented")
+
                             extra_arg = format_keys(extra_arg, fmt_vars)
                             pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
 
