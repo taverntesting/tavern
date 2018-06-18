@@ -93,3 +93,6 @@ tags
 
 # Sublimetext
 *.sublime-*
+
+# Pycharm
+.idea
