@@ -1,7 +1,9 @@
 import logging
+import warnings
 import os
 import io
 
+import pytest
 import yaml
 
 from contextlib2 import ExitStack
@@ -155,7 +157,7 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     delay(stage, "after")
 
 
-def run(in_file, tavern_global_cfg, tavern_http_backend, tavern_mqtt_backend, tavern_strict):
+def run(in_file, tavern_global_cfg={}, pytest_args=None):
     """Run all tests contained in a file
 
     For each test this makes sure it matches the expected schema, then runs it.
@@ -179,41 +181,15 @@ def run(in_file, tavern_global_cfg, tavern_http_backend, tavern_mqtt_backend, ta
         bool: Whether ALL tests passed or not
     """
 
-    passed = True
+    if tavern_global_cfg:
+        warnings.warn("Passing global_cfg to run() is now ignored, and will be removed in a future version of Tavern. This will be read from command line arguments or config files automatically.", FutureWarning)
 
-    global_cfg_paths = tavern_global_cfg
-    global_cfg = load_global_config(global_cfg_paths)
+    print(pytest_args)
+    print(in_file)
+    if pytest_args is None:
+        import sys
+        sys.argv += ["-k", in_file]
+    else:
+        pytest_args += ["-k", in_file]
 
-    global_cfg["strict"] = tavern_strict
-
-    global_cfg["backends"] = {
-        "http": tavern_http_backend,
-        "mqtt": tavern_mqtt_backend,
-    }
-
-    load_plugins(global_cfg)
-
-    with io.open(in_file, "r", encoding="utf-8") as infile:
-        # Multiple documents per file => multiple test paths per file
-        for test_spec in yaml.load_all(infile, Loader=IncludeLoader):
-            if not test_spec:
-                logger.warning("Empty document in input file '%s'", in_file)
-                continue
-
-            if "_xfail" in test_spec:
-                logger.info("_xfail does not work with tavern-ci cli, skipping test")
-                continue
-
-            try:
-                verify_tests(test_spec)
-            except exceptions.BadSchemaError:
-                passed = False
-                continue
-
-            try:
-                run_test(in_file, test_spec, global_cfg)
-            except exceptions.TestFailError:
-                passed = False
-                continue
-
-    return passed
+    return pytest.main(args=pytest_args)
