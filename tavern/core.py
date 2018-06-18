@@ -19,7 +19,7 @@ from .printer import log_pass, log_fail
 
 from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
 
-from .schemas.files import verify_tests
+from .schemas.files import verify_tests, wrapfile
 
 
 logger = logging.getLogger(__name__)
@@ -181,15 +181,21 @@ def run(in_file, tavern_global_cfg={}, pytest_args=None):
         bool: Whether ALL tests passed or not
     """
 
-    if tavern_global_cfg:
-        warnings.warn("Passing global_cfg to run() is now ignored, and will be removed in a future version of Tavern. This will be read from command line arguments or config files automatically.", FutureWarning)
+    # will be removed in future
+    with ExitStack() as stack:
 
-    print(pytest_args)
-    print(in_file)
-    if pytest_args is None:
-        import sys
-        sys.argv += ["-k", in_file]
-    else:
-        pytest_args += ["-k", in_file]
+        if tavern_global_cfg:
+            warnings.warn("Passing global_cfg to run() is now deprecated, and will be removed in a future version of Tavern. This will be read from command line arguments or config files automatically in future.", FutureWarning)
+            global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
 
-    return pytest.main(args=pytest_args)
+        if pytest_args is None:
+            import sys
+            sys.argv += ["-k", in_file]
+            if tavern_global_cfg:
+                sys.argv += ["--tavern-global-cfg", global_filename]
+        else:
+            pytest_args += ["-k", in_file]
+            if tavern_global_cfg:
+                pytest_args += ["--tavern-global-cfg", global_filename]
+
+        return pytest.main(args=pytest_args)
