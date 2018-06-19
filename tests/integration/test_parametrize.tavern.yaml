@@ -27,6 +27,70 @@ stages:
 
 ---
 
+test_name: Test multiple parametrized values
+
+includes:
+  - !include common.yaml
+
+marks:
+  - parametrize:
+      key: fruit
+      vals:
+        - apple
+        - orange
+        - pear
+  - parametrize:
+      key: edible
+      vals:
+        - rotten
+        - fresh
+        - unripe
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{fruit}-{edible}"
+    response:
+      status_code: 200
+      body:
+        value: "{fruit}-{edible}"
+
+---
+
+test_name: Test multiple parametrized values, mismatched amounts
+
+includes:
+  - !include common.yaml
+
+marks:
+  - parametrize:
+      key: fruit
+      vals:
+        - apple
+        - orange
+        - pear
+  - parametrize:
+      key: edible
+      vals:
+        - rotten
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{fruit}-{edible}"
+    response:
+      status_code: 200
+      body:
+        value: "{fruit}-{edible}"
+
+---
+
 test_name: Test skip parametrized
 
 includes:
@@ -80,3 +144,56 @@ stages:
       status_code: 503
       body:
         value: "klskdfiogj4iji34o"
+
+---
+
+test_name: Test empty vals raises error
+
+includes:
+  - !include common.yaml
+
+marks:
+  - parametrize:
+      key: to_send
+      vals:
+
+_xfail: verify
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{to_send}"
+    response:
+      status_code: 200
+      body:
+        value: "{to_send}"
+
+---
+
+test_name: Test invalid parametrize vals raises an error
+
+includes:
+  - !include common.yaml
+
+marks:
+  - parametrize:
+      key: to_send
+      vals:
+        a: b
+
+_xfail: verify
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{to_send}"
+    response:
+      status_code: 200
+      body:
+        value: "{to_send}"
