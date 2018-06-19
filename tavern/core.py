@@ -188,4 +188,4 @@ def _run_pytest(in_file, tavern_global_cfg, pytest_args=None, **kwargs):
 
 
 def run(in_file, tavern_global_cfg=None, **kwargs):
-    _run_pytest(in_file, tavern_global_cfg, **kwargs)
+    return _run_pytest(in_file, tavern_global_cfg, **kwargs)
