@@ -202,7 +202,7 @@ class YamlFile(pytest.File):
             # Do this after we've added all the other marks so doing
             # things like selecting on mark names still works even
             # after parametrization
-            parametrize_marks = [i for i in marks if isinstance(i, dict) and next(iter(i.keys())) == "parametrize"]
+            parametrize_marks = [i for i in marks if isinstance(i, dict) and "parametrize" in i]
             if parametrize_marks:
                 # no 'yield from' in python 2...
                 for new_item in self.get_parametrized_items(
