@@ -1,4 +1,6 @@
 import logging
+import yaml
+import io
 import warnings
 import os
 
@@ -7,6 +9,10 @@ import pytest
 from contextlib2 import ExitStack
 from box import Box
 
+from .schemas.files import verify_tests
+from .plugins import load_plugins
+from .util.general import load_global_config
+from .util.loader import IncludeLoader
 from .util import exceptions
 from .util.dict_util import format_keys
 from .util.delay import delay
@@ -152,7 +158,32 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     delay(stage, "after")
 
 
-def run(in_file, tavern_global_cfg=None, pytest_args=None, **kwargs):
+def _run_pytest(in_file, pytest_args=None, **kwargs):
+    """Run all tests contained in a file using pytest.main()
+
+    Args:
+        in_file (str): file to run tests on
+        ptest_args (list): Extra pytest args to pass
+
+        **kwargs (dict): ignored
+
+    Returns:
+        bool: Whether ALL tests passed or not
+    """
+
+    if kwargs:
+        warnings.warn("Passing extra keyword args to run() when using pytest is used are ignored.", FutureWarning)
+
+    if pytest_args is None:
+        import sys
+        sys.argv += ["-k", in_file]
+    else:
+        pytest_args += ["-k", in_file]
+
+    return pytest.main(args=pytest_args)
+
+
+def _run_legacy(in_file, tavern_global_cfg, **extra_config_args):
     """Run all tests contained in a file
 
     For each test this makes sure it matches the expected schema, then runs it.
@@ -171,29 +202,68 @@ def run(in_file, tavern_global_cfg=None, pytest_args=None, **kwargs):
     Args:
         in_file (str): file to run tests on
         tavern_global_cfg (str): file containing Global config for all tests
+        **extra_config_args (dict): extra things to put into global_cfg
 
     Returns:
         bool: Whether ALL tests passed or not
     """
 
-    if kwargs:
-        warnings.warn("Passing extra keyword args to run() is deprecated and will be removed in a future version. Settings will be read from a command line arguments or config files in future.", FutureWarning)
+    passed = True
 
-    # will be removed in future
-    with ExitStack() as stack:
+    global_cfg_paths = tavern_global_cfg
+    # load from files
+    global_cfg = load_global_config(global_cfg_paths)
 
+    # Add defaults for strict/backends
+    global_cfg.update({
+        "strict": "legacy",
+        "backends": {
+            "http": "requests",
+            "mqtt": "paho-mqtt",
+        }
+    })
+
+    # Then add extra things
+    global_cfg.update({
+        extra_config_args,
+    })
+
+    load_plugins(global_cfg)
+
+    not_implemented = ["marks", "_xfail"]
+
+    with io.open(in_file, "r", encoding="utf-8") as infile:
+        # Multiple documents per file => multiple test paths per file
+        for test_spec in yaml.load_all(infile, Loader=IncludeLoader):
+            if not test_spec:
+                logger.warning("Empty document in input file '%s'", in_file)
+                continue
+
+            for n in not_implemented:
+                if n in test_spec:
+                    logger.error("%s does not work with tavern-ci cli, skipping test", n)
+                    continue
+
+            try:
+                verify_tests(test_spec)
+            except exceptions.BadSchemaError:
+                passed = False
+                continue
+
+            try:
+                run_test(in_file, test_spec, global_cfg)
+            except exceptions.TestFailError:
+                passed = False
+                continue
+
+    return passed
+
+
+def run(in_file, tavern_global_cfg=None, use_pytest=True, **kwargs):
+
+    if use_pytest:
         if tavern_global_cfg:
-            warnings.warn("Passing global_cfg to run() is now deprecated, and will be removed in a future version of Tavern. This will be read from command line arguments or config files automatically in future.", FutureWarning)
-            global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
-
-        if pytest_args is None:
-            import sys
-            sys.argv += ["-k", in_file]
-            if tavern_global_cfg:
-                sys.argv += ["--tavern-global-cfg", global_filename]
-        else:
-            pytest_args += ["-k", in_file]
-            if tavern_global_cfg:
-                pytest_args += ["--tavern-global-cfg", global_filename]
-
-        return pytest.main(args=pytest_args)
+            warnings.warn("Passing tavern_global_cfg to run() when using pytest is ignored. Put configuration into he pytest configuration file.", UserWarning)
+        _run_pytest(in_file, **kwargs)
+    else:
+        _run_legacy(in_file, tavern_global_cfg, **kwargs)
