@@ -1,9 +1,9 @@
 import logging
-import yaml
 import io
 import warnings
 import os
 
+import yaml
 import pytest
 
 from contextlib2 import ExitStack
@@ -19,8 +19,6 @@ from .util.delay import delay
 from .printer import log_pass, log_fail
 
 from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
-
-from .schemas.files import wrapfile
 
 
 logger = logging.getLogger(__name__)
