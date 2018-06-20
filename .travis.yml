@@ -32,6 +32,15 @@ matrix:
     - python: pypy3
       env: TOXENV=pypy3-cookies TOXCFG=tox-integration.ini
 
+    - python: 3.6
+      env: TOXENV=py36-mqtt TOXCFG=tox-integration.ini
+    - python: 3.6
+      env: TOXENV=py36-advanced TOXCFG=tox-integration.ini
+    - python: 3.6
+      env: TOXENV=py36-generic TOXCFG=tox-integration.ini
+    - python: 2.7
+      env: TOXENV=py27-generic TOXCFG=tox-integration.ini
+
     - python: 2.7
       env: TOXENV=py27lint TOXCFG=tox.ini
     - python: 3.6

@@ -4,19 +4,136 @@ This is here mainly to make MQTT easier, this will almost defintiely change
 significantly if/when a proper plugin system is implemented!
 """
 import logging
-import requests
 
+import yaml
+import stevedore
 from future.utils import raise_from
 
-from .util.dict_util import format_keys
 from .util import exceptions
-from .request import RestRequest, MQTTRequest
-from .response import RestResponse, MQTTResponse
 
 logger = logging.getLogger(__name__)
 
 
-def get_extra_sessions(test_spec):
+class PluginHelperBase(object):
+    """Base for plugins"""
+
+
+def plugin_load_error(mgr, entry_point, err):
+    """ Handle import errors
+    """
+    # pylint: disable=unused-argument
+    msg = "Error loading plugin {} - {}".format(entry_point, err)
+    raise_from(exceptions.PluginLoadError(msg), err)
+
+
+def load_schema_plugins(schema_filename):
+    """Load base schema with plugin schemas"""
+
+    plugins = load_plugins()
+
+    with open(schema_filename, "r") as base_schema_file:
+        base_schema = yaml.load(base_schema_file)
+
+    for p in plugins:
+        try:
+            plugin_schema = p.plugin.schema
+        except AttributeError:
+            # Don't require a schema
+            logger.debug("No schema defined for %s", p.name)
+        else:
+            base_schema["mapping"].update(plugin_schema.get("initialisation", {}))
+
+    return base_schema
+
+
+def is_valid_reqresp_plugin(ext):
+    """Whether this is a valid 'reqresp' plugin
+
+    Requires certain functions/variables to be present
+
+    Todo:
+        Not all of these are required for all request/response types probably
+    """
+    required = [
+        # MQTTClient, requests.Session
+        "session_type",
+        # RestRequest, MQTTRequest
+        "request_type",
+        # request, mqtt_publish
+        "request_block_name",
+        # Some function that returns a dict
+        "get_expected_from_request",
+        # MQTTResponse, RestResponse
+        "verifier_type",
+        # response, mqtt_response
+        "response_block_name",
+        # dictionary with pykwalify schema
+        "schema",
+    ]
+
+    return all(hasattr(ext.plugin, i) for i in required)
+
+
+class _PluginCache(object):
+    # pylint: disable=inconsistent-return-statements
+
+    def __init__(self):
+        self.plugins = {}
+
+    def __call__(self, config=None):
+        if not config and not self.plugins:
+            raise exceptions.PluginLoadError("No config to load plugins from")
+        elif self.plugins:
+            return self.plugins
+        elif not self.plugins and config:
+            # NOTE
+            # This is reloaded every time
+            self.plugins = self._load_plugins(config)
+            return self.plugins
+
+    def _load_plugins(self, test_block_config):
+        """Load plugins from the 'tavern' entrypoint namespace
+
+        This can be a module or a class as long as it defines the right things
+
+        Todo:
+            - Limit which plugins are loaded based on some config/command line
+              option
+            - Different plugin names
+        """
+        # pylint: disable=no-self-use
+
+        plugins = []
+
+        for backend in ["http", "mqtt"]:
+            namespace = "tavern_{}".format(backend)
+
+            def enabled(ext):
+                # pylint: disable=cell-var-from-loop
+                return ext.name == test_block_config["backends"][backend]
+
+            manager = stevedore.EnabledExtensionManager(
+                namespace=namespace,
+                check_func=enabled,
+                verify_requirements=True,
+                on_load_failure_callback=plugin_load_error,
+            )
+            manager.propagate_map_exceptions = True
+
+            manager.map(is_valid_reqresp_plugin)
+
+            if len(manager.extensions) != 1:
+                raise exceptions.MissingSettingsError("Expected exactly one entrypoint in 'tavern-{}' namespace but got {}".format(backend, len(manager.extensions)))
+
+            plugins.extend(manager.extensions)
+
+        return plugins
+
+
+load_plugins = _PluginCache()
+
+
+def get_extra_sessions(test_spec, test_block_config):
     """Get extra 'sessions' for any extra test types
 
     Args:
@@ -28,22 +145,12 @@ def get_extra_sessions(test_spec):
 
     sessions = {}
 
-    # always used at the moment
-    requests_session = requests.Session()
-    sessions["requests"] = requests_session
+    plugins = load_plugins(test_block_config)
 
-    if "mqtt" in test_spec:
-        # FIXME
-        # this makes it hard to patch out, will need fixing when prooper plugin
-        # system is put in
-        from .mqtt import MQTTClient
-        try:
-            mqtt_client = MQTTClient(**test_spec["mqtt"])
-        except exceptions.MQTTError:
-            logger.exception("Error initializing mqtt connection")
-            raise
-
-        sessions["mqtt"] = mqtt_client
+    for p in plugins:
+        if any((p.plugin.request_block_name in i or p.plugin.response_block_name in i) for i in test_spec["stages"]):
+            logger.debug("Initialising session for %s (%s)", p.name, p.plugin.session_type)
+            sessions[p.name] = p.plugin.session_type(**test_spec.get(p.name, {}))
 
     return sessions
 
@@ -62,10 +169,12 @@ def get_request_type(stage, test_block_config, sessions):
         BaseRequest: request object with a run() method
     """
 
-    keys = {
-        "request": RestRequest,
-        "mqtt_publish": MQTTRequest,
-    }
+    plugins = load_plugins(test_block_config)
+
+    keys = {}
+
+    for p in plugins:
+        keys[p.plugin.request_block_name] = p.plugin.request_type
 
     if len(set(keys) & set(stage)) > 1:
         logger.error("Can only specify 1 request type")
@@ -74,26 +183,22 @@ def get_request_type(stage, test_block_config, sessions):
         logger.error("Need to specify one of '%s'", keys.keys())
         raise exceptions.MissingKeysError
 
-    if "request" in stage:
-        rspec = stage["request"]
-
-        session = sessions["requests"]
-
-        r = RestRequest(session, rspec, test_block_config)
-    elif "mqtt_publish" in stage:
-        session = sessions["mqtt"]
-
+    # We've validated that 1 and only 1 is there, so just loop until the first
+    # one is found
+    for p in plugins:
         try:
-            mqtt_client = sessions["mqtt"]
-        except KeyError as e:
-            logger.error("No mqtt settings but stage wanted to send an mqtt message")
-            raise_from(exceptions.MissingSettingsError, e)
+            request_args = stage[p.plugin.request_block_name]
+        except KeyError:
+            pass
+        else:
+            session = sessions[p.name]
+            request_class = p.plugin.request_type
+            logger.debug("Initialising request class for %s (%s)", p.name, request_class)
+            break
 
-        rspec = stage["mqtt_publish"]
+    request_maker = request_class(session, request_args, test_block_config)
 
-        r = MQTTRequest(mqtt_client, rspec, test_block_config)
-
-    return r
+    return request_maker
 
 
 def get_expected(stage, test_block_config, sessions):
@@ -113,29 +218,15 @@ def get_expected(stage, test_block_config, sessions):
         dict: mapping of request type: expected response dict
     """
 
+    plugins = load_plugins(test_block_config)
+
     expected = {}
 
-    if "request" in stage:
-        try:
-            r_expected = stage["response"]
-        except KeyError as e:
-            logger.error("Need a 'response' block if a 'request' is being sent")
-            raise_from(exceptions.MissingSettingsError, e)
-
-        f_expected = format_keys(r_expected, test_block_config["variables"])
-        expected["requests"] = f_expected
-
-    if "mqtt_response" in stage:
-        # mqtt response is not required
-        m_expected = stage.get("mqtt_response")
-        if m_expected:
-            # format so we can subscribe to the right topic
-            f_expected = format_keys(m_expected, test_block_config["variables"])
-            mqtt_client = sessions["mqtt"]
-            mqtt_client.subscribe(f_expected["topic"])
-            expected["mqtt"] = f_expected
-        else:
-            expected["mqtt"] = m_expected
+    for p in plugins:
+        if p.plugin.response_block_name in stage:
+            logger.debug("Getting expected response for %s", p.name)
+            plugin_expected = p.plugin.get_expected_from_request(stage, test_block_config, sessions[p.name])
+            expected[p.name] = plugin_expected
 
     return expected
 
@@ -153,19 +244,15 @@ def get_verifiers(stage, test_block_config, sessions, expected):
         BaseResponse: response validator object with a verify(response) method
     """
 
-    # keys = {
-    #     "request": RestResponse,
-    #     "mqtt_publish": MQTTResponse,
-    # }
+    plugins = load_plugins(test_block_config)
 
     verifiers = []
 
-    if "response" in stage:
-        session = sessions["requests"]
-        verifiers.append(RestResponse(session, stage["name"], expected["requests"], test_block_config))
-
-    if "mqtt_response" in stage:
-        mqtt_client = sessions["mqtt"]
-        verifiers.append(MQTTResponse(mqtt_client, stage["name"], expected["mqtt"], test_block_config))
+    for p in plugins:
+        if p.plugin.response_block_name in stage:
+            session = sessions[p.name]
+            logger.debug("Initialising verifier for %s (%s)", p.name, p.plugin.verifier_type)
+            verifier = p.plugin.verifier_type(session, stage["name"], expected[p.name], test_block_config)
+            verifiers.append(verifier)
 
     return verifiers

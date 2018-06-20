@@ -1,0 +1,94 @@
+---
+name: MQTT schemas
+desc: pykwalify schemas for 'mqtt' plugin block, mqtt_publish, and mqtt_response
+
+initialisation:
+  paho-mqtt:
+    required: false
+    type: map
+    mapping:
+
+      client:
+        required: false
+        type: map
+        mapping:
+          client_id:
+            type: str
+            required: false
+          clean_session:
+            type: bool
+            required: false
+          transport:
+            type: str
+            required: false
+            enum:
+              - tcp
+              - websockets
+
+      connect:
+        required: true
+        type: map
+        mapping:
+          host:
+            required: true
+            type: str
+          port:
+            required: false
+            type: int
+          keepalive:
+            required: false
+            type: float
+          timeout:
+            required: false
+            type: float
+
+      tls:
+        required: false
+        type: map
+        mapping:
+          enable:
+            required: false
+            type: bool
+
+          ca_certs:
+            required: false
+            type: str
+
+          certfile:
+            required: false
+            type: str
+
+          keyfile:
+            required: false
+            type: str
+
+          cert_reqs:
+            required: false
+            type: str
+            enum:
+              - CERT_NONE
+              - CERT_OPTIONAL
+              - CERT_REQUIRED
+
+          tls_version:
+            required: false
+            type: str
+            # This could be an enum but there's lots of them, and which ones are
+            # actually valid changes based on which version of python you're
+            # using. Just let any ssl errors propagate through
+
+          ciphers:
+            required: false
+            type: str
+
+      auth:
+        required: false
+        type: map
+        mapping:
+          username:
+            type: str
+            required: true
+
+          password:
+            type: str
+            required: false

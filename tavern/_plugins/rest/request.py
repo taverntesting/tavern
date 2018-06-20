@@ -1,4 +1,3 @@
-import functools
 import json
 import logging
 import warnings
@@ -8,6 +7,7 @@ try:
 except ImportError:
     from urllib import quote_plus
 
+from contextlib2 import ExitStack
 from future.utils import raise_from
 import requests
 from box import Box
@@ -16,7 +16,7 @@ from tavern.util import exceptions
 from tavern.util.dict_util import format_keys, check_expected_keys
 from tavern.schemas.extensions import get_wrapped_create_function
 
-from .base import BaseRequest
+from tavern.request.base import BaseRequest
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +39,8 @@ def get_request_args(rspec, test_block_config):
         BadSchemaError: Tried to pass a body in a GET request
     """
 
+    # pylint: disable=too-many-locals
+
     request_args = {}
 
     # Ones that are required and are enforced to be present by the schema
@@ -52,6 +54,7 @@ def get_request_args(rspec, test_block_config):
         "data",
         "params",
         "headers",
+        "files"
         # Ideally this would just be passed through but requests seems to error
         # if we pass a list instead of a tuple, so we have to manually convert
         # it further down
@@ -66,9 +69,24 @@ def get_request_args(rspec, test_block_config):
         logger.debug("Using default GET method")
         rspec["method"] = "GET"
 
-    headers = rspec.get("headers")
-    if headers:
-        if "content-type" not in [h.lower() for h in headers.keys()]:
+    content_keys = [
+        "data",
+        "json",
+    ]
+
+    headers = rspec.get("headers", {})
+    has_content_header = "content-type" in [h.lower() for h in headers.keys()]
+
+    if "files" in rspec:
+        if any(ckey in rspec for ckey in content_keys):
+            raise exceptions.BadSchemaError("Tried to send non-file content alongside a file")
+
+        if has_content_header:
+            logger.warning("Tried to specify a content-type header while sending a file - this will be ignored")
+            rspec["headers"] = {i: j for i, j in headers.items() if i.lower() != "content-type"}
+    elif headers:
+        # This should only be hit if we aren't sending a file
+        if not has_content_header:
             rspec["headers"]["content-type"] = "application/json"
 
     fspec = format_keys(rspec, test_block_config["variables"])
@@ -114,7 +132,6 @@ def get_request_args(rspec, test_block_config):
 
     # TODO
     # requests takes all of these - we need to parse the input to get them
-    # "files",
     # "cookies",
 
     # These verbs _can_ send a body but the body _should_ be ignored according
@@ -156,7 +173,7 @@ class RestRequest(BaseRequest):
             "auth",
             "json",
             "verify",
-            # "files",
+            "files",
             # "cookies",
             # "hooks",
         }
@@ -172,10 +189,20 @@ class RestRequest(BaseRequest):
         self._request_args = request_args
 
         # There is no way using requests to make a prepared request that will
-        # not follow redicrects, so instead we have to do this. This also means
+        # not follow redirects, so instead we have to do this. This also means
         # that we can't have the 'pre-request' hook any more because we don't
         # create a prepared request.
-        self._prepared = functools.partial(session.request, **request_args)
+
+        def prepared_request():
+            # If there are open files, create a context manager around each so
+            # they will be closed at the end of the request.
+            with ExitStack() as stack:
+                for key, filepath in self._request_args.get("files", {}).items():
+                    self._request_args["files"][key] = stack.enter_context(
+                            open(filepath, "rb"))
+                return session.request(**self._request_args)
+
+        self._prepared = prepared_request
 
     def run(self):
         """ Runs the prepared request and times it

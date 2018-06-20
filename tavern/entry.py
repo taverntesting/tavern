@@ -1,6 +1,6 @@
-import logging
 import argparse
-from argparse import ArgumentParser #, ArgumentTypeError
+from argparse import ArgumentParser
+import logging
 
 from .core import run
 
@@ -16,13 +16,6 @@ class TavernArgParser(ArgumentParser):
         self.add_argument(
             "in_file",
             help="Input file with tests in",
-        )
-
-        self.add_argument(
-            "--tavern-global-cfg",
-            required=False,
-            nargs="+",
-            help="One or more global configuration files to include in every test",
         )
 
         self.add_argument(
@@ -48,7 +41,7 @@ class TavernArgParser(ArgumentParser):
 
 
 def main():
-    args = TavernArgParser().parse_args()
+    args, remaining = TavernArgParser().parse_known_args()
     vargs = vars(args)
 
     if vargs.pop("debug"):
@@ -71,10 +64,20 @@ def main():
                 "formatter": "default",
                 "stream": "ext://sys.stdout",
             },
+            "nothing": {
+                "class": "logging.NullHandler",
+            }
         },
         "loggers": {
             "tavern": {
                 "handlers": [
+                    "nothing",
+                ],
+                "level": log_level,
+            },
+            "": {
+                "handlers": [
+                    "nothing",
                 ],
                 "level": log_level,
             }
@@ -99,4 +102,4 @@ def main():
 
     logging.config.dictConfig(log_cfg)
 
-    exit(not run(**vargs))
+    raise SystemExit(run(pytest_args=remaining, **vargs))

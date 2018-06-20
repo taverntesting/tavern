@@ -62,6 +62,16 @@ SETUP_REQUIRES = [
 ]
 
 
+TESTS_REQUIRE = [
+    "pytest>=3.1.0",
+    "pytest-cov",
+    "colorlog",
+    "mock",
+    "paho-mqtt==1.3.1",
+    "pytest-remove-stale-bytecode",
+]
+
+
 setup(
     name="tavern",
 
@@ -71,4 +81,9 @@ setup(
         "docs": BuildDocs,
         "upload_twine": DeployPypi,
     },
+
+    tests_require=TESTS_REQUIRE,
+    extras_require={
+        "tests": TESTS_REQUIRE
+    }
 )

@@ -8,10 +8,12 @@ try:
 except ImportError:
     from urlparse import urlparse, parse_qs
 
+from requests.status_codes import _codes
+
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util.dict_util import recurse_access_key, deep_dict_merge
 from tavern.util.exceptions import TestFailError
-from .base import BaseResponse, indent_err_text
+from tavern.response.base import BaseResponse, indent_err_text
 
 logger = logging.getLogger(__name__)
 
@@ -40,11 +42,91 @@ class RestResponse(BaseResponse):
         self.test_block_config = test_block_config
         self.status_code = None
 
+        def check_code(code):
+            if code not in _codes:
+                logger.warning("Unexpected status code '%s'", code)
+
+        if isinstance(self.expected["status_code"], int):
+            check_code(self.expected["status_code"])
+        else:
+            for code in self.expected["status_code"]:
+                check_code(code)
+
     def __str__(self):
         if self.response:
             return self.response.text.strip()
         else:
             return "<Not run yet>"
+
+    def _verbose_log_response(self, response):
+        """Verbosely log the response object, with query params etc."""
+
+        logger.info("Response: '%s'", response)
+
+        def log_dict_block(block, name):
+            if block:
+                to_log = name + ":"
+
+                if isinstance(block, list):
+                    for v in block:
+                        to_log += "\n  - {}".format(v)
+                else:
+                    for k, v in block.items():
+                        to_log += "\n  {}: {}".format(k, v)
+
+                logger.debug(to_log)
+
+        log_dict_block(response.headers, "Headers")
+
+        try:
+            log_dict_block(response.json(), "Body")
+        except ValueError:
+            pass
+
+        redirect_query_params = self._get_redirect_query_params(response)
+        if redirect_query_params:
+            parsed_url = urlparse(response.headers["location"])
+            to_path = "{0}://{1}{2}".format(*parsed_url)
+            logger.debug("Redirect location: %s", to_path)
+            log_dict_block(redirect_query_params, "Redirect URL query parameters")
+
+    def _get_redirect_query_params(self, response):
+        """If there was a redirect header, get any query parameters from it
+        """
+
+        try:
+            redirect_url = response.headers["location"]
+        except KeyError as e:
+            if "redirect_query_params" in self.expected.get("save", {}):
+                self._adderr("Wanted to save %s, but there was no redirect url in response",
+                    self.expected["save"]["redirect_query_params"], e=e)
+            redirect_query_params = {}
+        else:
+            parsed = urlparse(redirect_url)
+            qp = parsed.query
+            redirect_query_params = {i:j[0] for i, j in parse_qs(qp).items()}
+
+        return redirect_query_params
+
+    def _check_status_code(self, status_code, body):
+        expected_code = self.expected["status_code"]
+
+        if (isinstance(expected_code, int) and status_code == expected_code) or \
+        (isinstance(expected_code, list) and (status_code in expected_code)):
+            logger.debug("Status code '%s' matched expected '%s'", status_code, expected_code)
+            return
+        else:
+            if 400 <= status_code < 500:
+                # special case if there was a bad request. This assumes that the
+                # response would contain some kind of information as to why this
+                # request was rejected.
+                self._adderr("Status code was %s, expected %s:\n%s",
+                    status_code, expected_code,
+                    indent_err_text(json.dumps(body)),
+                    )
+            else:
+                self._adderr("Status code was %s, expected %s",
+                    status_code, expected_code)
 
     def verify(self, response):
         """Verify response against expected values and returns any values that
@@ -64,7 +146,7 @@ class RestResponse(BaseResponse):
         """
         # pylint: disable=too-many-statements
 
-        logger.info("Response: '%s' (%s)", response, response.content.decode("utf8"))
+        self._verbose_log_response(response)
 
         self.response = response
         self.status_code = response.status_code
@@ -74,15 +156,7 @@ class RestResponse(BaseResponse):
         except ValueError:
             body = None
 
-        if response.status_code != self.expected["status_code"]:
-            if 400 <= response.status_code < 500:
-                self._adderr("Status code was %s, expected %s:\n%s",
-                    response.status_code, self.expected["status_code"],
-                    indent_err_text(json.dumps(body)),
-                    )
-            else:
-                self._adderr("Status code was %s, expected %s",
-                    response.status_code, self.expected["status_code"])
+        self._check_status_code(response.status_code, body)
 
         if self.validate_function:
             try:
@@ -96,21 +170,11 @@ class RestResponse(BaseResponse):
         # Get any keys to save
         saved = {}
 
-        try:
-            redirect_url = response.headers["location"]
-        except KeyError as e:
-            if "redirect_query_params" in self.expected.get("save", {}):
-                self._adderr("Wanted to save %s, but there was no redirect url in response",
-                    self.expected["save"]["redirect_query_params"], e=e)
-            qp_as_dict = {}
-        else:
-            parsed = urlparse(redirect_url)
-            qp = parsed.query
-            qp_as_dict = {i:j[0] for i, j in parse_qs(qp).items()}
+        redirect_query_params = self._get_redirect_query_params(response)
 
         saved.update(self._save_value("body", body))
         saved.update(self._save_value("headers", response.headers))
-        saved.update(self._save_value("redirect_query_params", qp_as_dict))
+        saved.update(self._save_value("redirect_query_params", redirect_query_params))
 
         for cookie in self.expected.get("cookies", []):
             if cookie not in response.cookies:
@@ -136,7 +200,7 @@ class RestResponse(BaseResponse):
 
         self._validate_block("body", body)
         self._validate_block("headers", response.headers)
-        self._validate_block("redirect_query_params", qp_as_dict)
+        self._validate_block("redirect_query_params", redirect_query_params)
 
         if self.errors:
             raise TestFailError("Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()))
@@ -169,7 +233,15 @@ class RestResponse(BaseResponse):
 
         logger.debug("Validating %s for %s", blockname, expected_block)
 
-        self.recurse_check_key_match(expected_block, block, blockname)
+        # 'strict' could be a list, in which case we only want to enable strict
+        # key checking for that specific bit of the response
+        test_strictness = self.test_block_config["strict"]
+        if isinstance(test_strictness, list):
+            block_strictness = (blockname in test_strictness)
+        else:
+            block_strictness = test_strictness
+
+        self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
 
     def _save_value(self, key, to_check):
         """Save a value in the response for use in future tests

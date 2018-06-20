@@ -1,0 +1,18 @@
+---
+
+test_name: Test sending form encoded data works
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send a uuid and expect it to be returned
+    request:
+      url: "{host}/form_data"
+      method: POST
+      data:
+        id: !uuid &sent_uuid
+    response:
+      status_code: 200
+      body:
+        id: *sent_uuid

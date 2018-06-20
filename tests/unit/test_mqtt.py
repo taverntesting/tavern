@@ -1,8 +1,9 @@
 import pytest
-from mock import patch
+from mock import patch, Mock
 import paho.mqtt.client as paho
 
-from tavern.mqtt import MQTTClient
+from tavern._plugins.mqtt.client import MQTTClient
+from tavern._plugins.mqtt.request import MQTTRequest
 from tavern.util import exceptions
 
 
@@ -126,3 +127,36 @@ class TestTLS(object):
 
         with pytest.raises(exceptions.MQTTTLSError):
             MQTTClient(**args)
+
+
+@pytest.fixture(name="req")
+def fix_example_request():
+    spec = {
+        "topic":  "{request_topic:s}",
+        "payload": "abc123",
+    }
+
+    return spec.copy()
+
+
+class TestRequests:
+    def test_unknown_fields(self, req, includes):
+        """Unkown args should raise an error
+        """
+        req["fodokfowe"] = "Hello"
+
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            MQTTRequest(Mock(), req, includes)
+
+    def test_missing_format(self, req, includes):
+        """All format variables should be present
+        """
+        del includes["variables"]["request_topic"]
+
+        with pytest.raises(exceptions.MissingFormatError):
+            MQTTRequest(Mock(), req, includes)
+
+    def test_correct_format(self, req, includes):
+        """All format variables should be present
+        """
+        MQTTRequest(Mock(), req, includes)

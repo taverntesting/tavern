@@ -5,7 +5,7 @@ test_name: Test mqtt message response
 includes:
   - !include common.yaml
 
-mqtt: &mqtt_spec
+paho-mqtt: &mqtt_spec
   # tls:
   #   enable: true
   connect:
@@ -25,6 +25,7 @@ stages:
       topic: /device/123/pong
       payload: pong
       timeout: 5
+      qos: 1
 
 ---
 
@@ -33,7 +34,7 @@ test_name: Make sure posting publishes mqtt message
 includes:
   - !include common.yaml
 
-mqtt: *mqtt_spec
+paho-mqtt: *mqtt_spec
 
 stages:
   - name: step 1 - post message trigger
@@ -63,7 +64,7 @@ test_name: Test posting mqtt message updates state on server
 includes:
   - !include common.yaml
 
-mqtt: *mqtt_spec
+paho-mqtt: *mqtt_spec
 
 stages:
   - name: step 0 - reset devices
@@ -111,3 +112,47 @@ stages:
         lights: "on"
       headers:
         content-type: application/json
+
+---
+
+test_name: Test trying to subscribe with a too-large qos fails
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+_xfail: verify
+
+stages:
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /device/123/ping
+      payload: ping
+    mqtt_response:
+      topic: /device/123/pong
+      payload: pong
+      timeout: 5
+      qos: 3
+
+---
+
+test_name: Test trying to subscribe with an invalid qos fails
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+_xfail: verify
+
+stages:
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /device/123/ping
+      payload: ping
+    mqtt_response:
+      topic: /device/123/pong
+      payload: pong
+      timeout: 5
+      qos: weefwe

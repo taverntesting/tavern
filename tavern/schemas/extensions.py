@@ -1,10 +1,13 @@
 import logging
+import re
 import functools
 import importlib
 
 from future.utils import raise_from
 
 from tavern.util.exceptions import BadSchemaError
+from tavern.util import exceptions
+from tavern.util.loader import ApproxScalar
 
 
 logger = logging.getLogger(__name__)
@@ -22,25 +25,28 @@ def import_ext_function(entrypoint):
         function: function loaded from entrypoint
 
     Raises:
-        ImportError: If the module or function did not exist
-        ValueError: If the entrypoint was malformed
+        InvalidExtFunctionError: If the module or function did not exist
     """
     try:
         module, funcname = entrypoint.split(":")
-    except ValueError:
-        logger.exception("No colon in entrypoint")
-        raise
+    except ValueError as e:
+        msg = "Expected entrypoint in the form module.submodule:function"
+        logger.exception(msg)
+        raise_from(exceptions.InvalidExtFunctionError(msg), e)
 
     try:
         module = importlib.import_module(module)
-    except ImportError:
-        logger.exception("Error importing module %s", module)
-        raise
+    except ImportError as e:
+        msg = "Error importing module {}".format(module)
+        logger.exception(msg)
+        raise_from(exceptions.InvalidExtFunctionError(msg), e)
 
-    function = getattr(module, funcname, None)
-
-    if not function:
-        raise ImportError("No function named {} in {}".format(funcname, module))
+    try:
+        function = getattr(module, funcname)
+    except AttributeError as e:
+        msg = "No function named {} in {}".format(funcname, module)
+        logger.exception(msg)
+        raise_from(exceptions.InvalidExtFunctionError(msg), e)
 
     return function
 
@@ -106,6 +112,12 @@ def validate_extensions(value, rule_obj, path):
         BadSchemaError: Something in the validation function spec was wrong
     """
     # pylint: disable=unused-argument
+
+    try:
+        iter(value)
+    except TypeError as e:
+        raise_from(BadSchemaError("Invalid value for key - things like body/params/headers have to be a dictionary or a list, not a single value"), e)
+
     if "$ext" in value:
         expected_keys = {
             "function",
@@ -139,6 +151,20 @@ def validate_extensions(value, rule_obj, path):
     return True
 
 
+def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path):
+    # pylint: disable=unused-argument
+    err_msg = "status_code has to be an integer or a list of integers (got {})".format(value)
+
+    if not isinstance(value, (int, list)):
+        raise BadSchemaError(err_msg)
+
+    if isinstance(value, list):
+        if not all(isinstance(i, int) for i in value):
+            raise BadSchemaError(err_msg)
+
+    return True
+
+
 def validate_json_with_extensions(value, rule_obj, path):
     """ Performs the above match, but also matches a dict or a list. This it
     just because it seems like you can't match a dict OR a list in pykwalify
@@ -147,5 +173,34 @@ def validate_json_with_extensions(value, rule_obj, path):
 
     if not isinstance(value, (list, dict)):
         raise BadSchemaError("Error at {} - expected a list or dict".format(path))
+
+    def nested_values(d):
+        if isinstance(d, dict):
+            for v in d.values():
+                if isinstance(v, dict):
+                    for v_s in v.values():
+                        yield v_s
+                else:
+                    yield v
+        else:
+            yield d
+
+    if any(isinstance(i, ApproxScalar) for i in nested_values(value)):
+        # If this is a request data block
+        if not re.search(r"^/stages/\d/(response/body|mqtt_response/json)", path):
+            raise BadSchemaError("Error at {} - Cannot use a '!approx' in anything other than an expected http response body or mqtt response json".format(path))
+
+    return True
+
+
+def check_strict_key(value, rule_obj, path):
+    """Make sure the 'strict' key is either a bool or a list"""
+    # pylint: disable=unused-argument
+
+    if not isinstance(value, (bool, list)):
+        raise BadSchemaError("'strict' has to be either a boolean or a list")
+    elif isinstance(value, list):
+        if not set(["body", "headers", "redirect_query_params"]) >= set(value):
+            raise BadSchemaError("Invalid 'strict' keys passed: {}".format(value))
 
     return True

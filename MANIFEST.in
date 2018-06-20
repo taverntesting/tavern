@@ -1,2 +1,3 @@
 include tavern/schemas/tests.schema.yaml
+include tavern/_plugins/mqtt/schema.yaml
 include LICENSE

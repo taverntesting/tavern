@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: server.Dockerfile
     ports:
-      - "5000:5000"
+      - "5002:5000"
     environment:
       DB_NAME: /data/db
     volumes:

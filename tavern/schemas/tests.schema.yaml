@@ -5,101 +5,68 @@ desc: Matches test blocks
 # http://www.kuwata-lab.com/kwalify/ruby/users-guide.01.html
 # https://pykwalify.readthedocs.io/en/unstable/validation-rules.html
 
+
+schema;any_map_with_ext_function:
+  # Anchor matches any key: value, and if there's an $ext function
+  # in it it will check that it can be loaded at schema validation
+  # time instead of run time. This means there can be both
+  # checking for key: value matches as well as passing it to a
+  # function for more advanced manipulation
+  func: validate_extensions
+  type: map
+  required: false
+  mapping:
+    re;(.*):
+      type: any
+
+schema;any_map_or_list_with_ext_function:
+  # Similar, but we want to match lists or dicts
+  func: validate_json_with_extensions
+  type: any
+  required: false
+
+
 type: map
 mapping:
   test_name:
     required: true
     type: str
 
-  mqtt:
-    required: false
-    type: map
-    mapping:
-
-      client:
-        required: false
-        type: map
+  marks:
+    type: seq
+    matching: "any"
+    sequence:
+      - type: str
+        # bug? in pykwalify - this doesn't work
+        # unique: true
+      - type: map
         mapping:
-          client_id:
-            type: str
-            required: false
-          clean_session:
-            type: bool
-            required: false
-          transport:
-            type: str
-            required: false
-            enum:
-              - tcp
-              - websockets
-
-      connect:
-        required: true
-        type: map
-        mapping:
-          host:
-            required: true
-            type: str
-          port:
-            required: false
-            type: int
-          keepalive:
-            required: false
-            type: float
-          timeout:
-            required: false
-            type: float
-
-      tls:
-        required: false
-        type: map
-        mapping:
-          enable:
-            required: false
-            type: bool
-
-          ca_certs:
-            required: false
+          skipif:
             type: str
 
-          certfile:
-            required: false
-            type: str
+          parametrize:
+            type: map
+            mapping:
+              key:
+                type: str
+                required: true
+              vals:
+                type: seq
+                required: true
+                sequence:
+                  - type: str
+                  - type: int
+                  - type: float
 
-          keyfile:
-            required: false
-            type: str
+  _xfail:
+    type: str
+    enum:
+      - verify
+      - run
 
-          cert_reqs:
-            required: false
-            type: str
-            enum:
-              - CERT_NONE
-              - CERT_OPTIONAL
-              - CERT_REQUIRED
-
-          tls_version:
-            required: false
-            type: str
-            # This could be an enum but there's lots of them, and which ones are
-            # actually valid changes based on which version of python you're
-            # using. Just let any ssl errors propagate through
-
-          ciphers:
-            required: false
-            type: str
-
-      auth:
-        required: false
-        type: map
-        mapping:
-          username:
-            type: str
-            required: true
-
-          password:
-            type: str
-            required: false
+  strict:
+    func: check_strict_key
+    type: any
 
   includes:
     required: false
@@ -135,15 +102,61 @@ mapping:
             required: true
             unique: true
 
+          skip:
+            type: bool
+            required: false
+
+          only:
+            type: bool
+            required: false
+
           delay_before:
-            type: int
+            type: float
+            required: false
+            unique: true
+          delay_after:
+            type: float
             required: false
             unique: true
 
-          delay_after:
-            type: int
+          mqtt_publish:
+            type: map
             required: false
-            unique: true
+            mapping:
+              topic:
+                type: str
+                required: true
+              payload:
+                # Only a string
+                type: str
+                required: false
+              json:
+                include: any_map_or_list_with_ext_function
+              qos:
+                type: int
+                required: false
+          mqtt_response:
+            type: map
+            required: false
+            mapping:
+              topic:
+                type: str
+                required: true
+              payload:
+                type: any
+                required: false
+              json:
+                include: any_map_or_list_with_ext_function
+              timeout:
+                type: float
+                required: false
+              qos:
+                type: int
+                required: false
+                enum:
+                  - 0
+                  - 1
+                  - 2
 
           request:
             type: map
@@ -153,18 +166,8 @@ mapping:
                 type: str
                 required: true
 
-              re;(params|data|headers): &any_map_with_ext_function
-                # Anchor matches any key: value, and if there's an $ext function
-                # in it it will check that it can be loaded at schema validation
-                # time instead of run time. This means there can be both
-                # checking for key: value matches as well as passing it to a
-                # function for more advanced manipulation
-                func: validate_extensions
-                type: map
-                required: false
-                mapping:
-                  re;(.*):
-                    type: any
+              re;(params|data|headers):
+                include: any_map_with_ext_function
 
               auth:
                 func: validate_extensions
@@ -176,11 +179,15 @@ mapping:
                   - type: str
                     required: true
 
-              json: &any_map_or_list_with_ext_function
-                # Similar, but we want to match lists or dicts
-                func: validate_json_with_extensions
-                type: any
+              json:
+                include: any_map_or_list_with_ext_function
+
+              files:
                 required: false
+                type: map
+                mapping:
+                  re;(.*):
+                    type: str
 
               method:
                 type: str
@@ -202,63 +209,35 @@ mapping:
                 required: false
                 sequence:
                   - type: str
-                    unique: True
-
-          mqtt_publish:
-            type: map
-            required: false
-            mapping:
-              topic:
-                type: str
-                required: true
-              payload:
-                # Only a string
-                type: str
-                required: false
-              json:
-                <<: *any_map_or_list_with_ext_function
-              qos:
-                type: int
-                required: false
+                    unique: true
 
           response:
             type: map
             required: false
             mapping:
+              strict:
+                func: check_strict_key
+                type: any
+
               status_code:
-                type: int
+                type: any
+                func: validate_status_code_is_int_or_list_of_ints
 
               cookies:
                 type: seq
-                required: False
+                required: false
                 sequence:
                   - type: str
-                    unique: True
+                    unique: true
 
               re;(headers|redirect_query_params):
-                <<: *any_map_with_ext_function
+                include: any_map_with_ext_function
 
               body:
-                <<: *any_map_or_list_with_ext_function
+                include: any_map_or_list_with_ext_function
 
               save:
-                <<: *any_map_with_ext_function
+                include: any_map_with_ext_function
                 mapping:
                   re;(\$ext|body|headers|redirect_query_params):
                     type: any
-
-          mqtt_response:
-            type: map
-            required: false
-            mapping:
-              topic:
-                type: str
-                required: true
-              payload:
-                type: any
-                required: false
-              json:
-                <<: *any_map_or_list_with_ext_function
-              timeout:
-                type: float
-                required: false

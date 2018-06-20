@@ -1,21 +1,18 @@
 import logging
+import warnings
 import os
 
-import yaml
+import pytest
 
 from contextlib2 import ExitStack
 from box import Box
 
-from .util.general import load_global_config
 from .util import exceptions
+from .util.dict_util import format_keys
 from .util.delay import delay
-from .util.loader import IncludeLoader
-from .util.env_vars import check_env_var_settings
-from .printer import log_pass, log_fail
 
 from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
-
-from .schemas.files import verify_tests
+from .schemas.files import wrapfile
 
 
 logger = logging.getLogger(__name__)
@@ -62,15 +59,18 @@ def run_test(in_file, test_spec, global_cfg):
     if test_spec.get("includes"):
         for included in test_spec["includes"]:
             if "variables" in included:
-                check_env_var_settings(included["variables"])
-                test_block_config["variables"].update(included["variables"])
+                formatted_include = format_keys(included["variables"], {"tavern": tavern_box})
+                test_block_config["variables"].update(formatted_include)
 
     test_block_name = test_spec["test_name"]
+
+    # Strict on body by default
+    default_strictness = test_block_config["strict"]
 
     logger.info("Running test : %s", test_block_name)
 
     with ExitStack() as stack:
-        sessions = get_extra_sessions(test_spec)
+        sessions = get_extra_sessions(test_spec, test_block_config)
 
         for name, session in sessions.items():
             logger.debug("Entering context for %s", name)
@@ -78,98 +78,105 @@ def run_test(in_file, test_spec, global_cfg):
 
         # Run tests in a path in order
         for stage in test_spec["stages"]:
-            name = stage["name"]
+            if stage.get('skip'):
+                continue
 
-            try:
-                r = get_request_type(stage, test_block_config, sessions)
-            except exceptions.MissingFormatError:
-                log_fail(stage, None, None)
-                raise
+            test_block_config["strict"] = default_strictness
 
-            tavern_box.update(request_vars=r.request_vars)
-
-            try:
-                expected = get_expected(stage, test_block_config, sessions)
-            except exceptions.TavernException:
-                log_fail(stage, None, None)
-                raise
-
-            delay(stage, "before")
-
-            logger.info("Running stage : %s", name)
-
-            try:
-                response = r.run()
-            except exceptions.TavernException:
-                log_fail(stage, None, expected)
-                raise
-
-            verifiers = get_verifiers(stage, test_block_config, sessions, expected)
-
-            for v in verifiers:
-                try:
-                    saved = v.verify(response)
-                except exceptions.TavernException:
-                    log_fail(stage, v, expected)
-                    raise
+            # Can be overridden per stage
+            # NOTE
+            # this is hardcoded to check for the 'response' block. In the far
+            # future there might not be a response block, but at the moment it
+            # is the hardcoded value for any HTTP request.
+            if stage.get("response", {}):
+                if stage.get("response").get("strict", None) is not None:
+                    stage_strictness = stage.get("response").get("strict", None)
+                elif test_spec.get("strict", None) is not None:
+                    stage_strictness = test_spec.get("strict", None)
                 else:
-                    test_block_config["variables"].update(saved)
+                    stage_strictness = default_strictness
 
-            log_pass(stage, verifiers)
+                logger.debug("Strict key checking for this stage is '%s'", stage_strictness)
 
-            tavern_box.pop("request_vars")
-            delay(stage, "after")
+                test_block_config["strict"] = stage_strictness
+            elif default_strictness:
+                logger.debug("Default strictness '%s' ignored for this stage", default_strictness)
+
+            try:
+                run_stage(sessions, stage, tavern_box, test_block_config)
+            except exceptions.TavernException as e:
+                e.stage = stage
+                raise
+
+            if stage.get('only'):
+                break
 
 
-def run(in_file, tavern_global_cfg):
-    """Run all tests contained in a file
+def run_stage(sessions, stage, tavern_box, test_block_config):
+    name = stage["name"]
 
-    For each test this makes sure it matches the expected schema, then runs it.
-    There currently isn't something like pytest's `-x` flag which exits on first
-    failure.
+    r = get_request_type(stage, test_block_config, sessions)
 
-    Todo:
-        the tavern_global_cfg argument should ideally be called
-        'global_cfg_paths', but it would break the API so we just rename it below
+    tavern_box.update(request_vars=r.request_vars)
 
-    Note:
-        This function DOES NOT read from the pytest config file. This is NOT a
-        pytest-reliant part of the code! If you specify global config in
-        pytest.ini this will not be used here!
+    expected = get_expected(stage, test_block_config, sessions)
+
+    delay(stage, "before")
+
+    logger.info("Running stage : %s", name)
+    response = r.run()
+
+    verifiers = get_verifiers(stage, test_block_config, sessions, expected)
+    for v in verifiers:
+        saved = v.verify(response)
+        test_block_config["variables"].update(saved)
+
+    tavern_box.pop("request_vars")
+    delay(stage, "after")
+
+
+def _run_pytest(in_file, tavern_global_cfg, tavern_mqtt_backend=None, tavern_http_backend=None, tavern_strict=None, pytest_args=None, **kwargs): # pylint: disable=too-many-arguments
+    """Run all tests contained in a file using pytest.main()
 
     Args:
         in_file (str): file to run tests on
-        tavern_global_cfg (str): file containing Global config for all tests
+        tavern_global_cfg (dict): Extra global config
+        ptest_args (list): Extra pytest args to pass
+
+        **kwargs (dict): ignored
 
     Returns:
         bool: Whether ALL tests passed or not
     """
 
-    passed = True
+    if kwargs:
+        warnings.warn("Passing extra keyword args to run() when using pytest is used are ignored.", FutureWarning)
 
-    global_cfg_paths = tavern_global_cfg
-    global_cfg = load_global_config(global_cfg_paths)
+    with ExitStack() as stack:
 
-    with open(in_file, "r") as infile:
-        # Multiple documents per file => multiple test paths per file
-        for test_spec in yaml.load_all(infile, Loader=IncludeLoader):
-            if not test_spec:
-                logger.warning("Empty document in input file '%s'", in_file)
-                continue
+        if tavern_global_cfg:
+            global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
 
-            import ipdb; ipdb.set_trace()
+        pytest_args = pytest_args or []
+        pytest_args += ["-k", in_file]
+        if tavern_global_cfg:
+            pytest_args += ["--tavern-global-cfg", global_filename]
 
-            try:
-                verify_tests(test_spec)
-                pass
-            except exceptions.BadSchemaError:
-                passed = False
-                continue
+        if tavern_mqtt_backend:
+            pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
+        if tavern_http_backend:
+            pytest_args += ["--tavern-http-backend", tavern_http_backend]
+        if tavern_strict:
+            pytest_args += ["--tavern-strict", tavern_strict]
 
-            try:
-                run_test(in_file, test_spec, global_cfg)
-            except exceptions.TestFailError:
-                passed = False
-                continue
+        return pytest.main(args=pytest_args)
 
-    return passed
+
+def run(in_file, tavern_global_cfg=None, **kwargs):
+    """Run tests in file
+
+    Args:
+        in_file (str): file to run tests for
+        tavern_global_cfg (dict): Extra global config
+    """
+    return _run_pytest(in_file, tavern_global_cfg, **kwargs)
