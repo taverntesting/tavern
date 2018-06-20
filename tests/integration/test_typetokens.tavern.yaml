@@ -217,6 +217,50 @@ stages:
 
 ---
 
+test_name: Test can't use approx numbers in a request
+
+includes:
+  - !include common.yaml
+
+_xfail: verify
+
+stages:
+  - name: Match pi approximately
+    request:
+      url: "{host}/pi"
+      method: GET
+      json:
+        pi: !approx 2.4
+        bkd:
+          a:
+            b: 342
+    response:
+      status_code: 200
+
+---
+
+# This actually raises an error when first loading the file, so it's not easy to
+# test like this
+
+# test_name: Test approximate numbers must be a float
+#
+# includes:
+#   - !include common.yaml
+#
+# _xfail: run
+#
+# stages:
+#   - name: Match pi approximately
+#     request:
+#       url: "{host}/pi"
+#       method: GET
+#     response:
+#       status_code: 200
+#       body:
+#         pi: !approx about three
+#
+# ---
+
 test_name: Test approximate numbers
 
 includes:

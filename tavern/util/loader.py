@@ -203,7 +203,7 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
         # pylint: disable=unused-argument
         try:
             val = float(node.value)
-        except TypeError as e:
+        except (ValueError, TypeError) as e:
             logger.error("Could not coerce '%s' to a float for use with !approx", type(node.value))
             raise_from(BadSchemaError, e)
 
