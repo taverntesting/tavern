@@ -4,7 +4,7 @@ import logging
 import itertools
 import copy
 
-from py._code.code import ReprFileLocation
+from _pytest._code.code import FormattedExcinfo
 import pytest
 import yaml
 from future.utils import raise_from
@@ -365,17 +365,78 @@ class YamlItem(pytest.Item):
         return self.fspath, 0, "{self.path}::{self.name:s}".format(self=self)
 
 
-class ReprdError:
+class ReprdError(object):
 
     def __init__(self, exce, item):
         self.exce = exce
         self.item = item
 
-    def toterminal(self, tw):
-        linenum = 1
-        # filename, linenum = self.item.get_file_reference()
+    def _print_format_variables(self, tw, code_lines):
+
+        def read_formatted_vars(lines):
+            """Go over all lines and try to find format variables
+
+            This might be a bit wonky if escaped curly braces are used...
+            """
+            formatted_var_regex = "(?P<format_var>{.*?})"
+
+            for line in lines:
+                for match in re.finditer(formatted_var_regex, line):
+                    yield match["format_var"]
+
+        format_variables = list(read_formatted_vars(code_lines))
 
         try:
+            # pylint: disable=protected-access
+            keys = self.exce._excinfo[1].test_block_config["variables"]
+        except AttributeError:
+            logger.warning("Unable to read stage variables - error output may be wrong")
+            keys = self.item.global_cfg
+
+        # Print out values of format variables, like Pytest prints out the
+        # values of function call variables
+        tw.line("Format variables:", white=True, bold=True)
+        for var in format_variables:
+            try:
+                value_at_call = format_keys(var, keys)
+            except exceptions.MissingFormatError:
+                value_at_call = "???"
+                white = False
+                red = True
+            else:
+                white = True
+                red = False
+
+            line = "  {} = '{}'".format(var[1:-1], value_at_call)
+            tw.line(line, white=white, red=red)  # pragma: no cover
+
+    def _print_test_stage(self, tw, code_lines, read_stage): # pylint: disable=no-self-use
+        if read_stage:
+            tw.line("Test stage:", white=True, bold=True)
+        else:
+            tw.line("Test stages:", white=True, bold=True)
+
+        for line in code_lines:
+            tw.line(line, white=True)  # pragma: no cover
+
+    def _print_errors(self, tw):
+
+        tw.line("Errors:", white=True, bold=True)
+
+        # Sort of hack, just use this to directly extract the exception format.
+        # If this breaks in future, just re-implement it
+        e = FormattedExcinfo()
+        lines = e.get_exconly(self.exce)
+        for line in lines:
+            tw.line(line, red=True, bold=True)
+
+    def toterminal(self, tw):
+        """Print out a custom error message to the terminal"""
+
+        # Try to get the stage so we can print it out. I'm not sure if the stage
+        # will ever NOT be present, but better to check just in case
+        try:
+            # pylint: disable=protected-access
             stage = self.exce._excinfo[1].stage
         except AttributeError:
             # Fallback, we don't know which stage it is
@@ -399,52 +460,12 @@ class ReprdError:
 
         code_lines = list(read_relevant_lines(self.item.spec.start_mark.name))
 
-        def read_formatted_vars(lines):
-            formatted_var_regex = "(?P<format_var>{.*?})"
+        self._print_format_variables(tw, code_lines)
 
-            for line in lines:
-                for match in re.finditer(formatted_var_regex, line):
-                    yield match["format_var"]
+        tw.line("")
 
-        format_variables = list(read_formatted_vars(code_lines))
+        self._print_test_stage(tw, code_lines, read_stage)
 
-        try:
-            keys = self.exce._excinfo[1].test_block_config["variables"]
-        except AttributeError:
-            logger.warning("Unable to read stage variables - error output may be wrong")
-            keys = self.item.global_cfg
+        tw.line("")
 
-        # Print out values of format variables, like Pytest prints out the
-        # values of function call variables
-        tw.line("Format variables:", white=True, bold=True)
-        for var in format_variables:
-            try:
-                value_at_call = format_keys(var, keys)
-            except exceptions.MissingFormatError:
-                value_at_call = "???"
-                white = False
-                red = True
-            else:
-                white = True
-                red = False
-
-            line = "  {} = '{}'".format(var[1:-1], value_at_call)
-            tw.line(line, white=white, red=red)  # pragma: no cover
-        tw.line("")  # pragma: no cover
-
-        if read_stage:
-            tw.line("Test stage:", white=True, bold=True)
-        else:
-            tw.line("Test stages:", white=True, bold=True)
-
-        for line in code_lines:
-            tw.line(line, white=True)  # pragma: no cover
-
-        tw.line("")  # pragma: no cover
-        tw.line("Errors:", white=True, bold=True)
-
-        from _pytest._code.code import FormattedExcinfo
-        e = FormattedExcinfo()
-        lines = e.get_exconly(self.exce)
-        for line in lines:
-            tw.line(line, red=True, bold=True)
+        self._print_errors(tw)
