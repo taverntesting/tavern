@@ -63,9 +63,10 @@ def wrapfile(to_wrap):
         wrapped_tmp.write(dumped.encode("utf8"))
         wrapped_tmp.close()
 
-        yield wrapped_tmp.name
-
-        os.remove(wrapped_tmp.name)
+        try:
+            yield wrapped_tmp.name
+        finally:
+            os.remove(wrapped_tmp.name)
 
 
 def verify_tests(test_spec, load_plugins=True):
