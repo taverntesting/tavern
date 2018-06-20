@@ -380,9 +380,11 @@ class ReprdError:
 
             first_line = stages[0].start_mark.line
             last_line = stages[-1].end_mark.line
+            read_stage = False
         else:
             first_line = stage.start_mark.line
             last_line = stage.end_mark.line
+            read_stage = True
 
         def read_relevant_lines(filename):
             """Get lines between start and end mark"""
@@ -404,37 +406,35 @@ class ReprdError:
 
         # Print out values of format variables, like Pytest prints out the
         # values of function call variables
+        tw.line("Format variables:", white=True, bold=True)
         for var in format_variables:
             try:
                 value_at_call = format_keys(var, {})
             except exceptions.MissingFormatError:
                 value_at_call = "???"
-            line = "{} = '{}'".format(var[1:-1], value_at_call)
-            tw.line(line, white=True)  # pragma: no cover
+                white = False
+                red = True
+            else:
+                white = True
+                red = False
+
+            line = "  {} = '{}'".format(var[1:-1], value_at_call)
+            tw.line(line, white=white, red=red)  # pragma: no cover
         tw.line("")  # pragma: no cover
 
-        for line in code_lines:
-            tw.line(line, white=True, bold=True)  # pragma: no cover
-        return
-
-        indent = get_left_whitespace(code_lines[-1]) if code_lines else ''
-
-        for line, markup in failure.get_lines():
-            markup_params = {m: True for m in markup}
-            tw.line(indent + line, **markup_params)
-
-        location = ReprFileLocation(filename, linenum, "Tavern failure")
-        location.toterminal(tw)
-
-        if index != len(self.failures) - 1:
-            tw.line(self.failure_sep, cyan=True)
-
-
-def get_left_whitespace(line):
-    result = ''
-    for c in line:
-        if c in string.whitespace:
-            result += c
+        if read_stage:
+            tw.line("Test stage:", white=True, bold=True)
         else:
-            break
-    return result
+            tw.line("Test stages:", white=True, bold=True)
+
+        for line in code_lines:
+            tw.line(line, white=True)  # pragma: no cover
+
+        tw.line("")  # pragma: no cover
+        tw.line("Errors:", white=True, bold=True)
+
+        from _pytest._code.code import FormattedExcinfo
+        e = FormattedExcinfo()
+        lines = e.get_exconly(self.exce)
+        for line in lines:
+            tw.line(line, red=True, bold=True)
