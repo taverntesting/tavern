@@ -1,23 +1,19 @@
 import logging
+import warnings
 import os
-import io
 
-import yaml
+import pytest
 
 from contextlib2 import ExitStack
 from box import Box
 
-from .util.general import load_global_config
-from .plugins import load_plugins
 from .util import exceptions
 from .util.dict_util import format_keys
 from .util.delay import delay
-from .util.loader import IncludeLoader
 from .printer import log_pass, log_fail
 
 from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
-
-from .schemas.files import verify_tests
+from .schemas.files import wrapfile
 
 
 logger = logging.getLogger(__name__)
@@ -155,65 +151,42 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     delay(stage, "after")
 
 
-def run(in_file, tavern_global_cfg, tavern_http_backend, tavern_mqtt_backend, tavern_strict):
-    """Run all tests contained in a file
-
-    For each test this makes sure it matches the expected schema, then runs it.
-    There currently isn't something like pytest's `-x` flag which exits on first
-    failure.
-
-    Todo:
-        the tavern_global_cfg argument should ideally be called
-        'global_cfg_paths', but it would break the API so we just rename it below
-
-    Note:
-        This function DOES NOT read from the pytest config file. This is NOT a
-        pytest-reliant part of the code! If you specify global config in
-        pytest.ini this will not be used here!
+def _run_pytest(in_file, tavern_global_cfg, pytest_args=None, **kwargs):
+    """Run all tests contained in a file using pytest.main()
 
     Args:
         in_file (str): file to run tests on
-        tavern_global_cfg (str): file containing Global config for all tests
+        ptest_args (list): Extra pytest args to pass
+
+        **kwargs (dict): ignored
 
     Returns:
         bool: Whether ALL tests passed or not
     """
 
-    passed = True
+    if kwargs:
+        warnings.warn("Passing extra keyword args to run() when using pytest is used are ignored.", FutureWarning)
 
-    global_cfg_paths = tavern_global_cfg
-    global_cfg = load_global_config(global_cfg_paths)
+    # will be removed in future
+    with ExitStack() as stack:
 
-    global_cfg["strict"] = tavern_strict
+        if tavern_global_cfg:
+            warnings.warn("Passing global_cfg to run() is now deprecated, and will be removed in a future version of Tavern. This will be read from command line arguments or config files automatically in future.", FutureWarning)
+            global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
 
-    global_cfg["backends"] = {
-        "http": tavern_http_backend,
-        "mqtt": tavern_mqtt_backend,
-    }
+        pytest_args = pytest_args or []
+        pytest_args += ["-k", in_file]
+        if tavern_global_cfg:
+            pytest_args += ["--tavern-global-cfg", global_filename]
 
-    load_plugins(global_cfg)
+        return pytest.main(args=pytest_args)
 
-    with io.open(in_file, "r", encoding="utf-8") as infile:
-        # Multiple documents per file => multiple test paths per file
-        for test_spec in yaml.load_all(infile, Loader=IncludeLoader):
-            if not test_spec:
-                logger.warning("Empty document in input file '%s'", in_file)
-                continue
 
-            if "_xfail" in test_spec:
-                logger.info("_xfail does not work with tavern-ci cli, skipping test")
-                continue
+def run(in_file, tavern_global_cfg=None, **kwargs):
+    """Run tests in file
 
-            try:
-                verify_tests(test_spec)
-            except exceptions.BadSchemaError:
-                passed = False
-                continue
-
-            try:
-                run_test(in_file, test_spec, global_cfg)
-            except exceptions.TestFailError:
-                passed = False
-                continue
-
-    return passed
+    Args:
+        in_file (str): file to run tests for
+        tavern_global_cfg (dict): Extra global config - will be ignored in future
+    """
+    return _run_pytest(in_file, tavern_global_cfg, **kwargs)
