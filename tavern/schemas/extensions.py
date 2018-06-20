@@ -187,7 +187,7 @@ def validate_json_with_extensions(value, rule_obj, path):
 
     if any(isinstance(i, ApproxScalar) for i in nested_values(value)):
         # If this is a request data block
-        if not re.search("^/stages/\d/(response/body|mqtt_response/json)", path):
+        if not re.search(r"^/stages/\d/(response/body|mqtt_response/json)", path):
             raise BadSchemaError("Error at {} - Cannot use a '!approx' in anything other than an expected http response body or mqtt response json".format(path))
 
     return True
