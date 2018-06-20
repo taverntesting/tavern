@@ -71,8 +71,10 @@ class BaseResponse(object):
 
         logger.debug("expected = %s, actual = %s", expected_block, block)
 
+        ignore_key_case = (blockname == "headers")
+
         try:
-            check_keys_match_recursive(expected_block, block, [], strict)
+            check_keys_match_recursive(expected_block, block, [], strict, ignore_key_case)
         except exceptions.KeyMismatchError as e:
             # TODO
             # This block be removed in 1.0 as it is a breaking API change, and
