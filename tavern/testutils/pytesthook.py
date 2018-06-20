@@ -285,11 +285,12 @@ class ReprdError:
         # filename, linenum = self.item.get_file_reference()
 
         try:
-            code_lines = yaml.dump(self.exce.stage)
+            code_lines = yaml.dump(self.exce._excinfo[1].stage, default_flow_style=False)
         except AttributeError:
+            # Fallback
             spec = self.item.spec
             del spec["includes"]
-            code_lines = yaml.dump(spec)
+            code_lines = yaml.dump(spec, default_flow_style=False)
 
         code_lines = code_lines.split("\n")
 
