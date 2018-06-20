@@ -451,11 +451,11 @@ class ReprdError(object):
             spec = self.item.spec
             stages = spec["stages"]
 
-            first_line = stages[0].start_mark.line
+            first_line = stages[0].start_mark.line - 1
             last_line = stages[-1].end_mark.line
             read_stage = False
         else:
-            first_line = stage.start_mark.line
+            first_line = stage.start_mark.line - 1
             last_line = stage.end_mark.line
             read_stage = True
 
