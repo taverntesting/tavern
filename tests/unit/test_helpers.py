@@ -50,6 +50,18 @@ class TestRunAlone:
 
         assert pmock.called
 
+    def test_normal_args(self):
+        with patch("tavern.core.pytest.main") as pmock:
+            run(**{
+                'tavern_global_cfg': None,
+                'in_file': "kfdoskdof",
+                'tavern_http_backend': 'requests',
+                'tavern_mqtt_backend': 'paho-mqtt',
+                'tavern_strict': True,
+            })
+
+        assert pmock.called
+
     def test_extra_args(self):
         with pytest.warns(FutureWarning):
             with patch("tavern.core.pytest.main") as pmock:
@@ -57,7 +69,9 @@ class TestRunAlone:
                     'tavern_global_cfg': None,
                     'in_file': "kfdoskdof",
                     'tavern_http_backend': 'requests',
-                    'tavern_mqtt_backend': 'paho-mqtt'
+                    'tavern_mqtt_backend': 'paho-mqtt',
+                    'tavern_strict': True,
+                    'gfg': '2efsf',
                 })
 
         assert pmock.called

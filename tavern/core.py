@@ -151,7 +151,7 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     delay(stage, "after")
 
 
-def _run_pytest(in_file, tavern_global_cfg, pytest_args=None, **kwargs):
+def _run_pytest(in_file, tavern_global_cfg, tavern_mqtt_backend=None, tavern_http_backend=None, tavern_strict=None, pytest_args=None, **kwargs):
     """Run all tests contained in a file using pytest.main()
 
     Args:
@@ -177,6 +177,13 @@ def _run_pytest(in_file, tavern_global_cfg, pytest_args=None, **kwargs):
         pytest_args += ["-k", in_file]
         if tavern_global_cfg:
             pytest_args += ["--tavern-global-cfg", global_filename]
+
+        if tavern_mqtt_backend:
+            pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
+        if tavern_http_backend:
+            pytest_args += ["--tavern-http-backend", tavern_http_backend]
+        if tavern_strict:
+            pytest_args += ["--tavern-strict", tavern_strict]
 
         return pytest.main(args=pytest_args)
 
