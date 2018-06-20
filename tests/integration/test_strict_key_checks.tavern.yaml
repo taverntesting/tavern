@@ -126,6 +126,33 @@ stages:
 
 ---
 
+test_name: Test legacy key matching against body still fails if there's keys that aren't returned
+# should be removed in 1.0 when api changes
+
+includes:
+  - !include common.yaml
+
+_xfail: run
+
+stages:
+  - name: match with bool missing
+    request:
+      url: "{host}/fake_dictionary"
+    response:
+      status_code: 200
+      body:
+        top:
+          Thing: value
+          nested:
+            doubly:
+              inner: value
+        an_integer: 123
+        a_string: abc
+        # a_bool: true
+        cool_key: 123
+
+---
+
 test_name: Test strict key matching against body fails
 
 _xfail: run

@@ -283,7 +283,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
 
                 # If there are more keys in 'expected' compared to 'actual',
                 # this is still a hard error and we shouldn't continue
-                if (ekeys > akeys) or strict:
+                if extra_expected_keys or strict:
                     raise_from(exceptions.KeyMismatchError(full_msg), e)
                 else:
                     logger.warning(full_msg)
