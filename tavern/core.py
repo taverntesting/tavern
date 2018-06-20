@@ -10,7 +10,6 @@ from box import Box
 from .util import exceptions
 from .util.dict_util import format_keys
 from .util.delay import delay
-from .printer import log_pass, log_fail
 
 from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
 from .schemas.files import wrapfile
@@ -103,7 +102,11 @@ def run_test(in_file, test_spec, global_cfg):
             elif default_strictness:
                 logger.debug("Default strictness '%s' ignored for this stage", default_strictness)
 
-            run_stage(sessions, stage, tavern_box, test_block_config)
+            try:
+                run_stage(sessions, stage, tavern_box, test_block_config)
+            except exceptions.TavernException as e:
+                e.stage = stage
+                raise
 
             if stage.get('only'):
                 break
@@ -112,40 +115,21 @@ def run_test(in_file, test_spec, global_cfg):
 def run_stage(sessions, stage, tavern_box, test_block_config):
     name = stage["name"]
 
-    try:
-        r = get_request_type(stage, test_block_config, sessions)
-    except exceptions.MissingFormatError:
-        log_fail(stage, None, None)
-        raise
+    r = get_request_type(stage, test_block_config, sessions)
 
     tavern_box.update(request_vars=r.request_vars)
 
-    try:
-        expected = get_expected(stage, test_block_config, sessions)
-    except exceptions.TavernException:
-        log_fail(stage, None, None)
-        raise
+    expected = get_expected(stage, test_block_config, sessions)
 
     delay(stage, "before")
 
     logger.info("Running stage : %s", name)
-    try:
-        response = r.run()
-    except exceptions.TavernException:
-        log_fail(stage, None, expected)
-        raise
+    response = r.run()
 
     verifiers = get_verifiers(stage, test_block_config, sessions, expected)
     for v in verifiers:
-        try:
-            saved = v.verify(response)
-        except exceptions.TavernException:
-            log_fail(stage, v, expected)
-            raise
-        else:
-            test_block_config["variables"].update(saved)
-
-    log_pass(stage, verifiers)
+        saved = v.verify(response)
+        test_block_config["variables"].update(saved)
 
     tavern_box.pop("request_vars")
     delay(stage, "after")
