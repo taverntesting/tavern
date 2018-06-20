@@ -1,7 +1,9 @@
 import re
-import itertools
 import logging
+import itertools
 import copy
+
+from py._code.code import ReprFileLocation
 import pytest
 import yaml
 from future.utils import raise_from
@@ -350,8 +352,56 @@ class YamlItem(pytest.Item):
         if not issubclass(excinfo.type, exceptions.TavernException):
             return super(YamlItem, self).repr_failure(excinfo)
 
-        return super(YamlItem, self).repr_failure(excinfo)
+        # return super(YamlItem, self).repr_failure(excinfo)
+        return ReprdError(excinfo, self)
 
     def reportinfo(self):
         # pylint: disable=missing-format-attribute
         return self.fspath, 0, "{self.path}::{self.name:s}".format(self=self)
+
+
+class ReprdError:
+
+    def __init__(self, exce, item):
+        self.exce = exce
+        self.item = item
+
+    def toterminal(self, tw):
+        linenum = 1
+        # filename, linenum = self.item.get_file_reference()
+
+        try:
+            code_lines = yaml.dump(self.exce._excinfo[1].stage, default_flow_style=False)
+        except AttributeError:
+            # Fallback
+            spec = self.item.spec
+            del spec["includes"]
+            code_lines = yaml.dump(spec, default_flow_style=False)
+
+        code_lines = code_lines.split("\n")
+
+        for line in code_lines:
+            tw.line(line, white=True, bold=True)  # pragma: no cover
+        return
+
+        indent = get_left_whitespace(code_lines[-1]) if code_lines else ''
+
+        for line, markup in failure.get_lines():
+            markup_params = {m: True for m in markup}
+            tw.line(indent + line, **markup_params)
+
+        location = ReprFileLocation(filename, linenum, "Tavern failure")
+        location.toterminal(tw)
+
+        if index != len(self.failures) - 1:
+            tw.line(self.failure_sep, cyan=True)
+
+
+def get_left_whitespace(line):
+    result = ''
+    for c in line:
+        if c in string.whitespace:
+            result += c
+        else:
+            break
+    return result

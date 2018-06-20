@@ -118,6 +118,6 @@ class MQTTResponse(BaseResponse):
 
         if self.errors:
             raise exceptions.TestFailError("Test '{:s}' failed:\n{:s}".format(
-                self.name, self._str_errors()))
+                self.name, self._str_errors()), failures=self.errors)
 
         return {}

@@ -203,7 +203,7 @@ class RestResponse(BaseResponse):
         self._validate_block("redirect_query_params", redirect_query_params)
 
         if self.errors:
-            raise TestFailError("Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()))
+            raise TestFailError("Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()), failures=self.errors)
 
         return saved
 
