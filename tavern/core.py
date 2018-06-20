@@ -156,6 +156,7 @@ def _run_pytest(in_file, tavern_global_cfg, pytest_args=None, **kwargs):
 
     Args:
         in_file (str): file to run tests on
+        tavern_global_cfg (dict): Extra global config
         ptest_args (list): Extra pytest args to pass
 
         **kwargs (dict): ignored
@@ -167,11 +168,9 @@ def _run_pytest(in_file, tavern_global_cfg, pytest_args=None, **kwargs):
     if kwargs:
         warnings.warn("Passing extra keyword args to run() when using pytest is used are ignored.", FutureWarning)
 
-    # will be removed in future
     with ExitStack() as stack:
 
         if tavern_global_cfg:
-            warnings.warn("Passing global_cfg to run() is now deprecated, and will be removed in a future version of Tavern. This will be read from command line arguments or config files automatically in future.", FutureWarning)
             global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
 
         pytest_args = pytest_args or []
@@ -187,6 +186,6 @@ def run(in_file, tavern_global_cfg=None, **kwargs):
 
     Args:
         in_file (str): file to run tests for
-        tavern_global_cfg (dict): Extra global config - will be ignored in future
+        tavern_global_cfg (dict): Extra global config
     """
     return _run_pytest(in_file, tavern_global_cfg, **kwargs)

@@ -50,13 +50,6 @@ class TestRunAlone:
 
         assert pmock.called
 
-    def test_warngs_cfg(self):
-        with pytest.warns(FutureWarning):
-            with patch("tavern.core.pytest.main") as pmock:
-                run("abc", tavern_global_cfg={"a": "b"})
-
-        assert pmock.called
-
     def test_extra_args(self):
         with pytest.warns(FutureWarning):
             with patch("tavern.core.pytest.main") as pmock:
