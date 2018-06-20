@@ -44,6 +44,20 @@ mapping:
           skipif:
             type: str
 
+          parametrize:
+            type: map
+            mapping:
+              key:
+                type: str
+                required: true
+              vals:
+                type: seq
+                required: true
+                sequence:
+                  - type: str
+                  - type: int
+                  - type: float
+
   _xfail:
     type: str
     enum:
