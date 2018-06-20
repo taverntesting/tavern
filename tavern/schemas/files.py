@@ -68,7 +68,7 @@ def wrapfile(to_wrap):
         os.remove(wrapped_tmp.name)
 
 
-def verify_tests(test_spec):
+def verify_tests(test_spec, load_plugins=True):
     """Verify that a specific test block is correct
 
     Todo:
@@ -84,9 +84,12 @@ def verify_tests(test_spec):
         here = os.path.dirname(os.path.abspath(__file__))
         schema_filename = os.path.join(here, "tests.schema.yaml")
 
-        # TODO
-        # cache this
-        schema_with_plugins = load_schema_plugins(schema_filename)
+        if load_plugins:
+            # TODO
+            # cache this
+            schema_with_plugins = load_schema_plugins(schema_filename)
 
-        with wrapfile(schema_with_plugins) as schema_tmp:
-            verify_generic(test_tmp, schema_tmp)
+            with wrapfile(schema_with_plugins) as schema_tmp:
+                verify_generic(test_tmp, schema_tmp)
+        else:
+            verify_generic(test_tmp, schema_filename)

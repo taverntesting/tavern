@@ -1,4 +1,5 @@
 import logging
+import re
 import functools
 import importlib
 
@@ -6,6 +7,7 @@ from future.utils import raise_from
 
 from tavern.util.exceptions import BadSchemaError
 from tavern.util import exceptions
+from tavern.util.loader import ApproxScalar
 
 
 logger = logging.getLogger(__name__)
@@ -171,6 +173,22 @@ def validate_json_with_extensions(value, rule_obj, path):
 
     if not isinstance(value, (list, dict)):
         raise BadSchemaError("Error at {} - expected a list or dict".format(path))
+
+    def nested_values(d):
+        if isinstance(d, dict):
+            for v in d.values():
+                if isinstance(v, dict):
+                    for v_s in v.values():
+                        yield v_s
+                else:
+                    yield v
+        else:
+            yield d
+
+    if any(isinstance(i, ApproxScalar) for i in nested_values(value)):
+        # If this is a request data block
+        if not re.search(r"^/stages/\d/(response/body|mqtt_response/json)", path):
+            raise BadSchemaError("Error at {} - Cannot use a '!approx' in anything other than an expected http response body or mqtt response json".format(path))
 
     return True
 

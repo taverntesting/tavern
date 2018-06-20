@@ -1,8 +1,7 @@
-import logging
 import argparse
-from argparse import ArgumentParser #, ArgumentTypeError
+from argparse import ArgumentParser
+import logging
 
-from .testutils.pytesthook import add_parser_options
 from .core import run
 
 
@@ -40,11 +39,9 @@ class TavernArgParser(ArgumentParser):
             default=False,
         )
 
-        add_parser_options(self.add_argument)
-
 
 def main():
-    args = TavernArgParser().parse_args()
+    args, remaining = TavernArgParser().parse_known_args()
     vargs = vars(args)
 
     if vargs.pop("debug"):
@@ -105,4 +102,4 @@ def main():
 
     logging.config.dictConfig(log_cfg)
 
-    exit(not run(**vargs))
+    raise SystemExit(run(pytest_args=remaining, **vargs))
