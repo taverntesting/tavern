@@ -54,8 +54,8 @@ def create_node_class(cls):
             self.start_mark = start_mark
             self.end_mark = end_mark
 
-        def __new__(self, x, start_mark, end_mark):
-            return cls.__new__(self, x)
+        # def __new__(self, x, start_mark, end_mark):
+        #     return cls.__new__(self, x)
     node_class.__name__ = '%s_node' % cls.__name__
     return node_class
 
@@ -84,6 +84,10 @@ SourceMappingConstructor.add_constructor(
 SourceMappingConstructor.add_constructor(
         u'tag:yaml.org,2002:seq',
         SourceMappingConstructor.construct_yaml_seq)
+
+yaml.add_representer(dict_node, yaml.representer.SafeRepresenter.represent_dict)
+yaml.add_representer(list_node, yaml.representer.SafeRepresenter.represent_list)
+
 
 # pylint: disable=too-many-ancestors
 class IncludeLoader(Reader, Scanner, Parser, RememberComposer, Resolver,

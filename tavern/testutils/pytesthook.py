@@ -1,4 +1,5 @@
 import re
+import io
 import logging
 import itertools
 import copy
@@ -371,14 +372,46 @@ class ReprdError:
         # filename, linenum = self.item.get_file_reference()
 
         try:
-            code_lines = yaml.dump(self.exce._excinfo[1].stage, default_flow_style=False)
+            stage = self.exce._excinfo[1].stage
         except AttributeError:
-            # Fallback
+            # Fallback, we don't know which stage it is
             spec = self.item.spec
-            del spec["includes"]
-            code_lines = yaml.dump(spec, default_flow_style=False)
+            stages = spec["stages"]
 
-        code_lines = code_lines.split("\n")
+            first_line = stages[0].start_mark.line
+            last_line = stages[-1].end_mark.line
+        else:
+            first_line = stage.start_mark.line
+            last_line = stage.end_mark.line
+
+        def read_relevant_lines(filename):
+            """Get lines between start and end mark"""
+            with io.open(filename, "r", encoding="utf8") as testfile:
+                for idx, line in enumerate(testfile.readlines()):
+                    if idx > first_line and idx < last_line:
+                        yield line.rstrip()
+
+        code_lines = list(read_relevant_lines(self.item.spec.start_mark.name))
+
+        def read_formatted_vars(lines):
+            formatted_var_regex = "(?P<format_var>{.*?})"
+
+            for line in lines:
+                for match in re.finditer(formatted_var_regex, line):
+                    yield match["format_var"]
+
+        format_variables = list(read_formatted_vars(code_lines))
+
+        # Print out values of format variables, like Pytest prints out the
+        # values of function call variables
+        for var in format_variables:
+            try:
+                value_at_call = format_keys(var, {})
+            except exceptions.MissingFormatError:
+                value_at_call = "???"
+            line = "{} = '{}'".format(var[1:-1], value_at_call)
+            tw.line(line, white=True)  # pragma: no cover
+        tw.line("")  # pragma: no cover
 
         for line in code_lines:
             tw.line(line, white=True, bold=True)  # pragma: no cover
