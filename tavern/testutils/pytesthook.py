@@ -393,6 +393,8 @@ class ReprdError(object):
             logger.warning("Unable to read stage variables - error output may be wrong")
             keys = self.item.global_cfg
 
+        missing = []
+
         # Print out values of format variables, like Pytest prints out the
         # values of function call variables
         tw.line("Format variables:", white=True, bold=True)
@@ -400,6 +402,7 @@ class ReprdError(object):
             try:
                 value_at_call = format_keys(var, keys)
             except exceptions.MissingFormatError:
+                missing.append(var)
                 value_at_call = "???"
                 white = False
                 red = True
@@ -410,14 +413,19 @@ class ReprdError(object):
             line = "  {} = '{}'".format(var[1:-1], value_at_call)
             tw.line(line, white=white, red=red)  # pragma: no cover
 
-    def _print_test_stage(self, tw, code_lines, read_stage): # pylint: disable=no-self-use
+        return missing
+
+    def _print_test_stage(self, tw, code_lines, missing_format_vars, read_stage): # pylint: disable=no-self-use
         if read_stage:
             tw.line("Test stage:", white=True, bold=True)
         else:
             tw.line("Test stages:", white=True, bold=True)
 
         for line in code_lines:
-            tw.line(line, white=True)  # pragma: no cover
+            if any(i in line for i in missing_format_vars):
+                tw.line(line, red=True)
+            else:
+                tw.line(line, white=True)
 
     def _print_errors(self, tw):
 
@@ -460,11 +468,11 @@ class ReprdError(object):
 
         code_lines = list(read_relevant_lines(self.item.spec.start_mark.name))
 
-        self._print_format_variables(tw, code_lines)
+        missing_format_vars = self._print_format_variables(tw, code_lines)
 
         tw.line("")
 
-        self._print_test_stage(tw, code_lines, read_stage)
+        self._print_test_stage(tw, code_lines, missing_format_vars, read_stage)
 
         tw.line("")
 
