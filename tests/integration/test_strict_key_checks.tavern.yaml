@@ -153,6 +153,22 @@ stages:
 
 ---
 
+test_name: Test key matching matches headers case insensitive
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Get with header
+    request:
+      url: "{host}/headers"
+    response:
+      status_code: 200
+      headers:
+        x-InTeGrAtIoN-vALUe: _HelloWorld1
+
+---
+
 test_name: Test strict key matching against body fails
 
 _xfail: run
