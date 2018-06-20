@@ -270,6 +270,8 @@ class YamlItem(pytest.Item):
         self.path = path
         self.spec = spec
 
+        self.global_cfg = {}
+
     @property
     def obj(self):
         stages = ["{:d}: {:s}".format(i + 1, stage["name"]) for i, stage in enumerate(self.spec["stages"])]
@@ -316,6 +318,8 @@ class YamlItem(pytest.Item):
             global_cfg["backends"][b] = in_use
 
         load_plugins(global_cfg)
+
+        self.global_cfg = global_cfg
 
         # INTERNAL
         # NOTE - now that we can 'mark' tests, we could use pytest.mark.xfail
@@ -404,12 +408,18 @@ class ReprdError:
 
         format_variables = list(read_formatted_vars(code_lines))
 
+        try:
+            keys = self.exce._excinfo[1].test_block_config["variables"]
+        except AttributeError:
+            logger.warning("Unable to read stage variables - error output may be wrong")
+            keys = self.item.global_cfg
+
         # Print out values of format variables, like Pytest prints out the
         # values of function call variables
         tw.line("Format variables:", white=True, bold=True)
         for var in format_variables:
             try:
-                value_at_call = format_keys(var, {})
+                value_at_call = format_keys(var, keys)
             except exceptions.MissingFormatError:
                 value_at_call = "???"
                 white = False
