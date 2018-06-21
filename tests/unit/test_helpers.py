@@ -1,8 +1,12 @@
 from mock import patch
+import sys
 import pytest
+import _pytest
 
+from tavern.util import exceptions
 from tavern.core import run
 from tavern.testutils.helpers import validate_regex
+from tavern.testutils.pytesthook import YamlItem
 
 
 class FakeResponse:
@@ -75,3 +79,66 @@ class TestRunAlone:
                 })
 
         assert pmock.called
+
+
+class TestTavernRepr:
+
+    @pytest.fixture(name="fake_item")
+    def fix_fake_item(self, request):
+        item = YamlItem(
+            name="Fake Test Item",
+            parent=request.node,
+            spec={},
+            path="/tmp/hello",
+        )
+        return item
+
+    def _make_fake_exc_info(self, exc_type):
+        # Copied from pytest tests
+        class FakeExcinfo(_pytest._code.ExceptionInfo):
+            pass
+
+        try:
+            raise exc_type
+        except exc_type:
+            excinfo = FakeExcinfo(sys.exc_info())
+
+        return excinfo
+
+    def test_not_called_for_normal_exception(self, fake_item):
+        """Should call normal pytest repr_info"""
+        fake_info = self._make_fake_exc_info(RuntimeError)
+
+        with patch("tavern.testutils.pytesthook.ReprdError") as rmock:
+            fake_item.repr_failure(fake_info)
+
+        assert not rmock.called
+
+    def test_not_called_if_flag_not_enabled(self, fake_item):
+        """Not called by default for tavern exceptions"""
+        fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
+
+        with patch("tavern.testutils.pytesthook.ReprdError") as rmock:
+            fake_item.repr_failure(fake_info)
+
+        assert not rmock.called
+
+    def test_called_for_tavern_exception_ini(self, fake_item):
+        """Enable ini flag, should be called"""
+        fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
+
+        with patch.object(fake_item.config, "getini", return_value=True):
+            with patch("tavern.testutils.pytesthook.ReprdError") as rmock:
+                fake_item.repr_failure(fake_info)
+
+        assert rmock.called
+
+    def test_called_for_tavern_exception_cli(self, fake_item):
+        """Enable cli flag, should be called"""
+        fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
+
+        with patch.object(fake_item.config, "getoption", return_value=True):
+            with patch("tavern.testutils.pytesthook.ReprdError") as rmock:
+                fake_item.repr_failure(fake_info)
+
+        assert rmock.called
