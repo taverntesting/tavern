@@ -300,7 +300,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True, igno
                 try:
                     check_keys_match_recursive(expected_val[key], actual_val[key], keys + [key], strict)
                 except KeyError:
-                    logger.debug("Skipping missing key")
+                    logger.debug("Skipping comparin gmissing key %s due to strict=%s", key, strict)
         elif isinstance(expected_val, list):
             if len(expected_val) != len(actual_val):
                 raise_from(exceptions.KeyMismatchError("Length of returned list was different than expected ({})".format(full_err())), e)
