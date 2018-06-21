@@ -383,6 +383,16 @@ class ReprdError(object):
         self.exce = exce
         self.item = item
 
+    def _get_available_format_keys(self):
+        try:
+            # pylint: disable=protected-access
+            keys = self.exce._excinfo[1].test_block_config["variables"]
+        except AttributeError:
+            logger.warning("Unable to read stage variables - error output may be wrong")
+            keys = self.item.global_cfg
+
+        return keys
+
     def _print_format_variables(self, tw, code_lines):
 
         def read_formatted_vars(lines):
@@ -398,12 +408,7 @@ class ReprdError(object):
 
         format_variables = list(read_formatted_vars(code_lines))
 
-        try:
-            # pylint: disable=protected-access
-            keys = self.exce._excinfo[1].test_block_config["variables"]
-        except AttributeError:
-            logger.warning("Unable to read stage variables - error output may be wrong")
-            keys = self.item.global_cfg
+        keys = self._get_available_format_keys()
 
         missing = []
 
@@ -429,15 +434,29 @@ class ReprdError(object):
 
     def _print_test_stage(self, tw, code_lines, missing_format_vars, read_stage): # pylint: disable=no-self-use
         if read_stage:
-            tw.line("Test stage:", white=True, bold=True)
+            tw.line("Source test stage:", white=True, bold=True)
         else:
-            tw.line("Test stages:", white=True, bold=True)
+            tw.line("Source test stages:", white=True, bold=True)
 
         for line in code_lines:
             if any(i in line for i in missing_format_vars):
                 tw.line(line, red=True)
             else:
                 tw.line(line, white=True)
+
+    def _print_formatted_stage(self, tw, stage): # pylint: disable=no-self-use
+        tw.line("Formatted stage:", white=True, bold=True)
+
+        # This will definitely exist
+        formatted_lines = yaml.dump(stage, default_flow_style=False).split("\n")
+
+        keys = self._get_available_format_keys()
+
+        for line in formatted_lines:
+            if not line:
+                continue
+            line = format_keys(line, keys)
+            tw.line("  {}".format(line), white=True)
 
     def _print_errors(self, tw):
 
@@ -481,10 +500,15 @@ class ReprdError(object):
         code_lines = list(read_relevant_lines(self.item.spec.start_mark.name))
 
         missing_format_vars = self._print_format_variables(tw, code_lines)
-
         tw.line("")
 
         self._print_test_stage(tw, code_lines, missing_format_vars, read_stage)
+        tw.line("")
+
+        if not missing_format_vars and stage:
+            self._print_formatted_stage(tw, stage)
+        else:
+            tw.line("Unable to get formatted stage", white=True, bold=True)
 
         tw.line("")
 
