@@ -64,6 +64,12 @@ def add_parser_options(parser_addoption, with_defaults=True):
         nargs="+",
         choices=["body", "headers", "redirect_query_params"],
     )
+    parser_addoption(
+        "--tavern-beta-new-traceback",
+        help="Use new traceback style (beta)",
+        default=False,
+        action="store_true",
+    )
 
 
 def pytest_addoption(parser):
@@ -92,6 +98,12 @@ def pytest_addoption(parser):
         help="Default response matching strictness",
         type="args",
         default=None,
+    )
+    parser.addini(
+        "tavern-beta-new-traceback",
+        help="Use new traceback style (beta)",
+        type="bool",
+        default=False,
     )
 
 
@@ -354,11 +366,11 @@ class YamlItem(pytest.Item):
             failed rather than a traceback
         """
 
-        if not issubclass(excinfo.type, exceptions.TavernException):
-            return super(YamlItem, self).repr_failure(excinfo)
+        if self.config.getini("tavern-beta-new-traceback") or self.config.getoption("tavern_beta_new_traceback"):
+            if issubclass(excinfo.type, exceptions.TavernException):
+                return ReprdError(excinfo, self)
 
-        # return super(YamlItem, self).repr_failure(excinfo)
-        return ReprdError(excinfo, self)
+        return super(YamlItem, self).repr_failure(excinfo)
 
     def reportinfo(self):
         # pylint: disable=missing-format-attribute
