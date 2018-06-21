@@ -422,7 +422,7 @@ class ReprdError(object):
 
             for line in lines:
                 for match in re.finditer(formatted_var_regex, line):
-                    yield match["format_var"]
+                    yield match.group("format_var")
 
         format_variables = list(read_formatted_vars(code_lines))
 
