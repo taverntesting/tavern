@@ -56,14 +56,14 @@ class BaseResponse(object):
         """
 
         if not expected_block:
-            logger.debug("Nothing to check against")
+            logger.debug("No expected %s to check against", blockname)
             return
 
         expected_block = format_keys(expected_block, self.test_block_config["variables"])
 
         if block is None:
-            self._adderr("expected %s in the %s, but there was no response body",
-                expected_block, blockname)
+            self._adderr("expected %s in the %s, but there was no response %s",
+                expected_block, blockname, blockname)
             return
 
         if isinstance(block, collections.Mapping):

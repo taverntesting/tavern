@@ -183,7 +183,7 @@ class RestResponse(BaseResponse):
         try:
             wrapped = get_wrapped_response_function(self.expected["save"]["$ext"])
         except KeyError:
-            logger.debug("No save function")
+            logger.debug("No save function for this stage")
         else:
             try:
                 to_save = wrapped(response)
@@ -231,7 +231,7 @@ class RestResponse(BaseResponse):
                 except KeyError:
                     pass
 
-        logger.debug("Validating %s for %s", blockname, expected_block)
+        logger.debug("Validating response %s against %s", blockname, expected_block)
 
         # 'strict' could be a list, in which case we only want to enable strict
         # key checking for that specific bit of the response
