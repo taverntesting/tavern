@@ -197,3 +197,25 @@ stages:
       status_code: 200
       body:
         value: "{to_send}"
+
+---
+
+test_name: Test parametrize without include
+
+marks:
+  - parametrize:
+      key: to_send
+      vals:
+        - abc
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "http://localhost:5003/echo"
+      method: POST
+      json:
+        value: "{to_send}"
+    response:
+      status_code: 200
+      body:
+        value: "{to_send}"
