@@ -177,7 +177,7 @@ def yield_keyvals(block):
             yield [sidx], sidx, val
 
 
-def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
+def check_keys_match_recursive(expected_val, actual_val, keys, strict=True, ignore_key_case=False):
     """Utility to recursively check response values
 
     expected and actual both have to be of the same type or it will raise an
@@ -266,8 +266,12 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                 raise_from(exceptions.KeyMismatchError("Type of returned data was different than expected ({})".format(full_err())), e)
 
         if isinstance(expected_val, dict):
-            akeys = set(actual_val.keys())
-            ekeys = set(expected_val.keys())
+            if ignore_key_case:
+                akeys = set([k.lower() for k in list(actual_val.keys())])
+                ekeys = set([k.lower() for k in list(expected_val.keys())])
+            else:
+                akeys = set(actual_val.keys())
+                ekeys = set(expected_val.keys())
 
             if akeys != ekeys:
                 extra_actual_keys = akeys - ekeys
@@ -283,7 +287,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
 
                 # If there are more keys in 'expected' compared to 'actual',
                 # this is still a hard error and we shouldn't continue
-                if (ekeys > akeys) or strict:
+                if extra_expected_keys or strict:
                     raise_from(exceptions.KeyMismatchError(full_msg), e)
                 else:
                     logger.warning(full_msg)
@@ -296,7 +300,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                 try:
                     check_keys_match_recursive(expected_val[key], actual_val[key], keys + [key], strict)
                 except KeyError:
-                    logger.debug("Skipping missing key")
+                    logger.debug("Skipping comparing missing key %s due to strict=%s", key, strict)
         elif isinstance(expected_val, list):
             if len(expected_val) != len(actual_val):
                 raise_from(exceptions.KeyMismatchError("Length of returned list was different than expected ({})".format(full_err())), e)

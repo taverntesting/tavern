@@ -56,14 +56,14 @@ class BaseResponse(object):
         """
 
         if not expected_block:
-            logger.debug("Nothing to check against")
+            logger.debug("No expected %s to check against", blockname)
             return
 
         expected_block = format_keys(expected_block, self.test_block_config["variables"])
 
         if block is None:
-            self._adderr("expected %s in the %s, but there was no response body",
-                expected_block, blockname)
+            self._adderr("expected %s in the %s, but there was no response %s",
+                expected_block, blockname, blockname)
             return
 
         if isinstance(block, collections.Mapping):
@@ -71,8 +71,10 @@ class BaseResponse(object):
 
         logger.debug("expected = %s, actual = %s", expected_block, block)
 
+        ignore_key_case = (blockname == "headers")
+
         try:
-            check_keys_match_recursive(expected_block, block, [], strict)
+            check_keys_match_recursive(expected_block, block, [], strict, ignore_key_case)
         except exceptions.KeyMismatchError as e:
             # TODO
             # This block be removed in 1.0 as it is a breaking API change, and
