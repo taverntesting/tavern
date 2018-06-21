@@ -384,6 +384,14 @@ class ReprdError(object):
         self.item = item
 
     def _get_available_format_keys(self):
+        """Try to get the format variables for the stage
+
+        If we can't get the variable for this specific stage, just return the
+        global config which will at least have some format variables
+
+        Returns:
+            dict: variables for formatting test
+        """
         try:
             # pylint: disable=protected-access
             keys = self.exce._excinfo[1].test_block_config["variables"]
@@ -394,7 +402,17 @@ class ReprdError(object):
         return keys
 
     def _print_format_variables(self, tw, code_lines):
+        """Print a list of the format variables and their value at this stage
 
+        If the format variable is not defined, print it in red as '???'
+
+        Args:
+            tw (TerminalWriter): Pytest TW instance
+            code_lines (list(str)): Source lines for this stage
+
+        Returns:
+            list(str): List of all missing format variables
+        """
         def read_formatted_vars(lines):
             """Go over all lines and try to find format variables
 
@@ -433,6 +451,20 @@ class ReprdError(object):
         return missing
 
     def _print_test_stage(self, tw, code_lines, missing_format_vars, read_stage): # pylint: disable=no-self-use
+        """Print the direct source lines from this test stage
+
+        If we couldn't get the stage for some reason, print the entire test out.
+
+        If there are any lines which have missing format variables, higlight
+        them in red.
+
+        Args:
+            tw (Termin): Pytest TW instance
+            code_lines (list(str)): Raw source for this stage
+            missing_format_vars (list(str)): List of all missing format
+                variables for this stage
+            read_stage (bool): Whether we were able to read the stage or not
+        """
         if read_stage:
             tw.line("Source test stage:", white=True, bold=True)
         else:
@@ -445,6 +477,13 @@ class ReprdError(object):
                 tw.line(line, white=True)
 
     def _print_formatted_stage(self, tw, stage): # pylint: disable=no-self-use
+        """Print the 'formatted' stage that Tavern will actually use to send the
+        request/process the response
+
+        Args:
+            tw (TerminalWriter): Pytest TW instance
+            stage (dict): The 'final' stage used by Tavern
+        """
         tw.line("Formatted stage:", white=True, bold=True)
 
         # This will definitely exist
@@ -459,7 +498,11 @@ class ReprdError(object):
             tw.line("  {}".format(line), white=True)
 
     def _print_errors(self, tw):
+        """Print any errors in the 'normal' Pytest style
 
+        Args:
+            tw (TerminalWriter): Pytest TW instance
+        """
         tw.line("Errors:", white=True, bold=True)
 
         # Sort of hack, just use this to directly extract the exception format.
