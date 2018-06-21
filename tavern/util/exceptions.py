@@ -12,6 +12,10 @@ class TestFailError(TavernException):
     """Test failed somehow
     """
 
+    def __init__(self, msg, failures=None):
+        super(TestFailError, self).__init__(msg)
+        self.failures = failures or []
+
 
 class KeyMismatchError(TavernException):
     """Mismatch found while validating keys in response

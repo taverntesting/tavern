@@ -106,6 +106,7 @@ def run_test(in_file, test_spec, global_cfg):
                 run_stage(sessions, stage, tavern_box, test_block_config)
             except exceptions.TavernException as e:
                 e.stage = stage
+                e.test_block_config = test_block_config
                 raise
 
             if stage.get('only'):
