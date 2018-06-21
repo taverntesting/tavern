@@ -290,7 +290,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True, igno
                 if extra_expected_keys or strict:
                     raise_from(exceptions.KeyMismatchError(full_msg), e)
                 else:
-                    logger.warning(full_msg)
+                    logger.warning(full_msg, exc_info=True)
 
             # If strict is True, an error will be raised above. If not, recurse
             # through both sets of keys and just ignore missing ones
