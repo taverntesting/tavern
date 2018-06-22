@@ -41,6 +41,9 @@ def format_keys(val, variables):
                          val, box_vars)
             logger.error("Key(s) not found in format: %s", e.args)
             raise_from(exceptions.MissingFormatError(e.args), e)
+        except IndexError as e:
+            logger.error("Empty format values are invalid")
+            raise_from(exceptions.MissingFormatError(e.args), e)
     elif isinstance(val, TypeConvertToken):
         value = format_keys(val.value, box_vars)
         formatted = val.constructor(value)

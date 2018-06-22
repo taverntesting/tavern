@@ -149,6 +149,11 @@ class TypeSentinel(yaml.YAMLObject):
     def __str__(self):
         return "<Tavern YAML sentinel for {}>".format(self.constructor) # pylint: disable=no-member
 
+    @classmethod
+    def to_yaml(cls, dumper, data):
+        node = yaml.nodes.ScalarNode(cls.yaml_tag, "", style=cls.yaml_flow_style)
+        return node
+
 
 class IntSentinel(TypeSentinel):
     yaml_tag = "!anyint"
@@ -173,11 +178,6 @@ class AnythingSentinel(TypeSentinel):
     @classmethod
     def from_yaml(cls, loader, node):
         return ANYTHING
-
-    @classmethod
-    def to_yaml(cls, dumper, data):
-        node = yaml.nodes.ScalarNode(cls.yaml_tag, "", style=cls.yaml_flow_style)
-        return node
 
 
 # One instance of this
