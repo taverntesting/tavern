@@ -70,10 +70,11 @@ class RestResponse(BaseResponse):
                 if isinstance(block, list):
                     for v in block:
                         to_log += "\n  - {}".format(v)
-                else:
+                elif isinstance(block, dict):
                     for k, v in block.items():
                         to_log += "\n  {}: {}".format(k, v)
-
+                else:
+                    to_log += "\n {}".format(block)
                 logger.debug(to_log)
 
         log_dict_block(response.headers, "Headers")

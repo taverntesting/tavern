@@ -419,6 +419,23 @@ class TestFull:
 
         r.verify(FakeResponse())
 
+    @pytest.mark.parametrize('value', [1, 'some', False, None])
+    def test_validate_single_value_response(self, example_response, includes,
+                                            value):
+        """Check validating single value response (string, int, etc)."""
+        del example_response['body']
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        class FakeResponse:
+            headers = example_response["headers"]
+            content = "test".encode("utf8")
+            def json(self):
+                return value
+            status_code = example_response["status_code"]
+
+        r.verify(FakeResponse())
+
 
 def test_status_code_warns(example_response, includes):
     """Should continue if the status code is nonexistent
