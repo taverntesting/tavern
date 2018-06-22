@@ -434,6 +434,9 @@ class ReprdError(object):
         # values of function call variables
         tw.line("Format variables:", white=True, bold=True)
         for var in format_variables:
+            if re.fullmatch("^\s*\{\}\s*", var):
+                continue
+
             try:
                 value_at_call = format_keys(var, keys)
             except exceptions.MissingFormatError:
@@ -494,7 +497,8 @@ class ReprdError(object):
         for line in formatted_lines:
             if not line:
                 continue
-            line = format_keys(line, keys)
+            if not "{}" in line:
+                line = format_keys(line, keys)
             tw.line("  {}".format(line), white=True)
 
     def _print_errors(self, tw):
