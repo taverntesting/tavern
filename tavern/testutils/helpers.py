@@ -4,8 +4,9 @@ import importlib
 import logging
 import re
 import jwt
-from box import Box
 import jmespath as jmes
+
+from box import Box
 
 from tavern.schemas.files import wrapfile, verify_generic
 
