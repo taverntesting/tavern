@@ -72,10 +72,6 @@ TESTS_REQUIRE = [
     "jmespath",
 ]
 
-INSTALL_REQUIRES = [
-    "jmespath"
-]
-
 setup(
     name="tavern",
 
@@ -85,7 +81,6 @@ setup(
         "docs": BuildDocs,
         "upload_twine": DeployPypi,
     },
-    install_requires=INSTALL_REQUIRES,
     tests_require=TESTS_REQUIRE,
     extras_require={
         "tests": TESTS_REQUIRE
