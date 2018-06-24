@@ -1,15 +1,43 @@
 import json
+import operator
 import importlib
 import logging
 import re
 import jwt
 from box import Box
+import jmespath as jmes
 
 from tavern.schemas.files import wrapfile, verify_generic
 
 
 logger = logging.getLogger(__name__)
 
+COMPARATORS = {
+    'count_eq': lambda x, y: safe_length(x) == y,
+    'lt': operator.lt,
+    'less_than': operator.lt,
+    'eq': operator.eq,
+    'equals': operator.eq,
+    'str_eq': lambda x, y: operator.eq(str(x), str(y)),
+    'ne': operator.ne,
+    'not_equals': operator.ne,
+    'gt': operator.gt,
+    'greater_than': operator.gt,
+    'contains': lambda x, y: x and operator.contains(x, y),  # is y in x
+    'contained_by': lambda x, y: y and operator.contains(y, x),  # is x in y
+    'regex': lambda x, y: regex_compare(str(x), str(y)),
+    'type': lambda x, y: test_type(x, y)
+}
+TYPES = {
+    'none': type(None),
+    'number': (int, float),
+    'int': (int),
+    'float': float,
+    'bool': bool,
+    'str': str,
+    'list': list,
+    'dict': dict
+}
 
 def check_exception_raised(response, exception_location):
     """ Make sure the result from the server is the same as the exception we
@@ -83,7 +111,6 @@ def validate_pykwalify(response, schema):
     with wrapfile(response.json()) as rdump, wrapfile(schema) as sdump:
         verify_generic(rdump, sdump)
 
-
 def validate_regex(response, expression, header=None):
     """Make sure the response matches a regex expression
 
@@ -105,3 +132,55 @@ def validate_regex(response, expression, header=None):
     return {
         "regex": Box(match.groupdict())
     }
+
+
+def regex_compare(input, regex):
+    return bool(re.search(regex, input))
+
+def safe_length(var):
+    """ Exception-safe length check, returns -1 if no length on type or error """
+    output = -1
+    try: output = len(var)
+    except: pass
+    return output
+
+def test_type(val, mytype):
+    """ Check value fits one of the types, if so return true, else false """
+    typelist = TYPES.get(mytype.lower())
+    if typelist is None:
+        raise TypeError(
+            "Type {0} is not a valid type to test against!".format(mytype.lower()))
+    try:
+        for testtype in typelist:
+            if isinstance(val, testtype):
+                return True
+        return False
+    except TypeError:
+        return isinstance(val, typelist)
+
+def _validate_comparision(each_comparision):
+    assert set(each_comparision.keys()) == {'jmespath', 'operator', 'expected'}
+    jmespath, operator, expected =  each_comparision['jmespath'], \
+                                    each_comparision['operator'], \
+                                    each_comparision['expected']
+    assert operator in COMPARATORS, "Invalid operator provided for validate_content()"
+    return jmespath, operator, expected
+
+def validate_content(response, comparisions):
+    """Asserts expected value with actual value using JMES path expression
+    Args:
+        response (Response): reqeusts.Response object.
+        comparisions(list):
+            A list of dict containing the following keys:
+                1. jmespath : JMES path expression to extract data from.
+                2. operator : Operator to use to compare data.
+                3. expected : The expected value to match for
+    """
+    for each_comparision in comparisions:
+        jmespath, operator, expected = _validate_comparision(each_comparision)
+        _actual = jmes.search(jmespath, json.loads(response.content))
+        assert _actual is not None, "Invalid JMES path provided for validate_content()"
+        expession = " ".join([str(jmespath), str(operator), str(expected)])
+        _expression = " ".join([str(_actual), str(operator), str(expected)])
+        assert COMPARATORS[operator](_actual, expected), \
+            "Validation '" + expession + "' (" + _expression + ") failed!"

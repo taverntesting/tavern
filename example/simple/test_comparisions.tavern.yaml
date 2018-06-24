@@ -1,0 +1,19 @@
+---
+
+test_name: test_comparisions
+
+stages:
+  - name: test_comparisions
+    request:
+      url: https://jsonplaceholder.typicode.com/posts/1
+      method: GET
+    response:
+      status_code: 200
+      body:
+        id: 1
+        $ext:
+          function: helper:validate_content
+          extra_kwargs:
+            comparisions:
+              - {jmespath: "userId", operator: "eq", expected: 1}
+              - {jmespath: "userId", operator: "type", expected: str}
