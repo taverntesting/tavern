@@ -160,9 +160,9 @@ def test_type(val, mytype):
 
 def _validate_comparision(each_comparision):
     assert set(each_comparision.keys()) == {'jmespath', 'operator', 'expected'}
-    jmespath, operator, expected =  each_comparision['jmespath'], \
-                                    each_comparision['operator'], \
-                                    each_comparision['expected']
+    jmespath, operator, expected = each_comparision['jmespath'], \
+                                   each_comparision['operator'], \
+                                   each_comparision['expected']
     assert operator in COMPARATORS, "Invalid operator provided for validate_content()"
     return jmespath, operator, expected
 
