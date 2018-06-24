@@ -69,6 +69,7 @@ TESTS_REQUIRE = [
     "mock",
     "paho-mqtt==1.3.1",
     "pytest-remove-stale-bytecode",
+    "jmespath",
 ]
 
 
