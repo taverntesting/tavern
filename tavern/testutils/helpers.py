@@ -141,8 +141,10 @@ def regex_compare(input, regex):
 def safe_length(var):
     """ Exception-safe length check, returns -1 if no length on type or error """
     output = -1
-    try: output = len(var)
-    except: pass
+    try:
+        output = len(var)
+    except:
+        pass
     return output
 
 def test_type(val, mytype):
