@@ -453,7 +453,7 @@ class ReprdError(object):
 
         return missing
 
-    def _print_test_stage(self, tw, code_lines, missing_format_vars, read_stage): # pylint: disable=no-self-use
+    def _print_test_stage(self, tw, code_lines, missing_format_vars, line_start): # pylint: disable=no-self-use
         """Print the direct source lines from this test stage
 
         If we couldn't get the stage for some reason, print the entire test out.
@@ -466,10 +466,10 @@ class ReprdError(object):
             code_lines (list(str)): Raw source for this stage
             missing_format_vars (list(str)): List of all missing format
                 variables for this stage
-            read_stage (bool): Whether we were able to read the stage or not
+            line_start (int): Source line of this stage
         """
-        if read_stage:
-            tw.line("Source test stage:", white=True, bold=True)
+        if line_start:
+            tw.line("Source test stage (line {}):".format(line_start), white=True, bold=True)
         else:
             tw.line("Source test stages:", white=True, bold=True)
 
@@ -531,11 +531,11 @@ class ReprdError(object):
 
             first_line = stages[0].start_mark.line - 1
             last_line = stages[-1].end_mark.line
-            read_stage = False
+            line_start = None
         else:
             first_line = stage.start_mark.line - 1
             last_line = stage.end_mark.line
-            read_stage = True
+            line_start = first_line + 1
 
         def read_relevant_lines(filename):
             """Get lines between start and end mark"""
@@ -549,7 +549,7 @@ class ReprdError(object):
         missing_format_vars = self._print_format_variables(tw, code_lines)
         tw.line("")
 
-        self._print_test_stage(tw, code_lines, missing_format_vars, read_stage)
+        self._print_test_stage(tw, code_lines, missing_format_vars, line_start)
         tw.line("")
 
         if not missing_format_vars and stage:
