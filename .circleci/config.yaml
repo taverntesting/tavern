@@ -3,12 +3,49 @@ version: 2
 
 workflows:
   version: 2
-  simple_tests:
+  check-test-deploy:
     jobs:
-      - py27
-      - py36
-      - py27lint
-      - py36lint
+      - py27flakes
+      - py36flakes
+
+      - py27: &stage_1_deps
+          requires:
+            - py27flakes
+            - py36flakes
+      - py34: *stage_1_deps
+      - py35: *stage_1_deps
+      - py36: *stage_1_deps
+      - pypy: *stage_1_deps
+      - pypy3: *stage_1_deps
+      - py27lint: *stage_1_deps
+      - py36lint: *stage_1_deps
+
+      - py27-generic: &stage_2_deps
+          requires:
+            - py27
+            - py34
+            - py35
+            - py36
+            - pypy
+            - pypy3
+            - py27lint
+            - py36lint
+      - py27-advanced: *stage_2_deps
+      - py36-generic: *stage_2_deps
+      - py36-cookies: *stage_2_deps
+      - py36-mqtt: *stage_2_deps
+      - py36-advanced: *stage_2_deps
+
+      # TODO
+      # - deploy:
+      #     requires:
+      #       - py27-generic
+      #       - py27-advanced
+      #       - py36-generic
+      #       - py36-cookies
+      #       - py36-mqtt
+      #       - py36-advanced
+
 
 jobs:
   build:
@@ -23,34 +60,21 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "setup.py" }}-{{ checksum "setup.cfg }}
-            - v1-dependencies-{{ checksum "requirements.txt" }}
+            - v1-dependencies-{{ checksum "setup.py" }}-{{ checksum "setup.cfg" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
 
       - run:
           name: install dependencies
           command: |
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
+            tox --notest
 
       - save_cache:
           paths:
-            - ./venv
-          key: v1-dependencies-{{ checksum "requirements.txt" }}
+            - ./repo/.tox
+          key: v1-dependencies-{{ checksum "setup.py" }}-{{ checksum "setup.cfg" }}
 
-      # run tests!
-      # this example uses Django's built-in test-runner
-      # other common Python testing frameworks include pytest and nose
-      # https://pytest.org
-      # https://nose.readthedocs.io
       - run:
           name: run tests
           command: |
-            . venv/bin/activate
-            python manage.py test
-
-      - store_artifacts:
-          path: test-reports
-          destination: test-reports
+            tox
