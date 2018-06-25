@@ -434,7 +434,7 @@ class ReprdError(object):
         # values of function call variables
         tw.line("Format variables:", white=True, bold=True)
         for var in format_variables:
-            if re.fullmatch("^\s*\{\}\s*", var):
+            if re.match(r"^\s*\{\}\s*", var):
                 continue
 
             try:
