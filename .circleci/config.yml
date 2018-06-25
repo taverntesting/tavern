@@ -1,0 +1,91 @@
+---
+version: 2
+
+base_test_step: &base_test_step
+  working_directory: ~/repo
+
+  environment:
+    TOXCFG: "tox.ini"
+
+  steps:
+    - checkout
+
+    # Download and cache dependencies
+    - restore_cache:
+        keys:
+          - tavern-deps-{{ checksum "setup.py" }}-{{ checksum "setup.cfg" }}
+          # fallback to using the latest cache if no exact match is found
+          - tavern-deps-
+
+    - run:
+        name: install dependencies
+        command: |
+          pip install --upgrade setuptools tox
+          tox --notest
+
+    - save_cache:
+        paths:
+          - ./.cache/pip/
+        key: v1-dependencies-{{ checksum "setup.py" }}-{{ checksum "setup.cfg" }}
+
+    - run:
+        name: run tests
+        command: |
+          tox -e ${CIRCLE_JOB} -c ${TOXCFG}
+
+workflows:
+  version: 2
+  check-test-deploy:
+    jobs:
+      - py27flakes
+      - py36flakes
+
+      - py27: &stage_1_deps
+          requires:
+            - py27flakes
+            - py36flakes
+      - py34: *stage_1_deps
+      - py35: *stage_1_deps
+      - py36: *stage_1_deps
+      - pypy: *stage_1_deps
+      - pypy3: *stage_1_deps
+      - py27lint: *stage_1_deps
+      - py36lint: *stage_1_deps
+
+      - py27-generic: &stage_2_deps
+          requires:
+            - py27
+            - py34
+            - py35
+            - py36
+            - pypy
+            - pypy3
+            - py27lint
+            - py36lint
+      - py27-advanced: *stage_2_deps
+      - py36-generic: *stage_2_deps
+      - py36-cookies: *stage_2_deps
+      - py36-mqtt: *stage_2_deps
+      - py36-advanced: *stage_2_deps
+
+      # TODO
+      # - deploy:
+      #     requires:
+      #       - py27-generic
+      #       - py27-advanced
+      #       - py36-generic
+      #       - py36-cookies
+      #       - py36-mqtt
+      #       - py36-advanced
+
+
+jobs:
+  py27flakes:
+    <<: *base_test_step
+    docker:
+      - image: circleci/python:2.7
+
+  py36flakes:
+    <<: *base_test_step
+    docker:
+      - image: circleci/python:3.6
