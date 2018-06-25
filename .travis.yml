@@ -28,26 +28,26 @@ matrix:
     # Initial checks
     # Just pyflakes for now but there might be an isort/pep8 check in future too
     - python: 2.7
-      env: TOXENV=py27flakes
+      env: TOXENV=py27flakes TOXCFG=tox.ini
       stage: check
     - python: 3.6
-      env: TOXENV=py36flakes
+      env: TOXENV=py36flakes TOXCFG=tox.ini
       stage: check
 
     # 'Basic' tests
     # This runs pylint and the most basic tests for python 2/3
     - python: 2.7
-      env: TOXENV=py27
+      env: TOXENV=py27 TOXCFG=tox.ini
       stage: basic-tests
     - python: 3.6
-      env: TOXENV=py36
+      env: TOXENV=py36 TOXCFG=tox.ini
       stage: basic-tests
 
     - python: 2.7
-      env: TOXENV=py27
+      env: TOXENV=py27 TOXCFG=tox.ini
       stage: basic-tests
     - python: 3.6
-      env: TOXENV=py36
+      env: TOXENV=py36 TOXCFG=tox.ini
       stage: basic-tests
     - python: 2.7
       env: TOXENV=py27-generic TOXCFG=tox-integration.ini
@@ -56,26 +56,26 @@ matrix:
       env: TOXENV=py36-generic TOXCFG=tox-integration.ini
       stage: basic-tests
     - python: 2.7
-      env: TOXENV=py27lint
+      env: TOXENV=py27lint TOXCFG=tox.ini
       stage: basic-tests
     - python: 3.6
-      env: TOXENV=py36lint
+      env: TOXENV=py36lint TOXCFG=tox.ini
       stage: basic-tests
 
     # 'Full' tests
     # This runs for different versions of Python that we support as well as the
     # full integration test suite
     - python: 3.4
-      env: TOXENV=py34
+      env: TOXENV=py34 TOXCFG=tox.ini
       stage: full-tests
     - python: 3.5
-      env: TOXENV=py35
+      env: TOXENV=py35 TOXCFG=tox.ini
       stage: full-tests
     - python: pypy
-      env: TOXENV=pypy
+      env: TOXENV=pypy TOXCFG=tox.ini
       stage: full-tests
     - python: pypy3
-      env: TOXENV=pypy3
+      env: TOXENV=pypy3 TOXCFG=tox.ini
       stage: full-tests
 
     - python: 3.4
