@@ -4,6 +4,7 @@ import functools
 import importlib
 
 from future.utils import raise_from
+from pykwalify import core
 
 from tavern.util.exceptions import BadSchemaError
 from tavern.util import exceptions
@@ -11,6 +12,23 @@ from tavern.util.loader import ApproxScalar
 
 
 logger = logging.getLogger(__name__)
+
+
+def vaidate_last(func):
+    """Decorator to execute custom validator after all nested validation will
+    be passed."""
+    @functools.wraps(func)
+    def wrapper(value, rule_obj, path):
+        schema = rule_obj.schema
+        if schema is not None:
+            schema = schema.copy()
+            del schema['func']
+            c = core.Core(source_data=value, schema_data=schema)
+            c.validate(raise_exception=True)
+        else:
+            print(value, rule_obj, path)
+        return func(value, rule_obj, path)
+    return wrapper
 
 
 def import_ext_function(entrypoint):
@@ -202,5 +220,32 @@ def check_strict_key(value, rule_obj, path):
     elif isinstance(value, list):
         if not set(["body", "headers", "redirect_query_params"]) >= set(value):
             raise BadSchemaError("Invalid 'strict' keys passed: {}".format(value))
+
+    return True
+
+
+@vaidate_last
+def validate_parametrization(value, rule_obj, path):
+    """Validate paramerization."""
+    # pylint: disable=unused-argument
+    if value["vals"] is None:
+        raise BadSchemaError("'vals' field is not a list")
+    if "key" in value:
+        if not isinstance(value["key"], str):
+            raise BadSchemaError("'key' field is not a string")
+        if any(isinstance(v, dict) for v in value["vals"]):
+            raise BadSchemaError(
+                "'vals' can't contains dicts with 'key' field")
+    else:
+        if not isinstance(value["keys"], list):
+            raise BadSchemaError("'keys' should be a list")
+        if not all(isinstance(x, str) for x in value["keys"]):
+            raise BadSchemaError("'keys' should contaains only strings")
+        if not all(isinstance(x, dict) for x in value["vals"]):
+            raise BadSchemaError(
+                "'vals' should be a list of dicts with 'keys' field")
+        if any(set(x.keys()) ^ set(value["keys"]) for x in value["vals"]):
+            raise BadSchemaError("Each item in 'vals' should contain only "
+                                 "'keys' values as keys")
 
     return True

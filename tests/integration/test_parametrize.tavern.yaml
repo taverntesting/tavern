@@ -219,3 +219,31 @@ stages:
       status_code: 200
       body:
         value: "{to_send}"
+
+
+---
+
+test_name: Test parametrize with dicts of parameters
+
+marks:
+  - parametrize:
+      keys:
+        - foo
+        - bar
+      vals:
+        - foo: foo1
+          bar: bar1
+        - foo: foo2
+          bar: bar2
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "http://localhost:5003/echo"
+      method: POST
+      json:
+        value: "{foo} {bar}"
+    response:
+      status_code: 200
+      body:
+        value: "{foo} {bar}"

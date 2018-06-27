@@ -46,9 +46,10 @@ mapping:
 
           parametrize:
             type: map
+            func: validate_parametrization
             mapping:
-              key:
-                type: str
+              re;(keys?):
+                type: any
                 required: true
               vals:
                 type: seq
@@ -57,6 +58,10 @@ mapping:
                   - type: str
                   - type: int
                   - type: float
+                  - type: map
+                    mapping:
+                      re;(.*):
+                        type: any
 
   _xfail:
     type: str
