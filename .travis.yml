@@ -24,6 +24,7 @@ cache: pip
 services:
   - docker
 matrix:
+  fast_finish: true
   include:
     # Initial checks
     # Just pyflakes for now but there might be an isort/pep8 check in future too
