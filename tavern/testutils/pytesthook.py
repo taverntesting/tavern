@@ -307,7 +307,7 @@ class YamlItem(pytest.Item):
             pass
 
         fakefun.__doc__ = self.name + ":\n" + "\n".join(stages)
-        self.obj = fakefun
+        return fakefun
 
     def runtest(self):
         # Load ini first
