@@ -4,7 +4,7 @@ stages:
   - name: check
   - name: basic-tests
   - name: full-tests
-    if: branch = master OR type = pull_request OR tag = true
+    if: branch = master OR type = pull_request OR tag IS present
   - name: deploy
     if: branch = master AND tag = true
     script: skip
