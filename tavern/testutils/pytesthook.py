@@ -284,6 +284,20 @@ class YamlItem(pytest.Item):
 
         self.global_cfg = {}
 
+        self._initialise_fixture_attrs()
+
+    def _initialise_fixture_attrs(self):
+        from _pytest import fixtures
+        self.funcargs = {}
+        self._fixtureinfo = self.session._fixturemanager.getfixtureinfo(
+            self.parent, self.obj, self, funcargs=False)
+        self._request = fixtures.FixtureRequest(self)
+
+    def setup(self):
+        super(YamlItem, self).setup()
+        from _pytest import fixtures
+        fixtures.fillfixtures(self)
+
     @property
     def obj(self):
         stages = ["{:d}: {:s}".format(i + 1, stage["name"]) for i, stage in enumerate(self.spec["stages"])]

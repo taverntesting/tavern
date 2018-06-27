@@ -1,0 +1,28 @@
+---
+
+test_name: Test do a thing
+
+includes:
+  - !include common.yaml
+
+marks:
+  - parametrize:
+      key: to_send
+      vals:
+        - abc
+        - def
+        - "123"
+  - usefixtures:
+      - "anc"
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{to_send}"
+    response:
+      status_code: 200
+      body:
+        value: "{to_send}"

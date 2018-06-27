@@ -44,6 +44,12 @@ mapping:
           skipif:
             type: str
 
+          usefixtures:
+            type: seq
+            sequence:
+              - type: str
+                required: true
+
           parametrize:
             type: map
             mapping:
