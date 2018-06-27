@@ -166,8 +166,13 @@ mapping:
                 type: str
                 required: true
 
-              re;(params|data|headers):
+              re;(params|headers):
                 include: any_map_with_ext_function
+
+              data:
+                type: any
+                func: validate_data_key_with_ext_function
+                required: false
 
               auth:
                 func: validate_extensions

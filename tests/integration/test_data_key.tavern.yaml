@@ -1,0 +1,120 @@
+---
+
+test_name: Test sending form encoded data works
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send a uuid and expect it to be returned
+    request:
+      url: "{host}/form_data"
+      method: POST
+      data:
+        id: !uuid &sent_uuid
+    response:
+      status_code: 200
+      body:
+        id: *sent_uuid
+
+---
+
+test_name: Test sending raw data
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send 'ok' string and expect it back
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      data: OK
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+  - name: Send 'denied' string and expect it back
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      data: DENIED
+    response:
+      status_code: 401
+      body:
+        status: denied
+
+---
+
+test_name: Test sending base64 data
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send 'ok' string and expect it back
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      data: !!binary T0s=
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+  - name: Send 'denied' string and expect it back
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      data: !!binary REVOSUVE
+    response:
+      status_code: 401
+      body:
+        status: denied
+
+  - name: Send invalid string and expect it in error message
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      data: !!binary RVJS
+    response:
+      status_code: 400
+      body:
+        status: "err: 'ERR'"
+
+---
+
+test_name: Test sending a list in 'data' raises an error
+
+_xfail: verify
+
+stages:
+  - name: Try to send a list in 'data'
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      data:
+        - a
+        - b
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Test sending a float in 'data' raises an error
+
+_xfail: verify
+
+stages:
+  - name: Try to send a float in 'data'
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      data: 1.2
+    response:
+      status_code: 200
+      body:
+        status: ok

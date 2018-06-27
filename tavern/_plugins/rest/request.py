@@ -111,7 +111,7 @@ def get_request_args(rspec, test_block_config):
     for key in optional_in_file:
         try:
             func = get_wrapped_create_function(request_args[key].pop("$ext"))
-        except (KeyError, TypeError):
+        except (KeyError, TypeError, AttributeError):
             pass
         else:
             request_args[key] = func()

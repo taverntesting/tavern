@@ -133,6 +133,28 @@ def echo_values():
     return jsonify(response), 200
 
 
+@app.route("/expect_raw_data", methods=["POST"])
+def expect_raw_data():
+    raw_data = request.stream.read().decode("utf8")
+    if raw_data == "OK":
+        response = {
+            "status": "ok",
+        }
+        code = 200
+    elif raw_data == "DENIED":
+        response = {
+            "status": "denied",
+        }
+        code = 401
+    else:
+        response = {
+            "status": "err: '{}'".format(raw_data),
+        }
+        code = 400
+
+    return jsonify(response), code
+
+
 @app.route("/form_data", methods=["POST"])
 def echo_form_values():
     body = request.get_data()
