@@ -1,4 +1,5 @@
 ---
+conditions: v1
 stages:
   - name: check
   - name: basic-tests
