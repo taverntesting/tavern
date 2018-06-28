@@ -1,6 +1,6 @@
 import math
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 
 
 app = Flask(__name__)
@@ -161,3 +161,12 @@ def echo_form_values():
     key, _, value = body.decode("utf8").partition("=")
     response = {key: value}
     return jsonify(response), 200
+
+@app.route("/stream_file", methods=["GET"])
+def stream_file():
+    def iter():
+        for data in range(1,10):
+            yield data
+    response = Response(iter(), mimetype='application/octet-stream')
+    response.headers['Content-Disposition'] = 'attachment; filename=tmp.txt'
+    return response
