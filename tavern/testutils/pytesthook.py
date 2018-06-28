@@ -5,6 +5,7 @@ import itertools
 import copy
 
 from _pytest._code.code import FormattedExcinfo
+from _pytest import fixtures
 import pytest
 import yaml
 from future.utils import raise_from
@@ -258,6 +259,7 @@ class YamlFile(pytest.File):
 
             try:
                 for i in self._generate_items(test_spec):
+                    i._initialise_fixture_attrs()
                     yield i
             except (TypeError, KeyError):
                 verify_tests(test_spec, load_plugins=False)
@@ -284,18 +286,16 @@ class YamlItem(pytest.Item):
 
         self.global_cfg = {}
 
-        self._initialise_fixture_attrs()
-
     def _initialise_fixture_attrs(self):
-        from _pytest import fixtures
         self.funcargs = {}
-        self._fixtureinfo = self.session._fixturemanager.getfixtureinfo(
-            self.parent, self.obj, self, funcargs=False)
+        fixtureinfo = self.session._fixturemanager.getfixtureinfo(
+            self, self.obj, self, funcargs=False)
+        self._fixtureinfo = fixtureinfo
+        self.fixturenames = fixtureinfo.names_closure
         self._request = fixtures.FixtureRequest(self)
 
     def setup(self):
         super(YamlItem, self).setup()
-        from _pytest import fixtures
         fixtures.fillfixtures(self)
 
     @property

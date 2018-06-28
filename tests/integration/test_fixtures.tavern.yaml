@@ -6,14 +6,8 @@ includes:
   - !include common.yaml
 
 marks:
-  - parametrize:
-      key: to_send
-      vals:
-        - abc
-        - def
-        - "123"
-  - usefixtures:
-      - "anc"
+  - usefixtures: def
+  - usefixtures: abc
 
 stages:
   - name: Echo back a unicode value and make sure it matches
@@ -21,8 +15,8 @@ stages:
       url: "{host}/echo"
       method: POST
       json:
-        value: "{to_send}"
+        value: "abc"
     response:
       status_code: 200
       body:
-        value: "{to_send}"
+        value: "def"
