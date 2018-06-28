@@ -166,7 +166,7 @@ def echo_form_values():
 def stream_file():
     def iter():
         for data in range(1,10):
-            yield data
+            yield bytes(data)
     response = Response(iter(), mimetype='application/octet-stream')
     response.headers['Content-Disposition'] = 'attachment; filename=tmp.txt'
     return response
