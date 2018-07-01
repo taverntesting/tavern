@@ -10,8 +10,22 @@ from box import Box
 
 from tavern.schemas.files import wrapfile, verify_generic
 
-
 logger = logging.getLogger(__name__)
+
+
+def test_type(val, mytype):
+    """ Check value fits one of the types, if so return true, else false """
+    typelist = TYPES.get(mytype.lower())
+    if typelist is None:
+        raise TypeError(
+            "Type {0} is not a valid type to test against!".format(mytype.lower()))
+    try:
+        for testtype in typelist:
+            if isinstance(val, testtype):
+                return True
+        return False
+    except TypeError:
+        return isinstance(val, typelist)
 
 COMPARATORS = {
     'count_eq': lambda x, y: safe_length(x) == y,
@@ -27,7 +41,7 @@ COMPARATORS = {
     'contains': lambda x, y: x and operator.contains(x, y),  # is y in x
     'contained_by': lambda x, y: y and operator.contains(y, x),  # is x in y
     'regex': lambda x, y: regex_compare(str(x), str(y)),
-    'type': lambda x, y: test_type(x, y)
+    'type': test_type
 }
 TYPES = {
     'none': type(None),
@@ -116,7 +130,7 @@ def validate_regex(response, expression, header=None):
     """Make sure the response matches a regex expression
 
     Args:
-        response (Response): reqeusts.Response object
+        response (Response): requests.Response object
         expression (str): Regex expression to use
         header (str): Match against a particular header instead of the body
     Returns:
@@ -135,39 +149,23 @@ def validate_regex(response, expression, header=None):
     }
 
 
-def regex_compare(input, regex):
-    return bool(re.search(regex, input))
+def regex_compare(_input, regex):
+    return bool(re.search(regex, _input))
 
 def safe_length(var):
     """ Exception-safe length check, returns -1 if no length on type or error """
     output = -1
     try:
         output = len(var)
-    except:
+    except Exception:
         pass
     return output
 
-def test_type(val, mytype):
-    """ Check value fits one of the types, if so return true, else false """
-    typelist = TYPES.get(mytype.lower())
-    if typelist is None:
-        raise TypeError(
-            "Type {0} is not a valid type to test against!".format(mytype.lower()))
-    try:
-        for testtype in typelist:
-            if isinstance(val, testtype):
-                return True
-        return False
-    except TypeError:
-        return isinstance(val, typelist)
-
 def _validate_comparision(each_comparision):
     assert set(each_comparision.keys()) == {'jmespath', 'operator', 'expected'}
-    jmespath, operator, expected = each_comparision['jmespath'], \
-                                   each_comparision['operator'], \
-                                   each_comparision['expected']
-    assert operator in COMPARATORS, "Invalid operator provided for validate_content()"
-    return jmespath, operator, expected
+    jmespath, _operator, expected = each_comparision['jmespath'], each_comparision['operator'], each_comparision['expected']
+    assert _operator in COMPARATORS, "Invalid operator provided for validate_content()"
+    return jmespath, _operator, expected
 
 def validate_content(response, comparisions):
     """Asserts expected value with actual value using JMES path expression
@@ -180,10 +178,9 @@ def validate_content(response, comparisions):
                 3. expected : The expected value to match for
     """
     for each_comparision in comparisions:
-        jmespath, operator, expected = _validate_comparision(each_comparision)
+        jmespath, _operator, expected = _validate_comparision(each_comparision)
         _actual = jmes.search(jmespath, json.loads(response.content))
         assert _actual is not None, "Invalid JMES path provided for validate_content()"
-        expession = " ".join([str(jmespath), str(operator), str(expected)])
-        _expression = " ".join([str(_actual), str(operator), str(expected)])
-        assert COMPARATORS[operator](_actual, expected), \
-            "Validation '" + expession + "' (" + _expression + ") failed!"
+        expession = " ".join([str(jmespath), str(_operator), str(expected)])
+        _expression = " ".join([str(_actual), str(_operator), str(expected)])
+        assert COMPARATORS[_operator](_actual, expected), "Validation '" + expession + "' (" + _expression + ") failed!"
