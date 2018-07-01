@@ -157,7 +157,7 @@ def safe_length(var):
     output = -1
     try:
         output = len(var)
-    except Exception:
+    except TypeError:
         pass
     return output
 
