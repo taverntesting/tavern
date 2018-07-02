@@ -15,3 +15,8 @@ def run_all():
 @pytest.fixture
 def abc():
     return "abc-fixture-value"
+
+
+@pytest.fixture(name="def")
+def sdkofsok(abc):
+    return abc
