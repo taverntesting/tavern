@@ -45,11 +45,10 @@ mapping:
             type: str
 
           usefixtures:
-            type: str
-            # type: seq
-            # sequence:
-            #   - type: str
-            #     required: true
+            type: seq
+            sequence:
+              - type: str
+                required: true
 
           parametrize:
             type: map

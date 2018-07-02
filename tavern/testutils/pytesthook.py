@@ -4,6 +4,7 @@ import logging
 import itertools
 import copy
 
+import attr
 from _pytest._code.code import FormattedExcinfo
 from _pytest import fixtures
 import pytest
@@ -177,10 +178,7 @@ class YamlFile(pytest.File):
             })
             # And create the new item
             item_new = YamlItem(spec_new["test_name"], self, spec_new, self.fspath)
-
-            for pm in pytest_marks:
-                # All other marks should be added to this too
-                item_new.add_marker(pm)
+            item_new.add_markers(pytest_marks)
 
             yield item_new
 
@@ -231,8 +229,7 @@ class YamlFile(pytest.File):
                 # Only yield the parametrized ones
                 return
 
-            for pm in pytest_marks:
-                item.add_marker(pm)
+            item.add_markers(pytest_marks)
 
         yield item
 
@@ -308,6 +305,16 @@ class YamlItem(pytest.Item):
 
         fakefun.__doc__ = self.name + ":\n" + "\n".join(stages)
         return fakefun
+
+    def add_markers(self, pytest_marks):
+        for pm in pytest_marks:
+            if pm.name == "usefixtures":
+                # Need to do this here because we expect a list of markers from
+                # usefixtures, which pytest then wraps in a tuple. we need to
+                # extract this tuple so pytest can use both fixtures.
+                new_mark = attr.evolve(pm.mark, args=pm.mark.args[0])
+                pm = attr.evolve(pm, mark=new_mark)
+            self.add_marker(pm)
 
     def _parse_arguments(self):
         # Load ini first
