@@ -256,7 +256,7 @@ class YamlFile(pytest.File):
 
             try:
                 for i in self._generate_items(test_spec):
-                    i._initialise_fixture_attrs()
+                    i.initialise_fixture_attrs()
                     yield i
             except (TypeError, KeyError):
                 verify_tests(test_spec, load_plugins=False)
@@ -283,7 +283,8 @@ class YamlItem(pytest.Item):
 
         self.global_cfg = {}
 
-    def _initialise_fixture_attrs(self):
+    def initialise_fixture_attrs(self):
+        # pylint: disable=protected-access,attribute-defined-outside-init
         self.funcargs = {}
         fixtureinfo = self.session._fixturemanager.getfixtureinfo(
             self, self.obj, self, funcargs=False)
@@ -363,7 +364,7 @@ class YamlItem(pytest.Item):
             elif isinstance(m.args, str):
                 mark_values = {m.args: self.funcargs[m.args]}
             else:
-                raise RuntimeError("Don't know how to handle {}", m.args)
+                raise RuntimeError("Don't know how to handle {}".format(m.args))
 
             if any(mv in values for mv in mark_values):
                 logger.warning("Overriding value for %s", mark_values)
