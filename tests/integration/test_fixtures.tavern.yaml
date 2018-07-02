@@ -6,8 +6,8 @@ includes:
   - !include common.yaml
 
 marks:
-  - usefixtures: def
   - usefixtures: abc
+  # - usefixtures: def
 
 stages:
   - name: Echo back a unicode value and make sure it matches
@@ -15,8 +15,8 @@ stages:
       url: "{host}/echo"
       method: POST
       json:
-        value: "abc"
+        value: "{abc}"
     response:
       status_code: 200
       body:
-        value: "def"
+        value: "{abc}"

@@ -309,7 +309,7 @@ class YamlItem(pytest.Item):
         fakefun.__doc__ = self.name + ":\n" + "\n".join(stages)
         return fakefun
 
-    def runtest(self):
+    def _parse_arguments(self):
         # Load ini first
         ini_global_cfg_paths = self.config.getini("tavern-global-cfg") or []
         # THEN load command line, to allow overwriting of values
@@ -343,7 +343,37 @@ class YamlItem(pytest.Item):
 
             global_cfg["backends"][b] = in_use
 
+        return global_cfg
+
+    def _load_fixture_values(self):
+        fixture_markers = self.iter_markers("usefixtures")
+
+        values = {}
+
+        for m in fixture_markers:
+            if isinstance(m.args, (list, tuple)):
+                mark_values = {f: self.funcargs[f] for f in m.args}
+            elif isinstance(m.args, str):
+                mark_values = {m.args: self.funcargs[m.args]}
+            else:
+                raise RuntimeError("Don't know how to handle {}", m.args)
+
+            if any(mv in values for mv in mark_values):
+                logger.warning("Overriding value for %s", mark_values)
+
+            values.update(mark_values)
+
+        return values
+
+    def runtest(self):
+        global_cfg = self._parse_arguments()
+
+        global_cfg.setdefault("variables", {})
+
         load_plugins(global_cfg)
+
+        fixture_values = self._load_fixture_values()
+        global_cfg["variables"].update(fixture_values)
 
         self.global_cfg = global_cfg
 
