@@ -166,6 +166,7 @@ def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path):
 
 
 def check_usefixtures(value, rule_obj, path):
+    # pylint: disable=unused-argument
     err_msg = "'usefixtures' has to be a list with at least one item"
 
     if not isinstance(value, (list, tuple)):
