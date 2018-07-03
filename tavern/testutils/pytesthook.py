@@ -313,8 +313,17 @@ class YamlItem(pytest.Item):
                 # Need to do this here because we expect a list of markers from
                 # usefixtures, which pytest then wraps in a tuple. we need to
                 # extract this tuple so pytest can use both fixtures.
-                new_mark = attr.evolve(pm.mark, args=pm.mark.args[0])
-                pm = attr.evolve(pm, mark=new_mark)
+                if isinstance(pm.mark.args[0], (list, tuple)):
+                    new_mark = attr.evolve(pm.mark, args=pm.mark.args[0])
+                    pm = attr.evolve(pm, mark=new_mark)
+                elif isinstance(pm.mark.args[0], (dict)):
+                    # We could raise a TypeError here instead, but then it's a
+                    # failure at collection time (which is a bit annoying to
+                    # deal with). Instead just don't add the marker and it will
+                    # raise an exception at test verification.
+                    logger.error("'usefixtures' was an invalid type (should"
+                        " be a list of fixture names)")
+
             self.add_marker(pm)
 
     def _parse_arguments(self):
@@ -362,6 +371,9 @@ class YamlItem(pytest.Item):
             if isinstance(m.args, (list, tuple)):
                 mark_values = {f: self.funcargs[f] for f in m.args}
             elif isinstance(m.args, str):
+                # Not sure if this can happen if validation is working
+                # correctly, but it appears to be slightly broken so putting
+                # this check here just in case
                 mark_values = {m.args: self.funcargs[m.args]}
             else:
                 raise exceptions.BadSchemaError(("Can't handle 'usefixtures' spec of '{}'."
@@ -377,16 +389,11 @@ class YamlItem(pytest.Item):
         return values
 
     def runtest(self):
-        global_cfg = self._parse_arguments()
+        self.global_cfg = self._parse_arguments()
 
-        global_cfg.setdefault("variables", {})
+        self.global_cfg.setdefault("variables", {})
 
-        load_plugins(global_cfg)
-
-        fixture_values = self._load_fixture_values()
-        global_cfg["variables"].update(fixture_values)
-
-        self.global_cfg = global_cfg
+        load_plugins(self.global_cfg)
 
         # INTERNAL
         # NOTE - now that we can 'mark' tests, we could use pytest.mark.xfail
@@ -395,8 +402,11 @@ class YamlItem(pytest.Item):
         xfail = self.spec.get("_xfail", False)
 
         try:
+            fixture_values = self._load_fixture_values()
+            self.global_cfg["variables"].update(fixture_values)
+
             verify_tests(self.spec)
-            run_test(self.path, self.spec, global_cfg)
+            run_test(self.path, self.spec, self.global_cfg)
         except exceptions.BadSchemaError:
             if xfail == "verify":
                 logger.info("xfailing test while verifying schema")

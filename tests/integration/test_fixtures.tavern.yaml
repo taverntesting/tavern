@@ -8,6 +8,7 @@ includes:
 _xfail: verify
 
 marks:
+  # Breaks validation somehow...?
   - usefixtures: {}
   - usefixtures:
       - abc
@@ -24,6 +25,31 @@ stages:
       status_code: 200
       body:
         value: "{def}"
+
+---
+
+test_name: Test usefixtures being a mapping errors
+
+includes:
+  - !include common.yaml
+
+_xfail: verify
+
+marks:
+  - usefixtures: abc
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{abc}"
+    response:
+      status_code: 200
+      body:
+        value: "{def}"
+
 ---
 
 test_name: Test usefixtures
