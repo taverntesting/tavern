@@ -323,6 +323,7 @@ class YamlItem(pytest.Item):
                     # raise an exception at test verification.
                     logger.error("'usefixtures' was an invalid type (should"
                         " be a list of fixture names)")
+                    continue
 
             self.add_marker(pm)
 
