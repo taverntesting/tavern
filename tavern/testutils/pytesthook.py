@@ -364,7 +364,10 @@ class YamlItem(pytest.Item):
             elif isinstance(m.args, str):
                 mark_values = {m.args: self.funcargs[m.args]}
             else:
-                raise RuntimeError("Don't know how to handle {}".format(m.args))
+                raise RuntimeError(("Can't handle 'usefixtures' spec of '{}'."
+                    " There appears to be a bug in pykwalify so verification of"
+                    " 'usefixtures' is broken - it should be a list of fixture"
+                    " names").format(m.args))
 
             if any(mv in values for mv in mark_values):
                 logger.warning("Overriding value for %s", mark_values)

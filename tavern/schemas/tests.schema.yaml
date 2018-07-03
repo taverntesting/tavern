@@ -46,6 +46,10 @@ mapping:
 
           usefixtures:
             type: seq
+            # Depending on what is actually given for usefixtures this function
+            # may or may not be called. I think this is a bug in pykwalify.
+            # See pytesthook.py
+            func: check_usefixtures
             sequence:
               - type: str
                 required: true
