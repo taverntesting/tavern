@@ -11,8 +11,8 @@ marks:
   # Breaks validation somehow...?
   - usefixtures: {}
   - usefixtures:
-      - abc
-      - def
+      - str_fixture
+      - yield_str_fixture
 
 stages:
   - name: Echo back a unicode value and make sure it matches
@@ -20,11 +20,11 @@ stages:
       url: "{host}/echo"
       method: POST
       json:
-        value: "{abc}"
+        value: "{str_fixture}"
     response:
       status_code: 200
       body:
-        value: "{def}"
+        value: "{yield_str_fixture}"
 
 ---
 
@@ -36,7 +36,7 @@ includes:
 _xfail: verify
 
 marks:
-  - usefixtures: abc
+  - usefixtures: str_fixture
 
 stages:
   - name: Echo back a unicode value and make sure it matches
@@ -44,11 +44,11 @@ stages:
       url: "{host}/echo"
       method: POST
       json:
-        value: "{abc}"
+        value: "{str_fixture}"
     response:
       status_code: 200
       body:
-        value: "{def}"
+        value: "{yield_str_fixture}"
 
 ---
 
@@ -59,8 +59,8 @@ includes:
 
 marks:
   - usefixtures:
-      - abc
-      - def
+      - str_fixture
+      - yield_str_fixture
 
 stages:
   - name: Echo back a unicode value and make sure it matches
@@ -68,8 +68,33 @@ stages:
       url: "{host}/echo"
       method: POST
       json:
-        value: "{abc}"
+        value: "{str_fixture}"
     response:
       status_code: 200
       body:
-        value: "{def}"
+        value: "{yield_str_fixture}"
+
+---
+
+test_name: Test yielding fixture
+
+includes:
+  - !include common.yaml
+
+marks:
+  - usefixtures:
+      - yielder
+      - str_fixture
+      - yield_str_fixture
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{str_fixture}"
+    response:
+      status_code: 200
+      body:
+        value: "{yield_str_fixture}"
