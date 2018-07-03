@@ -449,3 +449,27 @@ class TestBeforeAfterHandlers:
             contexts.append(kwargs['context'])
 
         assert contexts[0] is contexts[1], "Context object was not preserved between tests"
+
+    def test_can_set_variables(self, fulltest, mockargs, includes):
+        fulltest['stages'][0]['before'] = [
+            {
+                'function': 'tavern.util.testutils:delay',
+            }
+        ]
+        fulltest['stages'][0]['request']['method'] = 'POST'
+        fulltest['stages'][0]['request']['json'] = {
+            'value': '{test:d}'
+        }
+
+        mock_response = Mock(**mockargs)
+
+        # override callback
+        @inject_context
+        def handler(context):
+            context['variables']['test'] = 123
+
+        with patch('tavern._plugins.rest.request.requests.Session.request', return_value=mock_response):
+            with patch('tavern.util.testutils.delay', new=handler):
+                run_test('heif', fulltest, includes)
+
+        # `run_test` will fail when the variable was not set properly

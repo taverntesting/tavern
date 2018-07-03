@@ -18,3 +18,9 @@ def timer_stop(context):
     elapsed = time.time() - start
 
     logger.info('request took %.3f seconds', elapsed)
+
+
+@inject_context
+def load_number(context):
+    context['variables']['input'] = 5
+    context['variables']['output'] = 10

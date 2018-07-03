@@ -123,6 +123,7 @@ def run_test(in_file, test_spec, global_cfg):
 def run_stage(sessions, stage, tavern_box, test_block_config, test_context):
     name = stage["name"]
 
+    _run_stage_actions(stage, 'before', test_context)
     r = get_request_type(stage, test_block_config, sessions)
 
     tavern_box.update(request_vars=r.request_vars)
@@ -131,7 +132,6 @@ def run_stage(sessions, stage, tavern_box, test_block_config, test_context):
 
     # Kept for compatibility reasons
     delay(stage, "before")
-    _run_stage_actions(stage, 'before', test_context)
 
     logger.info("Running stage : %s", name)
     response = r.run()
