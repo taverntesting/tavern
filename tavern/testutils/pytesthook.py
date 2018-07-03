@@ -364,7 +364,7 @@ class YamlItem(pytest.Item):
             elif isinstance(m.args, str):
                 mark_values = {m.args: self.funcargs[m.args]}
             else:
-                raise RuntimeError(("Can't handle 'usefixtures' spec of '{}'."
+                raise exceptions.BadSchemaError(("Can't handle 'usefixtures' spec of '{}'."
                     " There appears to be a bug in pykwalify so verification of"
                     " 'usefixtures' is broken - it should be a list of fixture"
                     " names").format(m.args))
