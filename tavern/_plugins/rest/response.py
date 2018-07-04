@@ -237,7 +237,6 @@ class RestResponse(BaseResponse):
             # insensitive manner
             block = {i.lower(): j for i, j in block.items()}
             expected_block = {i.lower(): j for i, j in expected_block.items()}
-            pass
 
         logger.debug("Validating response %s against %s", blockname, expected_block)
 
