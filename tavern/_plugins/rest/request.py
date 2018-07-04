@@ -87,7 +87,7 @@ def get_request_args(rspec, test_block_config):
             rspec["headers"] = {i: j for i, j in headers.items() if i.lower() != "content-type"}
     elif headers:
         # This should only be hit if we aren't sending a file
-        if not has_content_header and not rspec.get("stream"):
+        if not has_content_header:
             rspec["headers"]["content-type"] = "application/json"
 
     fspec = format_keys(rspec, test_block_config["variables"])
