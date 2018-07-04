@@ -287,7 +287,7 @@ class YamlItem(pytest.Item):
         # pylint: disable=protected-access,attribute-defined-outside-init
         self.funcargs = {}
         fixtureinfo = self.session._fixturemanager.getfixtureinfo(
-            self, self.obj, self, funcargs=False)
+            self, self.obj, type(self), funcargs=False)
         self._fixtureinfo = fixtureinfo
         self.fixturenames = fixtureinfo.names_closure
         self._request = fixtures.FixtureRequest(self)
