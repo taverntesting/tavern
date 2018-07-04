@@ -13,7 +13,10 @@ def token():
 
 @app.route("/headers", methods=["GET"])
 def headers():
-    return 'OK', 200, {'X-Integration-Value': "_HelloWorld1"}
+    return 'OK', 200, {
+        'X-Integration-Value': "_HelloWorld1",
+        "ATestHEader": "orange",
+    }
 
 
 @app.route("/verify", methods=["GET"])

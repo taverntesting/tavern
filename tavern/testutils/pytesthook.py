@@ -355,7 +355,7 @@ class YamlItem(pytest.Item):
         else:
             if xfail:
                 logger.error("Expected test to fail")
-                raise exceptions.TestFailError
+                raise exceptions.TestFailError("Expected test to fail at {} stage".format(xfail))
 
     def repr_failure(self, excinfo): # pylint: disable=no-self-use
         """ called when self.runtest() raises an exception.

@@ -232,6 +232,13 @@ class RestResponse(BaseResponse):
                 except KeyError:
                     pass
 
+        if blockname == "headers":
+            # Special case for headers. These need to be checked in a case
+            # insensitive manner
+            block = {i.lower(): j for i, j in block.items()}
+            expected_block = {i.lower(): j for i, j in expected_block.items()}
+            pass
+
         logger.debug("Validating response %s against %s", blockname, expected_block)
 
         # 'strict' could be a list, in which case we only want to enable strict
