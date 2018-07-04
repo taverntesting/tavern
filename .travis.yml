@@ -6,7 +6,7 @@ stages:
   - name: full-tests
     if: branch = master OR type = pull_request OR tag IS present
   - name: deploy
-    if: branch = master AND tag = true
+    if: branch = master AND tag IS present
     script: skip
     deploy:
       provider: pypi
