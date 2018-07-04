@@ -175,6 +175,7 @@ class RestRequest(BaseRequest):
             "json",
             "verify",
             "files",
+            "stream",
             # "cookies",
             # "hooks",
         }
