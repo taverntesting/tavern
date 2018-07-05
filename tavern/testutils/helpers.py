@@ -1,5 +1,4 @@
 import json
-import operator
 import importlib
 import logging
 import re
