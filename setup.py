@@ -68,8 +68,7 @@ TESTS_REQUIRE = [
     "colorlog",
     "mock",
     "paho-mqtt==1.3.1",
-    "pytest-remove-stale-bytecode",
-    "jmespath",
+    "pytest-remove-stale-bytecode"
 ]
 
 setup(
