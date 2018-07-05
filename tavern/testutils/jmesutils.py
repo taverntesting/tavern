@@ -1,6 +1,5 @@
 import re
 import operator
-import jmespath as jmes
 
 def test_type(val, mytype):
     """ Check value fits one of the types, if so return true, else false """
