@@ -7,7 +7,7 @@ import jmespath as jmes
 
 from box import Box
 
-from jmesutils import validate_comparision, actual_validation
+from tavern.testutils.jmesutils import validate_comparision, actual_validation
 from tavern.schemas.files import wrapfile, verify_generic
 
 logger = logging.getLogger(__name__)
