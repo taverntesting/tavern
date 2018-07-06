@@ -62,5 +62,3 @@ def validate_comparision(each_comparision):
 
 def actual_validation(_operator, _actual, expected, _expression, expession):
     assert COMPARATORS[_operator](_actual, expected), "Validation '" + expession + "' (" + _expression + ") failed!"
-
-

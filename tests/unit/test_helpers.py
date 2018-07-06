@@ -148,24 +148,23 @@ class TestTavernRepr:
 @pytest.fixture(name='nested_response')
 def fix_nested_response():
     class response_content(object):
-        content = {}
-    spec = {
-        "top": {
-            "Thing": "value",
-            "float": 0.1,
-            "nested": {
-                "doubly": {
-                    "inner_value": "value",
-                    "inner_list": [1, 2, 3],
+        content = {
+            "top": {
+                "Thing": "value",
+                "float": 0.1,
+                "nested": {
+                    "doubly": {
+                        "inner_value": "value",
+                        "inner_list": [1, 2, 3],
+                    }
                 }
-            }
-        },
-        "an_integer": 123,
-        "a_string": "abc",
-        "a_bool": True
-    }
-    response_content.content = spec.copy()
-    return json.dumps(response_content)
+            },
+            "an_integer": 123,
+            "a_string": "abc",
+            "a_bool": True
+        }
+    response_content.content = json.dumps(response_content.content)
+    return response_content
 
 class TestContent:
     def test_correct_jmes_path(self, nested_response):
