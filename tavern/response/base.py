@@ -107,7 +107,7 @@ class BaseResponse(object):
                 self._adderr("Value mismatch in %s: %s", blockname, e)
                 return
 
-            if isinstance(block, list):
+            if isinstance(block, list) and strict:
                 logger.debug("Failing because its a list")
                 # This should always raise an error
                 self._adderr("Value mismatch in %s: %s", blockname, e)

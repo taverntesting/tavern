@@ -342,10 +342,36 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
             # TODO
             # Check things in the wrong order?
 
+            if not strict:
+                list_item_present = False
+
+                # Iterate over list items to see if any of them match...
+                for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
+                    try:
+                        check_keys_match_recursive(e_val, a_val, keys + [i], strict)
+                    except exceptions.KeyMismatchError as sub_e:
+                        pass
+                        logger.error("jsdif")
+                    else:
+                        list_item_present = True
+
+                # ...and if so, continue
+                if list_item_present:
+                    logger.info("One (or more) list items present - continuing")
+                    # FIXME
+                    # do we need to check more here?
+                    return
+
+                # otherwise, fall through and raise an error
+
+            if len(expected_val) != len(actual_val):
+                raise_from(exceptions.KeyMismatchError("Length of returned list was different than expected - expected {} items, got {} ({})".format(len(expected_val), len(actual_val), full_err())), e)
+
             for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
                 try:
                     check_keys_match_recursive(e_val, a_val, keys + [i], strict)
                 except exceptions.KeyMismatchError as sub_e:
+                    logger.error("jsdif")
                     # This will still raise an error, but it will be more
                     # obvious where the error came from (in python 3 at least)
                     # and will take ANYTHING into account

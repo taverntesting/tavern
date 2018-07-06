@@ -388,6 +388,48 @@ stages:
 
 ---
 
+test_name: Test non-strict key matching one list item
+
+strict:
+  - body
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match 'e' in list
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      strict: false
+      body:
+        - c
+
+---
+
+test_name: Test strict key matching one list item fails
+
+_xfail: run
+
+strict:
+  - body
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match 'e' in list
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      strict: true
+      body:
+        - c
+
+---
+
 test_name: Test strict key matching works for specific test stages with false
 
 includes:
@@ -429,3 +471,45 @@ stages:
         an_integer: 123
         a_string: abc
         a_bool: true
+
+---
+
+test_name: Test non-strict key matching one list item
+
+strict:
+  - body
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match 'e' in list
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      strict: false
+      body:
+        - c
+
+---
+
+test_name: Test strict key matching one list item fails
+
+_xfail: run
+
+strict:
+  - body
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match 'e' in list
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      strict: true
+      body:
+        - c
