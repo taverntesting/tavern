@@ -63,6 +63,7 @@ def get_request_args(rspec, test_block_config):
 
     optional_with_default = {
         "verify": True,
+        "stream": False
     }
 
     if "method" not in rspec:
@@ -174,6 +175,7 @@ class RestRequest(BaseRequest):
             "json",
             "verify",
             "files",
+            "stream",
             # "cookies",
             # "hooks",
         }
