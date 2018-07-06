@@ -142,8 +142,12 @@ class TestTavernRepr:
 
         assert rmock.called
 
+
+
 @pytest.fixture(name='nested_response')
 def fix_nested_response():
+    class response_content(object):
+        content = {}
     spec = {
         "top": {
             "Thing": "value",
@@ -159,7 +163,8 @@ def fix_nested_response():
         "a_string": "abc",
         "a_bool": True
     }
-    return spec.copy()
+    response_content.content = spec.copy()
+    return response_content
 
 class TestContent:
     def test_correct_jmes_path(self, nested_response):
