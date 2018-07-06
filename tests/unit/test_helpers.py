@@ -1,5 +1,6 @@
 from mock import patch
 import sys
+import json
 import pytest
 import _pytest
 
@@ -164,7 +165,7 @@ def fix_nested_response():
         "a_bool": True
     }
     response_content.content = spec.copy()
-    return response_content
+    return json.dumps(response_content)
 
 class TestContent:
     def test_correct_jmes_path(self, nested_response):
