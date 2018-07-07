@@ -32,14 +32,14 @@ COMPARATORS = {
     'type': test_type
 }
 TYPES = {
-    'none': (type(None)),
-    'number': (int, float),
-    'int': (int),
-    'float': (float),
-    'bool': (bool),
-    'str': (str),
-    'list': (list),
-    'dict': (dict)
+    'none': [type(None)],
+    'number': [int, float],
+    'int': [int],
+    'float': [float],
+    'bool': [bool],
+    'str': [str],
+    'list': [list],
+    'dict': [dict]
 }
 
 def regex_compare(_input, regex):
