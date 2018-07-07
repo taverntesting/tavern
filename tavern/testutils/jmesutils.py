@@ -3,10 +3,10 @@ import operator
 
 def test_type(val, mytype):
     """ Check value fits one of the types, if so return true, else false """
-    typelist = TYPES.get(mytype.lower())
+    typelist = TYPES.get(str(mytype).lower())
     if typelist is None:
         raise TypeError(
-            "Type {0} is not a valid type to test against!".format(mytype.lower()))
+            "Type {0} is not a valid type to test against!".format(str(mytype).lower()))
     try:
         for testtype in typelist:
             if isinstance(val, testtype):
@@ -32,14 +32,14 @@ COMPARATORS = {
     'type': test_type
 }
 TYPES = {
-    'none': type(None),
+    'none': (type(None)),
     'number': (int, float),
     'int': (int),
-    'float': float,
-    'bool': bool,
-    'str': str,
-    'list': list,
-    'dict': dict
+    'float': (float),
+    'bool': (bool),
+    'str': (str),
+    'list': (list),
+    'dict': (dict)
 }
 
 def regex_compare(_input, regex):
