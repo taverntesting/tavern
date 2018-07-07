@@ -172,7 +172,7 @@ class TestContent:
             {'jmespath': "top.Thing", 'operator': "eq", 'expected': "value"},
             {'jmespath': "top.Thing", 'operator': "type", 'expected': "str"},
             {'jmespath': "an_integer", 'operator': "eq", 'expected': 123},
-            {'jmespath': "top.nested.doubly.inner_list", 'operator': "type", 'expected': list},
+            {'jmespath': "top.nested.doubly.inner_list", 'operator': "type", 'expected': "list"},
         ]
         validate_content(nested_response, comparisions)
         assert True

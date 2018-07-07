@@ -119,6 +119,6 @@ def validate_content(response, comparisions):
         jmespath, _operator, expected = validate_comparision(each_comparision)
         _actual = jmes.search(jmespath, json.loads(response.content))
         assert _actual is not None, "Invalid JMES path provided for validate_content()"
-        expession = " ".join([str(jmespath), str(_operator), str(expected)])
-        _expression = " ".join([str(_actual), str(_operator), str(expected)])
-        actual_validation(_operator, _actual, expected, expession, _expression)
+        _expession = " ".join([str(jmespath), str(_operator), str(expected)])
+        expession = " ".join([str(_actual), str(_operator), str(expected)])
+        actual_validation(_operator, _actual, expected, _expession, expession)
