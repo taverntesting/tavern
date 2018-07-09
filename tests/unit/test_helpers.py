@@ -1,11 +1,12 @@
 from mock import patch
 import sys
+import json
 import pytest
 import _pytest
 
 from tavern.util import exceptions
 from tavern.core import run
-from tavern.testutils.helpers import validate_regex
+from tavern.testutils.helpers import validate_regex, validate_content
 from tavern.testutils.pytesthook import YamlItem
 
 
@@ -13,7 +14,6 @@ class FakeResponse:
     def __init__(self, text):
         self.text = text
         self.headers = dict(test_header=text)
-
 
 class TestRegex:
 
@@ -142,3 +142,53 @@ class TestTavernRepr:
                 fake_item.repr_failure(fake_info)
 
         assert rmock.called
+
+
+
+@pytest.fixture(name='nested_response')
+def fix_nested_response():
+    class response_content(object):
+        content = {
+            "top": {
+                "Thing": "value",
+                "float": 0.1,
+                "nested": {
+                    "doubly": {
+                        "inner_value": "value",
+                        "inner_list": [1, 2, 3],
+                    }
+                }
+            },
+            "an_integer": 123,
+            "a_string": "abc",
+            "a_bool": True
+        }
+
+        def json(self):
+            return json.dumps(self.content)
+
+    return response_content()
+
+class TestContent:
+    def test_correct_jmes_path(self, nested_response):
+        comparisions = [
+            {'jmespath': "top.Thing", 'operator': "eq", 'expected': "value"},
+            {'jmespath': "an_integer", 'operator': "eq", 'expected': 123},
+            {'jmespath': "top.nested.doubly.inner_list", 'operator': "type", 'expected': "list"},
+        ]
+        validate_content(nested_response, comparisions)
+        assert True
+
+    def test_incorrect_jmes_path(self, nested_response):
+        comparisions = [
+            {'jmespath': "userId", 'operator': "eq", 'expected': 1}
+        ]
+        with pytest.raises(exceptions.JMESError):
+            validate_content(nested_response, comparisions)
+
+    def test_incorrect_value(self, nested_response):
+        comparisions = [
+            {'jmespath': "a_bool", 'operator': "eq", 'expected': False}
+        ]
+        with pytest.raises(exceptions.JMESError):
+            validate_content(nested_response, comparisions)

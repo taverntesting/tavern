@@ -116,9 +116,9 @@ def validate_extensions(value, rule_obj, path):
     try:
         iter(value)
     except TypeError as e:
-        raise_from(BadSchemaError("Invalid value for key - things like body/params/headers have to be a dictionary or a list, not a single value"), e)
+        raise_from(BadSchemaError("Invalid value for key - things like body/params/headers/data have to be iterable (list, dictionary, string), not a single value"), e)
 
-    if "$ext" in value:
+    if isinstance(value, dict) and "$ext" in value:
         expected_keys = {
             "function",
             "extra_args",
@@ -161,6 +161,59 @@ def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path):
     if isinstance(value, list):
         if not all(isinstance(i, int) for i in value):
             raise BadSchemaError(err_msg)
+
+    return True
+
+
+def check_usefixtures(value, rule_obj, path):
+    # pylint: disable=unused-argument
+    err_msg = "'usefixtures' has to be a list with at least one item"
+
+    if not isinstance(value, (list, tuple)):
+        raise BadSchemaError(err_msg)
+
+    if not value:
+        raise BadSchemaError(err_msg)
+
+    return True
+
+
+def validate_data_key_with_ext_function(value, rule_obj, path):
+    """Validate the 'data' key in a http request
+
+    From requests docs:
+
+    > data - (optional) Dictionary or list of tuples [(key, value)] (will be
+    > form-encoded), bytes, or file-like object to send in the body of the
+    > Request.
+
+    We could handle lists of tuples, but it seems entirely pointless to maintain
+    compatibility for something which is more verbose and does the same thing
+    """
+    validate_extensions(value, rule_obj, path)
+
+    if isinstance(value, dict):
+        # Fine
+        pass
+    elif isinstance(value, (str, bytes)):
+        # Also fine - might want to do checking on this for encoding etc?
+        pass
+    elif isinstance(value, list):
+        raise BadSchemaError("Error at {} - expected a dict, str, or !!binary".format(path))
+
+        # invalid = []
+
+        # # Check they're all a list of 2-tuples
+        # for p in value:
+        #     if not isinstance(p, list):
+        #         invalid += p
+        #     elif len(p) != 2:
+        #         invalid += p
+
+        # if invalid:
+        #     raise BadSchemaError("Error at {} - when passing a list to the 'data' key, all items must be 2-tuples (invalid values: {})".format(path, invalid))
+    else:
+        raise BadSchemaError("Error at {} - expected a dict, str, or !!binary".format(path))
 
     return True
 

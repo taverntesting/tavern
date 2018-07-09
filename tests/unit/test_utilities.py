@@ -220,6 +220,37 @@ class TestMatchRecursive:
 
         check_keys_match_recursive(first, second, [])
 
+    def test_key_case_matters(self):
+        """Make sure case of keys matters"""
+        a = {
+            "a": [
+                {
+                    "b": "val",
+                },
+            ]
+        }
+        b = copy.deepcopy(a)
+        b["a"][0] = {"B": "val"}
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+    def test_value_case_matters(self):
+        """Make sure case of values matters"""
+        a = {
+            "a": [
+                {
+                    "b": "val",
+                },
+            ]
+        }
+        b = copy.deepcopy(a)
+        b["a"][0]["b"] = "VAL"
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+
 
 @pytest.fixture(name="test_yaml")
 def fix_test_yaml():

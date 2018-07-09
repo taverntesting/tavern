@@ -1,6 +1,6 @@
 import math
 import os
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, Response
 
 
 app = Flask(__name__)
@@ -13,7 +13,10 @@ def token():
 
 @app.route("/headers", methods=["GET"])
 def headers():
-    return 'OK', 200, {'X-Integration-Value': "_HelloWorld1"}
+    return 'OK', 200, {
+        'X-Integration-Value': "_HelloWorld1",
+        "ATestHEader": "orange",
+    }
 
 
 @app.route("/verify", methods=["GET"])
@@ -133,9 +136,40 @@ def echo_values():
     return jsonify(response), 200
 
 
+@app.route("/expect_raw_data", methods=["POST"])
+def expect_raw_data():
+    raw_data = request.stream.read().decode("utf8")
+    if raw_data == "OK":
+        response = {
+            "status": "ok",
+        }
+        code = 200
+    elif raw_data == "DENIED":
+        response = {
+            "status": "denied",
+        }
+        code = 401
+    else:
+        response = {
+            "status": "err: '{}'".format(raw_data),
+        }
+        code = 400
+
+    return jsonify(response), code
+
+
 @app.route("/form_data", methods=["POST"])
 def echo_form_values():
     body = request.get_data()
     key, _, value = body.decode("utf8").partition("=")
     response = {key: value}
     return jsonify(response), 200
+
+@app.route("/stream_file", methods=["GET"])
+def stream_file():
+    def iter():
+        for data in range(1,10):
+            yield bytes(data)
+    response = Response(iter(), mimetype='application/octet-stream')
+    response.headers['Content-Disposition'] = 'attachment; filename=tmp.txt'
+    return response

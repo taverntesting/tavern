@@ -3,10 +3,14 @@ import importlib
 import logging
 import re
 import jwt
+import jmespath
+
+from future.utils import raise_from
 from box import Box
 
+from tavern.util import exceptions
+from tavern.testutils.jmesutils import validate_comparision, actual_validation
 from tavern.schemas.files import wrapfile, verify_generic
-
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +92,7 @@ def validate_regex(response, expression, header=None):
     """Make sure the response matches a regex expression
 
     Args:
-        response (Response): reqeusts.Response object
+        response (Response): requests.Response object
         expression (str): Regex expression to use
         header (str): Match against a particular header instead of the body
     Returns:
@@ -105,3 +109,31 @@ def validate_regex(response, expression, header=None):
     return {
         "regex": Box(match.groupdict())
     }
+
+
+def validate_content(response, comparisions):
+    """Asserts expected value with actual value using JMES path expression
+
+    Args:
+        response (Response): reqeusts.Response object.
+        comparisions(list):
+            A list of dict containing the following keys:
+                1. jmespath : JMES path expression to extract data from.
+                2. operator : Operator to use to compare data.
+                3. expected : The expected value to match for
+    """
+    for each_comparision in comparisions:
+        path, _operator, expected = validate_comparision(each_comparision)
+        logger.debug("Searching for '%s' in '%s'", path, response.json())
+        actual = jmespath.search(path, json.loads(response.json()))
+
+        if actual is None:
+            raise exceptions.JMESError("JMES path '{}' not found in response".format(path))
+
+        expession = " ".join([str(path), str(_operator), str(expected)])
+        parsed_expession = " ".join([str(actual), str(_operator), str(expected)])
+
+        try:
+            actual_validation(_operator, actual, expected, parsed_expession, expession)
+        except AssertionError as e:
+            raise_from(exceptions.JMESError("Error validating JMES"), e)

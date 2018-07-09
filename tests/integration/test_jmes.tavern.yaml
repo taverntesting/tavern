@@ -1,0 +1,75 @@
+---
+
+test_name: test dict comparisons
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: test_comparisions
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        an_integer: 123
+        $ext:
+          function: tavern.testutils.helpers:validate_content
+          extra_kwargs:
+            comparisions:
+              - jmespath: "an_integer"
+                operator: "eq"
+                expected: 123
+              - jmespath: "an_integer"
+                operator: "type"
+                expected: int
+              - jmespath: "a_string"
+                operator: "eq"
+                expected: abc
+              - jmespath: "top.Thing"
+                operator: "type"
+                expected: str
+              - jmespath: "top.nested.doubly.inner"
+                operator: "eq"
+                expected: value
+
+---
+
+test_name: test list comparisons
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: test_comparisions
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tavern.testutils.helpers:validate_content
+          extra_kwargs:
+            comparisions:
+              - jmespath: "[1]"
+                operator: "type"
+                expected: str
+              - jmespath: "[1]"
+                operator: "eq"
+                expected: b
+
+              - jmespath: "[5]"
+                operator: "type"
+                expected: int
+              - jmespath: "[5]"
+                operator: "eq"
+                expected: 3
+
+              - jmespath: "[8]"
+                operator: "type"
+                expected: float
+              - jmespath: "[8]"
+                operator: "eq"
+                expected: -3.0

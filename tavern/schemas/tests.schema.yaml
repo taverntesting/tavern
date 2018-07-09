@@ -44,6 +44,16 @@ mapping:
           skipif:
             type: str
 
+          usefixtures:
+            type: seq
+            # Depending on what is actually given for usefixtures this function
+            # may or may not be called. I think this is a bug in pykwalify.
+            # See pytesthook.py
+            func: check_usefixtures
+            sequence:
+              - type: str
+                required: true
+
           parametrize:
             type: map
             mapping:
@@ -166,8 +176,17 @@ mapping:
                 type: str
                 required: true
 
-              re;(params|data|headers):
+              re;(params|headers):
                 include: any_map_with_ext_function
+
+              data:
+                type: any
+                func: validate_data_key_with_ext_function
+                required: false
+
+              stream:
+                type: bool
+                required: false
 
               auth:
                 func: validate_extensions
