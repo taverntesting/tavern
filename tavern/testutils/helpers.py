@@ -125,7 +125,7 @@ def validate_content(response, comparisions):
     for each_comparision in comparisions:
         path, _operator, expected = validate_comparision(each_comparision)
         logger.debug("Searching for '%s' in '%s'", path, response.json())
-        actual = jmespath.search(path, response.json())
+        actual = jmespath.search(path, json.loads(response.json()))
 
         if actual is None:
             raise exceptions.JMESError("JMES path '{}' not found in response".format(path))
@@ -135,5 +135,5 @@ def validate_content(response, comparisions):
 
         try:
             actual_validation(_operator, actual, expected, parsed_expession, expession)
-        except Exception as e:
+        except AssertionError as e:
             raise_from(exceptions.JMESError("Error validating JMES"), e)

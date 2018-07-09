@@ -163,8 +163,11 @@ def fix_nested_response():
             "a_string": "abc",
             "a_bool": True
         }
-    response_content.content = json.dumps(response_content.content)
-    return response_content
+
+        def json(self):
+            return json.dumps(self.content)
+
+    return response_content()
 
 class TestContent:
     def test_correct_jmes_path(self, nested_response):
@@ -180,12 +183,12 @@ class TestContent:
         comparisions = [
             {'jmespath': "userId", 'operator': "eq", 'expected': 1}
         ]
-        with pytest.raises(AssertionError):
+        with pytest.raises(exceptions.JMESError):
             validate_content(nested_response, comparisions)
 
     def test_incorrect_value(self, nested_response):
         comparisions = [
             {'jmespath': "a_bool", 'operator': "eq", 'expected': False}
         ]
-        with pytest.raises(AssertionError):
+        with pytest.raises(exceptions.JMESError):
             validate_content(nested_response, comparisions)
