@@ -124,7 +124,7 @@ def validate_content(response, comparisions):
     """
     for each_comparision in comparisions:
         path, _operator, expected = validate_comparision(each_comparision)
-        logger.critical("Searching for '%s' in '%s'", path, response.json())
+        logger.debug("Searching for '%s' in '%s'", path, response.json())
         parsed = jmespath.search(path, response.json())
 
         if parsed is None:
