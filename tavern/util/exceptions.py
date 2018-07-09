@@ -79,3 +79,7 @@ class PluginLoadError(TavernException):
 
 class InvalidExtFunctionError(TavernException):
     """Error loading an external function for validation/plugin use"""
+
+
+class JMESError(TavernException):
+    """Error in JMES matching"""

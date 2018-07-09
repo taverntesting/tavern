@@ -3,14 +3,17 @@ import importlib
 import logging
 import re
 import jwt
-import jmespath as jmes
+import jmespath
 
+from future.utils import raise_from
 from box import Box
 
+from tavern.util import exceptions
 from tavern.testutils.jmesutils import validate_comparision, actual_validation
 from tavern.schemas.files import wrapfile, verify_generic
 
 logger = logging.getLogger(__name__)
+
 
 def check_exception_raised(response, exception_location):
     """ Make sure the result from the server is the same as the exception we
@@ -84,6 +87,7 @@ def validate_pykwalify(response, schema):
     with wrapfile(response.json()) as rdump, wrapfile(schema) as sdump:
         verify_generic(rdump, sdump)
 
+
 def validate_regex(response, expression, header=None):
     """Make sure the response matches a regex expression
 
@@ -105,8 +109,11 @@ def validate_regex(response, expression, header=None):
     return {
         "regex": Box(match.groupdict())
     }
+
+
 def validate_content(response, comparisions):
     """Asserts expected value with actual value using JMES path expression
+
     Args:
         response (Response): reqeusts.Response object.
         comparisions(list):
@@ -116,9 +123,17 @@ def validate_content(response, comparisions):
                 3. expected : The expected value to match for
     """
     for each_comparision in comparisions:
-        jmespath, _operator, expected = validate_comparision(each_comparision)
-        _actual = jmes.search(jmespath, json.loads(response.content))
-        assert _actual is not None, "Invalid JMES path provided for validate_content()"
-        _expession = " ".join([str(jmespath), str(_operator), str(expected)])
-        expession = " ".join([str(_actual), str(_operator), str(expected)])
-        actual_validation(_operator, _actual, expected, _expession, expession)
+        path, _operator, expected = validate_comparision(each_comparision)
+        logger.critical("Searching for '%s' in '%s'", path, response.json())
+        parsed = jmespath.search(path, response.json())
+
+        if parsed is None:
+            raise exceptions.JMESError("JMES path '{}' not found in response".format(path))
+
+        expession = " ".join([str(path), str(_operator), str(expected)])
+        parsed_expession = " ".join([str(parsed), str(_operator), str(expected)])
+
+        try:
+            actual_validation(_operator, parsed, expected, parsed_expession, expession)
+        except Exception as e:
+            raise_from(exceptions.JMESError("Error validating JMES"), e)
