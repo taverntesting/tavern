@@ -68,9 +68,8 @@ TESTS_REQUIRE = [
     "colorlog",
     "mock",
     "paho-mqtt==1.3.1",
-    "pytest-remove-stale-bytecode",
+    "pytest-remove-stale-bytecode"
 ]
-
 
 setup(
     name="tavern",
@@ -81,7 +80,6 @@ setup(
         "docs": BuildDocs,
         "upload_twine": DeployPypi,
     },
-
     tests_require=TESTS_REQUIRE,
     extras_require={
         "tests": TESTS_REQUIRE

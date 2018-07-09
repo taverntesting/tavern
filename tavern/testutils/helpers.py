@@ -3,13 +3,14 @@ import importlib
 import logging
 import re
 import jwt
+import jmespath as jmes
+
 from box import Box
 
+from tavern.testutils.jmesutils import validate_comparision, actual_validation
 from tavern.schemas.files import wrapfile, verify_generic
 
-
 logger = logging.getLogger(__name__)
-
 
 def check_exception_raised(response, exception_location):
     """ Make sure the result from the server is the same as the exception we
@@ -83,12 +84,11 @@ def validate_pykwalify(response, schema):
     with wrapfile(response.json()) as rdump, wrapfile(schema) as sdump:
         verify_generic(rdump, sdump)
 
-
 def validate_regex(response, expression, header=None):
     """Make sure the response matches a regex expression
 
     Args:
-        response (Response): reqeusts.Response object
+        response (Response): requests.Response object
         expression (str): Regex expression to use
         header (str): Match against a particular header instead of the body
     Returns:
@@ -105,3 +105,20 @@ def validate_regex(response, expression, header=None):
     return {
         "regex": Box(match.groupdict())
     }
+def validate_content(response, comparisions):
+    """Asserts expected value with actual value using JMES path expression
+    Args:
+        response (Response): reqeusts.Response object.
+        comparisions(list):
+            A list of dict containing the following keys:
+                1. jmespath : JMES path expression to extract data from.
+                2. operator : Operator to use to compare data.
+                3. expected : The expected value to match for
+    """
+    for each_comparision in comparisions:
+        jmespath, _operator, expected = validate_comparision(each_comparision)
+        _actual = jmes.search(jmespath, json.loads(response.content))
+        assert _actual is not None, "Invalid JMES path provided for validate_content()"
+        _expession = " ".join([str(jmespath), str(_operator), str(expected)])
+        expession = " ".join([str(_actual), str(_operator), str(expected)])
+        actual_validation(_operator, _actual, expected, _expession, expession)
