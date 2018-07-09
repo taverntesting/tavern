@@ -4,7 +4,9 @@ import logging
 import itertools
 import copy
 
+import attr
 from _pytest._code.code import FormattedExcinfo
+from _pytest import fixtures
 import pytest
 import yaml
 from future.utils import raise_from
@@ -176,10 +178,7 @@ class YamlFile(pytest.File):
             })
             # And create the new item
             item_new = YamlItem(spec_new["test_name"], self, spec_new, self.fspath)
-
-            for pm in pytest_marks:
-                # All other marks should be added to this too
-                item_new.add_marker(pm)
+            item_new.add_markers(pytest_marks)
 
             yield item_new
 
@@ -230,8 +229,7 @@ class YamlFile(pytest.File):
                 # Only yield the parametrized ones
                 return
 
-            for pm in pytest_marks:
-                item.add_marker(pm)
+            item.add_markers(pytest_marks)
 
         yield item
 
@@ -258,6 +256,7 @@ class YamlFile(pytest.File):
 
             try:
                 for i in self._generate_items(test_spec):
+                    i.initialise_fixture_attrs()
                     yield i
             except (TypeError, KeyError):
                 verify_tests(test_spec, load_plugins=False)
@@ -284,6 +283,19 @@ class YamlItem(pytest.Item):
 
         self.global_cfg = {}
 
+    def initialise_fixture_attrs(self):
+        # pylint: disable=protected-access,attribute-defined-outside-init
+        self.funcargs = {}
+        fixtureinfo = self.session._fixturemanager.getfixtureinfo(
+            self, self.obj, type(self), funcargs=False)
+        self._fixtureinfo = fixtureinfo
+        self.fixturenames = fixtureinfo.names_closure
+        self._request = fixtures.FixtureRequest(self)
+
+    def setup(self):
+        super(YamlItem, self).setup()
+        fixtures.fillfixtures(self)
+
     @property
     def obj(self):
         stages = ["{:d}: {:s}".format(i + 1, stage["name"]) for i, stage in enumerate(self.spec["stages"])]
@@ -295,7 +307,27 @@ class YamlItem(pytest.Item):
         fakefun.__doc__ = self.name + ":\n" + "\n".join(stages)
         return fakefun
 
-    def runtest(self):
+    def add_markers(self, pytest_marks):
+        for pm in pytest_marks:
+            if pm.name == "usefixtures":
+                # Need to do this here because we expect a list of markers from
+                # usefixtures, which pytest then wraps in a tuple. we need to
+                # extract this tuple so pytest can use both fixtures.
+                if isinstance(pm.mark.args[0], (list, tuple)):
+                    new_mark = attr.evolve(pm.mark, args=pm.mark.args[0])
+                    pm = attr.evolve(pm, mark=new_mark)
+                elif isinstance(pm.mark.args[0], (dict)):
+                    # We could raise a TypeError here instead, but then it's a
+                    # failure at collection time (which is a bit annoying to
+                    # deal with). Instead just don't add the marker and it will
+                    # raise an exception at test verification.
+                    logger.error("'usefixtures' was an invalid type (should"
+                        " be a list of fixture names)")
+                    continue
+
+            self.add_marker(pm)
+
+    def _parse_arguments(self):
         # Load ini first
         ini_global_cfg_paths = self.config.getini("tavern-global-cfg") or []
         # THEN load command line, to allow overwriting of values
@@ -329,9 +361,40 @@ class YamlItem(pytest.Item):
 
             global_cfg["backends"][b] = in_use
 
-        load_plugins(global_cfg)
+        return global_cfg
 
-        self.global_cfg = global_cfg
+    def _load_fixture_values(self):
+        fixture_markers = self.iter_markers("usefixtures")
+
+        values = {}
+
+        for m in fixture_markers:
+            if isinstance(m.args, (list, tuple)):
+                mark_values = {f: self.funcargs[f] for f in m.args}
+            elif isinstance(m.args, str):
+                # Not sure if this can happen if validation is working
+                # correctly, but it appears to be slightly broken so putting
+                # this check here just in case
+                mark_values = {m.args: self.funcargs[m.args]}
+            else:
+                raise exceptions.BadSchemaError(("Can't handle 'usefixtures' spec of '{}'."
+                    " There appears to be a bug in pykwalify so verification of"
+                    " 'usefixtures' is broken - it should be a list of fixture"
+                    " names").format(m.args))
+
+            if any(mv in values for mv in mark_values):
+                logger.warning("Overriding value for %s", mark_values)
+
+            values.update(mark_values)
+
+        return values
+
+    def runtest(self):
+        self.global_cfg = self._parse_arguments()
+
+        self.global_cfg.setdefault("variables", {})
+
+        load_plugins(self.global_cfg)
 
         # INTERNAL
         # NOTE - now that we can 'mark' tests, we could use pytest.mark.xfail
@@ -340,8 +403,11 @@ class YamlItem(pytest.Item):
         xfail = self.spec.get("_xfail", False)
 
         try:
+            fixture_values = self._load_fixture_values()
+            self.global_cfg["variables"].update(fixture_values)
+
             verify_tests(self.spec)
-            run_test(self.path, self.spec, global_cfg)
+            run_test(self.path, self.spec, self.global_cfg)
         except exceptions.BadSchemaError:
             if xfail == "verify":
                 logger.info("xfailing test while verifying schema")

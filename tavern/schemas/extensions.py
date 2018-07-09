@@ -165,6 +165,19 @@ def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path):
     return True
 
 
+def check_usefixtures(value, rule_obj, path):
+    # pylint: disable=unused-argument
+    err_msg = "'usefixtures' has to be a list with at least one item"
+
+    if not isinstance(value, (list, tuple)):
+        raise BadSchemaError(err_msg)
+
+    if not value:
+        raise BadSchemaError(err_msg)
+
+    return True
+
+
 def validate_data_key_with_ext_function(value, rule_obj, path):
     """Validate the 'data' key in a http request
 
