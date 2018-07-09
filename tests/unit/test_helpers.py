@@ -165,7 +165,7 @@ def fix_nested_response():
         }
 
         def json(self):
-            return json.dumps(self.content)
+            return self.content
 
     return response_content()
 
