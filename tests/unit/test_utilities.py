@@ -278,10 +278,13 @@ def fix_test_yaml():
 
 
 class TestCustomTokens:
+    def assert_type_value(self, test_value, expected_type, expected_value):
+        assert isinstance(test_value, expected_type)
+        assert test_value == expected_value
 
     def test_conversion(self, test_yaml):
         stages = yaml.load(test_yaml, Loader=IncludeLoader)['stages'][0]
 
-        assert isinstance(stages['request']['json']['number'], int)
-        assert isinstance(stages['response']['body']['double'], float)
-        assert isinstance(stages['request']['json']['return_float'], bool)
+        self.assert_type_value(stages['request']['json']['number'], int, 5)
+        self.assert_type_value(stages['response']['body']['double'], float, 10.0)
+        self.assert_type_value(stages['request']['json']['return_float'], bool, True)
