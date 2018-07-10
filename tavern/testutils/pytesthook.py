@@ -403,10 +403,11 @@ class YamlItem(pytest.Item):
         xfail = self.spec.get("_xfail", False)
 
         try:
+            verify_tests(self.spec)
+
             fixture_values = self._load_fixture_values()
             self.global_cfg["variables"].update(fixture_values)
 
-            verify_tests(self.spec)
             run_test(self.path, self.spec, self.global_cfg)
         except exceptions.BadSchemaError:
             if xfail == "verify":
