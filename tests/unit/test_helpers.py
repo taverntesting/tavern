@@ -169,6 +169,7 @@ def fix_nested_response():
 
     return response_content()
 
+
 class TestContent:
     def test_correct_jmes_path(self, nested_response):
         comparisions = [

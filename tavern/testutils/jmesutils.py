@@ -4,6 +4,7 @@ import operator
 from future.utils import raise_from
 
 from tavern.util import exceptions
+from builtins import str
 
 
 def test_type(val, mytype):
@@ -77,5 +78,6 @@ def validate_comparision(each_comparision):
     return jmespath, _operator, expected
 
 
-def actual_validation(_operator, _actual, expected, _expression, expession):
-    assert COMPARATORS[_operator](_actual, expected), "Validation '" + expession + "' (" + _expression + ") failed!"
+def actual_validation(_operator, _actual, expected, _expression, expression):
+    if not COMPARATORS[_operator](_actual, expected):
+        raise exceptions.JMESError("Validation '{}' ({}) failed!".format(expression, _expression))
