@@ -229,10 +229,24 @@ class FloatToken(TypeConvertToken):
     yaml_tag = "!float"
     constructor = float
 
+class BoolLiteralEval(object):
+    """Using `bool` as a constructor will evaluate all strings to `True`.
+    Using `ast.literal_eval` may result in other datatypes being returned.
+    This constructor returns a boolean given a boolean string representation.
+
+    See discussion here: https://stackoverflow.com/a/21732186/9923936
+    """
+    def __new__(cls, s):
+        if s == 'True':
+            return True
+        elif s == 'False':
+            return False
+        else:
+            raise ValueError("Cannot literally eval {} to a bool".format(s))
 
 class BoolToken(TypeConvertToken):
     yaml_tag = "!bool"
-    constructor = bool
+    constructor = BoolLiteralEval
 
 
 # Sort-of hack to try and avoid future API changes
