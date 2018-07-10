@@ -263,6 +263,7 @@ def fix_test_yaml():
         request:
           url: http://localhost:5000/double
           json:
+            is_sensitive: !bool "False"
             number: !int '5'
             return_float: !bool "True"
           method: POST
@@ -288,3 +289,4 @@ class TestCustomTokens:
         self.assert_type_value(stages['request']['json']['number'], int, 5)
         self.assert_type_value(stages['response']['body']['double'], float, 10.0)
         self.assert_type_value(stages['request']['json']['return_float'], bool, True)
+        self.assert_type_value(stages['request']['json']['is_sensitive'], bool, False)

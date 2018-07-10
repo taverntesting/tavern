@@ -112,12 +112,22 @@ def expect_type():
     body = request.get_json()
     value = body.get("value")
     dtype = body.get("dtype")
+    dvalue = body.get("dvalue")
 
-    if not value and dtype:
-        return "", 400
+    if not value and dtype and dvalue:
+        return jsonify({
+            "status": "Missing expected type or value"
+        }), 400
 
     if str(type(value)) != "<class '{}'>".format(dtype):
-        return "", 400
+        return jsonify({
+            "status": "Unexpected type: '{}'".format(str(type(value)))
+        }), 400
+
+    if value != dvalue:
+        return jsonify({
+            "status": "Unexpected value: '{}'".format(value)
+        }), 400
 
     return "", 200
 
