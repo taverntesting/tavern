@@ -1,10 +1,10 @@
 import re
 import operator
 
+from builtins import str
 from future.utils import raise_from
 
 from tavern.util import exceptions
-from builtins import str
 
 
 def test_type(val, mytype):
