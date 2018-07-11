@@ -240,7 +240,7 @@ class StrToBoolConstructor(object):
 
 class BoolToken(TypeConvertToken):
     yaml_tag = "!bool"
-    constructor = StrToBoolConstructor 
+    constructor = StrToBoolConstructor
 
 
 # Sort-of hack to try and avoid future API changes
