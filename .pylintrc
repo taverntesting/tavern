@@ -12,3 +12,4 @@ ignore-imports=yes
 
 [TYPECHECK]
 ignored-classes=RememberComposer
+ignored-modules=distutils

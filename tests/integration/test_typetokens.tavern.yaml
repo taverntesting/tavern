@@ -200,6 +200,7 @@ stages:
       json:
         value: !bool "{v_bool}"
         dtype: bool
+        dvalue: False
     response:
       status_code: 200
 
@@ -212,6 +213,7 @@ stages:
   #     json:
   #       value: !bool "true"
   #       dtype: bool
+  #       dvalue: True
   #   response:
   #     status_code: 200
 
@@ -291,6 +293,7 @@ stages:
       json:
         value: !int "{v_int}"
         dtype: int
+        dvalue: 123
     response:
       status_code: 200
 
@@ -301,6 +304,7 @@ stages:
       json:
         value: !int "1"
         dtype: int
+        dvalue: 1
     response:
       status_code: 200
 
@@ -313,6 +317,7 @@ stages:
   #     json:
   #       value: !int "{v_float}"
   #       dtype: int
+  #       dvalue: 123
   #   response:
   #     status_code: 200
 
@@ -331,6 +336,7 @@ stages:
       json:
         value: !float "{v_int}"
         dtype: float
+        dvalue: 123.0
     response:
       status_code: 200
 
@@ -341,6 +347,7 @@ stages:
       json:
         value: !float "1"
         dtype: float
+        dvalue: 1
     response:
       status_code: 200
 
@@ -351,6 +358,7 @@ stages:
       json:
         value: !float "{v_float}"
         dtype: float
+        dvalue: 4.56
     response:
       status_code: 200
 
@@ -361,6 +369,7 @@ stages:
       json:
         value: !float "5.67"
         dtype: float
+        dvalue: 5.67
     response:
       status_code: 200
 
@@ -393,5 +402,6 @@ stages:
       json:
         value: !float "{saved_float_value}"
         dtype: float
+        dvalue: 123.0
     response:
       status_code: 200
