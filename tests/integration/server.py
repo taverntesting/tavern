@@ -114,22 +114,22 @@ def expect_type():
     dtype = body.get("dtype")
     dvalue = body.get("dvalue")
 
+    status = "OK"
+    code = 200
+
     if not value and dtype and dvalue:
-        return jsonify({
-            "status": "Missing expected type or value"
-        }), 400
+        status = "Missing expected type or value"
+        code = 400
 
     if str(type(value)) != "<class '{}'>".format(dtype):
-        return jsonify({
-            "status": "Unexpected type: '{}'".format(str(type(value)))
-        }), 400
+        status = "Unexpected type: '{}'".format(str(type(value)))
+        code = 400
 
     if value != dvalue:
-        return jsonify({
-            "status": "Unexpected value: '{}'".format(value)
-        }), 400
+        status = "Unexpected value: '{}'".format(value)
+        code = 400
 
-    return "", 200
+    return jsonify({"status": status}), code
 
 
 @app.route("/status_code_return", methods=["POST"])
