@@ -1,5 +1,6 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
 
+from distutils.util import strtobool
 import logging
 import uuid
 import os.path
@@ -229,24 +230,17 @@ class FloatToken(TypeConvertToken):
     yaml_tag = "!float"
     constructor = float
 
-class BoolLiteralEval(object):
-    """Using `bool` as a constructor will evaluate all strings to `True`.
-    Using `ast.literal_eval` may result in other datatypes being returned.
-    This constructor returns a boolean given a boolean string representation.
 
-    See discussion here: https://stackoverflow.com/a/21732186/9923936
-    """
+class StrToBoolConstructor(object):
+    """Using `bool` as a constructor directly will evaluate all strings to `True`."""
+
     def __new__(cls, s):
-        if s == 'True':
-            return True
-        elif s == 'False':
-            return False
-        else:
-            raise ValueError("Cannot literally eval {} to a bool".format(s))
+        return bool(strtobool(s))
+
 
 class BoolToken(TypeConvertToken):
     yaml_tag = "!bool"
-    constructor = BoolLiteralEval
+    constructor = StrToBoolConstructor 
 
 
 # Sort-of hack to try and avoid future API changes
