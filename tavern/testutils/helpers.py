@@ -131,13 +131,14 @@ def validate_content(response, comparisions):
         if actual is None:
             raise exceptions.JMESError("JMES path '{}' not found in response".format(path))
 
-        expession = " ".join([str(path), str(_operator), str(expected)])
-        parsed_expession = " ".join([str(actual), str(_operator), str(expected)])
+        expression = " ".join([str(path), str(_operator), str(expected)])
+        parsed_expression = " ".join([str(actual), str(_operator), str(expected)])
 
         if _operator == "eq" and 0:
             check_keys_match_recursive(expected, actual, [])
         else:
             try:
-                actual_validation(_operator, actual, expected, parsed_expession, expession)
+                actual_validation(_operator, actual, expected, parsed_expression, expression)
             except AssertionError as e:
-                raise_from(exceptions.JMESError("Error validating JMES"), e)
+                e.message = "Validation " + expression + " (" + parsed_expression + ") FAILED!"
+                raise_from(exceptions.JMESError("Error validating JMES expression"), e)
