@@ -37,37 +37,49 @@ workflows:
   version: 2
   check-test-deploy:
     jobs:
+      # Pyflakes
       - py27flakes
-      - py37flakes
+      - py36flakes
 
-      - py27: &stage_1_deps
+      # Unit tests with common versions of Python
+      - py27: &unit_test_dependencies
           requires:
             - py27flakes
-            - py37flakes
-      - py34: *stage_1_deps
-      - py35: *stage_1_deps
-      - py36: *stage_1_deps
-      - py37: *stage_1_deps
-      - pypy: *stage_1_deps
-      - pypy3: *stage_1_deps
-      - py27lint: *stage_1_deps
-      - py37lint: *stage_1_deps
+            - py36flakes
+      - py36: *unit_test_dependencies
+      - py27lint: *unit_test_dependencies
+      - py36lint: *unit_test_dependencies
 
-      - py27-generic: &stage_2_deps
+      # Unit tests with extra other versions of Python
+      - py34: &extra_unit_test_dependencies
+          requires:
+            - py27flakes
+            - py36flakes
+      - py35: *extra_unit_test_dependencies
+      - py37: *extra_unit_test_dependencies
+      - pypy: *extra_unit_test_dependencies
+      - pypy3: *extra_unit_test_dependencies
+
+      # Basic integration tests with common versions of Python
+      - py27-generic: &integration_test_dependencies
           requires:
             - py27
-            - py34
-            - py35
             - py36
-            - pypy
-            - pypy3
             - py27lint
-            - py37lint
-      - py27-advanced: *stage_2_deps
-      - py36-generic: *stage_2_deps
-      - py36-cookies: *stage_2_deps
-      - py36-mqtt: *stage_2_deps
-      - py36-advanced: *stage_2_deps
+            - py36lint
+      - py36-generic: *integration_test_dependencies
+
+      # Extra integration tests
+      - py27-advanced: &extra_integration_test_dependencies
+          requires:
+            - py27
+            - py36
+            - py27lint
+            - py36lint
+      - py36-generic: *extra_integration_test_dependencies
+      - py36-cookies: *extra_integration_test_dependencies
+      - py36-mqtt: *extra_integration_test_dependencies
+      - py36-advanced: *extra_integration_test_dependencies
 
       # TODO
       # - deploy:
