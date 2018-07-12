@@ -1,6 +1,12 @@
 import re
 import operator
 
+from builtins import str
+from future.utils import raise_from
+
+from tavern.util import exceptions
+
+
 def test_type(val, mytype):
     """ Check value fits one of the types, if so return true, else false """
     typelist = TYPES.get(str(mytype).lower())
@@ -14,6 +20,7 @@ def test_type(val, mytype):
         return False
     except TypeError:
         return isinstance(val, typelist)
+
 
 COMPARATORS = {
     'count_eq': lambda x, y: safe_length(x) == y,
@@ -42,23 +49,35 @@ TYPES = {
     'dict': [dict]
 }
 
+
 def regex_compare(_input, regex):
     return bool(re.search(regex, _input))
 
+
 def safe_length(var):
     """ Exception-safe length check, returns -1 if no length on type or error """
-    output = -1
     try:
-        output = len(var)
+        return len(var)
     except TypeError:
-        pass
-    return output
+        return -1
+
 
 def validate_comparision(each_comparision):
-    assert set(each_comparision.keys()) == {'jmespath', 'operator', 'expected'}
+    try:
+        assert set(each_comparision.keys()) == {'jmespath', 'operator', 'expected'}
+    except KeyError as e:
+        raise_from(exceptions.BadSchemaError("Invalid keys given to JMES validation function"), e)
+
     jmespath, _operator, expected = each_comparision['jmespath'], each_comparision['operator'], each_comparision['expected']
-    assert _operator in COMPARATORS, "Invalid operator provided for validate_content()"
+
+    try:
+        COMPARATORS[_operator]
+    except KeyError as e:
+        raise_from(exceptions.BadSchemaError("Invalid comparator given"), e)
+
     return jmespath, _operator, expected
 
-def actual_validation(_operator, _actual, expected, _expression, expession):
-    assert COMPARATORS[_operator](_actual, expected), "Validation '" + expession + "' (" + _expression + ") failed!"
+
+def actual_validation(_operator, _actual, expected, _expression, expression):
+    if not COMPARATORS[_operator](_actual, expected):
+        raise exceptions.JMESError("Validation '{}' ({}) failed!".format(expression, _expression))

@@ -1,5 +1,6 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
 
+from distutils.util import strtobool
 import logging
 import uuid
 import os.path
@@ -230,9 +231,16 @@ class FloatToken(TypeConvertToken):
     constructor = float
 
 
+class StrToBoolConstructor(object):
+    """Using `bool` as a constructor directly will evaluate all strings to `True`."""
+
+    def __new__(cls, s):
+        return bool(strtobool(s))
+
+
 class BoolToken(TypeConvertToken):
     yaml_tag = "!bool"
-    constructor = bool
+    constructor = StrToBoolConstructor
 
 
 # Sort-of hack to try and avoid future API changes
