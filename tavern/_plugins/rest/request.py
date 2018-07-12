@@ -15,7 +15,7 @@ from box import Box
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys, check_expected_keys
 from tavern.schemas.extensions import get_wrapped_create_function
-
+from requests_ntlm import HttpNtlmAuth
 from tavern.request.base import BaseRequest
 
 logger = logging.getLogger(__name__)
@@ -108,6 +108,8 @@ def get_request_args(rspec, test_block_config):
 
     if "auth" in fspec:
         request_args["auth"] = tuple(fspec["auth"])
+    elif "auth_ntlm" in fspec:
+        request_args["auth_ntlm"] = tuple(fspec["auth_ntlm"])
 
     for key in optional_in_file:
         try:
@@ -172,6 +174,7 @@ class RestRequest(BaseRequest):
             "data",
             "params",
             "auth",
+            "auth_ntlm",
             "json",
             "verify",
             "files",
@@ -202,6 +205,9 @@ class RestRequest(BaseRequest):
                 for key, filepath in self._request_args.get("files", {}).items():
                     self._request_args["files"][key] = stack.enter_context(
                             open(filepath, "rb"))
+                if "auth_ntlm" in self._request_args:
+                    session.auth = HttpNtlmAuth(self._request_args["auth_ntlm"][0], self._request_args["auth_ntlm"][1])
+                    del self._request_args["auth_ntlm"]
                 return session.request(**self._request_args)
 
         self._prepared = prepared_request
