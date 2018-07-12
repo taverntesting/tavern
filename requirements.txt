@@ -1,6 +1,7 @@
 pyyaml
 pykwalify>=1.6.1
 requests
+requests_ntlm
 pyjwt
 python-box
 future
