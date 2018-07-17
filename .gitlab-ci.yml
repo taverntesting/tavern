@@ -42,11 +42,11 @@ stages:
   stage: precheck
 
 py27flakes:
-  <<: &flakestest
+  <<: *flakestest
   image: python:2.7-alpine
 
 py36flakes:
-  <<: &flakestest
+  <<: *flakestest
   image: python:3.6-alpine
 
 
@@ -55,7 +55,7 @@ py36flakes:
 ########################################
 
 .basictests: &basictest
-  <<: &testbaseanchor
+  <<: *testbaseanchor
 
 
 # basic unit tests
@@ -112,7 +112,7 @@ pypy3:
 
 # Different cfg file and needs docker running
 .integrationtest: &inttest
-  <<: &testbaseanchor
+  <<: *testbaseanchor
   variables:
     TOXCFG: tox-integration.ini
     # DOCKER_HOST: tcp://docker:2375
