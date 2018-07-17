@@ -119,8 +119,9 @@ pypy3:
     - docker:dind
   before_script:
     - pip install --upgrade docker-compose tox
-    # - mkdir -p /root/.docker/
+    - mkdir -p /root/.docker/
     # - touch /root/.docker/config.json
+    - echo "{}" > /root/.docker/config.json
     - docker-compose --verbose -f ./tests/integration/docker-compose.yaml images
 
 
