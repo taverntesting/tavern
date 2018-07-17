@@ -30,7 +30,6 @@ stages:
 
   only:
     - master
-    - tags
 
 
 ########################################
@@ -173,3 +172,34 @@ pypy3-cookies:
   <<: *inttest
   image: pypy:3-slim
   stage: full-tests
+
+
+########################################
+# Deploy
+########################################
+
+Deploy to pypi:
+  <<: *testbaseanchor
+
+  only:
+    - tags
+
+  stage: deploy
+  image: python:2.7-alpine
+  before_script:
+    - |
+        echo "
+        [distutils]
+        index-servers =
+            pypi
+
+        [pypi]
+        repository = https://pypi.python.org/pypi
+        username = ${PYPI_USERNAME}
+        password = ${PYPI_PASSWORD}
+        " > ~/.pypirc
+
+    - pip install twine
+  script:
+    - python setup.py sdist bdist_wheel --universal
+    - twine upload dist/*
