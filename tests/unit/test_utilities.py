@@ -264,6 +264,7 @@ def fix_test_yaml():
           url: http://localhost:5000/double
           json:
             is_sensitive: !bool "False"
+            raw_str: !raw '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'
             number: !int '5'
             return_float: !bool "True"
           method: POST
@@ -290,3 +291,8 @@ class TestCustomTokens:
         self.assert_type_value(stages['response']['body']['double'], float, 10.0)
         self.assert_type_value(stages['request']['json']['return_float'], bool, True)
         self.assert_type_value(stages['request']['json']['is_sensitive'], bool, False)
+        self.assert_type_value(
+            stages['request']['json']['raw_str'],
+            str,
+            '{{"query": "{{ val1 {{ val2 {{ val3 {{ val4, val5 }} }} }} }}"}}'
+        )
