@@ -247,7 +247,7 @@ class StrToRawConstructor(object):
     """Used when we want to ignore brace formatting syntax"""
 
     def __new__(cls, s):
-        return s.replace("{", "{{").replace("}", "}}")
+        return str(s.replace("{", "{{").replace("}", "}}"))
 
 
 class RawStrToken(TypeConvertToken):

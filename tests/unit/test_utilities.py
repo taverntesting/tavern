@@ -1,7 +1,6 @@
 from textwrap import dedent
 from collections import OrderedDict
 
-from builtins import str
 import pytest
 import yaml
 import copy
