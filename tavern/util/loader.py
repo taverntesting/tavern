@@ -5,6 +5,7 @@ import logging
 import uuid
 import os.path
 import pytest
+import re
 from future.utils import raise_from
 
 import yaml
@@ -241,6 +242,18 @@ class StrToBoolConstructor(object):
 class BoolToken(TypeConvertToken):
     yaml_tag = "!bool"
     constructor = StrToBoolConstructor
+
+
+class StrToRawConstructor(object):
+    """Used when we want to ignore brace formatting syntax"""
+
+    def __new__(cls, s):
+        return re.sub(r"([}{])", r"\1\1", s)
+
+
+class RawStrToken(TypeConvertToken):
+    yaml_tag = "!raw"
+    constructor = StrToRawConstructor
 
 
 # Sort-of hack to try and avoid future API changes

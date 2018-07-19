@@ -408,25 +408,6 @@ stages:
 
 ---
 
-test_name: Test not converting a raw string (ignore variable like syntax)
-
-includes:
-  - !include common.yaml
-
-stages:
-  - name: Do not convert raw string
-    request:
-      url: "{host}/expect_dtype"
-      method: POST
-      json:
-        value: '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'
-        dtype: str
-        dvalue: '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'
-    response:
-      status_code: 200
-
----
-
 test_name: Ignore variable syntax with double braces
 
 includes:
@@ -439,6 +420,25 @@ stages:
       method: POST
       json:
         value: '{{"query": "{{ val1 {{ val2 {{ val3 {{ val4, val5 }} }} }} }}"}}'
+        dtype: str
+        dvalue: '{{"query": "{{ val1 {{ val2 {{ val3 {{ val4, val5 }} }} }} }}"}}'
+    response:
+      status_code: 200
+
+---
+
+test_name: Test not converting a raw string (ignore variable like syntax)
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Do not convert raw string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !raw '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'
         dtype: str
         dvalue: '{{"query": "{{ val1 {{ val2 {{ val3 {{ val4, val5 }} }} }} }}"}}'
     response:
