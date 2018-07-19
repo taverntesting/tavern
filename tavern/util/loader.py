@@ -5,7 +5,6 @@ import logging
 import uuid
 import os.path
 import pytest
-import re
 from future.utils import raise_from
 
 import yaml
@@ -248,7 +247,7 @@ class StrToRawConstructor(object):
     """Used when we want to ignore brace formatting syntax"""
 
     def __new__(cls, s):
-        return re.sub(r"([}{])", r"\1\1", s)
+        return s.replace("{", "{{").replace("}", "}}")
 
 
 class RawStrToken(TypeConvertToken):
