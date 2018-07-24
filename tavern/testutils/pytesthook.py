@@ -239,9 +239,6 @@ class YamlFile(pytest.File):
         Yields:
             YamlItem: Essentially an individual pytest 'test object'
         """
-        # pylint: disable=too-many-nested-blocks
-
-        # pylint: disable=too-many-locals
 
         try:
             # Convert to a list so we can catch parser exceptions
@@ -259,7 +256,7 @@ class YamlFile(pytest.File):
                     i.initialise_fixture_attrs()
                     yield i
             except (TypeError, KeyError):
-                verify_tests(test_spec, load_plugins=False)
+                verify_tests(test_spec, with_plugins=False)
                 raise
 
 

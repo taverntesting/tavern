@@ -5,7 +5,6 @@ significantly if/when a proper plugin system is implemented!
 """
 import logging
 
-import yaml
 import stevedore
 from future.utils import raise_from
 
@@ -24,26 +23,6 @@ def plugin_load_error(mgr, entry_point, err):
     # pylint: disable=unused-argument
     msg = "Error loading plugin {} - {}".format(entry_point, err)
     raise_from(exceptions.PluginLoadError(msg), err)
-
-
-def load_schema_plugins(schema_filename):
-    """Load base schema with plugin schemas"""
-
-    plugins = load_plugins()
-
-    with open(schema_filename, "r") as base_schema_file:
-        base_schema = yaml.load(base_schema_file)
-
-    for p in plugins:
-        try:
-            plugin_schema = p.plugin.schema
-        except AttributeError:
-            # Don't require a schema
-            logger.debug("No schema defined for %s", p.name)
-        else:
-            base_schema["mapping"].update(plugin_schema.get("initialisation", {}))
-
-    return base_schema
 
 
 def is_valid_reqresp_plugin(ext):
