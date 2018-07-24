@@ -239,9 +239,6 @@ class YamlFile(pytest.File):
         Yields:
             YamlItem: Essentially an individual pytest 'test object'
         """
-        # pylint: disable=too-many-nested-blocks
-
-        # pylint: disable=too-many-locals
 
         try:
             # Convert to a list so we can catch parser exceptions
