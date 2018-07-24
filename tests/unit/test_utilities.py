@@ -8,7 +8,7 @@ import copy
 from tavern.schemas.extensions import validate_extensions
 from tavern.util import exceptions
 from tavern.util.loader import ANYTHING, IncludeLoader
-from tavern.util.dict_util import deep_dict_merge, check_keys_match_recursive
+from tavern.util.dict_util import deep_dict_merge, check_keys_match_recursive, format_keys
 
 
 class TestValidateFunctions:
@@ -290,3 +290,27 @@ class TestCustomTokens:
         self.assert_type_value(stages['response']['body']['double'], float, 10.0)
         self.assert_type_value(stages['request']['json']['return_float'], bool, True)
         self.assert_type_value(stages['request']['json']['is_sensitive'], bool, False)
+
+
+class TestFormatKeys:
+
+    def test_format_missing_raises(self):
+        to_format = {
+            "a": "{b}",
+        }
+
+        with pytest.raises(exceptions.MissingFormatError):
+            format_keys(to_format, {})
+
+    def test_format_success(self):
+        to_format = {
+            "a": "{b}",
+        }
+
+        final_value = "formatted"
+
+        format_variables = {
+            "b": final_value,
+        }
+
+        assert format_keys(to_format, format_variables)["a"] == final_value
