@@ -256,7 +256,7 @@ class YamlFile(pytest.File):
                     i.initialise_fixture_attrs()
                     yield i
             except (TypeError, KeyError):
-                verify_tests(test_spec, load_plugins=False)
+                verify_tests(test_spec, with_plugins=False)
                 raise
 
 
