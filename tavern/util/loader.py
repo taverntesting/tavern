@@ -243,6 +243,18 @@ class BoolToken(TypeConvertToken):
     constructor = StrToBoolConstructor
 
 
+class StrToRawConstructor(object):
+    """Used when we want to ignore brace formatting syntax"""
+
+    def __new__(cls, s):
+        return str(s.replace("{", "{{").replace("}", "}}"))
+
+
+class RawStrToken(TypeConvertToken):
+    yaml_tag = "!raw"
+    constructor = StrToRawConstructor
+
+
 # Sort-of hack to try and avoid future API changes
 ApproxScalar = type(pytest.approx(1.0))
 
