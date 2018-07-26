@@ -13,7 +13,7 @@ language: python
 cache: pip
 services:
   - docker
-matrix:
+jobs:
   fast_finish: true
   include:
     # Initial checks
