@@ -123,11 +123,9 @@ mapping:
           delay_before:
             type: float
             required: false
-            unique: true
           delay_after:
             type: float
             required: false
-            unique: true
 
           mqtt_publish:
             type: map
