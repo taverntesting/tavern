@@ -3,6 +3,7 @@ import io
 import logging
 import itertools
 import copy
+import py
 
 import attr
 from _pytest._code.code import FormattedExcinfo
@@ -624,3 +625,14 @@ class ReprdError(object):
         tw.line("")
 
         self._print_errors(tw)
+
+    @property
+    def longreprtext(self):
+        tw = py.io.TerminalWriter(stringio=True)  #pylint: disable=no-member
+        tw.hasmarkup = False
+        self.toterminal(tw)
+        exc = tw.stringio.getvalue()
+        return exc.strip()
+
+    def __str__(self):
+        return self.longreprtext
