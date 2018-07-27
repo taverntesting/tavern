@@ -343,24 +343,18 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
             # Check things in the wrong order?
 
             if not strict:
-                list_item_present = False
-
                 # Iterate over list items to see if any of them match...
-                for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
-                    try:
-                        check_keys_match_recursive(e_val, a_val, keys + [i], strict)
-                    except exceptions.KeyMismatchError as sub_e:
-                        pass
-                        logger.error("jsdif")
-                    else:
-                        list_item_present = True
-
-                # ...and if so, continue
-                if list_item_present:
-                    logger.info("One (or more) list items present - continuing")
-                    # FIXME
-                    # do we need to check more here?
-                    return
+                for i, e_val in enumerate(expected_val):
+                    for a_val in actual_val:
+                        try:
+                            check_keys_match_recursive(e_val, a_val, keys + [i], strict)
+                        except exceptions.KeyMismatchError:
+                            pass
+                        else:
+                            logger.debug("One (or more) list items present - continuing due to strict=%s", strict)
+                            # FIXME
+                            # do we need to check more here?
+                            return
 
                 # otherwise, fall through and raise an error
 
