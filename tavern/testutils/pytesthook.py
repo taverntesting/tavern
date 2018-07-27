@@ -628,7 +628,7 @@ class ReprdError(object):
 
     @property
     def longreprtext(self):
-        tw = io.TerminalWriter(stringio=True)
+        tw = py.io.TerminalWriter(stringio=True)
         tw.hasmarkup = False
         self.toterminal(tw)
         exc = tw.stringio.getvalue()
