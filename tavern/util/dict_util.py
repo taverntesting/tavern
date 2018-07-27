@@ -352,7 +352,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                             pass
                         else:
                             logger.debug("One (or more) list items present - continuing due to strict=%s", strict)
-                            # FIXME
+                            # TODO
                             # do we need to check more here?
                             return
 
@@ -365,7 +365,6 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                 try:
                     check_keys_match_recursive(e_val, a_val, keys + [i], strict)
                 except exceptions.KeyMismatchError as sub_e:
-                    logger.error("jsdif")
                     # This will still raise an error, but it will be more
                     # obvious where the error came from (in python 3 at least)
                     # and will take ANYTHING into account
