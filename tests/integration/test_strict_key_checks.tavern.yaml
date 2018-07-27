@@ -397,7 +397,16 @@ includes:
   - !include common.yaml
 
 stages:
-  - name: match 'e' in list
+  - name: match first item in list
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      strict: false
+      body:
+        - a
+
+  - name: match a middle item in the list
     request:
       url: "{host}/fake_list"
     response:
@@ -405,6 +414,15 @@ stages:
       strict: false
       body:
         - c
+
+  - name: match a number in the middle of the list
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      strict: false
+      body:
+        - 2
 
 ---
 

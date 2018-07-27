@@ -165,6 +165,22 @@ class TestMatchRecursive:
         with pytest.raises(exceptions.KeyMismatchError):
             check_keys_match_recursive(a, b, [])
 
+    def test_match_list_items(self):
+        """Should match any 2 list items if strict is False, not if it's True"""
+        a = [
+            "a",
+            "b",
+            "c",
+        ]
+        b = [
+            "b",
+        ]
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+        check_keys_match_recursive(a, b, [], strict=False)
+
 
 @pytest.fixture(name="test_yaml")
 def fix_test_yaml():
