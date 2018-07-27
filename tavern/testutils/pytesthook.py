@@ -1,9 +1,9 @@
 import re
-import py
 import io
 import logging
 import itertools
 import copy
+import py
 
 import attr
 from _pytest._code.code import FormattedExcinfo
@@ -628,7 +628,7 @@ class ReprdError(object):
 
     @property
     def longreprtext(self):
-        tw = py.io.TerminalWriter(stringio=True)
+        tw = py.io.TerminalWriter(stringio=True)  #pylint: disable=no-member
         tw.hasmarkup = False
         self.toterminal(tw)
         exc = tw.stringio.getvalue()
