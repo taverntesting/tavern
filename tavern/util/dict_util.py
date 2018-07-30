@@ -324,7 +324,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                     )
                 except KeyError:
                     logger.debug(
-                        "Skipping comparing missing key %s due to strict=%s",
+                        "Skipping comparing missing key '%s' due to strict=%s",
                         key,
                         strict,
                     )
@@ -345,21 +345,30 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
             if not strict:
                 missing = []
 
+                actual_iter = iter(actual_val)
+
                 # Iterate over list items to see if any of them match...
                 for i, e_val in enumerate(expected_val):
-                    for a_val in actual_val:
+                    while 1:
                         try:
-                            check_keys_match_recursive(e_val, a_val, keys + [i], strict)
+                            current_response_val = next(actual_iter)
+                        except StopIteration:
+                            logger.debug("Ran out of list response items to check")
+                            missing.append(e_val)
+                            break
+                        else:
+                            logger.debug("Got '%s' from response to check against '%s' from expected", current_response_val, e_val)
+
+                        try:
+                            check_keys_match_recursive(e_val,current_response_val, keys + [i], strict)
                         except exceptions.KeyMismatchError:
                             pass
                         else:
                             logger.debug("'%s' present in response", e_val)
                             break
-                    else:
-                        missing.append(e_val)
 
                 if missing:
-                    logger.error("List items not present in response: {}".format(missing))
+                    logger.error("List item(s) not present in response: {}".format(missing))
                     # then fall through and raise an error
                 else:
                     logger.debug("All expected list items present - continuing due to strict=%s", strict)

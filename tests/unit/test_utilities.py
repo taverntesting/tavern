@@ -168,12 +168,12 @@ class TestMatchRecursive:
     def test_match_list_items(self):
         """Should match any 2 list items if strict is False, not if it's True"""
         a = [
+            "b",
+        ]
+        b = [
             "a",
             "b",
             "c",
-        ]
-        b = [
-            "b",
         ]
 
         with pytest.raises(exceptions.KeyMismatchError):
@@ -181,15 +181,51 @@ class TestMatchRecursive:
 
         check_keys_match_recursive(a, b, [], strict=False)
 
+    def test_match_multiple(self):
+        """As long as they are in the right order, it can match multiple
+        items"""
+        a = [
+            "a",
+            "c",
+        ]
+        b = [
+            "a",
+            "b",
+            "c",
+        ]
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+        check_keys_match_recursive(a, b, [], strict=False)
+
+    def test_match_multiple_wrong_order(self):
+        """Raises an error if the expected items are in the wrong order"""
+        a = [
+            "c",
+            "a",
+        ]
+        b = [
+            "a",
+            "b",
+            "c",
+        ]
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [], strict=False)
+
     def test_match_wrong_type(self):
         """Can't match incorrect type"""
         a = [
+            1,
+        ]
+        b = [
             "1",
             "2",
             "3",
-        ]
-        b = [
-            1,
         ]
 
         with pytest.raises(exceptions.KeyMismatchError):
