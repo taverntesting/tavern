@@ -33,7 +33,7 @@ def run_test(in_file, test_spec, global_cfg):
         test_spec (dict): The specification for this test
         global_cfg (dict): Any global configuration for this test
 
-    Raises:
+    No Longer Raises:
         TavernException: If any of the tests failed
     """
 
@@ -114,6 +114,15 @@ def run_test(in_file, test_spec, global_cfg):
 
 
 def run_stage(sessions, stage, tavern_box, test_block_config):
+    """Run one stage from the test
+
+    Args:
+        sessions (list): List of relevant 'session' objects used for this test
+        stage (dict): specification of stage to be run
+        tavern_box (box.Box): Box object containing format variables to be used
+            in test
+        test_block_config (dict): available variables for test
+    """
     name = stage["name"]
 
     r = get_request_type(stage, test_block_config, sessions)
@@ -142,8 +151,14 @@ def _run_pytest(in_file, tavern_global_cfg, tavern_mqtt_backend=None, tavern_htt
     Args:
         in_file (str): file to run tests on
         tavern_global_cfg (dict): Extra global config
-        ptest_args (list): Extra pytest args to pass
-
+        tavern_mqtt_backend (str, optional): name of MQTT plugin to use. If not
+            specified, uses tavern-mqtt
+        tavern_http_backend (str, optional): name of HTTP plugin to use. If not
+            specified, use tavern-http
+        tavern_strict (bool, optional): Strictness of checking for responses.
+            See documentation for details
+        pytest_args (list, optional): List of extra arguments to pass directly
+            to Pytest as if they were command line arguments
         **kwargs (dict): ignored
 
     Returns:
@@ -179,5 +194,10 @@ def run(in_file, tavern_global_cfg=None, **kwargs):
     Args:
         in_file (str): file to run tests for
         tavern_global_cfg (dict): Extra global config
+        **kwargs: any extra arguments to pass to _run_pytest, see that function
+            for details
+
+    Returns:
+        bool: False if there were test failures, True otherwise
     """
     return _run_pytest(in_file, tavern_global_cfg, **kwargs)
