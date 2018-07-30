@@ -343,6 +343,8 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
             # Check things in the wrong order?
 
             if not strict:
+                missing = []
+
                 # Iterate over list items to see if any of them match...
                 for i, e_val in enumerate(expected_val):
                     for a_val in actual_val:
@@ -351,10 +353,17 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                         except exceptions.KeyMismatchError:
                             pass
                         else:
-                            logger.debug("One (or more) list items present - continuing due to strict=%s", strict)
-                            return
+                            logger.debug("'%s' present in response", e_val)
+                            break
+                    else:
+                        missing.append(e_val)
 
-                # otherwise, fall through and raise an error
+                if missing:
+                    logger.error("List items not present in response: {}".format(missing))
+                    # then fall through and raise an error
+                else:
+                    logger.debug("All expected list items present - continuing due to strict=%s", strict)
+                    return
 
             if len(expected_val) != len(actual_val):
                 raise_from(exceptions.KeyMismatchError("Length of returned list was different than expected - expected {} items, got {} ({})".format(len(expected_val), len(actual_val), full_err())), e)
