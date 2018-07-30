@@ -360,7 +360,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                             logger.debug("Got '%s' from response to check against '%s' from expected", current_response_val, e_val)
 
                         try:
-                            check_keys_match_recursive(e_val,current_response_val, keys + [i], strict)
+                            check_keys_match_recursive(e_val, current_response_val, keys + [i], strict)
                         except exceptions.KeyMismatchError:
                             pass
                         else:
@@ -368,7 +368,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                             break
 
                 if missing:
-                    logger.error("List item(s) not present in response: {}".format(missing))
+                    logger.error("List item(s) not present in response: %s", missing)
                     # then fall through and raise an error
                 else:
                     logger.debug("All expected list items present - continuing due to strict=%s", strict)
