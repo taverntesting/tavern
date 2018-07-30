@@ -352,8 +352,6 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                             pass
                         else:
                             logger.debug("One (or more) list items present - continuing due to strict=%s", strict)
-                            # TODO
-                            # do we need to check more here?
                             return
 
                 # otherwise, fall through and raise an error
