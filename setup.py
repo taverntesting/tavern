@@ -61,6 +61,7 @@ SETUP_REQUIRES = [
 
 INSTALL_REQUIRES = [
     "pytest-runner",
+    "pyyaml"
 ]
 
 
