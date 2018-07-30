@@ -23,21 +23,22 @@ def _resolve_test_stages(test_spec, available_stages):
     test_stages = []
     for raw_stage in test_spec["stages"]:
         stage = raw_stage
-        if "type" in stage:
-            if stage["type"] == "ref":
-                if "id" in stage:
-                    ref_id = stage["id"]
-                    if ref_id in available_stages:
-                        # Make sure nothing downstream can change the globally
-                        # defined stage. Just give the test a local copy.
-                        stage = deepcopy(available_stages[ref_id])
-                        logger.debug("found stage reference: %s", ref_id)
-                    else:
-                        logger.error("Skip stage: unknown stage referenced: %s", ref_id)
-                        continue
+        if stage.get("type") == "ref":
+            if "id" in stage:
+                ref_id = stage["id"]
+                if ref_id in available_stages:
+                    # Make sure nothing downstream can change the globally
+                    # defined stage. Just give the test a local copy.
+                    stage = deepcopy(available_stages[ref_id])
+                    logger.debug("found stage reference: %s", ref_id)
                 else:
-                    logger.error("Skip stage: 'ref' type must specify 'id'")
-                    continue
+                    logger.error("Bad stage: unknown stage referenced: %s", ref_id)
+                    raise exceptions.InvalidStageReferenceError(
+                        "Unknown stage reference: {}".format(ref_id))
+            else:
+                logger.error("Bad stage: 'ref' type must specify 'id'")
+                raise exceptions.BadSchemaError(
+                    "'ref' stage type must specify 'id'")
         test_stages.append(stage)
 
     return test_stages
@@ -89,6 +90,9 @@ def run_test(in_file, test_spec, global_cfg):
 
             if "stages" in included:
                 for stage in included["stages"]:
+                    if stage["id"] in available_stages:
+                        raise exceptions.DuplicateStageDefinitionError(
+                            "Stage with specified id already defined: {}".format(stage["id"]))
                     available_stages[stage["id"]] = stage
 
     test_block_name = test_spec["test_name"]

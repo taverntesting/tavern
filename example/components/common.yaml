@@ -4,4 +4,4 @@ description:
   Test the ability to test components from external YAML files.
 
 variables:
-  service: "http://localhost:5000"
+  service: "http://localhost:5009"
