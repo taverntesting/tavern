@@ -55,9 +55,11 @@ class DeployPypi(Command):
             [args],
             msg="Uploading package to pypi")
 
-
 SETUP_REQUIRES = [
-    "setuptools>=36",
+    "setuptools>=36",    
+]
+
+INSTALL_REQUIRES = [
     "pytest-runner",
 ]
 
@@ -73,9 +75,8 @@ TESTS_REQUIRE = [
 
 setup(
     name="tavern",
-
     setup_requires=SETUP_REQUIRES,
-
+    install_requires=INSTALL_REQUIRES,
     cmdclass={
         "docs": BuildDocs,
         "upload_twine": DeployPypi,
