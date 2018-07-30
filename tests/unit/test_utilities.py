@@ -181,6 +181,23 @@ class TestMatchRecursive:
 
         check_keys_match_recursive(a, b, [], strict=False)
 
+    def test_match_wrong_type(self):
+        """Can't match incorrect type"""
+        a = [
+            "1",
+            "2",
+            "3",
+        ]
+        b = [
+            1,
+        ]
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [], strict=False)
+
 
 @pytest.fixture(name="test_yaml")
 def fix_test_yaml():
