@@ -57,11 +57,9 @@ class DeployPypi(Command):
 
 
 TESTS_REQUIRE = [
-    "pytest>=3.1.0",
     "pytest-cov",
     "colorlog",
     "mock",
-    "paho-mqtt==1.3.1",
     "pytest-remove-stale-bytecode"
 ]
 
