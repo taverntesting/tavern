@@ -89,7 +89,6 @@ class _PluginCache(object):
         Args:
             test_block_config (dict): available config for test
 
-
         Raises:
             exceptions.MissingSettingsError: Description
 

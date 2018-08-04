@@ -217,6 +217,10 @@ mapping:
                   - OPTIONS
                   - HEAD
 
+              timeout:
+                type: float
+                required: false
+
               verify:
                 type: bool
                 required: false

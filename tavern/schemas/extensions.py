@@ -257,3 +257,23 @@ def check_strict_key(value, rule_obj, path):
             raise BadSchemaError("Invalid 'strict' keys passed: {}".format(value))
 
     return True
+
+
+def validate_timeout_tuple_or_float(value, rule_obj, path):
+    """Make sure timeout is a float/int or a tuple of floats/ints"""
+    # pylint: disable=unused-argument
+
+    err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints"
+
+    if isinstance(value, (list, tuple)):
+        if len(value) > 2:
+            raise BadSchemaError(err_msg)
+        if not all(isinstance(i, (float, int)) for i in value):
+            raise BadSchemaError(err_msg)
+
+    elif not isinstance(value, (float, int)):
+        raise BadSchemaError(err_msg)
+
+    logger.error(value)
+
+    return True
