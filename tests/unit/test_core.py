@@ -2,6 +2,7 @@ import json
 import uuid
 import os
 from mock import patch, Mock, MagicMock
+from copy import deepcopy
 
 import pytest
 import requests
@@ -109,6 +110,28 @@ class TestRunStages:
                 run_test("heif", fulltest, includes)
 
         assert pmock.called
+
+    def test_external_stage(self, fulltest, mockargs, includes):
+        """ Successfully load and run stage ref from the includes
+        """
+
+        mock_response = Mock(**mockargs)
+
+        newtest = deepcopy(fulltest)
+        newtest["includes"] = [includes]
+        newtest["stages"].insert(0, {"type": "ref", "id": "my_external_stage"})
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
+            run_test("heif", newtest, includes)
+
+        assert pmock.called
+
+        # We expect 2 calls, first to bing (external stage),
+        # then google (part of fulltest)
+        assert len(pmock.call_args_list) == 2
+        args, kwargs = pmock.call_args_list[0]
+        assert kwargs["url"] == "http://www.bing.com"
+        args, kwargs = pmock.call_args_list[1]
+        assert kwargs["url"] == "http://www.google.com"
 
 
 class TestDelay:

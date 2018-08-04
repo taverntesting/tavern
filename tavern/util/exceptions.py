@@ -83,3 +83,10 @@ class InvalidExtFunctionError(TavernException):
 
 class JMESError(TavernException):
     """Error in JMES matching"""
+
+
+class InvalidStageReferenceError(TavernException):
+    """Error loading stage reference"""
+
+class DuplicateStageDefinitionError(TavernException):
+    """Stage with the specified ID previously defined"""

@@ -19,6 +19,23 @@ def fix_example_includes():
             "http": "requests",
         },
         "strict": True,
+        "stages": [{
+            "id": "my_external_stage",
+            "name": "My external stage",
+            "request": {
+                "url": "http://www.bing.com",
+                "method": "GET",
+            },
+            "response": {
+                "status_code": 200,
+                "body": {
+                    "key": "value",
+                },
+                "headers": {
+                    "content-type": "application/json",
+                }
+            }
+        }]
     }
 
     return includes.copy()
