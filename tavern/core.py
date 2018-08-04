@@ -1,6 +1,7 @@
 import logging
 import warnings
 import os
+from copy import deepcopy
 
 import pytest
 
@@ -17,6 +18,30 @@ from .schemas.files import wrapfile
 
 logger = logging.getLogger(__name__)
 
+def _resolve_test_stages(test_spec, available_stages):
+    # Need to get a final list of stages in the tests (resolving refs)
+    test_stages = []
+    for raw_stage in test_spec["stages"]:
+        stage = raw_stage
+        if stage.get("type") == "ref":
+            if "id" in stage:
+                ref_id = stage["id"]
+                if ref_id in available_stages:
+                    # Make sure nothing downstream can change the globally
+                    # defined stage. Just give the test a local copy.
+                    stage = deepcopy(available_stages[ref_id])
+                    logger.debug("found stage reference: %s", ref_id)
+                else:
+                    logger.error("Bad stage: unknown stage referenced: %s", ref_id)
+                    raise exceptions.InvalidStageReferenceError(
+                        "Unknown stage reference: {}".format(ref_id))
+            else:
+                logger.error("Bad stage: 'ref' type must specify 'id'")
+                raise exceptions.BadSchemaError(
+                    "'ref' stage type must specify 'id'")
+        test_stages.append(stage)
+
+    return test_stages
 
 def run_test(in_file, test_spec, global_cfg):
     """Run a single tavern test
@@ -56,11 +81,19 @@ def run_test(in_file, test_spec, global_cfg):
         logger.warning("Empty test block in %s", in_file)
         return
 
+    available_stages = {}
     if test_spec.get("includes"):
         for included in test_spec["includes"]:
             if "variables" in included:
                 formatted_include = format_keys(included["variables"], {"tavern": tavern_box})
                 test_block_config["variables"].update(formatted_include)
+
+            if "stages" in included:
+                for stage in included["stages"]:
+                    if stage["id"] in available_stages:
+                        raise exceptions.DuplicateStageDefinitionError(
+                            "Stage with specified id already defined: {}".format(stage["id"]))
+                    available_stages[stage["id"]] = stage
 
     test_block_name = test_spec["test_name"]
 
@@ -70,6 +103,7 @@ def run_test(in_file, test_spec, global_cfg):
     logger.info("Running test : %s", test_block_name)
 
     with ExitStack() as stack:
+        test_spec["stages"] = _resolve_test_stages(test_spec, available_stages)
         sessions = get_extra_sessions(test_spec, test_block_config)
 
         for name, session in sessions.items():

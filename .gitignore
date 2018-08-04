@@ -94,6 +94,10 @@ tags
 # Sublimetext
 *.sublime-*
 
+# Vim
+*.swp
+*.swo
+
 # Pycharm
 .idea
 
