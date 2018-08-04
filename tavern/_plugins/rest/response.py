@@ -9,10 +9,10 @@ except ImportError:
     from urlparse import urlparse, parse_qs
 
 from requests.status_codes import _codes
+from requests.exceptions import Timeout
 
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util.dict_util import recurse_access_key, deep_dict_merge
-from tavern.util.exceptions import TestFailError
 from tavern.response.base import BaseResponse, indent_err_text
 
 logger = logging.getLogger(__name__)
@@ -147,6 +147,10 @@ class RestResponse(BaseResponse):
         """
         # pylint: disable=too-many-statements
 
+        if isinstance(response, Timeout):
+            self._adderr("Request timed out: %s", str(response), e=response)
+            self._raise_if_failed()
+
         self._verbose_log_response(response)
 
         self.response = response
@@ -203,8 +207,7 @@ class RestResponse(BaseResponse):
         self._validate_block("headers", response.headers)
         self._validate_block("redirect_query_params", redirect_query_params)
 
-        if self.errors:
-            raise TestFailError("Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()), failures=self.errors)
+        self._raise_if_failed()
 
         return saved
 

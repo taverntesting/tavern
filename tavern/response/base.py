@@ -6,6 +6,7 @@ import warnings
 from tavern.util import exceptions
 from tavern.util.python_2_util import indent
 from tavern.util.dict_util import format_keys, check_keys_match_recursive
+from tavern.util.exceptions import TestFailError
 
 logger = logging.getLogger(__name__)
 
@@ -36,6 +37,10 @@ class BaseResponse(object):
         else:
             logger.error(msg, *args)
         self.errors += [(msg % args)]
+
+    def _raise_if_failed(self):
+        if self.errors:
+            raise TestFailError("Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()), failures=self.errors)
 
     @abstractmethod
     def verify(self, response):

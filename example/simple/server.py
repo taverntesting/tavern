@@ -9,7 +9,7 @@ app = Flask(__name__)
 def double_number():
     r = request.get_json()
 
-    time.sleep(10)
+    time.sleep(0.5)
 
     try:
         number = r["number"]
