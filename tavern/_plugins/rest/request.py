@@ -54,7 +54,10 @@ def get_request_args(rspec, test_block_config):
         "data",
         "params",
         "headers",
-        "files"
+        "files",
+        "timeout",
+        #"proxies", # TODO: add support for requests proxies
+        #"cert", # TODO: add/test support for certs (either file path or tuple)
         # Ideally this would just be passed through but requests seems to error
         # if we pass a list instead of a tuple, so we have to manually convert
         # it further down
@@ -63,7 +66,8 @@ def get_request_args(rspec, test_block_config):
 
     optional_with_default = {
         "verify": True,
-        "stream": False
+        "stream": False,
+        "allow_redirects": False,
     }
 
     if "method" not in rspec:
@@ -176,6 +180,8 @@ class RestRequest(BaseRequest):
             "verify",
             "files",
             "stream",
+            "allow_redirects",
+            "timeout"
             # "cookies",
             # "hooks",
         }
@@ -185,8 +191,6 @@ class RestRequest(BaseRequest):
         request_args = get_request_args(rspec, test_block_config)
 
         logger.debug("Request args: %s", request_args)
-
-        request_args.update(allow_redirects=False)
 
         self._request_args = request_args
 
@@ -214,10 +218,13 @@ class RestRequest(BaseRequest):
 
         Returns:
             requests.Response: response object
+            requests.exceptions.RequestException: An exception from running the request.
         """
 
         try:
             return self._prepared()
+        except requests.exceptions.Timeout as e:
+            return e
         except requests.exceptions.RequestException as e:
             logger.exception("Error running prepared request")
             raise_from(exceptions.RestRequestException, e)

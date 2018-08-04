@@ -228,6 +228,14 @@ mapping:
                   - type: str
                     unique: true
 
+              timeout:
+                type: float
+                required: false
+
+              allow_redirects:
+                type: bool
+                required: false
+
           response:
             type: map
             required: false

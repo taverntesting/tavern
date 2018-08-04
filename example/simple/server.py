@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 
+import time
 
 app = Flask(__name__)
 
@@ -7,6 +8,8 @@ app = Flask(__name__)
 @app.route("/double", methods=["POST"])
 def double_number():
     r = request.get_json()
+
+    time.sleep(10)
 
     try:
         number = r["number"]
