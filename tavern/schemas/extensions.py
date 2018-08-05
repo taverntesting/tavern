@@ -276,7 +276,7 @@ def validate_timeout_tuple_or_float(value, rule_obj, path):
         if len(value) != 2:
             raise BadSchemaError(err_msg)
         for v in value:
-            check_is_timeout_val(value)
+            check_is_timeout_val(v)
     else:
         check_is_timeout_val(value)
 
