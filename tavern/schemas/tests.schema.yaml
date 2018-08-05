@@ -218,8 +218,9 @@ mapping:
                   - HEAD
 
               timeout:
-                type: float
+                type: any
                 required: false
+                func: validate_timeout_tuple_or_float
 
               verify:
                 type: bool
