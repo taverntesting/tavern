@@ -263,7 +263,7 @@ def validate_timeout_tuple_or_float(value, rule_obj, path):
     """Make sure timeout is a float/int or a tuple of floats/ints"""
     # pylint: disable=unused-argument
 
-    err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints"
+    err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{}' (type {})".format(value, type(value))
 
     def check_is_timeout_val(v):
         if value is True or value is False:
