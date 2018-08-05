@@ -266,7 +266,7 @@ def validate_timeout_tuple_or_float(value, rule_obj, path):
     err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints"
 
     if isinstance(value, (list, tuple)):
-        if len(value) > 2:
+        if len(value) != 2:
             raise BadSchemaError(err_msg)
         if not all(isinstance(i, (float, int)) for i in value):
             raise BadSchemaError(err_msg)

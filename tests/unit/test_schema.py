@@ -88,7 +88,6 @@ class TestTimeout:
     @pytest.mark.parametrize("incorrect_value", (
         "abc",
         True,
-        None,
         {"a": 2},
         [1, 2, 3],
     ))
