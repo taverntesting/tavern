@@ -274,6 +274,4 @@ def validate_timeout_tuple_or_float(value, rule_obj, path):
     elif not isinstance(value, (float, int)):
         raise BadSchemaError(err_msg)
 
-    logger.error(value)
-
     return True
