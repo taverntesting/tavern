@@ -35,6 +35,8 @@ stages:
 
 test_name: Test timeout to server actually times out
 
+_xfail: run
+
 includes:
   - !include common.yaml
 
@@ -50,6 +52,8 @@ stages:
 ---
 
 test_name: Test timeout to server tuple actually times out
+
+_xfail: run
 
 includes:
 - !include common.yaml
