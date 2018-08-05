@@ -110,6 +110,11 @@ def get_request_args(rspec, test_block_config):
     if "auth" in fspec:
         request_args["auth"] = tuple(fspec["auth"])
 
+    if "timeout" in fspec:
+        # Needs to be a tuple, it being a list doesn't work
+        if isinstance(fspec["timeout"], list):
+            request_args["timeout"] = tuple(fspec["timeout"])
+
     for key in optional_in_file:
         try:
             func = get_wrapped_create_function(request_args[key].pop("$ext"))
