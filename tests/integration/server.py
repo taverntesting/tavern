@@ -1,5 +1,7 @@
 import math
 import os
+import time
+
 from flask import Flask, request, jsonify, Response
 
 
@@ -25,6 +27,16 @@ def verify():
         return '', 200
     else:
         return '', 401
+
+
+@app.route("/get_thing_slow", methods=["GET"])
+def get_slow():
+    time.sleep(0.25)
+
+    response = {
+        "status": "OK",
+    }
+    return jsonify(response), 200
 
 
 @app.route("/fake_dictionary", methods=["GET"])
