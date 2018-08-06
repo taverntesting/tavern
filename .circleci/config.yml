@@ -11,24 +11,24 @@ base_test_step: &base_test_step
     - checkout
 
     # Download and cache dependencies
-    - restore_cache:
+    - restore_cache: &s1
         keys:
           - tavern-deps-{{ checksum "setup.py" }}-{{ checksum "setup.cfg" }}
           # fallback to using the latest cache if no exact match is found
           - tavern-deps-
 
-    - run:
+    - run: &s2
         name: install dependencies
         command: |
           pip install --user --upgrade setuptools tox
           python -m tox -e ${CIRCLE_JOB} -c ${TOXCFG} --notest
 
-    - save_cache:
+    - save_cache: &s3
         paths:
           - ~/.cache/pip/
         key: v1-dependencies-{{ checksum "setup.py" }}-{{ checksum "setup.cfg" }}
 
-    - run:
+    - run: &s4
         name: run tests
         command: |
           python -m tox -e ${CIRCLE_JOB} -c ${TOXCFG}
@@ -37,6 +37,16 @@ integration_test_step: &integration_test_step
   <<: *base_test_step
   environment:
     TOXCFG: "tox-integration.ini"
+
+  steps:
+    - checkout
+    - *s1
+    - *s2
+    - *s3
+    # Need to do this for integration tests
+    - setup_remote_docker:
+        docker_layer_caching: true
+    - *s4
 
 workflows:
   version: 2
