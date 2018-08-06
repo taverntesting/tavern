@@ -5,5 +5,5 @@ description: used for testing against local server
 variables:
   service:
     proto: http
-    host: "{tavern.env_vars.DOCKER_HOST}"
+    host: localhost
     port: 5000

@@ -3,7 +3,7 @@ name: test includes
 description: used for testing against local server
 
 variables:
-  host: http://{tavern.env_vars.DOCKER_HOST}:5003
+  host: http://localhost:5003
   first_part: "nested"
   second_part: "{tavern.env_vars.SECOND_URL_PART}"
 
