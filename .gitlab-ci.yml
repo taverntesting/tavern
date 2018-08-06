@@ -13,12 +13,12 @@ stages:
 .basetest: &testbaseanchor
   stage: basic-tests
 
-  cache:
-    key: tavern-project-cache
-    paths:
-      - .cache/pip
-      - .tox
-    policy: pull
+  # cache:
+  #   key: tavern-project-cache
+  #   paths:
+  #     - .cache/pip
+  #     - .tox
+  #   policy: pull
 
   before_script:
     - pip install tox
@@ -68,11 +68,11 @@ py36:
 
   # Make this job push the cache. It doesn't hugely matter if the cache is out
   # of date, so just do it in one job.
-  cache:
-    key: tavern-project-cache
-    paths:
-      - .cache/pip
-      - .tox
+  # cache:
+  #   key: tavern-project-cache
+  #   paths:
+  #     - .cache/pip
+  #     - .tox
 
 py27lint:
   <<: *basictest
