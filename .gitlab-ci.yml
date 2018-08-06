@@ -114,15 +114,11 @@ pypy3:
   <<: *testbaseanchor
   variables:
     TOXCFG: tox-integration.ini
-    # DOCKER_HOST: tcp://docker:2375
+    DOCKER_HOST: tcp://docker:2375
   services:
     - docker:dind
   before_script:
     - pip install --upgrade docker-compose tox
-    - mkdir -p /root/.docker/
-    # - touch /root/.docker/config.json
-    - echo "{}" > /root/.docker/config.json
-    - docker-compose --verbose -f ./tests/integration/docker-compose.yaml images
 
 
 # basic integration tests
