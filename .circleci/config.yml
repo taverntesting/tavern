@@ -20,7 +20,7 @@ base_test_step: &base_test_step
     - run:
         name: install dependencies
         command: |
-          pip install --upgrade setuptools tox
+          pip install --user --upgrade setuptools tox
           tox --notest
 
     - save_cache:
