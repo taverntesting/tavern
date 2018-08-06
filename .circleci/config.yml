@@ -33,6 +33,11 @@ version: 2
         command: |
           tox -e ${CIRCLE_JOB} -c ${TOXCFG}
 
+.integration_test_step: &integration_test_step
+  <<: *base_test_step
+  environment:
+    TOXCFG: "tox-integration.ini"
+
 workflows:
   version: 2
   check-test-deploy:
@@ -42,44 +47,36 @@ workflows:
       - py36flakes
 
       # Unit tests with common versions of Python
-      - py27: &unit_test_dependencies
+      - py27: &basic_test_dependencies
           requires:
             - py27flakes
             - py36flakes
-      - py36: *unit_test_dependencies
-      - py27lint: *unit_test_dependencies
-      - py36lint: *unit_test_dependencies
+      - py36: *basic_test_dependencies
+      - py27lint: *basic_test_dependencies
+      - py36lint: *basic_test_dependencies
+      # Basic integration tests with common versions of Python
+      - py27-generic: *basic_test_dependencies
+      - py36-generic: *basic_test_dependencies
 
       # Unit tests with extra other versions of Python
-      - py34: &extra_unit_test_dependencies
+      - py34: &extra_test_dependencies
           requires:
             - py27flakes
             - py36flakes
-      - py35: *extra_unit_test_dependencies
-      - py37: *extra_unit_test_dependencies
-      - pypy: *extra_unit_test_dependencies
-      - pypy3: *extra_unit_test_dependencies
-
-      # Basic integration tests with common versions of Python
-      - py27-generic: &integration_test_dependencies
-          requires:
-            - py27
-            - py36
-            - py27lint
-            - py36lint
-      - py36-generic: *integration_test_dependencies
-
+          filters:
+            branches:
+              only:
+                - master
+      - py35: *extra_test_dependencies
+      - py37: *extra_test_dependencies
+      - pypy: *extra_test_dependencies
+      - pypy3: *extra_test_dependencies
       # Extra integration tests
-      - py27-advanced: &extra_integration_test_dependencies
-          requires:
-            - py27
-            - py36
-            - py27lint
-            - py36lint
-      - py36-generic: *extra_integration_test_dependencies
-      - py36-cookies: *extra_integration_test_dependencies
-      - py36-mqtt: *extra_integration_test_dependencies
-      - py36-advanced: *extra_integration_test_dependencies
+      - py27-advanced: *extra_test_dependencies
+      - py36-generic: *extra_test_dependencies
+      - py36-cookies: *extra_test_dependencies
+      - py36-mqtt: *extra_test_dependencies
+      - py36-advanced: *extra_test_dependencies
 
       # TODO
       # - deploy:
@@ -138,3 +135,15 @@ jobs:
     <<: *base_test_step
     docker:
       - image: circleci/python:3.6
+
+  py27-generic:
+    <<: *integration_test_step
+    docker:
+    - image: circleci/python:2.7
+  py36-generic: &py36_integration_step
+    <<: *integration_test_step
+    docker:
+    - image: circleci/python:3.6
+  py36-cookies: *py36_integration_step
+  py36-mqtt: *py36_integration_step
+  py36-advanced: *py36_integration_step
