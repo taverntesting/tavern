@@ -211,7 +211,7 @@ marks:
 stages:
   - name: Echo back a unicode value and make sure it matches
     request:
-      url: "http://localhost:5003/echo"
+      url: "{host}/echo"
       method: POST
       json:
         value: "{to_send}"

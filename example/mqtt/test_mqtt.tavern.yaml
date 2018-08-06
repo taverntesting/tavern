@@ -9,7 +9,7 @@ paho-mqtt: &mqtt_spec
   # tls:
   #   enable: true
   connect:
-    host: localhost
+    host: "{host}"
     port: 9001
     timeout: 3
   client:
@@ -39,7 +39,7 @@ paho-mqtt: *mqtt_spec
 stages:
   - name: step 1 - post message trigger
     request:
-      url: "{host}/send_mqtt_message"
+      url: "{host}:{port}/send_mqtt_message"
       json:
         device_id: 123
         payload: "hello"
@@ -69,7 +69,7 @@ paho-mqtt: *mqtt_spec
 stages:
   - name: step 0 - reset devices
     request:
-      url: "{host}/reset"
+      url: "{host}:{port}/reset"
       method: POST
       headers:
         content-type: application/json
@@ -78,7 +78,7 @@ stages:
 
   - name: step 1 - get device state with lights off
     request:
-      url: "{host}/get_device_state"
+      url: "{host}:{port}/get_device_state"
       params:
         device_id: 123
       method: GET
@@ -100,7 +100,7 @@ stages:
 
   - name: step 3 - get device state, lights now on
     request:
-      url: "{host}/get_device_state"
+      url: "{host}:{port}/get_device_state"
       params:
         device_id: 123
       method: GET

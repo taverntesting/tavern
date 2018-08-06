@@ -3,4 +3,4 @@ name: test includes
 description: used for testing against local server
 
 variables:
-  host: http://localhost:5001
+  host: http://{tavern.env_vars.DOCKER_HOST}:5001
