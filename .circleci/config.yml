@@ -131,7 +131,7 @@ jobs:
     <<: *base_test_step
     docker:
       - image: circleci/python:2.7
-  py37lint:
+  py36lint:
     <<: *base_test_step
     docker:
       - image: circleci/python:3.6
