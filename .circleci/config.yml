@@ -6,6 +6,7 @@ base_test_step: &base_test_step
 
   environment:
     TOXCFG: "tox.ini"
+    PATH: $HOME/.local/bin
 
   steps:
     - checkout
@@ -21,7 +22,7 @@ base_test_step: &base_test_step
         name: install dependencies
         command: |
           pip install --user --upgrade setuptools tox
-          python -m tox -e ${CIRCLE_JOB} -c ${TOXCFG} --notest
+          tox -e ${CIRCLE_JOB} -c ${TOXCFG} --notest
 
     - save_cache:
         paths:
@@ -31,7 +32,7 @@ base_test_step: &base_test_step
     - run:
         name: run tests
         command: |
-          python -m tox -e ${CIRCLE_JOB} -c ${TOXCFG}
+          tox -e ${CIRCLE_JOB} -c ${TOXCFG}
 
 integration_test_step: &integration_test_step
   <<: *base_test_step
