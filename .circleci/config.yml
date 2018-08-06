@@ -6,7 +6,6 @@ base_test_step: &base_test_step
 
   environment:
     TOXCFG: "tox.ini"
-    PATH: $PATH:$HOME/.local/bin
 
   steps:
     - checkout
@@ -22,7 +21,7 @@ base_test_step: &base_test_step
         name: install dependencies
         command: |
           pip install --user --upgrade setuptools tox
-          tox -e ${CIRCLE_JOB} -c ${TOXCFG} --notest
+          python -m tox -e ${CIRCLE_JOB} -c ${TOXCFG} --notest
 
     - save_cache:
         paths:
@@ -32,7 +31,7 @@ base_test_step: &base_test_step
     - run:
         name: run tests
         command: |
-          tox -e ${CIRCLE_JOB} -c ${TOXCFG}
+          python -m tox -e ${CIRCLE_JOB} -c ${TOXCFG}
 
 integration_test_step: &integration_test_step
   <<: *base_test_step
@@ -70,8 +69,8 @@ workflows:
                 - master
       - py35: *extra_test_dependencies
       - py37: *extra_test_dependencies
-      - pypy: *extra_test_dependencies
-      - pypy3: *extra_test_dependencies
+      # - pypy: *extra_test_dependencies
+      # - pypy3: *extra_test_dependencies
       # Extra integration tests
       - py27-advanced: *extra_test_dependencies
       - py36-generic: *extra_test_dependencies
@@ -120,14 +119,14 @@ jobs:
     <<: *base_test_step
     docker:
       - image: circleci/python:3.7
-  pypy:
-    <<: *base_test_step
-    docker:
-      - image: pypy:2-slim
-  pypy3:
-    <<: *base_test_step
-    docker:
-      - image: pypy:3-slim
+  # pypy:
+  #   <<: *base_test_step
+  #   docker:
+  #     - image: pypy:2-slim
+  # pypy3:
+  #   <<: *base_test_step
+  #   docker:
+  #     - image: pypy:3-slim
   py27lint:
     <<: *base_test_step
     docker:
