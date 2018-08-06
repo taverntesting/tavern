@@ -21,7 +21,7 @@ base_test_step: &base_test_step
         name: install dependencies
         command: |
           pip install --user --upgrade setuptools tox
-          tox --notest
+          python -m tox --notest
 
     - save_cache:
         paths:
