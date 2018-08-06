@@ -6,7 +6,7 @@ base_test_step: &base_test_step
 
   environment:
     TOXCFG: "tox.ini"
-    PATH: $HOME/.local/bin
+    PATH: $PATH:$HOME/.local/bin
 
   steps:
     - checkout
