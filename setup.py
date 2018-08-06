@@ -56,25 +56,15 @@ class DeployPypi(Command):
             msg="Uploading package to pypi")
 
 
-SETUP_REQUIRES = [
-    "setuptools>=36",
-    "pytest-runner",
-]
-
-
 TESTS_REQUIRE = [
-    "pytest>=3.1.0",
     "pytest-cov",
     "colorlog",
     "mock",
-    "paho-mqtt==1.3.1",
     "pytest-remove-stale-bytecode"
 ]
 
 setup(
     name="tavern",
-
-    setup_requires=SETUP_REQUIRES,
 
     cmdclass={
         "docs": BuildDocs,

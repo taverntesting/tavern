@@ -96,6 +96,7 @@ def validate_regex(response, expression, header=None):
         response (Response): requests.Response object
         expression (str): Regex expression to use
         header (str): Match against a particular header instead of the body
+
     Returns:
         dict: dictionary of regex: boxed name capture groups
     """

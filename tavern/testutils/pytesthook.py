@@ -3,6 +3,7 @@ import io
 import logging
 import itertools
 import copy
+import py
 
 import attr
 from _pytest._code.code import FormattedExcinfo
@@ -239,9 +240,6 @@ class YamlFile(pytest.File):
         Yields:
             YamlItem: Essentially an individual pytest 'test object'
         """
-        # pylint: disable=too-many-nested-blocks
-
-        # pylint: disable=too-many-locals
 
         try:
             # Convert to a list so we can catch parser exceptions
@@ -259,7 +257,7 @@ class YamlFile(pytest.File):
                     i.initialise_fixture_attrs()
                     yield i
             except (TypeError, KeyError):
-                verify_tests(test_spec, load_plugins=False)
+                verify_tests(test_spec, with_plugins=False)
                 raise
 
 
@@ -298,7 +296,14 @@ class YamlItem(pytest.Item):
 
     @property
     def obj(self):
-        stages = ["{:d}: {:s}".format(i + 1, stage["name"]) for i, stage in enumerate(self.spec["stages"])]
+        stages = []
+        for i, stage in enumerate(self.spec["stages"]):
+            name = "<unknown>"
+            if "name" in stage:
+                name = stage["name"]
+            elif "id" in stage:
+                name = stage["id"]
+            stages.append("{:d}: {:s}".format(i + 1, name))
 
         # This needs to be a function or skipif breaks
         def fakefun():
@@ -627,3 +632,14 @@ class ReprdError(object):
         tw.line("")
 
         self._print_errors(tw)
+
+    @property
+    def longreprtext(self):
+        tw = py.io.TerminalWriter(stringio=True)  #pylint: disable=no-member
+        tw.hasmarkup = False
+        self.toterminal(tw)
+        exc = tw.stringio.getvalue()
+        return exc.strip()
+
+    def __str__(self):
+        return self.longreprtext

@@ -5,7 +5,6 @@ significantly if/when a proper plugin system is implemented!
 """
 import logging
 
-import yaml
 import stevedore
 from future.utils import raise_from
 
@@ -26,26 +25,6 @@ def plugin_load_error(mgr, entry_point, err):
     raise_from(exceptions.PluginLoadError(msg), err)
 
 
-def load_schema_plugins(schema_filename):
-    """Load base schema with plugin schemas"""
-
-    plugins = load_plugins()
-
-    with open(schema_filename, "r") as base_schema_file:
-        base_schema = yaml.load(base_schema_file)
-
-    for p in plugins:
-        try:
-            plugin_schema = p.plugin.schema
-        except AttributeError:
-            # Don't require a schema
-            logger.debug("No schema defined for %s", p.name)
-        else:
-            base_schema["mapping"].update(plugin_schema.get("initialisation", {}))
-
-    return base_schema
-
-
 def is_valid_reqresp_plugin(ext):
     """Whether this is a valid 'reqresp' plugin
 
@@ -53,6 +32,12 @@ def is_valid_reqresp_plugin(ext):
 
     Todo:
         Not all of these are required for all request/response types probably
+
+    Args:
+        ext (object): class or module plugin object
+
+    Returns:
+        bool: Whether the plugin has everything we need to use it
     """
     required = [
         # MQTTClient, requests.Session
@@ -100,6 +85,16 @@ class _PluginCache(object):
             - Limit which plugins are loaded based on some config/command line
               option
             - Different plugin names
+
+        Args:
+            test_block_config (dict): available config for test
+
+
+        Raises:
+            exceptions.MissingSettingsError: Description
+
+        Returns:
+            list: Loaded plugins, can be a class or a module
         """
         # pylint: disable=no-self-use
 
@@ -138,6 +133,7 @@ def get_extra_sessions(test_spec, test_block_config):
 
     Args:
         test_spec (dict): Spec for the test block
+        test_block_config (dict): available config for test
 
     Returns:
         dict: mapping of name: session. Session should be a context manager.
@@ -167,6 +163,10 @@ def get_request_type(stage, test_block_config, sessions):
 
     Returns:
         BaseRequest: request object with a run() method
+
+    Raises:
+        exceptions.DuplicateKeysError: More than one kind of request specified
+        exceptions.MissingKeysError: No request type specified
     """
 
     plugins = load_plugins(test_block_config)
@@ -212,6 +212,7 @@ def get_expected(stage, test_block_config, sessions):
 
     Args:
         stage (dict): test stage
+        test_block_config (dict): available configuration for this test
         sessions (dict): all available sessions
 
     Returns:

@@ -1,6 +1,7 @@
 import logging
 import warnings
 import os
+from copy import deepcopy
 
 import pytest
 
@@ -17,6 +18,30 @@ from .schemas.files import wrapfile
 
 logger = logging.getLogger(__name__)
 
+def _resolve_test_stages(test_spec, available_stages):
+    # Need to get a final list of stages in the tests (resolving refs)
+    test_stages = []
+    for raw_stage in test_spec["stages"]:
+        stage = raw_stage
+        if stage.get("type") == "ref":
+            if "id" in stage:
+                ref_id = stage["id"]
+                if ref_id in available_stages:
+                    # Make sure nothing downstream can change the globally
+                    # defined stage. Just give the test a local copy.
+                    stage = deepcopy(available_stages[ref_id])
+                    logger.debug("found stage reference: %s", ref_id)
+                else:
+                    logger.error("Bad stage: unknown stage referenced: %s", ref_id)
+                    raise exceptions.InvalidStageReferenceError(
+                        "Unknown stage reference: {}".format(ref_id))
+            else:
+                logger.error("Bad stage: 'ref' type must specify 'id'")
+                raise exceptions.BadSchemaError(
+                    "'ref' stage type must specify 'id'")
+        test_stages.append(stage)
+
+    return test_stages
 
 def run_test(in_file, test_spec, global_cfg):
     """Run a single tavern test
@@ -33,7 +58,7 @@ def run_test(in_file, test_spec, global_cfg):
         test_spec (dict): The specification for this test
         global_cfg (dict): Any global configuration for this test
 
-    Raises:
+    No Longer Raises:
         TavernException: If any of the tests failed
     """
 
@@ -56,11 +81,19 @@ def run_test(in_file, test_spec, global_cfg):
         logger.warning("Empty test block in %s", in_file)
         return
 
+    available_stages = {}
     if test_spec.get("includes"):
         for included in test_spec["includes"]:
             if "variables" in included:
                 formatted_include = format_keys(included["variables"], {"tavern": tavern_box})
                 test_block_config["variables"].update(formatted_include)
+
+            if "stages" in included:
+                for stage in included["stages"]:
+                    if stage["id"] in available_stages:
+                        raise exceptions.DuplicateStageDefinitionError(
+                            "Stage with specified id already defined: {}".format(stage["id"]))
+                    available_stages[stage["id"]] = stage
 
     test_block_name = test_spec["test_name"]
 
@@ -70,6 +103,7 @@ def run_test(in_file, test_spec, global_cfg):
     logger.info("Running test : %s", test_block_name)
 
     with ExitStack() as stack:
+        test_spec["stages"] = _resolve_test_stages(test_spec, available_stages)
         sessions = get_extra_sessions(test_spec, test_block_config)
 
         for name, session in sessions.items():
@@ -114,6 +148,15 @@ def run_test(in_file, test_spec, global_cfg):
 
 
 def run_stage(sessions, stage, tavern_box, test_block_config):
+    """Run one stage from the test
+
+    Args:
+        sessions (list): List of relevant 'session' objects used for this test
+        stage (dict): specification of stage to be run
+        tavern_box (box.Box): Box object containing format variables to be used
+            in test
+        test_block_config (dict): available variables for test
+    """
     name = stage["name"]
 
     r = get_request_type(stage, test_block_config, sessions)
@@ -142,8 +185,14 @@ def _run_pytest(in_file, tavern_global_cfg, tavern_mqtt_backend=None, tavern_htt
     Args:
         in_file (str): file to run tests on
         tavern_global_cfg (dict): Extra global config
-        ptest_args (list): Extra pytest args to pass
-
+        tavern_mqtt_backend (str, optional): name of MQTT plugin to use. If not
+            specified, uses tavern-mqtt
+        tavern_http_backend (str, optional): name of HTTP plugin to use. If not
+            specified, use tavern-http
+        tavern_strict (bool, optional): Strictness of checking for responses.
+            See documentation for details
+        pytest_args (list, optional): List of extra arguments to pass directly
+            to Pytest as if they were command line arguments
         **kwargs (dict): ignored
 
     Returns:
@@ -179,5 +228,10 @@ def run(in_file, tavern_global_cfg=None, **kwargs):
     Args:
         in_file (str): file to run tests for
         tavern_global_cfg (dict): Extra global config
+        **kwargs: any extra arguments to pass to _run_pytest, see that function
+            for details
+
+    Returns:
+        bool: False if there were test failures, True otherwise
     """
     return _run_pytest(in_file, tavern_global_cfg, **kwargs)

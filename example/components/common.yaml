@@ -1,0 +1,7 @@
+---
+name: Test loading external componenets
+description:
+  Test the ability to test components from external YAML files.
+
+variables:
+  service: "http://localhost:5009"

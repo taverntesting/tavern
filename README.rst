@@ -181,11 +181,3 @@ Tavern makes use of several excellent open-source projects:
    formatting terminal outputs
 -  `paho-mqtt <https://github.com/eclipse/paho.mqtt.python>`__, for
    sending MQTT messages
-
-Developed and maintained by `Overlock <https://overlock.io>`__
---------------------------------------------------------------
-
-Overlock helps developers quickly find and fix bugs in distributed
-systems such as IoT deployments by gathering together exception
-information from end devices, gateways or servers. We're currently in
-beta - find out more at `overlock.io <https://overlock.io>`__
