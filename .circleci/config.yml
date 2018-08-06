@@ -1,7 +1,7 @@
 ---
 version: 2
 
-.base_test_step: &base_test_step
+base_test_step: &base_test_step
   working_directory: ~/repo
 
   environment:
@@ -33,7 +33,7 @@ version: 2
         command: |
           tox -e ${CIRCLE_JOB} -c ${TOXCFG}
 
-.integration_test_step: &integration_test_step
+integration_test_step: &integration_test_step
   <<: *base_test_step
   environment:
     TOXCFG: "tox-integration.ini"
