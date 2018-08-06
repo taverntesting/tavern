@@ -1,0 +1,149 @@
+---
+version: 2
+
+.base_test_step: &base_test_step
+  working_directory: ~/repo
+
+  environment:
+    TOXCFG: "tox.ini"
+
+  steps:
+    - checkout
+
+    # Download and cache dependencies
+    - restore_cache:
+        keys:
+          - tavern-deps-{{ checksum "setup.py" }}-{{ checksum "setup.cfg" }}
+          # fallback to using the latest cache if no exact match is found
+          - tavern-deps-
+
+    - run:
+        name: install dependencies
+        command: |
+          pip install --upgrade setuptools tox
+          tox --notest
+
+    - save_cache:
+        paths:
+          - ~/.cache/pip/
+        key: v1-dependencies-{{ checksum "setup.py" }}-{{ checksum "setup.cfg" }}
+
+    - run:
+        name: run tests
+        command: |
+          tox -e ${CIRCLE_JOB} -c ${TOXCFG}
+
+.integration_test_step: &integration_test_step
+  <<: *base_test_step
+  environment:
+    TOXCFG: "tox-integration.ini"
+
+workflows:
+  version: 2
+  check-test-deploy:
+    jobs:
+      # Pyflakes
+      - py27flakes
+      - py36flakes
+
+      # Unit tests with common versions of Python
+      - py27: &basic_test_dependencies
+          requires:
+            - py27flakes
+            - py36flakes
+      - py36: *basic_test_dependencies
+      - py27lint: *basic_test_dependencies
+      - py36lint: *basic_test_dependencies
+      # Basic integration tests with common versions of Python
+      - py27-generic: *basic_test_dependencies
+      - py36-generic: *basic_test_dependencies
+
+      # Unit tests with extra other versions of Python
+      - py34: &extra_test_dependencies
+          requires:
+            - py27flakes
+            - py36flakes
+          filters:
+            branches:
+              only:
+                - master
+      - py35: *extra_test_dependencies
+      - py37: *extra_test_dependencies
+      - pypy: *extra_test_dependencies
+      - pypy3: *extra_test_dependencies
+      # Extra integration tests
+      - py27-advanced: *extra_test_dependencies
+      - py36-generic: *extra_test_dependencies
+      - py36-cookies: *extra_test_dependencies
+      - py36-mqtt: *extra_test_dependencies
+      - py36-advanced: *extra_test_dependencies
+
+      # TODO
+      # - deploy:
+      #     requires:
+      #       - py27-generic
+      #       - py27-advanced
+      #       - py36-generic
+      #       - py36-cookies
+      #       - py36-mqtt
+      #       - py36-advanced
+
+
+jobs:
+  py27flakes:
+    <<: *base_test_step
+    docker:
+      - image: circleci/python:2.7
+  py37flakes:
+    <<: *base_test_step
+    docker:
+      - image: circleci/python:3.7
+
+  py27:
+    <<: *base_test_step
+    docker:
+      - image: circleci/python:2.7
+  py34:
+    <<: *base_test_step
+    docker:
+      - image: circleci/python:3.4
+  py35:
+    <<: *base_test_step
+    docker:
+      - image: circleci/python:3.5
+  py36:
+    <<: *base_test_step
+    docker:
+      - image: circleci/python:3.6
+  py37:
+    <<: *base_test_step
+    docker:
+      - image: circleci/python:3.7
+  pypy:
+    <<: *base_test_step
+    docker:
+      - image: pypy:2-slim
+  pypy3:
+    <<: *base_test_step
+    docker:
+      - image: pypy:3-slim
+  py27lint:
+    <<: *base_test_step
+    docker:
+      - image: circleci/python:2.7
+  py37lint:
+    <<: *base_test_step
+    docker:
+      - image: circleci/python:3.6
+
+  py27-generic:
+    <<: *integration_test_step
+    docker:
+    - image: circleci/python:2.7
+  py36-generic: &py36_integration_step
+    <<: *integration_test_step
+    docker:
+    - image: circleci/python:3.6
+  py36-cookies: *py36_integration_step
+  py36-mqtt: *py36_integration_step
+  py36-advanced: *py36_integration_step
