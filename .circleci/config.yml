@@ -11,24 +11,24 @@ base_test_step: &base_test_step
     - checkout
 
     # Download and cache dependencies
-    - restore_cache: &s1
+    - &s1 restore_cache:
         keys:
           - tavern-deps-{{ checksum "setup.py" }}-{{ checksum "setup.cfg" }}
           # fallback to using the latest cache if no exact match is found
           - tavern-deps-
 
-    - run: &s2
+    - &s2 run:
         name: install dependencies
         command: |
           pip install --user --upgrade setuptools tox
           python -m tox -e ${CIRCLE_JOB} -c ${TOXCFG} --notest
 
-    - save_cache: &s3
+    - &s3 save_cache:
         paths:
           - ~/.cache/pip/
         key: v1-dependencies-{{ checksum "setup.py" }}-{{ checksum "setup.cfg" }}
 
-    - run: &s4
+    - &s4 run:
         name: run tests
         command: |
           python -m tox -e ${CIRCLE_JOB} -c ${TOXCFG}
