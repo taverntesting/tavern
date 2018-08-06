@@ -94,10 +94,10 @@ jobs:
     <<: *base_test_step
     docker:
       - image: circleci/python:2.7
-  py37flakes:
+  py36flakes:
     <<: *base_test_step
     docker:
-      - image: circleci/python:3.7
+      - image: circleci/python:3.6
 
   py27:
     <<: *base_test_step
