@@ -21,7 +21,7 @@ base_test_step: &base_test_step
         name: install dependencies
         command: |
           pip install --user --upgrade setuptools tox
-          python -m tox --notest
+          python -m tox -e ${CIRCLE_JOB} --notest
 
     - save_cache:
         paths:
