@@ -21,7 +21,7 @@ base_test_step: &base_test_step
         name: install dependencies
         command: |
           pip install --user --upgrade setuptools tox
-          python -m tox -e ${CIRCLE_JOB} --notest
+          python -m tox -e ${CIRCLE_JOB} -c ${TOXCFG} --notest
 
     - save_cache:
         paths:
@@ -31,7 +31,7 @@ base_test_step: &base_test_step
     - run:
         name: run tests
         command: |
-          tox -e ${CIRCLE_JOB} -c ${TOXCFG}
+          python -m tox -e ${CIRCLE_JOB} -c ${TOXCFG}
 
 integration_test_step: &integration_test_step
   <<: *base_test_step
