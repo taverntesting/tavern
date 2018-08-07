@@ -10,7 +10,14 @@ from tavern.util import exceptions
 from tavern.util.loader import ApproxScalar
 
 
-logger = logging.getLogger(__name__)
+def _getlogger():
+    """Get logger for this module
+
+    Have to do it like this because the way that pykwalify load extension
+    modules means that getting the logger the normal way just result sin it
+    trying to get the root logger which won't log correctly
+    """
+    return logging.getLogger("tavern.schemas.extensions")
 
 
 def import_ext_function(entrypoint):
@@ -27,6 +34,8 @@ def import_ext_function(entrypoint):
     Raises:
         InvalidExtFunctionError: If the module or function did not exist
     """
+    logger = _getlogger()
+
     try:
         module, funcname = entrypoint.split(":")
     except ValueError as e:
