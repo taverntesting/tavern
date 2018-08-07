@@ -296,7 +296,14 @@ class YamlItem(pytest.Item):
 
     @property
     def obj(self):
-        stages = ["{:d}: {:s}".format(i + 1, stage["name"]) for i, stage in enumerate(self.spec["stages"])]
+        stages = []
+        for i, stage in enumerate(self.spec["stages"]):
+            name = "<unknown>"
+            if "name" in stage:
+                name = stage["name"]
+            elif "id" in stage:
+                name = stage["id"]
+            stages.append("{:d}: {:s}".format(i + 1, name))
 
         # This needs to be a function or skipif breaks
         def fakefun():

@@ -94,7 +94,14 @@ tags
 # Sublimetext
 *.sublime-*
 
+# Vim
+*.swp
+*.swo
+
 # Pycharm
 .idea
+
+# vs
+.vs
 
 tavern.lock
