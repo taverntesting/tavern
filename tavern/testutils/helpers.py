@@ -10,7 +10,7 @@ from box import Box
 
 from tavern.util import exceptions
 from tavern.testutils.jmesutils import validate_comparision, actual_validation
-from tavern.schemas.files import wrapfile, verify_generic
+from tavern.schemas.files import verify_generic
 from tavern.util.dict_util import check_keys_match_recursive
 
 logger = logging.getLogger(__name__)
