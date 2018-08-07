@@ -85,8 +85,12 @@ def validate_pykwalify(response, schema):
         response (Response): reqeusts.Response object
         schema (dict): Schema for response
     """
-    with wrapfile(response.json()) as rdump, wrapfile(schema) as sdump:
-        verify_generic(rdump, sdump)
+    try:
+        to_verify = response.json()
+    except TypeError as e:
+        raise_from(exceptions.BadSchemaError("Tried to match a pykwalify schema against a non-json response"), e)
+    else:
+        verify_generic(to_verify, schema)
 
 
 def validate_regex(response, expression, header=None):

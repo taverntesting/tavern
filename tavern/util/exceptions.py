@@ -88,5 +88,6 @@ class JMESError(TavernException):
 class InvalidStageReferenceError(TavernException):
     """Error loading stage reference"""
 
+
 class DuplicateStageDefinitionError(TavernException):
     """Stage with the specified ID previously defined"""

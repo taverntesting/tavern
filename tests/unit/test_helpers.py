@@ -1,10 +1,12 @@
 from mock import patch
+import yaml
 import sys
-import json
 import pytest
 import _pytest
+from textwrap import dedent
 
 from tavern.util import exceptions
+from tavern.testutils.helpers import validate_pykwalify
 from tavern.core import run
 from tavern.testutils.helpers import validate_regex, validate_content
 from tavern.testutils.pytesthook import YamlItem
@@ -193,3 +195,41 @@ class TestContent:
         ]
         with pytest.raises(exceptions.JMESError):
             validate_content(nested_response, comparisions)
+
+
+class TestPykwalifyExtension:
+    def test_validate_schema_correct(self, nested_response):
+        correct_schema = dedent("""
+              type: map
+              required: true
+              mapping:
+                top:
+                  type: map
+                  required: true
+                  mapping:
+                    Thing:
+                      type: str
+                    float:
+                      type: float
+                    nested:
+                      type: any
+                an_integer:
+                  type: int
+                a_string:
+                  type: str
+                a_bool:
+                  type: bool
+        """)
+
+        validate_pykwalify(nested_response, yaml.load(correct_schema))
+
+    def test_validate_schema_incorrect(self, nested_response):
+        correct_schema = dedent("""
+              type: seq
+              required: true
+              sequence:
+                - type: str
+        """)
+
+        with pytest.raises(exceptions.BadSchemaError):
+            validate_pykwalify(nested_response, yaml.load(correct_schema))
