@@ -97,7 +97,7 @@ def verify_generic(to_verify, schema):
     extension_module_filename = os.path.join(here, "extensions.py")
 
     verifier = core.Core(
-        source_file=to_verify,
+        source_data=to_verify,
         schema_data=schema,
         extensions=[extension_module_filename],
     )
@@ -149,5 +149,4 @@ def verify_tests(test_spec, with_plugins=True):
     schema_filename = os.path.join(here, "tests.schema.yaml")
     schema = load_schema_file(schema_filename, with_plugins)
 
-    with wrapfile(test_spec) as test_tmp:
-        verify_generic(test_tmp, schema)
+    verify_generic(test_spec, schema)
