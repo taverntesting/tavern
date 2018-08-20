@@ -54,6 +54,7 @@ class RestResponse(BaseResponse):
 
     def _verbose_log_response(self, response):
         """Verbosely log the response object, with query params etc."""
+        # pylint: disable=no-self-use
 
         logger.info("Response: '%s'", response)
 
