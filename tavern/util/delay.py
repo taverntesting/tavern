@@ -17,5 +17,5 @@ def delay(stage, when):
     except KeyError:
         pass
     else:
-        logger.debug("Delaying %s request for %d seconds", when, length)
+        logger.debug("Delaying %s request for %.2f seconds", when, length)
         time.sleep(length)
