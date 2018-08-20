@@ -8,7 +8,6 @@ except ImportError:
     from urlparse import urlparse, parse_qs  # type: ignore
 
 from requests.status_codes import _codes
-import requests
 
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util.dict_util import recurse_access_key, deep_dict_merge
