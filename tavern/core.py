@@ -75,8 +75,6 @@ def run_test(in_file, test_spec, global_cfg):
         "env_vars": dict(os.environ),
     })
 
-    test_block_config["variables"]["tavern"] = tavern_box
-
     if not test_spec:
         logger.warning("Empty test block in %s", in_file)
         return
@@ -94,6 +92,8 @@ def run_test(in_file, test_spec, global_cfg):
                         raise exceptions.DuplicateStageDefinitionError(
                             "Stage with specified id already defined: {}".format(stage["id"]))
                     available_stages[stage["id"]] = stage
+
+    test_block_config["variables"]["tavern"] = tavern_box
 
     test_block_name = test_spec["test_name"]
 
