@@ -145,7 +145,7 @@ class RestResponse(BaseResponse):
         """
         self._verbose_log_response(response)
 
-        self.test_block_config["tavern_internal"]["pytest_hook_caller"].pytest_tavern_log_response(get_requests_response_information(response))
+        self.test_block_config["tavern_internal"]["pytest_hook_caller"].pytest_tavern_log_response(response=get_requests_response_information(response))
 
         self.response = response
         self.status_code = response.status_code
