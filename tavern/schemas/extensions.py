@@ -276,7 +276,7 @@ def validate_timeout_tuple_or_float(value, rule_obj, path):
     logger = _getlogger()
 
     def check_is_timeout_val(v):
-        if value is True or value is False or not isinstance(v, (float, int)):
+        if v is True or v is False or not isinstance(v, (float, int)):
             logger.debug("'timeout' value not a float/int")
             raise BadSchemaError(err_msg)
 
