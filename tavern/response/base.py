@@ -144,3 +144,12 @@ class BaseResponse(object):
         if isinstance(payload, dict):
             if "$ext" in payload:
                 self.validate_function = get_wrapped_response_function(payload["$ext"])
+
+    def get_parsed_response(self, response):
+        """Get a dict/list representation of the response
+
+        Should be overridden by plugins, but it's not _required_ because it
+        might not be used
+        """
+        logger.warning("get_parsed_response not overridden for %s - no useful information can be logged about this response", type(self))
+        return {}

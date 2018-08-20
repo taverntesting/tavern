@@ -1,11 +1,12 @@
-import logging
 import json
+import logging
 import time
 
-from tavern.util import exceptions
 from tavern.response.base import BaseResponse
+from tavern.util import exceptions
 from tavern.util.dict_util import check_keys_match_recursive
 from tavern.util.loader import ANYTHING
+from .util import get_paho_mqtt_response_information
 
 try:
     LoadException = json.decoder.JSONDecodeError
@@ -81,6 +82,8 @@ class MQTTResponse(BaseResponse):
             self.received_messages.append(msg)
 
             msg.payload = msg.payload.decode("utf8")
+
+            self.test_block_config["tavern_internal"]["pytest_hook_caller"].pytest_tavern_log_response(get_paho_mqtt_response_information(msg))
 
             if json_payload:
                 try:

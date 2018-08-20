@@ -27,7 +27,7 @@ class FakeMessage:
 
 
 class TestResponse(object):
-    def _get_fake_verifier(self, expected, fake_messages):
+    def _get_fake_verifier(self, expected, fake_messages, includes):
         """Given a list of messages, return a mocked version of the MQTT
         response verifier which will take messages off the front of this list as
         if they were published
@@ -51,16 +51,16 @@ class TestResponse(object):
 
         fake_client = Mock(spec=MQTTClient, message_received=yield_all_messages())
 
-        return MQTTResponse(fake_client, "Test stage", expected, {})
+        return MQTTResponse(fake_client, "Test stage", expected, includes)
 
-    def test_message_on_same_topic_fails(self):
+    def test_message_on_same_topic_fails(self, includes):
         """Correct topic, wrong message"""
 
         expected = {"topic": "/a/b/c", "payload": "hello"}
 
         fake_message = FakeMessage({"topic": "/a/b/c", "payload": "goodbye"})
 
-        verifier = self._get_fake_verifier(expected, [fake_message])
+        verifier = self._get_fake_verifier(expected, [fake_message], includes)
 
         with pytest.raises(exceptions.TestFailError):
             verifier.verify(expected)
@@ -68,21 +68,21 @@ class TestResponse(object):
         assert len(verifier.received_messages) == 1
         assert verifier.received_messages[0].topic == fake_message.topic
 
-    def test_correct_message(self):
+    def test_correct_message(self, includes):
         """Both correct matches"""
 
         expected = {"topic": "/a/b/c", "payload": "hello"}
 
         fake_message = FakeMessage(expected)
 
-        verifier = self._get_fake_verifier(expected, [fake_message])
+        verifier = self._get_fake_verifier(expected, [fake_message], includes)
 
         verifier.verify(expected)
 
         assert len(verifier.received_messages) == 1
         assert verifier.received_messages[0].topic == fake_message.topic
 
-    def test_correct_message_eventually(self):
+    def test_correct_message_eventually(self, includes):
         """One wrong messge, then the correct one"""
 
         expected = {"topic": "/a/b/c", "payload": "hello"}
@@ -92,7 +92,7 @@ class TestResponse(object):
 
         verifier = self._get_fake_verifier(
             expected, [fake_message_bad, fake_message_good]
-        )
+        , includes)
 
         verifier.verify(expected)
 

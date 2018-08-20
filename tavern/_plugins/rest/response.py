@@ -8,12 +8,14 @@ except ImportError:
     from urlparse import urlparse, parse_qs  # type: ignore
 
 from requests.status_codes import _codes
+import requests
 
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util.dict_util import recurse_access_key, deep_dict_merge
 from tavern.util import exceptions
 from tavern.util.exceptions import TestFailError
 from tavern.response.base import BaseResponse, indent_err_text
+from .util import get_redirect_query_params, get_requests_response_information
 
 logger = logging.getLogger(__name__)
 
@@ -56,6 +58,10 @@ class RestResponse(BaseResponse):
 
         logger.info("Response: '%s'", response)
 
+        # Reuse this. The hooks will get called, but also print it out here for
+        # usability/backwards compatability.
+        response_info = get_requests_response_information(response)
+
         def log_dict_block(block, name):
             if block:
                 to_log = name + ":"
@@ -70,26 +76,18 @@ class RestResponse(BaseResponse):
                     to_log += "\n {}".format(block)
                 logger.debug(to_log)
 
-        log_dict_block(response.headers, "Headers")
+        log_dict_block(response_info["headers"], "Headers")
+        log_dict_block(response_info["body"], "Body")
+        if response_info.get("redirect_query_location"):
+            log_dict_block(response_info["redirect_query_location"], "Body")
 
-        try:
-            log_dict_block(response.json(), "Body")
-        except ValueError:
-            pass
-
-        redirect_query_params = self._get_redirect_query_params(response)
-        if redirect_query_params:
-            parsed_url = urlparse(response.headers["location"])
-            to_path = "{0}://{1}{2}".format(*parsed_url)
-            logger.debug("Redirect location: %s", to_path)
-            log_dict_block(redirect_query_params, "Redirect URL query parameters")
-
-    def _get_redirect_query_params(self, response):
-        """If there was a redirect header, get any query parameters from it
+    def _get_redirect_query_params_with_err_check(self, response):
+        """Call get_redirect_query_params, but also trigger an error if we
+        expected a redirection
         """
 
         try:
-            redirect_url = response.headers["location"]
+            response.headers["location"]
         except KeyError as e:
             if "redirect_query_params" in self.expected.get("save", {}):
                 self._adderr(
@@ -99,9 +97,7 @@ class RestResponse(BaseResponse):
                 )
             redirect_query_params = {}
         else:
-            parsed = urlparse(redirect_url)
-            qp = parsed.query
-            redirect_query_params = {i: j[0] for i, j in parse_qs(qp).items()}
+            redirect_query_params = get_redirect_query_params(response)
 
         return redirect_query_params
 
@@ -149,6 +145,8 @@ class RestResponse(BaseResponse):
         """
         self._verbose_log_response(response)
 
+        self.test_block_config["tavern_internal"]["pytest_hook_caller"].pytest_tavern_log_response(get_requests_response_information(response))
+
         self.response = response
         self.status_code = response.status_code
 
@@ -173,7 +171,7 @@ class RestResponse(BaseResponse):
         # Get any keys to save
         saved = {}
 
-        redirect_query_params = self._get_redirect_query_params(response)
+        redirect_query_params = self._get_redirect_query_params_with_err_check(response)
 
         saved.update(self._save_value("body", body))
         saved.update(self._save_value("headers", response.headers))
