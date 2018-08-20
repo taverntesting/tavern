@@ -1,3 +1,5 @@
+# pylint: disable=unused-argument
+
 def pytest_tavern_log_response(response):
     """Called when a response is obtained from a server
 
