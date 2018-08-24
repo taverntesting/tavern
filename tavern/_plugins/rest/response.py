@@ -1,6 +1,7 @@
 import json
 import logging
 import traceback
+from builtins import str as ustr
 
 try:
     from urllib.parse import urlparse, parse_qs
@@ -66,12 +67,18 @@ class RestResponse(BaseResponse):
             if block:
                 to_log = name + ":"
 
+                def enc(v):
+                    if isinstance(v, ustr):
+                        return v.encode("utf8")
+                    else:
+                        return v
+
                 if isinstance(block, list):
                     for v in block:
-                        to_log += "\n  - {}".format(v)
+                        to_log += "\n  - {}".format(enc(v))
                 elif isinstance(block, dict):
                     for k, v in block.items():
-                        to_log += "\n  {}: {}".format(k, v)
+                        to_log += "\n  {}: {}".format(enc(k), enc(v))
                 else:
                     to_log += "\n {}".format(block)
                 logger.debug(to_log)
