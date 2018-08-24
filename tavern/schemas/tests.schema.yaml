@@ -142,6 +142,11 @@ schema;stage:
             - OPTIONS
             - HEAD
 
+        timeout:
+          type: any
+          required: false
+          func: validate_timeout_tuple_or_float
+
         verify:
           type: bool
           required: false

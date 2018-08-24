@@ -54,7 +54,8 @@ def get_request_args(rspec, test_block_config):
         "data",
         "params",
         "headers",
-        "files"
+        "files",
+        "timeout",
         # Ideally this would just be passed through but requests seems to error
         # if we pass a list instead of a tuple, so we have to manually convert
         # it further down
@@ -108,6 +109,11 @@ def get_request_args(rspec, test_block_config):
 
     if "auth" in fspec:
         request_args["auth"] = tuple(fspec["auth"])
+
+    if "timeout" in fspec:
+        # Needs to be a tuple, it being a list doesn't work
+        if isinstance(fspec["timeout"], list):
+            request_args["timeout"] = tuple(fspec["timeout"])
 
     for key in optional_in_file:
         try:
@@ -176,6 +182,7 @@ class RestRequest(BaseRequest):
             "verify",
             "files",
             "stream",
+            "timeout",
             # "cookies",
             # "hooks",
         }

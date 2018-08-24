@@ -81,3 +81,37 @@ class TestHeaders:
 
         with pytest.raises(BadSchemaError):
             verify_tests(test_dict)
+
+
+class TestTimeout:
+
+    @pytest.mark.parametrize("incorrect_value", (
+        "abc",
+        True,
+        {"a": 2},
+        [1, 2, 3],
+    ))
+    def test_timeout_single_fail(self, test_dict, incorrect_value):
+        """Timeout must be a list of floats or a float"""
+        test_dict["stages"][0]["request"]["timeout"] = incorrect_value
+
+        with pytest.raises(BadSchemaError):
+            verify_tests(test_dict)
+
+    @pytest.mark.parametrize("incorrect_value", (
+        "abc",
+        True,
+        None,
+        {"a": 2}
+    ))
+    def test_timeout_tuple_fail(self, test_dict, incorrect_value):
+        """Timeout must be a list of floats or a float"""
+        test_dict["stages"][0]["request"]["timeout"] = [1, incorrect_value]
+
+        with pytest.raises(BadSchemaError):
+            verify_tests(test_dict)
+
+        test_dict["stages"][0]["request"]["timeout"] = [incorrect_value, 1]
+
+        with pytest.raises(BadSchemaError):
+            verify_tests(test_dict)

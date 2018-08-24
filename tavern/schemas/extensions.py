@@ -10,7 +10,14 @@ from tavern.util import exceptions
 from tavern.util.loader import ApproxScalar
 
 
-logger = logging.getLogger(__name__)
+def _getlogger():
+    """Get logger for this module
+
+    Have to do it like this because the way that pykwalify load extension
+    modules means that getting the logger the normal way just result sin it
+    trying to get the root logger which won't log correctly
+    """
+    return logging.getLogger("tavern.schemas.extensions")
 
 
 def import_ext_function(entrypoint):
@@ -27,6 +34,8 @@ def import_ext_function(entrypoint):
     Raises:
         InvalidExtFunctionError: If the module or function did not exist
     """
+    logger = _getlogger()
+
     try:
         module, funcname = entrypoint.split(":")
     except ValueError as e:
@@ -255,5 +264,28 @@ def check_strict_key(value, rule_obj, path):
     elif isinstance(value, list):
         if not set(["body", "headers", "redirect_query_params"]) >= set(value):
             raise BadSchemaError("Invalid 'strict' keys passed: {}".format(value))
+
+    return True
+
+
+def validate_timeout_tuple_or_float(value, rule_obj, path):
+    """Make sure timeout is a float/int or a tuple of floats/ints"""
+    # pylint: disable=unused-argument
+
+    err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{}' (type {})".format(value, type(value))
+    logger = _getlogger()
+
+    def check_is_timeout_val(v):
+        if v is True or v is False or not isinstance(v, (float, int)):
+            logger.debug("'timeout' value not a float/int")
+            raise BadSchemaError(err_msg)
+
+    if isinstance(value, (list, tuple)):
+        if len(value) != 2:
+            raise BadSchemaError(err_msg)
+        for v in value:
+            check_is_timeout_val(v)
+    else:
+        check_is_timeout_val(value)
 
     return True
