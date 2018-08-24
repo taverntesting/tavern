@@ -86,7 +86,7 @@ class RestResponse(BaseResponse):
         log_dict_block(response_info["headers"], "Headers")
         log_dict_block(response_info["body"], "Body")
         if response_info.get("redirect_query_location"):
-            log_dict_block(response_info["redirect_query_location"], "Body")
+            log_dict_block(response_info["redirect_query_location"], "Redirect location")
 
     def _get_redirect_query_params_with_err_check(self, response):
         """Call get_redirect_query_params, but also trigger an error if we
