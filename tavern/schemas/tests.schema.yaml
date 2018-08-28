@@ -36,6 +36,12 @@ schema;stage:
       type: str
       required: true
       unique: true
+    retry:
+      type: int
+      required: false
+      unique: true
+      range:
+        min: 1
 
     skip:
       type: bool

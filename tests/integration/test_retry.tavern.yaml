@@ -1,0 +1,17 @@
+---
+
+test_name: Make sure tavern repeats request
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: polling
+    retry: 2
+    request:
+      url: "{host}/poll"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        status: ready

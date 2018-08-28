@@ -134,6 +134,43 @@ class TestRunStages:
         assert kwargs["url"] == "http://www.google.com"
 
 
+class TestRetry:
+
+    def test_repeats_twice_and_succeeds(self, fulltest, mockargs, includes):
+        fulltest["stages"][0]["retry"] = 2
+        failed_mockargs = deepcopy(mockargs)
+        failed_mockargs['status_code'] = 400
+
+        mock_responses = [
+            Mock(**failed_mockargs),
+            Mock(**mockargs),
+        ]
+
+        with patch("tavern._plugins.rest.request.requests.Session.request", side_effect=mock_responses) as pmock:
+            run_test("heif", fulltest, includes)
+
+        assert pmock.call_count == 2
+
+    def test_repeats_twice_and_fails(self, fulltest, mockargs, includes):
+        fulltest["stages"][0]["retry"] = 2
+        mockargs['status_code'] = 400
+        mock_response = Mock(**mockargs)
+
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
+            with pytest.raises(exceptions.TestFailError):
+                run_test("heif", fulltest, includes)
+
+        assert pmock.call_count == 2
+
+    def test_run_once(self, fulltest, mockargs, includes):
+        mock_responses = Mock(**mockargs)
+
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_responses) as pmock:
+            run_test("heif", fulltest, includes)
+
+        assert pmock.call_count == 1
+
+
 class TestDelay:
 
     def test_sleep_before(self, fulltest, mockargs, includes):

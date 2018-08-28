@@ -11,6 +11,7 @@ from box import Box
 from .util import exceptions
 from .util.dict_util import format_keys
 from .util.delay import delay
+from .util.retry import retry
 
 from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
 from .schemas.files import wrapfile
@@ -136,8 +137,12 @@ def run_test(in_file, test_spec, global_cfg):
             elif default_strictness:
                 logger.debug("Default strictness '%s' ignored for this stage", default_strictness)
 
+            run_stage_ = run_stage
+            if stage.get('retry', 1) > 1:
+                run_stage_ = retry(stage)(run_stage_)
+
             try:
-                run_stage(sessions, stage, tavern_box, test_block_config)
+                run_stage_(sessions, stage, tavern_box, test_block_config)
             except exceptions.TavernException as e:
                 e.stage = stage
                 e.test_block_config = test_block_config
