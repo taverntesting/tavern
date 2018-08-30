@@ -93,6 +93,10 @@ def upload_fake_file():
     if not request.files:
         return '', 401
 
+    for key, item in request.files.items():
+        if not item.content_type:
+            return "", 500
+
     # Try to download each of the files downloaded to /tmp and
     # then remove them
     for key in request.files:

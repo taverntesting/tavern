@@ -1,5 +1,7 @@
 import json
+import mimetypes
 import logging
+import os
 import warnings
 
 try:
@@ -207,8 +209,20 @@ class RestRequest(BaseRequest):
             # they will be closed at the end of the request.
             with ExitStack() as stack:
                 for key, filepath in self._request_args.get("files", {}).items():
-                    self._request_args["files"][key] = stack.enter_context(
-                            open(filepath, "rb"))
+                    # ...3-tuple ('filename', fileobj, 'content_type')
+                    file_spec = [
+                        os.path.basename(filepath),
+                        stack.enter_context(open(filepath, "rb")),
+                    ]
+
+                    # If it doesn't have a mimetype, or can't guess it, don't
+                    # send the content type for the file
+                    content_type = mimetypes.guess_type(filepath)
+                    if content_type:
+                        file_spec.append(content_type)
+
+                    self._request_args["files"][key] = tuple(file_spec)
+
                 return session.request(**self._request_args)
 
         self._prepared = prepared_request
