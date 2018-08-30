@@ -35,3 +35,20 @@ stages:
         common: "common.yaml"
     response:
       status_code: 200
+
+---
+
+test_name: Test sending a text file will send the correct content type
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Upload multiple files
+    request:
+      url: "{host}/fake_upload_file"
+      method: POST
+      files:
+        test: testfile.txt
+    response:
+      status_code: 200

@@ -1,4 +1,5 @@
 import math
+import mimetypes
 import os
 import time
 
@@ -93,9 +94,15 @@ def upload_fake_file():
     if not request.files:
         return '', 401
 
+    if not mimetypes.inited:
+        mimetypes.init()
+
     for key, item in request.files.items():
-        if not item.content_type:
-            return "", 500
+        if item.filename:
+            filetype = ".{}".format(item.filename.split(".")[-1])
+            if filetype in mimetypes.suffix_map:
+                if not item.content_type:
+                    return "", 400
 
     # Try to download each of the files downloaded to /tmp and
     # then remove them

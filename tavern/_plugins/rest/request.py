@@ -208,24 +208,58 @@ class RestRequest(BaseRequest):
             # If there are open files, create a context manager around each so
             # they will be closed at the end of the request.
             with ExitStack() as stack:
-                for key, filepath in self._request_args.get("files", {}).items():
-                    # ...3-tuple ('filename', fileobj, 'content_type')
-                    file_spec = [
-                        os.path.basename(filepath),
-                        stack.enter_context(open(filepath, "rb")),
-                    ]
-
-                    # If it doesn't have a mimetype, or can't guess it, don't
-                    # send the content type for the file
-                    content_type = mimetypes.guess_type(filepath)
-                    if content_type:
-                        file_spec.append(content_type)
-
-                    self._request_args["files"][key] = tuple(file_spec)
-
+                self._request_args.update(self._get_file_arguments(stack))
                 return session.request(**self._request_args)
 
         self._prepared = prepared_request
+
+    def _get_file_arguments(self, stack):
+        """Get corect arguments for anything that should be passed as a file to
+        requests
+
+        Args:
+            stack (ExitStack): context stack to add file objects to so they're
+                closed correctly after use
+
+        Returns:
+            dict: mapping of {"files": ...} to pass directly to requests
+        """
+
+        files_to_send = {}
+
+        for key, filepath in self._request_args.get("files", {}).items():
+            if not mimetypes.inited:
+                mimetypes.init()
+
+            filename = os.path.basename(filepath)
+
+            # a 2-tuple ('filename', fileobj)
+            file_spec = [
+                filename,
+                stack.enter_context(open(filepath, "rb")),
+            ]
+
+            # If it doesn't have a mimetype, or can't guess it, don't
+            # send the content type for the file
+            content_type, encoding = mimetypes.guess_type((filepath))
+            if content_type:
+                # a 3-tuple ('filename', fileobj, 'content_type')
+                logger.debug("content_type for '%s' = '%s'", filename, content_type)
+                file_spec.append(content_type)
+                if encoding:
+                    # or a 4-tuple ('filename', fileobj, 'content_type', custom_headers)
+                    logger.debug("encoding for '%s' = '%s'", filename, encoding)
+                    # encoding is None for no encoding or the name of the
+                    # program used to encode (e.g. compress or gzip). The
+                    # encoding is suitable for use as a Content-Encoding header.
+                    file_spec.append({"Content-Encoding": encoding})
+
+            files_to_send[key] = tuple(file_spec)
+
+        if files_to_send:
+            return {"files": files_to_send}
+        else:
+            return {}
 
     def run(self):
         """ Runs the prepared request and times it
