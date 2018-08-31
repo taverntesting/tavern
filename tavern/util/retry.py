@@ -28,17 +28,17 @@ def retry(stage):
                 except exceptions.TavernException as e:
                     exception = e
                     if i < max_retries:
-                        logger.info('Stage %s failed for %i time. Retrying.', stage['name'], i + 1)
+                        logger.info("Stage '%s' failed for %i time. Retrying.", stage['name'], i + 1)
                         delay(stage, 'after')
                 else:
                     break
             else:
-                logger.error('Stage %s did not succeed in %i repeats.', stage['name'], max_retries)
+                logger.error("Stage '%s' did not succeed in %i retries.", stage['name'], max_retries)
                 raise_from(
                     exceptions.TestFailError(
-                        "Test '{}' failed: stage did not succeed in {} repeats.".format(stage['name'], max_retries)),
+                        "Test '{}' failed: stage did not succeed in {} retries.".format(stage['name'], max_retries)),
                     exception)
-            logger.debug('Stage %s succeed after %i repeats.', stage['name'], i)  # pylint: disable=undefined-loop-variable
+            logger.debug("Stage '%s' succeed after %i retries.", stage['name'], i)  # pylint: disable=undefined-loop-variable
             return res
 
         return wrapped
