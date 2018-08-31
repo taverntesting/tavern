@@ -27,8 +27,9 @@ def retry(stage):
                     res = fn(*args, **kwargs)
                 except exceptions.TavernException as e:
                     exception = e
-                    logger.info('Stage %s failed for %i time. Retrying.', stage['name'], i + 1)
-                    delay(stage, 'after')
+                    if i < max_retries:
+                        logger.info('Stage %s failed for %i time. Retrying.', stage['name'], i + 1)
+                        delay(stage, 'after')
                 else:
                     break
             else:
