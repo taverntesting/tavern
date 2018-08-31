@@ -137,7 +137,7 @@ class TestRunStages:
 class TestRetry:
 
     def test_repeats_twice_and_succeeds(self, fulltest, mockargs, includes):
-        fulltest["stages"][0]["retry"] = 2
+        fulltest["stages"][0]["max_retries"] = 1
         failed_mockargs = deepcopy(mockargs)
         failed_mockargs['status_code'] = 400
 
@@ -152,7 +152,7 @@ class TestRetry:
         assert pmock.call_count == 2
 
     def test_repeats_twice_and_fails(self, fulltest, mockargs, includes):
-        fulltest["stages"][0]["retry"] = 2
+        fulltest["stages"][0]["max_retries"] = 1
         mockargs['status_code'] = 400
         mock_response = Mock(**mockargs)
 

@@ -138,7 +138,7 @@ def run_test(in_file, test_spec, global_cfg):
                 logger.debug("Default strictness '%s' ignored for this stage", default_strictness)
 
             run_stage_ = run_stage
-            if stage.get('retry', 1) > 1:
+            if stage.get('max_retries'):
                 run_stage_ = retry(stage)(run_stage_)
 
             try:
