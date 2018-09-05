@@ -235,12 +235,18 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
 
     logger.info("Running stage : %s", name)
 
+    hook_caller = test_block_config["tavern_internal"]["pytest_hook_caller"]
+
     # These are run directly before/after to allow timing
-    test_block_config["tavern_internal"]["pytest_hook_caller"].pytest_tavern_before_request(stage=stage)
-    response = r.run()
-    test_block_config["tavern_internal"]["pytest_hook_caller"].pytest_tavern_after_request(stage=stage)
+    hook_caller.pytest_tavern_before_request(stage=stage)
+    try:
+        response = r.run()
+    finally:
+        # Called even if the test fails
+        hook_caller.pytest_tavern_after_request(stage=stage)
 
     verifiers = get_verifiers(stage, test_block_config, sessions, expected)
+
     for v in verifiers:
         saved = v.verify(response)
         test_block_config["variables"].update(saved)

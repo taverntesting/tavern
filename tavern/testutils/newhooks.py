@@ -14,4 +14,9 @@ def pytest_tavern_before_request(stage):
 
 
 def pytest_tavern_after_request(stage):
-    """Called after each request"""
+    """Called after each request, even if it fails
+
+    Note:
+        Some types of stages can run the request successfully, then fail later
+        on during verification.
+    """
