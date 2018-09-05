@@ -1,0 +1,7 @@
+[run]
+branch = False
+
+[paths]
+tavern =
+    tavern/
+    .tox/py36-generic/lib/python3.6/site-packages/tavern/
