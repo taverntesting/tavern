@@ -13,4 +13,3 @@ stages:
       stream: True
     response:
       status_code: 200
-

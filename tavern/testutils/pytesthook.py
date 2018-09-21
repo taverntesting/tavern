@@ -3,14 +3,16 @@ import io
 import logging
 import itertools
 import copy
-import py
+import os
 
+import py
 import attr
 from _pytest._code.code import FormattedExcinfo
 from _pytest import fixtures
 import pytest
 import yaml
 from future.utils import raise_from
+from box import Box
 
 from tavern.plugins import load_plugins
 from tavern.core import run_test
@@ -340,6 +342,19 @@ class YamlItem(pytest.Item):
 
         all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
         global_cfg = load_global_config(all_paths)
+
+        try:
+            loaded_variables = global_cfg["variables"]
+        except KeyError:
+            logger.debug("Nothing to format in global config files")
+        else:
+            tavern_box = Box({
+                "tavern": {
+                    "env_vars": dict(os.environ),
+                }
+            })
+
+            global_cfg["variables"] = format_keys(loaded_variables, tavern_box)
 
         if self.config.getini("tavern-strict") is not None:
             strict = self.config.getini("tavern-strict")
