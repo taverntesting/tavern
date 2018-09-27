@@ -180,8 +180,17 @@ class AnythingSentinel(TypeSentinel):
     def from_yaml(cls, loader, node):
         return ANYTHING
 
+    def __deepcopy__(self, memo):
+        """Return ANYTHING when doing a deep copy
 
-# One instance of this
+        This is required because the checks in various parts of the code assume
+        that ANYTHING is a singleton, but doing a deep copy creates a new object
+        by default
+        """
+        return ANYTHING
+
+
+# One instance of this (see above)
 ANYTHING = AnythingSentinel()
 
 

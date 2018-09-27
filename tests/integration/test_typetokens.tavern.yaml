@@ -23,6 +23,16 @@ stages:
       status_code: 200
       body:
         top: !anything
+---
+
+test_name: Test 'anything' token will match any response, from included stage
+
+includes:
+  - !include common.yaml
+
+stages:
+  - type: ref
+    id: typetoken-anything-match
 
 ---
 
