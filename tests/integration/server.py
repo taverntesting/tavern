@@ -1,3 +1,4 @@
+import itertools
 import math
 import mimetypes
 import os
@@ -198,6 +199,7 @@ def echo_form_values():
     response = {key: value}
     return jsonify(response), 200
 
+
 @app.route("/stream_file", methods=["GET"])
 def stream_file():
     def iter():
@@ -206,3 +208,12 @@ def stream_file():
     response = Response(iter(), mimetype='application/octet-stream')
     response.headers['Content-Disposition'] = 'attachment; filename=tmp.txt'
     return response
+
+
+statuses = itertools.cycle(['processing', 'ready'])
+
+
+@app.route("/poll", methods=["GET"])
+def poll():
+    response = {'status': next(statuses)}
+    return jsonify(response)
