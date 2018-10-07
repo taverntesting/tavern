@@ -102,4 +102,7 @@ def main():
 
     logging.config.dictConfig(log_cfg)
 
-    raise SystemExit(run(pytest_args=remaining, **vargs))
+    in_file = vargs.pop("in_file")
+    global_cfg = vargs.pop("tavern_global_cfg")
+
+    raise SystemExit(run(in_file, global_cfg, pytest_args=remaining, **vargs))

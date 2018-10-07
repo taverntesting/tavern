@@ -460,8 +460,7 @@ class YamlItem(pytest.Item):
         return super(YamlItem, self).repr_failure(excinfo)
 
     def reportinfo(self):
-        # pylint: disable=missing-format-attribute
-        return self.fspath, 0, "{self.path}::{self.name:s}".format(self=self)
+        return self.fspath, 0, "{s.path}::{s.name:s}".format(s=self)
 
 
 class ReprdError(object):

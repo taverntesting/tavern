@@ -196,7 +196,7 @@ class RestResponse(BaseResponse):
             else:
                 if isinstance(to_save, dict):
                     saved.update(to_save)
-                elif not isinstance(to_save, None):
+                elif to_save is not None:
                     self._adderr("Unexpected return value '%s' from $ext save function")
 
         self._validate_block("body", body)

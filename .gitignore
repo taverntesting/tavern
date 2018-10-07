@@ -105,3 +105,4 @@ tags
 .vs
 
 tavern.lock
+pytype_output
