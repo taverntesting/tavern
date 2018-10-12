@@ -1,0 +1,130 @@
+diff --git a/tavern/core.py b/tavern/core.py
+index c44b005..42164f7 100644
+--- a/tavern/core.py
++++ b/tavern/core.py
+@@ -137,12 +137,11 @@ def run_test(in_file, test_spec, global_cfg):
+             elif default_strictness:
+                 logger.debug("Default strictness '%s' ignored for this stage", default_strictness)
+ 
+-            run_stage_ = run_stage
+-            if stage.get('max_retries'):
+-                run_stage_ = retry(stage)(run_stage_)
++            # Wrap run_stage with retry helper
++            run_stage_with_retries = retry(stage)(run_stage)
+ 
+             try:
+-                run_stage_(sessions, stage, tavern_box, test_block_config)
++                run_stage_with_retries(sessions, stage, tavern_box, test_block_config)
+             except exceptions.TavernException as e:
+                 e.stage = stage
+                 e.test_block_config = test_block_config
+diff --git a/tavern/util/retry.py b/tavern/util/retry.py
+index 62dda50..fed572a 100644
+--- a/tavern/util/retry.py
++++ b/tavern/util/retry.py
+@@ -18,29 +18,32 @@ def retry(stage):
+ 
+     max_retries = stage.get('max_retries', 0)
+ 
+-    def decorator(fn):
++    if max_retries == 0:
++        # Just return the plain function
++        return lambda fn: fn
++
++    def retry_wrapper(fn):
+         @wraps(fn)
+         def wrapped(*args, **kwargs):
+-            exception = NotImplementedError('not reached')
+             for i in range(max_retries + 1):
+                 try:
+                     res = fn(*args, **kwargs)
+                 except exceptions.TavernException as e:
+-                    exception = e
+                     if i < max_retries:
+                         logger.info("Stage '%s' failed for %i time. Retrying.", stage['name'], i + 1)
+                         delay(stage, 'after')
++                    else:
++                        logger.error("Stage '%s' did not succeed in %i retries.", stage['name'], max_retries)
++                        raise_from(
++                            exceptions.TestFailError(
++                                "Test '{}' failed: stage did not succeed in {} retries.".format(stage['name'], max_retries)),
++                            e)
+                 else:
+                     break
+-            else:
+-                logger.error("Stage '%s' did not succeed in %i retries.", stage['name'], max_retries)
+-                raise_from(
+-                    exceptions.TestFailError(
+-                        "Test '{}' failed: stage did not succeed in {} retries.".format(stage['name'], max_retries)),
+-                    exception)
++
+             logger.debug("Stage '%s' succeed after %i retries.", stage['name'], i)  # pylint: disable=undefined-loop-variable
+             return res
+ 
+         return wrapped
+ 
+-    return decorator
++    return retry_wrapper
+diff --git a/tests/integration/test_retry.tavern.yaml b/tests/integration/test_retry.tavern.yaml
+index b25a98e..4abe267 100644
+--- a/tests/integration/test_retry.tavern.yaml
++++ b/tests/integration/test_retry.tavern.yaml
+@@ -18,13 +18,33 @@ stages:
+ 
+ ---
+ 
+-test_name: Validate max_retries
++test_name: Setting max_retries to a float should fail - doesn't make sense
++
++includes:
++  - !include common.yaml
+ 
+ _xfail: verify
+ 
++stages:
++  - name: polling
++    max_retries: 1.5
++    request:
++      url: "{host}/poll"
++      method: GET
++    response:
++      status_code: 200
++      body:
++        status: ready
++
++---
++
++test_name: Setting max_retries to less than 0 should fail
++
+ includes:
+   - !include common.yaml
+ 
++_xfail: verify
++
+ stages:
+   - name: polling
+     max_retries: -1
+@@ -35,3 +55,23 @@ stages:
+       status_code: 200
+       body:
+         status: ready
++
++---
++
++test_name: Setting max_retries to something other than an int should fail
++
++includes:
++  - !include common.yaml
++
++_xfail: verify
++
++stages:
++  - name: polling
++    max_retries: five
++    request:
++      url: "{host}/poll"
++      method: GET
++    response:
++      status_code: 200
++      body:
++        status: ready

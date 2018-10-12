@@ -137,12 +137,11 @@ def run_test(in_file, test_spec, global_cfg):
             elif default_strictness:
                 logger.debug("Default strictness '%s' ignored for this stage", default_strictness)
 
-            run_stage_ = run_stage
-            if stage.get('max_retries'):
-                run_stage_ = retry(stage)(run_stage_)
+            # Wrap run_stage with retry helper
+            run_stage_with_retries = retry(stage)(run_stage)
 
             try:
-                run_stage_(sessions, stage, tavern_box, test_block_config)
+                run_stage_with_retries(sessions, stage, tavern_box, test_block_config)
             except exceptions.TavernException as e:
                 e.stage = stage
                 e.test_block_config = test_block_config

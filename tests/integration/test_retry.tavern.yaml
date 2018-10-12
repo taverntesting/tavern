@@ -18,16 +18,56 @@ stages:
 
 ---
 
-test_name: Validate max_retries
-
-_xfail: verify
+test_name: Setting max_retries to a float should fail - doesn't make sense
 
 includes:
   - !include common.yaml
 
+_xfail: verify
+
+stages:
+  - name: polling
+    max_retries: 1.5
+    request:
+      url: "{host}/poll"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        status: ready
+
+---
+
+test_name: Setting max_retries to less than 0 should fail
+
+includes:
+  - !include common.yaml
+
+_xfail: verify
+
 stages:
   - name: polling
     max_retries: -1
+    request:
+      url: "{host}/poll"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        status: ready
+
+---
+
+test_name: Setting max_retries to something other than an int should fail
+
+includes:
+  - !include common.yaml
+
+_xfail: verify
+
+stages:
+  - name: polling
+    max_retries: five
     request:
       url: "{host}/poll"
       method: GET
