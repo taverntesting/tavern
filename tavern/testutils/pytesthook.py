@@ -268,13 +268,28 @@ class YamlFile(pytest.File):
         # skipif: {my_integer} > 2
         # skipif: 'https' in '{hostname}'
         # skipif: '{hostname}'.contains('ignoreme')
-        included = test_spec.get("includes", [])
         fmt_vars = {}
-        for i in included:
-            fmt_vars.update(**i.get("variables", {}))
 
         global_cfg = load_global_cfg(self.config)
         fmt_vars.update(**global_cfg.get("variables", {}))
+
+        included = test_spec.get("includes", [])
+        for i in included:
+            fmt_vars.update(**i.get("variables", {}))
+
+        # Needed if something in a config file uses tavern.env_vars
+        tavern_box = Box({
+            "tavern": {
+                "env_vars": dict(os.environ),
+            }
+        })
+
+        try:
+            fmt_vars = format_keys(fmt_vars, tavern_box)
+        except exceptions.MissingFormatError as e:
+            # eg, if we have {tavern.env_vars.DOESNT_EXIST}
+            msg = "Tried to use tavern format variable that did not exist"
+            raise_from(exceptions.MissingFormatError(msg), e)
 
         return fmt_vars
 
