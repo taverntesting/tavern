@@ -253,25 +253,47 @@ class YamlFile(pytest.File):
 
             yield item_new
 
-    def _generate_items(self, test_spec):
+    def _get_test_fmt_vars(self, test_spec):
+        """Get any format variables that can be inferred for the test at this point
 
+        Args:
+            test_spec (dict): Test specification, possibly with included config files
+
+        Returns:
+            dict: available format variables
+        """
+        # Get included variables so we can do things like:
+        # skipif: {my_integer} > 2
+        # skipif: 'https' in '{hostname}'
+        # skipif: '{hostname}'.contains('ignoreme')
+        included = test_spec.get("includes", [])
+        fmt_vars = {}
+        for i in included:
+            fmt_vars.update(**i.get("variables", {}))
+
+        global_cfg = load_global_cfg(self.config)
+        fmt_vars.update(**global_cfg.get("variables", {}))
+
+        return fmt_vars
+
+    def _generate_items(self, test_spec):
+        """Modify or generate tests based on test spec
+
+        If there are any 'parametrize' marks, this will generate extra tests
+        based on the values
+
+        Args:
+            test_spec (dict): Test specification
+
+        Yields:
+            YamlItem: Tavern YAML test
+        """
         item = YamlItem(test_spec["test_name"], self, test_spec, self.fspath)
 
         marks = test_spec.get("marks", [])
 
         if marks:
-            # Get included variables so we can do things like:
-            # skipif: {my_integer} > 2
-            # skipif: 'https' in '{hostname}'
-            # skipif: '{hostname}'.contains('ignoreme')
-            included = test_spec.get("includes", [])
-            fmt_vars = {}
-            for i in included:
-                fmt_vars.update(**i.get("variables", {}))
-
-            global_cfg = load_global_cfg(self.config)
-            fmt_vars.update(**global_cfg.get("variables", {}))
-
+            fmt_vars = self._get_test_fmt_vars(test_spec)
             pytest_marks = []
 
             # This should either be a string or a skipif
@@ -284,8 +306,20 @@ class YamlFile(pytest.File):
                         # NOTE
                         # cannot do 'skipif' and rely on a parametrized
                         # argument.
-                        extra_arg = format_keys(extra_arg, fmt_vars)
-                        pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
+                        try:
+                            extra_arg = format_keys(extra_arg, fmt_vars)
+                        except exceptions.MissingFormatError as e:
+                            msg = "Tried to use mark '{}' (with value '{}') in test '{}' but one or more format variables was not in any configuration file used by the test".format(markname, extra_arg, test_spec["test_name"])
+                            # NOTE
+                            # we could continue and let it fail in the test, but
+                            # this gives a better indication of what actually
+                            # happened (even if it is difficult to test)
+                            raise_from(exceptions.MissingFormatError(msg), e)
+                            # eg:
+                            # logger.error(msg)
+                            # continue
+                        else:
+                            pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
 
             # Do this after we've added all the other marks so doing
             # things like selecting on mark names still works even

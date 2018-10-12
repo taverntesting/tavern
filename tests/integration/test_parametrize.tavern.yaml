@@ -219,3 +219,68 @@ stages:
       status_code: 200
       body:
         value: "{to_send}"
+
+---
+
+test_name: Test parametrize from thing in common.yaml
+
+includes:
+  - !include common.yaml
+
+marks:
+  - parametrize:
+      key: generic_str
+      vals:
+        # normal string
+        - "{v_str}"
+        # from env var
+        - "{second_part}"
+  - parametrize:
+      key: edible
+      vals:
+        - rotten
+        - fresh
+        - unripe
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{generic_str}-{edible}"
+    response:
+      status_code: 200
+      body:
+        value: "{generic_str}-{edible}"
+
+---
+
+test_name: Test parametrize from thing in global config
+
+marks:
+  - parametrize:
+      key: generic_str
+      vals:
+        # normal string
+        - "{test_string_1}"
+        # from env var
+        - "{test_string_2}"
+  - parametrize:
+      key: edible
+      vals:
+        - rotten
+        - fresh
+        - unripe
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "{generic_str}-{edible}"
+    response:
+      status_code: 200
+      body:
+        value: "{generic_str}-{edible}"
