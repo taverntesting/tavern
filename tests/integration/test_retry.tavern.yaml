@@ -15,3 +15,23 @@ stages:
       status_code: 200
       body:
         status: ready
+
+---
+
+test_name: Validate max_retries
+
+_xfail: verify
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: polling
+    max_retries: -1
+    request:
+      url: "{host}/poll"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        status: ready
