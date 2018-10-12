@@ -93,6 +93,8 @@ def load_global_cfg(pytest_config):
 
         global_cfg["backends"][b] = in_use
 
+    logger.debug("Global config: %s", global_cfg)
+
     return global_cfg
 
 
@@ -290,18 +292,20 @@ class YamlFile(pytest.File):
         """
         item = YamlItem(test_spec["test_name"], self, test_spec, self.fspath)
 
-        marks = test_spec.get("marks", [])
+        original_marks = test_spec.get("marks", [])
 
-        if marks:
+        if original_marks:
             fmt_vars = self._get_test_fmt_vars(test_spec)
             pytest_marks = []
+            formatted_marks = []
 
-            # This should either be a string or a skipif
-            for m in marks:
+            for m in original_marks:
                 if isinstance(m, str):
+                    # a normal mark
                     m = format_keys(m, fmt_vars)
                     pytest_marks.append(getattr(pytest.mark, m))
                 elif isinstance(m, dict):
+                    # skipif or parametrize (for now)
                     for markname, extra_arg in m.items():
                         # NOTE
                         # cannot do 'skipif' and rely on a parametrized
@@ -320,11 +324,12 @@ class YamlFile(pytest.File):
                             # continue
                         else:
                             pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
+                            formatted_marks.append({markname: extra_arg})
 
             # Do this after we've added all the other marks so doing
             # things like selecting on mark names still works even
             # after parametrization
-            parametrize_marks = [i for i in marks if isinstance(i, dict) and "parametrize" in i]
+            parametrize_marks = [i for i in formatted_marks if isinstance(i, dict) and "parametrize" in i]
             if parametrize_marks:
                 # no 'yield from' in python 2...
                 for new_item in self.get_parametrized_items(
