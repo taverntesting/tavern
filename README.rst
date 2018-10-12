@@ -181,3 +181,12 @@ Tavern makes use of several excellent open-source projects:
    formatting terminal outputs
 -  `paho-mqtt <https://github.com/eclipse/paho.mqtt.python>`__, for
    sending MQTT messages
+
+
+Maintenance
+-----------
+
+Tavern is currently maintained by
+
+- @michaelboulton
+- @benhowes
