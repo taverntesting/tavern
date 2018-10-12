@@ -5,6 +5,11 @@ import itertools
 import copy
 import os
 
+try:
+    from functools import lru_cache
+except ImportError:
+    from backports.functools_lru_cache import lru_cache
+
 import py
 import attr
 from _pytest._code.code import FormattedExcinfo
@@ -26,6 +31,69 @@ from tavern.schemas.files import verify_tests
 logger = logging.getLogger(__name__)
 
 match_tavern_file = re.compile(r'.+\.tavern\.ya?ml$').match
+
+
+@lru_cache()
+def load_global_cfg(pytest_config):
+    """Load globally included config files from cmdline/cfg file arguments
+
+    Args:
+        pytest_config (pytest.Config): Pytest config object
+
+    Returns:
+        dict: variables/stages/etc from global config files
+
+    Raises:
+        exceptions.UnexpectedKeysError: Invalid settings in one or more config
+            files detected
+    """
+    # Load ini first
+    ini_global_cfg_paths = pytest_config.getini("tavern-global-cfg") or []
+    # THEN load command line, to allow overwriting of values
+    cmdline_global_cfg_paths = pytest_config.getoption("tavern_global_cfg") or []
+
+    all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
+    global_cfg = load_global_config(all_paths)
+
+    try:
+        loaded_variables = global_cfg["variables"]
+    except KeyError:
+        logger.debug("Nothing to format in global config files")
+    else:
+        tavern_box = Box({
+            "tavern": {
+                "env_vars": dict(os.environ),
+            }
+        })
+
+        global_cfg["variables"] = format_keys(loaded_variables, tavern_box)
+
+    if pytest_config.getini("tavern-strict") is not None:
+        strict = pytest_config.getini("tavern-strict")
+        if isinstance(strict, list):
+            if any(i not in ["body", "headers", "redirect_query_params"] for i in strict):
+                raise exceptions.UnexpectedKeysError("Invalid values for 'strict' use in config file")
+    elif pytest_config.getoption("tavern_strict") is not None:
+        strict = pytest_config.getoption("tavern_strict")
+    else:
+        strict = []
+
+    global_cfg["strict"] = strict
+
+    global_cfg["backends"] = {}
+    backends = ["http", "mqtt"]
+    for b in backends:
+        # similar logic to above - use ini, then cmdline if present
+        ini_opt = pytest_config.getini("tavern-{}-backend".format(b))
+        cli_opt = pytest_config.getoption("tavern_{}_backend".format(b))
+
+        in_use = ini_opt
+        if cli_opt and (cli_opt != ini_opt):
+            in_use = cli_opt
+
+        global_cfg["backends"][b] = in_use
+
+    return global_cfg
 
 
 def pytest_collect_file(parent, path):
@@ -201,6 +269,9 @@ class YamlFile(pytest.File):
             for i in included:
                 fmt_vars.update(**i.get("variables", {}))
 
+            global_cfg = load_global_cfg(self.config)
+            fmt_vars.update(**global_cfg.get("variables", {}))
+
             pytest_marks = []
 
             # This should either be a string or a skipif
@@ -334,55 +405,6 @@ class YamlItem(pytest.Item):
 
             self.add_marker(pm)
 
-    def _parse_arguments(self):
-        # Load ini first
-        ini_global_cfg_paths = self.config.getini("tavern-global-cfg") or []
-        # THEN load command line, to allow overwriting of values
-        cmdline_global_cfg_paths = self.config.getoption("tavern_global_cfg") or []
-
-        all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
-        global_cfg = load_global_config(all_paths)
-
-        try:
-            loaded_variables = global_cfg["variables"]
-        except KeyError:
-            logger.debug("Nothing to format in global config files")
-        else:
-            tavern_box = Box({
-                "tavern": {
-                    "env_vars": dict(os.environ),
-                }
-            })
-
-            global_cfg["variables"] = format_keys(loaded_variables, tavern_box)
-
-        if self.config.getini("tavern-strict") is not None:
-            strict = self.config.getini("tavern-strict")
-            if isinstance(strict, list):
-                if any(i not in ["body", "headers", "redirect_query_params"] for i in strict):
-                    raise exceptions.UnexpectedKeysError("Invalid values for 'strict' use in config file")
-        elif self.config.getoption("tavern_strict") is not None:
-            strict = self.config.getoption("tavern_strict")
-        else:
-            strict = []
-
-        global_cfg["strict"] = strict
-
-        global_cfg["backends"] = {}
-        backends = ["http", "mqtt"]
-        for b in backends:
-            # similar logic to above - use ini, then cmdline if present
-            ini_opt = self.config.getini("tavern-{}-backend".format(b))
-            cli_opt = self.config.getoption("tavern_{}_backend".format(b))
-
-            in_use = ini_opt
-            if cli_opt and (cli_opt != ini_opt):
-                in_use = cli_opt
-
-            global_cfg["backends"][b] = in_use
-
-        return global_cfg
-
     def _load_fixture_values(self):
         fixture_markers = self.iter_markers("usefixtures")
 
@@ -410,7 +432,7 @@ class YamlItem(pytest.Item):
         return values
 
     def runtest(self):
-        self.global_cfg = self._parse_arguments()
+        self.global_cfg = load_global_cfg(self.config)
 
         self.global_cfg.setdefault("variables", {})
 
