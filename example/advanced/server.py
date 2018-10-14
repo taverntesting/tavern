@@ -21,7 +21,7 @@ def get_db():
         with db:
             try:
                 db.execute("CREATE TABLE numbers_table (name TEXT NOT NULL, number INTEGER NOT NULL)")
-            except:
+            except Exception:
                 pass
 
     return db
@@ -70,7 +70,7 @@ def requires_jwt(endpoint):
 
         try:
             jwt.decode(token, SECRET, audience=SERVERNAME, algorithms=["HS256"])
-        except:
+        except Exception:
             return jsonify({"error": "Invalid token"}), 401
 
         return endpoint(*args, **kwargs)

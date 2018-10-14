@@ -99,6 +99,8 @@ stages:
       status_code: 200
       body:
         number: 246
+        $ext:
+          function: testing_utils:assert_quick_response
       headers:
         content-type: application/json
 
