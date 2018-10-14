@@ -62,9 +62,9 @@ jobs:
     - python: 3.5
       env: TOXENV=py35 TOXCFG=tox.ini
       stage: full-tests
-    - python: pypy
-      env: TOXENV=pypy TOXCFG=tox.ini
-      stage: full-tests
+    # - python: pypy
+    #   env: TOXENV=pypy TOXCFG=tox.ini
+    #   stage: full-tests
     - python: pypy3
       env: TOXENV=pypy3 TOXCFG=tox.ini
       stage: full-tests
@@ -75,9 +75,9 @@ jobs:
     - python: 3.5
       env: TOXENV=py35-generic TOXCFG=tox-integration.ini
       stage: full-tests
-    - python: pypy
-      env: TOXENV=pypy-generic TOXCFG=tox-integration.ini
-      stage: full-tests
+    # - python: pypy
+    #   env: TOXENV=pypy-generic TOXCFG=tox-integration.ini
+    #   stage: full-tests
     - python: pypy3
       env: TOXENV=pypy3-generic TOXCFG=tox-integration.ini
       stage: full-tests
