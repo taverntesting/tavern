@@ -174,27 +174,27 @@ def fix_nested_response():
 
 class TestContent:
     def test_correct_jmes_path(self, nested_response):
-        comparisions = [
+        comparisons = [
             {'jmespath': "top.Thing", 'operator': "eq", 'expected': "value"},
             {'jmespath': "an_integer", 'operator': "eq", 'expected': 123},
             {'jmespath': "top.nested.doubly.inner_list", 'operator': "type", 'expected': "list"},
         ]
-        validate_content(nested_response, comparisions)
+        validate_content(nested_response, comparisons)
         assert True
 
     def test_incorrect_jmes_path(self, nested_response):
-        comparisions = [
+        comparisons = [
             {'jmespath': "userId", 'operator': "eq", 'expected': 1}
         ]
         with pytest.raises(exceptions.JMESError):
-            validate_content(nested_response, comparisions)
+            validate_content(nested_response, comparisons)
 
     def test_incorrect_value(self, nested_response):
-        comparisions = [
+        comparisons = [
             {'jmespath': "a_bool", 'operator': "eq", 'expected': False}
         ]
         with pytest.raises(exceptions.JMESError):
-            validate_content(nested_response, comparisions)
+            validate_content(nested_response, comparisons)
 
 
 class TestPykwalifyExtension:

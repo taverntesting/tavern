@@ -6,7 +6,7 @@ includes:
   - !include common.yaml
 
 stages:
-  - name: test_comparisions
+  - name: test_comparisons
     request:
       url: "{host}/fake_dictionary"
       method: GET
@@ -17,7 +17,7 @@ stages:
         $ext:
           function: tavern.testutils.helpers:validate_content
           extra_kwargs:
-            comparisions:
+            comparisons:
               - jmespath: "an_integer"
                 operator: "eq"
                 expected: 123
@@ -42,7 +42,7 @@ includes:
   - !include common.yaml
 
 stages:
-  - name: test_comparisions
+  - name: test_comparisons
     request:
       url: "{host}/fake_list"
       method: GET
@@ -52,7 +52,7 @@ stages:
         $ext:
           function: tavern.testutils.helpers:validate_content
           extra_kwargs:
-            comparisions:
+            comparisons:
               - jmespath: "[1]"
                 operator: "type"
                 expected: str
