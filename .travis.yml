@@ -9,7 +9,9 @@ stages:
     if: branch = master AND tag IS present
 
 sudo: required
+dist: xenial
 language: python
+
 cache: pip
 services:
   - docker
