@@ -21,8 +21,8 @@ jobs:
     - python: 2.7
       env: TOXENV=py27flakes TOXCFG=tox.ini
       stage: check
-    - python: 3.6
-      env: TOXENV=py36flakes TOXCFG=tox.ini
+    - python: 3.7
+      env: TOXENV=py37flakes TOXCFG=tox.ini
       stage: check
 
     # 'Basic' tests
@@ -30,27 +30,27 @@ jobs:
     - python: 2.7
       env: TOXENV=py27 TOXCFG=tox.ini
       stage: basic-tests
-    - python: 3.6
-      env: TOXENV=py36 TOXCFG=tox.ini
+    - python: 3.7
+      env: TOXENV=py37 TOXCFG=tox.ini
       stage: basic-tests
-
     - python: 2.7
       env: TOXENV=py27 TOXCFG=tox.ini
       stage: basic-tests
-    - python: 3.6
-      env: TOXENV=py36 TOXCFG=tox.ini
-      stage: basic-tests
-    - python: 2.7
-      env: TOXENV=py27-generic TOXCFG=tox-integration.ini
-      stage: basic-tests
-    - python: 3.6
-      env: TOXENV=py36-generic TOXCFG=tox-integration.ini
+    - python: 3.7
+      env: TOXENV=py37 TOXCFG=tox.ini
       stage: basic-tests
     - python: 2.7
       env: TOXENV=py27lint TOXCFG=tox.ini
       stage: basic-tests
     - python: 3.6
       env: TOXENV=py36lint TOXCFG=tox.ini
+      stage: basic-tests
+
+    - python: 2.7
+      env: TOXENV=py27-generic TOXCFG=tox-integration.ini
+      stage: basic-tests
+    - python: 3.7
+      env: TOXENV=py37-generic TOXCFG=tox-integration.ini
       stage: basic-tests
 
     # 'Full' tests
@@ -61,6 +61,9 @@ jobs:
       stage: full-tests
     - python: 3.5
       env: TOXENV=py35 TOXCFG=tox.ini
+      stage: full-tests
+    - python: 3.6
+      env: TOXENV=py36 TOXCFG=tox.ini
       stage: full-tests
     # - python: pypy
     #   env: TOXENV=pypy TOXCFG=tox.ini
@@ -75,6 +78,9 @@ jobs:
     - python: 3.5
       env: TOXENV=py35-generic TOXCFG=tox-integration.ini
       stage: full-tests
+    - python: 3.6
+      env: TOXENV=py36-generic TOXCFG=tox-integration.ini
+      stage: full-tests
     # - python: pypy
     #   env: TOXENV=pypy-generic TOXCFG=tox-integration.ini
     #   stage: full-tests
@@ -82,11 +88,11 @@ jobs:
       env: TOXENV=pypy3-generic TOXCFG=tox-integration.ini
       stage: full-tests
 
-    - python: 3.6
-      env: TOXENV=py36-mqtt TOXCFG=tox-integration.ini
+    - python: 3.7
+      env: TOXENV=py37-mqtt TOXCFG=tox-integration.ini
       stage: full-tests
-    - python: 3.6
-      env: TOXENV=py36-advanced TOXCFG=tox-integration.ini
+    - python: 3.7
+      env: TOXENV=py37-advanced TOXCFG=tox-integration.ini
       stage: full-tests
     - stage: deploy
       script: skip
