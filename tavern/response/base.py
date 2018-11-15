@@ -1,5 +1,5 @@
 import logging
-import collections
+from collections import Mapping
 from abc import abstractmethod
 import warnings
 
@@ -66,7 +66,7 @@ class BaseResponse(object):
                 expected_block, blockname, blockname)
             return
 
-        if isinstance(block, collections.Mapping):
+        if isinstance(block, Mapping):
             block = dict(block)
 
         logger.debug("expected = %s, actual = %s", expected_block, block)
