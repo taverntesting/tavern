@@ -169,6 +169,8 @@ class YamlFile(pytest.File):
             variables = {}
             for pair in joined:
                 key, value = pair
+                # NOTE: If test is invalid, test names generated here will be
+                # very weird looking
                 if isinstance(key, str):
                     variables[key] = value
                     flattened_values += [value]

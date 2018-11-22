@@ -346,7 +346,7 @@ stages:
     response:
       status_code: 200
       body:
-        value: "{fruit}-{edible}"
+        value: "{fruit}-{edible}-nope"
 
 ---
 
@@ -376,7 +376,7 @@ stages:
     response:
       status_code: 200
       body:
-        value: "{fruit}-{edible}"
+        value: "{fruit}-{edible}-nope"
 
 ---
 
@@ -405,4 +405,4 @@ stages:
     response:
       status_code: 200
       body:
-        value: "{fruit}-{edible}"
+        value: "{fruit}-{edible}-nope"
