@@ -162,29 +162,32 @@ class YamlFile(pytest.File):
 
         keys = [i["parametrize"]["key"] for i in parametrize_marks]
 
-        # Use for formatting parametrized values - eg {}-{}, {}-{}-{}, etc.
-        inner_fmt = "-".join(["{}"]*len(keys))
-
         for vals_combination in combined:
-            inner_formatted = inner_fmt.format(*vals_combination)
-
-            spec_new = copy.deepcopy(test_spec)
-
-            # Change the name
-            spec_new["test_name"] = test_spec["test_name"] + "[{}]".format(inner_formatted)
-
             # combination of keys and the values they correspond to
             joined = zip(keys, vals_combination)
+            flattened_values = []
             variables = {}
             for pair in joined:
                 key, value = pair
                 if isinstance(key, str):
                     variables[key] = value
+                    flattened_values += [value]
                 else:
                     for subkey, subvalue in zip(key, value):
                         variables[subkey] = subvalue
+                        flattened_values += [subvalue]
 
             logger.debug("Variables for this combination: %s", variables)
+
+            # Use for formatting parametrized values - eg {}-{}, {}-{}-{}, etc.
+            inner_fmt = "-".join(["{}"]*len(flattened_values))
+
+            # Change the name
+            inner_formatted = inner_fmt.format(*flattened_values)
+            spec_new = copy.deepcopy(test_spec)
+            spec_new["test_name"] = test_spec["test_name"] + "[{}]".format(inner_formatted)
+
+            logger.debug("New test name: %s", spec_new["test_name"])
 
             # Make this new thing available for formatting
             spec_new.setdefault("includes", []).append({
