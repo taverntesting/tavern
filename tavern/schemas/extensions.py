@@ -207,7 +207,7 @@ def check_parametrize_marks(value, rule_obj, path):
         #         - unripe
         err_msg = "If 'key' is a string, 'vals' must be a list of items"
         for v in vals:
-            if isinstance(v, list)
+            if isinstance(v, list):
                 raise BadSchemaError(err_msg)
 
     elif isinstance(key_or_keys, list):
