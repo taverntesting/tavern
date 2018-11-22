@@ -318,3 +318,91 @@ stages:
       status_code: 200
       body:
         value: "{fruit}-{edible}_{first_half}-{second_half}"
+
+---
+
+# NOTE: This might pass in future, if we allow parametrizing/storing JSON blocks rather than just single variables.
+test_name: Test failing when vals is a list and key isn't
+
+_xfail: verify
+
+includes:
+  - !include common.yaml
+
+marks:
+  - parametrize:
+      key: edible
+      vals:
+        - [spear, mint]
+        - [jack, fruit]
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{fruit}-{edible}"
+    response:
+      status_code: 200
+      body:
+        value: "{fruit}-{edible}"
+
+---
+
+test_name: Test failing when key is a list and vals isn't
+
+_xfail: verify
+
+includes:
+  - !include common.yaml
+
+marks:
+  - parametrize:
+      key:
+        - edible
+        - fruit
+      vals:
+        - fresh
+        - orange
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{fruit}-{edible}"
+    response:
+      status_code: 200
+      body:
+        value: "{fruit}-{edible}"
+
+---
+
+test_name: Test failing when keys and values list lengths do not match
+
+_xfail: verify
+
+includes:
+  - !include common.yaml
+
+marks:
+  - parametrize:
+      key:
+        - edible
+        - fruit
+      vals:
+        - [fresh]
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{fruit}-{edible}"
+    response:
+      status_code: 200
+      body:
+        value: "{fruit}-{edible}"
