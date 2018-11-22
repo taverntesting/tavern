@@ -237,10 +237,12 @@ mapping:
 
           parametrize:
             type: map
+            func: check_parametrize_marks
             mapping:
               key:
-                type: str
-                required: true
+                mapping:
+                  re;(.*):
+                    type: any
               vals:
                 type: seq
                 required: true
@@ -248,6 +250,7 @@ mapping:
                   - type: str
                   - type: int
                   - type: float
+                  - type: sequence
 
   _xfail:
     type: str
