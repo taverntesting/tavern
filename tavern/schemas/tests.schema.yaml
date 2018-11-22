@@ -240,9 +240,8 @@ mapping:
             func: check_parametrize_marks
             mapping:
               key:
-                mapping:
-                  re;(.*):
-                    type: any
+                type: any
+                required: true
               vals:
                 type: seq
                 required: true
