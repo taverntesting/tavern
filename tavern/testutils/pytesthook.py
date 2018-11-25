@@ -171,7 +171,7 @@ class YamlFile(pytest.File):
                 key, value = pair
                 # NOTE: If test is invalid, test names generated here will be
                 # very weird looking
-                if isinstance(key, ustr):
+                if isinstance(key, (str, ustr)):
                     variables[key] = value
                     flattened_values += [value]
                 else:
