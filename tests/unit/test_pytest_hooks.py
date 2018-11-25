@@ -1,8 +1,8 @@
-import os
 import base64
+import os
 
 import pytest
-from mock import patch, Mock
+from mock import Mock, patch
 
 from tavern.testutils.pytesthook import YamlFile
 from tavern.util import exceptions
@@ -19,7 +19,7 @@ def mock_args():
     }
 
     config = Mock(
-        **cargs,
+        **cargs
     )
 
     session = Mock(
@@ -31,7 +31,7 @@ def mock_args():
         config=config,
         parent=None,
         nodeid="sdlfs",
-        **cargs,
+        **cargs
     )
 
     return {

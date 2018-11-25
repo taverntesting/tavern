@@ -1,27 +1,27 @@
-import re
-import io
-import logging
-import itertools
 import copy
+import io
+import itertools
+import logging
 import os
+import re
+from builtins import str as ustr
 
-import py
 import attr
-from _pytest._code.code import FormattedExcinfo
-from _pytest import fixtures
+import py
 import pytest
 import yaml
+from _pytest import fixtures
+from _pytest._code.code import FormattedExcinfo
 from future.utils import raise_from
+
 from box import Box
-
-from tavern.plugins import load_plugins
 from tavern.core import run_test
-from tavern.util.general import load_global_config
-from tavern.util import exceptions
-from tavern.util.loader import IncludeLoader
-from tavern.util.dict_util import format_keys
+from tavern.plugins import load_plugins
 from tavern.schemas.files import verify_tests
-
+from tavern.util import exceptions
+from tavern.util.dict_util import format_keys
+from tavern.util.general import load_global_config
+from tavern.util.loader import IncludeLoader
 
 logger = logging.getLogger(__name__)
 
@@ -171,7 +171,7 @@ class YamlFile(pytest.File):
                 key, value = pair
                 # NOTE: If test is invalid, test names generated here will be
                 # very weird looking
-                if isinstance(key, str):
+                if isinstance(key, ustr):
                     variables[key] = value
                     flattened_values += [value]
                 else:
