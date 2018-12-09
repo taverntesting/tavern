@@ -187,6 +187,52 @@ def check_usefixtures(value, rule_obj, path):
     return True
 
 
+def check_parametrize_marks(value, rule_obj, path):
+    # pylint: disable=unused-argument
+
+    key_or_keys = value["key"]
+    vals = value["vals"]
+
+    # At this point we can assume vals is a list - check anyway
+    if not isinstance(vals, list):
+        raise BadSchemaError("'vals' should be a list")
+
+    if isinstance(key_or_keys, str):
+        # example:
+        # - parametrize:
+        #     key: edible
+        #     vals:
+        #         - rotten
+        #         - fresh
+        #         - unripe
+        err_msg = "If 'key' is a string, 'vals' must be a list of items"
+        for v in vals:
+            if isinstance(v, list):
+                raise BadSchemaError(err_msg)
+
+    elif isinstance(key_or_keys, list):
+        # example:
+        # - parametrize:
+        #     key:
+        #         - edible
+        #         - fruit
+        #     vals:
+        #         - [rotten, apple]
+        #         - [fresh, orange]
+        #         - [unripe, pear]
+        err_msg = "If 'key' is a list, 'vals' must be a list of lists where each list is the same length as 'key'"
+        for v in vals:
+            if not isinstance(v, list):
+                raise BadSchemaError(err_msg)
+            elif len(v) != len(key_or_keys):
+                raise BadSchemaError(err_msg)
+
+    else:
+        raise BadSchemaError("'key' must be a string or a list")
+
+    return True
+
+
 def validate_data_key_with_ext_function(value, rule_obj, path):
     """Validate the 'data' key in a http request
 
