@@ -212,7 +212,7 @@ def _run_pytest(in_file, tavern_global_cfg, tavern_mqtt_backend=None, tavern_htt
             global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
 
         pytest_args = pytest_args or []
-        pytest_args += ["-k", in_file]
+        pytest_args += [in_file]
         if tavern_global_cfg:
             pytest_args += ["--tavern-global-cfg", global_filename]
 
