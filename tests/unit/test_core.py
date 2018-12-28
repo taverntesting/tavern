@@ -113,10 +113,8 @@ class TestRunStages:
 
 
 class TestIncludeStages:
-
-    def test_external_stage(self, fulltest, mockargs, includes):
-        """ Successfully load and run stage ref from the includes
-        """
+    @pytest.fixture
+    def fake_stages(self):
 
         stages = [{
             "id": "my_external_stage",
@@ -135,16 +133,10 @@ class TestIncludeStages:
                 }
             }
         }]
-        includes["stages"] = stages
 
-        mock_response = Mock(**mockargs)
+        return stages
 
-        newtest = deepcopy(fulltest)
-        newtest["includes"] = [includes]
-        newtest["stages"].insert(0, {"type": "ref", "id": "my_external_stage"})
-        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
-            run_test("heif", newtest, includes)
-
+    def check_mocks_called(self, pmock):
         assert pmock.called
 
         # We expect 2 calls, first to bing (external stage),
@@ -154,6 +146,84 @@ class TestIncludeStages:
         assert kwargs["url"] == "http://www.bing.com"
         args, kwargs = pmock.call_args_list[1]
         assert kwargs["url"] == "http://www.google.com"
+
+    def test_included_stage(self, fulltest, mockargs, includes, fake_stages):
+        """ Load stage from includes
+        """
+        mock_response = Mock(**mockargs)
+
+        stage_includes = [
+            {
+                "stages": fake_stages
+            }
+        ]
+
+        newtest = deepcopy(fulltest)
+        newtest["includes"] = stage_includes
+        newtest["stages"].insert(0, {"type": "ref", "id": "my_external_stage"})
+
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
+            run_test("heif", newtest, includes)
+
+        self.check_mocks_called(pmock)
+
+    def test_global_stage(self, fulltest, mockargs, includes, fake_stages):
+        """ Load stage from global config
+        """
+        mock_response = Mock(**mockargs)
+
+        stage_includes = [
+        ]
+
+        newtest = deepcopy(fulltest)
+        newtest["includes"] = stage_includes
+        newtest["stages"].insert(0, {"type": "ref", "id": "my_external_stage"})
+
+        includes["stages"] = fake_stages
+
+        with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
+            run_test("heif", newtest, includes)
+
+        self.check_mocks_called(pmock)
+
+    def test_both_stages(self, fulltest, mockargs, includes, fake_stages):
+        """ Load stage defined in both - raise a warning for now
+        """
+        mock_response = Mock(**mockargs)
+
+        stage_includes = [
+            {
+                "stages": fake_stages
+            }
+        ]
+
+        newtest = deepcopy(fulltest)
+        newtest["includes"] = stage_includes
+        newtest["stages"].insert(0, {"type": "ref", "id": "my_external_stage"})
+
+        includes["stages"] = fake_stages
+
+        with pytest.warns(FutureWarning):
+            with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
+                run_test("heif", newtest, includes)
+
+        self.check_mocks_called(pmock)
+
+    def test_neither(self, fulltest, mockargs, includes, fake_stages):
+        """ Raises error if not defined
+        """
+        mock_response = Mock(**mockargs)
+
+        stage_includes = [
+        ]
+
+        newtest = deepcopy(fulltest)
+        newtest["includes"] = stage_includes
+        newtest["stages"].insert(0, {"type": "ref", "id": "my_external_stage"})
+
+        with pytest.raises(exceptions.InvalidStageReferenceError):
+            with patch("tavern._plugins.rest.request.requests.Session.request", return_value=mock_response) as pmock:
+                run_test("heif", newtest, includes)
 
 
 class TestRetry:

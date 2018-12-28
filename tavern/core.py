@@ -80,14 +80,16 @@ def run_test(in_file, test_spec, global_cfg):
         logger.warning("Empty test block in %s", in_file)
         return
 
-    def getids(s):
+    def stage_ids(s):
         return [i["id"] for i in s]
 
     available_stages = test_block_config.get("stages", [])
+
     if test_spec.get("includes"):
+        # Need to do this separately here so there is no confusion between global and included stages
         for included in test_spec["includes"]:
             for stage in included.get("stages", {}):
-                if stage["id"] in getids(included.get("stages", {})):
+                if stage["id"] in stage_ids(available_stages):
                     msg = "Stage id '{}' defined in stage-included test which was already defined in global configuration - this will be an error in future!".format(stage["id"])
                     logger.warning(msg)
                     warnings.warn(msg, FutureWarning)
@@ -99,13 +101,15 @@ def run_test(in_file, test_spec, global_cfg):
                 formatted_include = format_keys(included["variables"], {"tavern": tavern_box})
                 test_block_config["variables"].update(formatted_include)
 
-            for stage in included.get("stages", {}):
-                if stage["id"] in included_stages:
+            for stage in included.get("stages", []):
+                if stage["id"] in stage_ids(included_stages):
                     raise exceptions.DuplicateStageDefinitionError(
                         "Stage with specified id already defined: {}".format(stage["id"]))
-                included_stages[stage["id"]] = stage
+                included_stages.append(stage)
+    else:
+        included_stages = []
 
-        available_stages = deep_dict_merge(available_stages, included_stages)
+    available_stages = {s["id"]: s for s in available_stages + included_stages}
 
     test_block_config["variables"]["tavern"] = tavern_box
 
