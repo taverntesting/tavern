@@ -9,7 +9,7 @@ from contextlib2 import ExitStack
 from box import Box
 
 from .util import exceptions
-from .util.dict_util import format_keys
+from .util.dict_util import format_keys, deep_dict_merge
 from .util.delay import delay
 from .util.retry import retry
 
@@ -80,19 +80,32 @@ def run_test(in_file, test_spec, global_cfg):
         logger.warning("Empty test block in %s", in_file)
         return
 
-    available_stages = {}
+    def getids(s):
+        return [i["id"] for i in s]
+
+    available_stages = test_block_config.get("stages", [])
     if test_spec.get("includes"):
+        for included in test_spec["includes"]:
+            for stage in included.get("stages", {}):
+                if stage["id"] in getids(included.get("stages", {})):
+                    msg = "Stage id '{}' defined in stage-included test which was already defined in global configuration - this will be an error in future!".format(stage["id"])
+                    logger.warning(msg)
+                    warnings.warn(msg, FutureWarning)
+
+        included_stages = []
+
         for included in test_spec["includes"]:
             if "variables" in included:
                 formatted_include = format_keys(included["variables"], {"tavern": tavern_box})
                 test_block_config["variables"].update(formatted_include)
 
-            if "stages" in included:
-                for stage in included["stages"]:
-                    if stage["id"] in available_stages:
-                        raise exceptions.DuplicateStageDefinitionError(
-                            "Stage with specified id already defined: {}".format(stage["id"]))
-                    available_stages[stage["id"]] = stage
+            for stage in included.get("stages", {}):
+                if stage["id"] in included_stages:
+                    raise exceptions.DuplicateStageDefinitionError(
+                        "Stage with specified id already defined: {}".format(stage["id"]))
+                included_stages[stage["id"]] = stage
+
+        available_stages = deep_dict_merge(available_stages, included_stages)
 
     test_block_config["variables"]["tavern"] = tavern_box
 

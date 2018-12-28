@@ -111,9 +111,31 @@ class TestRunStages:
 
         assert pmock.called
 
+
+class TestIncludeStages:
+
     def test_external_stage(self, fulltest, mockargs, includes):
         """ Successfully load and run stage ref from the includes
         """
+
+        stages = [{
+            "id": "my_external_stage",
+            "name": "My external stage",
+            "request": {
+                "url": "http://www.bing.com",
+                "method": "GET",
+            },
+            "response": {
+                "status_code": 200,
+                "body": {
+                    "key": "value",
+                },
+                "headers": {
+                    "content-type": "application/json",
+                }
+            }
+        }]
+        includes["stages"] = stages
 
         mock_response = Mock(**mockargs)
 
