@@ -9,7 +9,7 @@ from contextlib2 import ExitStack
 from box import Box
 
 from .util import exceptions
-from .util.dict_util import format_keys, deep_dict_merge
+from .util.dict_util import format_keys
 from .util.delay import delay
 from .util.retry import retry
 
