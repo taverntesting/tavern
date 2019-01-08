@@ -25,7 +25,7 @@ def generate_tavern_yaml(json_path):
         print(yaml.dump(test_dict, explicit_start=True, default_flow_style=False))
 
 
-def help():
+def display_help():
     print("pub_tavern.py <url to openapi.json>")
     print(
         "eg: pub_tavern.py https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-simple.json"
@@ -35,5 +35,5 @@ def help():
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        help()
+        display_help()
     generate_tavern_yaml(sys.argv[1])
