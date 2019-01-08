@@ -9,6 +9,7 @@ verify_ssl = true
 coreapi = "*"
 openapi-core = "*"
 openapi-codec = "*"
+PyYAML = "*"
 
 [requires]
 python_version = "3.6"
