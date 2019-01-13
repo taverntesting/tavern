@@ -352,9 +352,6 @@ class YamlFile(pytest.File):
                             # this gives a better indication of what actually
                             # happened (even if it is difficult to test)
                             raise_from(exceptions.MissingFormatError(msg), e)
-                            # eg:
-                            # logger.error(msg)
-                            # continue
                         else:
                             pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
                             formatted_marks.append({markname: extra_arg})
