@@ -115,44 +115,40 @@ stages:
 
 ---
 
-test_name: Test trying to subscribe with a too-large qos fails
+test_name: Test empty payload
 
 includes:
   - !include common.yaml
 
 paho-mqtt: *mqtt_spec
 
-_xfail: verify
-
 stages:
-  - name: step 1 - ping/pong
+  - name: Check lights status
     mqtt_publish:
-      topic: /device/123/ping
-      payload: ping
+      topic: /device/123/status
     mqtt_response:
-      topic: /device/123/pong
-      payload: pong
-      timeout: 5
-      qos: 3
+      topic: /device/123/status/response
+      json:
+        lights: 0
+      timeout: 3
+      qos: 1
 
 ---
 
-test_name: Test trying to subscribe with an invalid qos fails
+test_name: Test can handle type tokens
 
 includes:
   - !include common.yaml
 
 paho-mqtt: *mqtt_spec
 
-_xfail: verify
-
 stages:
-  - name: step 1 - ping/pong
+  - name: Test checking for lights status with anyint
     mqtt_publish:
-      topic: /device/123/ping
-      payload: ping
+      topic: /device/123/status_request
     mqtt_response:
-      topic: /device/123/pong
-      payload: pong
-      timeout: 5
-      qos: weefwe
+      topic: /device/123/status_response
+      json:
+        lights: !anyint
+      timeout: 3
+      qos: 1
