@@ -64,12 +64,21 @@ stages:
       topic: /device/123/echo
       payload: hello world
       retain: true
+      qos: 1
+    # NOTE: not subcribing to .../echo here
 
-  - name: Echo text with retain force off
-    mqtt_publish:
-      topic: /device/123/echo
-      payload: hello world
-      retain: false
+  # - name: Dummy ping request
+  #   # wait to avoid false positive test from race condition
+  #   delay_before: 1
+  #   # This stage just exists to test subscription and retained messages
+  #   mqtt_publish:
+  #     topic: /device/123/ping
+  #   # This is retained from the previous test
+  #   mqtt_response:
+  #     topic: /device/123/echo/response
+  #     payload: hello world
+  #     timeout: 5
+  #     qos: 1
 
 ---
 
