@@ -51,6 +51,28 @@ stages:
 
 ---
 
+test_name: Test retain key
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - name: Echo text with retain force on
+    mqtt_publish:
+      topic: /device/123/echo
+      payload: hello world
+      retain: true
+
+  - name: Echo text with retain force off
+    mqtt_publish:
+      topic: /device/123/echo
+      payload: hello world
+      retain: false
+
+---
+
 test_name: Test ping/pong with no payload
 
 includes:
