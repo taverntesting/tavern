@@ -1,0 +1,26 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+
+[packages]
+colorlog = "*"
+contextlib2 = "*"
+future = "*"
+jmespath = "*"
+mock = "*"
+paho-mqtt = "==1.3.1"
+pykwalify = ">=1.6.1"
+pytest-cov = "*"
+pytest-remove-stale-bytecode = "*"
+pytest = ">=3.6.0"
+python-box = "*"
+requests = "*"
+stevedore = "*"
+PyJWT = "*"
+PyYAML = "*"
+
+[requires]
+python_version = "3.6"

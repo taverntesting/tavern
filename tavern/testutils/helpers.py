@@ -9,7 +9,7 @@ from future.utils import raise_from
 from box import Box
 
 from tavern.util import exceptions
-from tavern.testutils.jmesutils import validate_comparision, actual_validation
+from tavern.testutils.jmesutils import validate_comparison, actual_validation
 from tavern.schemas.files import verify_generic
 from tavern.util.dict_util import check_keys_match_recursive
 
@@ -117,19 +117,19 @@ def validate_regex(response, expression, header=None):
     }
 
 
-def validate_content(response, comparisions):
+def validate_content(response, comparisons):
     """Asserts expected value with actual value using JMES path expression
 
     Args:
         response (Response): reqeusts.Response object.
-        comparisions(list):
+        comparisons(list):
             A list of dict containing the following keys:
                 1. jmespath : JMES path expression to extract data from.
                 2. operator : Operator to use to compare data.
                 3. expected : The expected value to match for
     """
-    for each_comparision in comparisions:
-        path, _operator, expected = validate_comparision(each_comparision)
+    for each_comparison in comparisons:
+        path, _operator, expected = validate_comparison(each_comparison)
         logger.debug("Searching for '%s' in '%s'", path, response.json())
         actual = jmespath.search(path, response.json())
 

@@ -7,7 +7,7 @@ import warnings
 try:
     from urllib.parse import quote_plus
 except ImportError:
-    from urllib import quote_plus
+    from urllib import quote_plus  # type: ignore
 
 from contextlib2 import ExitStack
 from future.utils import raise_from

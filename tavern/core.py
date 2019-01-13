@@ -80,19 +80,36 @@ def run_test(in_file, test_spec, global_cfg):
         logger.warning("Empty test block in %s", in_file)
         return
 
-    available_stages = {}
+    def stage_ids(s):
+        return [i["id"] for i in s]
+
+    available_stages = test_block_config.get("stages", [])
+
     if test_spec.get("includes"):
+        # Need to do this separately here so there is no confusion between global and included stages
+        for included in test_spec["includes"]:
+            for stage in included.get("stages", {}):
+                if stage["id"] in stage_ids(available_stages):
+                    msg = "Stage id '{}' defined in stage-included test which was already defined in global configuration - this will be an error in future!".format(stage["id"])
+                    logger.warning(msg)
+                    warnings.warn(msg, FutureWarning)
+
+        included_stages = []
+
         for included in test_spec["includes"]:
             if "variables" in included:
                 formatted_include = format_keys(included["variables"], {"tavern": tavern_box})
                 test_block_config["variables"].update(formatted_include)
 
-            if "stages" in included:
-                for stage in included["stages"]:
-                    if stage["id"] in available_stages:
-                        raise exceptions.DuplicateStageDefinitionError(
-                            "Stage with specified id already defined: {}".format(stage["id"]))
-                    available_stages[stage["id"]] = stage
+            for stage in included.get("stages", []):
+                if stage["id"] in stage_ids(included_stages):
+                    raise exceptions.DuplicateStageDefinitionError(
+                        "Stage with specified id already defined: {}".format(stage["id"]))
+                included_stages.append(stage)
+    else:
+        included_stages = []
+
+    available_stages = {s["id"]: s for s in available_stages + included_stages}
 
     test_block_config["variables"]["tavern"] = tavern_box
 
@@ -212,7 +229,7 @@ def _run_pytest(in_file, tavern_global_cfg, tavern_mqtt_backend=None, tavern_htt
             global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
 
         pytest_args = pytest_args or []
-        pytest_args += ["-k", in_file]
+        pytest_args += [in_file]
         if tavern_global_cfg:
             pytest_args += ["--tavern-global-cfg", global_filename]
 

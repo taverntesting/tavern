@@ -6,7 +6,7 @@ try:
     from queue import Queue, Full, Empty
     LoadError = IOError
 except ImportError:
-    from Queue import Queue, Full, Empty
+    from Queue import Queue, Full, Empty  # type: ignore
     LoadError = FileNotFoundError # pylint: disable=undefined-variable
 
 from future.utils import raise_from

@@ -161,4 +161,16 @@ See 57f2a10e58a88325c185258d2c83b07a532aa93a for details
 
 ## 0.18.3          Fix 'anything' token in included test stages
 
-# 0.19.0          Add retries to stages
+# 0.19.0          add retries to stages
+
+## 0.19.1          fix typo in jmes utils
+
+# 0.20.0          allow compatibility with pytest 4
+
+# 0.21.0          add parametrisation of multiple keys without creating combinations
+
+## 0.21.1          improve reporting of actual vs expected types in errors
+
+# 0.22.0          fix selection of tests when using run() function interface
+
+## 0.22.1          allow referenced stages to be included from global configuration files

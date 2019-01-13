@@ -225,8 +225,10 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
 
         e_formatted = _format_err("expected")
         a_formatted = _format_err("actual")
-        return "{} = '{}', {} = '{}'".format(e_formatted, expected_val,
-            a_formatted, actual_val)
+        return "{} = '{}' (type = {}), {} = '{}' (type = {})".format(
+            e_formatted, expected_val, type(expected_val),
+            a_formatted, actual_val, type(actual_val)
+        )
 
     # Check required because of python 2/3 unicode compatability when loading yaml
     if isinstance(actual_val, ustr):

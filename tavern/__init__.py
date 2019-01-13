@@ -1,1 +1,2 @@
-__version__ = "0.19.0"
+"""Stop pytest warning about module already imported: PYTEST_DONT_REWRITE"""
+__version__ = "0.22.1"
