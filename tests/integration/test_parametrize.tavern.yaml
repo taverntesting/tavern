@@ -449,9 +449,9 @@ marks:
       key: generic_str
       vals:
         # normal string
-        - "{test_string_1}"
+        - "{global_test_string_1}"
         # from env var
-        - "{test_string_2}"
+        - "{global_test_string_2}"
   - parametrize:
       key: edible
       vals:
