@@ -13,7 +13,6 @@ except ImportError:
 
 import py
 import attr
-import py
 import pytest
 import yaml
 from _pytest import fixtures
