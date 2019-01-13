@@ -171,9 +171,9 @@ paho-mqtt: *mqtt_spec
 stages:
   - name: Test checking for lights status with anyint
     mqtt_publish:
-      topic: /device/123/status_request
+      topic: /device/123/status
     mqtt_response:
-      topic: /device/123/status_response
+      topic: /device/123/status/response
       json:
         lights: !anyint
       timeout: 3
