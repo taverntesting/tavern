@@ -228,7 +228,7 @@ class MQTTClient(object):
         else:
             return msg
 
-    def publish(self, topic, payload=None, *args, **kwargs):
+    def publish(self, topic, payload=None, qos=None, retain=None):
         """publish message using paho library
         """
         logger.debug("Checking subscriptions")
@@ -262,7 +262,12 @@ class MQTTClient(object):
 
         logger.debug("Publishing on '%s'", topic)
 
-        msg = self._client.publish(topic, payload, *args, **kwargs)
+        kwargs = {}
+        if qos is not None:
+            kwargs["qos"] = qos
+        if retain is not None:
+            kwargs["retain"] = retain
+        msg = self._client.publish(topic, payload, **kwargs)
 
         if not msg.is_published:
             raise exceptions.MQTTError("err {:s}: {:s}".format(_err_vals.get(msg.rc, "unknown"), paho.error_string(msg.rc)))
@@ -283,7 +288,7 @@ class MQTTClient(object):
             logger.error("Error subscribing to '%s'", topic)
 
     def _on_subscribe(self, client, userdata, mid, granted_qos):
-        # self.on_subscribe(self, self._userdata, mid, granted_qos)
+        # pylint: disable=unused-argument
         if mid in self._subscribed:
             topic = self._subscribed[mid][0]
             logger.debug("Successfully subscribed to '%s'", topic)

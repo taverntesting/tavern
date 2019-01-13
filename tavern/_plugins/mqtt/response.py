@@ -51,6 +51,7 @@ class MQTTResponse(BaseResponse):
         Args:
             response: not used
         """
+        # pylint: disable=too-many-statements
 
         self.response = response
 
