@@ -50,3 +50,25 @@ stages:
       payload: pong
       timeout: 5
       qos: weefwe
+
+---
+
+test_name: Test incorrect type token fails
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+_xfail: run
+
+stages:
+  - name: Test checking for lights status with anystr fails
+    mqtt_publish:
+      topic: /device/123/status
+    mqtt_response:
+      topic: /device/123/status/response
+      json:
+        lights: !anystr
+      timeout: 3
+      qos: 1
