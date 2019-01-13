@@ -1,6 +1,6 @@
 ---
 
-test_name: Test mqtt message response
+test_name: Test mqtt message echo
 
 includes:
   - !include common.yaml
@@ -17,13 +17,72 @@ paho-mqtt: &mqtt_spec
     client_id: tavern-tester
 
 stages:
+  - name: Echo text
+    mqtt_publish:
+      topic: /device/123/echo
+      payload: hello world
+    mqtt_response:
+      topic: /device/123/echo/response
+      payload: hello world
+      timeout: 5
+      qos: 1
+
+---
+
+test_name: Test mqtt message echo json
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - name: Echo json
+    mqtt_publish:
+      topic: /device/123/echo
+      json:
+        message: hello world
+    mqtt_response:
+      topic: /device/123/echo/response
+      json:
+        message: hello world
+      timeout: 5
+      qos: 1
+
+---
+
+test_name: Test ping/pong with no payload
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
   - name: step 1 - ping/pong
     mqtt_publish:
       topic: /device/123/ping
-      payload: ping
     mqtt_response:
       topic: /device/123/pong
-      payload: pong
+      timeout: 5
+      qos: 1
+
+---
+
+test_name: Test ping/pong with ignored payload
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /device/123/ping
+      payload: blaeruhg
+    mqtt_response:
+      topic: /device/123/pong
       timeout: 5
       qos: 1
 

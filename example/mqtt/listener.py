@@ -98,7 +98,15 @@ def handle_ping_topic(client, message):
 
     client.publish(
         "/device/{}/pong".format(device_id),
-        "pong",
+    )
+
+
+def handle_echo_topic(client, message):
+    device_id = message.topic.split("/")[-2]
+
+    client.publish(
+        "/device/{}/echo/response".format(device_id),
+        message.payload,
     )
 
 
@@ -107,6 +115,8 @@ def on_message_callback(client, userdata, message):
 
     if "lights" in message.topic:
         handle_lights_topic(message)
+    elif "echo" in message.topic:
+        handle_echo_topic(client, message)
     elif "ping" in message.topic:
         handle_ping_topic(client, message)
     elif "status" in message.topic:
@@ -124,6 +134,7 @@ def wait_for_messages():
     topics = [
         "lights",
         "ping",
+        "echo",
         "status",
     ]
 

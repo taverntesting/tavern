@@ -72,3 +72,23 @@ stages:
         lights: !anystr
       timeout: 3
       qos: 1
+
+---
+
+test_name: Test expecting empty payload but receiving a payload fails
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+_xfail: run
+
+stages:
+  - name: Test checking for lights status with anyint
+    mqtt_publish:
+      topic: /device/123/status
+    mqtt_response:
+      topic: /device/123/status/response
+      timeout: 3
+      qos: 1
