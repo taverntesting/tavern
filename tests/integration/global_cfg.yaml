@@ -1,0 +1,8 @@
+---
+name: test global includes
+description: used for testing against local server
+
+variables:
+  global_host: http://localhost:5003
+  test_string_1: abc
+  test_string_2: abc
