@@ -3,6 +3,15 @@ from coreapi import Client
 import yaml
 
 
+def generate_tavern_yaml(json_path):
+    client = Client()
+    d = client.get(json_path, format="openapi")
+
+    output_yaml(d.links)
+    for routes in d.data.keys():
+        output_yaml(d.data[routes], routes)
+
+
 def output_yaml(links, prefix=""):
     for test_name in links.keys():
         test_dict = {}
@@ -19,15 +28,6 @@ def output_yaml(links, prefix=""):
         test_dict["stages"] = [inner_dict]
         print(test_dict)
         print(yaml.dump(test_dict, explicit_start=True, default_flow_style=False))
-
-
-def generate_tavern_yaml(json_path):
-    client = Client()
-    d = client.get(json_path, format="openapi")
-
-    output_yaml(d.links)
-    for routes in d.data.keys():
-        output_yaml(d.data[routes], routes)
 
 
 def display_help():
