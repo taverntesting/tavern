@@ -1,20 +1,16 @@
-import yaml
-from coreapi import Client
-import openapi_codec
 import sys
+from coreapi import Client
+import yaml
 
 
-def generate_tavern_yaml(json_path):
-    client = Client()
-    d = client.get(json_path, format="openapi")
-
-    test_dict = {}
-    for test_name in d.links.keys():
-        test_dict["test_name"] = test_name
+def output_yaml(links, prefix=""):
+    for test_name in links.keys():
+        test_dict = {}
+        test_dict["test_name"] = f"{prefix}/{test_name}"
 
         request = {
-            "url": d.links[test_name].url,
-            "method": str.upper(d.links[test_name].action),
+            "url": links[test_name].url,
+            "method": str.upper(links[test_name].action),
         }
 
         response = {"strict": False, "status_code": 200}
@@ -23,6 +19,15 @@ def generate_tavern_yaml(json_path):
         test_dict["stages"] = [inner_dict]
         print(test_dict)
         print(yaml.dump(test_dict, explicit_start=True, default_flow_style=False))
+
+
+def generate_tavern_yaml(json_path):
+    client = Client()
+    d = client.get(json_path, format="openapi")
+
+    output_yaml(d.links)
+    for routes in d.data.keys():
+        output_yaml(d.data[routes], routes)
 
 
 def display_help():
