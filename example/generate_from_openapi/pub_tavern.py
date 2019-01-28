@@ -6,7 +6,7 @@ import yaml
 def output_yaml(links, prefix=""):
     for test_name in links.keys():
         test_dict = {}
-        test_dict["test_name"] = f"{prefix}/{test_name}"
+        test_dict["test_name"] = f"{prefix}/{test_name}" if prefix else test_name
 
         request = {
             "url": links[test_name].url,
