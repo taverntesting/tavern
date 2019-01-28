@@ -13,8 +13,8 @@ def generate_tavern_yaml(json_path):
 
 
 def output_yaml(links, prefix=""):
+    test_dict = {}
     for test_name in links.keys():
-        test_dict = {}
         test_dict["test_name"] = f"{prefix}/{test_name}" if prefix else test_name
 
         request = {
