@@ -1,28 +1,64 @@
-import yaml
-from coreapi import Client
-import openapi_codec
 import sys
+from urllib.parse import urlparse
+from coreapi import Client
+import yaml
 
 
 def generate_tavern_yaml(json_path):
     client = Client()
     d = client.get(json_path, format="openapi")
 
+    output_yaml(d.links)
+    for routes in d.data.keys():
+        output_yaml(d.data[routes], routes)
+
+
+def output_yaml(links, prefix=""):
     test_dict = {}
-    for test_name in d.links.keys():
-        test_dict["test_name"] = test_name
+    for test_name in links.keys():
+        default_name = get_name(prefix, test_name, links[test_name].action, links[test_name].url)
+        test_dict["test_name"] = default_name
 
         request = {
-            "url": d.links[test_name].url,
-            "method": str.upper(d.links[test_name].action),
+            "url": links[test_name].url,
+            "method": str.upper(links[test_name].action),
         }
 
+        if links[test_name].encoding:
+            request["headers"] = {"content-type": links[test_name].encoding}
+
+        json = get_request_placeholders(links[test_name].fields)
+        if json and request["method"] != "GET":
+            request["json"] = json
+
         response = {"strict": False, "status_code": 200}
-        inner_dict = {"name": test_name, "request": request, "response": response}
+        inner_dict = {"name": default_name, "request": request, "response": response}
 
         test_dict["stages"] = [inner_dict]
-        print(test_dict)
+        #print(test_dict)
         print(yaml.dump(test_dict, explicit_start=True, default_flow_style=False))
+
+
+def get_request_placeholders(fields):
+    field_dict = {}
+    for field in fields:
+        field_dict[field.name] = "required" if field.required else "optional"
+    return field_dict
+
+
+def get_name(prefix, test_name, action, url):
+    name = f"{action} "
+
+    if prefix and test_name:
+        name += f"{prefix}/{test_name}"
+    elif test_name:
+        name += test_name
+    elif prefix:
+        name += f"{prefix} " + urlparse(url).path
+    else:
+        name += urlparse(url).path
+
+    return name
 
 
 def display_help():
