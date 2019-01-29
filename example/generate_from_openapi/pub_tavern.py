@@ -22,12 +22,26 @@ def output_yaml(links, prefix=""):
             "method": str.upper(links[test_name].action),
         }
 
+        if links[test_name].encoding:
+            request["headers"] = {"content-type": links[test_name].encoding}
+
+        json = get_request_placeholders(links[test_name].fields)
+        if json:
+            request["json"] = json
+
         response = {"strict": False, "status_code": 200}
         inner_dict = {"name": test_name, "request": request, "response": response}
 
         test_dict["stages"] = [inner_dict]
         print(test_dict)
         print(yaml.dump(test_dict, explicit_start=True, default_flow_style=False))
+
+
+def get_request_placeholders(fields):
+    field_dict = {}
+    for field in fields:
+        field_dict[field.name] = "required" if field.required else "optional"
+    return field_dict
 
 
 def display_help():
