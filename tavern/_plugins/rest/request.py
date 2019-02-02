@@ -69,6 +69,9 @@ def get_request_args(rspec, test_block_config):
 
     content_keys = ["data", "json"]
 
+    if all(c in rspec for c in content_keys):
+        raise BadSchemaError("Can only specify one type of request data in HTTP request")
+
     headers = rspec.get("headers", {})
     has_content_header = "content-type" in [h.lower() for h in headers.keys()]
 
@@ -87,7 +90,7 @@ def get_request_args(rspec, test_block_config):
             }
     elif headers:
         # This should only be hit if we aren't sending a file
-        if not has_content_header:
+        if not has_content_header and "json" in rspec:
             rspec["headers"]["content-type"] = "application/json"
 
     fspec = format_keys(rspec, test_block_config["variables"])
