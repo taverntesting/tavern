@@ -26,3 +26,25 @@ stages:
       method: GET
     response:
       status_code: 999
+
+---
+
+test_name: Test 'only' keyword for test isolation
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: This should be ignored
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 999
+  - name: This is the only test that should run
+    only: yes
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
