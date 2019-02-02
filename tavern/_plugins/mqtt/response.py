@@ -44,19 +44,7 @@ class MQTTResponse(BaseResponse):
         else:
             return "<Not run yet>"
 
-    def verify(self, response):
-        """Ensure mqtt message has arrived
-
-        Args:
-            response: not used
-        """
-        # pylint: disable=too-many-statements
-
-        self.response = response
-
-        topic = self.expected["topic"]
-        timeout = self.expected.get("timeout", 1)
-
+    def _get_payload_vals(self):
         # TODO move this check to initialisation/schema checking
         if "json" in self.expected:
             if "payload" in self.expected:
@@ -73,7 +61,18 @@ class MQTTResponse(BaseResponse):
             payload = None
             json_payload = False
 
+        return payload, json_payload
+
+    def _await_response(self):
+        """Actually wait for response"""
+        topic = self.expected["topic"]
+        timeout = self.expected.get("timeout", 1)
+
+        payload, json_payload = self._get_payload_vals()
+
         time_spent = 0
+
+        msg = None
 
         while time_spent < timeout:
             t0 = time.time()
@@ -162,3 +161,17 @@ class MQTTResponse(BaseResponse):
             )
 
         return {}
+
+    def verify(self, response):
+        """Ensure mqtt message has arrived
+
+        Args:
+            response: not used
+        """
+
+        self.response = response
+
+        try:
+            return self._await_response()
+        finally:
+            self._client.unsubscribe_all()
