@@ -1,5 +1,3 @@
 from .base import BaseResponse
 
-__all__ = [
-    "BaseResponse",
-]
+__all__ = ["BaseResponse"]

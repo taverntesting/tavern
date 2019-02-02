@@ -57,11 +57,14 @@ def create_node_class(cls):
 
         # def __new__(self, x, start_mark, end_mark):
         #     return cls.__new__(self, x)
-    node_class.__name__ = '%s_node' % cls.__name__
+
+    node_class.__name__ = "%s_node" % cls.__name__
     return node_class
+
 
 dict_node = create_node_class(dict)
 list_node = create_node_class(list)
+
 
 class SourceMappingConstructor(SafeConstructor):
     # To support lazy loading, the original constructors first yield
@@ -79,20 +82,27 @@ class SourceMappingConstructor(SafeConstructor):
 
 
 SourceMappingConstructor.add_constructor(
-        u'tag:yaml.org,2002:map',
-        SourceMappingConstructor.construct_yaml_map)
+    u"tag:yaml.org,2002:map", SourceMappingConstructor.construct_yaml_map
+)
 
 SourceMappingConstructor.add_constructor(
-        u'tag:yaml.org,2002:seq',
-        SourceMappingConstructor.construct_yaml_seq)
+    u"tag:yaml.org,2002:seq", SourceMappingConstructor.construct_yaml_seq
+)
 
 yaml.add_representer(dict_node, yaml.representer.SafeRepresenter.represent_dict)
 yaml.add_representer(list_node, yaml.representer.SafeRepresenter.represent_list)
 
 
 # pylint: disable=too-many-ancestors
-class IncludeLoader(Reader, Scanner, Parser, RememberComposer, Resolver,
-        SourceMappingConstructor, SafeConstructor):
+class IncludeLoader(
+    Reader,
+    Scanner,
+    Parser,
+    RememberComposer,
+    Resolver,
+    SourceMappingConstructor,
+    SafeConstructor,
+):
     """YAML Loader with `!include` constructor and which can remember anchors
     between documents"""
 
@@ -119,15 +129,15 @@ def construct_include(loader, node):
     """Include file referenced at node."""
 
     # pylint: disable=protected-access
-    filename = os.path.abspath(os.path.join(
-        loader._root, loader.construct_scalar(node)
-    ))
-    extension = os.path.splitext(filename)[1].lstrip('.')
+    filename = os.path.abspath(
+        os.path.join(loader._root, loader.construct_scalar(node))
+    )
+    extension = os.path.splitext(filename)[1].lstrip(".")
 
-    if extension not in ('yaml', 'yml'):
+    if extension not in ("yaml", "yml"):
         raise BadSchemaError("Unknown filetype '{}'".format(filename))
 
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         return yaml.load(f, IncludeLoader)
 
 
@@ -141,6 +151,7 @@ class TypeSentinel(yaml.YAMLObject):
     'hint' to the validator that it should expect a specific type in the
     response.
     """
+
     yaml_loader = IncludeLoader
 
     @classmethod
@@ -148,7 +159,9 @@ class TypeSentinel(yaml.YAMLObject):
         return cls()
 
     def __str__(self):
-        return "<Tavern YAML sentinel for {}>".format(self.constructor) # pylint: disable=no-member
+        return "<Tavern YAML sentinel for {}>".format(
+            self.constructor
+        )  # pylint: disable=no-member
 
     @classmethod
     def to_yaml(cls, dumper, data):
@@ -160,17 +173,21 @@ class IntSentinel(TypeSentinel):
     yaml_tag = "!anyint"
     constructor = int
 
+
 class FloatSentinel(TypeSentinel):
     yaml_tag = "!anyfloat"
     constructor = float
+
 
 class StrSentinel(TypeSentinel):
     yaml_tag = "!anystr"
     constructor = str
 
+
 class BoolSentinel(TypeSentinel):
     yaml_tag = "!anybool"
     constructor = bool
+
 
 class AnythingSentinel(TypeSentinel):
     yaml_tag = "!anything"
@@ -207,6 +224,7 @@ class TypeConvertToken(yaml.YAMLObject):
     So this preserves the actual value that the type should be up until the
     point that it actually needs to be formatted
     """
+
     yaml_loader = IncludeLoader
 
     def __init__(self, value):
@@ -218,7 +236,7 @@ class TypeConvertToken(yaml.YAMLObject):
 
         try:
             # See if it's already a valid value (eg, if we do `!int "2"`)
-            converted = cls.constructor(value) # pylint: disable=no-member
+            converted = cls.constructor(value)  # pylint: disable=no-member
         except ValueError:
             # If not (eg, `!int "{int_value:d}"`)
             return cls(value)
@@ -227,7 +245,9 @@ class TypeConvertToken(yaml.YAMLObject):
 
     @classmethod
     def to_yaml(cls, dumper, data):
-        return yaml.nodes.ScalarNode(cls.yaml_tag, data.value, style=cls.yaml_flow_style)
+        return yaml.nodes.ScalarNode(
+            cls.yaml_tag, data.value, style=cls.yaml_flow_style
+        )
 
 
 class IntToken(TypeConvertToken):
@@ -267,6 +287,7 @@ class RawStrToken(TypeConvertToken):
 # Sort-of hack to try and avoid future API changes
 ApproxScalar = type(pytest.approx(1.0))
 
+
 class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
     yaml_tag = "!approx"
     yaml_loader = IncludeLoader
@@ -277,14 +298,19 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
         try:
             val = float(node.value)
         except (ValueError, TypeError) as e:
-            logger.error("Could not coerce '%s' to a float for use with !approx", type(node.value))
+            logger.error(
+                "Could not coerce '%s' to a float for use with !approx",
+                type(node.value),
+            )
             raise_from(BadSchemaError, e)
 
         return pytest.approx(val)
 
     @classmethod
     def to_yaml(cls, dumper, data):
-        return yaml.nodes.ScalarNode("!approx", str(data.expected), style=cls.yaml_flow_style)
+        return yaml.nodes.ScalarNode(
+            "!approx", str(data.expected), style=cls.yaml_flow_style
+        )
 
 
 # Apparently this isn't done automatically?

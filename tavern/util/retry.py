@@ -16,7 +16,7 @@ def retry(stage):
         stage (dict): test stage
     """
 
-    max_retries = stage.get('max_retries', 0)
+    max_retries = stage.get("max_retries", 0)
 
     if max_retries == 0:
         # Just return the plain function
@@ -30,18 +30,32 @@ def retry(stage):
                     res = fn(*args, **kwargs)
                 except exceptions.TavernException as e:
                     if i < max_retries:
-                        logger.info("Stage '%s' failed for %i time. Retrying.", stage['name'], i + 1)
-                        delay(stage, 'after')
+                        logger.info(
+                            "Stage '%s' failed for %i time. Retrying.",
+                            stage["name"],
+                            i + 1,
+                        )
+                        delay(stage, "after")
                     else:
-                        logger.error("Stage '%s' did not succeed in %i retries.", stage['name'], max_retries)
+                        logger.error(
+                            "Stage '%s' did not succeed in %i retries.",
+                            stage["name"],
+                            max_retries,
+                        )
                         raise_from(
                             exceptions.TestFailError(
-                                "Test '{}' failed: stage did not succeed in {} retries.".format(stage['name'], max_retries)),
-                            e)
+                                "Test '{}' failed: stage did not succeed in {} retries.".format(
+                                    stage["name"], max_retries
+                                )
+                            ),
+                            e,
+                        )
                 else:
                     break
 
-            logger.debug("Stage '%s' succeed after %i retries.", stage['name'], i)  # pylint: disable=undefined-loop-variable
+            logger.debug(
+                "Stage '%s' succeed after %i retries.", stage["name"], i
+            )  # pylint: disable=undefined-loop-variable
             return res
 
         return wrapped

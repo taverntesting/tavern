@@ -13,11 +13,10 @@ logger = logging.getLogger(__name__)
 def indent_err_text(err):
     if err == "null":
         err = "<No body>"
-    return indent(err, " "*4)
+    return indent(err, " " * 4)
 
 
 class BaseResponse(object):
-
     def __init__(self):
         # all errors in this response
         self.errors = []
@@ -29,7 +28,7 @@ class BaseResponse(object):
         return "- " + "\n- ".join(self.errors)
 
     def _adderr(self, msg, *args, **kwargs):
-        e = kwargs.get('e')
+        e = kwargs.get("e")
 
         if e:
             logger.exception(msg, *args)
@@ -59,11 +58,17 @@ class BaseResponse(object):
             logger.debug("No expected %s to check against", blockname)
             return
 
-        expected_block = format_keys(expected_block, self.test_block_config["variables"])
+        expected_block = format_keys(
+            expected_block, self.test_block_config["variables"]
+        )
 
         if block is None:
-            self._adderr("expected %s in the %s, but there was no response %s",
-                expected_block, blockname, blockname)
+            self._adderr(
+                "expected %s in the %s, but there was no response %s",
+                expected_block,
+                blockname,
+                blockname,
+            )
             return
 
         if isinstance(block, Mapping):

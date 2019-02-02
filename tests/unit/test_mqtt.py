@@ -12,24 +12,15 @@ def test_host_required():
     with pytest.raises(exceptions.MissingKeysError):
         MQTTClient()
 
-    args = {
-        "connect": {
-            "host": "localhost",
-        }
-    }
+    args = {"connect": {"host": "localhost"}}
 
     MQTTClient(**args)
 
 
 class TestClient(object):
-
     @pytest.fixture(name="fake_client")
     def fix_fake_client(self):
-        args = {
-            "connect": {
-                "host": "localhost",
-            }
-        }
+        args = {"connect": {"host": "localhost"}}
 
         return MQTTClient(**args)
 
@@ -59,8 +50,9 @@ class TestClient(object):
     def test_context_connection_success(self, fake_client):
         """returns self on success"""
 
-        with patch.object(fake_client._client, "loop_start"), \
-        patch.object(fake_client._client, "connect_async"):
+        with patch.object(fake_client._client, "loop_start"), patch.object(
+            fake_client._client, "connect_async"
+        ):
             fake_client._client._state = paho.mqtt_cs_connected
             with fake_client as x:
                 assert fake_client == x
@@ -72,8 +64,9 @@ class TestClient(object):
             is_published = False
             rc = 1
 
-        with patch.object(fake_client._client, "subscribe"), \
-        patch.object(fake_client._client, "publish", return_value=FakeMessage()):
+        with patch.object(fake_client._client, "subscribe"), patch.object(
+            fake_client._client, "publish", return_value=FakeMessage()
+        ):
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")
 
@@ -84,25 +77,21 @@ class TestClient(object):
             is_published = False
             rc = 2342423
 
-        with patch.object(fake_client._client, "subscribe"), \
-        patch.object(fake_client._client, "publish", return_value=FakeMessage()):
+        with patch.object(fake_client._client, "subscribe"), patch.object(
+            fake_client._client, "publish", return_value=FakeMessage()
+        ):
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")
 
 
 class TestTLS(object):
-
     def test_disabled_tls(self):
         """Even if there are other invalid options, disable tls and early exit
         without checking other args
         """
         args = {
-            "connect": {
-                "host": "localhost",
-            },
-            "tls": {
-                "certfile": "/lcliueurhug/ropko3kork32",
-            }
+            "connect": {"host": "localhost"},
+            "tls": {"certfile": "/lcliueurhug/ropko3kork32"},
         }
 
         with pytest.raises(exceptions.MQTTTLSError):
@@ -116,14 +105,7 @@ class TestTLS(object):
     def test_invalid_tls_ver(self):
         """Bad tls versions raise exception
         """
-        args = {
-            "connect": {
-                "host": "localhost",
-            },
-            "tls": {
-                "tls_version": "custom_tls",
-            }
-        }
+        args = {"connect": {"host": "localhost"}, "tls": {"tls_version": "custom_tls"}}
 
         with pytest.raises(exceptions.MQTTTLSError):
             MQTTClient(**args)
@@ -131,10 +113,7 @@ class TestTLS(object):
 
 @pytest.fixture(name="req")
 def fix_example_request():
-    spec = {
-        "topic":  "{request_topic:s}",
-        "payload": "abc123",
-    }
+    spec = {"topic": "{request_topic:s}", "payload": "abc123"}
 
     return spec.copy()
 
