@@ -1,4 +1,5 @@
 import logging
+from distutils.util import strtobool
 import warnings
 import os
 from copy import deepcopy
@@ -128,9 +129,13 @@ def run_test(in_file, test_spec, global_cfg):
             logger.debug("Entering context for %s", name)
             stack.enter_context(session)
 
+        has_only = any(strtobool(stage.get("only")) for stage in test_spec["stages"])
+
         # Run tests in a path in order
         for stage in test_spec["stages"]:
             if stage.get('skip'):
+                continue
+            elif has_only and not strtobool(stage.get('only')):
                 continue
 
             test_block_config["strict"] = default_strictness
@@ -163,9 +168,6 @@ def run_test(in_file, test_spec, global_cfg):
                 e.stage = stage
                 e.test_block_config = test_block_config
                 raise
-
-            if stage.get('only'):
-                break
 
 
 def run_stage(sessions, stage, tavern_box, test_block_config):
