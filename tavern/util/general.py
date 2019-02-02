@@ -1,6 +1,7 @@
 import logging
 import yaml
 from .dict_util import deep_dict_merge
+from .loader import IncludeLoader
 
 
 logger = logging.getLogger(__name__)
@@ -24,7 +25,7 @@ def load_global_config(global_cfg_paths):
         logger.debug("Loading global config from %s", global_cfg_paths)
         for filename in global_cfg_paths:
             with open(filename, "r") as gfileobj:
-                contents = yaml.load(gfileobj)
+                contents = yaml.load(gfileobj, Loader=IncludeLoader)
 
             global_cfg = deep_dict_merge(global_cfg, contents)
 

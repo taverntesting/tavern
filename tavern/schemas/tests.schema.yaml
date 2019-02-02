@@ -74,6 +74,9 @@ schema;stage:
         qos:
           type: int
           required: false
+        retain:
+          type: bool
+          required: false
     mqtt_response:
       type: map
       required: false

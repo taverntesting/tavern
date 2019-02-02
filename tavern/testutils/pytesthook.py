@@ -6,8 +6,13 @@ import os
 import re
 from builtins import str as ustr
 
-import attr
+try:
+    from functools import lru_cache
+except ImportError:
+    from backports.functools_lru_cache import lru_cache
+
 import py
+import attr
 import pytest
 import yaml
 from _pytest import fixtures
@@ -26,6 +31,71 @@ from tavern.util.loader import IncludeLoader
 logger = logging.getLogger(__name__)
 
 match_tavern_file = re.compile(r'.+\.tavern\.ya?ml$').match
+
+
+@lru_cache()
+def load_global_cfg(pytest_config):
+    """Load globally included config files from cmdline/cfg file arguments
+
+    Args:
+        pytest_config (pytest.Config): Pytest config object
+
+    Returns:
+        dict: variables/stages/etc from global config files
+
+    Raises:
+        exceptions.UnexpectedKeysError: Invalid settings in one or more config
+            files detected
+    """
+    # Load ini first
+    ini_global_cfg_paths = pytest_config.getini("tavern-global-cfg") or []
+    # THEN load command line, to allow overwriting of values
+    cmdline_global_cfg_paths = pytest_config.getoption("tavern_global_cfg") or []
+
+    all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
+    global_cfg = load_global_config(all_paths)
+
+    try:
+        loaded_variables = global_cfg["variables"]
+    except KeyError:
+        logger.debug("Nothing to format in global config files")
+    else:
+        tavern_box = Box({
+            "tavern": {
+                "env_vars": dict(os.environ),
+            }
+        })
+
+        global_cfg["variables"] = format_keys(loaded_variables, tavern_box)
+
+    if pytest_config.getini("tavern-strict") is not None:
+        strict = pytest_config.getini("tavern-strict")
+        if isinstance(strict, list):
+            if any(i not in ["body", "headers", "redirect_query_params"] for i in strict):
+                raise exceptions.UnexpectedKeysError("Invalid values for 'strict' use in config file")
+    elif pytest_config.getoption("tavern_strict") is not None:
+        strict = pytest_config.getoption("tavern_strict")
+    else:
+        strict = []
+
+    global_cfg["strict"] = strict
+
+    global_cfg["backends"] = {}
+    backends = ["http", "mqtt"]
+    for b in backends:
+        # similar logic to above - use ini, then cmdline if present
+        ini_opt = pytest_config.getini("tavern-{}-backend".format(b))
+        cli_opt = pytest_config.getoption("tavern_{}_backend".format(b))
+
+        in_use = ini_opt
+        if cli_opt and (cli_opt != ini_opt):
+            in_use = cli_opt
+
+        global_cfg["backends"][b] = in_use
+
+    logger.debug("Global config: %s", global_cfg)
+
+    return global_cfg
 
 
 def pytest_collect_file(parent, path):
@@ -203,41 +273,93 @@ class YamlFile(pytest.File):
 
             yield item_new
 
-    def _generate_items(self, test_spec):
+    def _get_test_fmt_vars(self, test_spec):
+        """Get any format variables that can be inferred for the test at this point
 
+        Args:
+            test_spec (dict): Test specification, possibly with included config files
+
+        Returns:
+            dict: available format variables
+        """
+        # Get included variables so we can do things like:
+        # skipif: {my_integer} > 2
+        # skipif: 'https' in '{hostname}'
+        # skipif: '{hostname}'.contains('ignoreme')
+        fmt_vars = {}
+
+        global_cfg = load_global_cfg(self.config)
+        fmt_vars.update(**global_cfg.get("variables", {}))
+
+        included = test_spec.get("includes", [])
+        for i in included:
+            fmt_vars.update(**i.get("variables", {}))
+
+        # Needed if something in a config file uses tavern.env_vars
+        tavern_box = Box({
+            "tavern": {
+                "env_vars": dict(os.environ),
+            }
+        })
+
+        try:
+            fmt_vars = format_keys(fmt_vars, tavern_box)
+        except exceptions.MissingFormatError as e:
+            # eg, if we have {tavern.env_vars.DOESNT_EXIST}
+            msg = "Tried to use tavern format variable that did not exist"
+            raise_from(exceptions.MissingFormatError(msg), e)
+
+        return fmt_vars
+
+    def _generate_items(self, test_spec):
+        """Modify or generate tests based on test spec
+
+        If there are any 'parametrize' marks, this will generate extra tests
+        based on the values
+
+        Args:
+            test_spec (dict): Test specification
+
+        Yields:
+            YamlItem: Tavern YAML test
+        """
         item = YamlItem(test_spec["test_name"], self, test_spec, self.fspath)
 
-        marks = test_spec.get("marks", [])
+        original_marks = test_spec.get("marks", [])
 
-        if marks:
-            # Get included variables so we can do things like:
-            # skipif: {my_integer} > 2
-            # skipif: 'https' in '{hostname}'
-            # skipif: '{hostname}'.contains('ignoreme')
-            included = test_spec.get("includes", [])
-            fmt_vars = {}
-            for i in included:
-                fmt_vars.update(**i.get("variables", {}))
-
+        if original_marks:
+            fmt_vars = self._get_test_fmt_vars(test_spec)
             pytest_marks = []
+            formatted_marks = []
 
-            # This should either be a string or a skipif
-            for m in marks:
+            for m in original_marks:
                 if isinstance(m, str):
+                    # a normal mark
                     m = format_keys(m, fmt_vars)
                     pytest_marks.append(getattr(pytest.mark, m))
                 elif isinstance(m, dict):
+                    # skipif or parametrize (for now)
                     for markname, extra_arg in m.items():
                         # NOTE
                         # cannot do 'skipif' and rely on a parametrized
                         # argument.
-                        extra_arg = format_keys(extra_arg, fmt_vars)
-                        pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
+                        try:
+                            extra_arg = format_keys(extra_arg, fmt_vars)
+                        except exceptions.MissingFormatError as e:
+                            msg = "Tried to use mark '{}' (with value '{}') in test '{}' but one or more format variables was not in any configuration file used by the test".format(markname, extra_arg, test_spec["test_name"])
+                            # NOTE
+                            # we could continue and let it fail in the test, but
+                            # this gives a better indication of what actually
+                            # happened (even if it is difficult to test)
+                            raise_from(exceptions.MissingFormatError(msg), e)
+                        else:
+                            pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
+                            formatted_marks.append({markname: extra_arg})
 
             # Do this after we've added all the other marks so doing
             # things like selecting on mark names still works even
             # after parametrization
-            parametrize_marks = [i for i in marks if isinstance(i, dict) and "parametrize" in i]
+            parametrize_marks = [i for i in formatted_marks if isinstance(i, dict) and "parametrize" in i]
             if parametrize_marks:
                 # no 'yield from' in python 2...
                 for new_item in self.get_parametrized_items(
@@ -352,55 +474,6 @@ class YamlItem(pytest.Item):
 
             self.add_marker(pm)
 
-    def _parse_arguments(self):
-        # Load ini first
-        ini_global_cfg_paths = self.config.getini("tavern-global-cfg") or []
-        # THEN load command line, to allow overwriting of values
-        cmdline_global_cfg_paths = self.config.getoption("tavern_global_cfg") or []
-
-        all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
-        global_cfg = load_global_config(all_paths)
-
-        try:
-            loaded_variables = global_cfg["variables"]
-        except KeyError:
-            logger.debug("Nothing to format in global config files")
-        else:
-            tavern_box = Box({
-                "tavern": {
-                    "env_vars": dict(os.environ),
-                }
-            })
-
-            global_cfg["variables"] = format_keys(loaded_variables, tavern_box)
-
-        if self.config.getini("tavern-strict") is not None:
-            strict = self.config.getini("tavern-strict")
-            if isinstance(strict, list):
-                if any(i not in ["body", "headers", "redirect_query_params"] for i in strict):
-                    raise exceptions.UnexpectedKeysError("Invalid values for 'strict' use in config file")
-        elif self.config.getoption("tavern_strict") is not None:
-            strict = self.config.getoption("tavern_strict")
-        else:
-            strict = []
-
-        global_cfg["strict"] = strict
-
-        global_cfg["backends"] = {}
-        backends = ["http", "mqtt"]
-        for b in backends:
-            # similar logic to above - use ini, then cmdline if present
-            ini_opt = self.config.getini("tavern-{}-backend".format(b))
-            cli_opt = self.config.getoption("tavern_{}_backend".format(b))
-
-            in_use = ini_opt
-            if cli_opt and (cli_opt != ini_opt):
-                in_use = cli_opt
-
-            global_cfg["backends"][b] = in_use
-
-        return global_cfg
-
     def _load_fixture_values(self):
         fixture_markers = self.iter_markers("usefixtures")
 
@@ -428,7 +501,7 @@ class YamlItem(pytest.Item):
         return values
 
     def runtest(self):
-        self.global_cfg = self._parse_arguments()
+        self.global_cfg = load_global_cfg(self.config)
 
         self.global_cfg.setdefault("variables", {})
 

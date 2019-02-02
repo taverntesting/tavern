@@ -51,6 +51,7 @@ class MQTTResponse(BaseResponse):
         Args:
             response: not used
         """
+        # pylint: disable=too-many-statements
 
         self.response = response
 
@@ -64,8 +65,11 @@ class MQTTResponse(BaseResponse):
 
             payload = self.expected["json"]
             json_payload = True
-        else:
+        elif "payload" in self.expected:
             payload = self.expected["payload"]
+            json_payload = False
+        else:
+            payload = None
             json_payload = False
 
         time_spent = 0
@@ -87,20 +91,30 @@ class MQTTResponse(BaseResponse):
                 try:
                     msg.payload = json.loads(msg.payload)
                 except LoadException:
-                    logger.warning("Expected a json payload but got '%s'", msg.payload)
+                    logger.warning("Expected a json payload but got '%s'", msg.payload, exc_info=True)
                     msg = None
                     continue
 
-            if msg.payload != payload:
-                logger.warning("Got unexpected payload on topic '%s': '%s' (expected '%s')",
-                    msg.topic, msg.payload, payload)
-
+            if not payload:
+                if not msg.payload:
+                    logger.info("Got message with no payload (as expected) on '%s'", topic)
+                    break
+                else:
+                    logger.warning("Message had payload '%s' but we expected no payload")
+            elif msg.payload != payload:
                 if json_payload:
                     try:
                         check_keys_match_recursive(payload, msg.payload, [])
                     except exceptions.KeyMismatchError:
                         # Just want to log the mismatch
                         pass
+                    else:
+                        logger.info("Got expected message in '%s' with payload '%s'",
+                            msg.topic, msg.payload)
+                        break
+
+                logger.warning("Got unexpected payload on topic '%s': '%s' (expected '%s')",
+                    msg.topic, msg.payload, payload)
             elif msg.topic != topic:
                 logger.warning("Got unexpected message in '%s' with payload '%s'",
                     msg.topic, msg.payload)

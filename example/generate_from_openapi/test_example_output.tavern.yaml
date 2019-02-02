@@ -1,0 +1,32 @@
+---
+stages:
+- name: get pets/listPets
+  request:
+    method: GET
+    url: http://localhost:8000/pets
+  response:
+    status_code: 200
+    strict: false
+test_name: get pets/listPets
+
+---
+stages:
+- name: post pets/createPets
+  request:
+    method: POST
+    url: http://localhost:8000/pets
+  response:
+    status_code: 200
+    strict: false
+test_name: post pets/createPets
+
+---
+stages:
+- name: get pets/showPetById
+  request:
+    method: GET
+    url: http://localhost:8000/pets/{petId}
+  response:
+    status_code: 200
+    strict: false
+test_name: get pets/showPetById

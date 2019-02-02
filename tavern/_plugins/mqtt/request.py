@@ -44,7 +44,7 @@ class MQTTRequest(BaseRequest):
             "payload",
             "json",
             "qos",
-            # TODO retain?
+            "retain",
         }
 
         check_expected_keys(expected, rspec)

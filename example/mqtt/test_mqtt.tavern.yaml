@@ -1,6 +1,6 @@
 ---
 
-test_name: Test mqtt message response
+test_name: Test mqtt message echo
 
 includes:
   - !include common.yaml
@@ -17,13 +17,103 @@ paho-mqtt: &mqtt_spec
     client_id: tavern-tester
 
 stages:
+  - name: Echo text
+    mqtt_publish:
+      topic: /device/123/echo
+      payload: hello world
+    mqtt_response:
+      topic: /device/123/echo/response
+      payload: hello world
+      timeout: 5
+      qos: 1
+
+---
+
+test_name: Test mqtt message echo json
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - name: Echo json
+    mqtt_publish:
+      topic: /device/123/echo
+      json:
+        message: hello world
+    mqtt_response:
+      topic: /device/123/echo/response
+      json:
+        message: hello world
+      timeout: 5
+      qos: 1
+
+---
+
+test_name: Test retain key
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - name: Echo text with retain force on
+    mqtt_publish:
+      topic: /device/123/echo
+      payload: hello world
+      retain: true
+      qos: 1
+    # NOTE: not subcribing to .../echo here
+
+  # - name: Dummy ping request
+  #   # wait to avoid false positive test from race condition
+  #   delay_before: 1
+  #   # This stage just exists to test subscription and retained messages
+  #   mqtt_publish:
+  #     topic: /device/123/ping
+  #   # This is retained from the previous test
+  #   mqtt_response:
+  #     topic: /device/123/echo/response
+  #     payload: hello world
+  #     timeout: 5
+  #     qos: 1
+
+---
+
+test_name: Test ping/pong with no payload
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
   - name: step 1 - ping/pong
     mqtt_publish:
       topic: /device/123/ping
-      payload: ping
     mqtt_response:
       topic: /device/123/pong
-      payload: pong
+      timeout: 5
+      qos: 1
+
+---
+
+test_name: Test ping/pong with ignored payload
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /device/123/ping
+      payload: blaeruhg
+    mqtt_response:
+      topic: /device/123/pong
       timeout: 5
       qos: 1
 
@@ -115,44 +205,66 @@ stages:
 
 ---
 
-test_name: Test trying to subscribe with a too-large qos fails
+test_name: Test empty payload
 
 includes:
   - !include common.yaml
 
 paho-mqtt: *mqtt_spec
 
-_xfail: verify
-
 stages:
-  - name: step 1 - ping/pong
+  - name: step 0 - reset devices
+    request:
+      url: "{host}/reset"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 204
+
+  - name: Check lights status is off
     mqtt_publish:
-      topic: /device/123/ping
-      payload: ping
+      topic: /device/123/status
     mqtt_response:
-      topic: /device/123/pong
-      payload: pong
-      timeout: 5
-      qos: 3
+      topic: /device/123/status/response
+      json:
+        lights: 0
+      timeout: 3
+      qos: 1
+
+  - name: Turn lights on
+    mqtt_publish:
+      topic: /device/123/lights
+      qos: 1
+      payload: "on"
+    delay_after: 2
+
+  - name: Check lights status is on
+    mqtt_publish:
+      topic: /device/123/status
+    mqtt_response:
+      topic: /device/123/status/response
+      json:
+        lights: 1
+      timeout: 3
+      qos: 1
 
 ---
 
-test_name: Test trying to subscribe with an invalid qos fails
+test_name: Test can handle type tokens
 
 includes:
   - !include common.yaml
 
 paho-mqtt: *mqtt_spec
 
-_xfail: verify
-
 stages:
-  - name: step 1 - ping/pong
+  - name: Test checking for lights status with anyint
     mqtt_publish:
-      topic: /device/123/ping
-      payload: ping
+      topic: /device/123/status
     mqtt_response:
-      topic: /device/123/pong
-      payload: pong
-      timeout: 5
-      qos: weefwe
+      topic: /device/123/status/response
+      json:
+        lights: !anyint
+      timeout: 3
+      qos: 1
