@@ -17,7 +17,6 @@ logger = logging.getLogger(__name__)
 
 
 class MQTTResponse(BaseResponse):
-
     def __init__(self, client, name, expected, test_block_config):
         # pylint: disable=unused-argument
 
@@ -61,7 +60,9 @@ class MQTTResponse(BaseResponse):
         # TODO move this check to initialisation/schema checking
         if "json" in self.expected:
             if "payload" in self.expected:
-                raise exceptions.BadSchemaError("Can only specify one of 'payload' or 'json' in MQTT response")
+                raise exceptions.BadSchemaError(
+                    "Can only specify one of 'payload' or 'json' in MQTT response"
+                )
 
             payload = self.expected["json"]
             json_payload = True
@@ -91,16 +92,24 @@ class MQTTResponse(BaseResponse):
                 try:
                     msg.payload = json.loads(msg.payload)
                 except LoadException:
-                    logger.warning("Expected a json payload but got '%s'", msg.payload, exc_info=True)
+                    logger.warning(
+                        "Expected a json payload but got '%s'",
+                        msg.payload,
+                        exc_info=True,
+                    )
                     msg = None
                     continue
 
             if not payload:
                 if not msg.payload:
-                    logger.info("Got message with no payload (as expected) on '%s'", topic)
+                    logger.info(
+                        "Got message with no payload (as expected) on '%s'", topic
+                    )
                     break
                 else:
-                    logger.warning("Message had payload '%s' but we expected no payload")
+                    logger.warning(
+                        "Message had payload '%s' but we expected no payload"
+                    )
             elif msg.payload != payload:
                 if json_payload:
                     try:
@@ -109,29 +118,47 @@ class MQTTResponse(BaseResponse):
                         # Just want to log the mismatch
                         pass
                     else:
-                        logger.info("Got expected message in '%s' with payload '%s'",
-                            msg.topic, msg.payload)
+                        logger.info(
+                            "Got expected message in '%s' with payload '%s'",
+                            msg.topic,
+                            msg.payload,
+                        )
                         break
 
-                logger.warning("Got unexpected payload on topic '%s': '%s' (expected '%s')",
-                    msg.topic, msg.payload, payload)
+                logger.warning(
+                    "Got unexpected payload on topic '%s': '%s' (expected '%s')",
+                    msg.topic,
+                    msg.payload,
+                    payload,
+                )
             elif msg.topic != topic:
-                logger.warning("Got unexpected message in '%s' with payload '%s'",
-                    msg.topic, msg.payload)
+                logger.warning(
+                    "Got unexpected message in '%s' with payload '%s'",
+                    msg.topic,
+                    msg.payload,
+                )
             else:
-                logger.info("Got expected message in '%s' with payload '%s'",
-                    msg.topic, msg.payload)
+                logger.info(
+                    "Got expected message in '%s' with payload '%s'",
+                    msg.topic,
+                    msg.payload,
+                )
                 break
 
             msg = None
             time_spent += time.time() - t0
 
         if not msg:
-            self._adderr("Expected '%s' on topic '%s' but no such message received",
-                payload, topic)
+            self._adderr(
+                "Expected '%s' on topic '%s' but no such message received",
+                payload,
+                topic,
+            )
 
         if self.errors:
-            raise exceptions.TestFailError("Test '{:s}' failed:\n{:s}".format(
-                self.name, self._str_errors()), failures=self.errors)
+            raise exceptions.TestFailError(
+                "Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()),
+                failures=self.errors,
+            )
 
         return {}

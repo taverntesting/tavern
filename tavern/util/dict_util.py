@@ -28,7 +28,7 @@ def format_keys(val, variables):
 
     if isinstance(val, dict):
         formatted = {}
-        #formatted = {key: format_keys(val[key], box_vars) for key in val}
+        # formatted = {key: format_keys(val[key], box_vars) for key in val}
         for key in val:
             formatted[key] = format_keys(val[key], box_vars)
     elif isinstance(val, (list, tuple)):
@@ -37,8 +37,9 @@ def format_keys(val, variables):
         try:
             formatted = val.format(**box_vars)
         except KeyError as e:
-            logger.error("Failed to resolve string [%s] with variables [%s]",
-                         val, box_vars)
+            logger.error(
+                "Failed to resolve string [%s] with variables [%s]", val, box_vars
+            )
             logger.error("Key(s) not found in format: %s", e.args)
             raise_from(exceptions.MissingFormatError(e.args), e)
         except IndexError as e:
@@ -101,8 +102,11 @@ def deep_dict_merge(initial_dct, merge_dct):
     dct = initial_dct.copy()
 
     for k in merge_dct:
-        if (k in dct and isinstance(dct[k], dict)
-                and isinstance(merge_dct[k], collections.Mapping)):
+        if (
+            k in dct
+            and isinstance(dct[k], dict)
+            and isinstance(merge_dct[k], collections.Mapping)
+        ):
             dct[k] = deep_dict_merge(dct[k], merge_dct[k])
         else:
             dct[k] = merge_dct[k]
@@ -220,14 +224,19 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
 
         a["b"]["c"] = 4, b["b"]["c"] = {'key': 'value'}
         """
+
         def _format_err(which):
             return "{}{}".format(which, "".join('["{}"]'.format(key) for key in keys))
 
         e_formatted = _format_err("expected")
         a_formatted = _format_err("actual")
         return "{} = '{}' (type = {}), {} = '{}' (type = {})".format(
-            e_formatted, expected_val, type(expected_val),
-            a_formatted, actual_val, type(actual_val)
+            e_formatted,
+            expected_val,
+            type(expected_val),
+            a_formatted,
+            actual_val,
+            type(actual_val),
         )
 
     # Check required because of python 2/3 unicode compatability when loading yaml
@@ -263,12 +272,19 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
         # At this point, there is likely to be an error unless we're using any
         # of the type sentinels
 
-        if not (expected_val is ANYTHING): # pylint: disable=superfluous-parens
+        if not (expected_val is ANYTHING):  # pylint: disable=superfluous-parens
             # NOTE
             # Second part of this check will be removed in future - see deprecation
             # warning below for details
             if not expected_matches and expected_val is not None:
-                raise_from(exceptions.KeyMismatchError("Type of returned data was different than expected ({})".format(full_err())), e)
+                raise_from(
+                    exceptions.KeyMismatchError(
+                        "Type of returned data was different than expected ({})".format(
+                            full_err()
+                        )
+                    ),
+                    e,
+                )
 
         if isinstance(expected_val, dict):
             akeys = set(actual_val.keys())
@@ -282,9 +298,13 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                 if extra_actual_keys:
                     msg += " - Extra keys in response: {}".format(extra_actual_keys)
                 if extra_expected_keys:
-                    msg += " - Keys missing from response: {}".format(extra_expected_keys)
+                    msg += " - Keys missing from response: {}".format(
+                        extra_expected_keys
+                    )
 
-                full_msg = "Structure of returned data was different than expected {} ({})".format(msg, full_err())
+                full_msg = "Structure of returned data was different than expected {} ({})".format(
+                    msg, full_err()
+                )
 
                 # If there are more keys in 'expected' compared to 'actual',
                 # this is still a hard error and we shouldn't continue
@@ -299,12 +319,25 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
 
             for key in to_recurse:
                 try:
-                    check_keys_match_recursive(expected_val[key], actual_val[key], keys + [key], strict)
+                    check_keys_match_recursive(
+                        expected_val[key], actual_val[key], keys + [key], strict
+                    )
                 except KeyError:
-                    logger.debug("Skipping comparing missing key %s due to strict=%s", key, strict)
+                    logger.debug(
+                        "Skipping comparing missing key %s due to strict=%s",
+                        key,
+                        strict,
+                    )
         elif isinstance(expected_val, list):
             if len(expected_val) != len(actual_val):
-                raise_from(exceptions.KeyMismatchError("Length of returned list was different than expected - expected {} items, got {} ({})".format(len(expected_val), len(actual_val), full_err())), e)
+                raise_from(
+                    exceptions.KeyMismatchError(
+                        "Length of returned list was different than expected - expected {} items, got {} ({})".format(
+                            len(expected_val), len(actual_val), full_err()
+                        )
+                    ),
+                    e,
+                )
 
             # TODO
             # Check things in the wrong order?
@@ -318,10 +351,19 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                     # and will take ANYTHING into account
                     raise_from(sub_e, e)
         elif expected_val is None:
-            warnings.warn("Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.", FutureWarning)
+            warnings.warn(
+                "Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.",
+                FutureWarning,
+            )
         elif expected_val is ANYTHING:
             logger.debug("Actual value = '%s' - matches !anything", actual_val)
         elif isinstance(expected_val, TypeSentinel) and expected_matches:
-            logger.debug("Actual value = '%s' - matches !any%s", actual_val, expected_val.constructor)
+            logger.debug(
+                "Actual value = '%s' - matches !any%s",
+                actual_val,
+                expected_val.constructor,
+            )
         else:
-            raise_from(exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e)
+            raise_from(
+                exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e
+            )
