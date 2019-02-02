@@ -1,5 +1,3 @@
 from .base import BaseRequest
 
-__all__ = [
-    "BaseRequest",
-]
+__all__ = ["BaseRequest"]
