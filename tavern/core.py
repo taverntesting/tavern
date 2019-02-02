@@ -129,13 +129,22 @@ def run_test(in_file, test_spec, global_cfg):
             logger.debug("Entering context for %s", name)
             stack.enter_context(session)
 
-        has_only = any(strtobool(stage.get("only", "no")) for stage in test_spec["stages"])
+        def getonly(stage):
+            o = stage.get("only")
+            if o is None:
+                return False
+            elif isinstance(o, bool):
+                return o
+            else:
+                return strtobool(o)
+
+        has_only = any(getonly(stage) for stage in test_spec["stages"])
 
         # Run tests in a path in order
         for stage in test_spec["stages"]:
             if stage.get('skip'):
                 continue
-            elif has_only and not strtobool(stage.get('only', "no")):
+            elif has_only and not getonly(stage):
                 continue
 
             test_block_config["strict"] = default_strictness
