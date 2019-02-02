@@ -14,7 +14,6 @@ from .util.delay import delay
 from .util.retry import retry
 
 from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
-from .schemas.files import wrapfile
 
 
 logger = logging.getLogger(__name__)
@@ -222,7 +221,6 @@ def _run_pytest(in_file, tavern_global_cfg, tavern_mqtt_backend=None, tavern_htt
 
     if kwargs:
         warnings.warn("Passing extra keyword args to run() when using pytest is used are ignored.", FutureWarning)
-
 
     if tavern_global_cfg:
         global_filename = tavern_global_cfg
