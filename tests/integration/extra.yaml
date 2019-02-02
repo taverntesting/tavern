@@ -1,0 +1,8 @@
+---
+name: global includes
+description: Used for testing global config tests
+
+variables:
+  global_host: http://localhost:5003
+  test_string_1: "hello"
+  test_string_2: "{tavern.env_vars.SECOND_URL_PART}"
