@@ -178,6 +178,9 @@ def run_test(in_file, test_spec, global_cfg):
                 e.test_block_config = test_block_config
                 raise
 
+            if getonly(stage):
+                continue
+
 
 def run_stage(sessions, stage, tavern_box, test_block_config):
     """Run one stage from the test
