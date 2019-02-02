@@ -25,6 +25,7 @@ def retry(stage):
     def retry_wrapper(fn):
         @wraps(fn)
         def wrapped(*args, **kwargs):
+            i = 0
             for i in range(max_retries + 1):
                 try:
                     res = fn(*args, **kwargs)
