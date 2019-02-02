@@ -70,7 +70,9 @@ def get_request_args(rspec, test_block_config):
     content_keys = ["data", "json"]
 
     if all(c in rspec for c in content_keys):
-        raise BadSchemaError("Can only specify one type of request data in HTTP request")
+        raise exceptions.BadSchemaError(
+            "Can only specify one type of request data in HTTP request"
+        )
 
     headers = rspec.get("headers", {})
     has_content_header = "content-type" in [h.lower() for h in headers.keys()]
