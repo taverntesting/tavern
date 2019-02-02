@@ -179,7 +179,7 @@ def run_test(in_file, test_spec, global_cfg):
                 raise
 
             if getonly(stage):
-                continue
+                break
 
 
 def run_stage(sessions, stage, tavern_box, test_block_config):
