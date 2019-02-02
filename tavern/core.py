@@ -223,24 +223,23 @@ def _run_pytest(in_file, tavern_global_cfg, tavern_mqtt_backend=None, tavern_htt
     if kwargs:
         warnings.warn("Passing extra keyword args to run() when using pytest is used are ignored.", FutureWarning)
 
-    with ExitStack() as stack:
 
-        if tavern_global_cfg:
-            global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
+    if tavern_global_cfg:
+        global_filename = tavern_global_cfg
 
-        pytest_args = pytest_args or []
-        pytest_args += [in_file]
-        if tavern_global_cfg:
-            pytest_args += ["--tavern-global-cfg", global_filename]
+    pytest_args = pytest_args or []
+    pytest_args += [in_file]
+    if tavern_global_cfg:
+        pytest_args += ["--tavern-global-cfg", global_filename]
 
-        if tavern_mqtt_backend:
-            pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
-        if tavern_http_backend:
-            pytest_args += ["--tavern-http-backend", tavern_http_backend]
-        if tavern_strict:
-            pytest_args += ["--tavern-strict", tavern_strict]
+    if tavern_mqtt_backend:
+        pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
+    if tavern_http_backend:
+        pytest_args += ["--tavern-http-backend", tavern_http_backend]
+    if tavern_strict:
+        pytest_args += ["--tavern-strict", tavern_strict]
 
-        return pytest.main(args=pytest_args)
+    return pytest.main(args=pytest_args)
 
 
 def run(in_file, tavern_global_cfg=None, **kwargs):
