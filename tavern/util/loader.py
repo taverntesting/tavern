@@ -160,9 +160,7 @@ class TypeSentinel(yaml.YAMLObject):
 
     def __str__(self):
         # pylint: disable=no-member
-        return "<Tavern YAML sentinel for {}>".format(
-            self.constructor
-        )
+        return "<Tavern YAML sentinel for {}>".format(self.constructor)
 
     @classmethod
     def to_yaml(cls, dumper, data):
