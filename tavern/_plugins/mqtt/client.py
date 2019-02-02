@@ -132,6 +132,13 @@ class MQTTClient(object):
         }
         self._client.user_data_set(self._userdata)
 
+        # Topics to subscribe to - mapping of subscription message id to a tuple
+        # of (topic, sub_status) where sub_status is true or false based on
+        # whether it has finished subscribing or not
+        self._subscribed = {}
+        # callback
+        self._client.on_subscribe = self._on_subscribe
+
     def _handle_tls_args(self):
         """Make sure TLS options are valid
         """
@@ -221,12 +228,46 @@ class MQTTClient(object):
         else:
             return msg
 
-    def publish(self, topic, payload, *args, **kwargs):
+    def publish(self, topic, payload=None, qos=None, retain=None):
         """publish message using paho library
         """
+        logger.debug("Checking subscriptions")
+
+        def not_finished_subcribing_to():
+            """Get topic names for topics which have not finished subcribing to"""
+            return [i[0] for i in self._subscribed.values() if not i[1]]
+
+        to_wait_for = not_finished_subcribing_to()
+
+        if to_wait_for:
+            elapsed = 0.0
+            while elapsed < self._connect_timeout:
+                # TODO
+                # configurable?
+                time.sleep(0.25)
+                elapsed += 0.25
+
+                to_wait_for = not_finished_subcribing_to()
+
+                if not to_wait_for:
+                    logger.debug("Finished subcribing to all topics")
+                    break
+
+                logger.debug("Not finished subcribing to '%s' after %.2f seconds", to_wait_for, elapsed)
+
+            if to_wait_for:
+                logger.warning("Did not finish subscribing to '%s' before publishing - going ahead anyway")
+        else:
+            logger.debug("Finished subcribing to all topics")
+
         logger.debug("Publishing on '%s'", topic)
 
-        msg = self._client.publish(topic, payload, *args, **kwargs)
+        kwargs = {}
+        if qos is not None:
+            kwargs["qos"] = qos
+        if retain is not None:
+            kwargs["retain"] = retain
+        msg = self._client.publish(topic, payload, **kwargs)
 
         if not msg.is_published:
             raise exceptions.MQTTError("err {:s}: {:s}".format(_err_vals.get(msg.rc, "unknown"), paho.error_string(msg.rc)))
@@ -239,7 +280,21 @@ class MQTTClient(object):
         should be called for every expected message in mqtt_response
         """
         logger.debug("subscribing to topic '%s'", topic)
-        self._client.subscribe(topic, *args, **kwargs)
+        (status, mid) = self._client.subscribe(topic, *args, **kwargs)
+
+        if status == 0:
+            self._subscribed[mid] = (topic, False)
+        else:
+            logger.error("Error subscribing to '%s'", topic)
+
+    def _on_subscribe(self, client, userdata, mid, granted_qos):
+        # pylint: disable=unused-argument
+        if mid in self._subscribed:
+            topic = self._subscribed[mid][0]
+            logger.debug("Successfully subscribed to '%s'", topic)
+            self._subscribed[mid] = (topic, True)
+        else:
+            logger.warning("Got SUBACK message with mid '%s', but did not recognise that mid", mid)
 
     def __enter__(self):
         self._client.connect_async(**self._connect_args)

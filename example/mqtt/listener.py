@@ -1,7 +1,8 @@
-import sqlite3
-import os
+import json
 import logging
 import logging.config
+import os
+import sqlite3
 
 import yaml
 import paho.mqtt.client as paho
@@ -72,13 +73,40 @@ def handle_lights_topic(message):
         with db:
             db.execute("UPDATE devices_table SET lights_on = 0 WHERE device_id IS (?)", (device_id,))
 
+def handle_request_topic(client, message):
+    db = get_db()
+
+    device_id = message.topic.split("/")[-2]
+
+    logging.info("Checking lights status")
+    with db:
+        row = db.execute("SELECT lights_on FROM devices_table WHERE device_id IS (?)", (device_id,))
+
+    try:
+        status = int(next(row)[0])
+    except Exception:
+        logging.exception("Error getting status for device '%s'", device_id)
+    else:
+        client.publish(
+            "/device/{}/status/response".format(device_id),
+            json.dumps({"lights": status})
+        )
+
 
 def handle_ping_topic(client, message):
     device_id = message.topic.split("/")[-2]
 
     client.publish(
         "/device/{}/pong".format(device_id),
-        "pong",
+    )
+
+
+def handle_echo_topic(client, message):
+    device_id = message.topic.split("/")[-2]
+
+    client.publish(
+        "/device/{}/echo/response".format(device_id),
+        message.payload,
     )
 
 
@@ -87,8 +115,14 @@ def on_message_callback(client, userdata, message):
 
     if "lights" in message.topic:
         handle_lights_topic(message)
+    elif "echo" in message.topic:
+        handle_echo_topic(client, message)
     elif "ping" in message.topic:
         handle_ping_topic(client, message)
+    elif "status" in message.topic:
+        handle_request_topic(client, message)
+    else:
+        logging.warning("Got unexpected MQTT topic '%s'", message.topic)
 
 
 def wait_for_messages():
@@ -100,6 +134,8 @@ def wait_for_messages():
     topics = [
         "lights",
         "ping",
+        "echo",
+        "status",
     ]
 
     for t in topics:

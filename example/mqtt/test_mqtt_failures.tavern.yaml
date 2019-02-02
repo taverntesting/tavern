@@ -1,0 +1,94 @@
+---
+
+test_name: Test trying to subscribe with a too-large qos fails
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: &mqtt_spec
+  # tls:
+  #   enable: true
+  connect:
+    host: localhost
+    port: 9001
+    timeout: 3
+  client:
+    transport: websockets
+    client_id: tavern-tester
+
+_xfail: verify
+
+stages:
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /device/123/ping
+      payload: ping
+    mqtt_response:
+      topic: /device/123/pong
+      payload: pong
+      timeout: 5
+      qos: 3
+
+---
+
+test_name: Test trying to subscribe with an invalid qos fails
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+_xfail: verify
+
+stages:
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /device/123/ping
+      payload: ping
+    mqtt_response:
+      topic: /device/123/pong
+      payload: pong
+      timeout: 5
+      qos: weefwe
+
+---
+
+test_name: Test incorrect type token fails
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+_xfail: run
+
+stages:
+  - name: Test checking for lights status with anystr fails
+    mqtt_publish:
+      topic: /device/123/status
+    mqtt_response:
+      topic: /device/123/status/response
+      json:
+        lights: !anystr
+      timeout: 3
+      qos: 1
+
+---
+
+test_name: Test expecting empty payload but receiving a payload fails
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+_xfail: run
+
+stages:
+  - name: Test checking for lights status with anyint
+    mqtt_publish:
+      topic: /device/123/status
+    mqtt_response:
+      topic: /device/123/status/response
+      timeout: 3
+      qos: 1
