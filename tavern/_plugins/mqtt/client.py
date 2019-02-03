@@ -302,6 +302,11 @@ class MQTTClient(object):
         else:
             logger.error("Error subscribing to '%s'", topic)
 
+    def unsubscribe_all(self):
+        """Unsubscribe from all topics"""
+        for (topic, _) in self._subscribed.values():
+            self._client.unsubscribe(topic)
+
     def _on_subscribe(self, client, userdata, mid, granted_qos):
         # pylint: disable=unused-argument
         if mid in self._subscribed:
