@@ -67,17 +67,23 @@ def get_request_args(rspec, test_block_config):
         logger.debug("Using default GET method")
         rspec["method"] = "GET"
 
-    content_keys = ["data", "json"]
+    content_keys = ["data", "json", "files"]
+
+    in_request = [c for c in content_keys if c in rspec]
+    if len(in_request) > 1:
+        # Explicitly raise an error here
+        # From requests docs:
+        # Note, the json parameter is ignored if either data or files is passed.
+        raise exceptions.BadSchemaError(
+            "Can only specify one type of request data in HTTP request (tried to send {})".format(
+                " and ".join(in_request)
+            )
+        )
 
     headers = rspec.get("headers", {})
     has_content_header = "content-type" in [h.lower() for h in headers.keys()]
 
     if "files" in rspec:
-        if any(ckey in rspec for ckey in content_keys):
-            raise exceptions.BadSchemaError(
-                "Tried to send non-file content alongside a file"
-            )
-
         if has_content_header:
             logger.warning(
                 "Tried to specify a content-type header while sending a file - this will be ignored"
@@ -85,10 +91,6 @@ def get_request_args(rspec, test_block_config):
             rspec["headers"] = {
                 i: j for i, j in headers.items() if i.lower() != "content-type"
             }
-    elif headers:
-        # This should only be hit if we aren't sending a file
-        if not has_content_header:
-            rspec["headers"]["content-type"] = "application/json"
 
     fspec = format_keys(rspec, test_block_config["variables"])
 
