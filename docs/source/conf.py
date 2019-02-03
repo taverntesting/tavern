@@ -64,6 +64,7 @@ project = 'Tavern'
 copyright = '2019, Michael Boulton'
 author = 'Michael Boulton'
 html_logo = "_static/icon.png"
+html_favicon = "_static/favicon.png"
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
