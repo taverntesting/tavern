@@ -3,6 +3,9 @@
 
 .. image:: https://img.shields.io/pypi/v/tavern.svg
     :target: https://pypi.org/project/tavern/
+    
+.. image:: https://readthedocs.org/projects/pip/badge/?version=latest&style=flat
+    :target: https://tavern.readthedocs.io/en/latest/
 
 Easier API testing
 ==================
