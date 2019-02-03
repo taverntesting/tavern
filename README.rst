@@ -141,6 +141,10 @@ to run the integration tests, make sure you have
 ``tox -c tox-integraton.ini`` (bear in mind this might take a while.)
 It's that simple!
 
+Tavern uses [black](https://github.com/ambv/black) to keep all of the code
+formatted consistently. There is a pre-commit hook to run black which can
+be enabled by running `pre-commit install`.
+
 If you want to add a feature to get merged back into mainline Tavern:
 
 -  Add the feature you want

@@ -26,6 +26,9 @@ jobs:
     - python: 3.7
       env: TOXENV=py37flakes TOXCFG=tox.ini
       stage: check
+    - python: 3.7
+      env: TOXENV=py37black TOXCFG=tox.ini
+      stage: check
 
     # 'Basic' tests
     # This runs pylint and the most basic tests for python 2/3

@@ -19,15 +19,12 @@ logger = logging.getLogger(__name__)
 
 
 class RestResponse(BaseResponse):
-
     def __init__(self, session, name, expected, test_block_config):
         # pylint: disable=unused-argument
 
         super(RestResponse, self).__init__()
 
-        defaults = {
-            'status_code': 200
-        }
+        defaults = {"status_code": 200}
 
         self.name = name
         body = expected.get("body") or {}
@@ -99,35 +96,44 @@ class RestResponse(BaseResponse):
             redirect_url = response.headers["location"]
         except KeyError as e:
             if "redirect_query_params" in self.expected.get("save", {}):
-                self._adderr("Wanted to save %s, but there was no redirect url in response",
-                    self.expected["save"]["redirect_query_params"], e=e)
+                self._adderr(
+                    "Wanted to save %s, but there was no redirect url in response",
+                    self.expected["save"]["redirect_query_params"],
+                    e=e,
+                )
             redirect_query_params = {}
         else:
             parsed = urlparse(redirect_url)
             qp = parsed.query
-            redirect_query_params = {i:j[0] for i, j in parse_qs(qp).items()}
+            redirect_query_params = {i: j[0] for i, j in parse_qs(qp).items()}
 
         return redirect_query_params
 
     def _check_status_code(self, status_code, body):
         expected_code = self.expected["status_code"]
 
-        if (isinstance(expected_code, int) and status_code == expected_code) or \
-        (isinstance(expected_code, list) and (status_code in expected_code)):
-            logger.debug("Status code '%s' matched expected '%s'", status_code, expected_code)
+        if (isinstance(expected_code, int) and status_code == expected_code) or (
+            isinstance(expected_code, list) and (status_code in expected_code)
+        ):
+            logger.debug(
+                "Status code '%s' matched expected '%s'", status_code, expected_code
+            )
             return
         else:
             if 400 <= status_code < 500:
                 # special case if there was a bad request. This assumes that the
                 # response would contain some kind of information as to why this
                 # request was rejected.
-                self._adderr("Status code was %s, expected %s:\n%s",
-                    status_code, expected_code,
+                self._adderr(
+                    "Status code was %s, expected %s:\n%s",
+                    status_code,
+                    expected_code,
                     indent_err_text(json.dumps(body)),
-                    )
+                )
             else:
-                self._adderr("Status code was %s, expected %s",
-                    status_code, expected_code)
+                self._adderr(
+                    "Status code was %s, expected %s", status_code, expected_code
+                )
 
     def verify(self, response):
         """Verify response against expected values and returns any values that
@@ -162,11 +168,13 @@ class RestResponse(BaseResponse):
         if self.validate_function:
             try:
                 self.validate_function(response)
-            except Exception as e: #pylint: disable=broad-except
-                self._adderr("Error calling validate function '%s':\n%s",
+            except Exception as e:  # pylint: disable=broad-except
+                self._adderr(
+                    "Error calling validate function '%s':\n%s",
                     self.validate_function.func,
                     indent_err_text(traceback.format_exc()),
-                    e=e)
+                    e=e,
+                )
 
         # Get any keys to save
         saved = {}
@@ -188,11 +196,13 @@ class RestResponse(BaseResponse):
         else:
             try:
                 to_save = wrapped(response)
-            except Exception as e: #pylint: disable=broad-except
-                self._adderr("Error calling save function '%s':\n%s",
+            except Exception as e:  # pylint: disable=broad-except
+                self._adderr(
+                    "Error calling save function '%s':\n%s",
                     wrapped.func,
                     indent_err_text(traceback.format_exc()),
-                    e=e)
+                    e=e,
+                )
             else:
                 if isinstance(to_save, dict):
                     saved.update(to_save)
@@ -204,7 +214,10 @@ class RestResponse(BaseResponse):
         self._validate_block("redirect_query_params", redirect_query_params)
 
         if self.errors:
-            raise TestFailError("Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()), failures=self.errors)
+            raise TestFailError(
+                "Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()),
+                failures=self.errors,
+            )
 
         return saved
 
@@ -244,7 +257,7 @@ class RestResponse(BaseResponse):
         # key checking for that specific bit of the response
         test_strictness = self.test_block_config["strict"]
         if isinstance(test_strictness, list):
-            block_strictness = (blockname in test_strictness)
+            block_strictness = blockname in test_strictness
         else:
             block_strictness = test_strictness
 
@@ -272,16 +285,19 @@ class RestResponse(BaseResponse):
             return {}
 
         if not to_check:
-            self._adderr("No %s in response (wanted to save %s)",
-                key, expected)
+            self._adderr("No %s in response (wanted to save %s)", key, expected)
         else:
             for save_as, joined_key in expected.items():
                 split_key = joined_key.split(".")
                 try:
                     saved[save_as] = recurse_access_key(to_check, copy.copy(split_key))
                 except (IndexError, KeyError) as e:
-                    self._adderr("Wanted to save '%s' from '%s', but it did not exist in the response",
-                        joined_key, key, e=e)
+                    self._adderr(
+                        "Wanted to save '%s' from '%s', but it did not exist in the response",
+                        joined_key,
+                        key,
+                        e=e,
+                    )
 
         if saved:
             logger.debug("Saved %s for '%s' from response", saved, key)

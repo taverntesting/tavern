@@ -117,7 +117,11 @@ class _PluginCache(object):
             manager.map(is_valid_reqresp_plugin)
 
             if len(manager.extensions) != 1:
-                raise exceptions.MissingSettingsError("Expected exactly one entrypoint in 'tavern-{}' namespace but got {}".format(backend, len(manager.extensions)))
+                raise exceptions.MissingSettingsError(
+                    "Expected exactly one entrypoint in 'tavern-{}' namespace but got {}".format(
+                        backend, len(manager.extensions)
+                    )
+                )
 
             plugins.extend(manager.extensions)
 
@@ -143,8 +147,13 @@ def get_extra_sessions(test_spec, test_block_config):
     plugins = load_plugins(test_block_config)
 
     for p in plugins:
-        if any((p.plugin.request_block_name in i or p.plugin.response_block_name in i) for i in test_spec["stages"]):
-            logger.debug("Initialising session for %s (%s)", p.name, p.plugin.session_type)
+        if any(
+            (p.plugin.request_block_name in i or p.plugin.response_block_name in i)
+            for i in test_spec["stages"]
+        ):
+            logger.debug(
+                "Initialising session for %s (%s)", p.name, p.plugin.session_type
+            )
             sessions[p.name] = p.plugin.session_type(**test_spec.get(p.name, {}))
 
     return sessions
@@ -192,7 +201,9 @@ def get_request_type(stage, test_block_config, sessions):
         else:
             session = sessions[p.name]
             request_class = p.plugin.request_type
-            logger.debug("Initialising request class for %s (%s)", p.name, request_class)
+            logger.debug(
+                "Initialising request class for %s (%s)", p.name, request_class
+            )
             break
 
     request_maker = request_class(session, request_args, test_block_config)
@@ -225,7 +236,9 @@ def get_expected(stage, test_block_config, sessions):
     for p in plugins:
         if p.plugin.response_block_name in stage:
             logger.debug("Getting expected response for %s", p.name)
-            plugin_expected = p.plugin.get_expected_from_request(stage, test_block_config, sessions[p.name])
+            plugin_expected = p.plugin.get_expected_from_request(
+                stage, test_block_config, sessions[p.name]
+            )
             expected[p.name] = plugin_expected
 
     return expected
@@ -251,8 +264,12 @@ def get_verifiers(stage, test_block_config, sessions, expected):
     for p in plugins:
         if p.plugin.response_block_name in stage:
             session = sessions[p.name]
-            logger.debug("Initialising verifier for %s (%s)", p.name, p.plugin.verifier_type)
-            verifier = p.plugin.verifier_type(session, stage["name"], expected[p.name], test_block_config)
+            logger.debug(
+                "Initialising verifier for %s (%s)", p.name, p.plugin.verifier_type
+            )
+            verifier = p.plugin.verifier_type(
+                session, stage["name"], expected[p.name], test_block_config
+            )
             verifiers.append(verifier)
 
     return verifiers
