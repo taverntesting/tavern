@@ -1,6 +1,13 @@
 repos:
--   repo: https://github.com/ambv/black
-    rev: stable
-    hooks:
-    - id: black
-      language_version: python3.7
+- repo: https://github.com/ambv/black
+  rev: stable
+  hooks:
+  - id: black
+    language_version: python3.7
+- repo: https://github.com/PyCQA/prospector
+  rev: 1.1.6 # The version of Prospector to use, at least 1.1.6
+  hooks:
+  - id: prospector
+    args:
+      - --max-line-length 88
+      - --strictness low

@@ -1,0 +1,21 @@
+inherits:
+    - strictness_veryhigh
+
+output-format: json
+
+test-warnings: true
+doc-warnings: true
+
+pep8:
+  options:
+    max-line-length: 88
+pylint:
+  disable:
+    - useless-object-inheritance
+
+ignore-paths:
+  - venv
+  - .tox
+
+mccabe:
+  run: false
