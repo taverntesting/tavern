@@ -33,7 +33,7 @@ repo <https://github.com/taverntesting/tavern>`__.
 Quickstart
 ----------
 
-First up run `pip install tavern`.
+First up run ``pip install tavern``.
 
 Then, let's create a basic test, ``test_minimal.tavern.yaml``:
 
