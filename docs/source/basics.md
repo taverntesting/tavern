@@ -439,12 +439,14 @@ response:
 
 The behaviour of various levels of 'strictness' based on the response:
 
+
 | Response | True | False | 'legacy' |
-|----|--------|------|-------|----------|
-| ` { "first": 1, "second": { "nested": 2 } } `  | PASS | PASS | PASS |
-| ` { "first": 1 } `  | FAIL | PASS | PASS |
-| ` { "first": 1, "second": { "another": 2 } } `  | FAIL | FAIL | FAIL |
-| ` { "first": 1, "second": { "nested": 2, "another": 2 } } `  | FAIL | PASS | FAIL |
+| ---- | -------- | ------ | ------- |
+| `{ "first": 1, "second": { "nested": 2 } }`  | PASS | PASS | PASS |
+| `{ "first": 1 }`  | FAIL | PASS | PASS |
+| `{ "first": 1, "second": { "another": 2 } }`  | FAIL | FAIL | FAIL |
+| `{ "first": 1, "second": { "nested": 2, "another": 2 } }`  | FAIL | PASS | FAIL |
+
 
 As you can see from the table, the 'legacy' behaviour only cares about keys
 below the top level which was a design flaw. This behaviour will be removed in a
