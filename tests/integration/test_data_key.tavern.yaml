@@ -118,3 +118,23 @@ stages:
       status_code: 200
       body:
         status: ok
+
+---
+
+test_name: Test sending JSON and data at the same time fails
+
+_xfail: verify
+
+stages:
+  - name: Try to send both
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      data:
+        a: 123
+      json:
+        b: 456
+    response:
+      status_code: 200
+      body:
+        status: ok
