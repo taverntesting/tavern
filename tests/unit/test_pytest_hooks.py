@@ -1,11 +1,9 @@
 import base64
 import os
 
-import pytest
-from mock import Mock, patch
+from mock import Mock
 
 from tavern.testutils.pytesthook import YamlFile
-from tavern.util import exceptions
 
 
 def mock_args():
