@@ -69,7 +69,7 @@ def get_request_args(rspec, test_block_config):
 
     content_keys = ["data", "json", "files"]
 
-    in_request = list(filter(lambda c: c in rspec, content_keys))
+    in_request = [c for c in content_keys if c in rspec]
     if len(in_request) > 1:
         # Explicitly raise an error here
         # From requests docs:
