@@ -9,5 +9,4 @@ repos:
   hooks:
   - id: prospector
     args:
-      - --max-line-length 88
       - --strictness low

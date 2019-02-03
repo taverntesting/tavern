@@ -1,7 +1,7 @@
 inherits:
-    - strictness_veryhigh
+  - strictness_veryhigh
 
-output-format: json
+output-format: pylint
 
 test-warnings: true
 doc-warnings: true
@@ -10,8 +10,20 @@ pep8:
   options:
     max-line-length: 88
 pylint:
+  options:
+    max-line-length: 88
+    ignored-classes: RememberComposer
+    ignored-modules: distutils
   disable:
     - useless-object-inheritance
+    - missing-docstring
+    - bad-continuation
+    - fixme
+    - invalid-name
+    - line-too-long
+    - too-few-public-methods
+    - no-else-return
+    - too-many-branches
 
 ignore-paths:
   - venv
