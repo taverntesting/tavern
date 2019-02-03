@@ -17,7 +17,7 @@ In short, we think the best things about Taven are:
 ### It's Lightweight.
 Tavern is a small codebase which uses pytest under the hood.
 
-### Easy Write, Easy to Read and Understand.
+### Easy to Write, Easy to Read and Understand.
 The yaml syntax allows you to abstract what you need with anchors, whilst using `pytest.mark` to organise your tests. Your tests should become more maintainable as a result.
 
 ### Scales
