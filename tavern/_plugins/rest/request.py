@@ -82,7 +82,7 @@ def get_request_args(rspec, test_block_config):
 
     headers = rspec.get("headers", {})
     has_content_header = "content-type" in [h.lower() for h in headers.keys()]
-    logger.critical(rspec)
+
     if "files" in rspec:
         if has_content_header:
             logger.warning(
