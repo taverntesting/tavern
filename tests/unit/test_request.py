@@ -94,19 +94,19 @@ class TestRequestArgs(object):
 
         assert args["method"] == "POST"
 
-    @pytest.mark.parametrize("extra, ctype", [
-        {}, None,
-        {"json": [1, 2, 3]},
-        {"data": {"a": 2}}
-    ])
-    def test_default_content_type(self, req, includes, extra, ctype):
+    @pytest.mark.parametrize("extra", [{}, {"json": [1, 2, 3]}, {"data": {"a": 2}}])
+    def test_no_default_content_type(self, req, includes, extra):
         del req["headers"]["Content-Type"]
+        req.pop("json", {})
+        req.pop("data", {})
 
-        includes.update(**extra)
+        req.update(**extra)
 
         args = get_request_args(req, includes)
 
-        assert args["headers"].get("content-type") == ctype
+        # Requests will automatically set content type headers for json/form encoded data so we don't need to
+        with pytest.raises(KeyError):
+            assert args["headers"]["content-type"]
 
     def test_no_set_content_type(self, req, includes):
         del req["headers"]["Content-Type"]
@@ -117,8 +117,8 @@ class TestRequestArgs(object):
             assert args["headers"]["content-type"]
 
     def test_cannot_send_data_and_json(self, req, includes):
-        includes["json"] = [1, 2, 3]
-        includes["data"] = [1, 2, 3]
+        req["json"] = [1, 2, 3]
+        req["data"] = [1, 2, 3]
 
         with pytest.raises(exceptions.BadSchemaError):
             get_request_args(req, includes)
