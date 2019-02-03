@@ -20,7 +20,7 @@ Tavern is a small codebase which uses pytest under the hood.
 ### Easy to Write, Easy to Read and Understand.
 The yaml syntax allows you to abstract what you need with anchors, whilst using `pytest.mark` to organise your tests. Your tests should become more maintainable as a result.
 
-### Scales
+### Test Anything
 From the simplest API test through to the most complex of requests, tavern remains readable and easy to extend. We're aiming for developers to not need the docs open all the time!
 
 ### Extensible
