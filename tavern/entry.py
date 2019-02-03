@@ -1,6 +1,6 @@
 import argparse
 from argparse import ArgumentParser
-import logging
+import logging.config
 
 from .core import run
 

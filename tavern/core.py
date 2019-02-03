@@ -15,7 +15,6 @@ from .util.delay import delay
 from .util.retry import retry
 
 from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
-from .schemas.files import wrapfile
 
 
 logger = logging.getLogger(__name__)
@@ -259,24 +258,22 @@ def _run_pytest(
             FutureWarning,
         )
 
-    with ExitStack() as stack:
+    if tavern_global_cfg:
+        global_filename = tavern_global_cfg
 
-        if tavern_global_cfg:
-            global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
+    pytest_args = pytest_args or []
+    pytest_args += [in_file]
+    if tavern_global_cfg:
+        pytest_args += ["--tavern-global-cfg", global_filename]
 
-        pytest_args = pytest_args or []
-        pytest_args += [in_file]
-        if tavern_global_cfg:
-            pytest_args += ["--tavern-global-cfg", global_filename]
+    if tavern_mqtt_backend:
+        pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
+    if tavern_http_backend:
+        pytest_args += ["--tavern-http-backend", tavern_http_backend]
+    if tavern_strict:
+        pytest_args += ["--tavern-strict", tavern_strict]
 
-        if tavern_mqtt_backend:
-            pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
-        if tavern_http_backend:
-            pytest_args += ["--tavern-http-backend", tavern_http_backend]
-        if tavern_strict:
-            pytest_args += ["--tavern-strict", tavern_strict]
-
-        return pytest.main(args=pytest_args)
+    return pytest.main(args=pytest_args)
 
 
 def run(in_file, tavern_global_cfg=None, **kwargs):
