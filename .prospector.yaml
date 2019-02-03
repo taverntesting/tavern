@@ -1,14 +1,42 @@
 inherits:
   - strictness_veryhigh
 
-output-format: pylint
+output-format: grouped
 
-test-warnings: true
-doc-warnings: true
-
+# Doesn't conform with black
+no-style-warnings: true
+# Having this set here _enables_ style warnings again (???)
+max-line-length: 9999
 pep8:
   run: false
+  options:
+    # Needed to stop it complaining, for some reason
+    max-line-length: 9999
+
+# We only provide 1 function, this is a bit useless
+doc-warnings: false
+
+# Only enabled for pyflakes
+test-warnings: false
+
+dodgy:
+  run: true
+profile-validator:
+  run: true
+pyflakes:
+  run: true
+pylint:
+  run: true
+pyroma:
+  run: true
+vulture:
+  run: true
+
+# Not needed
 mccabe:
+  run: false
+# Enabled in python 3 in tox
+mypy:
   run: false
 
 ignore-paths:
