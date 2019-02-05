@@ -52,7 +52,15 @@ def get_parametrised_tests(marks):
 
 
 class TestMakeFile(object):
-    def test_nothing(self):
+    def test_only_single(self):
+        marks = [ ]
+
+        tests = get_parametrised_tests(marks)
+
+        # Only 1
+        assert len(tests) == 1
+
+    def test_only_single(self):
         marks = [
             get_basic_parametrize_mark(),
             get_basic_parametrize_mark(),
