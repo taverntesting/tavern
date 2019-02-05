@@ -242,6 +242,33 @@ def _format_test_marks(original_marks, fmt_vars, test_name):
     return pytest_marks, formatted_marks
 
 
+def _generate_parametrized_test_items(keys, vals_combination):
+    """Generate test name from given key(s)/value(s) combination"""
+    flattened_values = []
+    variables = {}
+
+    # combination of keys and the values they correspond to
+    for pair in zip(keys, vals_combination):
+        key, value = pair
+        # NOTE: If test is invalid, test names generated here will be
+        # very weird looking
+        if isinstance(key, (str, ustr)):
+            variables[key] = value
+            flattened_values += [value]
+        else:
+            for subkey, subvalue in zip(key, value):
+                variables[subkey] = subvalue
+                flattened_values += [subvalue]
+
+    logger.debug("Variables for this combination: %s", variables)
+
+    # Use for formatting parametrized values - eg {}-{}, {}-{}-{}, etc.
+    inner_fmt = "-".join(["{}"] * len(flattened_values))
+    inner_formatted = inner_fmt.format(*flattened_values)
+
+    return variables, inner_formatted
+
+
 class YamlFile(pytest.File):
 
     """Custom `File` class that loads each test block as a different test
@@ -293,29 +320,9 @@ class YamlFile(pytest.File):
         keys = [i["parametrize"]["key"] for i in parametrize_marks]
 
         for vals_combination in combined:
-            # combination of keys and the values they correspond to
-            joined = zip(keys, vals_combination)
-            flattened_values = []
-            variables = {}
-            for pair in joined:
-                key, value = pair
-                # NOTE: If test is invalid, test names generated here will be
-                # very weird looking
-                if isinstance(key, (str, ustr)):
-                    variables[key] = value
-                    flattened_values += [value]
-                else:
-                    for subkey, subvalue in zip(key, value):
-                        variables[subkey] = subvalue
-                        flattened_values += [subvalue]
-
-            logger.debug("Variables for this combination: %s", variables)
-
-            # Use for formatting parametrized values - eg {}-{}, {}-{}-{}, etc.
-            inner_fmt = "-".join(["{}"] * len(flattened_values))
+            variables, inner_formatted = _generate_parametrized_test_items(keys, vals_combination)
 
             # Change the name
-            inner_formatted = inner_fmt.format(*flattened_values)
             spec_new = copy.deepcopy(test_spec)
             spec_new["test_name"] = test_spec["test_name"] + "[{}]".format(
                 inner_formatted
