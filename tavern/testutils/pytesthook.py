@@ -178,6 +178,70 @@ def pytest_addoption(parser):
     )
 
 
+def _format_test_marks(original_marks, fmt_vars, test_name):
+    """Given the 'raw' marks from the test and any available format variables,
+    generate new  marks for this test
+
+    Args:
+        original_marks (list): Raw string from test - should correspond to either a
+            pytest builtin mark or a custom user mark
+        fmt_vars (dict): dictionary containing available format variables
+        test_name (str): Name of test (for error logging)
+
+    Returns:
+        tuple: first element is normal pytest mark objects, second element is all
+            marks which were formatted (no matter their content)
+
+    Todo:
+        Fix doctests below - failing due to missing pytest markers
+
+    Example:
+
+        # >>> _format_test_marks([], {}, 'abc')
+        # ([], [])
+        # >>> _format_test_marks(['tavernmarker'], {}, 'abc')
+        # (['tavernmarker'], [])
+        # >>> _format_test_marks(['{formatme}'], {'formatme': 'tavernmarker'}, 'abc')
+        # (['tavernmarker'], [])
+        # >>> _format_test_marks([{'skipif': '{skiptest}'}], {'skiptest': true}, 'abc')
+        # (['tavernmarker'], [])
+
+    """
+
+    pytest_marks = []
+    formatted_marks = []
+
+    for m in original_marks:
+        if isinstance(m, str):
+            # a normal mark
+            m = format_keys(m, fmt_vars)
+            pytest_marks.append(getattr(pytest.mark, m))
+        elif isinstance(m, dict):
+            # skipif or parametrize (for now)
+            for markname, extra_arg in m.items():
+                # NOTE
+                # cannot do 'skipif' and rely on a parametrized
+                # argument.
+                try:
+                    extra_arg = format_keys(extra_arg, fmt_vars)
+                except exceptions.MissingFormatError as e:
+                    msg = "Tried to use mark '{}' (with value '{}') in test '{}' but one or more format variables was not in any configuration file used by the test".format(
+                        markname, extra_arg, test_name
+                    )
+                    # NOTE
+                    # we could continue and let it fail in the test, but
+                    # this gives a better indication of what actually
+                    # happened (even if it is difficult to test)
+                    raise_from(exceptions.MissingFormatError(msg), e)
+                else:
+                    pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
+                    formatted_marks.append({markname: extra_arg})
+        else:
+            raise exceptions.BadSchemaError("Unexpected mark type '{}'".format(type(m)))
+
+    return pytest_marks, formatted_marks
+
+
 class YamlFile(pytest.File):
 
     """Custom `File` class that loads each test block as a different test
@@ -325,36 +389,9 @@ class YamlFile(pytest.File):
 
         if original_marks:
             fmt_vars = self._get_test_fmt_vars(test_spec)
-            pytest_marks = []
-            formatted_marks = []
-
-            for m in original_marks:
-                if isinstance(m, str):
-                    # a normal mark
-                    m = format_keys(m, fmt_vars)
-                    pytest_marks.append(getattr(pytest.mark, m))
-                elif isinstance(m, dict):
-                    # skipif or parametrize (for now)
-                    for markname, extra_arg in m.items():
-                        # NOTE
-                        # cannot do 'skipif' and rely on a parametrized
-                        # argument.
-                        try:
-                            extra_arg = format_keys(extra_arg, fmt_vars)
-                        except exceptions.MissingFormatError as e:
-                            msg = "Tried to use mark '{}' (with value '{}') in test '{}' but one or more format variables was not in any configuration file used by the test".format(
-                                markname, extra_arg, test_spec["test_name"]
-                            )
-                            # NOTE
-                            # we could continue and let it fail in the test, but
-                            # this gives a better indication of what actually
-                            # happened (even if it is difficult to test)
-                            raise_from(exceptions.MissingFormatError(msg), e)
-                        else:
-                            pytest_marks.append(
-                                getattr(pytest.mark, markname)(extra_arg)
-                            )
-                            formatted_marks.append({markname: extra_arg})
+            pytest_marks, formatted_marks = _format_test_marks(
+                original_marks, fmt_vars, test_spec["test_name"]
+            )
 
             # Do this after we've added all the other marks so doing
             # things like selecting on mark names still works even
@@ -362,6 +399,7 @@ class YamlFile(pytest.File):
             parametrize_marks = [
                 i for i in formatted_marks if isinstance(i, dict) and "parametrize" in i
             ]
+
             if parametrize_marks:
                 # no 'yield from' in python 2...
                 for new_item in self.get_parametrized_items(
