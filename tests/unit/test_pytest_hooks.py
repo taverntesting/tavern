@@ -4,7 +4,7 @@ import os
 import pytest
 from mock import Mock, patch
 
-from tavern.testutils.pytesthook import YamlFile
+from tavern.testutils.pytesthook.file import YamlFile
 from tavern.util import exceptions
 
 
