@@ -29,8 +29,6 @@ pylint:
   run: true
 pyroma:
   run: true
-vulture:
-  run: true
 
 # Not needed
 mccabe:
