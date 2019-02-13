@@ -1,13 +1,5 @@
 import logging
 
-from .error import ReprdError
-from .util import load_global_cfg
-
-try:
-    from functools import lru_cache
-except ImportError:
-    from backports.functools_lru_cache import lru_cache
-
 import attr
 import pytest
 from _pytest import fixtures
@@ -16,6 +8,10 @@ from tavern.core import run_test
 from tavern.plugins import load_plugins
 from tavern.schemas.files import verify_tests
 from tavern.util import exceptions
+
+from .error import ReprdError
+from .util import load_global_cfg
+
 
 logger = logging.getLogger(__name__)
 

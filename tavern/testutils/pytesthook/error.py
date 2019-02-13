@@ -3,6 +3,8 @@ import re
 import io
 import py
 import yaml
+from _pytest._code.code import FormattedExcinfo
+
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys
 

@@ -5,14 +5,6 @@ import copy
 import logging
 import os
 
-from .item import YamlItem
-from .util import load_global_cfg
-
-try:
-    from functools import lru_cache
-except ImportError:
-    from backports.functools_lru_cache import lru_cache
-
 import pytest
 import yaml
 from future.utils import raise_from
@@ -22,6 +14,9 @@ from tavern.schemas.files import verify_tests
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys
 from tavern.util.loader import IncludeLoader
+
+from .item import YamlItem
+from .util import load_global_cfg
 
 logger = logging.getLogger(__name__)
 
