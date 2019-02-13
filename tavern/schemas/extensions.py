@@ -125,14 +125,15 @@ def validate_extensions(value, rule_obj, path):
     try:
         iter(value)
     except TypeError as e:
-        raise_from(BadSchemaError("Invalid value for key - things like body/params/headers/data have to be iterable (list, dictionary, string), not a single value"), e)
+        raise_from(
+            BadSchemaError(
+                "Invalid value for key - things like body/params/headers/data have to be iterable (list, dictionary, string), not a single value"
+            ),
+            e,
+        )
 
     if isinstance(value, dict) and "$ext" in value:
-        expected_keys = {
-            "function",
-            "extra_args",
-            "extra_kwargs",
-        }
+        expected_keys = {"function", "extra_args", "extra_kwargs"}
 
         validate_keys = value["$ext"]
 
@@ -145,24 +146,32 @@ def validate_extensions(value, rule_obj, path):
 
         try:
             import_ext_function(validate_keys["function"])
-        except Exception as e: # pylint: disable=broad-except
-            raise_from(BadSchemaError("Couldn't load {}".format(validate_keys["function"])), e)
+        except Exception as e:  # pylint: disable=broad-except
+            raise_from(
+                BadSchemaError("Couldn't load {}".format(validate_keys["function"])), e
+            )
 
         extra_args = validate_keys.get("extra_args")
         extra_kwargs = validate_keys.get("extra_kwargs")
 
         if extra_args and not isinstance(extra_args, list):
-            raise BadSchemaError("Expected a list of extra_args, got {}".format(type(extra_args)))
+            raise BadSchemaError(
+                "Expected a list of extra_args, got {}".format(type(extra_args))
+            )
 
         if extra_kwargs and not isinstance(extra_kwargs, dict):
-            raise BadSchemaError("Expected a dict of extra_kwargs, got {}".format(type(extra_args)))
+            raise BadSchemaError(
+                "Expected a dict of extra_kwargs, got {}".format(type(extra_args))
+            )
 
     return True
 
 
 def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path):
     # pylint: disable=unused-argument
-    err_msg = "status_code has to be an integer or a list of integers (got {})".format(value)
+    err_msg = "status_code has to be an integer or a list of integers (got {})".format(
+        value
+    )
 
     if not isinstance(value, (int, list)):
         raise BadSchemaError(err_msg)
@@ -254,7 +263,9 @@ def validate_data_key_with_ext_function(value, rule_obj, path):
         # Also fine - might want to do checking on this for encoding etc?
         pass
     elif isinstance(value, list):
-        raise BadSchemaError("Error at {} - expected a dict, str, or !!binary".format(path))
+        raise BadSchemaError(
+            "Error at {} - expected a dict, str, or !!binary".format(path)
+        )
 
         # invalid = []
 
@@ -268,7 +279,9 @@ def validate_data_key_with_ext_function(value, rule_obj, path):
         # if invalid:
         #     raise BadSchemaError("Error at {} - when passing a list to the 'data' key, all items must be 2-tuples (invalid values: {})".format(path, invalid))
     else:
-        raise BadSchemaError("Error at {} - expected a dict, str, or !!binary".format(path))
+        raise BadSchemaError(
+            "Error at {} - expected a dict, str, or !!binary".format(path)
+        )
 
     return True
 
@@ -296,7 +309,11 @@ def validate_json_with_extensions(value, rule_obj, path):
     if any(isinstance(i, ApproxScalar) for i in nested_values(value)):
         # If this is a request data block
         if not re.search(r"^/stages/\d/(response/body|mqtt_response/json)", path):
-            raise BadSchemaError("Error at {} - Cannot use a '!approx' in anything other than an expected http response body or mqtt response json".format(path))
+            raise BadSchemaError(
+                "Error at {} - Cannot use a '!approx' in anything other than an expected http response body or mqtt response json".format(
+                    path
+                )
+            )
 
     return True
 
@@ -318,7 +335,9 @@ def validate_timeout_tuple_or_float(value, rule_obj, path):
     """Make sure timeout is a float/int or a tuple of floats/ints"""
     # pylint: disable=unused-argument
 
-    err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{}' (type {})".format(value, type(value))
+    err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{}' (type {})".format(
+        value, type(value)
+    )
     logger = _getlogger()
 
     def check_is_timeout_val(v):

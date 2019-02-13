@@ -14,6 +14,7 @@ from tavern.util.exceptions import BadSchemaError
 from tavern.plugins import load_plugins
 
 from tavern.util.loader import IncludeLoader
+
 core.yaml.safe_load = functools.partial(yaml.load, Loader=IncludeLoader)
 
 logger = logging.getLogger(__name__)
@@ -54,7 +55,9 @@ class SchemaCache(object):
                     # Don't require a schema
                     logger.debug("No schema defined for %s", p.name)
                 else:
-                    base_schema["mapping"].update(plugin_schema.get("initialisation", {}))
+                    base_schema["mapping"].update(
+                        plugin_schema.get("initialisation", {})
+                    )
 
             self._loaded[mangled] = base_schema
             return self._loaded[mangled]

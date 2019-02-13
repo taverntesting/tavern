@@ -13,32 +13,15 @@ def mock_args():
 
     fspath = "abc"
 
-    cargs = {
-        "rootdir": "abc",
-        "fspath": fspath,
-    }
+    cargs = {"rootdir": "abc", "fspath": fspath}
 
-    config = Mock(
-        **cargs
-    )
+    config = Mock(**cargs)
 
-    session = Mock(
-        _initialpaths=[],
-        config=config,
-    )
+    session = Mock(_initialpaths=[], config=config)
 
-    parent = Mock(
-        config=config,
-        parent=None,
-        nodeid="sdlfs",
-        **cargs
-    )
+    parent = Mock(config=config, parent=None, nodeid="sdlfs", **cargs)
 
-    return {
-        "session": session,
-        "parent": parent,
-        "fspath": fspath,
-    }
+    return {"session": session, "parent": parent, "fspath": fspath}
 
 
 def genkey():
@@ -48,36 +31,20 @@ def genkey():
 
 def get_basic_parametrize_mark():
     """Get a random 'normal' parametrize mark"""
-    return {
-        "parametrize": {
-            "key": genkey(),
-            "vals": [1, 2, 3],
-        }
-    }
+    return {"parametrize": {"key": genkey(), "vals": [1, 2, 3]}}
 
 
 def get_joined_parametrize_mark():
     """Get a random 'combined' parametrize mark"""
     return {
-        "parametrize": {
-            "key": [
-                genkey(),
-                genkey(),
-            ],
-            "vals": [
-                ["w", "x"],
-                ["y", "z"],
-            ]
-        }
+        "parametrize": {"key": [genkey(), genkey()], "vals": [["w", "x"], ["y", "z"]]}
     }
 
 
 def get_parametrised_tests(marks):
     y = YamlFile(**mock_args())
 
-    spec = {
-        "test_name": "a test"
-    }
+    spec = {"test_name": "a test"}
 
     gen = y.get_parametrized_items(spec, marks, [])
 
@@ -85,7 +52,6 @@ def get_parametrised_tests(marks):
 
 
 class TestMakeFile(object):
-
     def test_nothing(self):
         marks = [
             get_basic_parametrize_mark(),
@@ -105,10 +71,7 @@ class TestMakeFile(object):
         assert len(tests) == 27
 
     def test_double(self):
-        marks = [
-            get_joined_parametrize_mark(),
-            get_basic_parametrize_mark(),
-        ]
+        marks = [get_joined_parametrize_mark(), get_basic_parametrize_mark()]
 
         tests = get_parametrised_tests(marks)
 

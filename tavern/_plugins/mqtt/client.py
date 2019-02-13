@@ -4,10 +4,12 @@ import time
 
 try:
     from queue import Queue, Full, Empty
+
     LoadError = IOError
 except ImportError:
-    from Queue import Queue, Full, Empty
-    LoadError = FileNotFoundError # pylint: disable=undefined-variable
+    from Queue import Queue, Full, Empty  # type: ignore
+
+    LoadError = FileNotFoundError  # pylint: disable=undefined-variable
 
 from future.utils import raise_from
 import paho.mqtt.client as paho
@@ -55,12 +57,7 @@ class MQTTClient(object):
                 # "protocol",
                 "transport",
             },
-            "connect": {
-                "host",
-                "port",
-                "keepalive",
-                "timeout",
-            },
+            "connect": {"host", "port", "keepalive", "timeout"},
             "tls": {
                 "enable",
                 "ca_certs",
@@ -70,10 +67,7 @@ class MQTTClient(object):
                 "tls_version",
                 "ciphers",
             },
-            "auth": {
-                "username",
-                "password",
-            },
+            "auth": {"username", "password"},
         }
 
         logger.debug("Initialising MQTT client with %s", kwargs)
@@ -121,16 +115,23 @@ class MQTTClient(object):
                 raise_from(exceptions.MQTTTLSError("Unexpected error enabling TLS", e))
             except ssl.SSLError as e:
                 # incorrect cipher, etc.
-                raise_from(exceptions.MQTTTLSError("Unexpected SSL error enabling TLS", e))
+                raise_from(
+                    exceptions.MQTTTLSError("Unexpected SSL error enabling TLS", e)
+                )
 
         # Arbitrary number, could just be 1 and only accept 1 message per stages
         # but we might want to raise an error if more than 1 message is received
         # during a test stage.
         self._message_queue = Queue(maxsize=10)
-        self._userdata = {
-            "queue": self._message_queue,
-        }
+        self._userdata = {"queue": self._message_queue}
         self._client.user_data_set(self._userdata)
+
+        # Topics to subscribe to - mapping of subscription message id to a tuple
+        # of (topic, sub_status) where sub_status is true or false based on
+        # whether it has finished subscribing or not
+        self._subscribed = {}
+        # callback
+        self._client.on_subscribe = self._on_subscribe
 
     def _handle_tls_args(self):
         """Make sure TLS options are valid
@@ -150,15 +151,21 @@ class MQTTClient(object):
                 return
 
         if "keyfile" in self._tls_args and "certfile" not in self._tls_args:
-            raise exceptions.MQTTTLSError("If specifying a TLS keyfile, a certfile also needs to be specified")
+            raise exceptions.MQTTTLSError(
+                "If specifying a TLS keyfile, a certfile also needs to be specified"
+            )
 
         def check_file_exists(key):
             try:
                 with open(self._tls_args[key], "r"):
                     pass
             except LoadError as e:
-                raise_from(exceptions.MQTTTLSError("Couldn't load '{}' from '{}'".format(
-                    key, self._tls_args[key])), e)
+                raise_from(
+                    exceptions.MQTTTLSError(
+                        "Couldn't load '{}' from '{}'".format(key, self._tls_args[key])
+                    ),
+                    e,
+                )
             except KeyError:
                 pass
 
@@ -176,10 +183,15 @@ class MQTTClient(object):
         try:
             self._tls_args["tls_version"] = getattr(ssl, self._tls_args["tls_version"])
         except AttributeError as e:
-            raise_from(exceptions.MQTTTLSError("Error getting TLS version from "
-                "ssl module - ssl module had no attribute '{}'. Check the "
-                "documentation for the version of python you're using to see "
-                "if this a valid option.".format(self._tls_args["tls_version"])), e)
+            raise_from(
+                exceptions.MQTTTLSError(
+                    "Error getting TLS version from "
+                    "ssl module - ssl module had no attribute '{}'. Check the "
+                    "documentation for the version of python you're using to see "
+                    "if this a valid option.".format(self._tls_args["tls_version"])
+                ),
+                e,
+            )
         except KeyError:
             pass
 
@@ -221,15 +233,59 @@ class MQTTClient(object):
         else:
             return msg
 
-    def publish(self, topic, payload, *args, **kwargs):
+    def publish(self, topic, payload=None, qos=None, retain=None):
         """publish message using paho library
         """
+        logger.debug("Checking subscriptions")
+
+        def not_finished_subcribing_to():
+            """Get topic names for topics which have not finished subcribing to"""
+            return [i[0] for i in self._subscribed.values() if not i[1]]
+
+        to_wait_for = not_finished_subcribing_to()
+
+        if to_wait_for:
+            elapsed = 0.0
+            while elapsed < self._connect_timeout:
+                # TODO
+                # configurable?
+                time.sleep(0.25)
+                elapsed += 0.25
+
+                to_wait_for = not_finished_subcribing_to()
+
+                if not to_wait_for:
+                    logger.debug("Finished subcribing to all topics")
+                    break
+
+                logger.debug(
+                    "Not finished subcribing to '%s' after %.2f seconds",
+                    to_wait_for,
+                    elapsed,
+                )
+
+            if to_wait_for:
+                logger.warning(
+                    "Did not finish subscribing to '%s' before publishing - going ahead anyway"
+                )
+        else:
+            logger.debug("Finished subcribing to all topics")
+
         logger.debug("Publishing on '%s'", topic)
 
-        msg = self._client.publish(topic, payload, *args, **kwargs)
+        kwargs = {}
+        if qos is not None:
+            kwargs["qos"] = qos
+        if retain is not None:
+            kwargs["retain"] = retain
+        msg = self._client.publish(topic, payload, **kwargs)
 
         if not msg.is_published:
-            raise exceptions.MQTTError("err {:s}: {:s}".format(_err_vals.get(msg.rc, "unknown"), paho.error_string(msg.rc)))
+            raise exceptions.MQTTError(
+                "err {:s}: {:s}".format(
+                    _err_vals.get(msg.rc, "unknown"), paho.error_string(msg.rc)
+                )
+            )
 
         return msg
 
@@ -239,7 +295,28 @@ class MQTTClient(object):
         should be called for every expected message in mqtt_response
         """
         logger.debug("subscribing to topic '%s'", topic)
-        self._client.subscribe(topic, *args, **kwargs)
+        (status, mid) = self._client.subscribe(topic, *args, **kwargs)
+
+        if status == 0:
+            self._subscribed[mid] = (topic, False)
+        else:
+            logger.error("Error subscribing to '%s'", topic)
+
+    def unsubscribe_all(self):
+        """Unsubscribe from all topics"""
+        for (topic, _) in self._subscribed.values():
+            self._client.unsubscribe(topic)
+
+    def _on_subscribe(self, client, userdata, mid, granted_qos):
+        # pylint: disable=unused-argument
+        if mid in self._subscribed:
+            topic = self._subscribed[mid][0]
+            logger.debug("Successfully subscribed to '%s'", topic)
+            self._subscribed[mid] = (topic, True)
+        else:
+            logger.warning(
+                "Got SUBACK message with mid '%s', but did not recognise that mid", mid
+            )
 
     def __enter__(self):
         self._client.connect_async(**self._connect_args)
@@ -261,7 +338,9 @@ class MQTTClient(object):
             elapsed += 0.25
 
         self._disconnect()
-        logger.error("Could not connect to broker after %s seconds", self._connect_timeout)
+        logger.error(
+            "Could not connect to broker after %s seconds", self._connect_timeout
+        )
         raise exceptions.MQTTError
 
     def __exit__(self, *args):

@@ -37,7 +37,9 @@ def check_exception_raised(response, exception_location):
         assert dumped["error"] == exception.error_title
 
     actual_description = dumped.get("description", dumped.get("error_description"))
-    expected_description = getattr(exception, "error_description", getattr(exception, "description"))
+    expected_description = getattr(
+        exception, "error_description", getattr(exception, "description")
+    )
 
     try:
         assert actual_description == expected_description
@@ -88,7 +90,12 @@ def validate_pykwalify(response, schema):
     try:
         to_verify = response.json()
     except TypeError as e:
-        raise_from(exceptions.BadSchemaError("Tried to match a pykwalify schema against a non-json response"), e)
+        raise_from(
+            exceptions.BadSchemaError(
+                "Tried to match a pykwalify schema against a non-json response"
+            ),
+            e,
+        )
     else:
         verify_generic(to_verify, schema)
 
@@ -112,9 +119,7 @@ def validate_regex(response, expression, header=None):
     match = re.search(expression, content)
     assert match
 
-    return {
-        "regex": Box(match.groupdict())
-    }
+    return {"regex": Box(match.groupdict())}
 
 
 def validate_content(response, comparisons):
@@ -134,7 +139,9 @@ def validate_content(response, comparisons):
         actual = jmespath.search(path, response.json())
 
         if actual is None:
-            raise exceptions.JMESError("JMES path '{}' not found in response".format(path))
+            raise exceptions.JMESError(
+                "JMES path '{}' not found in response".format(path)
+            )
 
         expession = " ".join([str(path), str(_operator), str(expected)])
         parsed_expession = " ".join([str(actual), str(_operator), str(expected)])
@@ -143,6 +150,8 @@ def validate_content(response, comparisons):
             check_keys_match_recursive(expected, actual, [])
         else:
             try:
-                actual_validation(_operator, actual, expected, parsed_expession, expession)
+                actual_validation(
+                    _operator, actual, expected, parsed_expession, expession
+                )
             except AssertionError as e:
                 raise_from(exceptions.JMESError("Error validating JMES"), e)

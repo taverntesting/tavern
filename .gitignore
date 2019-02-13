@@ -106,3 +106,7 @@ tags
 
 tavern.lock
 pytype_output
+
+.mypy_cache
+
+.vscode

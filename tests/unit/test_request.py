@@ -15,20 +15,17 @@ from tavern.util import exceptions
 @pytest.fixture(name="req")
 def fix_example_request():
     spec = {
-        "url":  "{request.prefix:s}{request.url:s}",
-        "method":  "POST",
+        "url": "{request.prefix:s}{request.url:s}",
+        "method": "POST",
         "headers": {
             "Content-Type": "application/x-www-form-urlencoded",
-            "Authorization":  "Basic {test_auth_token:s}",
+            "Authorization": "Basic {test_auth_token:s}",
         },
         "data": {
-            "a_thing":  "authorization_code",
-            "code":  "{code:s}",
-            "url":  "{callback_url:s}",
-            "array": [
-                "{code:s}",
-                "{code:s}",
-            ]
+            "a_thing": "authorization_code",
+            "code": "{code:s}",
+            "url": "{callback_url:s}",
+            "array": ["{code:s}", "{code:s}"],
         },
     }
 
@@ -72,7 +69,6 @@ class TestRequests(object):
 
 
 class TestRequestArgs(object):
-
     def test_default_method(self, req, includes):
         del req["method"]
         del req["data"]
@@ -81,10 +77,7 @@ class TestRequestArgs(object):
 
         assert args["method"] == "GET"
 
-    @pytest.mark.parametrize("body_key", (
-        "json",
-        "data"
-    ))
+    @pytest.mark.parametrize("body_key", ("json", "data"))
     def test_default_method_raises_with_body(self, req, includes, body_key):
         del req["method"]
         del req["data"]
@@ -101,12 +94,34 @@ class TestRequestArgs(object):
 
         assert args["method"] == "POST"
 
-    def test_default_content_type(self, req, includes):
+    @pytest.mark.parametrize("extra", [{}, {"json": [1, 2, 3]}, {"data": {"a": 2}}])
+    def test_no_default_content_type(self, req, includes, extra):
+        del req["headers"]["Content-Type"]
+        req.pop("json", {})
+        req.pop("data", {})
+
+        req.update(**extra)
+
+        args = get_request_args(req, includes)
+
+        # Requests will automatically set content type headers for json/form encoded data so we don't need to
+        with pytest.raises(KeyError):
+            assert args["headers"]["content-type"]
+
+    def test_no_set_content_type(self, req, includes):
         del req["headers"]["Content-Type"]
 
         args = get_request_args(req, includes)
 
-        assert args["headers"]["content-type"] == "application/json"
+        with pytest.raises(KeyError):
+            assert args["headers"]["content-type"]
+
+    def test_cannot_send_data_and_json(self, req, includes):
+        req["json"] = [1, 2, 3]
+        req["data"] = [1, 2, 3]
+
+        with pytest.raises(exceptions.BadSchemaError):
+            get_request_args(req, includes)
 
     def test_no_override_content_type(self, req, includes):
         req["headers"]["Content-Type"] = "application/x-www-form-urlencoded"
@@ -124,13 +139,7 @@ class TestRequestArgs(object):
         assert args["headers"]["content-type"] == "application/x-www-form-urlencoded"
 
     def test_nested_params_encoded(self, req, includes):
-        req["params"] = {
-            "a": {
-                "b": {
-                    "c": "d",
-                }
-            }
-        }
+        req["params"] = {"a": {"b": {"c": "d"}}}
 
         args = get_request_args(req, includes)
 
@@ -139,7 +148,7 @@ class TestRequestArgs(object):
     def test_array_substitution(self, req, includes):
         args = get_request_args(req, includes)
 
-        assert args['data']['array'] == ['def456', 'def456']
+        assert args["data"]["array"] == ["def456", "def456"]
 
     def test_file_and_data_fails(self, req, includes):
         """Can't send json/form data and files at once"""
@@ -148,10 +157,7 @@ class TestRequestArgs(object):
         with pytest.raises(exceptions.BadSchemaError):
             get_request_args(req, includes)
 
-    @pytest.mark.parametrize("extra_headers", (
-        {},
-        {"x-cool-header": "plark"}
-    ))
+    @pytest.mark.parametrize("extra_headers", ({}, {"x-cool-header": "plark"}))
     def test_headers_no_content_type_change(self, req, includes, extra_headers):
         """Sending a file doesn't set the content type as json"""
         del req["data"]
@@ -163,7 +169,6 @@ class TestRequestArgs(object):
 
 
 class TestExtFunctions:
-
     def test_get_from_function(self, req, includes):
         """Make sure ext functions work in request
 
@@ -173,12 +178,7 @@ class TestExtFunctions:
         """
         to_copy = {"thing": "value"}
 
-        req["data"] = {
-            "$ext": {
-                "function": "copy:copy",
-                "extra_args": [to_copy],
-            }
-        }
+        req["data"] = {"$ext": {"function": "copy:copy", "extra_args": [to_copy]}}
 
         args = get_request_args(req, includes)
 
@@ -186,11 +186,7 @@ class TestExtFunctions:
 
 
 class TestOptionalDefaults:
-
-    @pytest.mark.parametrize("verify", (
-        True,
-        False
-    ))
+    @pytest.mark.parametrize("verify", (True, False))
     def test_passthrough_verify(self, req, includes, verify):
         """Should be able to pass 'verify' through to requests.request
         """

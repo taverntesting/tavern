@@ -7,7 +7,7 @@ import warnings
 try:
     from urllib.parse import quote_plus
 except ImportError:
-    from urllib import quote_plus
+    from urllib import quote_plus  # type: ignore
 
 from contextlib2 import ExitStack
 from future.utils import raise_from
@@ -46,10 +46,7 @@ def get_request_args(rspec, test_block_config):
     request_args = {}
 
     # Ones that are required and are enforced to be present by the schema
-    required_in_file = [
-        "method",
-        "url",
-    ]
+    required_in_file = ["method", "url"]
 
     optional_in_file = [
         "json",
@@ -64,34 +61,36 @@ def get_request_args(rspec, test_block_config):
         # "auth",
     ]
 
-    optional_with_default = {
-        "verify": True,
-        "stream": False
-    }
+    optional_with_default = {"verify": True, "stream": False}
 
     if "method" not in rspec:
         logger.debug("Using default GET method")
         rspec["method"] = "GET"
 
-    content_keys = [
-        "data",
-        "json",
-    ]
+    content_keys = ["data", "json", "files"]
+
+    in_request = [c for c in content_keys if c in rspec]
+    if len(in_request) > 1:
+        # Explicitly raise an error here
+        # From requests docs:
+        # Note, the json parameter is ignored if either data or files is passed.
+        raise exceptions.BadSchemaError(
+            "Can only specify one type of request data in HTTP request (tried to send {})".format(
+                " and ".join(in_request)
+            )
+        )
 
     headers = rspec.get("headers", {})
     has_content_header = "content-type" in [h.lower() for h in headers.keys()]
 
     if "files" in rspec:
-        if any(ckey in rspec for ckey in content_keys):
-            raise exceptions.BadSchemaError("Tried to send non-file content alongside a file")
-
         if has_content_header:
-            logger.warning("Tried to specify a content-type header while sending a file - this will be ignored")
-            rspec["headers"] = {i: j for i, j in headers.items() if i.lower() != "content-type"}
-    elif headers:
-        # This should only be hit if we aren't sending a file
-        if not has_content_header:
-            rspec["headers"]["content-type"] = "application/json"
+            logger.warning(
+                "Tried to specify a content-type header while sending a file - this will be ignored"
+            )
+            rspec["headers"] = {
+                i: j for i, j in headers.items() if i.lower() != "content-type"
+            }
 
     fspec = format_keys(rspec, test_block_config["variables"])
 
@@ -148,13 +147,15 @@ def get_request_args(rspec, test_block_config):
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
     if request_args["method"] in ["GET", "HEAD", "OPTIONS"]:
         if any(i in request_args for i in ["json", "data"]):
-            warnings.warn("You are trying to send a body with a HTTP verb that has no semantic use for it", RuntimeWarning)
+            warnings.warn(
+                "You are trying to send a body with a HTTP verb that has no semantic use for it",
+                RuntimeWarning,
+            )
 
     return request_args
 
 
 class RestRequest(BaseRequest):
-
     def __init__(self, session, rspec, test_block_config):
         """Prepare request
 
@@ -168,9 +169,9 @@ class RestRequest(BaseRequest):
                 spec. Only valid keyword args to requests can be passed
         """
 
-        if 'meta' in rspec:
-            meta = rspec.pop('meta')
-            if meta and 'clear_session_cookies' in meta:
+        if "meta" in rspec:
+            meta = rspec.pop("meta")
+            if meta and "clear_session_cookies" in meta:
                 session.cookies.clear_session_cookies()
 
         expected = {
@@ -234,10 +235,7 @@ class RestRequest(BaseRequest):
             filename = os.path.basename(filepath)
 
             # a 2-tuple ('filename', fileobj)
-            file_spec = [
-                filename,
-                stack.enter_context(open(filepath, "rb")),
-            ]
+            file_spec = [filename, stack.enter_context(open(filepath, "rb"))]
 
             # If it doesn't have a mimetype, or can't guess it, don't
             # send the content type for the file

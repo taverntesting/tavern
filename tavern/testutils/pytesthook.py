@@ -6,8 +6,12 @@ import os
 import re
 from builtins import str as ustr
 
+try:
+    from functools import lru_cache
+except ImportError:
+    from backports.functools_lru_cache import lru_cache
+
 import attr
-import py
 import pytest
 import yaml
 from _pytest import fixtures
@@ -25,7 +29,72 @@ from tavern.util.loader import IncludeLoader
 
 logger = logging.getLogger(__name__)
 
-match_tavern_file = re.compile(r'.+\.tavern\.ya?ml$').match
+match_tavern_file = re.compile(r".+\.tavern\.ya?ml$").match
+
+
+@lru_cache()
+def load_global_cfg(pytest_config):
+    """Load globally included config files from cmdline/cfg file arguments
+
+    Args:
+        pytest_config (pytest.Config): Pytest config object
+
+    Returns:
+        dict: variables/stages/etc from global config files
+
+    Raises:
+        exceptions.UnexpectedKeysError: Invalid settings in one or more config
+            files detected
+    """
+    # Load ini first
+    ini_global_cfg_paths = pytest_config.getini("tavern-global-cfg") or []
+    # THEN load command line, to allow overwriting of values
+    cmdline_global_cfg_paths = pytest_config.getoption("tavern_global_cfg") or []
+
+    all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
+    global_cfg = load_global_config(all_paths)
+
+    try:
+        loaded_variables = global_cfg["variables"]
+    except KeyError:
+        logger.debug("Nothing to format in global config files")
+    else:
+        tavern_box = Box({"tavern": {"env_vars": dict(os.environ)}})
+
+        global_cfg["variables"] = format_keys(loaded_variables, tavern_box)
+
+    if pytest_config.getini("tavern-strict") is not None:
+        strict = pytest_config.getini("tavern-strict")
+        if isinstance(strict, list):
+            if any(
+                i not in ["body", "headers", "redirect_query_params"] for i in strict
+            ):
+                raise exceptions.UnexpectedKeysError(
+                    "Invalid values for 'strict' use in config file"
+                )
+    elif pytest_config.getoption("tavern_strict") is not None:
+        strict = pytest_config.getoption("tavern_strict")
+    else:
+        strict = []
+
+    global_cfg["strict"] = strict
+
+    global_cfg["backends"] = {}
+    backends = ["http", "mqtt"]
+    for b in backends:
+        # similar logic to above - use ini, then cmdline if present
+        ini_opt = pytest_config.getini("tavern-{}-backend".format(b))
+        cli_opt = pytest_config.getoption("tavern_{}_backend".format(b))
+
+        in_use = ini_opt
+        if cli_opt and (cli_opt != ini_opt):
+            in_use = cli_opt
+
+        global_cfg["backends"][b] = in_use
+
+    logger.debug("Global config: %s", global_cfg)
+
+    return global_cfg
 
 
 def pytest_collect_file(parent, path):
@@ -55,12 +124,12 @@ def add_parser_options(parser_addoption, with_defaults=True):
     parser_addoption(
         "--tavern-http-backend",
         help="Which http backend to use",
-        default='requests' if with_defaults else None,
+        default="requests" if with_defaults else None,
     )
     parser_addoption(
         "--tavern-mqtt-backend",
         help="Which mqtt backend to use",
-        default='paho-mqtt' if with_defaults else None,
+        default="paho-mqtt" if with_defaults else None,
     )
     parser_addoption(
         "--tavern-strict",
@@ -86,17 +155,13 @@ def pytest_addoption(parser):
         "tavern-global-cfg",
         help="One or more global configuration files to include in every test",
         type="linelist",
-        default=[]
+        default=[],
     )
     parser.addini(
-        "tavern-http-backend",
-        help="Which http backend to use",
-        default="requests",
+        "tavern-http-backend", help="Which http backend to use", default="requests"
     )
     parser.addini(
-        "tavern-mqtt-backend",
-        help="Which mqtt backend to use",
-        default="paho-mqtt",
+        "tavern-mqtt-backend", help="Which mqtt backend to use", default="paho-mqtt"
     )
     parser.addini(
         "tavern-strict",
@@ -182,68 +247,124 @@ class YamlFile(pytest.File):
             logger.debug("Variables for this combination: %s", variables)
 
             # Use for formatting parametrized values - eg {}-{}, {}-{}-{}, etc.
-            inner_fmt = "-".join(["{}"]*len(flattened_values))
+            inner_fmt = "-".join(["{}"] * len(flattened_values))
 
             # Change the name
             inner_formatted = inner_fmt.format(*flattened_values)
             spec_new = copy.deepcopy(test_spec)
-            spec_new["test_name"] = test_spec["test_name"] + "[{}]".format(inner_formatted)
+            spec_new["test_name"] = test_spec["test_name"] + "[{}]".format(
+                inner_formatted
+            )
 
             logger.debug("New test name: %s", spec_new["test_name"])
 
             # Make this new thing available for formatting
-            spec_new.setdefault("includes", []).append({
-                "name": "parametrized[{}]".format(inner_formatted),
-                "description": "autogenerated by Tavern",
-                "variables": variables
-            })
+            spec_new.setdefault("includes", []).append(
+                {
+                    "name": "parametrized[{}]".format(inner_formatted),
+                    "description": "autogenerated by Tavern",
+                    "variables": variables,
+                }
+            )
             # And create the new item
             item_new = YamlItem(spec_new["test_name"], self, spec_new, self.fspath)
             item_new.add_markers(pytest_marks)
 
             yield item_new
 
-    def _generate_items(self, test_spec):
+    def _get_test_fmt_vars(self, test_spec):
+        """Get any format variables that can be inferred for the test at this point
 
+        Args:
+            test_spec (dict): Test specification, possibly with included config files
+
+        Returns:
+            dict: available format variables
+        """
+        # Get included variables so we can do things like:
+        # skipif: {my_integer} > 2
+        # skipif: 'https' in '{hostname}'
+        # skipif: '{hostname}'.contains('ignoreme')
+        fmt_vars = {}
+
+        global_cfg = load_global_cfg(self.config)
+        fmt_vars.update(**global_cfg.get("variables", {}))
+
+        included = test_spec.get("includes", [])
+        for i in included:
+            fmt_vars.update(**i.get("variables", {}))
+
+        # Needed if something in a config file uses tavern.env_vars
+        tavern_box = Box({"tavern": {"env_vars": dict(os.environ)}})
+
+        try:
+            fmt_vars = format_keys(fmt_vars, tavern_box)
+        except exceptions.MissingFormatError as e:
+            # eg, if we have {tavern.env_vars.DOESNT_EXIST}
+            msg = "Tried to use tavern format variable that did not exist"
+            raise_from(exceptions.MissingFormatError(msg), e)
+
+        return fmt_vars
+
+    def _generate_items(self, test_spec):
+        """Modify or generate tests based on test spec
+
+        If there are any 'parametrize' marks, this will generate extra tests
+        based on the values
+
+        Args:
+            test_spec (dict): Test specification
+
+        Yields:
+            YamlItem: Tavern YAML test
+        """
         item = YamlItem(test_spec["test_name"], self, test_spec, self.fspath)
 
-        marks = test_spec.get("marks", [])
+        original_marks = test_spec.get("marks", [])
 
-        if marks:
-            # Get included variables so we can do things like:
-            # skipif: {my_integer} > 2
-            # skipif: 'https' in '{hostname}'
-            # skipif: '{hostname}'.contains('ignoreme')
-            included = test_spec.get("includes", [])
-            fmt_vars = {}
-            for i in included:
-                fmt_vars.update(**i.get("variables", {}))
-
+        if original_marks:
+            fmt_vars = self._get_test_fmt_vars(test_spec)
             pytest_marks = []
+            formatted_marks = []
 
-            # This should either be a string or a skipif
-            for m in marks:
+            for m in original_marks:
                 if isinstance(m, str):
+                    # a normal mark
                     m = format_keys(m, fmt_vars)
                     pytest_marks.append(getattr(pytest.mark, m))
                 elif isinstance(m, dict):
+                    # skipif or parametrize (for now)
                     for markname, extra_arg in m.items():
                         # NOTE
                         # cannot do 'skipif' and rely on a parametrized
                         # argument.
-                        extra_arg = format_keys(extra_arg, fmt_vars)
-                        pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
+                        try:
+                            extra_arg = format_keys(extra_arg, fmt_vars)
+                        except exceptions.MissingFormatError as e:
+                            msg = "Tried to use mark '{}' (with value '{}') in test '{}' but one or more format variables was not in any configuration file used by the test".format(
+                                markname, extra_arg, test_spec["test_name"]
+                            )
+                            # NOTE
+                            # we could continue and let it fail in the test, but
+                            # this gives a better indication of what actually
+                            # happened (even if it is difficult to test)
+                            raise_from(exceptions.MissingFormatError(msg), e)
+                        else:
+                            pytest_marks.append(
+                                getattr(pytest.mark, markname)(extra_arg)
+                            )
+                            formatted_marks.append({markname: extra_arg})
 
             # Do this after we've added all the other marks so doing
             # things like selecting on mark names still works even
             # after parametrization
-            parametrize_marks = [i for i in marks if isinstance(i, dict) and "parametrize" in i]
+            parametrize_marks = [
+                i for i in formatted_marks if isinstance(i, dict) and "parametrize" in i
+            ]
             if parametrize_marks:
                 # no 'yield from' in python 2...
                 for new_item in self.get_parametrized_items(
-                    test_spec,
-                    parametrize_marks,
-                    pytest_marks
+                    test_spec, parametrize_marks, pytest_marks
                 ):
                     yield new_item
 
@@ -263,7 +384,9 @@ class YamlFile(pytest.File):
 
         try:
             # Convert to a list so we can catch parser exceptions
-            all_tests = list(yaml.load_all(self.fspath.open(encoding="utf-8"), Loader=IncludeLoader))
+            all_tests = list(
+                yaml.load_all(self.fspath.open(encoding="utf-8"), Loader=IncludeLoader)
+            )
         except yaml.parser.ParserError as e:
             raise_from(exceptions.BadSchemaError, e)
 
@@ -305,7 +428,8 @@ class YamlItem(pytest.Item):
         # pylint: disable=protected-access,attribute-defined-outside-init
         self.funcargs = {}
         fixtureinfo = self.session._fixturemanager.getfixtureinfo(
-            self, self.obj, type(self), funcargs=False)
+            self, self.obj, type(self), funcargs=False
+        )
         self._fixtureinfo = fixtureinfo
         self.fixturenames = fixtureinfo.names_closure
         self._request = fixtures.FixtureRequest(self)
@@ -346,60 +470,13 @@ class YamlItem(pytest.Item):
                     # failure at collection time (which is a bit annoying to
                     # deal with). Instead just don't add the marker and it will
                     # raise an exception at test verification.
-                    logger.error("'usefixtures' was an invalid type (should"
-                        " be a list of fixture names)")
+                    logger.error(
+                        "'usefixtures' was an invalid type (should"
+                        " be a list of fixture names)"
+                    )
                     continue
 
             self.add_marker(pm)
-
-    def _parse_arguments(self):
-        # Load ini first
-        ini_global_cfg_paths = self.config.getini("tavern-global-cfg") or []
-        # THEN load command line, to allow overwriting of values
-        cmdline_global_cfg_paths = self.config.getoption("tavern_global_cfg") or []
-
-        all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
-        global_cfg = load_global_config(all_paths)
-
-        try:
-            loaded_variables = global_cfg["variables"]
-        except KeyError:
-            logger.debug("Nothing to format in global config files")
-        else:
-            tavern_box = Box({
-                "tavern": {
-                    "env_vars": dict(os.environ),
-                }
-            })
-
-            global_cfg["variables"] = format_keys(loaded_variables, tavern_box)
-
-        if self.config.getini("tavern-strict") is not None:
-            strict = self.config.getini("tavern-strict")
-            if isinstance(strict, list):
-                if any(i not in ["body", "headers", "redirect_query_params"] for i in strict):
-                    raise exceptions.UnexpectedKeysError("Invalid values for 'strict' use in config file")
-        elif self.config.getoption("tavern_strict") is not None:
-            strict = self.config.getoption("tavern_strict")
-        else:
-            strict = []
-
-        global_cfg["strict"] = strict
-
-        global_cfg["backends"] = {}
-        backends = ["http", "mqtt"]
-        for b in backends:
-            # similar logic to above - use ini, then cmdline if present
-            ini_opt = self.config.getini("tavern-{}-backend".format(b))
-            cli_opt = self.config.getoption("tavern_{}_backend".format(b))
-
-            in_use = ini_opt
-            if cli_opt and (cli_opt != ini_opt):
-                in_use = cli_opt
-
-            global_cfg["backends"][b] = in_use
-
-        return global_cfg
 
     def _load_fixture_values(self):
         fixture_markers = self.iter_markers("usefixtures")
@@ -415,10 +492,14 @@ class YamlItem(pytest.Item):
                 # this check here just in case
                 mark_values = {m.args: self.funcargs[m.args]}
             else:
-                raise exceptions.BadSchemaError(("Can't handle 'usefixtures' spec of '{}'."
-                    " There appears to be a bug in pykwalify so verification of"
-                    " 'usefixtures' is broken - it should be a list of fixture"
-                    " names").format(m.args))
+                raise exceptions.BadSchemaError(
+                    (
+                        "Can't handle 'usefixtures' spec of '{}'."
+                        " There appears to be a bug in pykwalify so verification of"
+                        " 'usefixtures' is broken - it should be a list of fixture"
+                        " names"
+                    ).format(m.args)
+                )
 
             if any(mv in values for mv in mark_values):
                 logger.warning("Overriding value for %s", mark_values)
@@ -428,7 +509,7 @@ class YamlItem(pytest.Item):
         return values
 
     def runtest(self):
-        self.global_cfg = self._parse_arguments()
+        self.global_cfg = load_global_cfg(self.config)
 
         self.global_cfg.setdefault("variables", {})
 
@@ -460,9 +541,11 @@ class YamlItem(pytest.Item):
         else:
             if xfail:
                 logger.error("Expected test to fail")
-                raise exceptions.TestFailError("Expected test to fail at {} stage".format(xfail))
+                raise exceptions.TestFailError(
+                    "Expected test to fail at {} stage".format(xfail)
+                )
 
-    def repr_failure(self, excinfo): # pylint: disable=no-self-use
+    def repr_failure(self, excinfo):  # pylint: disable=no-self-use
         """ called when self.runtest() raises an exception.
 
         Todo:
@@ -471,7 +554,9 @@ class YamlItem(pytest.Item):
             failed rather than a traceback
         """
 
-        if self.config.getini("tavern-beta-new-traceback") or self.config.getoption("tavern_beta_new_traceback"):
+        if self.config.getini("tavern-beta-new-traceback") or self.config.getoption(
+            "tavern_beta_new_traceback"
+        ):
             if issubclass(excinfo.type, exceptions.TavernException):
                 return ReprdError(excinfo, self)
 
@@ -482,7 +567,6 @@ class YamlItem(pytest.Item):
 
 
 class ReprdError(object):
-
     def __init__(self, exce, item):
         self.exce = exce
         self.item = item
@@ -517,6 +601,7 @@ class ReprdError(object):
         Returns:
             list(str): List of all missing format variables
         """
+
         def read_formatted_vars(lines):
             """Go over all lines and try to find format variables
 
@@ -557,7 +642,9 @@ class ReprdError(object):
 
         return missing
 
-    def _print_test_stage(self, tw, code_lines, missing_format_vars, line_start): # pylint: disable=no-self-use
+    def _print_test_stage(
+        self, tw, code_lines, missing_format_vars, line_start
+    ):  # pylint: disable=no-self-use
         """Print the direct source lines from this test stage
 
         If we couldn't get the stage for some reason, print the entire test out.
@@ -573,7 +660,9 @@ class ReprdError(object):
             line_start (int): Source line of this stage
         """
         if line_start:
-            tw.line("Source test stage (line {}):".format(line_start), white=True, bold=True)
+            tw.line(
+                "Source test stage (line {}):".format(line_start), white=True, bold=True
+            )
         else:
             tw.line("Source test stages:", white=True, bold=True)
 
@@ -583,7 +672,7 @@ class ReprdError(object):
             else:
                 tw.line(line, white=True)
 
-    def _print_formatted_stage(self, tw, stage): # pylint: disable=no-self-use
+    def _print_formatted_stage(self, tw, stage):  # pylint: disable=no-self-use
         """Print the 'formatted' stage that Tavern will actually use to send the
         request/process the response
 
@@ -667,7 +756,7 @@ class ReprdError(object):
 
     @property
     def longreprtext(self):
-        tw = py.io.TerminalWriter(stringio=True)  #pylint: disable=no-member
+        tw = py.io.TerminalWriter(stringio=True)  # pylint: disable=no-member
         tw.hasmarkup = False
         self.toterminal(tw)
         exc = tw.stringio.getvalue()

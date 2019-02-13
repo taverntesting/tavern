@@ -3,6 +3,9 @@
 
 .. image:: https://img.shields.io/pypi/v/tavern.svg
     :target: https://pypi.org/project/tavern/
+    
+.. image:: https://readthedocs.org/projects/pip/badge/?version=latest&style=flat
+    :target: https://tavern.readthedocs.io/en/latest/
 
 Easier API testing
 ==================
@@ -33,7 +36,9 @@ repo <https://github.com/taverntesting/tavern>`__.
 Quickstart
 ----------
 
-First, let's create a basic test, ``test_minimal.tavern.yaml``:
+First up run ``pip install tavern``.
+
+Then, let's create a basic test, ``test_minimal.tavern.yaml``:
 
 .. code:: yaml
 
@@ -140,6 +145,10 @@ to run the integration tests, make sure you have
 `docker <https://www.docker.com/>`__ installed and run
 ``tox -c tox-integraton.ini`` (bear in mind this might take a while.)
 It's that simple!
+
+Tavern uses [black](https://github.com/ambv/black) to keep all of the code
+formatted consistently. There is a pre-commit hook to run black which can
+be enabled by running `pre-commit install`.
 
 If you want to add a feature to get merged back into mainline Tavern:
 

@@ -18,6 +18,7 @@ session_type = MQTTClient
 request_type = MQTTRequest
 request_block_name = "mqtt_publish"
 
+
 def get_expected_from_request(stage, test_block_config, session):
     # mqtt response is not required
     m_expected = stage.get("mqtt_response")
@@ -31,6 +32,7 @@ def get_expected_from_request(stage, test_block_config, session):
         expected = {}
 
     return expected
+
 
 verifier_type = MQTTResponse
 response_block_name = "mqtt_response"

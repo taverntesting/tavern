@@ -1,4 +1,5 @@
 import logging
+from distutils.util import strtobool
 import warnings
 import os
 from copy import deepcopy
@@ -14,10 +15,10 @@ from .util.delay import delay
 from .util.retry import retry
 
 from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
-from .schemas.files import wrapfile
 
 
 logger = logging.getLogger(__name__)
+
 
 def _resolve_test_stages(test_spec, available_stages):
     # Need to get a final list of stages in the tests (resolving refs)
@@ -35,14 +36,15 @@ def _resolve_test_stages(test_spec, available_stages):
                 else:
                     logger.error("Bad stage: unknown stage referenced: %s", ref_id)
                     raise exceptions.InvalidStageReferenceError(
-                        "Unknown stage reference: {}".format(ref_id))
+                        "Unknown stage reference: {}".format(ref_id)
+                    )
             else:
                 logger.error("Bad stage: 'ref' type must specify 'id'")
-                raise exceptions.BadSchemaError(
-                    "'ref' stage type must specify 'id'")
+                raise exceptions.BadSchemaError("'ref' stage type must specify 'id'")
         test_stages.append(stage)
 
     return test_stages
+
 
 def run_test(in_file, test_spec, global_cfg):
     """Run a single tavern test
@@ -72,27 +74,49 @@ def run_test(in_file, test_spec, global_cfg):
     if "variables" not in test_block_config:
         test_block_config["variables"] = {}
 
-    tavern_box = Box({
-        "env_vars": dict(os.environ),
-    })
+    tavern_box = Box({"env_vars": dict(os.environ)})
 
     if not test_spec:
         logger.warning("Empty test block in %s", in_file)
         return
 
-    available_stages = {}
+    def stage_ids(s):
+        return [i["id"] for i in s]
+
+    available_stages = test_block_config.get("stages", [])
+
     if test_spec.get("includes"):
+        # Need to do this separately here so there is no confusion between global and included stages
+        for included in test_spec["includes"]:
+            for stage in included.get("stages", {}):
+                if stage["id"] in stage_ids(available_stages):
+                    msg = "Stage id '{}' defined in stage-included test which was already defined in global configuration - this will be an error in future!".format(
+                        stage["id"]
+                    )
+                    logger.warning(msg)
+                    warnings.warn(msg, FutureWarning)
+
+        included_stages = []
+
         for included in test_spec["includes"]:
             if "variables" in included:
-                formatted_include = format_keys(included["variables"], {"tavern": tavern_box})
+                formatted_include = format_keys(
+                    included["variables"], {"tavern": tavern_box}
+                )
                 test_block_config["variables"].update(formatted_include)
 
-            if "stages" in included:
-                for stage in included["stages"]:
-                    if stage["id"] in available_stages:
-                        raise exceptions.DuplicateStageDefinitionError(
-                            "Stage with specified id already defined: {}".format(stage["id"]))
-                    available_stages[stage["id"]] = stage
+            for stage in included.get("stages", []):
+                if stage["id"] in stage_ids(included_stages):
+                    raise exceptions.DuplicateStageDefinitionError(
+                        "Stage with specified id already defined: {}".format(
+                            stage["id"]
+                        )
+                    )
+                included_stages.append(stage)
+    else:
+        included_stages = []
+
+    available_stages = {s["id"]: s for s in available_stages + included_stages}
 
     test_block_config["variables"]["tavern"] = tavern_box
 
@@ -111,9 +135,22 @@ def run_test(in_file, test_spec, global_cfg):
             logger.debug("Entering context for %s", name)
             stack.enter_context(session)
 
+        def getonly(stage):
+            o = stage.get("only")
+            if o is None:
+                return False
+            elif isinstance(o, bool):
+                return o
+            else:
+                return strtobool(o)
+
+        has_only = any(getonly(stage) for stage in test_spec["stages"])
+
         # Run tests in a path in order
         for stage in test_spec["stages"]:
-            if stage.get('skip'):
+            if stage.get("skip"):
+                continue
+            elif has_only and not getonly(stage):
                 continue
 
             test_block_config["strict"] = default_strictness
@@ -131,11 +168,15 @@ def run_test(in_file, test_spec, global_cfg):
                 else:
                     stage_strictness = default_strictness
 
-                logger.debug("Strict key checking for this stage is '%s'", stage_strictness)
+                logger.debug(
+                    "Strict key checking for this stage is '%s'", stage_strictness
+                )
 
                 test_block_config["strict"] = stage_strictness
             elif default_strictness:
-                logger.debug("Default strictness '%s' ignored for this stage", default_strictness)
+                logger.debug(
+                    "Default strictness '%s' ignored for this stage", default_strictness
+                )
 
             # Wrap run_stage with retry helper
             run_stage_with_retries = retry(stage)(run_stage)
@@ -147,7 +188,7 @@ def run_test(in_file, test_spec, global_cfg):
                 e.test_block_config = test_block_config
                 raise
 
-            if stage.get('only'):
+            if getonly(stage):
                 break
 
 
@@ -183,7 +224,15 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     delay(stage, "after")
 
 
-def _run_pytest(in_file, tavern_global_cfg, tavern_mqtt_backend=None, tavern_http_backend=None, tavern_strict=None, pytest_args=None, **kwargs): # pylint: disable=too-many-arguments
+def _run_pytest(
+    in_file,
+    tavern_global_cfg,
+    tavern_mqtt_backend=None,
+    tavern_http_backend=None,
+    tavern_strict=None,
+    pytest_args=None,
+    **kwargs
+):  # pylint: disable=too-many-arguments
     """Run all tests contained in a file using pytest.main()
 
     Args:
@@ -204,26 +253,27 @@ def _run_pytest(in_file, tavern_global_cfg, tavern_mqtt_backend=None, tavern_htt
     """
 
     if kwargs:
-        warnings.warn("Passing extra keyword args to run() when using pytest is used are ignored.", FutureWarning)
+        warnings.warn(
+            "Passing extra keyword args to run() when using pytest is used are ignored.",
+            FutureWarning,
+        )
 
-    with ExitStack() as stack:
+    if tavern_global_cfg:
+        global_filename = tavern_global_cfg
 
-        if tavern_global_cfg:
-            global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
+    pytest_args = pytest_args or []
+    pytest_args += [in_file]
+    if tavern_global_cfg:
+        pytest_args += ["--tavern-global-cfg", global_filename]
 
-        pytest_args = pytest_args or []
-        pytest_args += ["-k", in_file]
-        if tavern_global_cfg:
-            pytest_args += ["--tavern-global-cfg", global_filename]
+    if tavern_mqtt_backend:
+        pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
+    if tavern_http_backend:
+        pytest_args += ["--tavern-http-backend", tavern_http_backend]
+    if tavern_strict:
+        pytest_args += ["--tavern-strict", tavern_strict]
 
-        if tavern_mqtt_backend:
-            pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
-        if tavern_http_backend:
-            pytest_args += ["--tavern-http-backend", tavern_http_backend]
-        if tavern_strict:
-            pytest_args += ["--tavern-strict", tavern_strict]
-
-        return pytest.main(args=pytest_args)
+    return pytest.main(args=pytest_args)
 
 
 def run(in_file, tavern_global_cfg=None, **kwargs):
