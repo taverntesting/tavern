@@ -86,7 +86,12 @@ def _format_test_marks(original_marks, fmt_vars, test_name):
 
 
 def _generate_parametrized_test_items(keys, vals_combination):
-    """Generate test name from given key(s)/value(s) combination"""
+    """Generate test name from given key(s)/value(s) combination
+
+    Args:
+        keys (list): list of keys to format name with
+        vals_combination (tuple(str)): this combination of values for the key
+    """
     flattened_values = []
     variables = {}
 
@@ -104,6 +109,15 @@ def _generate_parametrized_test_items(keys, vals_combination):
                 flattened_values += [subvalue]
 
     logger.debug("Variables for this combination: %s", variables)
+    logger.debug("Values for this combination: %s", flattened_values)
+
+    def u2string(s):
+        if isinstance(s, ustr):
+            return s.encode("utf8")
+        else:
+            return s
+
+    flattened_values = list(map(u2string, flattened_values))
 
     # Use for formatting parametrized values - eg {}-{}, {}-{}-{}, etc.
     inner_fmt = "-".join(["{}"] * len(flattened_values))

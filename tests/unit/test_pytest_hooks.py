@@ -1,15 +1,12 @@
-import base64
-import os
-
 import pytest
-from mock import Mock, patch
+from faker import Faker
+from mock import Mock
 
 from tavern.testutils.pytesthook.file import YamlFile
-from tavern.util import exceptions
 
 
 def mock_args():
-    """Get a basic test config to initialist a YamlFile object with"""
+    """Get a basic test config to initialise a YamlFile object with"""
 
     fspath = "abc"
 
@@ -24,20 +21,18 @@ def mock_args():
     return {"session": session, "parent": parent, "fspath": fspath}
 
 
-def genkey():
-    """Get a random short key name"""
-    return base64.b64encode(os.urandom(5)).decode("utf8")
-
-
-def get_basic_parametrize_mark():
+def get_basic_parametrize_mark(faker):
     """Get a random 'normal' parametrize mark"""
-    return {"parametrize": {"key": genkey(), "vals": [1, 2, 3]}}
+    return {"parametrize": {"key": faker.name(), "vals": [faker.name(), 2, 3]}}
 
 
-def get_joined_parametrize_mark():
+def get_joined_parametrize_mark(faker):
     """Get a random 'combined' parametrize mark"""
     return {
-        "parametrize": {"key": [genkey(), genkey()], "vals": [["w", "x"], ["y", "z"]]}
+        "parametrize": {
+            "key": [faker.name(), faker.name()],
+            "vals": [["w", "x"], ["y", "z"]],
+        }
     }
 
 
@@ -51,22 +46,33 @@ def get_parametrised_tests(marks):
     return list(gen)
 
 
+def test_none():
+    marks = []
+
+    tests = get_parametrised_tests(marks)
+
+    # Only 1
+    assert len(tests) == 1
+
+
+@pytest.mark.parametrize("faker", [Faker(), Faker("zh_CN")])
 class TestMakeFile(object):
-    def test_only_single(self):
-        marks = [ ]
+    def test_only_single(self, faker):
+        marks = [get_basic_parametrize_mark(faker)]
 
         tests = get_parametrised_tests(marks)
 
-        # Only 1
-        assert len(tests) == 1
+        # [1]
+        # [2]
+        # [3]
+        assert len(tests) == 3
 
-    def test_only_single(self):
+    def test_only_basic(self, faker):
         marks = [
-            get_basic_parametrize_mark(),
-            get_basic_parametrize_mark(),
-            get_basic_parametrize_mark(),
+            get_basic_parametrize_mark(faker),
+            get_basic_parametrize_mark(faker),
+            get_basic_parametrize_mark(faker),
         ]
-
         tests = get_parametrised_tests(marks)
 
         # [1, 1, 1]
@@ -78,8 +84,8 @@ class TestMakeFile(object):
         # etc.
         assert len(tests) == 27
 
-    def test_double(self):
-        marks = [get_joined_parametrize_mark(), get_basic_parametrize_mark()]
+    def test_double(self, faker):
+        marks = [get_joined_parametrize_mark(faker), get_basic_parametrize_mark(faker)]
 
         tests = get_parametrised_tests(marks)
 
@@ -91,11 +97,11 @@ class TestMakeFile(object):
         # [y, z, 3]
         assert len(tests) == 6
 
-    def test_double_double(self):
+    def test_double_double(self, faker):
         marks = [
-            get_joined_parametrize_mark(),
-            get_joined_parametrize_mark(),
-            get_basic_parametrize_mark(),
+            get_joined_parametrize_mark(faker),
+            get_joined_parametrize_mark(faker),
+            get_basic_parametrize_mark(faker),
         ]
 
         tests = get_parametrised_tests(marks)
@@ -109,12 +115,12 @@ class TestMakeFile(object):
         # etc.
         assert len(tests) == 12
 
-    def test_double_double_single(self):
+    def test_double_double_single(self, faker):
         marks = [
-            get_joined_parametrize_mark(),
-            get_joined_parametrize_mark(),
-            get_basic_parametrize_mark(),
-            get_basic_parametrize_mark(),
+            get_joined_parametrize_mark(faker),
+            get_joined_parametrize_mark(faker),
+            get_basic_parametrize_mark(faker),
+            get_basic_parametrize_mark(faker),
         ]
 
         tests = get_parametrised_tests(marks)

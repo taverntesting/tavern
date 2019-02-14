@@ -17,7 +17,7 @@ def format_keys(val, variables):
     """recursively format a dictionary with the given values
 
     Args:
-        val (dict): Input dictionary to format
+        val (object): Input dictionary to format
         variables (dict): Dictionary of keys to format it with
 
     Returns:

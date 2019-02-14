@@ -52,10 +52,8 @@ class ReprdError(object):
 
             This might be a bit wonky if escaped curly braces are used...
             """
-            formatted_var_regex = "(?P<format_var>{.*?})"
-
             for line in lines:
-                for match in re.finditer(formatted_var_regex, line):
+                for match in re.finditer(r"(?P<format_var>{.*?})", line):
                     yield match.group("format_var")
 
         format_variables = list(read_formatted_vars(code_lines))
@@ -163,6 +161,7 @@ class ReprdError(object):
             # pylint: disable=protected-access
             stage = self.exce._excinfo[1].stage
         except AttributeError:
+            stage = None
             # Fallback, we don't know which stage it is
             spec = self.item.spec
             stages = spec["stages"]
@@ -179,7 +178,7 @@ class ReprdError(object):
             """Get lines between start and end mark"""
             with io.open(filename, "r", encoding="utf8") as testfile:
                 for idx, line in enumerate(testfile.readlines()):
-                    if idx > first_line and idx < last_line:
+                    if first_line < idx < last_line:
                         yield line.rstrip()
 
         code_lines = list(read_relevant_lines(self.item.spec.start_mark.name))
