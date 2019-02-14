@@ -3,15 +3,8 @@ inherits:
 
 output-format: grouped
 
-# Doesn't conform with black
-no-style-warnings: true
-# Having this set here _enables_ style warnings again (???)
-max-line-length: 9999
 pep8:
-  run: false
-  options:
-    # Needed to stop it complaining, for some reason
-    max-line-length: 9999
+  none: true
 
 # We only provide 1 function, this is a bit useless
 doc-warnings: false
