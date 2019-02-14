@@ -112,10 +112,10 @@ def _generate_parametrized_test_items(keys, vals_combination):
     logger.debug("Values for this combination: %s", flattened_values)
 
     def u2string(s):
-        if isinstance(s, ustr):
-            return s.encode("utf8")
-        else:
+        if isinstance(s, str):
             return s
+        else:
+            return s.encode("utf8")
 
     flattened_values = list(map(u2string, flattened_values))
 
