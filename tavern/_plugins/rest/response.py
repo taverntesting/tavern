@@ -151,8 +151,6 @@ class RestResponse(BaseResponse):
         Raises:
             TestFailError: Something went wrong with validating the response
         """
-        # pylint: disable=too-many-statements
-
         self._verbose_log_response(response)
 
         self.response = response
