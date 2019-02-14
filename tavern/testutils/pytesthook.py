@@ -546,7 +546,7 @@ class YamlItem(pytest.Item):
                     "Expected test to fail at {} stage".format(xfail)
                 )
 
-    def repr_failure(self, excinfo):  # pylint: disable=no-self-use
+    def repr_failure(self, excinfo):
         """ called when self.runtest() raises an exception.
 
         Todo:
@@ -673,7 +673,7 @@ class ReprdError(object):
             else:
                 tw.line(line, white=True)
 
-    def _print_formatted_stage(self, tw, stage):  # pylint: disable=no-self-use
+    def _print_formatted_stage(self, tw, stage):
         """Print the 'formatted' stage that Tavern will actually use to send the
         request/process the response
 
@@ -735,7 +735,7 @@ class ReprdError(object):
             """Get lines between start and end mark"""
             with io.open(filename, "r", encoding="utf8") as testfile:
                 for idx, line in enumerate(testfile.readlines()):
-                    if idx > first_line and idx < last_line:
+                    if first_line < idx < last_line:
                         yield line.rstrip()
 
         code_lines = list(read_relevant_lines(self.item.spec.start_mark.name))

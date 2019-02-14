@@ -133,7 +133,9 @@ def run_test(in_file, test_spec, global_cfg):
 
     # Get included stages and resolve any into the test spec dictionary
     available_stages = test_block_config.get("stages", [])
-    included_stages = _get_included_stages(tavern_box, test_block_config, test_spec, available_stages)
+    included_stages = _get_included_stages(
+        tavern_box, test_block_config, test_spec, available_stages
+    )
     all_stages = {s["id"]: s for s in available_stages + included_stages}
     test_spec["stages"] = _resolve_test_stages(test_spec, all_stages)
 
@@ -243,13 +245,13 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
 
 
 def _run_pytest(
-        in_file,
-        tavern_global_cfg,
-        tavern_mqtt_backend=None,
-        tavern_http_backend=None,
-        tavern_strict=None,
-        pytest_args=None,
-        **kwargs
+    in_file,
+    tavern_global_cfg,
+    tavern_mqtt_backend=None,
+    tavern_http_backend=None,
+    tavern_strict=None,
+    pytest_args=None,
+    **kwargs
 ):  # pylint: disable=too-many-arguments
     """Run all tests contained in a file using pytest.main()
 

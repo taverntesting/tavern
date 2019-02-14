@@ -54,9 +54,7 @@ def retry(stage):
                 else:
                     break
 
-            logger.debug(
-                "Stage '%s' succeed after %i retries.", stage["name"], i
-            )  # pylint: disable=undefined-loop-variable
+            logger.debug("Stage '%s' succeed after %i retries.", stage["name"], i)
             return res
 
         return wrapped
