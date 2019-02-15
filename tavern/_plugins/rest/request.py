@@ -59,6 +59,7 @@ def get_request_args(rspec, test_block_config):
         # if we pass a list instead of a tuple, so we have to manually convert
         # it further down
         # "auth",
+        # "cert"
     ]
 
     optional_with_default = {"verify": True, "stream": False}
@@ -110,6 +111,9 @@ def get_request_args(rspec, test_block_config):
 
     if "auth" in fspec:
         request_args["auth"] = tuple(fspec["auth"])
+
+    if "cert" in fspec:
+        request_args["cert"] = tuple(fspec["cert"])
 
     if "timeout" in fspec:
         # Needs to be a tuple, it being a list doesn't work
@@ -186,6 +190,7 @@ class RestRequest(BaseRequest):
             "files",
             "stream",
             "timeout",
+            "cert",
             # "cookies",
             # "hooks",
         }
