@@ -1,12 +1,9 @@
 import contextlib
 import json
-import mimetypes
 import logging
+import mimetypes
 import os
 import warnings
-
-from requests.cookies import cookiejar_from_dict
-from requests.utils import dict_from_cookiejar
 
 try:
     from urllib.parse import quote_plus
@@ -16,6 +13,8 @@ except ImportError:
 from contextlib2 import ExitStack
 from future.utils import raise_from
 import requests
+from requests.cookies import cookiejar_from_dict
+from requests.utils import dict_from_cookiejar
 from box import Box
 
 from tavern.util import exceptions
