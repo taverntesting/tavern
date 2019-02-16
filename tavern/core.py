@@ -199,7 +199,7 @@ def run_test(in_file, test_spec, global_cfg):
                 )
 
             # Wrap run_stage with retry helper
-            run_stage_with_retries = retry(stage)(run_stage)
+            run_stage_with_retries = retry(stage, test_block_config)(run_stage)
 
             try:
                 run_stage_with_retries(sessions, stage, tavern_box, test_block_config)
@@ -230,7 +230,7 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
 
     expected = get_expected(stage, test_block_config, sessions)
 
-    delay(stage, "before")
+    delay(stage, "before", test_block_config["variables"])
 
     logger.info("Running stage : %s", name)
     response = r.run()
@@ -241,7 +241,7 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
         test_block_config["variables"].update(saved)
 
     tavern_box.pop("request_vars")
-    delay(stage, "after")
+    delay(stage, "after", test_block_config["variables"])
 
 
 def _run_pytest(
