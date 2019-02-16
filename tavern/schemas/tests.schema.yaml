@@ -5,7 +5,6 @@ desc: Matches test blocks
 # http://www.kuwata-lab.com/kwalify/ruby/users-guide.01.html
 # https://pykwalify.readthedocs.io/en/unstable/validation-rules.html
 
-
 schema;any_map_with_ext_function:
   # Anchor matches any key: value, and if there's an $ext function
   # in it it will check that it can be loaded at schema validation
@@ -44,18 +43,22 @@ schema;stage:
         min: 0
 
     skip:
-      type: bool
+      type: any
+      func: bool_variable
       required: false
 
     only:
-      type: bool
+      type: any
+      func: bool_variable
       required: false
 
     delay_before:
-      type: float
+      type: any
+      func: float_variable
       required: false
     delay_after:
-      type: float
+      type: any
+      func: float_variable
       required: false
 
     mqtt_publish:
@@ -72,10 +75,12 @@ schema;stage:
         json:
           include: any_map_or_list_with_ext_function
         qos:
-          type: int
+          type: any
+          func: int_variable
           required: false
         retain:
-          type: bool
+          type: any
+          func: bool_variable
           required: false
     mqtt_response:
       type: map
@@ -90,10 +95,12 @@ schema;stage:
         json:
           include: any_map_or_list_with_ext_function
         timeout:
-          type: float
+          type: any
+          func: float_variable
           required: false
         qos:
-          type: int
+          type: any
+          func: int_variable
           required: false
           enum:
             - 0
@@ -117,7 +124,8 @@ schema;stage:
           required: false
 
         stream:
-          type: bool
+          type: any
+          func: bool_variable
           required: false
 
         auth:

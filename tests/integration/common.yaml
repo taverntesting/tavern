@@ -13,6 +13,9 @@ variables:
   v_float: 4.56
   v_bool: false
 
+  status_200: 200
+  verify_false: "False"
+  delay_before_0_1: 0.1
 
 stages:
   - id: typetoken-anything-match

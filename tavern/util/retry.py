@@ -9,7 +9,7 @@ from .delay import delay
 logger = logging.getLogger(__name__)
 
 
-def retry(stage):
+def retry(stage, test_block_config):
     """Look for retry and try to repeat the stage `retry` times.
 
     Args:
@@ -36,7 +36,7 @@ def retry(stage):
                             stage["name"],
                             i + 1,
                         )
-                        delay(stage, "after")
+                        delay(stage, "after", test_block_config["variables"])
                     else:
                         logger.error(
                             "Stage '%s' did not succeed in %i retries.",

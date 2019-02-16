@@ -4,10 +4,11 @@ import functools
 import importlib
 
 from future.utils import raise_from
+from pykwalify.types import is_int, is_float, is_bool
 
 from tavern.util.exceptions import BadSchemaError
 from tavern.util import exceptions
-from tavern.util.loader import ApproxScalar
+from tavern.util.loader import ApproxScalar, IntToken, FloatToken, BoolToken
 
 
 def _getlogger():
@@ -18,6 +19,39 @@ def _getlogger():
     trying to get the root logger which won't log correctly
     """
     return logging.getLogger("tavern.schemas.extensions")
+
+
+# To extend pykwalify's type validation, extend its internal functions
+# These return boolean values
+def validate_type_and_token(validate_type, token):
+    def validate(value):
+        return validate_type(value) or isinstance(value, token)
+
+    return validate
+
+
+is_int_like = validate_type_and_token(is_int, IntToken)
+is_float_like = validate_type_and_token(is_float, FloatToken)
+is_bool_like = validate_type_and_token(is_bool, BoolToken)
+
+# These plug into the pykwalify extension function API
+def validator_like(validate, description):
+    def validator(value, rule_obj, path):
+        # pylint: disable=unused-argument
+        if validate(value):
+            return True
+        else:
+            err_msg = "expected '{}' type at '{}', got '{}'".format(
+                description, path, value
+            )
+            raise BadSchemaError(err_msg)
+
+    return validator
+
+
+int_variable = validator_like(is_int_like, "int-like")
+float_variable = validator_like(is_float_like, "float-like")
+bool_variable = validator_like(is_bool_like, "bool-like")
 
 
 def import_ext_function(entrypoint):
@@ -173,11 +207,11 @@ def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path):
         value
     )
 
-    if not isinstance(value, (int, list)):
+    if not isinstance(value, list) and not is_int_like(value):
         raise BadSchemaError(err_msg)
 
     if isinstance(value, list):
-        if not all(isinstance(i, int) for i in value):
+        if not all(is_int_like(i) for i in value):
             raise BadSchemaError(err_msg)
 
     return True
@@ -322,7 +356,7 @@ def check_strict_key(value, rule_obj, path):
     """Make sure the 'strict' key is either a bool or a list"""
     # pylint: disable=unused-argument
 
-    if not isinstance(value, (bool, list)):
+    if not isinstance(value, list) and not is_bool_like(value):
         raise BadSchemaError("'strict' has to be either a boolean or a list")
     elif isinstance(value, list):
         if not set(["body", "headers", "redirect_query_params"]) >= set(value):
@@ -341,7 +375,7 @@ def validate_timeout_tuple_or_float(value, rule_obj, path):
     logger = _getlogger()
 
     def check_is_timeout_val(v):
-        if v is True or v is False or not isinstance(v, (float, int)):
+        if v is True or v is False or not (is_float_like(v) or is_int_like(v)):
             logger.debug("'timeout' value not a float/int")
             raise BadSchemaError(err_msg)
 
