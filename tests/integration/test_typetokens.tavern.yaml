@@ -229,6 +229,22 @@ stages:
 
 ---
 
+test_name: Test using a converted bool as part of the validated schema
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Validate converted bool
+    request:
+      url: "{host}/pi"
+      method: GET
+      verify: !bool "{verify_false}"
+    response:
+      status_code: 200
+
+---
+
 test_name: Test can't use approx numbers in a request
 
 includes:
@@ -333,6 +349,21 @@ stages:
 
 ---
 
+test_name: Test using a converted int as part of the validated schema
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Validate converted int
+    request:
+      url: "{host}/pi"
+      method: GET
+    response:
+      status_code: !int "{status_200}"
+
+---
+
 test_name: Test conversion to an float from included files
 
 includes:
@@ -380,6 +411,22 @@ stages:
         value: !float "5.67"
         dtype: float
         dvalue: 5.67
+    response:
+      status_code: 200
+
+---
+
+test_name: Test using a converted float as part of the validated schema
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Validate converted float
+    delay_before: !float "{delay_before_0_1}"
+    request:
+      url: "{host}/pi"
+      method: GET
     response:
       status_code: 200
 
