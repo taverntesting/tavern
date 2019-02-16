@@ -394,8 +394,10 @@ def validate_verify_bool_or_str(value, rule_obj, path):
     """Make sure the 'verify' key is either a bool or a str"""
     # pylint: disable=unused-argument
 
-    if not isinstance(value, (bool, str)):
-        raise BadSchemaError("'verify' has to be either a boolean or a string")
+    if not isinstance(value, (bool, str)) and not is_bool_like(value):
+        raise BadSchemaError(
+            "'verify' has to be either a boolean or the path to a CA_BUNDLE file or directory with certificates of trusted CAs"
+        )
 
     return True
 
