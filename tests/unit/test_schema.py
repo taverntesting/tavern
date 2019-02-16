@@ -112,7 +112,9 @@ class TestCert:
         test_dict["stages"][0]["request"]["cert"] = correct_value
         verify_tests(test_dict)
 
-    @pytest.mark.parametrize("incorrect_value", (None, True, {}, ("a", "b", "c"), [], ["a"], ["a", "b", "c"]))
+    @pytest.mark.parametrize(
+        "incorrect_value", (None, True, {}, ("a", "b", "c"), [], ["a"], ["a", "b", "c"])
+    )
     def test_cert_as_tuple(self, test_dict, incorrect_value):
         test_dict["stages"][0]["request"]["cert"] = incorrect_value
         with pytest.raises(BadSchemaError):
