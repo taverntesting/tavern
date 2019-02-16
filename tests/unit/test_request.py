@@ -167,6 +167,22 @@ class TestRequestArgs(object):
 
         assert "content-type" not in [i.lower() for i in args["headers"].keys()]
 
+    @pytest.mark.parametrize("cert_value", ("a", ("a", "b"), ["a", "b"]))
+    def test_cert_with_valid_values(self, req, includes, cert_value):
+        req["cert"] = cert_value
+        args = get_request_args(req, includes)
+        if isinstance(cert_value, list):
+            assert args["cert"] == (cert_value[0], cert_value[1])
+        else:
+            assert args["cert"] == cert_value
+
+    @pytest.mark.parametrize("verify_values", (True, False, "a"))
+    def test_verity_with_valid_values(self, req, includes, verify_values):
+        req["verify"] = verify_values
+        args = get_request_args(req, includes)
+
+        assert args["verify"] == verify_values
+
 
 class TestExtFunctions:
     def test_get_from_function(self, req, includes):

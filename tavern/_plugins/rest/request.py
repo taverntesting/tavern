@@ -55,11 +55,11 @@ def get_request_args(rspec, test_block_config):
         "headers",
         "files",
         "timeout",
+        "cert",
         # Ideally this would just be passed through but requests seems to error
         # if we pass a list instead of a tuple, so we have to manually convert
         # it further down
-        # "auth",
-        # "cert"
+        # "auth"
     ]
 
     optional_with_default = {"verify": True, "stream": False}
@@ -113,7 +113,8 @@ def get_request_args(rspec, test_block_config):
         request_args["auth"] = tuple(fspec["auth"])
 
     if "cert" in fspec:
-        request_args["cert"] = tuple(fspec["cert"])
+        if isinstance(fspec["cert"], list):
+            request_args["cert"] = tuple(fspec["cert"])
 
     if "timeout" in fspec:
         # Needs to be a tuple, it being a list doesn't work

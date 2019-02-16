@@ -157,17 +157,13 @@ schema;stage:
           func: validate_timeout_tuple_or_float
 
         cert:
-          func: validate_extensions
-          type: seq
+          func: validate_cert_tuple_or_str
+          type: any
           required: false
-          sequence:
-          - type: str
-            required: true
-          - type: str
-            required: true
 
         verify:
           type: any
+          func: validate_verify_bool_or_str
           required: false
 
         meta:

@@ -104,3 +104,29 @@ class TestTimeout:
 
         with pytest.raises(BadSchemaError):
             verify_tests(test_dict)
+
+
+class TestCert:
+    @pytest.mark.parametrize("correct_value", ("a", ("a", "b"), ["a", "b"]))
+    def test_cert_as_string_tuple_list(self, test_dict, correct_value):
+        test_dict["stages"][0]["request"]["cert"] = correct_value
+        verify_tests(test_dict)
+
+    @pytest.mark.parametrize("incorrect_value", (None, True, {}, ("a", "b", "c"), [], ["a"], ["a", "b", "c"]))
+    def test_cert_as_tuple(self, test_dict, incorrect_value):
+        test_dict["stages"][0]["request"]["cert"] = incorrect_value
+        with pytest.raises(BadSchemaError):
+            verify_tests(test_dict)
+
+
+class TestVerify:
+    @pytest.mark.parametrize("correct_value", ("a", True, False))
+    def test_verify_with_string_boolean(self, test_dict, correct_value):
+        test_dict["stages"][0]["request"]["verify"] = correct_value
+        verify_tests(test_dict)
+
+    @pytest.mark.parametrize("incorrect_value", (None, 1, {}, [], ("a", "b")))
+    def test_verify_with_incorrect_value(self, test_dict, incorrect_value):
+        test_dict["stages"][0]["request"]["verify"] = incorrect_value
+        with pytest.raises(BadSchemaError):
+            verify_tests(test_dict)
