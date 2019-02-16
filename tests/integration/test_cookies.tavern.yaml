@@ -6,7 +6,8 @@ includes:
   - !include common.yaml
 
 stages:
-  - name: No cookie - error
+  - &no-cookie-error
+    name: No cookie - error
     request:
       url: "{host}/expect_cookie"
       method: GET
@@ -30,6 +31,8 @@ stages:
       method: GET
     response:
       status_code: 200
+      body:
+        status: ok
 
 ---
 
@@ -39,13 +42,7 @@ includes:
   - !include common.yaml
 
 stages:
-  - name: No cookie - error
-    request:
-      url: "{host}/expect_cookie"
-      method: GET
-    response:
-      status_code: 400
-      error: "No cookie named tavern-cookie in request"
+  - *no-cookie-error
 
   - &get-cookie-1
     name: Get tavern-cookie-1
@@ -81,7 +78,8 @@ stages:
         - tavern-cookie-2
     response:
       status_code: 400
-      error: "No cookie named tavern-cookie-1 in request"
+      body:
+        error: "No cookie named tavern-cookie-1 in request"
 
   - name: Send the wrong cookie again - error
     request:
@@ -93,7 +91,8 @@ stages:
         - tavern-cookie-1
     response:
       status_code: 400
-      error: "No cookie named tavern-cookie-2 in request"
+      body:
+        error: "No cookie named tavern-cookie-2 in request"
 
 ---
 
@@ -103,13 +102,7 @@ includes:
   - !include common.yaml
 
 stages:
-  - name: No cookie - error
-    request:
-      url: "{host}/expect_cookie"
-      method: GET
-    response:
-      status_code: 400
-      error: "No cookie named tavern-cookie in request"
+  - *no-cookie-error
 
   - *get-cookie-1
 
@@ -125,6 +118,8 @@ stages:
         - tavern-cookie-1
     response:
       status_code: 200
+      body:
+        status: ok
 
   - name: Send the right cookie - success
     request:
@@ -136,3 +131,104 @@ stages:
         - tavern-cookie-2
     response:
       status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Test sending no cookie fails even if we have a cookie
+
+includes:
+  - !include common.yaml
+
+stages:
+  - *no-cookie-error
+
+  - *get-cookie-1
+
+  - name: Send the right cookie - success
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-1
+      cookies:
+        - tavern-cookie-1
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+  - name: No cookie - error
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      # Explicitly send no cookie
+      cookies: []
+      json:
+        cookie_name: tavern-cookie-1
+    response:
+      status_code: 400
+      body:
+        error: "No cookie named tavern-cookie-1 in request"
+
+  - name: but it is still available
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-1
+      cookies:
+        - tavern-cookie-1
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Test trying to send a cookie that we don't have fails
+
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send a cookie which doesn't exist
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-1
+      cookies:
+        - tavern-cookie-1
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Test trying to send a cookie that we don't have fails, even if we do have a cookie
+
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - *get-cookie-1
+
+  - name: Send a cookie which doesn't exist
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-2
+      cookies:
+        - tavern-cookie-2
+    response:
+      status_code: 200
+      body:
+        status: ok

@@ -1,8 +1,12 @@
+import contextlib
 import json
 import mimetypes
 import logging
 import os
 import warnings
+
+from requests.cookies import cookiejar_from_dict
+from requests.utils import dict_from_cookiejar
 
 try:
     from urllib.parse import quote_plus
@@ -155,11 +159,34 @@ def get_request_args(rspec, test_block_config):
     return request_args
 
 
+@contextlib.contextmanager
+def _set_cookies_for_request(session, request_args):
+    """
+    Possibly reset session cookies for a single request then set them back.
+    If no cookies were present in the request arguments, do nothing.
+
+    This does not use try/finally because if it fails then we don't care about
+    the cookies anyway
+
+    Args:
+        session (requests.Session): Current session
+        request_args (dict): current request arguments
+    """
+    if "cookies" in request_args:
+        old_cookies = dict_from_cookiejar(session.cookies)
+        session.cookies = cookiejar_from_dict({})
+        yield
+        session.cookies = cookiejar_from_dict(old_cookies)
+    else:
+        yield
+
+
 class RestRequest(BaseRequest):
     def __init__(self, session, rspec, test_block_config):
         """Prepare request
 
         Args:
+            session (requests.Session): existing session
             rspec (dict): test spec
             test_block_config (dict): Any configuration for this the block of
                 tests
@@ -186,13 +213,29 @@ class RestRequest(BaseRequest):
             "files",
             "stream",
             "timeout",
-            # "cookies",
+            "cookies",
             # "hooks",
         }
 
         check_expected_keys(expected, rspec)
 
         request_args = get_request_args(rspec, test_block_config)
+
+        # Need to do this down here - it is separate from getting request args as
+        # it depends on the state of the session
+        if "cookies" in rspec:
+            existing_cookies = session.cookies.get_dict()
+            missing = set(rspec["cookies"]) - set(existing_cookies.keys())
+            if missing:
+                logger.error("Missing cookies")
+                raise exceptions.MissingCookieError(
+                    "Tried to use cookies '{}' in request but only had '{}' available".format(
+                        rspec["cookies"], existing_cookies
+                    )
+                )
+            request_args["cookies"] = {
+                c: existing_cookies.get(c) for c in rspec["cookies"]
+            }
 
         logger.debug("Request args: %s", request_args)
 
@@ -209,6 +252,7 @@ class RestRequest(BaseRequest):
             # If there are open files, create a context manager around each so
             # they will be closed at the end of the request.
             with ExitStack() as stack:
+                stack.enter_context(_set_cookies_for_request(session, request_args))
                 self._request_args.update(self._get_file_arguments(stack))
                 return session.request(**self._request_args)
 
