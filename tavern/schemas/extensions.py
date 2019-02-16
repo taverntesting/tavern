@@ -404,8 +404,10 @@ def validate_cert_tuple_or_str(value, rule_obj, path):
     """Make sure the 'cert' key is either a str or tuple"""
     # pylint: disable=unused-argument
 
-    err_msg = "The 'cert' key must be a single file (containing the private key and the certificate) " \
-              "or as a tuple of both files"
+    err_msg = (
+        "The 'cert' key must be a single file (containing the private key and the certificate) "
+        "or as a tuple of both files"
+    )
 
     if not isinstance(value, (str, tuple, list)):
         raise BadSchemaError(err_msg)
