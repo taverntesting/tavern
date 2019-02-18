@@ -166,8 +166,6 @@ class YamlFile(pytest.File):
             doesn't appear to do anything. This could be removed?
         """
 
-        # pylint: disable=too-many-locals
-
         # These should be in the same order as specified in the input file
         vals = [i["parametrize"]["vals"] for i in parametrize_marks]
 
