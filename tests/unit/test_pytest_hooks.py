@@ -1,9 +1,11 @@
 import base64
 import os
 
+import pytest
+from faker import Faker
 from mock import Mock
 
-from tavern.testutils.pytesthook import YamlFile
+from tavern.testutils.pytesthook.file import YamlFile
 
 
 def mock_args():
