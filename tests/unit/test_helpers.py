@@ -9,7 +9,7 @@ from tavern.util import exceptions
 from tavern.testutils.helpers import validate_pykwalify
 from tavern.core import run
 from tavern.testutils.helpers import validate_regex, validate_content
-from tavern.testutils.pytesthook import YamlItem
+from tavern.testutils.pytesthook.item import YamlItem
 
 
 class FakeResponse:
@@ -110,7 +110,7 @@ class TestTavernRepr:
         """Should call normal pytest repr_info"""
         fake_info = self._make_fake_exc_info(RuntimeError)
 
-        with patch("tavern.testutils.pytesthook.ReprdError") as rmock:
+        with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
             fake_item.repr_failure(fake_info)
 
         assert not rmock.called
@@ -119,7 +119,7 @@ class TestTavernRepr:
         """Not called by default for tavern exceptions"""
         fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
 
-        with patch("tavern.testutils.pytesthook.ReprdError") as rmock:
+        with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
             fake_item.repr_failure(fake_info)
 
         assert not rmock.called
@@ -129,7 +129,7 @@ class TestTavernRepr:
         fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
 
         with patch.object(fake_item.config, "getini", return_value=True):
-            with patch("tavern.testutils.pytesthook.ReprdError") as rmock:
+            with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
         assert rmock.called
@@ -139,7 +139,7 @@ class TestTavernRepr:
         fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
 
         with patch.object(fake_item.config, "getoption", return_value=True):
-            with patch("tavern.testutils.pytesthook.ReprdError") as rmock:
+            with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
         assert rmock.called
