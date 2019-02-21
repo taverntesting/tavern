@@ -81,7 +81,10 @@ def load_global_cfg(pytest_config):
 
         global_cfg["variables"] = format_keys(loaded_variables, tavern_box)
 
+    strict = []
+
     if pytest_config.getini("tavern-strict") is not None:
+        # Lowest priority
         strict = pytest_config.getini("tavern-strict")
         if isinstance(strict, list):
             if any(
@@ -91,10 +94,10 @@ def load_global_cfg(pytest_config):
                     "Invalid values for 'strict' use in config file"
                 )
     elif pytest_config.getoption("tavern_strict") is not None:
+        # Middle priority
         strict = pytest_config.getoption("tavern_strict")
-    else:
-        strict = []
 
+    # Can be overridden in tests
     global_cfg["strict"] = strict
 
     global_cfg["backends"] = {}
