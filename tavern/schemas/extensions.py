@@ -388,3 +388,34 @@ def validate_timeout_tuple_or_float(value, rule_obj, path):
         check_is_timeout_val(value)
 
     return True
+
+
+def validate_verify_bool_or_str(value, rule_obj, path):
+    """Make sure the 'verify' key is either a bool or a str"""
+    # pylint: disable=unused-argument
+
+    if not isinstance(value, (bool, str)) and not is_bool_like(value):
+        raise BadSchemaError(
+            "'verify' has to be either a boolean or the path to a CA_BUNDLE file or directory with certificates of trusted CAs"
+        )
+
+    return True
+
+
+def validate_cert_tuple_or_str(value, rule_obj, path):
+    """Make sure the 'cert' key is either a str or tuple"""
+    # pylint: disable=unused-argument
+
+    err_msg = (
+        "The 'cert' key must be a single file (containing the private key and the certificate) "
+        "or as a tuple of both files"
+    )
+
+    if not isinstance(value, (str, tuple, list)):
+        raise BadSchemaError(err_msg)
+
+    if isinstance(value, (list, tuple)):
+        if len(value) != 2:
+            raise BadSchemaError(err_msg)
+
+    return True
