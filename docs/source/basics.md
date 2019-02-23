@@ -527,6 +527,7 @@ stages:
 
 test_name: Just check for one thing in a big nested dict
 
+# completely disable strict key checking for this whole test
 strict: False
 
 stages:
@@ -592,6 +593,7 @@ stages:
       url: "{host}/users/joebloggs"
       method: GET
     response:
+      # Disable all strict key checking just for this stage
       strict: False
       status_code: 200
       json:
