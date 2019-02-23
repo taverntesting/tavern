@@ -197,12 +197,63 @@ stages:
         content-type: application/json
 ```
 
-## Running against an unverified server
+## Controlling secure access
+
+### Running against an unverified server
 
 If you're testing against a server which has SSL certificates that fail
 validation (for example, testing against a local development server with
 self-signed certificates), the `verify` keyword can be used in the `request`
 stage to disable certificate checking for that request.
+
+### Using self signed certificates
+
+In case you need to use a self-signed certificate to connect to a server,
+you can use the `cert` key in the request to control which certificates
+will be used by Requests.
+
+If you just want to pass your client certificate with a request, pass
+the path to it using the `cert` key:
+
+```yaml
+---
+
+test_name: Access an API which requires a client certificate
+
+stages:
+  - name: Get user info
+    request:
+      url: "{host}/userinfo"
+      method: GET
+      cert: "/path/to/certificate"
+      # Or use a format variable:
+      # cert: "{cert_path}"
+    response:
+      ...
+```
+
+If you need to pass a SSL key file as well, pass a list of length two with the first
+element being the certificate and the second being the path to the key:
+
+```yaml
+---
+
+test_name: Access an API which requires a client certificate
+
+stages:
+  - name: Get user info
+    request:
+      url: "{host}/userinfo"
+      method: GET
+      cert:
+        - "/path/to/certificate"
+        - "/path/to/key"
+    response:
+      ...
+```
+
+See the [Requests documentation](http://docs.python-requests.org/en/master/api/#requests.request)
+for more details about this option.
 
 ## Uploading files as part of the request
 

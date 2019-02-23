@@ -1,0 +1,40 @@
+---
+
+test_name: Test cannot pass an invalid value to 'cert'
+
+_xfail: verify
+
+stages:
+  - name: Use a cert incorrectly
+    request:
+      url: "{host}/echo"
+      method: POST
+      cert: 123
+      json:
+        value: "abc"
+    response:
+      status_code: 200
+      json:
+        value: "abc"
+
+---
+
+test_name: Test cannot pass too many values to 'cert'
+
+_xfail: verify
+
+stages:
+  - name: Use a cert incorrectly
+    request:
+      url: "{host}/echo"
+      method: POST
+      cert:
+        - abc
+        - def
+        - ghi
+      json:
+        value: "abc"
+    response:
+      status_code: 200
+      json:
+        value: "abc"
