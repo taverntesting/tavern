@@ -23,7 +23,7 @@ def login():
     payload = {
         "sub": "test-user",
         "aud": SERVERNAME,
-        "exp": datetime.datetime.now() + datetime.timedelta(hours=1)
+        "exp": datetime.datetime.now() + datetime.timedelta(hours=1),
     }
 
     token = jwt.encode(payload, SECRET, algorithm="HS256").decode("utf8")
@@ -56,13 +56,14 @@ def requires_jwt(endpoint):
 
     return check_auth_call
 
+
 @app.route("/ping", methods=["GET"])
 @requires_jwt
 def ping():
     return jsonify({"data": "pong"}), 200
 
+
 @app.route("/hello/<name>", methods=["GET"])
 @requires_jwt
 def hello(name):
     return jsonify({"data": "Hello, {}".format(name)}), 200
-

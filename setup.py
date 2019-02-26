@@ -34,7 +34,7 @@ class DeployPypi(Command):
     ]
 
     def initialize_options(self):
-        self.repository = None
+        self.repository = None  # pylint: disable=attribute-defined-outside-init
 
     def finalize_options(self):
         if not self.repository:
@@ -74,5 +74,7 @@ setup(
     tests_require=TESTS_REQUIRE,
     extras_require={
         "tests": TESTS_REQUIRE
-    }
+    },
+
+    zip_safe=True
 )

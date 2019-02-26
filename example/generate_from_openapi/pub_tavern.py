@@ -16,7 +16,9 @@ def generate_tavern_yaml(json_path):
 def output_yaml(links, prefix=""):
     test_dict = {}
     for test_name in links.keys():
-        default_name = get_name(prefix, test_name, links[test_name].action, links[test_name].url)
+        default_name = get_name(
+            prefix, test_name, links[test_name].action, links[test_name].url
+        )
         test_dict["test_name"] = default_name
 
         request = {
@@ -35,7 +37,7 @@ def output_yaml(links, prefix=""):
         inner_dict = {"name": default_name, "request": request, "response": response}
 
         test_dict["stages"] = [inner_dict]
-        #print(test_dict)
+        # print(test_dict)
         print(yaml.dump(test_dict, explicit_start=True, default_flow_style=False))
 
 

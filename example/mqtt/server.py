@@ -32,11 +32,11 @@ def get_client():
 
 
 def get_db():
-     return sqlite3.connect(DATABASE)
+    return sqlite3.connect(DATABASE)
 
 
 def get_cached_db():
-    db = getattr(g, '_database', None)
+    db = getattr(g, "_database", None)
     if db is None:
         db = g._database = get_db()
 
@@ -82,7 +82,7 @@ loggers:
 
 @app.teardown_appcontext
 def close_connection(exception):
-    db = getattr(g, '_database', None)
+    db = getattr(g, "_database", None)
     if db is not None:
         db.close()
 
@@ -103,11 +103,7 @@ def send_message():
 
     try:
         with get_client() as mqtt_client:
-            mqtt_client.publish(
-                topic,
-                r["payload"],
-                r.get("qos", 0)
-            )
+            mqtt_client.publish(topic, r["payload"], r.get("qos", 0))
     except Exception:
         return jsonify({"error": topic}), 500
 

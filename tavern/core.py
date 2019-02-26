@@ -16,7 +16,6 @@ from .util.retry import retry
 
 from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -44,6 +43,58 @@ def _resolve_test_stages(test_spec, available_stages):
         test_stages.append(stage)
 
     return test_stages
+
+
+def _get_included_stages(tavern_box, test_block_config, test_spec, available_stages):
+    """
+    Get any stages which were included via config files which will be available
+    for use in this test
+
+    Args:
+        available_stages (list): List of stages which already exist
+        tavern_box (box.Box): Available parameters
+        test_block_config (dict): Current test config dictionary
+        test_spec (dict): Specification for current test
+
+    Returns:
+        list: Fully resolved
+    """
+
+    def stage_ids(s):
+        return [i["id"] for i in s]
+
+    if test_spec.get("includes"):
+        # Need to do this separately here so there is no confusion between global and included stages
+        for included in test_spec["includes"]:
+            for stage in included.get("stages", {}):
+                if stage["id"] in stage_ids(available_stages):
+                    msg = "Stage id '{}' defined in stage-included test which was already defined in global configuration - this will be an error in future!".format(
+                        stage["id"]
+                    )
+                    logger.warning(msg)
+                    warnings.warn(msg, FutureWarning)
+
+        included_stages = []
+
+        for included in test_spec["includes"]:
+            if "variables" in included:
+                formatted_include = format_keys(
+                    included["variables"], {"tavern": tavern_box}
+                )
+                test_block_config["variables"].update(formatted_include)
+
+            for stage in included.get("stages", []):
+                if stage["id"] in stage_ids(included_stages):
+                    raise exceptions.DuplicateStageDefinitionError(
+                        "Stage with specified id already defined: {}".format(
+                            stage["id"]
+                        )
+                    )
+                included_stages.append(stage)
+    else:
+        included_stages = []
+
+    return included_stages
 
 
 def run_test(in_file, test_spec, global_cfg):
@@ -80,43 +131,13 @@ def run_test(in_file, test_spec, global_cfg):
         logger.warning("Empty test block in %s", in_file)
         return
 
-    def stage_ids(s):
-        return [i["id"] for i in s]
-
+    # Get included stages and resolve any into the test spec dictionary
     available_stages = test_block_config.get("stages", [])
-
-    if test_spec.get("includes"):
-        # Need to do this separately here so there is no confusion between global and included stages
-        for included in test_spec["includes"]:
-            for stage in included.get("stages", {}):
-                if stage["id"] in stage_ids(available_stages):
-                    msg = "Stage id '{}' defined in stage-included test which was already defined in global configuration - this will be an error in future!".format(
-                        stage["id"]
-                    )
-                    logger.warning(msg)
-                    warnings.warn(msg, FutureWarning)
-
-        included_stages = []
-
-        for included in test_spec["includes"]:
-            if "variables" in included:
-                formatted_include = format_keys(
-                    included["variables"], {"tavern": tavern_box}
-                )
-                test_block_config["variables"].update(formatted_include)
-
-            for stage in included.get("stages", []):
-                if stage["id"] in stage_ids(included_stages):
-                    raise exceptions.DuplicateStageDefinitionError(
-                        "Stage with specified id already defined: {}".format(
-                            stage["id"]
-                        )
-                    )
-                included_stages.append(stage)
-    else:
-        included_stages = []
-
-    available_stages = {s["id"]: s for s in available_stages + included_stages}
+    included_stages = _get_included_stages(
+        tavern_box, test_block_config, test_spec, available_stages
+    )
+    all_stages = {s["id"]: s for s in available_stages + included_stages}
+    test_spec["stages"] = _resolve_test_stages(test_spec, all_stages)
 
     test_block_config["variables"]["tavern"] = tavern_box
 
@@ -128,7 +149,6 @@ def run_test(in_file, test_spec, global_cfg):
     logger.info("Running test : %s", test_block_name)
 
     with ExitStack() as stack:
-        test_spec["stages"] = _resolve_test_stages(test_spec, available_stages)
         sessions = get_extra_sessions(test_spec, test_block_config)
 
         for name, session in sessions.items():

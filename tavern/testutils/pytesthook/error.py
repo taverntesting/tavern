@@ -115,7 +115,7 @@ class ReprdError(object):
             else:
                 tw.line(line, white=True)
 
-    def _print_formatted_stage(self, tw, stage):  # pylint: disable=no-self-use
+    def _print_formatted_stage(self, tw, stage):
         """Print the 'formatted' stage that Tavern will actually use to send the
         request/process the response
 

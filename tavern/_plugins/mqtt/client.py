@@ -9,7 +9,7 @@ try:
 except ImportError:
     from Queue import Queue, Full, Empty  # type: ignore
 
-    LoadError = FileNotFoundError  # pylint: disable=undefined-variable
+    LoadError = FileNotFoundError  # noqa
 
 from future.utils import raise_from
 import paho.mqtt.client as paho
