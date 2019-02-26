@@ -407,7 +407,7 @@ def validate_cert_tuple_or_str(value, rule_obj, path):
     # pylint: disable=unused-argument
 
     err_msg = (
-        "The 'cert' key must be a single file (containing the private key and the certificate) "
+        "The 'cert' key must be the path to a single file (containing the private key and the certificate) "
         "or as a tuple of both files"
     )
 
@@ -416,6 +416,8 @@ def validate_cert_tuple_or_str(value, rule_obj, path):
 
     if isinstance(value, (list, tuple)):
         if len(value) != 2:
+            raise BadSchemaError(err_msg)
+        elif not all(isinstance(i, str) for i in value):
             raise BadSchemaError(err_msg)
 
     return True

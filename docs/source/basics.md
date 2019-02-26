@@ -403,8 +403,7 @@ the same request in each test to re-fetch the data.
 
 **NOTE**: At the time of writing, Tavern will by default not perform 'strict'
 key checking on the top level keys in the response, but will perform it on all
-keys below that. This 'legacy' behaviour will be changed in a future version, see
-below for details.
+keys below that. This 'legacy' behaviour will be changed in a future version, see below for details.
 
 'Strict' key checking can be enabled or disabled globally, per test, or per
 stage. 'Strict' key checking refers to whether extra keys in the response should
@@ -456,7 +455,17 @@ compatability.
 The strictness setting does not only apply to the body however, it can also be
 used on the headers and redirect query parameters.
 
-This setting can be controlled in 3 different ways.
+This setting can be controlled in 3 different ways, the order of priority being:
+
+1. In the test/stage itself
+2. Passed on the command line
+3. Read from pytest config
+
+This means that using the command line option will _not_ override any settings
+for specific tests.
+
+**NOTE**: 'strict' key checking can currently only be _enabled_ via the command line
+and the pytest config file, not _disabled_.
 
 ### Command line
 
@@ -469,11 +478,19 @@ only want to check that it returns the data you want and not care about any
 extra metadata sent with the response. This can be re-enabled per test or per
 stage if wanted.
 
-Example:
-
 ```shell
 # Enable strict checking for body and headers only
 py.test --tavern-strict body headers -- my_test_folder/
+```
+
+### In the Pytest config file
+
+This behaves identically to the command line option, but will be read from
+whichever configuration file Pytest is using.
+
+```editorconfig
+[pytest]
+tavern-strict=body headers
 ```
 
 ### Per test
@@ -506,6 +523,25 @@ stages:
         x-my-custom-header: chocolate
       body:
         id: 1
+---
+
+test_name: Just check for one thing in a big nested dict
+
+# completely disable strict key checking for this whole test
+strict: False
+
+stages:
+  - name: Try to get user
+    request:
+      url: "{host}/users/joebloggs"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        q:
+          x:
+            z:
+              a: 1
 ---
 
 test_name: Make sure the headers and body match what I expect exactly
@@ -557,6 +593,7 @@ stages:
       url: "{host}/users/joebloggs"
       method: GET
     response:
+      # Disable all strict key checking just for this stage
       strict: False
       status_code: 200
       json:
