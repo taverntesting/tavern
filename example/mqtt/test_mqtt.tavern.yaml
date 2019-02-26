@@ -29,6 +29,33 @@ stages:
 
 ---
 
+test_name: Test mqtt with paramtrized port
+
+includes:
+  - !include common.yaml
+
+paho-mqtt:
+  connect:
+    host: localhost
+    port: !int "{p_port}"
+    timeout: 3
+  client:
+    transport: websockets
+    client_id: tavern-tester
+
+stages:
+  - name: Echo text
+    mqtt_publish:
+      topic: /device/123/echo
+      payload: hello world
+    mqtt_response:
+      topic: /device/123/echo/response
+      payload: hello world
+      timeout: 5
+      qos: 1
+
+---
+
 test_name: Test mqtt message echo json
 
 includes:
