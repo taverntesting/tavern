@@ -14,7 +14,7 @@ def double_number():
         return jsonify({"error": "no number passed"}), 400
 
     try:
-        double = int(number)*2
+        double = int(number) * 2
     except ValueError:
         return jsonify({"error": "a number was not passed"}), 400
 

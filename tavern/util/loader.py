@@ -1,22 +1,21 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
 
-from distutils.util import strtobool
 import logging
-import uuid
 import os.path
+import uuid
+from distutils.util import strtobool
+
 import pytest
 from future.utils import raise_from
-
 import yaml
-from yaml.reader import Reader
-from yaml.scanner import Scanner
-from yaml.parser import Parser
 from yaml.composer import Composer
 from yaml.constructor import SafeConstructor
+from yaml.parser import Parser
+from yaml.reader import Reader
 from yaml.resolver import Resolver
+from yaml.scanner import Scanner
 
 from tavern.util.exceptions import BadSchemaError
-
 
 logger = logging.getLogger(__name__)
 
@@ -108,8 +107,6 @@ class IncludeLoader(
 
     def __init__(self, stream):
         """Initialise Loader."""
-
-        # pylint: disable=non-parent-init-called
 
         try:
             self._root = os.path.split(stream.name)[0]
@@ -293,7 +290,6 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
 
     @classmethod
     def from_yaml(cls, loader, node):
-        # pylint: disable=unused-argument
         try:
             val = float(node.value)
         except (ValueError, TypeError) as e:

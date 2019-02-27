@@ -223,7 +223,7 @@ class TestIncludeStages:
             with patch(
                 "tavern._plugins.rest.request.requests.Session.request",
                 return_value=mock_response,
-            ) as pmock:
+            ):
                 run_test("heif", newtest, includes)
 
 

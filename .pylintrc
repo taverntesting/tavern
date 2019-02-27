@@ -1,6 +1,5 @@
 [MASTER]
-disable=missing-docstring,bad-continuation,fixme,invalid-name,line-too-long,too-few-public-methods,no-else-return,too-many-branches
-
+disable=missing-docstring,bad-continuation,fixme,invalid-name,line-too-long,too-few-public-methods,no-else-return,too-many-branches,locally-disabled,useless-object-inheritance
 ignore=tests
 
 [REPORTS]
