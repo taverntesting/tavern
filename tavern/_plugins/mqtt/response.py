@@ -83,7 +83,11 @@ class MQTTResponse(BaseResponse):
 
             msg.payload = msg.payload.decode("utf8")
 
-            self.test_block_config["tavern_internal"]["pytest_hook_caller"].pytest_tavern_log_response(response=get_paho_mqtt_response_information(msg))
+            self.test_block_config["tavern_internal"][
+                "pytest_hook_caller"
+            ].pytest_tavern_log_response(
+                response=get_paho_mqtt_response_information(msg)
+            )
 
             if json_payload:
                 try:

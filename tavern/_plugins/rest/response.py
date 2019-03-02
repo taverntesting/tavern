@@ -86,7 +86,9 @@ class RestResponse(BaseResponse):
         log_dict_block(response_info["headers"], "Headers")
         log_dict_block(response_info["body"], "Body")
         if response_info.get("redirect_query_location"):
-            log_dict_block(response_info["redirect_query_location"], "Redirect location")
+            log_dict_block(
+                response_info["redirect_query_location"], "Redirect location"
+            )
 
     def _get_redirect_query_params_with_err_check(self, response):
         """Call get_redirect_query_params, but also trigger an error if we
@@ -152,7 +154,11 @@ class RestResponse(BaseResponse):
         """
         self._verbose_log_response(response)
 
-        self.test_block_config["tavern_internal"]["pytest_hook_caller"].pytest_tavern_log_response(response=get_requests_response_information(response))
+        self.test_block_config["tavern_internal"][
+            "pytest_hook_caller"
+        ].pytest_tavern_log_response(
+            response=get_requests_response_information(response)
+        )
 
         self.response = response
         self.status_code = response.status_code

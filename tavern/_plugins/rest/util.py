@@ -15,7 +15,7 @@ def get_redirect_query_params(response):
     else:
         parsed = urlparse(redirect_url)
         qp = parsed.query
-        redirect_query_params = {i:j[0] for i, j in parse_qs(qp).items()}
+        redirect_query_params = {i: j[0] for i, j in parse_qs(qp).items()}
 
     return redirect_query_params
 

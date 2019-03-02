@@ -139,6 +139,8 @@ class YamlItem(pytest.Item):
 
         load_plugins(self.global_cfg)
 
+        self.global_cfg["tavern_internal"] = {"pytest_hook_caller": self.config.hook}
+
         # INTERNAL
         # NOTE - now that we can 'mark' tests, we could use pytest.mark.xfail
         # instead. This doesn't differentiate between an error in verification
