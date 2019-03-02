@@ -91,8 +91,8 @@ class TestResponse(object):
         fake_message_bad = FakeMessage({"topic": "/a/b/c", "payload": "goodbye"})
 
         verifier = self._get_fake_verifier(
-            expected, [fake_message_bad, fake_message_good]
-        , includes)
+            expected, [fake_message_bad, fake_message_good], includes
+        )
 
         verifier.verify(expected)
 
