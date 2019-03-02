@@ -137,6 +137,8 @@ def run_test(in_file, test_spec, global_cfg):
     included_stages = _get_included_stages(
         tavern_box, test_block_config, test_spec, available_stages
     )
+    logger.debug("available in test: %s", available_stages)
+    logger.debug("available in includes: %s", included_stages)
     all_stages = {s["id"]: s for s in available_stages + included_stages}
     test_spec["stages"] = _resolve_test_stages(test_spec, all_stages)
 
@@ -217,7 +219,7 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     """Run one stage from the test
 
     Args:
-        sessions (dict): Dictionary of relevant 'session' objects used for this test
+        sessions (dict): mapping of relevant 'session' objects used for this test
         stage (dict): specification of stage to be run
         tavern_box (box.Box): Box object containing format variables to be used
             in test
