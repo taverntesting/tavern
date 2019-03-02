@@ -271,6 +271,26 @@ stages:
 
 ---
 
+test_name: Test can handle anything token
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - name: Test checking for lights status with anyint
+    mqtt_publish:
+      topic: /device/123/status
+    mqtt_response:
+      topic: /device/123/status/response
+      json:
+        lights: !anything
+      timeout: 3
+      qos: 1
+
+---
+
 test_name: Test type token on non-json payload
 
 includes:
