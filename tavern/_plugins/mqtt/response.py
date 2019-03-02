@@ -19,8 +19,6 @@ logger = logging.getLogger(__name__)
 
 class MQTTResponse(BaseResponse):
     def __init__(self, client, name, expected, test_block_config):
-        # pylint: disable=unused-argument
-
         super(MQTTResponse, self).__init__()
 
         self.name = name
