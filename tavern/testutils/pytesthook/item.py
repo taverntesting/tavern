@@ -1,4 +1,6 @@
 import logging
+import sys
+import warnings
 
 import attr
 import pytest
@@ -29,12 +31,22 @@ class YamlItem(pytest.Item):
         spec (dict): The whole dictionary of the test
     """
 
+    py2_warned = False
+
     def __init__(self, name, parent, spec, path):
         super(YamlItem, self).__init__(name, parent)
         self.path = path
         self.spec = spec
 
         self.global_cfg = {}
+
+        if sys.version_info < (3, 0, 0):
+            if not YamlItem.py2_warned:
+                warnings.warn(
+                    "Tavern will drop support for Python 2 in a future release, please switch to using Python 3",
+                    FutureWarning,
+                )
+                YamlItem.py2_warned = True
 
     def initialise_fixture_attrs(self):
         # pylint: disable=protected-access,attribute-defined-outside-init

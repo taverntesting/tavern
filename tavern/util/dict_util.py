@@ -1,7 +1,11 @@
 import warnings
 import logging
 from builtins import str as ustr
-from collections.abc import Mapping
+
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
 
 from future.utils import raise_from
 from box import Box
