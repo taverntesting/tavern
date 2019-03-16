@@ -1,7 +1,8 @@
-import json
-import traceback
-import logging
 import copy
+import json
+import logging
+import traceback
+
 
 try:
     from urllib.parse import urlparse, parse_qs
@@ -13,6 +14,7 @@ from requests.status_codes import _codes
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util.dict_util import recurse_access_key, deep_dict_merge
 from tavern.util.exceptions import TestFailError
+from tavern.util.jmespath_util import check_jmespath_match
 from tavern.response.base import BaseResponse, indent_err_text
 
 logger = logging.getLogger(__name__)
@@ -177,6 +179,8 @@ class RestResponse(BaseResponse):
         # Get any keys to save
         saved = {}
 
+        saved.update(self._validate_jmespath(body))
+
         redirect_query_params = self._get_redirect_query_params(response)
 
         saved.update(self._save_value("body", body))
@@ -301,3 +305,25 @@ class RestResponse(BaseResponse):
             logger.debug("Saved %s for '%s' from response", saved, key)
 
         return saved
+
+    def _validate_jmespath(self, body):
+        """
+        Valid all available jmespath queries for this response
+
+        Args:
+            body (dict, list): parsed body from response
+
+        Returns:
+            dict: values to save for future requests
+        """
+        saved_values = {}
+        for path_block in self.expected.get("jmespath", []):
+            value = check_jmespath_match(
+                body, path_block["query"], path_block.get("expected", None)
+            )
+
+            save_as = path_block.get("save_as")
+            if save_as:
+                saved_values[save_as] = value
+
+        return saved_values
