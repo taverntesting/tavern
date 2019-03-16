@@ -52,7 +52,8 @@ class ReprdError(object):
             """
             for line in lines:
                 for match in re.finditer(r"(.*?:\s+!raw)?(?(1).*|.*?(?P<format_var>(?<!{){[^{]*?}))", line):
-                    yield match.group("format_var")
+                    if match.group("format_var") is not None:
+                        yield match.group("format_var")
 
         format_variables = list(read_formatted_vars(code_lines))
 
