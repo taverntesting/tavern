@@ -176,7 +176,7 @@ class ReprdError(object):
             """Get lines between start and end mark"""
             with io.open(filename, "r", encoding="utf8") as testfile:
                 for idx, line in enumerate(testfile.readlines()):
-                    if first_line < idx < last_line:
+                    if first_line < idx < last_line and not line.lstrip().startswith("#"):
                         yield line.rstrip()
 
         code_lines = list(read_relevant_lines(self.item.spec.start_mark.name))
