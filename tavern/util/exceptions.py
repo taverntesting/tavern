@@ -91,3 +91,7 @@ class InvalidStageReferenceError(TavernException):
 
 class DuplicateStageDefinitionError(TavernException):
     """Stage with the specified ID previously defined"""
+
+
+class InvalidSettingsError(TavernException):
+    """Configuration was passed incorrectly in some fashion"""

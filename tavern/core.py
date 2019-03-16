@@ -9,6 +9,7 @@ import pytest
 from contextlib2 import ExitStack
 from box import Box
 
+from tavern.schemas.files import wrapfile
 from .util import exceptions
 from .util.dict_util import format_keys
 from .util.delay import delay
@@ -216,7 +217,7 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     """Run one stage from the test
 
     Args:
-        sessions (list): List of relevant 'session' objects used for this test
+        sessions (dict): List of relevant 'session' objects used for this test
         stage (dict): specification of stage to be run
         tavern_box (box.Box): Box object containing format variables to be used
             in test
@@ -278,13 +279,8 @@ def _run_pytest(
             FutureWarning,
         )
 
-    if tavern_global_cfg:
-        global_filename = tavern_global_cfg
-
     pytest_args = pytest_args or []
     pytest_args += [in_file]
-    if tavern_global_cfg:
-        pytest_args += ["--tavern-global-cfg", global_filename]
 
     if tavern_mqtt_backend:
         pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
@@ -293,7 +289,28 @@ def _run_pytest(
     if tavern_strict:
         pytest_args += ["--tavern-strict", tavern_strict]
 
-    return pytest.main(args=pytest_args)
+    with ExitStack() as stack:
+        if tavern_global_cfg:
+            if isinstance(tavern_global_cfg, str):
+                if not os.path.exists(tavern_global_cfg):
+                    raise exceptions.InvalidSettingsError(
+                        "global config file '{}' does not exist".format(
+                            tavern_global_cfg
+                        )
+                    )
+                global_filename = tavern_global_cfg
+            elif isinstance(tavern_global_cfg, dict):
+                global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
+            else:
+                raise exceptions.InvalidSettingsError(
+                    "Invalid format for global settings - must be dict or path to settings file, was {}".format(
+                        type(tavern_global_cfg)
+                    )
+                )
+
+            pytest_args += ["--tavern-global-cfg", global_filename]
+
+        return pytest.main(args=pytest_args)
 
 
 def run(in_file, tavern_global_cfg=None, **kwargs):
