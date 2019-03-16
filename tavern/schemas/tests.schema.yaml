@@ -203,6 +203,23 @@ schema;stage:
         re;(headers|redirect_query_params):
           include: any_map_with_ext_function
 
+        jmespath:
+          type: seq
+          required: false
+          sequence:
+          - type: map
+            required: true
+            mapping:
+              query:
+                type: str
+                required: true
+              expected:
+                type: any
+                required: false
+              save_as:
+                type: str
+                required: false
+
         body:
           include: any_map_or_list_with_ext_function
 

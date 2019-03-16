@@ -60,6 +60,24 @@ def get_fake_dictionary():
     return jsonify(fake), 200
 
 
+@app.route("/fake_nested_objects", methods=["GET"])
+def get_fake_nested():
+    fake = {
+        "a_list": [
+            "first",
+            "second",
+            {
+                "nested": "value",
+                "another_list": [
+                    1
+                ]
+            }
+        ]
+    }
+
+    return jsonify(fake), 200
+
+
 @app.route("/fake_list", methods=["GET"])
 def list_response():
     list_response = [

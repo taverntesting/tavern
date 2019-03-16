@@ -187,26 +187,28 @@ stages:
 
   - *send_saved_value
 
----
-
-test_name: Test querying object and saving with a typetoken
-
-includes:
-  - !include common.yaml
-
-stages:
-  - name: Query from complex object
-    request:
-      url: "{host}/fake_dictionary"
-      method: GET
-    response:
-      status_code: 200
-      jmespath:
-        - query: "top.Thing"
-          expected: !anystr
-          save_as: jmes_saved_value
-
-  - *send_saved_value
+# NOTE: Doing expected: !anystr should probably just not be allowed,
+# as it is implied by _not_ passing anything
+#---
+#
+#test_name: Test querying object and saving with a typetoken
+#
+#includes:
+#  - !include common.yaml
+#
+#stages:
+#  - name: Query from complex object
+#    request:
+#      url: "{host}/fake_dictionary"
+#      method: GET
+#    response:
+#      status_code: 200
+#      jmespath:
+#        - query: "top.Thing"
+#          expected: !anystr
+#          save_as: jmes_saved_value
+#
+#  - *send_saved_value
 
 ---
 
@@ -218,11 +220,15 @@ includes:
 stages:
   - name: Query from complex object
     request:
-      url: "{host}/fake_dictionary"
+      url: "{host}/fake_nested_objects"
       method: GET
     response:
       status_code: 200
-      # NOTE: no 'body'
+      # NOTE: no 'body' for this
       jmespath:
-        - query: "top.key"
-          expected: "val"
+        - query: "a_list[2].nested"
+          expected: "value"
+        - query: "a_list[2].another_list[0]"
+          expected: 1
+        - query: "a_list[1]"
+          expected: "second"

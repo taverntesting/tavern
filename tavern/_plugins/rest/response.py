@@ -3,6 +3,7 @@ import json
 import logging
 import traceback
 
+from tavern.util import exceptions
 
 try:
     from urllib.parse import urlparse, parse_qs
@@ -318,9 +319,13 @@ class RestResponse(BaseResponse):
         """
         saved_values = {}
         for path_block in self.expected.get("jmespath", []):
-            value = check_jmespath_match(
-                body, path_block["query"], path_block.get("expected", None)
-            )
+            try:
+                value = check_jmespath_match(
+                    body, path_block["query"], path_block.get("expected", None)
+                )
+            except exceptions.JMESError as e:
+                self._adderr("Error matching JMES in response", e=e)
+                continue
 
             save_as = path_block.get("save_as")
             if save_as:
