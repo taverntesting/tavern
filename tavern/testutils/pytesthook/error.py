@@ -51,7 +51,9 @@ class ReprdError(object):
             """Go over all lines and try to find format variables
             """
             for line in lines:
-                for match in re.finditer(r"(.*?:\s+!raw)?(?(1).*|.*?(?P<format_var>(?<!{){[^{]*?}))", line):
+                for match in re.finditer(
+                    r"(.*?:\s+!raw)?(?(1).*|.*?(?P<format_var>(?<!{){[^{]*?}))", line
+                ):
                     if match.group("format_var") is not None:
                         yield match.group("format_var")
 
