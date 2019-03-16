@@ -3,7 +3,6 @@ import json
 import logging
 import traceback
 
-from tavern.util import exceptions
 
 try:
     from urllib.parse import urlparse, parse_qs
@@ -15,6 +14,7 @@ from requests.status_codes import _codes
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util.dict_util import recurse_access_key, deep_dict_merge
 from tavern.util.exceptions import TestFailError
+from tavern.util import exceptions
 from tavern.util.jmespath_util import check_jmespath_match
 from tavern.response.base import BaseResponse, indent_err_text
 
