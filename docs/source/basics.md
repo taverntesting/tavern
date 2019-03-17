@@ -126,7 +126,8 @@ response:
 
 The query should be defined as a JMES query (see http://jmespath.org/
 for more information). In the above example, this essentially performs
-the operation `json["thing"]["nested"][0]`
+the operation `json["thing"]["nested"][0]`. This can be used to perform
+powerful queries 
 
 It is also possible to save data using function calls, explained below.
 

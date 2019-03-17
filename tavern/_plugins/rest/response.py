@@ -293,8 +293,10 @@ class RestResponse(BaseResponse):
             for save_as, joined_key in expected.items():
                 try:
                     saved[save_as] = recurse_access_key(to_check, joined_key)
-                except (IndexError, KeyError, TypeError) as e:
-                    # TODO: In 1.0, this will raise JMESError instead
+                except (
+                    exceptions.InvalidQueryResultTypeError,
+                    exceptions.KeySearchNotFoundError,
+                ) as e:
                     self._adderr(
                         "Wanted to save '%s' from '%s', but it did not exist in the response",
                         joined_key,

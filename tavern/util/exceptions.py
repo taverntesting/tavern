@@ -91,3 +91,11 @@ class InvalidStageReferenceError(TavernException):
 
 class DuplicateStageDefinitionError(TavernException):
     """Stage with the specified ID previously defined"""
+
+
+class KeySearchNotFoundError(TavernException):
+    """Trying to search for a key in the response but was not found"""
+
+
+class InvalidQueryResultTypeError(TavernException):
+    """Searched for a value in data but it was not a 'simple' type"""

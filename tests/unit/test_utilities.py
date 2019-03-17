@@ -244,8 +244,29 @@ class TestRecurseAccess:
         (("a.0", "a[0]", "b"), ("a.1.c", "a[1].c", "d")),
     )
     def test_search_old_style(self, nested_data, old_query, new_query, expected_data):
+        """Make sure old style searches perform the same as jmes queries"""
         with pytest.warns(FutureWarning):
             old_val = recurse_access_key(nested_data, old_query)
         new_val = recurse_access_key(nested_data, new_query)
 
         assert old_val == new_val == expected_data
+
+    @pytest.mark.parametrize("old_query, new_query", (("a", "a"), ("a.1", "a[1]")))
+    def test_invalid_searches(self, nested_data, old_query, new_query):
+        """Make sure a search that returns a value that is not a simple value raises an error"""
+        with pytest.raises(exceptions.InvalidQueryResultTypeError):
+            recurse_access_key(nested_data, old_query)
+
+        with pytest.raises(exceptions.InvalidQueryResultTypeError):
+            recurse_access_key(nested_data, new_query)
+
+    @pytest.mark.parametrize(
+        "old_query, new_query", (("f", "f"), ("a.3", "a[3]"), ("a.1.x", "a[1].x"))
+    )
+    def test_missing_search(self, nested_data, old_query, new_query):
+        """Searching for data not in given data raises an exception"""
+        with pytest.raises(exceptions.KeySearchNotFoundError):
+            recurse_access_key(nested_data, old_query)
+
+        with pytest.raises(exceptions.KeySearchNotFoundError):
+            recurse_access_key(nested_data, new_query)

@@ -1,4 +1,5 @@
 import collections
+import copy
 import logging
 import warnings
 from builtins import str as ustr
@@ -81,13 +82,32 @@ def recurse_access_key(data, query):
     # The value might actually be None, in which case we will search twice for no reason,
     # but this shouldn't cause any issues
     if from_jmespath is None:
-        from_recurse = _recurse_access_key(data, query.split(".").copy())
+        try:
+            from_recurse = _recurse_access_key(data, query.split("."))
+        except (IndexError, KeyError) as e:
+            raise_from(
+                exceptions.KeySearchNotFoundError(
+                    "Error searching for key in given data"
+                ),
+                e,
+            )
+
+        # Only warn once
         if not warned:
-            # Only warn once
+            # If we found a key using 'old' style searching, which will be deprecated
             warnings.warn(msg, FutureWarning)
-        return from_recurse
+
+        found = from_recurse
     else:
-        return from_jmespath
+        found = from_jmespath
+
+    if not isinstance(found, (float, int, str)):
+        raise exceptions.InvalidQueryResultTypeError(
+            "Key '%s' was found in given data, but it was not a 'simple' type (float, int, string)",
+            query,
+        )
+
+    return found
 
 
 def _recurse_access_key(current_val, keys):
