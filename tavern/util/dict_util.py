@@ -95,13 +95,17 @@ def recurse_access_key(data, query):
     else:
         found = from_jmespath
 
+    check_is_simple_value(found, query)
+
+    return found
+
+
+def check_is_simple_value(found, query):
     if not isinstance(found, (float, int, str)):
         raise exceptions.InvalidQueryResultTypeError(
             "Key '%s' was found in given data, but it was not a 'simple' type (float, int, string)",
             query,
         )
-
-    return found
 
 
 def _recurse_access_key(current_val, keys):

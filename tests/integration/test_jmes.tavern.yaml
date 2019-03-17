@@ -251,3 +251,23 @@ stages:
         - query: "[?@ == `3`]"
         - query: "[?@ == `9`]"
           expected: []
+
+---
+
+test_name: Test querying list
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Query
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      jmespath:
+        - query: "[?@ == `3`]"
+          save_as: Blauerhg
+        - query: "[?@ == `9`]"
+          expected: []

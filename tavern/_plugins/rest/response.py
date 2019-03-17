@@ -1,8 +1,6 @@
-import copy
 import json
 import logging
 import traceback
-
 
 try:
     from urllib.parse import urlparse, parse_qs
@@ -12,7 +10,11 @@ except ImportError:
 from requests.status_codes import _codes
 
 from tavern.schemas.extensions import get_wrapped_response_function
-from tavern.util.dict_util import recurse_access_key, deep_dict_merge
+from tavern.util.dict_util import (
+    recurse_access_key,
+    deep_dict_merge,
+    check_is_simple_value,
+)
 from tavern.util.exceptions import TestFailError
 from tavern.util import exceptions
 from tavern.util.jmespath_util import check_jmespath_match
@@ -331,6 +333,10 @@ class RestResponse(BaseResponse):
 
             save_as = path_block.get("save_as")
             if save_as:
+                try:
+                    check_is_simple_value(save_as, path_block["query"])
+                except exceptions.InvalidQueryResultTypeError as e:
+                    self._adderr("Invalid query type to save", e=e)
                 saved_values[save_as] = value
 
         return saved_values

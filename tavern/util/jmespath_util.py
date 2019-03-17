@@ -24,7 +24,7 @@ def check_jmespath_match(parsed_response, query, expected=None):
     if actual is None:
         raise exceptions.JMESError(msg)
 
-    if expected:
+    if expected is not None:
         # Reuse dict util helper as it should behave the same
         check_keys_match_recursive(expected, actual, [], True)
     elif not actual and not (actual == expected):
