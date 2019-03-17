@@ -4,8 +4,13 @@ from abc import abstractmethod
 import warnings
 
 from tavern.util import exceptions
+from tavern.util.jmespath_util import check_jmespath_match
 from tavern.util.python_2_util import indent
-from tavern.util.dict_util import format_keys, check_keys_match_recursive
+from tavern.util.dict_util import (
+    format_keys,
+    check_keys_match_recursive,
+    check_is_simple_value,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +28,8 @@ class BaseResponse(object):
 
         # None by default?
         self.test_block_config = {"variables": {}}
+
+        self.expected = {}
 
     def _str_errors(self):
         return "- " + "\n- ".join(self.errors)
@@ -127,3 +134,39 @@ class BaseResponse(object):
                 msg = "Checking keys worked using 'legacy' comparison, which will not match dictionary keys at the top level of the response. This behaviour will be changed in a future version"
                 warnings.warn(msg, FutureWarning)
                 logger.warning(msg, exc_info=True)
+
+    def _validate_jmespath(self, body):
+        """
+        Valid all available jmespath queries for this response
+
+        Args:
+            body (dict, list): parsed body from response
+
+        Returns:
+            dict: values to save for future requests
+        """
+        saved_values = {}
+        for path_block in self.expected.get("jmespath", []):
+            try:
+                value = check_jmespath_match(
+                    body, path_block["query"], path_block.get("expected", None)
+                )
+            except exceptions.JMESError as e:
+                self._adderr("Error matching JMES in response", e=e)
+                continue
+
+            save_as = path_block.get("save_as")
+            if save_as:
+                try:
+                    check_is_simple_value(value, path_block["query"])
+                except exceptions.InvalidQueryResultTypeError as e:
+                    self._adderr(
+                        "Invalid query result type to save (was {})".format(
+                            type(value)
+                        ),
+                        e=e,
+                    )
+                else:
+                    saved_values[save_as] = value
+
+        return saved_values
