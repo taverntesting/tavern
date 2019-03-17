@@ -43,7 +43,7 @@ class YamlItem(pytest.Item):
         if sys.version_info < (3, 0, 0):
             if not YamlItem.py2_warned:
                 warnings.warn(
-                    "Tavern will drop support for Python 2 in a future release, please switch to using Python 3",
+                    "Tavern will drop support for Python 2 in a future release, please switch to using Python 3 (see https://docs.pytest.org/en/latest/py27-py34-deprecation.html)",
                     FutureWarning,
                 )
                 YamlItem.py2_warned = True
