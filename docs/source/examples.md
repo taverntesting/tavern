@@ -242,52 +242,6 @@ stages:
 
 This example illustrates three major parts of the Tavern syntax: saving data, using that data in later requests and using validation functions.
 
-### Saving data for later requests
-
-```yaml
-response:
-  save:
-    body:
-      <variable name>: <value to assign>
-```
-
-To save a piece of data returned from an API call, use the `save` key in the response object. For each piece of data you want to save, you have to specify which part of the response you want to save by passing the key name and what you want to refer to the variable as in later tests. You can save data from the `body`, `headers`.
-
-This example assigns the value of `body.token` to the variable `test_login_token` and the redirect location to `next_redirect_location`.
-
-```yaml
-save:
-  body:
-    test_login_token: token
-  headers:
-    next_redirect_location: location
-```
-
-### External functions
-
-Python functions can be called inside tests to perform operations on data which
-is more advanced than can be expressed in YAML. These are of the form:
-
-```yaml
-$ext:
-  function: <path to module>:<name of function>
-  extra_kwargs:
-    <key>: <value>
-    <key>:
-      <nested key>: <value>
-      <nested key>: <value>
-```
-
-To use a python function as a validation function, add it to the response body,
-headers, or redirect query parameters block inside a `$ext` key. You must
-specify the path to the module containing the function (for example, all
-built-in validation functions are located at `tavern.testutils.helpers`) and the
-name of the function in the `function` key.
-
-The first argument of every validation function is the response, and further
-arguments can be passed in by defining them in `extra_args` and `extra_kwargs`.
-External functions can also be used for saving data for use in future tests.
-
 ## Further reading
 
 There are more examples in the [examples](https://github.com/taverntesting/tavern/tree/master/example) folder on Github, showing how to do some more advanced testing, including how to test using MQTT. Tavern also has a lot of integration tests that show its behaviour - you might find it useful to check out the [integration tests](https://github.com/taverntesting/tavern/tree/master/tests/integration) folder for some more examples.

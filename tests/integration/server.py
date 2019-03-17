@@ -1,3 +1,4 @@
+import base64
 import itertools
 import math
 import mimetypes
@@ -5,7 +6,6 @@ import os
 import time
 
 from flask import Flask, request, jsonify, Response
-
 
 app = Flask(__name__)
 
@@ -217,3 +217,23 @@ statuses = itertools.cycle(['processing', 'ready'])
 def poll():
     response = {'status': next(statuses)}
     return jsonify(response)
+
+
+def _maybe_get_cookie_name():
+    return (request.get_json() or {}).get("cookie_name", "tavern-cookie")
+
+@app.route("/get_cookie", methods=["POST"])
+def give_cookie():
+    cookie_name = _maybe_get_cookie_name()
+    response = Response()
+    response.set_cookie(cookie_name, base64.b64encode(os.urandom(16)).decode("utf8"))
+    return response, 200
+
+
+@app.route("/expect_cookie", methods=["GET"])
+def expect_cookie():
+    cookie_name = _maybe_get_cookie_name()
+    if cookie_name not in request.cookies:
+        return jsonify({"error": "No cookie named {} in request".format(cookie_name)}), 400
+    else:
+        return jsonify({"status": "ok"}), 200

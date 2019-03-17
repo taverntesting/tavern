@@ -1119,6 +1119,12 @@ success = run("test_server.tavern.yaml", pytest_args=["-x"])
 can also be controlled just by putting them in the appropriate Pytest
 configuration file (such as your `setup.cfg` or `pytest.ini`).
 
+Under the hood, the `run` function calls `pytest.main` to start the test
+run, and will pass the return code back to the caller. At the time of
+writing, this means it will return a `0` if all tests are successful,
+and a nonzero result if one or more tests failed (or there was some
+other error while running or collecting the tests).
+
 ## Matching arbitrary return values in a response
 
 Sometimes you want to just make sure that a value is returned, but you don't
