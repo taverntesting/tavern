@@ -1,14 +1,14 @@
 import collections
-import warnings
 import logging
+import warnings
 from builtins import str as ustr
 
-from future.utils import raise_from
+import jmespath
 from box import Box
+from future.utils import raise_from
 
 from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
 from . import exceptions
-
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +52,45 @@ def format_keys(val, variables):
     return formatted
 
 
-def recurse_access_key(current_val, keys):
+def recurse_access_key(data, query):
+    """
+    Search for something in the given data using the given query.
+
+    Note:
+        Falls back to old _recurse_access_key if not found - will be removed in 1.0
+
+    Args:
+        data (dict, list): Data to search in
+        query (str): Query to run
+
+    Returns:
+        object: Whatever was found by the search
+    """
+
+    warned = False
+    msg = "In a future version of Tavern, selecting for values to save in nested objects will have to be done as a JMES path query - see http://jmespath.org/ for more information"
+
+    try:
+        from_jmespath = jmespath.search(query, data)
+    except jmespath.exceptions.ParseError:
+        logger.warning("Error parsing JMES query - " + msg, exc_info=True)
+        warnings.warn(msg, FutureWarning)
+        warned = True
+        from_jmespath = None
+
+    # The value might actually be None, in which case we will search twice for no reason,
+    # but this shouldn't cause any issues
+    if from_jmespath is None:
+        from_recurse = _recurse_access_key(data, query.split(".").copy())
+        if not warned:
+            # Only warn once
+            warnings.warn(msg, FutureWarning)
+        return from_recurse
+    else:
+        return from_jmespath
+
+
+def _recurse_access_key(current_val, keys):
     """ Given a list of keys and a dictionary, recursively access the dicionary
     using the keys until we find the key its looking for
 
@@ -60,18 +98,24 @@ def recurse_access_key(current_val, keys):
 
     Example:
 
-        >>> recurse_access_key({'a': 'b'}, ['a'])
+        >>> _recurse_access_key({'a': 'b'}, ['a'])
         'b'
-        >>> recurse_access_key({'a': {'b': ['c', 'd']}}, ['a', 'b', '0'])
+        >>> _recurse_access_key({'a': {'b': ['c', 'd']}}, ['a', 'b', '0'])
         'c'
 
     Args:
         current_val (dict): current dictionary we have recursed into
         keys (list): list of str/int of subkeys
 
+    Raises:
+        IndexError: list index not found in data
+        KeyError: dict key not found in data
+
     Returns:
         str or dict: value of subkey in dict
     """
+    logger.debug("Recursively searching for '%s' in '%s'", keys, current_val)
+
     if not keys:
         return current_val
     else:
@@ -82,7 +126,16 @@ def recurse_access_key(current_val, keys):
         except ValueError:
             pass
 
-        return recurse_access_key(current_val[current_key], keys)
+        try:
+            return _recurse_access_key(current_val[current_key], keys)
+        except (IndexError, KeyError, TypeError) as e:
+            logger.error(
+                "%s accessing data - looking for '%s' in '%s'",
+                type(e).__name__,
+                current_key,
+                current_val,
+            )
+            raise
 
 
 def deep_dict_merge(initial_dct, merge_dct):

@@ -1,18 +1,19 @@
-from textwrap import dedent
+import copy
 from collections import OrderedDict
+from textwrap import dedent
 
 import pytest
 import yaml
-import copy
 
 from tavern.schemas.extensions import validate_extensions
 from tavern.util import exceptions
-from tavern.util.loader import ANYTHING, IncludeLoader
 from tavern.util.dict_util import (
     deep_dict_merge,
     check_keys_match_recursive,
     format_keys,
+    recurse_access_key,
 )
+from tavern.util.loader import ANYTHING, IncludeLoader
 
 
 class TestValidateFunctions:
@@ -229,3 +230,22 @@ class TestFormatKeys:
         format_variables = {"b": final_value}
 
         assert format_keys(to_format, format_variables)["a"] == final_value
+
+
+class TestRecurseAccess:
+    @pytest.fixture
+    def nested_data(self):
+        data = {"a": ["b", {"c": "d"}]}
+
+        return data
+
+    @pytest.mark.parametrize(
+        "old_query, new_query, expected_data",
+        (("a.0", "a[0]", "b"), ("a.1.c", "a[1].c", "d")),
+    )
+    def test_search_old_style(self, nested_data, old_query, new_query, expected_data):
+        with pytest.warns(FutureWarning):
+            old_val = recurse_access_key(nested_data, old_query)
+        new_val = recurse_access_key(nested_data, new_query)
+
+        assert old_val == new_val == expected_data

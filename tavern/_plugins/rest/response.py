@@ -291,10 +291,10 @@ class RestResponse(BaseResponse):
             self._adderr("No %s in response (wanted to save %s)", key, expected)
         else:
             for save_as, joined_key in expected.items():
-                split_key = joined_key.split(".")
                 try:
-                    saved[save_as] = recurse_access_key(to_check, copy.copy(split_key))
-                except (IndexError, KeyError) as e:
+                    saved[save_as] = recurse_access_key(to_check, joined_key)
+                except (IndexError, KeyError, TypeError) as e:
+                    # TODO: In 1.0, this will raise JMESError instead
                     self._adderr(
                         "Wanted to save '%s' from '%s', but it did not exist in the response",
                         joined_key,
