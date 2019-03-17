@@ -1094,7 +1094,7 @@ extra_cfg = {
 success = run("test_server.tavern.yaml", extra_cfg)
 ```
 
-An absolutel filename to a configuration file can also be passed.
+An absolute filepath to a configuration file can also be passed.
 
 This is also how things such as strict key checking is controlled via the
 `run()` function. Extra keyword arguments that are taken by this function:
