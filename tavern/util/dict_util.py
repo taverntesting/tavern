@@ -4,8 +4,8 @@ import warnings
 from builtins import str as ustr
 
 import jmespath
-from box import Box
 from future.utils import raise_from
+from box import Box
 
 from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
 from . import exceptions
@@ -72,7 +72,7 @@ def recurse_access_key(data, query):
     try:
         from_jmespath = jmespath.search(query, data)
     except jmespath.exceptions.ParseError:
-        logger.warning("Error parsing JMES query - " + msg, exc_info=True)
+        logger.warning("Error parsing JMES query - %s", msg, exc_info=True)
         from_jmespath = None
 
     # The value might actually be None, in which case we will search twice for no reason,
