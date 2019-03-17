@@ -217,7 +217,7 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     """Run one stage from the test
 
     Args:
-        sessions (dict): List of relevant 'session' objects used for this test
+        sessions (dict): Dictionary of relevant 'session' objects used for this test
         stage (dict): specification of stage to be run
         tavern_box (box.Box): Box object containing format variables to be used
             in test
