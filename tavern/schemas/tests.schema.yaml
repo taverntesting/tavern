@@ -134,9 +134,12 @@ schema;stage:
           required: false
           sequence:
             - type: str
-              required: true
+
+        cookies:
+          type: seq
+          required: false
+          sequence:
             - type: str
-              required: true
 
         json:
           include: any_map_or_list_with_ext_function
