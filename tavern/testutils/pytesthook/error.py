@@ -49,12 +49,13 @@ class ReprdError(object):
 
         def read_formatted_vars(lines):
             """Go over all lines and try to find format variables
-
-            This might be a bit wonky if escaped curly braces are used...
             """
             for line in lines:
-                for match in re.finditer(r"(?P<format_var>{.*?})", line):
-                    yield match.group("format_var")
+                for match in re.finditer(
+                    r"(.*?:\s+!raw)?(?(1).*|.*?(?P<format_var>(?<!{){[^{]*?}))", line
+                ):
+                    if match.group("format_var") is not None:
+                        yield match.group("format_var")
 
         format_variables = list(read_formatted_vars(code_lines))
 
@@ -179,7 +180,7 @@ class ReprdError(object):
             with io.open(filename, "r", encoding="utf8") as testfile:
                 for idx, line in enumerate(testfile.readlines()):
                     if first_line < idx < last_line:
-                        yield line.rstrip()
+                        yield line.split("#", 1)[0].rstrip()
 
         code_lines = list(read_relevant_lines(self.item.spec.start_mark.name))
 
