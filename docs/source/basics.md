@@ -121,7 +121,7 @@ This can be saved into the value `first_val` with this response block:
 response:
   save:
     body:
-      fourth_val: thing.nested[0]
+      first_val: thing.nested[0]
 ```
 
 The query should be defined as a JMES query (see http://jmespath.org/
@@ -131,6 +131,95 @@ powerful queries on response data, but note that only 'simple' values
 like integers, strings, or float values can be saved. Trying to save a
 'block' of data such as a JSON list or object is currently unsupported
 and will cause the test to fail.
+
+#### Using JMES path with the response body
+
+A more generic way to query and save data from the response can be done using the
+**jmespath** block. This block can take 3 values, specifying a query
+to run on the (JSON) response, an optional expected value, and an optional
+name to save the result of this query. Using the above example, this would
+be done using:
+
+```yaml
+response:
+  jmespath:
+    - query: thing.nested[0]
+      expected: 1  # optional
+      save_as: first_val  # optional
+``` 
+
+This technique is required when dealing with nested lists. Say that we
+_only_ want to make sure that the list in the above response contained
+the value `3`, and we do not care about either the order of the list or
+how many other values are returned. One way to do this for the given
+response would be:
+
+```yaml
+response:
+  body:
+    thing:
+      nested:
+        - !anyint
+        - !anyint
+        - 3
+        - !anyint
+```
+
+This is messy and we need to put extra data into our test when we are
+just going to ignore the other values. This will also break if the length
+of the list changes or if the types change.
+
+A more robust way of doing this is with the `jmespath` key, using a
+similar query to above:
+
+```yaml
+response:
+  jmespath:
+    - query: thing.nested[?@ == `3`]
+```
+
+This will just make sure that _one of_ the values in the returned nested
+list matches the value we expect, no matter how many other elements there
+are, or in what order. The 'expected' key in this situation is the _result_
+of the query , ie `[3]`, so it cannot be saved.
+
+For a more complicate example, we might have an endpoint returning a user
+with a list of groups they belong to, like so:
+
+```json
+{
+  "username": "johnny",
+  "groups": [
+    {
+      "groupname": "normal_user",
+      "assigned": "2017-09-01"
+    },
+    {
+      "groupname": "special_user",
+      "assigned": "2017-09-01"
+    }
+  ]
+}
+```
+
+To make sure that this user is in the normal groups but is not an admin,
+we can do it like so:
+
+```yaml
+response:
+  jmespath:
+    - query: "groups[?groupname == "admin"]"
+      # NOTE: If we do not give an explicit empty list here, Tavern will
+      # assume that you expected a value and will cause the test to fail    
+      expected: []
+    - query: "groups[?groupname == "normal_user]"
+      # NOTE: No 'expected' value is given here, so this will match
+      # as long as the normal_user group is present 
+```
+
+Due to implementation reasons, this cannot be used to match a null value.
+
+There are much more examples at http://jmespath.org/tutorial.html.
 
 It is also possible to save data using function calls, explained below.
 

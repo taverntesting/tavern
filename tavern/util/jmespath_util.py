@@ -19,11 +19,17 @@ def check_jmespath_match(parsed_response, query, expected=None):
     """
     actual = jmespath.search(query, parsed_response)
 
+    msg = "JMES path '{}' not found in response".format(query)
+
     if actual is None:
-        raise exceptions.JMESError("JMES path '{}' not found in response".format(query))
+        raise exceptions.JMESError(msg)
 
     if expected:
         # Reuse dict util helper as it should behave the same
         check_keys_match_recursive(expected, actual, [], True)
+    elif not actual and not (actual == expected):
+        # This can return an empty list, but it might be what we expect. if not,
+        # raise an exception
+        raise exceptions.JMESError(msg)
 
     return actual

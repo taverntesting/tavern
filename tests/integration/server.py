@@ -60,8 +60,8 @@ def get_fake_nested():
 
 @app.route("/fake_list", methods=["GET"])
 def list_response():
-    list_response = ["a", "b", "c", 1, 2, 3, -1.0, -2.0, -3.0]
-    return jsonify(list_response), 200
+    response = ["a", "b", "c", 1, 2, 3, -1.0, -2.0, -3.0]
+    return jsonify(response), 200
 
 
 @app.route("/nested_list", methods=["GET"])
