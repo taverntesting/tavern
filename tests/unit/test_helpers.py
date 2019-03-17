@@ -216,7 +216,9 @@ class TestPykwalifyExtension:
         """
         )
 
-        validate_pykwalify(nested_response, yaml.load(correct_schema))
+        validate_pykwalify(
+            nested_response, yaml.load(correct_schema, Loader=yaml.SafeLoader)
+        )
 
     def test_validate_schema_incorrect(self, nested_response):
         correct_schema = dedent(
@@ -229,4 +231,6 @@ class TestPykwalifyExtension:
         )
 
         with pytest.raises(exceptions.BadSchemaError):
-            validate_pykwalify(nested_response, yaml.load(correct_schema))
+            validate_pykwalify(
+                nested_response, yaml.load(correct_schema, Loader=yaml.SafeLoader)
+            )

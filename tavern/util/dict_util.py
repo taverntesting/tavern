@@ -1,7 +1,11 @@
-import collections
 import warnings
 import logging
 from builtins import str as ustr
+
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
 
 from future.utils import raise_from
 from box import Box
@@ -102,11 +106,7 @@ def deep_dict_merge(initial_dct, merge_dct):
     dct = initial_dct.copy()
 
     for k in merge_dct:
-        if (
-            k in dct
-            and isinstance(dct[k], dict)
-            and isinstance(merge_dct[k], collections.Mapping)
-        ):
+        if k in dct and isinstance(dct[k], dict) and isinstance(merge_dct[k], Mapping):
             dct[k] = deep_dict_merge(dct[k], merge_dct[k])
         else:
             dct[k] = merge_dct[k]

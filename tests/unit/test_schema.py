@@ -30,7 +30,7 @@ def fix_test_dict():
     """
     )
 
-    as_dict = yaml.load(text)
+    as_dict = yaml.load(text, Loader=yaml.SafeLoader)
 
     return as_dict
 
