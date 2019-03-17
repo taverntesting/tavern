@@ -254,7 +254,28 @@ stages:
 
 ---
 
-test_name: Test querying list
+test_name: Test saving a list fails
+
+includes:
+  - !include common.yaml
+
+_xfail: run
+
+stages:
+  - name: Query
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      jmespath:
+        # This will fail because you can't save a list
+        - query: "[?@ == `3`]"
+          save_as: Blauerhg
+
+---
+
+test_name: Test saving one list element works
 
 includes:
   - !include common.yaml
@@ -267,7 +288,26 @@ stages:
     response:
       status_code: 200
       jmespath:
-        - query: "[?@ == `3`]"
+        - query: "[?@ == `3`] | [0]"
           save_as: Blauerhg
-        - query: "[?@ == `9`]"
-          expected: []
+
+---
+
+test_name: Test saving an object fails
+
+includes:
+  - !include common.yaml
+
+_xfail: run
+
+stages:
+  - name: Query
+    request:
+      url: "{host}/fake_nested_objects"
+      method: GET
+    response:
+      status_code: 200
+      jmespath:
+        # This will fail because you can't save an object
+        - query: "top"
+          save_as: Blauerhg

@@ -101,10 +101,11 @@ def recurse_access_key(data, query):
 
 
 def check_is_simple_value(found, query):
-    if not isinstance(found, (float, int, str)):
+    if not isinstance(found, (float, int, str, ustr)):
         raise exceptions.InvalidQueryResultTypeError(
-            "Key '%s' was found in given data, but it was not a 'simple' type (float, int, string)",
-            query,
+            "Key '{}' was found in given data, but it was '{}' when it should be a 'simple' type (float, int, string)".format(
+                query, type(found)
+            )
         )
 
 

@@ -181,7 +181,17 @@ response:
 This will just make sure that _one of_ the values in the returned nested
 list matches the value we expect, no matter how many other elements there
 are, or in what order. The 'expected' key in this situation is the _result_
-of the query , ie `[3]`, so it cannot be saved.
+of the query , ie `[3]`. Because values to be saved can only be 'simple'
+values, if you want to save the result of the query
+you need to use the [pipe operator](http://jmespath.org/specification.html#pipe-expressions)
+like this:
+
+```yaml
+response:
+  jmespath:
+    - query: thing.nested[?@ == `3`] | [0]
+      save_as: value_equalling_3
+```
 
 For a more complicate example, we might have an endpoint returning a user
 with a list of groups they belong to, like so:
@@ -214,7 +224,11 @@ response:
       expected: []
     - query: "groups[?groupname == "normal_user]"
       # NOTE: No 'expected' value is given here, so this will match
-      # as long as the normal_user group is present 
+      # as long as the normal_user group is present
+    - query: "groups[?groupname == "special_user].assigned"
+      # Save the date the the user was assigned the 'special' group
+      # for use in a later test
+      save_as: special_assigned_on_date 
 ```
 
 Due to implementation reasons, this cannot be used to match a null value.

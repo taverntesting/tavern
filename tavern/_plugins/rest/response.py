@@ -336,7 +336,12 @@ class RestResponse(BaseResponse):
                 try:
                     check_is_simple_value(value, path_block["query"])
                 except exceptions.InvalidQueryResultTypeError as e:
-                    self._adderr("Invalid query result type to save (was {})".format(type(value)), e=e)
+                    self._adderr(
+                        "Invalid query result type to save (was {})".format(
+                            type(value)
+                        ),
+                        e=e,
+                    )
                 else:
                     saved_values[save_as] = value
 
