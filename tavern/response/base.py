@@ -1,5 +1,10 @@
 import logging
-from collections import Mapping
+
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
+
 from abc import abstractmethod
 import warnings
 
