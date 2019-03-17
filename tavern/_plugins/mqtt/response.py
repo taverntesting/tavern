@@ -6,6 +6,7 @@ from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util import exceptions
 from tavern.response.base import BaseResponse
 from tavern.util.dict_util import check_keys_match_recursive
+from tavern.util.loader import ANYTHING
 
 try:
     LoadException = json.decoder.JSONDecodeError
@@ -109,6 +110,9 @@ class MQTTResponse(BaseResponse):
                     logger.warning(
                         "Message had payload '%s' but we expected no payload"
                     )
+            elif payload is ANYTHING:
+                logger.info("Got message on %s matching !anything token", topic)
+                break
             elif msg.payload != payload:
                 if json_payload:
                     try:
