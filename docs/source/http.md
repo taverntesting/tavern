@@ -109,6 +109,75 @@ stages:
 This test ensures that a cookie called `session-cookie` is returned from the
 'login' stage, and this cookie will be sent with all future stages of that test.
 
+#### Choosing cookies
+
+If you have multiple cookies for a domain, the `cookies` key
+can also be used in the request block to specify which one to send:
+
+```yaml
+---
+
+test_name: Test receiving and sending cookie
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Expect multiple cookies returned
+    request:
+      url: "{host}/get_cookie"
+      method: POST
+    response:
+      status_code: 200
+      cookies:
+        - tavern-cookie-1
+        - tavern-cookie-2
+
+  - name: Only send one cookie
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      cookies:
+        - tavern-cookie-1
+    response:
+      status_code: 200
+      body:
+        status: ok
+```
+
+Trying to specify a cookie which does not exist will fail the stage.
+
+To send _no_ cookies, simply use an empty array:
+
+```yaml
+---
+
+test_name: Test receiving and sending cookie
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get cookie for domain
+    request:
+      url: "{host}/get_cookie"
+      method: POST
+    response:
+      status_code: 200
+      cookies:
+        - tavern-cookie-1
+
+  - name: Send no cookies
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      cookies: []
+    response:
+      status_code: 403
+      body:
+        status: access denied
+```
+
 ### HTTP Basic Auth
 
 For a server that expects HTTP Basic Auth, the `auth` keyword can be used in the

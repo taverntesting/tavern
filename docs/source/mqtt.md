@@ -114,6 +114,7 @@ The full list of keys for this block:
   serialize into JSON.
 - `qos`: QoS level for publishing. Defaults to 0 in paho-mqtt.
 
+
 ### Options for receiving MQTT messages
 
 The `mqtt_response` key gives a topic and payload which should be received by
@@ -126,6 +127,14 @@ that timeout period, it is considered a failure.
 If other messages on the same topic but with a different payload arrive in the
 meantime, they are ignored and a warning will be logged.
 
+```yaml
+    mqtt_response:
+      topic: /device/123/ping
+      json:
+        thing_1: abc
+        thing_2: 123
+```
+
 The keys which can be used:
 
 - `topic`: The MQTT topic to subcribe to
@@ -135,6 +144,18 @@ The keys which can be used:
 - `timeout`: How many seconds to wait for the message to arrive. Defaults to 3.
 - `qos`: The level of QoS to subscribe to the topic with. This defaults to 1,
   and it is unlikely that you will need to ever set this value manually.
+
+While the `json` key will follow the same matching rules as
+HTTP JSON responses, The special 'anything' token can be used with the
+`payload` key just to check that there was _some_ response on a topic:
+
+```yaml
+    mqtt_response:
+      topic: /device/123/ping
+      payload: !anything
+```
+
+Other type tokens such as `!anyint` will _not_ work.
 
 ## Mixing MQTT tests and HTTP tests
 
@@ -149,7 +170,7 @@ for it to say that a light has been turned on. When it receives this message, it
 updates a database so that each future request to get the state of the device
 will return the updated state.
 
-```
+```yaml
 ---
 
 test_name: Make sure posting publishes mqtt message
