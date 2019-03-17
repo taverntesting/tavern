@@ -1,5 +1,4 @@
 import collections
-import copy
 import logging
 import warnings
 from builtins import str as ustr
@@ -68,15 +67,12 @@ def recurse_access_key(data, query):
         object: Whatever was found by the search
     """
 
-    warned = False
     msg = "In a future version of Tavern, selecting for values to save in nested objects will have to be done as a JMES path query - see http://jmespath.org/ for more information"
 
     try:
         from_jmespath = jmespath.search(query, data)
     except jmespath.exceptions.ParseError:
         logger.warning("Error parsing JMES query - " + msg, exc_info=True)
-        warnings.warn(msg, FutureWarning)
-        warned = True
         from_jmespath = None
 
     # The value might actually be None, in which case we will search twice for no reason,
@@ -92,10 +88,8 @@ def recurse_access_key(data, query):
                 e,
             )
 
-        # Only warn once
-        if not warned:
-            # If we found a key using 'old' style searching, which will be deprecated
-            warnings.warn(msg, FutureWarning)
+        # If we found a key using 'old' style searching, which will be deprecated
+        warnings.warn(msg, FutureWarning)
 
         found = from_recurse
     else:
