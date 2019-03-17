@@ -121,8 +121,12 @@ This can be saved into the value `first_val` with this response block:
 response:
   save:
     body:
-      fourth_val: thing.nested.0
+      fourth_val: thing.nested[0]
 ```
+
+The query should be defined as a JMES query (see http://jmespath.org/
+for more information). In the above example, this essentially performs
+the operation `json["thing"]["nested"][0]`
 
 It is also possible to save data using function calls, explained below.
 
