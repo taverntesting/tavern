@@ -245,42 +245,6 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     delay(stage, "after", test_block_config["variables"])
 
 
-def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
-    """
-    Try to parse global configuration from given argument.
-
-    Args:
-        stack (ExitStack): context stack for wrapping file if a dictionary is given
-        tavern_global_cfg (dict, str): Dictionary or string. It should be a
-            path to a file or a dictionary with configuration.
-
-    Returns:
-        str: path to global config file
-
-    Raises:
-        InvalidSettingsError: If global config was not of the right type or a given path
-            does not exist
-
-    Todo:
-        Once python 2 is dropped, allow this to take a 'path like object'
-    """
-    if isinstance(tavern_global_cfg, str):
-        if not os.path.exists(tavern_global_cfg):
-            raise exceptions.InvalidSettingsError(
-                "global config file '{}' does not exist".format(tavern_global_cfg)
-            )
-        global_filename = tavern_global_cfg
-    elif isinstance(tavern_global_cfg, dict):
-        global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
-    else:
-        raise exceptions.InvalidSettingsError(
-            "Invalid format for global settings - must be dict or path to settings file, was {}".format(
-                type(tavern_global_cfg)
-            )
-        )
-
-    return global_filename
-
 
 def _run_pytest(
     in_file,
@@ -333,6 +297,42 @@ def _run_pytest(
             pytest_args += ["--tavern-global-cfg", global_filename]
         return pytest.main(args=pytest_args)
 
+
+def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
+    """
+    Try to parse global configuration from given argument.
+
+    Args:
+        stack (ExitStack): context stack for wrapping file if a dictionary is given
+        tavern_global_cfg (dict, str): Dictionary or string. It should be a
+            path to a file or a dictionary with configuration.
+
+    Returns:
+        str: path to global config file
+
+    Raises:
+        InvalidSettingsError: If global config was not of the right type or a given path
+            does not exist
+
+    Todo:
+        Once python 2 is dropped, allow this to take a 'path like object'
+    """
+    if isinstance(tavern_global_cfg, str):
+        if not os.path.exists(tavern_global_cfg):
+            raise exceptions.InvalidSettingsError(
+                "global config file '{}' does not exist".format(tavern_global_cfg)
+            )
+        global_filename = tavern_global_cfg
+    elif isinstance(tavern_global_cfg, dict):
+        global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
+    else:
+        raise exceptions.InvalidSettingsError(
+            "Invalid format for global settings - must be dict or path to settings file, was {}".format(
+                type(tavern_global_cfg)
+            )
+        )
+
+    return global_filename
 
 def run(in_file, tavern_global_cfg=None, **kwargs):
     """Run tests in file
