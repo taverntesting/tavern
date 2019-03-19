@@ -357,10 +357,16 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                             missing.append(e_val)
                             break
                         else:
-                            logger.debug("Got '%s' from response to check against '%s' from expected", current_response_val, e_val)
+                            logger.debug(
+                                "Got '%s' from response to check against '%s' from expected",
+                                current_response_val,
+                                e_val,
+                            )
 
                         try:
-                            check_keys_match_recursive(e_val, current_response_val, keys + [i], strict)
+                            check_keys_match_recursive(
+                                e_val, current_response_val, keys + [i], strict
+                            )
                         except exceptions.KeyMismatchError:
                             pass
                         else:
@@ -371,11 +377,21 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                     logger.error("List item(s) not present in response: %s", missing)
                     # then fall through and raise an error
                 else:
-                    logger.debug("All expected list items present - continuing due to strict=%s", strict)
+                    logger.debug(
+                        "All expected list items present - continuing due to strict=%s",
+                        strict,
+                    )
                     return
 
             if len(expected_val) != len(actual_val):
-                raise_from(exceptions.KeyMismatchError("Length of returned list was different than expected - expected {} items, got {} ({})".format(len(expected_val), len(actual_val), full_err())), e)
+                raise_from(
+                    exceptions.KeyMismatchError(
+                        "Length of returned list was different than expected - expected {} items, got {} ({})".format(
+                            len(expected_val), len(actual_val), full_err()
+                        )
+                    ),
+                    e,
+                )
 
             for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
                 try:
