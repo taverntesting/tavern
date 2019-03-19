@@ -281,13 +281,13 @@ def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
 
 
 def _run_pytest(
-        in_file,
-        tavern_global_cfg,
-        tavern_mqtt_backend=None,
-        tavern_http_backend=None,
-        tavern_strict=None,
-        pytest_args=None,
-        **kwargs
+    in_file,
+    tavern_global_cfg,
+    tavern_mqtt_backend=None,
+    tavern_http_backend=None,
+    tavern_strict=None,
+    pytest_args=None,
+    **kwargs
 ):  # pylint: disable=too-many-arguments
     """Run all tests contained in a file using pytest.main()
 

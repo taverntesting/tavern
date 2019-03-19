@@ -23,15 +23,12 @@ class TestBasicRun:
     def test_run_with_cfg(self):
         run("", {"a": 2})
 
-    @pytest.mark.parametrize("expected_kwarg", (
-            "tavern_mqtt_backend",
-            "tavern_http_backend",
-            "tavern_strict",
-    ))
+    @pytest.mark.parametrize(
+        "expected_kwarg",
+        ("tavern_mqtt_backend", "tavern_http_backend", "tavern_strict"),
+    )
     def test_doesnt_warn_about_expected_kwargs(self, expected_kwarg):
-        kw = {
-            expected_kwarg: 123
-        }
+        kw = {expected_kwarg: 123}
         with pytest.warns(None) as warn_rec:
             run("", **kw)
 
@@ -51,7 +48,6 @@ class TestParseGlobalCfg:
 
 
 class TestParseFailures:
-
     @pytest.fixture(autouse=True)
     def patch_pytest(self):
         with patch("tavern.core.pytest.main") as fake_main:
