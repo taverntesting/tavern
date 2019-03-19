@@ -329,16 +329,6 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                         strict,
                     )
         elif isinstance(expected_val, list):
-            if len(expected_val) != len(actual_val):
-                raise_from(
-                    exceptions.KeyMismatchError(
-                        "Length of returned list was different than expected - expected {} items, got {} ({})".format(
-                            len(expected_val), len(actual_val), full_err()
-                        )
-                    ),
-                    e,
-                )
-
             # TODO
             # Check things in the wrong order?
 
