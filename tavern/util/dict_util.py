@@ -329,20 +329,18 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                         strict,
                     )
         elif isinstance(expected_val, list):
-            # TODO
-            # Check things in the wrong order?
-
             if not strict:
                 missing = []
 
                 actual_iter = iter(actual_val)
 
-                # Iterate over list items to see if any of them match...
+                # Iterate over list items to see if any of them match _IN ORDER_
                 for i, e_val in enumerate(expected_val):
                     while 1:
                         try:
                             current_response_val = next(actual_iter)
                         except StopIteration:
+                            # Still iterating checking for a value, but ran out of response values
                             logger.debug("Ran out of list response items to check")
                             missing.append(e_val)
                             break
@@ -353,44 +351,42 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                                 e_val,
                             )
 
+                        # Found one - check if it matches
                         try:
                             check_keys_match_recursive(
                                 e_val, current_response_val, keys + [i], strict
                             )
                         except exceptions.KeyMismatchError:
-                            pass
+                            # Doesn't match what we're looking for
+                            logger.debug("%s did not match next response value %s", e_val, current_response_val)
                         else:
                             logger.debug("'%s' present in response", e_val)
                             break
 
                 if missing:
-                    logger.error("List item(s) not present in response: %s", missing)
-                    # then fall through and raise an error
-                else:
-                    logger.debug(
-                        "All expected list items present - continuing due to strict=%s",
-                        strict,
+                    msg = "List item(s) not present in response: {}".format(missing)
+                    raise exceptions.KeyMismatchError(msg)
+
+                logger.debug("All expected list items present")
+            else:
+                if len(expected_val) != len(actual_val):
+                    raise_from(
+                        exceptions.KeyMismatchError(
+                            "Length of returned list was different than expected - expected {} items, got {} ({})".format(
+                                len(expected_val), len(actual_val), full_err()
+                            )
+                        ),
+                        e,
                     )
-                    return
 
-            if len(expected_val) != len(actual_val):
-                raise_from(
-                    exceptions.KeyMismatchError(
-                        "Length of returned list was different than expected - expected {} items, got {} ({})".format(
-                            len(expected_val), len(actual_val), full_err()
-                        )
-                    ),
-                    e,
-                )
-
-            for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
-                try:
-                    check_keys_match_recursive(e_val, a_val, keys + [i], strict)
-                except exceptions.KeyMismatchError as sub_e:
-                    # This will still raise an error, but it will be more
-                    # obvious where the error came from (in python 3 at least)
-                    # and will take ANYTHING into account
-                    raise_from(sub_e, e)
+                for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
+                    try:
+                        check_keys_match_recursive(e_val, a_val, keys + [i], strict)
+                    except exceptions.KeyMismatchError as sub_e:
+                        # This should _ALWAYS_ raise an error, but it will be more
+                        # obvious where the error came from (in python 3 at least)
+                        # and will take ANYTHING into account
+                        raise_from(sub_e, e)
         elif expected_val is None:
             warnings.warn(
                 "Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.",
