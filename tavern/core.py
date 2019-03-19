@@ -245,7 +245,6 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     delay(stage, "after", test_block_config["variables"])
 
 
-
 def _run_pytest(
     in_file,
     tavern_global_cfg,
@@ -333,6 +332,7 @@ def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
         )
 
     return global_filename
+
 
 def run(in_file, tavern_global_cfg=None, **kwargs):
     """Run tests in file
