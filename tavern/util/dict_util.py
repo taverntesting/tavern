@@ -358,7 +358,11 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                             )
                         except exceptions.KeyMismatchError:
                             # Doesn't match what we're looking for
-                            logger.debug("%s did not match next response value %s", e_val, current_response_val)
+                            logger.debug(
+                                "%s did not match next response value %s",
+                                e_val,
+                                current_response_val,
+                            )
                         else:
                             logger.debug("'%s' present in response", e_val)
                             break

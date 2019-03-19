@@ -165,16 +165,12 @@ class TestMatchRecursive:
         with pytest.raises(exceptions.KeyMismatchError):
             check_keys_match_recursive(a, b, [])
 
+
+class TestNonStrictListMatching:
     def test_match_list_items(self):
         """Should match any 2 list items if strict is False, not if it's True"""
-        a = [
-            "b",
-        ]
-        b = [
-            "a",
-            "b",
-            "c",
-        ]
+        a = ["b"]
+        b = ["a", "b", "c"]
 
         with pytest.raises(exceptions.KeyMismatchError):
             check_keys_match_recursive(a, b, [])
@@ -184,15 +180,8 @@ class TestMatchRecursive:
     def test_match_multiple(self):
         """As long as they are in the right order, it can match multiple
         items"""
-        a = [
-            "a",
-            "c",
-        ]
-        b = [
-            "a",
-            "b",
-            "c",
-        ]
+        a = ["a", "c"]
+        b = ["a", "b", "c"]
 
         with pytest.raises(exceptions.KeyMismatchError):
             check_keys_match_recursive(a, b, [])
@@ -201,15 +190,8 @@ class TestMatchRecursive:
 
     def test_match_multiple_wrong_order(self):
         """Raises an error if the expected items are in the wrong order"""
-        a = [
-            "c",
-            "a",
-        ]
-        b = [
-            "a",
-            "b",
-            "c",
-        ]
+        a = ["c", "a"]
+        b = ["a", "b", "c"]
 
         with pytest.raises(exceptions.KeyMismatchError):
             check_keys_match_recursive(a, b, [])
@@ -219,14 +201,19 @@ class TestMatchRecursive:
 
     def test_match_wrong_type(self):
         """Can't match incorrect type"""
-        a = [
-            1,
-        ]
-        b = [
-            "1",
-            "2",
-            "3",
-        ]
+        a = [1]
+        b = ["1", "2", "3"]
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [], strict=False)
+
+    def test_match_list_items_more_as(self):
+        """One of them is present, the others aren't"""
+        a = ["a", "b", "c"]
+        b = ["a"]
 
         with pytest.raises(exceptions.KeyMismatchError):
             check_keys_match_recursive(a, b, [])
