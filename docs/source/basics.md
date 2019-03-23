@@ -1347,6 +1347,20 @@ request:
     an_integer: !int "{my_integer:d}" # Works
 ```
 
+Because curly braces are automatically formatted, trying to send one
+in a string might cause some unexpected issues. This can be mitigated
+by using the `!raw` tag, which will not perform string formatting.
+
+*Note*: This is just shorthand for replacing a `{` with a `{{` in the
+string
+
+```yaml
+request:
+  json:
+    # Sent as {"raw_braces": "{not_escaped}"}
+    raw_braces: !raw "{not_escaped}"
+```
+
 ## Adding a delay between tests
 
 Sometimes you might need to wait for some kind of uncontrollable external event
