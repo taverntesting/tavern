@@ -63,9 +63,10 @@ class BaseResponse(object):
             logger.debug("No expected %s to check against", blockname)
             return
 
-        expected_block = format_keys(
-            expected_block, self.test_block_config["variables"]
-        )
+        # This should be done _before_ it gets to this point - typically in get_expected_from_request from plugin
+        # expected_block = format_keys(
+        #     expected_block, self.test_block_config["variables"]
+        # )
 
         if block is None:
             self._adderr(
