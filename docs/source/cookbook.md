@@ -25,27 +25,28 @@ If you have a fixture that loads some information from a file or some
 other external data source, but the behaviour needs to change depending
 on which test is being run, this can be done by  marking the test and
 accessing the test
-[Node](https://docs.pytest.org/en/latest/reference.html#node) 
+[Node](https://docs.pytest.org/en/latest/reference.html#node)
 in your fixture to change the behaviour:
 
 ```yaml
 test_name: endpoint 1 test
 
-marks:
-  - endpoint_1
-  - usefixtures:
-       - read_uuid
+pytest:
+  marks:
+    - endpoint_1
+    - usefixtures:
+         - read_uuid
 
 stages:
     ...
-    
 ---
 test_name: endpoint 2 test
 
-marks:
-  - endpoint_2
-  - usefixtures:
-       - read_uuid
+pytest:
+  marks:
+    - endpoint_2
+    - usefixtures:
+         - read_uuid
 
 stages:
     ...
@@ -61,10 +62,10 @@ import json
 def read_uuid(request):  # 'request' is a built in pytest fixture
     marks = request.node.own_markers
     mark_names = [m.name for m in marks]
-    
+
     with open("stored_uuids.json", "r") as ufile:
         uuids = json.load(ufile)
-    
+
     if "endpoint_1" in mark_names:
         return uuids["endpoint_1"]
     elif "endpoint_2" in mark_names:
@@ -80,7 +81,7 @@ or to be supported in any way.**
 
 [Locust](https://locust.io/) is a simple Python based load testing tool
 which can be used to flood your API with requests to see how it handles
-under load. This is not a good map for Tavern because every time you run 
+under load. This is not a good map for Tavern because every time you run
 even a single test you incur the cost of starting Pytest, collecting
 files, etc., but if you do want to be able to see how your existing API
 can handle a few tens of requests per second before using tools more
@@ -112,7 +113,7 @@ class TavernClient(object):
             )
 
         joined_args = ["--disable-pytest-warnings", "--no-cov", "-qqqqqqqq", "-s"]
-        
+
         if extra_pytest_args:
             joined_args += extra_pytest_args
 
