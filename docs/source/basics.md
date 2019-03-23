@@ -1017,7 +1017,7 @@ at the command line using the `--tavern-global-cfg` flag. The variables in
 `common.yaml` will then be available for formatting in *all* tests during that
 test run.
 
-**NOTE**: `tavern-ci` is essentially just an alias for `py.test` and 
+**NOTE**: `tavern-ci` is essentially just an alias for `py.test` and
 will take the same options.
 
 ```
@@ -1118,7 +1118,7 @@ stages:
 ```
 
 Each stage should have a uniquely identifiable `id`, but other than that
-the stage can be define just as other tests (including using format 
+the stage can be define just as other tests (including using format
 variables).
 
 This can be included in a test by specifying the `id` of the test like
@@ -1226,7 +1226,7 @@ stages:
 ```
 
 This works with YAML as well, the only caveat being that the filename
-_must_ end with `.yaml`, `.yml`, or `.json`. 
+_must_ end with `.yaml`, `.yml`, or `.json`.
 
 ## Using the run() function
 
