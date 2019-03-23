@@ -1,18 +1,21 @@
-from textwrap import dedent
+import copy
+import os
+import tempfile
 from collections import OrderedDict
+from textwrap import dedent
 
 import pytest
 import yaml
-import copy
 
 from tavern.schemas.extensions import validate_extensions
+from tavern.schemas.files import wrapfile
 from tavern.util import exceptions
-from tavern.util.loader import ANYTHING, IncludeLoader
 from tavern.util.dict_util import (
     deep_dict_merge,
     check_keys_match_recursive,
     format_keys,
 )
+from tavern.util.loader import ANYTHING, IncludeLoader, load_single_document_yaml
 
 
 class TestValidateFunctions:
@@ -229,3 +232,26 @@ class TestFormatKeys:
         format_variables = {"b": final_value}
 
         assert format_keys(to_format, format_variables)["a"] == final_value
+
+
+class TestLoadCfg:
+    def test_load_one(self):
+        example = {"a": "b"}
+
+        with wrapfile(example) as f:
+            assert example == load_single_document_yaml(f)
+
+    def test_load_multiple_fails(self):
+        example = [{"a": "b"}, {"c": "d"}]
+
+        with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as wrapped_tmp:
+            # put into a file
+            dumped = yaml.dump_all(example)
+            wrapped_tmp.write(dumped.encode("utf8"))
+            wrapped_tmp.close()
+
+            try:
+                with pytest.raises(exceptions.UnexpectedDocumentsError):
+                    load_single_document_yaml(wrapped_tmp.name)
+            finally:
+                os.remove(wrapped_tmp.name)

@@ -15,6 +15,7 @@ from yaml.reader import Reader
 from yaml.resolver import Resolver
 from yaml.scanner import Scanner
 
+from tavern.util import exceptions
 from tavern.util.exceptions import BadSchemaError
 
 logger = logging.getLogger(__name__)
@@ -132,10 +133,13 @@ def construct_include(loader, node):
     extension = os.path.splitext(filename)[1].lstrip(".")
 
     if extension not in ("yaml", "yml"):
-        raise BadSchemaError("Unknown filetype '{}'".format(filename))
+        raise BadSchemaError(
+            "Unknown filetype '{}' (included files must be in YAML format and end with .yaml or .yml)".format(
+                filename
+            )
+        )
 
-    with open(filename, "r") as f:
-        return yaml.load(f, IncludeLoader)
+    return load_single_document_yaml(filename)
 
 
 IncludeLoader.add_constructor("!include", construct_include)
@@ -298,8 +302,8 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
                 type(node.value),
             )
             raise_from(BadSchemaError, e)
-
-        return pytest.approx(val)
+        else:
+            return pytest.approx(val)
 
     @classmethod
     def to_yaml(cls, dumper, data):
@@ -310,3 +314,27 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
 
 # Apparently this isn't done automatically?
 yaml.dumper.Dumper.add_representer(ApproxScalar, ApproxSentinel.to_yaml)
+
+
+def load_single_document_yaml(filename):
+    """
+    Load a yaml file and expect only one document
+
+    Args:
+        filename (str): path to document
+
+    Returns:
+        dict: content of file
+
+    Raises:
+        UnexpectedDocumentsError: If more than one document was in the file
+    """
+
+    with open(filename, "r") as fileobj:
+        try:
+            contents = yaml.load(fileobj, Loader=IncludeLoader)
+        except yaml.composer.ComposerError as e:
+            msg = "Expected only one document in this file but found multiple"
+            raise_from(exceptions.UnexpectedDocumentsError(msg), e)
+
+    return contents
