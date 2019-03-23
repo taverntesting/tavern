@@ -95,3 +95,7 @@ class DuplicateStageDefinitionError(TavernException):
 
 class InvalidSettingsError(TavernException):
     """Configuration was passed incorrectly in some fashion"""
+
+
+class UnexpectedDocumentsError(TavernException):
+    """Multiple documents were found in a YAML file when only one was expected"""
