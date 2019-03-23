@@ -10,7 +10,7 @@ import warnings
 
 from tavern.util import exceptions
 from tavern.util.python_2_util import indent
-from tavern.util.dict_util import format_keys, check_keys_match_recursive
+from tavern.util.dict_util import check_keys_match_recursive
 
 logger = logging.getLogger(__name__)
 
