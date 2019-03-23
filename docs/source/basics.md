@@ -1613,6 +1613,9 @@ This will result in 6 tests:
 - cheap fresh orange
 - cheap unripe pear
 
+**NOTE**: Due to implementation reasons it is currently impossible to
+parametrize either the HTTP method or the MQTT QoS parameter.
+
 #### usefixtures
 
 Since 0.15.0 there is limited support for Pytest
