@@ -1073,6 +1073,89 @@ tavern-global-cfg=
     test_urls.yaml
 ```
 
+### Sharing stages in configuration files
+
+If you have a stage that is shared across a huge number of tests and it
+is infeasible to put all the tests which share that stage into one file,
+you can also define stages in configuration files and use them in your
+tests.
+
+Say we have a login stage that needs to be run before every test in our
+test suite. Stages are defined in a configuration file like this:
+
+```yaml
+# stage_auth.yaml
+---
+
+name: Authentication stage
+description:
+  Reusable test stage for authentication
+
+variables:
+  user:
+    user: test-user
+    pass: correct-password
+
+stages:
+  - id: login_get_token
+    name: Login and acquire token
+    request:
+      url: "{service:s}/login"
+      json:
+        user: "{user.user:s}"
+        password: "{user.pass:s}"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      headers:
+        content-type: application/json
+      save:
+        body:
+          test_login_token: token
+```
+
+Each stage should have a uniquely identifiable `id`, but other than that
+the stage can be define just as other tests (including using format 
+variables).
+
+This can be included in a test by specifying the `id` of the test like
+this:
+
+```yaml
+---
+
+test_name: Test authenticated /hello
+
+includes:
+  - !include auth_stage.yaml
+
+stages:
+  - name: Unauthenticated /hello
+    request:
+      url: "{service:s}/hello/Jim"
+      method: GET
+    response:
+      status_code: 401
+  - type: ref
+    id: login_get_token
+  - name: Authenticated /hello
+    request:
+      url: "{service:s}/hello/Jim"
+      method: GET
+      headers:
+        Content-Type: application/json
+        Authorization: "Bearer {test_login_token}"
+    response:
+      status_code: 200
+      headers:
+        content-type: application/json
+      body:
+        data: "Hello, Jim"
+
+```
+
 ## Using the run() function
 
 Because the `run()` function (see [examples](/examples)) calls directly into the
