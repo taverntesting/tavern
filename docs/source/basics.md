@@ -121,8 +121,16 @@ This can be saved into the value `first_val` with this response block:
 response:
   save:
     body:
-      fourth_val: thing.nested.0
+      first_val: thing.nested[0]
 ```
+
+The query should be defined as a JMES query (see http://jmespath.org/
+for more information). In the above example, this essentially performs
+the operation `json["thing"]["nested"][0]`. This can be used to perform
+powerful queries on response data, but note that only 'simple' values
+like integers, strings, or float values can be saved. Trying to save a
+'block' of data such as a JSON list or object is currently unsupported
+and will cause the test to fail.
 
 It is also possible to save data using function calls, explained below.
 
