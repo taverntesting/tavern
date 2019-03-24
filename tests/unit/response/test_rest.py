@@ -346,7 +346,12 @@ class TestFull:
         assert r.errors
 
     def test_saved_value_in_validate(self, nested_response, nested_schema, includes):
-        r = RestResponse(Mock(), "Test 1", format_keys(nested_schema, includes["variables"]), includes)
+        r = RestResponse(
+            Mock(),
+            "Test 1",
+            format_keys(nested_schema, includes["variables"]),
+            includes,
+        )
 
         class FakeResponse:
             headers = nested_response["headers"]
