@@ -21,7 +21,8 @@ from tavern.util.dict_util import (
     deep_dict_merge,
     check_keys_match_recursive,
     format_keys,
-    recurse_access_key)
+    recurse_access_key,
+)
 from tavern.util.loader import ANYTHING, IncludeLoader, load_single_document_yaml
 
 
