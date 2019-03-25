@@ -46,7 +46,7 @@ def login():
     payload = {
         "sub": "test-user",
         "aud": SERVERNAME,
-        "exp": datetime.datetime.now() + datetime.timedelta(hours=1),
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
     }
 
     token = jwt.encode(payload, SECRET, algorithm="HS256").decode("utf8")
