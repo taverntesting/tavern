@@ -329,3 +329,30 @@ stages:
         message: !raw "Hello {world}"
       timeout: 5
       qos: 1
+
+---
+
+test_name: Test can use type token with mqtt port
+
+includes:
+  - !include common.yaml
+
+paho-mqtt:
+  client:
+    transport: websockets
+    client_id: tavern-tester
+  connect:
+    host: "{host}"
+    port: "{mqtt_port:d}"
+    timeout: 3
+
+stages:
+
+  - name: Step 1 - ping/pong
+    mqtt_publish:
+      topic: /device/123/ping
+      payload: ping
+    mqtt_response:
+      topic: /device/123/pong
+      payload: pong
+      timeout: 5
