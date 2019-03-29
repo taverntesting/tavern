@@ -6,7 +6,7 @@ import uuid
 from distutils.util import strtobool
 
 import pytest
-from future.utils import raise_from
+
 import yaml
 from yaml.composer import Composer
 from yaml.constructor import SafeConstructor
@@ -301,7 +301,7 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
                 "Could not coerce '%s' to a float for use with !approx",
                 type(node.value),
             )
-            raise_from(BadSchemaError, e)
+            raise BadSchemaError from e
         else:
             return pytest.approx(val)
 
@@ -335,6 +335,6 @@ def load_single_document_yaml(filename):
             contents = yaml.load(fileobj, Loader=IncludeLoader)
         except yaml.composer.ComposerError as e:
             msg = "Expected only one document in this file but found multiple"
-            raise_from(exceptions.UnexpectedDocumentsError(msg), e)
+            raise exceptions.UnexpectedDocumentsError(msg) from e
 
     return contents

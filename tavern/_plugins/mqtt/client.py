@@ -2,16 +2,8 @@ import logging
 import ssl
 import time
 
-try:
-    from queue import Queue, Full, Empty
+from queue import Queue, Full, Empty
 
-    LoadError = IOError
-except ImportError:
-    from Queue import Queue, Full, Empty  # type: ignore
-
-    LoadError = FileNotFoundError  # noqa
-
-from future.utils import raise_from
 import paho.mqtt.client as paho
 
 from tavern.util.dict_util import check_expected_keys
@@ -112,12 +104,12 @@ class MQTTClient(object):
                 self._client.tls_set(**self._tls_args)
             except ValueError as e:
                 # tls_set only raises ValueErrors directly
-                raise_from(exceptions.MQTTTLSError("Unexpected error enabling TLS", e))
+                raise exceptions.MQTTTLSError("Unexpected error enabling TLS") from e
             except ssl.SSLError as e:
                 # incorrect cipher, etc.
-                raise_from(
-                    exceptions.MQTTTLSError("Unexpected SSL error enabling TLS", e)
-                )
+                raise exceptions.MQTTTLSError(
+                    "Unexpected SSL error enabling TLS"
+                ) from e
 
         # Arbitrary number, could just be 1 and only accept 1 message per stages
         # but we might want to raise an error if more than 1 message is received
@@ -159,15 +151,12 @@ class MQTTClient(object):
             try:
                 with open(self._tls_args[key], "r"):
                     pass
-            except LoadError as e:
-                raise_from(
-                    exceptions.MQTTTLSError(
-                        "Couldn't load '{}' from '{}'".format(key, self._tls_args[key])
-                    ),
-                    e,
-                )
+            except IOError as e:
+                raise exceptions.MQTTTLSError(
+                    "Couldn't load '{}' from '{}'".format(key, self._tls_args[key])
+                ) from e
             except KeyError:
-                pass
+                logger.debug("File not found", exc_info=True)
 
         # could be moved to schema validation stage
         check_file_exists("cert_reqs")
@@ -178,22 +167,19 @@ class MQTTClient(object):
         try:
             self._tls_args["cert_reqs"] = getattr(ssl, self._tls_args["cert_reqs"])
         except KeyError:
-            pass
+            logger.debug("No cert specified")
 
         try:
             self._tls_args["tls_version"] = getattr(ssl, self._tls_args["tls_version"])
         except AttributeError as e:
-            raise_from(
-                exceptions.MQTTTLSError(
-                    "Error getting TLS version from "
-                    "ssl module - ssl module had no attribute '{}'. Check the "
-                    "documentation for the version of python you're using to see "
-                    "if this a valid option.".format(self._tls_args["tls_version"])
-                ),
-                e,
-            )
+            raise exceptions.MQTTTLSError(
+                "Error getting TLS version from "
+                "ssl module - ssl module had no attribute '{}'. Check the "
+                "documentation for the version of python you're using to see "
+                "if this a valid option.".format(self._tls_args["tls_version"])
+            ) from e
         except KeyError:
-            pass
+            logger.debug("No tls version explicitly specified")
 
     @staticmethod
     def _on_message(client, userdata, message):

@@ -1,5 +1,5 @@
 import pytest
-from mock import patch, Mock
+from unittest.mock import patch, Mock
 import paho.mqtt.client as paho
 
 from tavern._plugins.mqtt.client import MQTTClient

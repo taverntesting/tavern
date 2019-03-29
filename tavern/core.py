@@ -1,21 +1,18 @@
 import logging
-from distutils.util import strtobool
-import warnings
 import os
+from contextlib import ExitStack
 from copy import deepcopy
+from distutils.util import strtobool
 
 import pytest
-
-from contextlib2 import ExitStack
 from box import Box
 
 from tavern.schemas.files import wrapfile
-from .util import exceptions
-from .util.dict_util import format_keys
-from .util.delay import delay
-from .util.retry import retry
-
 from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
+from .util import exceptions
+from .util.delay import delay
+from .util.dict_util import format_keys
+from .util.retry import retry
 
 logger = logging.getLogger(__name__)
 
@@ -69,11 +66,9 @@ def _get_included_stages(tavern_box, test_block_config, test_spec, available_sta
         for included in test_spec["includes"]:
             for stage in included.get("stages", {}):
                 if stage["id"] in stage_ids(available_stages):
-                    msg = "Stage id '{}' defined in stage-included test which was already defined in global configuration - this will be an error in future!".format(
-                        stage["id"]
+                    raise exceptions.DuplicateStageDefinitionError(
+                        "Stage id '{}' defined in stage-included test which was already defined in global configuration"
                     )
-                    logger.warning(msg)
-                    warnings.warn(msg, FutureWarning)
 
         included_stages = []
 
@@ -245,58 +240,6 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     delay(stage, "after", test_block_config["variables"])
 
 
-def _run_pytest(
-    in_file,
-    tavern_global_cfg,
-    tavern_mqtt_backend=None,
-    tavern_http_backend=None,
-    tavern_strict=None,
-    pytest_args=None,
-    **kwargs
-):  # pylint: disable=too-many-arguments
-    """Run all tests contained in a file using pytest.main()
-
-    Args:
-        in_file (str): file to run tests on
-        tavern_global_cfg (str, dict): Extra global config
-        tavern_mqtt_backend (str, optional): name of MQTT plugin to use. If not
-            specified, uses tavern-mqtt
-        tavern_http_backend (str, optional): name of HTTP plugin to use. If not
-            specified, use tavern-http
-        tavern_strict (bool, optional): Strictness of checking for responses.
-            See documentation for details
-        pytest_args (list, optional): List of extra arguments to pass directly
-            to Pytest as if they were command line arguments
-        **kwargs (dict): ignored
-
-    Returns:
-        bool: Whether ALL tests passed or not
-    """
-
-    if kwargs:
-        logger.warning("Unexpected keyword args: %s", kwargs)
-        warnings.warn(
-            "Passing extra keyword args to run() when using pytest is used are ignored.",
-            FutureWarning,
-        )
-
-    pytest_args = pytest_args or []
-    pytest_args += [in_file]
-
-    if tavern_mqtt_backend:
-        pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
-    if tavern_http_backend:
-        pytest_args += ["--tavern-http-backend", tavern_http_backend]
-    if tavern_strict:
-        pytest_args += ["--tavern-strict", tavern_strict]
-
-    with ExitStack() as stack:
-        if tavern_global_cfg:
-            global_filename = _get_or_wrap_global_cfg(stack, tavern_global_cfg)
-            pytest_args += ["--tavern-global-cfg", global_filename]
-        return pytest.main(args=pytest_args)
-
-
 def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
     """
     Try to parse global configuration from given argument.
@@ -334,16 +277,44 @@ def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
     return global_filename
 
 
-def run(in_file, tavern_global_cfg=None, **kwargs):
-    """Run tests in file
+def run(
+    in_file,
+    tavern_global_cfg,
+    tavern_mqtt_backend=None,
+    tavern_http_backend=None,
+    tavern_strict=None,
+    pytest_args=None,
+):  # pylint: disable=too-many-arguments
+    """Run all tests contained in a file using pytest.main()
 
     Args:
-        in_file (str): file to run tests for
+        in_file (str): file to run tests on
         tavern_global_cfg (str, dict): Extra global config
-        **kwargs: any extra arguments to pass to _run_pytest, see that function
-            for details
+        tavern_mqtt_backend (str, optional): name of MQTT plugin to use. If not
+            specified, uses tavern-mqtt
+        tavern_http_backend (str, optional): name of HTTP plugin to use. If not
+            specified, use tavern-http
+        tavern_strict (bool, optional): Strictness of checking for responses.
+            See documentation for details
+        pytest_args (list, optional): List of extra arguments to pass directly
+            to Pytest as if they were command line arguments
 
     Returns:
-        bool: False if there were test failures, True otherwise
+        bool: Whether ALL tests passed or not
     """
-    return _run_pytest(in_file, tavern_global_cfg, **kwargs)
+
+    pytest_args = pytest_args or []
+    pytest_args += [in_file]
+
+    if tavern_mqtt_backend:
+        pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
+    if tavern_http_backend:
+        pytest_args += ["--tavern-http-backend", tavern_http_backend]
+    if tavern_strict:
+        pytest_args += ["--tavern-strict", tavern_strict]
+
+    with ExitStack() as stack:
+        if tavern_global_cfg:
+            global_filename = _get_or_wrap_global_cfg(stack, tavern_global_cfg)
+            pytest_args += ["--tavern-global-cfg", global_filename]
+        return pytest.main(args=pytest_args)

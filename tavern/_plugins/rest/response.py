@@ -3,10 +3,7 @@ import traceback
 import logging
 import copy
 
-try:
-    from urllib.parse import urlparse, parse_qs
-except ImportError:
-    from urlparse import urlparse, parse_qs  # type: ignore
+from urllib.parse import urlparse, parse_qs
 
 from requests.status_codes import _codes
 

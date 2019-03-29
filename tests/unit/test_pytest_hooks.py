@@ -3,7 +3,7 @@ import os
 
 import pytest
 from faker import Faker
-from mock import Mock
+from unittest.mock import Mock
 
 from tavern.testutils.pytesthook.file import YamlFile
 

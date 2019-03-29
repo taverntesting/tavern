@@ -1,4 +1,4 @@
-from mock import patch
+from unittest.mock import patch
 import yaml
 import sys
 import pytest

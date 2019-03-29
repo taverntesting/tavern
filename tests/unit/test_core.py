@@ -1,7 +1,7 @@
 import json
 import uuid
 import os
-from mock import patch, Mock, MagicMock
+from unittest.mock import patch, Mock, MagicMock
 from copy import deepcopy
 
 import pytest

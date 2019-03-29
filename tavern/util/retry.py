@@ -1,8 +1,6 @@
 import logging
 from functools import wraps
 
-from future.utils import raise_from
-
 from . import exceptions
 from .delay import delay
 
@@ -26,6 +24,7 @@ def retry(stage, test_block_config):
         @wraps(fn)
         def wrapped(*args, **kwargs):
             i = 0
+            res = None
             for i in range(max_retries + 1):
                 try:
                     res = fn(*args, **kwargs)
@@ -43,14 +42,12 @@ def retry(stage, test_block_config):
                             stage["name"],
                             max_retries,
                         )
-                        raise_from(
-                            exceptions.TestFailError(
-                                "Test '{}' failed: stage did not succeed in {} retries.".format(
-                                    stage["name"], max_retries
-                                )
-                            ),
-                            e,
-                        )
+                        raise exceptions.TestFailError(
+                            "Test '{}' failed: stage did not succeed in {} retries.".format(
+                                stage["name"], max_retries
+                            )
+                        ) from e
+
                 else:
                     break
 

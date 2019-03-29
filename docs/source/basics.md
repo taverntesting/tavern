@@ -148,9 +148,9 @@ request:
 ```
 
 This is formatted using Python's [string formatting
-syntax](https://docs.python.org/2/library/string.html#format-string-syntax). The
+syntax](https://docs.python.org/3/library/string.html#format-string-syntax). The
 variable to be used is encased in curly brackets and an optional
-[type code](https://docs.python.org/2/library/string.html#format-specification-mini-language)
+[type code](https://docs.python.org/3/library/string.html#format-specification-mini-language)
 can be passed after a colon.
 
 This means that if you want to pass a literal `{` or `}` in a request (or expect

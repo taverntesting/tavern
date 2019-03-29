@@ -1,17 +1,13 @@
 import contextlib
+from contextlib import ExitStack
 import json
 import logging
 import mimetypes
 import os
 import warnings
 
-try:
-    from urllib.parse import quote_plus
-except ImportError:
-    from urllib import quote_plus  # type: ignore
+from urllib.parse import quote_plus
 
-from contextlib2 import ExitStack
-from future.utils import raise_from
 import requests
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
@@ -288,7 +284,7 @@ class RestRequest(BaseRequest):
 
             # If it doesn't have a mimetype, or can't guess it, don't
             # send the content type for the file
-            content_type, encoding = mimetypes.guess_type((filepath))
+            content_type, encoding = mimetypes.guess_type(filepath)
             if content_type:
                 # a 3-tuple ('filename', fileobj, 'content_type')
                 logger.debug("content_type for '%s' = '%s'", filename, content_type)
@@ -322,7 +318,7 @@ class RestRequest(BaseRequest):
             return self._prepared()
         except requests.exceptions.RequestException as e:
             logger.exception("Error running prepared request")
-            raise_from(exceptions.RestRequestException, e)
+            raise exceptions.RestRequestException from e
 
     @property
     def request_vars(self):

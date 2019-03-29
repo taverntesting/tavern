@@ -1,5 +1,5 @@
 import pytest
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 
 from tavern._plugins.rest.response import RestResponse
 from tavern.util.loader import ANYTHING

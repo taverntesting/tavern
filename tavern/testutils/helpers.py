@@ -5,7 +5,7 @@ import re
 import jwt
 import jmespath
 
-from future.utils import raise_from
+
 from box import Box
 
 from tavern.util import exceptions
@@ -90,12 +90,10 @@ def validate_pykwalify(response, schema):
     try:
         to_verify = response.json()
     except TypeError as e:
-        raise_from(
-            exceptions.BadSchemaError(
-                "Tried to match a pykwalify schema against a non-json response"
-            ),
-            e,
-        )
+        raise exceptions.BadSchemaError(
+            "Tried to match a pykwalify schema against a non-json response"
+        ) from e
+
     else:
         verify_generic(to_verify, schema)
 
@@ -154,4 +152,4 @@ def validate_content(response, comparisons):
                     _operator, actual, expected, parsed_expession, expession
                 )
             except AssertionError as e:
-                raise_from(exceptions.JMESError("Error validating JMES"), e)
+                raise exceptions.JMESError("Error validating JMES") from e

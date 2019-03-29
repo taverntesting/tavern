@@ -1,5 +1,5 @@
 import pytest
-from mock import Mock
+from unittest.mock import Mock
 
 from tavern._plugins.mqtt.client import MQTTClient
 from tavern.util import exceptions

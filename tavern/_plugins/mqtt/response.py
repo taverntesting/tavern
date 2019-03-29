@@ -8,12 +8,6 @@ from tavern.response.base import BaseResponse
 from tavern.util.dict_util import check_keys_match_recursive
 from tavern.util.loader import ANYTHING
 
-try:
-    LoadException = json.decoder.JSONDecodeError
-except AttributeError:
-    # python 2 raises ValueError on json loads() error instead
-    LoadException = ValueError
-
 logger = logging.getLogger(__name__)
 
 
@@ -91,7 +85,7 @@ class MQTTResponse(BaseResponse):
             if json_payload:
                 try:
                     msg.payload = json.loads(msg.payload)
-                except LoadException:
+                except json.decoder.JSONDecodeError:
                     logger.warning(
                         "Expected a json payload but got '%s'",
                         msg.payload,

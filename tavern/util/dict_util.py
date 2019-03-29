@@ -1,18 +1,10 @@
-import warnings
 import logging
-from builtins import str as ustr
+from collections.abc import Mapping
 
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
-
-from future.utils import raise_from
 from box import Box
 
 from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
 from . import exceptions
-
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +29,7 @@ def format_keys(val, variables):
             formatted[key] = format_keys(val[key], box_vars)
     elif isinstance(val, (list, tuple)):
         formatted = [format_keys(item, box_vars) for item in val]
-    elif isinstance(val, (ustr, str)):
+    elif isinstance(val, str):
         try:
             formatted = val.format(**box_vars)
         except KeyError as e:
@@ -45,10 +37,10 @@ def format_keys(val, variables):
                 "Failed to resolve string [%s] with variables [%s]", val, box_vars
             )
             logger.error("Key(s) not found in format: %s", e.args)
-            raise_from(exceptions.MissingFormatError(e.args), e)
+            raise exceptions.MissingFormatError(e.args) from e
         except IndexError as e:
             logger.error("Empty format values are invalid")
-            raise_from(exceptions.MissingFormatError(e.args), e)
+            raise exceptions.MissingFormatError(e.args) from e
     elif isinstance(val, TypeConvertToken):
         value = format_keys(val.value, box_vars)
         formatted = val.constructor(value)
@@ -217,7 +209,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
         KeyMismatchError: expected_val and actual_val did not match
     """
 
-    # pylint: disable=too-many-locals,too-many-statements
+    # pylint: disable=too-many-locals
 
     def full_err():
         """Get error in the format:
@@ -239,11 +231,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
             type(actual_val),
         )
 
-    # Check required because of python 2/3 unicode compatability when loading yaml
-    if isinstance(actual_val, ustr):
-        actual_type = str
-    else:
-        actual_type = type(actual_val)
+    actual_type = type(actual_val)
 
     if expected_val is ANYTHING:
         # Match anything. We could just early exit here but having the debug
@@ -273,18 +261,12 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
         # of the type sentinels
 
         if not (expected_val is ANYTHING):  # pylint: disable=superfluous-parens
-            # NOTE
-            # Second part of this check will be removed in future - see deprecation
-            # warning below for details
-            if not expected_matches and expected_val is not None:
-                raise_from(
-                    exceptions.KeyMismatchError(
-                        "Type of returned data was different than expected ({})".format(
-                            full_err()
-                        )
-                    ),
-                    e,
-                )
+            if not expected_matches:
+                raise exceptions.KeyMismatchError(
+                    "Type of returned data was different than expected ({})".format(
+                        full_err()
+                    )
+                ) from e
 
         if isinstance(expected_val, dict):
             akeys = set(actual_val.keys())
@@ -309,7 +291,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                 # If there are more keys in 'expected' compared to 'actual',
                 # this is still a hard error and we shouldn't continue
                 if extra_expected_keys or strict:
-                    raise_from(exceptions.KeyMismatchError(full_msg), e)
+                    raise exceptions.KeyMismatchError(full_msg) from e
                 else:
                     logger.warning(full_msg, exc_info=True)
 
@@ -330,14 +312,11 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                     )
         elif isinstance(expected_val, list):
             if len(expected_val) != len(actual_val):
-                raise_from(
-                    exceptions.KeyMismatchError(
-                        "Length of returned list was different than expected - expected {} items, got {} ({})".format(
-                            len(expected_val), len(actual_val), full_err()
-                        )
-                    ),
-                    e,
-                )
+                raise exceptions.KeyMismatchError(
+                    "Length of returned list was different than expected - expected {} items from got {} ({}".format(
+                        len(expected_val), len(actual_val), full_err()
+                    )
+                ) from e
 
             # TODO
             # Check things in the wrong order?
@@ -349,12 +328,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                     # This will still raise an error, but it will be more
                     # obvious where the error came from (in python 3 at least)
                     # and will take ANYTHING into account
-                    raise_from(sub_e, e)
-        elif expected_val is None:
-            warnings.warn(
-                "Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.",
-                FutureWarning,
-            )
+                    raise sub_e from e
         elif expected_val is ANYTHING:
             logger.debug("Actual value = '%s' - matches !anything", actual_val)
         elif isinstance(expected_val, TypeSentinel) and expected_matches:
@@ -364,6 +338,6 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                 expected_val.constructor,
             )
         else:
-            raise_from(
-                exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e
-            )
+            raise exceptions.KeyMismatchError(
+                "Key mismatch: ({})".format(full_err())
+            ) from e

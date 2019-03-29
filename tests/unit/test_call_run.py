@@ -1,5 +1,5 @@
 import pytest
-from mock import patch
+from unittest.mock import patch
 
 from tavern.core import run
 from tavern.util import exceptions

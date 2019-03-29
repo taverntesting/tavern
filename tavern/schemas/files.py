@@ -5,7 +5,6 @@ import functools
 import logging
 import contextlib
 
-from future.utils import raise_from
 
 import yaml
 from pykwalify import core
@@ -108,7 +107,7 @@ def verify_generic(to_verify, schema):
         verifier.validate()
     except pykwalify.errors.PyKwalifyException as e:
         logger.exception("Error validating %s", to_verify)
-        raise_from(BadSchemaError(), e)
+        raise BadSchemaError() from e
 
 
 @contextlib.contextmanager

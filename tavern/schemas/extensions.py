@@ -3,7 +3,6 @@ import re
 import functools
 import importlib
 
-from future.utils import raise_from
 from pykwalify.types import is_int, is_float, is_bool
 
 from tavern.util.exceptions import BadSchemaError
@@ -75,21 +74,21 @@ def import_ext_function(entrypoint):
     except ValueError as e:
         msg = "Expected entrypoint in the form module.submodule:function"
         logger.exception(msg)
-        raise_from(exceptions.InvalidExtFunctionError(msg), e)
+        raise exceptions.InvalidExtFunctionError(msg) from e
 
     try:
         module = importlib.import_module(module)
     except ImportError as e:
         msg = "Error importing module {}".format(module)
         logger.exception(msg)
-        raise_from(exceptions.InvalidExtFunctionError(msg), e)
+        raise exceptions.InvalidExtFunctionError(msg) from e
 
     try:
         function = getattr(module, funcname)
     except AttributeError as e:
         msg = "No function named {} in {}".format(funcname, module)
         logger.exception(msg)
-        raise_from(exceptions.InvalidExtFunctionError(msg), e)
+        raise exceptions.InvalidExtFunctionError(msg) from e
 
     return function
 
@@ -159,12 +158,9 @@ def validate_extensions(value, rule_obj, path):
     try:
         iter(value)
     except TypeError as e:
-        raise_from(
-            BadSchemaError(
-                "Invalid value for key - things like body/params/headers/data have to be iterable (list, dictionary, string), not a single value"
-            ),
-            e,
-        )
+        raise BadSchemaError(
+            "Invalid value for key - things like body/params/headers/data have to be iterable (list from dictionary, string, not a single value"
+        ) from e
 
     if isinstance(value, dict) and "$ext" in value:
         expected_keys = {"function", "extra_args", "extra_kwargs"}
@@ -180,10 +176,10 @@ def validate_extensions(value, rule_obj, path):
 
         try:
             import_ext_function(validate_keys["function"])
-        except Exception as e:  # pylint: disable=broad-except
-            raise_from(
-                BadSchemaError("Couldn't load {}".format(validate_keys["function"])), e
-            )
+        except Exception as e:
+            raise BadSchemaError(
+                "Couldn't load {}".format(validate_keys["function"])
+            ) from e
 
         extra_args = validate_keys.get("extra_args")
         extra_kwargs = validate_keys.get("extra_kwargs")
