@@ -294,6 +294,7 @@ def _run_pytest(
         if tavern_global_cfg:
             global_filename = _get_or_wrap_global_cfg(stack, tavern_global_cfg)
             pytest_args += ["--tavern-global-cfg", global_filename]
+        logger.critical(pytest_args)
         return pytest.main(args=pytest_args)
 
 
