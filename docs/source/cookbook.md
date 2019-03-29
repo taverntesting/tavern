@@ -31,22 +31,21 @@ in your fixture to change the behaviour:
 ```yaml
 test_name: endpoint 1 test
 
-pytest:
-  marks:
-    - endpoint_1
-    - usefixtures:
-         - read_uuid
+marks:
+  - endpoint_1
+  - usefixtures:
+       - read_uuid
 
 stages:
     ...
+    
 ---
 test_name: endpoint 2 test
 
-pytest:
-  marks:
-    - endpoint_2
-    - usefixtures:
-         - read_uuid
+marks:
+  - endpoint_2
+  - usefixtures:
+       - read_uuid
 
 stages:
     ...
