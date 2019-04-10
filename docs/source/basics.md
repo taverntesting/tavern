@@ -1198,7 +1198,9 @@ to send to a server and we don't want hundreds of lines in the test:
     "friends": [
       {
         "id": 0,
-   ...
+        "etc": []
+      }
+    ]
   }
 ]
 ```
