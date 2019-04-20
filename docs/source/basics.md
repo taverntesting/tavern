@@ -1017,7 +1017,7 @@ at the command line using the `--tavern-global-cfg` flag. The variables in
 `common.yaml` will then be available for formatting in *all* tests during that
 test run.
 
-**NOTE**: `tavern-ci` is essentially just an alias for `py.test` and
+**NOTE**: `tavern-ci` is just an alias for `py.test` and
 will take the same options.
 
 ```
