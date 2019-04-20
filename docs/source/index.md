@@ -37,3 +37,4 @@ Tavern is still in active development and is used by 100s of companies.
 * [Plugins](plugins.md)
 * [Debugging Tests](debugging.md)
 * [Examples](examples.md)
+* [Advanced Cookbook](cookbook.md)

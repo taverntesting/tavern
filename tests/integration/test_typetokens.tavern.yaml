@@ -500,3 +500,22 @@ stages:
         dvalue: '{{"query": "{{ val1 {{ val2 {{ val3 {{ val4, val5 }} }} }} }}"}}'
     response:
       status_code: 200
+
+---
+
+test_name: Test raw token works in response as well
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Post raw, expect raw
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: !raw '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'
+    response:
+      status_code: 200
+      body:
+        value: !raw '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'

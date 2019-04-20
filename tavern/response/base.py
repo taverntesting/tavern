@@ -10,7 +10,7 @@ import warnings
 
 from tavern.util import exceptions
 from tavern.util.python_2_util import indent
-from tavern.util.dict_util import format_keys, check_keys_match_recursive
+from tavern.util.dict_util import check_keys_match_recursive
 
 logger = logging.getLogger(__name__)
 
@@ -63,9 +63,10 @@ class BaseResponse(object):
             logger.debug("No expected %s to check against", blockname)
             return
 
-        expected_block = format_keys(
-            expected_block, self.test_block_config["variables"]
-        )
+        # This should be done _before_ it gets to this point - typically in get_expected_from_request from plugin
+        # expected_block = format_keys(
+        #     expected_block, self.test_block_config["variables"]
+        # )
 
         if block is None:
             self._adderr(

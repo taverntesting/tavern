@@ -258,7 +258,7 @@ def _run_pytest(
 
     Args:
         in_file (str): file to run tests on
-        tavern_global_cfg (dict): Extra global config
+        tavern_global_cfg (str, dict): Extra global config
         tavern_mqtt_backend (str, optional): name of MQTT plugin to use. If not
             specified, uses tavern-mqtt
         tavern_http_backend (str, optional): name of HTTP plugin to use. If not
@@ -274,6 +274,7 @@ def _run_pytest(
     """
 
     if kwargs:
+        logger.warning("Unexpected keyword args: %s", kwargs)
         warnings.warn(
             "Passing extra keyword args to run() when using pytest is used are ignored.",
             FutureWarning,
@@ -293,7 +294,6 @@ def _run_pytest(
         if tavern_global_cfg:
             global_filename = _get_or_wrap_global_cfg(stack, tavern_global_cfg)
             pytest_args += ["--tavern-global-cfg", global_filename]
-
         return pytest.main(args=pytest_args)
 
 
@@ -339,7 +339,7 @@ def run(in_file, tavern_global_cfg=None, **kwargs):
 
     Args:
         in_file (str): file to run tests for
-        tavern_global_cfg (dict): Extra global config
+        tavern_global_cfg (str, dict): Extra global config
         **kwargs: any extra arguments to pass to _run_pytest, see that function
             for details
 
