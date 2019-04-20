@@ -1,13 +1,13 @@
-import logging
-import re
 import functools
 import importlib
+import logging
+import re
 
 from future.utils import raise_from
 from pykwalify.types import is_int, is_float, is_bool
 
-from tavern.util.exceptions import BadSchemaError
 from tavern.util import exceptions
+from tavern.util.exceptions import BadSchemaError
 from tavern.util.loader import ApproxScalar, IntToken, FloatToken, BoolToken
 
 
@@ -325,9 +325,6 @@ def validate_json_with_extensions(value, rule_obj, path):
     just because it seems like you can't match a dict OR a list in pykwalify
     """
     validate_extensions(value, rule_obj, path)
-
-    if not isinstance(value, (list, dict)):
-        raise BadSchemaError("Error at {} - expected a list or dict".format(path))
 
     def nested_values(d):
         if isinstance(d, dict):
