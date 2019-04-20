@@ -1133,12 +1133,6 @@ includes:
   - !include auth_stage.yaml
 
 stages:
-  - name: Unauthenticated /hello
-    request:
-      url: "{service:s}/hello/Jim"
-      method: GET
-    response:
-      status_code: 401
   - type: ref
     id: login_get_token
   - name: Authenticated /hello
