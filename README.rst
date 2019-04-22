@@ -143,7 +143,7 @@ After you've created your development environment, just
 ``pip install tox`` and run ``tox`` to run the unit tests. If you want
 to run the integration tests, make sure you have
 `docker <https://www.docker.com/>`__ installed and run
-``tox -c tox-integraton.ini`` (bear in mind this might take a while.)
+``tox -c tox-integration.ini`` (bear in mind this might take a while.)
 It's that simple!
 
 Tavern uses [black](https://github.com/ambv/black) to keep all of the code
