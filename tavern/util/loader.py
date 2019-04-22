@@ -132,7 +132,7 @@ def construct_include(loader, node):
     )
     extension = os.path.splitext(filename)[1].lstrip(".")
 
-    if extension not in ("yaml", "yml"):
+    if extension not in ("yaml", "yml", "json"):
         raise BadSchemaError(
             "Unknown filetype '{}' (included files must be in YAML format and end with .yaml or .yml)".format(
                 filename

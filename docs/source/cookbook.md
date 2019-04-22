@@ -1,0 +1,74 @@
+# Advanced Cookbook
+
+This page contains some extra reading you might find useful when
+writing and running your Tavern tests.
+
+## Pytest plugins
+
+Because Tavern is built upon Pytest, The majority of Pytest plugins can
+be used seamlessly to help your testing.
+
+- `pytest-sugar` and `pytest-tldr` can all be used
+to make test result reporting more pretty or less pretty.
+- `pytest-instafail` shows errors in line while tests are running
+- `pytest-html` can be used to provide html reports of test runs
+- `pytest-xdist` can be used to run your tests in parallel, speeding up
+test runs if you have a large number of tests
+
+## Using marks with fixtures
+
+Though passing arguments into fixtures is unsupported at the time of writing,
+you can use [Pytest marks](https://docs.pytest.org/en/latest/mark.html)
+to control the behaviour of fixtures.
+
+If you have a fixture that loads some information from a file or some
+other external data source, but the behaviour needs to change depending
+on which test is being run, this can be done by  marking the test and
+accessing the test
+[Node](https://docs.pytest.org/en/latest/reference.html#node)
+in your fixture to change the behaviour:
+
+```yaml
+test_name: endpoint 1 test
+
+marks:
+  - endpoint_1
+  - usefixtures:
+       - read_uuid
+
+stages:
+    ...
+
+---
+test_name: endpoint 2 test
+
+marks:
+  - endpoint_2
+  - usefixtures:
+       - read_uuid
+
+stages:
+    ...
+```
+
+In the `read_uuid` fixture:
+
+```python
+import pytest
+import json
+
+@pytest.fixture
+def read_uuid(request):  # 'request' is a built in pytest fixture
+    marks = request.node.own_markers
+    mark_names = [m.name for m in marks]
+
+    with open("stored_uuids.json", "r") as ufile:
+        uuids = json.load(ufile)
+
+    if "endpoint_1" in mark_names:
+        return uuids["endpoint_1"]
+    elif "endpoint_2" in mark_names:
+        return uuids["endpoint_2"]
+    else:
+        pytest.fail("No marker found on test!")
+```

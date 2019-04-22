@@ -1,3 +1,7 @@
+import contextlib
+import os
+import tempfile
+from textwrap import dedent
 import copy
 import os
 import tempfile
@@ -7,9 +11,12 @@ from textwrap import dedent
 import pytest
 import yaml
 
+from mock import Mock, patch
+
 from tavern.schemas.extensions import validate_extensions
 from tavern.schemas.files import wrapfile
 from tavern.util import exceptions
+from tavern.util.loader import ANYTHING, IncludeLoader, construct_include
 from tavern.util.dict_util import (
     deep_dict_merge,
     check_keys_match_recursive,
@@ -255,3 +262,34 @@ class TestLoadCfg:
                     load_single_document_yaml(wrapped_tmp.name)
             finally:
                 os.remove(wrapped_tmp.name)
+
+
+class TestLoadFile:
+    @staticmethod
+    @contextlib.contextmanager
+    def magic_wrap(to_wrap, suffix):
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as wrapped_tmp:
+            dumped = yaml.dump(to_wrap, default_flow_style=False)
+            wrapped_tmp.write(dumped.encode("utf8"))
+            wrapped_tmp.close()
+
+            try:
+                yield wrapped_tmp.name
+            finally:
+                os.remove(wrapped_tmp.name)
+
+    @pytest.mark.parametrize("suffix", (".yaml", ".yml", ".json"))
+    def test_load_extensions(self, suffix):
+        example = {"a": "b"}
+
+        with TestLoadFile.magic_wrap(example, suffix) as tmpfile:
+            with patch("tavern.util.loader.os.path.join", return_value=tmpfile):
+                assert example == construct_include(Mock(), Mock())
+
+    def test_load_bad_extension(self):
+        example = {"a": "b"}
+
+        with TestLoadFile.magic_wrap(example, ".bllakjf") as tmpfile:
+            with patch("tavern.util.loader.os.path.join", return_value=tmpfile):
+                with pytest.raises(exceptions.BadSchemaError):
+                    construct_include(Mock(), Mock())
