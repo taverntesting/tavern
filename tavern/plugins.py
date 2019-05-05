@@ -8,6 +8,7 @@ import logging
 import stevedore
 from future.utils import raise_from
 
+from tavern.util.dict_util import format_keys
 from .util import exceptions
 
 logger = logging.getLogger(__name__)
@@ -154,7 +155,9 @@ def get_extra_sessions(test_spec, test_block_config):
             logger.debug(
                 "Initialising session for %s (%s)", p.name, p.plugin.session_type
             )
-            sessions[p.name] = p.plugin.session_type(**test_spec.get(p.name, {}))
+            session_spec = test_spec.get(p.name, {})
+            formatted = format_keys(session_spec, test_block_config.get("variables", {}))
+            sessions[p.name] = p.plugin.session_type(**formatted)
 
     return sessions
 
