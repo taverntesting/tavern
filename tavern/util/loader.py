@@ -339,9 +339,13 @@ def load_single_document_yaml(filename):
     return contents
 
 
-def error_on_empty_scalar(*args, **kwargs):  # pylint: disable=unused-argument
-    raise exceptions.BadSchemaError(
-        "Cannot define an empty value in test - either give it a value or explicitly set it to None")
+def error_on_empty_scalar(self, mark):  # pylint: disable=unused-argument
+    location = "{mark.name:s}:{mark.line:d} - column {mark.column:d}".format(mark=mark)
+    error = "Error at {} - cannot define an empty value in test - either give it a value or explicitly set it to None".format(
+        location
+    )
+
+    raise exceptions.BadSchemaError(error)
 
 
 yaml.parser.Parser.process_empty_scalar = error_on_empty_scalar
