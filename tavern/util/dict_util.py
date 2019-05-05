@@ -1,5 +1,5 @@
-import warnings
 import logging
+import warnings
 from builtins import str as ustr
 
 try:
@@ -12,7 +12,6 @@ from box import Box
 
 from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
 from . import exceptions
-
 
 logger = logging.getLogger(__name__)
 
@@ -311,7 +310,12 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                 if extra_expected_keys or strict:
                     raise_from(exceptions.KeyMismatchError(full_msg), e)
                 else:
-                    logger.warning(full_msg, exc_info=True)
+                    logger.debug(
+                        "Mismatch in returned data, continuing due to strict=%s: %s",
+                        strict,
+                        full_msg,
+                        exc_info=True,
+                    )
 
             # If strict is True, an error will be raised above. If not, recurse
             # through both sets of keys and just ignore missing ones
