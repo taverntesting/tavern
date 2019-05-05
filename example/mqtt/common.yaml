@@ -4,4 +4,5 @@ description: used for testing against local server
 
 variables:
   host: http://localhost:5002
-  mqtt_port: 5002
+  mqtt_host: localhost
+  mqtt_port: 9001
