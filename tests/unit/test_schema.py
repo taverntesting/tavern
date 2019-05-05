@@ -6,9 +6,9 @@ from textwrap import dedent
 import pytest
 import yaml
 
-from tavern.util.exceptions import BadSchemaError
-from tavern.schemas.files import verify_tests
 from tavern.core import run
+from tavern.schemas.files import verify_tests
+from tavern.util.exceptions import BadSchemaError
 
 
 @pytest.fixture(name="test_dict")
@@ -143,11 +143,12 @@ class TestBadSchemaAtCollect:
     def test_empty_dict_val(self):
         """Defining an empty mapping value is not allowed"""
 
-        content = dedent("""
+        content = dedent(
+            """
         ---
-        
+
         test_name: Test cannot send a set
-        
+
         stages:
           - name: match top level
             request:
@@ -158,7 +159,8 @@ class TestBadSchemaAtCollect:
               status_code: 200
               body:
                 top: !anything
-        """)
+        """
+        )
 
         with pytest.raises(BadSchemaError):
             with TestBadSchemaAtCollect.wrapfile_nondict(content) as filename:
@@ -167,11 +169,12 @@ class TestBadSchemaAtCollect:
     def test_empty_list_val(self):
         """Defining an empty list value is not allowed"""
 
-        content = dedent("""
+        content = dedent(
+            """
         ---
-        
+
         test_name: Test cannot send a set
-        
+
         stages:
           - name: match top level
             request:
@@ -185,7 +188,8 @@ class TestBadSchemaAtCollect:
               status_code: 200
               body:
                 top: !anything
-        """)
+        """
+        )
 
         with pytest.raises(BadSchemaError):
             with TestBadSchemaAtCollect.wrapfile_nondict(content) as filename:
