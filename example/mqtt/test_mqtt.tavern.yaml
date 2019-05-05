@@ -343,7 +343,7 @@ paho-mqtt:
     client_id: tavern-tester
   connect:
     host: "{host}"
-    port: "{mqtt_port:d}"
+    port: !int "{mqtt_port:d}"
     timeout: 3
 
 stages:
