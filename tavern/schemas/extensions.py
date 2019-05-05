@@ -136,7 +136,7 @@ def get_wrapped_create_function(ext):
     return inner
 
 
-def validate_extensions(value, rule_obj, path):
+def validate_extensions(value, rule_obj, path, must_iter=True):
     """Given a specification for calling a validation function, make sure that
     the arguments are valid (ie, function is valid, arguments are of the
     correct type...)
@@ -156,15 +156,16 @@ def validate_extensions(value, rule_obj, path):
     """
     # pylint: disable=unused-argument
 
-    try:
-        iter(value)
-    except TypeError as e:
-        raise_from(
-            BadSchemaError(
-                "Invalid value for key - things like body/params/headers/data have to be iterable (list, dictionary, string), not a single value"
-            ),
-            e,
-        )
+    if must_iter:
+        try:
+            iter(value)
+        except TypeError as e:
+            raise_from(
+                BadSchemaError(
+                    "Invalid value for key - things like body/params/headers/data have to be iterable (list, dictionary, string), not a single value"
+                ),
+                e,
+            )
 
     if isinstance(value, dict) and "$ext" in value:
         expected_keys = {"function", "extra_args", "extra_kwargs"}
@@ -324,7 +325,7 @@ def validate_json_with_extensions(value, rule_obj, path):
     """ Performs the above match, but also matches a dict or a list. This it
     just because it seems like you can't match a dict OR a list in pykwalify
     """
-    validate_extensions(value, rule_obj, path)
+    validate_extensions(value, rule_obj, path, must_iter=False)
 
     def nested_values(d):
         if isinstance(d, dict):
