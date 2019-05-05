@@ -6,9 +6,9 @@ from textwrap import dedent
 import pytest
 import yaml
 
-from tavern.core import run
 from tavern.schemas.files import verify_tests
 from tavern.util.exceptions import BadSchemaError
+from tavern.util.loader import load_single_document_yaml
 
 
 @pytest.fixture(name="test_dict")
@@ -130,7 +130,9 @@ class TestBadSchemaAtCollect:
     @staticmethod
     @contextlib.contextmanager
     def wrapfile_nondict(to_wrap):
-        with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as wrapped_tmp:
+        with tempfile.NamedTemporaryFile(
+            suffix=".yaml", prefix="test_", delete=False
+        ) as wrapped_tmp:
             # put into a file
             wrapped_tmp.write(to_wrap.encode("utf8"))
             wrapped_tmp.close()
@@ -143,7 +145,7 @@ class TestBadSchemaAtCollect:
     def test_empty_dict_val(self):
         """Defining an empty mapping value is not allowed"""
 
-        content = dedent(
+        text = dedent(
             """
         ---
 
@@ -162,14 +164,14 @@ class TestBadSchemaAtCollect:
         """
         )
 
-        with pytest.raises(BadSchemaError):
-            with TestBadSchemaAtCollect.wrapfile_nondict(content) as filename:
-                run(filename)
+        with TestBadSchemaAtCollect.wrapfile_nondict(text) as filename:
+            with pytest.raises(BadSchemaError):
+                load_single_document_yaml(filename)
 
     def test_empty_list_val(self):
         """Defining an empty list value is not allowed"""
 
-        content = dedent(
+        text = dedent(
             """
         ---
 
@@ -191,6 +193,6 @@ class TestBadSchemaAtCollect:
         """
         )
 
-        with pytest.raises(BadSchemaError):
-            with TestBadSchemaAtCollect.wrapfile_nondict(content) as filename:
-                run(filename)
+        with TestBadSchemaAtCollect.wrapfile_nondict(text) as filename:
+            with pytest.raises(BadSchemaError):
+                load_single_document_yaml(filename)
