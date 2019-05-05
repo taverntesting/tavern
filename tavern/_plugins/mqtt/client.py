@@ -319,6 +319,8 @@ class MQTTClient(object):
             )
 
     def __enter__(self):
+        logger.debug("Connecting to %s", self._connect_args)
+
         self._client.connect_async(**self._connect_args)
         self._client.loop_start()
 
