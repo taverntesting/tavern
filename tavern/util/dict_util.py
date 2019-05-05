@@ -78,6 +78,8 @@ def recurse_access_key(data, query):
     # The value might actually be None, in which case we will search twice for no reason,
     # but this shouldn't cause any issues
     if from_jmespath is None:
+        logger.debug("JMES path search was None - trying old implementation")
+
         try:
             from_recurse = _recurse_access_key(data, query.split("."))
         except (IndexError, KeyError) as e:
