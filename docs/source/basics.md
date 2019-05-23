@@ -188,7 +188,7 @@ stages:
       status_code: 200
       body:
         user_id: "{tavern.request_vars.params.user_id}"
-        new_welcome_message: "{tavern.request_vars.json.message}"
+        new_welcome_message: "{tavern.request_vars.json.welcome_message}"
 ```
 
 This example uses `json` and `params` - we can also use any of the other request
