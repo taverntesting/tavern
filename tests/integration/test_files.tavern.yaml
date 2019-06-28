@@ -18,6 +18,25 @@ stages:
 
 ---
 
+test_name: Test files can be uploaded alongside data
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Upload file and data
+    request:
+      url: "{host}/fake_upload_file_data"
+      method: POST
+      files:
+        test_files: "test_files.tavern.yaml"
+      data:
+        key: value
+    response:
+      status_code: 200
+
+---
+
 test_name: Test extra headers don't break content-type
 
 includes:
