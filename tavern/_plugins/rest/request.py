@@ -78,11 +78,12 @@ def get_request_args(rspec, test_block_config):
         # Explicitly raise an error here
         # From requests docs:
         # Note, the json parameter is ignored if either data or files is passed.
-        raise exceptions.BadSchemaError(
-            "Can only specify one type of request data in HTTP request (tried to send {})".format(
-                " and ".join(in_request)
+        # However, we allow the data + files case, as requests handles it correctly
+        if set(in_request) != {"data", "files"}:
+            raise exceptions.BadSchemaError(
+                "Can only specify one type of request data in HTTP request (tried to "
+                "send {})".format(" and ".join(in_request))
             )
-        )
 
     headers = rspec.get("headers", {})
     has_content_header = "content-type" in [h.lower() for h in headers.keys()]

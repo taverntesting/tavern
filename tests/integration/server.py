@@ -115,6 +115,37 @@ def upload_fake_file():
     return '', 200
 
 
+@app.route("/fake_upload_file_data", methods=["POST"])
+def upload_fake_file_and_data():
+    if not request.files:
+        return "", 401
+
+    if not request.form.to_dict():
+        return "", 402
+
+    # Verify that the content type is `multipart`
+    if not request.content_type.startswith("multipart/form-data"):
+        return "", 403
+
+    if not mimetypes.inited:
+        mimetypes.init()
+
+    for key, item in request.files.items():
+        if item.filename:
+            filetype = ".{}".format(item.filename.split(".")[-1])
+            if filetype in mimetypes.suffix_map:
+                if not item.content_type:
+                    return "", 400
+
+    # Try to download each of the files downloaded to /tmp
+    for key in request.files:
+        file_to_save = request.files[key]
+        path = os.path.join("/tmp", file_to_save.filename)
+        file_to_save.save(path)
+
+    return "", 200
+
+
 @app.route("/nested/again", methods=["GET"])
 def multiple_path_items_response():
     response = {
