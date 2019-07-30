@@ -244,7 +244,7 @@ There are two external functions built in to Tavern: `validate_jwt` and
 additional arguments that are passed directly to the `decode` method in the
 [PyJWT](https://github.com/jpadilla/pyjwt/blob/master/jwt/api_jwt.py#L59)
 library. **NOTE: Make sure the keyword arguments you are passing are correct
-or PyJWT will silently ignore them. In thr future, this function will likely be
+or PyJWT will silently ignore them. In the future, this function will likely be
 changed to use a different library to avoid this issue.**
 
 ```yaml
