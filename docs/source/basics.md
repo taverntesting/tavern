@@ -1085,7 +1085,7 @@ Say we have a login stage that needs to be run before every test in our
 test suite. Stages are defined in a configuration file like this:
 
 ```yaml
-# stage_auth.yaml
+# auth_stage.yaml
 ---
 
 name: Authentication stage
