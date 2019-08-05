@@ -156,7 +156,9 @@ def get_extra_sessions(test_spec, test_block_config):
                 "Initialising session for %s (%s)", p.name, p.plugin.session_type
             )
             session_spec = test_spec.get(p.name, {})
-            formatted = format_keys(session_spec, test_block_config.get("variables", {}))
+            formatted = format_keys(
+                session_spec, test_block_config.get("variables", {})
+            )
             sessions[p.name] = p.plugin.session_type(**formatted)
 
     return sessions
