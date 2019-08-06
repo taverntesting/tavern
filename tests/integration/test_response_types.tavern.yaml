@@ -49,3 +49,71 @@ stages:
       status_code: 200
       body:
         value: 手机号格式不正确
+
+---
+
+test_name: Test string as top-level JSON type
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Echo back a string value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: "json_string"
+    response:
+      status_code: 200
+      body: "json_string"
+
+---
+
+test_name: Test boolean as top-level JSON type
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Echo back a boolean value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: False
+    response:
+      status_code: 200
+      body: False
+
+---
+
+test_name: Test number as top-level JSON type
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Echo back a number value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: 1337
+    response:
+      status_code: 200
+      body: 1337
+
+---
+
+test_name: Test null as top-level JSON type
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Echo back a number value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: null
+    response:
+      status_code: 200
+      body: null
