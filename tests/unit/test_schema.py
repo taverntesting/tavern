@@ -52,20 +52,6 @@ class TestJSON:
 
         verify_tests(test_dict)
 
-    def test_json_value_request(self, test_dict):
-        """Don't match other stuff"""
-        test_dict["stages"][0]["request"]["json"] = "Hello"
-
-        with pytest.raises(BadSchemaError):
-            verify_tests(test_dict)
-
-    def test_json_value_response(self, test_dict):
-        """Don't match other stuff"""
-        test_dict["stages"][0]["response"]["body"] = "Hi"
-
-        with pytest.raises(BadSchemaError):
-            verify_tests(test_dict)
-
 
 class TestHeaders:
     def test_header_request_list(self, test_dict):
