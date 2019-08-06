@@ -1,5 +1,6 @@
 import logging
 
+
 try:
     from collections.abc import Mapping
 except ImportError:
@@ -8,6 +9,7 @@ except ImportError:
 from abc import abstractmethod
 import warnings
 
+from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util import exceptions
 from tavern.util.python_2_util import indent
 from tavern.util.dict_util import check_keys_match_recursive
@@ -26,8 +28,12 @@ class BaseResponse(object):
         # all errors in this response
         self.errors = []
 
+        self.validate_function = None
+
         # None by default?
         self.test_block_config = {"variables": {}}
+
+        self.expected = {}
 
     def _str_errors(self):
         return "- " + "\n- ".join(self.errors)
@@ -133,3 +139,8 @@ class BaseResponse(object):
                 msg = "Checking keys worked using 'legacy' comparison, which will not match dictionary keys at the top level of the response. This behaviour will be changed in a future version"
                 warnings.warn(msg, FutureWarning)
                 logger.warning(msg, exc_info=True)
+
+    def _check_for_validate_functions(self, payload):
+        if isinstance(payload, dict):
+            if "$ext" in payload:
+                self.validate_function = get_wrapped_response_function(payload["$ext"])

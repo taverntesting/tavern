@@ -27,12 +27,8 @@ class RestResponse(BaseResponse):
         defaults = {"status_code": 200}
 
         self.name = name
-        body = expected.get("body") or {}
 
-        if "$ext" in body:
-            self.validate_function = get_wrapped_response_function(body["$ext"])
-        else:
-            self.validate_function = None
+        self._check_for_validate_functions(expected.get("body", {}))
 
         self.expected = deep_dict_merge(defaults, expected)
         self.response = None
