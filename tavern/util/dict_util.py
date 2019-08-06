@@ -72,7 +72,8 @@ def recurse_access_key(data, query):
     try:
         from_jmespath = jmespath.search(query, data)
     except jmespath.exceptions.ParseError:
-        logger.warning("Error parsing JMES query - %s", msg, exc_info=True)
+        # TODO: In 1.0, this will raise an error instead
+        logger.debug("Error parsing JMES query - %s", msg, exc_info=True)
         from_jmespath = None
 
     # The value might actually be None, in which case we will search twice for no reason,

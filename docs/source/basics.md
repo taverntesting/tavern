@@ -132,6 +132,10 @@ like integers, strings, or float values can be saved. Trying to save a
 'block' of data such as a JSON list or object is currently unsupported
 and will cause the test to fail.
 
+**NOTE**: The behaviour of these queries used to be different and indexing into
+an array was done like `thing.nested.0`. This will be deprecated in the
+1.0 release.
+
 It is also possible to save data using function calls, explained below.
 
 For a more formal definition of the schema that the tests are validated against,
