@@ -145,12 +145,19 @@ class TestRequestArgs(object):
 
         assert args["data"]["array"] == ["def456", "def456"]
 
-    def test_file_and_data_fails(self, req, includes):
-        """Can't send json/form data and files at once"""
+    def test_file_and_json_fails(self, req, includes):
+        """Can't send json and files at once"""
         req["files"] = ["abc"]
+        req["json"] = {"key": "value"}
 
         with pytest.raises(exceptions.BadSchemaError):
             get_request_args(req, includes)
+
+    def test_file_and_data_succeeds(self, req, includes):
+        """Can send form data and files at once"""
+        req["files"] = ["abc"]
+
+        get_request_args(req, includes)
 
     @pytest.mark.parametrize("extra_headers", ({}, {"x-cool-header": "plark"}))
     def test_headers_no_content_type_change(self, req, includes, extra_headers):
