@@ -18,7 +18,7 @@ schema;any_map_with_ext_function:
     re;(.*):
       type: any
 
-schema;any_map_or_list_with_ext_function:
+schema;any_json_with_ext_function:
   # Similar, but we want to match lists or dicts
   func: validate_json_with_extensions
   type: any
@@ -73,7 +73,7 @@ schema;stage:
           type: str
           required: false
         json:
-          include: any_map_or_list_with_ext_function
+          include: any_json_with_ext_function
         qos:
           type: any
           func: int_variable
@@ -93,7 +93,7 @@ schema;stage:
           type: any
           required: false
         json:
-          include: any_map_or_list_with_ext_function
+          include: any_json_with_ext_function
         timeout:
           type: any
           func: float_variable
@@ -146,7 +146,7 @@ schema;stage:
             - type: str
 
         json:
-          include: any_map_or_list_with_ext_function
+          include: any_json_with_ext_function
 
         files:
           required: false
@@ -211,7 +211,7 @@ schema;stage:
           include: any_map_with_ext_function
 
         body:
-          include: any_map_or_list_with_ext_function
+          include: any_json_with_ext_function
 
         save:
           include: any_map_with_ext_function
