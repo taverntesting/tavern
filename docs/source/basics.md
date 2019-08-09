@@ -144,7 +144,7 @@ request:
   json:
     variable_key: "{key_name:s}"
     # or
-    variable_key: "{key_name}"
+    # variable_key: "{key_name}"
 ```
 
 This is formatted using Python's [string formatting
@@ -291,15 +291,90 @@ response:
 If an external function you are using raises any exception, the test will be
 considered failed. The return value from these functions is ignored.
 
-### Saving data with external functions
+### Using external functions for other things
 
-An external function can also be used to save data from the response. To do this,
-the function must return a dict where each key either points to a single value or
+External functions can be used to inject arbitrary data into tests or to save
+data from the response.
+
+An external function must return a dict where each key either points to a single value or
 to an object which is accessible using dot notation. The easiest way to do this
-is to return a [Box](https://pypi.python.org/pypi/python-box/) object. Each key in
+is to return a [Box](https://pypi.python.org/pypi/python-box/) object.
+
+To make sure that Tavern can find external functions you need to make sure that
+it is in the Python path. For example, if `utils.py` is in the 'tests' folder,
+you will need to run your tests something like (on Linux):
+
+```shell
+$ PYTHONPATH=$PYTHONPATH:tests py.test tests/
+```
+
+Strictly, `$ext` functions can be used anywhere in `tests_schema.yaml` that
+calls `validate_extensions` - this includes:
+
+- HTTP Request:
+    - `json`
+    - `params`
+    - `headers`
+    - `auth`
+- HTTP Response:
+    - `headers`
+    - `redirect_query_params`
+    - `body`
+    - `save` 
+
+- MQTT Publish:
+    - `json`
+- MQTT Response:
+    - `json`
+
+
+**Note**: Functions used in the `body` (HTTP) or `json` (MQTT) block in the 
+_response_ block take the response as the first argument. Functions used anywhere
+else should take _no_ arguments. This might be changed in future to be less
+confusing.
+
+#### Injecting external data into a request
+
+A use case for this is trying to insert some data into a response that is
+either calculated dynamically or fetched from an external source. If we want to
+generate some authentication headers to access our API for example, we can use
+an `$ext` function to calculate it dynamically (note as above that this function
+should _not_ take any arguments):
+
+```python
+# utils.py
+from box import Box
+
+def generate_bearer_token():
+    token = sign_a_jwt()
+    auth_header = {
+        "Authorization": "Bearer {}".format(token)
+    }
+    return Box(auth_header)
+```
+
+This can be used as so:
+
+```yaml
+- name: login
+  request:
+    url: http://server.com/login
+    headers:
+      $ext:
+        function: utils:generate_bearer_token
+    json:
+      username: test_user
+      password: abc123
+  response:
+    status_code: 200
+```
+
+#### Saving data from a response
+
+When using the `$ext` key in the `save` block there is special behaviour - each key in
 the returned object will be saved as if it had been specified separately in the
-**save** object. The function is called in the same way as a validator function,
-in the **$ext** key of the **save** object.
+`save` object. The function is called in the same way as a validator function,
+in the `$ext` key of the `save` object.
 
 Say that we have a server which returns a response like this:
 
@@ -307,20 +382,23 @@ Say that we have a server which returns a response like this:
 {
     "user": {
         "name": "John Smith",
-        "id": "abcdef12345",
+        "id": "abcdef12345"
     }
 }
 ```
 
-If our test function extracts the key `name` from the response body:
+If our test function extracts the key `name` from the response body (note as above
+that this function should take the response object as the first argument):
 
 ```python
 # utils.py
+from box import Box
+
 def test_function(response):
-    return {"test_user_name": response.json()["user"]["name"]}
+    return Box({"test_user_name": response.json()["user"]["name"]})
 ```
 
-We would use it in the **save** object like this:
+We would use it in the `save` object like this:
 
 ```yaml
 save:
@@ -333,13 +411,7 @@ save:
 In this case, both `{test_user_name}` and `{test_user_id}` are available for use
 in later requests.
 
-To make sure that Tavern can find this test function you need to make sure that
-it is in the Python path. For example, if `utils.py` is in the 'tests' folder,
-you will need to run your tests something like (on Linux):
-
-```shell
-$ PYTHONPATH=$PYTHONPATH:tests py.test tests/
-```
+#### A more complicated example
 
 For a more practical example, the built in `validate_jwt` function also returns the
 decoded token as a dictionary wrapped in a [Box]
@@ -488,7 +560,7 @@ py.test --tavern-strict body headers -- my_test_folder/
 This behaves identically to the command line option, but will be read from
 whichever configuration file Pytest is using.
 
-```editorconfig
+```ini
 [pytest]
 tavern-strict=body headers
 ```
