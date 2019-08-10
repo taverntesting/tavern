@@ -1,5 +1,8 @@
 ---
 
+includes:
+  - !include common.yaml
+
 test_name: Test redirecting without setting flag works
 
 stages:
@@ -10,6 +13,9 @@ stages:
       status_code: 302
 
 ---
+
+includes:
+  - !include common.yaml
 
 test_name: Expect a redirect when setting the flag
 

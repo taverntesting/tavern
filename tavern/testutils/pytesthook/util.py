@@ -137,9 +137,6 @@ def _load_global_strictness(pytest_config):
 
 def _load_global_follow_redirects(pytest_config):
     """Load the global 'follow redirects' setting"""
-    if pytest_config.getini("tavern-always-follow-redirects") is not None:
-        return pytest_config.getini("tavern-always-follow-redirects")
-    elif pytest_config.getoption("tavern_always_follow_redirects") is not None:
-        return pytest_config.getoption("tavern_always_follow_redirects")
-    else:
-        return None
+    return pytest_config.getini(
+        "tavern-always-follow-redirects"
+    ) or pytest_config.getoption("tavern_always_follow_redirects")
