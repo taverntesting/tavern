@@ -243,10 +243,21 @@ class RestRequest(BaseRequest):
                 c: existing_cookies.get(c) for c in rspec["cookies"]
             }
 
-        logger.debug("Request args: %s", request_args)
+        # Check to see if we should follow redirects
+        global_follow_redirects = test_block_config.get("follow_redirects")
+        if global_follow_redirects is not None:
+            request_args.update(allow_redirects=global_follow_redirects)
+        test_follow_redirects = rspec.get("follow_redirects")
+        if test_follow_redirects is not None:
+            if global_follow_redirects is not None:
+                logger.info(
+                    "Overriding global follow_redirects setting of %s with test-level specification of %s",
+                    global_follow_redirects,
+                    test_follow_redirects,
+                )
+            request_args.update(allow_redirects=test_follow_redirects)
 
-        if not test_block_config.get("follow_redirects"):
-            request_args.update(allow_redirects=False)
+        logger.debug("Request args: %s", request_args)
 
         self._request_args = request_args
 
