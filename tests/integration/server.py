@@ -282,3 +282,8 @@ def redirect_to_other_endpoint():
 @app.route("/redirect/destination", methods=["GET"])
 def get_redirected_to_here():
     return jsonify({"status": "successful redirect"}), 200
+
+
+@app.route("/get_single_json_item", methods=["GET"])
+def return_one_item():
+    return jsonify("c82bfa63-fd2a-419a-8c06-21cb283fd9f7"), 200
