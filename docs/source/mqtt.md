@@ -12,7 +12,7 @@ This is a very simple MQTT test that only uses MQTT messages:
 ---
 
 test_name: Test mqtt message response
-mqtt:
+paho-mqtt:
   client:
     transport: websockets
     client_id: tavern-tester
@@ -32,7 +32,7 @@ stages:
       timeout: 5
 ```
 
-The first thing to notice is the extra `mqtt` block required at the top level.
+The first thing to notice is the extra `paho-mqtt` block required at the top level.
 When this block is present, an MQTT client will be started for the current test
 and is used to publish and receive messages from a broker.
 
@@ -179,7 +179,7 @@ includes:
   - !include common.yaml
 
 # More realistic broker connection options
-mqtt: &mqtt_spec
+paho-mqtt: &mqtt_spec
   client:
     transport: websockets
   connect:
@@ -250,7 +250,7 @@ test_name: Make sure posting publishes mqtt message
 includes:
   - !include common.yaml
 
-mqtt: *mqtt_spec
+paho-mqtt: *mqtt_spec
 
 stages:
   - name: step 1 - post message trigger

@@ -1,18 +1,14 @@
-import warnings
+import collections
 import logging
+import warnings
 from builtins import str as ustr
 
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
-
+import jmespath
 from future.utils import raise_from
 from box import Box
 
 from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
 from . import exceptions
-
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +52,67 @@ def format_keys(val, variables):
     return formatted
 
 
-def recurse_access_key(current_val, keys):
+def recurse_access_key(data, query):
+    """
+    Search for something in the given data using the given query.
+
+    Note:
+        Falls back to old _recurse_access_key if not found - will be removed in 1.0
+
+    Args:
+        data (dict, list): Data to search in
+        query (str): Query to run
+
+    Returns:
+        object: Whatever was found by the search
+    """
+
+    msg = "In a future version of Tavern, selecting for values to save in nested objects will have to be done as a JMES path query - see http://jmespath.org/ for more information"
+
+    try:
+        from_jmespath = jmespath.search(query, data)
+    except jmespath.exceptions.ParseError:
+        # TODO: In 1.0, this will raise an error instead
+        logger.debug("Error parsing JMES query - %s", msg, exc_info=True)
+        from_jmespath = None
+
+    # The value might actually be None, in which case we will search twice for no reason,
+    # but this shouldn't cause any issues
+    if from_jmespath is None:
+        logger.debug("JMES path search was None - trying old implementation")
+
+        try:
+            from_recurse = _recurse_access_key(data, query.split("."))
+        except (IndexError, KeyError) as e:
+            raise_from(
+                exceptions.KeySearchNotFoundError(
+                    "Error searching for key in given data"
+                ),
+                e,
+            )
+
+        # If we found a key using 'old' style searching, which will be deprecated
+        warnings.warn(msg, FutureWarning)
+
+        found = from_recurse
+    else:
+        found = from_jmespath
+
+    check_is_simple_value(found, query)
+
+    return found
+
+
+def check_is_simple_value(found, query):
+    if not isinstance(found, (float, int, str, ustr)):
+        raise exceptions.InvalidQueryResultTypeError(
+            "Key '{}' was found in given data, but it was '{}' when it should be a 'simple' type (float, int, string)".format(
+                query, type(found)
+            )
+        )
+
+
+def _recurse_access_key(current_val, keys):
     """ Given a list of keys and a dictionary, recursively access the dicionary
     using the keys until we find the key its looking for
 
@@ -64,18 +120,24 @@ def recurse_access_key(current_val, keys):
 
     Example:
 
-        >>> recurse_access_key({'a': 'b'}, ['a'])
+        >>> _recurse_access_key({'a': 'b'}, ['a'])
         'b'
-        >>> recurse_access_key({'a': {'b': ['c', 'd']}}, ['a', 'b', '0'])
+        >>> _recurse_access_key({'a': {'b': ['c', 'd']}}, ['a', 'b', '0'])
         'c'
 
     Args:
         current_val (dict): current dictionary we have recursed into
         keys (list): list of str/int of subkeys
 
+    Raises:
+        IndexError: list index not found in data
+        KeyError: dict key not found in data
+
     Returns:
         str or dict: value of subkey in dict
     """
+    logger.debug("Recursively searching for '%s' in '%s'", keys, current_val)
+
     if not keys:
         return current_val
     else:
@@ -86,7 +148,16 @@ def recurse_access_key(current_val, keys):
         except ValueError:
             pass
 
-        return recurse_access_key(current_val[current_key], keys)
+        try:
+            return _recurse_access_key(current_val[current_key], keys)
+        except (IndexError, KeyError, TypeError) as e:
+            logger.error(
+                "%s accessing data - looking for '%s' in '%s'",
+                type(e).__name__,
+                current_key,
+                current_val,
+            )
+            raise
 
 
 def deep_dict_merge(initial_dct, merge_dct):
@@ -106,7 +177,11 @@ def deep_dict_merge(initial_dct, merge_dct):
     dct = initial_dct.copy()
 
     for k in merge_dct:
-        if k in dct and isinstance(dct[k], dict) and isinstance(merge_dct[k], Mapping):
+        if (
+            k in dct
+            and isinstance(dct[k], dict)
+            and isinstance(merge_dct[k], collections.Mapping)
+        ):
             dct[k] = deep_dict_merge(dct[k], merge_dct[k])
         else:
             dct[k] = merge_dct[k]
@@ -311,7 +386,12 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                 if extra_expected_keys or strict:
                     raise_from(exceptions.KeyMismatchError(full_msg), e)
                 else:
-                    logger.warning(full_msg, exc_info=True)
+                    logger.debug(
+                        "Mismatch in returned data, continuing due to strict=%s: %s",
+                        strict,
+                        full_msg,
+                        exc_info=True,
+                    )
 
             # If strict is True, an error will be raised above. If not, recurse
             # through both sets of keys and just ignore missing ones

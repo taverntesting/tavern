@@ -1,7 +1,6 @@
 import json
-import traceback
 import logging
-import copy
+import traceback
 
 try:
     from urllib.parse import urlparse, parse_qs
@@ -12,6 +11,7 @@ from requests.status_codes import _codes
 
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util.dict_util import recurse_access_key, deep_dict_merge
+from tavern.util import exceptions
 from tavern.util.exceptions import TestFailError
 from tavern.response.base import BaseResponse, indent_err_text
 
@@ -27,12 +27,8 @@ class RestResponse(BaseResponse):
         defaults = {"status_code": 200}
 
         self.name = name
-        body = expected.get("body") or {}
 
-        if "$ext" in body:
-            self.validate_function = get_wrapped_response_function(body["$ext"])
-        else:
-            self.validate_function = None
+        self._check_for_validate_functions(expected.get("body", {}))
 
         self.expected = deep_dict_merge(defaults, expected)
         self.response = None
@@ -286,10 +282,12 @@ class RestResponse(BaseResponse):
             self._adderr("No %s in response (wanted to save %s)", key, expected)
         else:
             for save_as, joined_key in expected.items():
-                split_key = joined_key.split(".")
                 try:
-                    saved[save_as] = recurse_access_key(to_check, copy.copy(split_key))
-                except (IndexError, KeyError) as e:
+                    saved[save_as] = recurse_access_key(to_check, joined_key)
+                except (
+                    exceptions.InvalidQueryResultTypeError,
+                    exceptions.KeySearchNotFoundError,
+                ) as e:
                     self._adderr(
                         "Wanted to save '%s' from '%s', but it did not exist in the response",
                         joined_key,

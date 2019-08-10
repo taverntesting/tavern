@@ -121,8 +121,20 @@ This can be saved into the value `first_val` with this response block:
 response:
   save:
     body:
-      fourth_val: thing.nested.0
+      first_val: thing.nested[0]
 ```
+
+The query should be defined as a JMES query (see http://jmespath.org/
+for more information). In the above example, this essentially performs
+the operation `json["thing"]["nested"][0]`. This can be used to perform
+powerful queries on response data, but note that only 'simple' values
+like integers, strings, or float values can be saved. Trying to save a
+'block' of data such as a JSON list or object is currently unsupported
+and will cause the test to fail.
+
+**NOTE**: The behaviour of these queries used to be different and indexing into
+an array was done like `thing.nested.0`. This will be deprecated in the
+1.0 release.
 
 It is also possible to save data using function calls, explained below.
 
@@ -188,7 +200,7 @@ stages:
       status_code: 200
       body:
         user_id: "{tavern.request_vars.params.user_id}"
-        new_welcome_message: "{tavern.request_vars.json.message}"
+        new_welcome_message: "{tavern.request_vars.json.welcome_message}"
 ```
 
 This example uses `json` and `params` - we can also use any of the other request
@@ -244,7 +256,7 @@ There are two external functions built in to Tavern: `validate_jwt` and
 additional arguments that are passed directly to the `decode` method in the
 [PyJWT](https://github.com/jpadilla/pyjwt/blob/master/jwt/api_jwt.py#L59)
 library. **NOTE: Make sure the keyword arguments you are passing are correct
-or PyJWT will silently ignore them. In thr future, this function will likely be
+or PyJWT will silently ignore them. In the future, this function will likely be
 changed to use a different library to avoid this issue.**
 
 ```yaml
@@ -1085,7 +1097,7 @@ Say we have a login stage that needs to be run before every test in our
 test suite. Stages are defined in a configuration file like this:
 
 ```yaml
-# stage_auth.yaml
+# auth_stage.yaml
 ---
 
 name: Authentication stage
