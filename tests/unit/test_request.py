@@ -52,8 +52,10 @@ class TestRequests(object):
         with pytest.warns(RuntimeWarning):
             RestRequest(Mock(), req, includes)
 
+
+class TestHttpRedirects(object):
     def test_session_called_no_redirects(self, req, includes):
-        """Always disable redirects
+        """Always disable redirects by defauly
         """
 
         rmock = Mock(spec=requests.Session)
@@ -61,6 +63,18 @@ class TestRequests(object):
 
         assert rmock.request.called
         assert rmock.request.call_args[1]["allow_redirects"] == False
+
+    @pytest.mark.parametrize("do_follow", [True, False])
+    def test_session_do_follow_redirects_based_on_test(self, req, includes, do_follow):
+        """Locally enable following redirects in test"""
+
+        req["follow_redirects"] = do_follow
+
+        rmock = Mock(spec=requests.Session)
+        RestRequest(rmock, req, includes).run()
+
+        assert rmock.request.called
+        assert rmock.request.call_args[1]["allow_redirects"] == do_follow
 
 
 class TestRequestArgs(object):
