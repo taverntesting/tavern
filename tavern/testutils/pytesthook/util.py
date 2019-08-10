@@ -90,8 +90,17 @@ def load_global_cfg(pytest_config):
     # Can be overridden in tests
     global_cfg["strict"] = _load_global_strictness(pytest_config)
     global_cfg["follow_redirects"] = _load_global_follow_redirects(pytest_config)
+    global_cfg["backends"] = _load_global_backends(pytest_config)
 
-    global_cfg["backends"] = {}
+    logger.debug("Global config: %s", global_cfg)
+
+    return global_cfg
+
+
+def _load_global_backends(pytest_config):
+    """Load which backend should be used"""
+    backend_settings = {}
+
     backends = ["http", "mqtt"]
     for b in backends:
         # similar logic to above - use ini, then cmdline if present
@@ -102,11 +111,9 @@ def load_global_cfg(pytest_config):
         if cli_opt and (cli_opt != ini_opt):
             in_use = cli_opt
 
-        global_cfg["backends"][b] = in_use
+        backend_settings[b] = in_use
 
-    logger.debug("Global config: %s", global_cfg)
-
-    return global_cfg
+    return backend_settings
 
 
 def _load_global_strictness(pytest_config):
