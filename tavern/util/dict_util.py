@@ -13,6 +13,16 @@ from . import exceptions
 logger = logging.getLogger(__name__)
 
 
+class _FormattedString(str):
+    """Wrapper class for things that have already been formatted
+
+    This is only used below and should not be used outside this module
+    """
+
+    def __init(self, s):
+        super(_FormattedString, self).__init__(s)
+
+
 def format_keys(val, variables):
     """recursively format a dictionary with the given values
 
@@ -33,6 +43,8 @@ def format_keys(val, variables):
             formatted[key] = format_keys(val[key], box_vars)
     elif isinstance(val, (list, tuple)):
         formatted = [format_keys(item, box_vars) for item in val]
+    elif isinstance(formatted, _FormattedString):
+        logger.debug("Already formatted %s, not double-formatting", formatted)
     elif isinstance(val, (ustr, str)):
         try:
             formatted = val.format(**box_vars)
@@ -45,9 +57,13 @@ def format_keys(val, variables):
         except IndexError as e:
             logger.error("Empty format values are invalid")
             raise_from(exceptions.MissingFormatError(e.args), e)
+
+        formatted = _FormattedString(formatted)
     elif isinstance(val, TypeConvertToken):
         value = format_keys(val.value, box_vars)
         formatted = val.constructor(value)
+    else:
+        logger.debug("Not formatting something of type '%s'", type(formatted))
 
     return formatted
 
