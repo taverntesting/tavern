@@ -4,9 +4,8 @@ repos:
   hooks:
   - id: black
     language_version: python3.7
-- repo: https://github.com/PyCQA/prospector
-  rev: 1.1.6 # The version of Prospector to use, at least 1.1.6
+- repo: https://github.com/pre-commit/pre-commit-hooks
+  rev: v2.3.0
   hooks:
-  - id: prospector
-    args:
-      - --strictness low
+  - id: pyflakes
+    language_version: python3.7
