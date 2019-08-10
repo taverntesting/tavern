@@ -60,8 +60,7 @@ TESTS_REQUIRE = [
     "pytest-cov",
     "colorlog",
     "mock",
-    "faker",
-    "pytest-remove-stale-bytecode"
+    "faker"
 ]
 
 setup(

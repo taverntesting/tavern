@@ -1,15 +1,15 @@
-import json
 import importlib
+import json
 import logging
 import re
+
 import jwt
-
-from future.utils import raise_from
 from box import Box
+from future.utils import raise_from
 
-from tavern.util import exceptions
-from tavern.testutils.jmesutils import validate_comparison, actual_validation
 from tavern.schemas.files import verify_generic
+from tavern.testutils.jmesutils import validate_comparison, actual_validation
+from tavern.util import exceptions
 from tavern.util.dict_util import check_keys_match_recursive
 from tavern.util.jmespath_util import check_jmespath_match
 

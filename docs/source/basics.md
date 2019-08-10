@@ -132,6 +132,10 @@ like integers, strings, or float values can be saved. Trying to save a
 'block' of data such as a JSON list or object is currently unsupported
 and will cause the test to fail.
 
+**NOTE**: The behaviour of these queries used to be different and indexing into
+an array was done like `thing.nested.0`. This will be deprecated in the
+1.0 release.
+
 It is also possible to save data using function calls, explained below.
 
 For a more formal definition of the schema that the tests are validated against,
@@ -196,7 +200,7 @@ stages:
       status_code: 200
       body:
         user_id: "{tavern.request_vars.params.user_id}"
-        new_welcome_message: "{tavern.request_vars.json.message}"
+        new_welcome_message: "{tavern.request_vars.json.welcome_message}"
 ```
 
 This example uses `json` and `params` - we can also use any of the other request
@@ -252,7 +256,7 @@ There are two external functions built in to Tavern: `validate_jwt` and
 additional arguments that are passed directly to the `decode` method in the
 [PyJWT](https://github.com/jpadilla/pyjwt/blob/master/jwt/api_jwt.py#L59)
 library. **NOTE: Make sure the keyword arguments you are passing are correct
-or PyJWT will silently ignore them. In thr future, this function will likely be
+or PyJWT will silently ignore them. In the future, this function will likely be
 changed to use a different library to avoid this issue.**
 
 ```yaml
@@ -1025,7 +1029,8 @@ at the command line using the `--tavern-global-cfg` flag. The variables in
 `common.yaml` will then be available for formatting in *all* tests during that
 test run.
 
-**NOTE**: `tavern-ci` uses argparse to read this from the command line:
+**NOTE**: `tavern-ci` is just an alias for `py.test` and
+will take the same options.
 
 ```
 # These will all work
@@ -1081,6 +1086,156 @@ tavern-global-cfg=
     test_urls.yaml
 ```
 
+### Sharing stages in configuration files
+
+If you have a stage that is shared across a huge number of tests and it
+is infeasible to put all the tests which share that stage into one file,
+you can also define stages in configuration files and use them in your
+tests.
+
+Say we have a login stage that needs to be run before every test in our
+test suite. Stages are defined in a configuration file like this:
+
+```yaml
+# auth_stage.yaml
+---
+
+name: Authentication stage
+description:
+  Reusable test stage for authentication
+
+variables:
+  user:
+    user: test-user
+    pass: correct-password
+
+stages:
+  - id: login_get_token
+    name: Login and acquire token
+    request:
+      url: "{service:s}/login"
+      json:
+        user: "{user.user:s}"
+        password: "{user.pass:s}"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      headers:
+        content-type: application/json
+      save:
+        body:
+          test_login_token: token
+```
+
+Each stage should have a uniquely identifiable `id`, but other than that
+the stage can be define just as other tests (including using format
+variables).
+
+This can be included in a test by specifying the `id` of the test like
+this:
+
+```yaml
+---
+
+test_name: Test authenticated /hello
+
+includes:
+  - !include auth_stage.yaml
+
+stages:
+  - type: ref
+    id: login_get_token
+  - name: Authenticated /hello
+    request:
+      url: "{service:s}/hello/Jim"
+      method: GET
+      headers:
+        Content-Type: application/json
+        Authorization: "Bearer {test_login_token}"
+    response:
+      status_code: 200
+      headers:
+        content-type: application/json
+      body:
+        data: "Hello, Jim"
+
+```
+
+### Directly including test data
+
+If your test just has a huge amount of data that you would like to keep
+in a separate file, you can also (ab)use the `!include` tag to directly
+include data into a test. Say we have a huge amount of JSON that we want
+to send to a server and we don't want hundreds of lines in the test:
+
+```json
+// test_data.json
+[
+  {
+    "_id": "5c965b1373f3fe071a9cb2b7",
+    "index": 0,
+    "guid": "ef3f8c42-522a-4d6b-84ec-79a07009460d",
+    "isActive": false,
+    "balance": "$3,103.47",
+    "picture": "http://placehold.it/32x32",
+    "age": 26,
+    "eyeColor": "green",
+    "name": "Cannon Wood",
+    "gender": "male",
+    "company": "CANDECOR",
+    "email": "cannonwood@candecor.com",
+    "phone": "+1 (944) 549-2826",
+    "address": "528 Woodpoint Road, Snowville, Kansas, 140",
+    "about": "Dolore in consequat exercitation esse esse velit eu velit aliquip ex. Reprehenderit est consectetur excepteur sint sint dolore. Anim minim dolore est ut fugiat. Occaecat tempor tempor mollit dolore anim commodo laboris commodo aute quis ex irure voluptate. Sunt magna tempor veniam cillum exercitation quis minim est eiusmod aliqua.\r\n",
+    "registered": "2015-12-27T11:30:18 -00:00",
+    "latitude": -2.515302,
+    "longitude": -98.678105,
+    "tags": [
+      "proident",
+      "aliqua",
+      "velit",
+      "labore",
+      "consequat",
+      "esse",
+      "ea"
+    ],
+    "friends": [
+      {
+        "id": 0,
+        "etc": []
+      }
+    ]
+  }
+]
+```
+
+(Handily generated by https://www.json-generator.com/)
+
+Putting this whole thing into the test would be a bit overkill, but it
+can be inject directly into your test like this:
+
+```yaml
+---
+
+test_name: Post a lot of data
+
+stages:
+  - name: Create new user
+    request:
+      url: "{service:s}/new_user"
+      method: POST
+      json: !include test_data.json
+    response:
+      status_code: 201
+      body:
+        status: user created
+```
+
+This works with YAML as well, the only caveat being that the filename
+_must_ end with `.yaml`, `.yml`, or `.json`.
+
 ## Using the run() function
 
 Because the `run()` function (see [examples](/examples)) calls directly into the
@@ -1094,13 +1249,15 @@ from tavern.core import run
 
 extra_cfg = {
     "variables": {
-        "key_1": "value":,
+        "key_1": "value",
         "key_2": 123,
     }
 }
 
 success = run("test_server.tavern.yaml", extra_cfg)
 ```
+
+An absolute filepath to a configuration file can also be passed.
 
 This is also how things such as strict key checking is controlled via the
 `run()` function. Extra keyword arguments that are taken by this function:
@@ -1197,6 +1354,20 @@ request:
   json:
     an_integer: !!int "{my_integer:d}" # Error
     an_integer: !int "{my_integer:d}" # Works
+```
+
+Because curly braces are automatically formatted, trying to send one
+in a string might cause some unexpected issues. This can be mitigated
+by using the `!raw` tag, which will not perform string formatting.
+
+*Note*: This is just shorthand for replacing a `{` with a `{{` in the
+string
+
+```yaml
+request:
+  json:
+    # Sent as {"raw_braces": "{not_escaped}"}
+    raw_braces: !raw "{not_escaped}"
 ```
 
 ## Adding a delay between tests
@@ -1618,6 +1789,9 @@ This will result in 6 tests:
 - cheap rotten apple
 - cheap fresh orange
 - cheap unripe pear
+
+**NOTE**: Due to implementation reasons it is currently impossible to
+parametrize either the HTTP method or the MQTT QoS parameter.
 
 #### usefixtures
 

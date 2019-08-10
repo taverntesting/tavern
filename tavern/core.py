@@ -9,6 +9,7 @@ import pytest
 from contextlib2 import ExitStack
 from box import Box
 
+from tavern.schemas.files import wrapfile
 from .util import exceptions
 from .util.dict_util import format_keys
 from .util.delay import delay
@@ -216,7 +217,7 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     """Run one stage from the test
 
     Args:
-        sessions (list): List of relevant 'session' objects used for this test
+        sessions (dict): Dictionary of relevant 'session' objects used for this test
         stage (dict): specification of stage to be run
         tavern_box (box.Box): Box object containing format variables to be used
             in test
@@ -257,7 +258,7 @@ def _run_pytest(
 
     Args:
         in_file (str): file to run tests on
-        tavern_global_cfg (dict): Extra global config
+        tavern_global_cfg (str, dict): Extra global config
         tavern_mqtt_backend (str, optional): name of MQTT plugin to use. If not
             specified, uses tavern-mqtt
         tavern_http_backend (str, optional): name of HTTP plugin to use. If not
@@ -273,18 +274,14 @@ def _run_pytest(
     """
 
     if kwargs:
+        logger.warning("Unexpected keyword args: %s", kwargs)
         warnings.warn(
             "Passing extra keyword args to run() when using pytest is used are ignored.",
             FutureWarning,
         )
 
-    if tavern_global_cfg:
-        global_filename = tavern_global_cfg
-
     pytest_args = pytest_args or []
     pytest_args += [in_file]
-    if tavern_global_cfg:
-        pytest_args += ["--tavern-global-cfg", global_filename]
 
     if tavern_mqtt_backend:
         pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
@@ -293,7 +290,48 @@ def _run_pytest(
     if tavern_strict:
         pytest_args += ["--tavern-strict", tavern_strict]
 
-    return pytest.main(args=pytest_args)
+    with ExitStack() as stack:
+        if tavern_global_cfg:
+            global_filename = _get_or_wrap_global_cfg(stack, tavern_global_cfg)
+            pytest_args += ["--tavern-global-cfg", global_filename]
+        return pytest.main(args=pytest_args)
+
+
+def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
+    """
+    Try to parse global configuration from given argument.
+
+    Args:
+        stack (ExitStack): context stack for wrapping file if a dictionary is given
+        tavern_global_cfg (dict, str): Dictionary or string. It should be a
+            path to a file or a dictionary with configuration.
+
+    Returns:
+        str: path to global config file
+
+    Raises:
+        InvalidSettingsError: If global config was not of the right type or a given path
+            does not exist
+
+    Todo:
+        Once python 2 is dropped, allow this to take a 'path like object'
+    """
+    if isinstance(tavern_global_cfg, str):
+        if not os.path.exists(tavern_global_cfg):
+            raise exceptions.InvalidSettingsError(
+                "global config file '{}' does not exist".format(tavern_global_cfg)
+            )
+        global_filename = tavern_global_cfg
+    elif isinstance(tavern_global_cfg, dict):
+        global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
+    else:
+        raise exceptions.InvalidSettingsError(
+            "Invalid format for global settings - must be dict or path to settings file, was {}".format(
+                type(tavern_global_cfg)
+            )
+        )
+
+    return global_filename
 
 
 def run(in_file, tavern_global_cfg=None, **kwargs):
@@ -301,7 +339,7 @@ def run(in_file, tavern_global_cfg=None, **kwargs):
 
     Args:
         in_file (str): file to run tests for
-        tavern_global_cfg (dict): Extra global config
+        tavern_global_cfg (str, dict): Extra global config
         **kwargs: any extra arguments to pass to _run_pytest, see that function
             for details
 

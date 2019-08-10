@@ -72,12 +72,15 @@ def recurse_access_key(data, query):
     try:
         from_jmespath = jmespath.search(query, data)
     except jmespath.exceptions.ParseError:
-        logger.warning("Error parsing JMES query - %s", msg, exc_info=True)
+        # TODO: In 1.0, this will raise an error instead
+        logger.debug("Error parsing JMES query - %s", msg, exc_info=True)
         from_jmespath = None
 
     # The value might actually be None, in which case we will search twice for no reason,
     # but this shouldn't cause any issues
     if from_jmespath is None:
+        logger.debug("JMES path search was None - trying old implementation")
+
         try:
             from_recurse = _recurse_access_key(data, query.split("."))
         except (IndexError, KeyError) as e:
@@ -383,7 +386,12 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                 if extra_expected_keys or strict:
                     raise_from(exceptions.KeyMismatchError(full_msg), e)
                 else:
-                    logger.warning(full_msg, exc_info=True)
+                    logger.debug(
+                        "Mismatch in returned data, continuing due to strict=%s: %s",
+                        strict,
+                        full_msg,
+                        exc_info=True,
+                    )
 
             # If strict is True, an error will be raised above. If not, recurse
             # through both sets of keys and just ignore missing ones

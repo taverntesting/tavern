@@ -2,6 +2,7 @@ import pytest
 from mock import Mock, patch
 
 from tavern._plugins.rest.response import RestResponse
+from tavern.util.dict_util import format_keys
 from tavern.util.loader import ANYTHING
 from tavern.util import exceptions
 
@@ -345,7 +346,12 @@ class TestFull:
         assert r.errors
 
     def test_saved_value_in_validate(self, nested_response, nested_schema, includes):
-        r = RestResponse(Mock(), "Test 1", nested_schema, includes)
+        r = RestResponse(
+            Mock(),
+            "Test 1",
+            format_keys(nested_schema, includes["variables"]),
+            includes,
+        )
 
         class FakeResponse:
             headers = nested_response["headers"]

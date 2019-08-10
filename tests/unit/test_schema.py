@@ -30,7 +30,7 @@ def fix_test_dict():
     """
     )
 
-    as_dict = yaml.load(text)
+    as_dict = yaml.load(text, Loader=yaml.SafeLoader)
 
     return as_dict
 
@@ -51,20 +51,6 @@ class TestJSON:
         test_dict["stages"][0]["response"]["body"] = [1, "text", -1]
 
         verify_tests(test_dict)
-
-    def test_json_value_request(self, test_dict):
-        """Don't match other stuff"""
-        test_dict["stages"][0]["request"]["json"] = "Hello"
-
-        with pytest.raises(BadSchemaError):
-            verify_tests(test_dict)
-
-    def test_json_value_response(self, test_dict):
-        """Don't match other stuff"""
-        test_dict["stages"][0]["response"]["body"] = "Hi"
-
-        with pytest.raises(BadSchemaError):
-            verify_tests(test_dict)
 
 
 class TestHeaders:

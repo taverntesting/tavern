@@ -11,7 +11,6 @@ from tavern.util.dict_util import (
     deep_dict_merge,
     check_keys_match_recursive,
     format_keys,
-    recurse_access_key,
 )
 from tavern.util.loader import ANYTHING, IncludeLoader
 
@@ -273,3 +272,57 @@ class TestRecurseAccess:
 
         with pytest.raises(exceptions.KeySearchNotFoundError):
             recurse_access_key(nested_data, new_query)
+
+
+class TestLoadCfg:
+    def test_load_one(self):
+        example = {"a": "b"}
+
+        with wrapfile(example) as f:
+            assert example == load_single_document_yaml(f)
+
+    def test_load_multiple_fails(self):
+        example = [{"a": "b"}, {"c": "d"}]
+
+        with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as wrapped_tmp:
+            # put into a file
+            dumped = yaml.dump_all(example)
+            wrapped_tmp.write(dumped.encode("utf8"))
+            wrapped_tmp.close()
+
+            try:
+                with pytest.raises(exceptions.UnexpectedDocumentsError):
+                    load_single_document_yaml(wrapped_tmp.name)
+            finally:
+                os.remove(wrapped_tmp.name)
+
+
+class TestLoadFile:
+    @staticmethod
+    @contextlib.contextmanager
+    def magic_wrap(to_wrap, suffix):
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as wrapped_tmp:
+            dumped = yaml.dump(to_wrap, default_flow_style=False)
+            wrapped_tmp.write(dumped.encode("utf8"))
+            wrapped_tmp.close()
+
+            try:
+                yield wrapped_tmp.name
+            finally:
+                os.remove(wrapped_tmp.name)
+
+    @pytest.mark.parametrize("suffix", (".yaml", ".yml", ".json"))
+    def test_load_extensions(self, suffix):
+        example = {"a": "b"}
+
+        with TestLoadFile.magic_wrap(example, suffix) as tmpfile:
+            with patch("tavern.util.loader.os.path.join", return_value=tmpfile):
+                assert example == construct_include(Mock(), Mock())
+
+    def test_load_bad_extension(self):
+        example = {"a": "b"}
+
+        with TestLoadFile.magic_wrap(example, ".bllakjf") as tmpfile:
+            with patch("tavern.util.loader.os.path.join", return_value=tmpfile):
+                with pytest.raises(exceptions.BadSchemaError):
+                    construct_include(Mock(), Mock())

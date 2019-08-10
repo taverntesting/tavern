@@ -13,7 +13,7 @@ import pykwalify
 from tavern.util.exceptions import BadSchemaError
 from tavern.plugins import load_plugins
 
-from tavern.util.loader import IncludeLoader
+from tavern.util.loader import IncludeLoader, load_single_document_yaml
 
 core.yaml.safe_load = functools.partial(yaml.load, Loader=IncludeLoader)
 
@@ -30,8 +30,7 @@ class SchemaCache(object):
         try:
             return self._loaded[schema_filename]
         except KeyError:
-            with open(schema_filename, "r") as sfile:
-                self._loaded[schema_filename] = yaml.load(sfile.read())
+            self._loaded[schema_filename] = load_single_document_yaml(schema_filename)
 
             logger.debug("Loaded schema from %s", schema_filename)
 

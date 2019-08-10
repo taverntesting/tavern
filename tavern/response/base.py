@@ -1,16 +1,19 @@
 import logging
-from collections import Mapping
+
+try:
+    from collections.abc import Mapping
+except ImportError:
+    from collections import Mapping
+
 from abc import abstractmethod
 import warnings
 
+from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util import exceptions
 from tavern.util.jmespath_util import check_jmespath_match
 from tavern.util.python_2_util import indent
-from tavern.util.dict_util import (
-    format_keys,
-    check_keys_match_recursive,
-    check_is_simple_value,
-)
+from tavern.util.dict_util import check_keys_match_recursive, \
+    check_is_simple_value
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +28,8 @@ class BaseResponse(object):
     def __init__(self):
         # all errors in this response
         self.errors = []
+
+        self.validate_function = None
 
         # None by default?
         self.test_block_config = {"variables": {}}
@@ -65,9 +70,10 @@ class BaseResponse(object):
             logger.debug("No expected %s to check against", blockname)
             return
 
-        expected_block = format_keys(
-            expected_block, self.test_block_config["variables"]
-        )
+        # This should be done _before_ it gets to this point - typically in get_expected_from_request from plugin
+        # expected_block = format_keys(
+        #     expected_block, self.test_block_config["variables"]
+        # )
 
         if block is None:
             self._adderr(
@@ -134,6 +140,11 @@ class BaseResponse(object):
                 msg = "Checking keys worked using 'legacy' comparison, which will not match dictionary keys at the top level of the response. This behaviour will be changed in a future version"
                 warnings.warn(msg, FutureWarning)
                 logger.warning(msg, exc_info=True)
+
+    def _check_for_validate_functions(self, payload):
+        if isinstance(payload, dict):
+            if "$ext" in payload:
+                self.validate_function = get_wrapped_response_function(payload["$ext"])
 
     def _validate_jmespath(self, body):
         """
