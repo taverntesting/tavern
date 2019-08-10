@@ -13,7 +13,7 @@ from . import exceptions
 logger = logging.getLogger(__name__)
 
 
-class _FormattedString(str):
+class _FormattedString(object):
     """Wrapper class for things that have already been formatted
 
     This is only used below and should not be used outside this module
@@ -58,7 +58,10 @@ def format_keys(val, variables):
             logger.error("Empty format values are invalid")
             raise_from(exceptions.MissingFormatError(e.args), e)
 
-        formatted = _FormattedString(formatted)
+        class InnerFormattedString(_FormattedString, type(val)):
+            """Hack for python 2"""
+
+        formatted = InnerFormattedString(formatted)
     elif isinstance(val, TypeConvertToken):
         value = format_keys(val.value, box_vars)
         formatted = val.constructor(value)
