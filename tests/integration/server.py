@@ -5,7 +5,7 @@ import mimetypes
 import os
 import time
 
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, redirect
 
 app = Flask(__name__)
 
@@ -234,8 +234,9 @@ def echo_form_values():
 @app.route("/stream_file", methods=["GET"])
 def stream_file():
     def iter():
-        for data in range(1,10):
+        for data in range(1, 10):
             yield bytes(data)
+
     response = Response(iter(), mimetype='application/octet-stream')
     response.headers['Content-Disposition'] = 'attachment; filename=tmp.txt'
     return response
@@ -253,11 +254,13 @@ def poll():
 def _maybe_get_cookie_name():
     return (request.get_json() or {}).get("cookie_name", "tavern-cookie")
 
+
 @app.route("/get_cookie", methods=["POST"])
 def give_cookie():
     cookie_name = _maybe_get_cookie_name()
     response = Response()
-    response.set_cookie(cookie_name, base64.b64encode(os.urandom(16)).decode("utf8"))
+    response.set_cookie(cookie_name,
+                        base64.b64encode(os.urandom(16)).decode("utf8"))
     return response, 200
 
 
@@ -265,6 +268,17 @@ def give_cookie():
 def expect_cookie():
     cookie_name = _maybe_get_cookie_name()
     if cookie_name not in request.cookies:
-        return jsonify({"error": "No cookie named {} in request".format(cookie_name)}), 400
+        return jsonify(
+            {"error": "No cookie named {} in request".format(cookie_name)}), 400
     else:
         return jsonify({"status": "ok"}), 200
+
+
+@app.route("/redirect/source", methods=["GET"])
+def redirect_to_other_endpoint():
+    return redirect("/redirect/destination", 302)
+
+
+@app.route("/redirect/destination", methods=["GET"])
+def redirect_to_other_endpoint():
+    return jsonify({"status": "successful redirect"}), 200
