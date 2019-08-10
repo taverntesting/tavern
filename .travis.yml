@@ -42,12 +42,6 @@ jobs:
       env: TOXENV=py37 TOXCFG=tox.ini
       stage: basic-tests
     - python: 2.7
-      env: TOXENV=py27 TOXCFG=tox.ini
-      stage: basic-tests
-    - python: 3.7
-      env: TOXENV=py37 TOXCFG=tox.ini
-      stage: basic-tests
-    - python: 2.7
       env: TOXENV=py27lint TOXCFG=tox.ini
       stage: basic-tests
     - python: 3.7
