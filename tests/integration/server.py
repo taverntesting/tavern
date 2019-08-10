@@ -224,6 +224,7 @@ def poll():
 def _maybe_get_cookie_name():
     return (request.get_json() or {}).get("cookie_name", "tavern-cookie")
 
+
 @app.route("/get_cookie", methods=["POST"])
 def give_cookie():
     cookie_name = _maybe_get_cookie_name()
@@ -236,6 +237,9 @@ def give_cookie():
 def expect_cookie():
     cookie_name = _maybe_get_cookie_name()
     if cookie_name not in request.cookies:
-        return jsonify({"error": "No cookie named {} in request".format(cookie_name)}), 400
+        return (
+            jsonify({"error": "No cookie named {} in request".format(cookie_name)}),
+            400,
+        )
     else:
         return jsonify({"status": "ok"}), 200

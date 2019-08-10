@@ -12,8 +12,7 @@ from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util import exceptions
 from tavern.util.jmespath_util import check_jmespath_match
 from tavern.util.python_2_util import indent
-from tavern.util.dict_util import check_keys_match_recursive, \
-    check_is_simple_value
+from tavern.util.dict_util import check_keys_match_recursive, check_is_simple_value
 
 logger = logging.getLogger(__name__)
 
