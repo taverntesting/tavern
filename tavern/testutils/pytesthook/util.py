@@ -48,6 +48,12 @@ def add_parser_options(parser_addoption, with_defaults=True):
         default=False,
         action="store_true",
     )
+    parser_addoption(
+        "--tavern-always-follow-redirects",
+        help="Always follow HTTP redirects",
+        default=False,
+        action="store_true",
+    )
 
 
 @lru_cache()
@@ -81,24 +87,9 @@ def load_global_cfg(pytest_config):
 
         global_cfg["variables"] = format_keys(loaded_variables, tavern_box)
 
-    strict = []
-
-    if pytest_config.getini("tavern-strict") is not None:
-        # Lowest priority
-        strict = pytest_config.getini("tavern-strict")
-        if isinstance(strict, list):
-            if any(
-                i not in ["body", "headers", "redirect_query_params"] for i in strict
-            ):
-                raise exceptions.UnexpectedKeysError(
-                    "Invalid values for 'strict' use in config file"
-                )
-    elif pytest_config.getoption("tavern_strict") is not None:
-        # Middle priority
-        strict = pytest_config.getoption("tavern_strict")
-
     # Can be overridden in tests
-    global_cfg["strict"] = strict
+    global_cfg["strict"] = _load_global_strictness(pytest_config)
+    global_cfg["follow_redirects"] = _load_global_follow_redirects(pytest_config)
 
     global_cfg["backends"] = {}
     backends = ["http", "mqtt"]
@@ -116,3 +107,32 @@ def load_global_cfg(pytest_config):
     logger.debug("Global config: %s", global_cfg)
 
     return global_cfg
+
+
+def _load_global_strictness(pytest_config):
+    """Load the global 'strictness' setting"""
+    strict = []
+    if pytest_config.getini("tavern-strict") is not None:
+        # Lowest priority
+        strict = pytest_config.getini("tavern-strict")
+        if isinstance(strict, list):
+            if any(
+                i not in ["body", "headers", "redirect_query_params"] for i in strict
+            ):
+                raise exceptions.UnexpectedKeysError(
+                    "Invalid values for 'strict' use in config file"
+                )
+    elif pytest_config.getoption("tavern_strict") is not None:
+        # Middle priority
+        strict = pytest_config.getoption("tavern_strict")
+    return strict
+
+
+def _load_global_follow_redirects(pytest_config):
+    """Load the global 'follow redirects' setting"""
+    if pytest_config.getini("tavern-always-follow-redirects") is not None:
+        return pytest_config.getini("tavern-always-follow-redirects")
+    elif pytest_config.getoption("tavern_always_follow_redirects") is not None:
+        return pytest_config.getoption("tavern_always_follow_redirects")
+    else:
+        return None

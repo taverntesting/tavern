@@ -245,7 +245,8 @@ class RestRequest(BaseRequest):
 
         logger.debug("Request args: %s", request_args)
 
-        request_args.update(allow_redirects=False)
+        if not test_block_config.get("follow_redirects"):
+            request_args.update(allow_redirects=False)
 
         self._request_args = request_args
 
