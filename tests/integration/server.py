@@ -280,5 +280,5 @@ def redirect_to_other_endpoint():
 
 
 @app.route("/redirect/destination", methods=["GET"])
-def redirect_to_other_endpoint():
+def get_redirected_to_here():
     return jsonify({"status": "successful redirect"}), 200
