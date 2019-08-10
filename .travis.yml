@@ -14,14 +14,16 @@ language: python
 
 branches:
   only:
-  - master
+    - master
 
 cache:
   directories:
     - $HOME/.cache/pip
     - .tox
+
 services:
   - docker
+
 jobs:
   fast_finish: true
   include:
