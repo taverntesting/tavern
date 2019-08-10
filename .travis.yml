@@ -12,6 +12,10 @@ sudo: required
 dist: xenial
 language: python
 
+branches:
+  only:
+  - master
+
 cache:
   directories:
     - $HOME/.cache/pip
