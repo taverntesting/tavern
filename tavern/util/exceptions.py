@@ -97,5 +97,13 @@ class InvalidSettingsError(TavernException):
     """Configuration was passed incorrectly in some fashion"""
 
 
+class KeySearchNotFoundError(TavernException):
+    """Trying to search for a key in the response but was not found"""
+
+
+class InvalidQueryResultTypeError(TavernException):
+    """Searched for a value in data but it was not a 'simple' type"""
+
+
 class UnexpectedDocumentsError(TavernException):
     """Multiple documents were found in a YAML file when only one was expected"""

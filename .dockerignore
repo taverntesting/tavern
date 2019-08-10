@@ -91,26 +91,29 @@ ENV/
 tags
 .pytest_cache
 
-# Sublimetext
-*.sublime-*
-
-# Vim
-*.swp
-*.swo
-
-# Pycharm
-.idea
-
-# vs
-.vs
-
-tavern.lock
-pytype_output
-
-.mypy_cache
-
-.vscode
-
-out/
-**/*.iml
-.idea
+.bumpversion.cfg
+.cache
+.coverage
+dist
+docker
+docs
+.eggs
+example
+.git
+.gitignore
+LICENSE
+# MANIFEST.in
+.pylintrc
+.pytest_cache
+README.rst
+requirements.txt
+# setup.cfg
+# setup.py
+tags
+# tavern
+tavern.egg-info
+tests
+.tox
+tox.ini
+tox-integration.ini
+.travis.yml

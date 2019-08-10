@@ -1,17 +1,17 @@
-import json
 import importlib
+import json
 import logging
 import re
+
 import jwt
-import jmespath
-
-from future.utils import raise_from
 from box import Box
+from future.utils import raise_from
 
-from tavern.util import exceptions
-from tavern.testutils.jmesutils import validate_comparison, actual_validation
 from tavern.schemas.files import verify_generic
+from tavern.testutils.jmesutils import validate_comparison, actual_validation
+from tavern.util import exceptions
 from tavern.util.dict_util import check_keys_match_recursive
+from tavern.util.jmespath_util import check_jmespath_match
 
 logger = logging.getLogger(__name__)
 
@@ -136,12 +136,8 @@ def validate_content(response, comparisons):
     for each_comparison in comparisons:
         path, _operator, expected = validate_comparison(each_comparison)
         logger.debug("Searching for '%s' in '%s'", path, response.json())
-        actual = jmespath.search(path, response.json())
 
-        if actual is None:
-            raise exceptions.JMESError(
-                "JMES path '{}' not found in response".format(path)
-            )
+        actual = check_jmespath_match(response.json(), path)
 
         expession = " ".join([str(path), str(_operator), str(expected)])
         parsed_expession = " ".join([str(actual), str(_operator), str(expected)])
