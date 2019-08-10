@@ -115,6 +115,10 @@ schema;stage:
           type: str
           required: true
 
+        follow_redirects:
+          type: bool
+          required: false
+
         re;(params|headers):
           include: any_map_with_ext_function
 
