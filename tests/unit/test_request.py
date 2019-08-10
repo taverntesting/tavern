@@ -76,6 +76,20 @@ class TestHttpRedirects(object):
         assert rmock.request.called
         assert rmock.request.call_args[1]["allow_redirects"] == do_follow
 
+    @pytest.mark.parametrize("do_follow", [True, False])
+    def test_session_do_follow_redirects_based_on_global_flag(
+        self, req, includes, do_follow
+    ):
+        """Globally enable following redirects in test"""
+
+        includes["follow_redirects"] = do_follow
+
+        rmock = Mock(spec=requests.Session)
+        RestRequest(rmock, req, includes).run()
+
+        assert rmock.request.called
+        assert rmock.request.call_args[1]["allow_redirects"] == do_follow
+
 
 class TestRequestArgs(object):
     def test_default_method(self, req, includes):
