@@ -87,7 +87,7 @@ def verify_generic(to_verify, schema):
     """Verify a generic file against a given schema
 
     Args:
-        to_verify (str): Filename of source tests to check
+        to_verify (dict): Filename of source tests to check
         schema (dict): Schema to verify against
 
     Raises:
