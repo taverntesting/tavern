@@ -145,7 +145,7 @@ class BaseResponse(object):
             if "$ext" in payload:
                 self.validate_function = get_wrapped_response_function(payload["$ext"])
 
-    def get_parsed_response(self, response):
+    def get_parsed_response(self, response):  # pylint: disable=unused-argument
         """Get a dict/list representation of the response
 
         Should be overridden by plugins, but it's not _required_ because it
