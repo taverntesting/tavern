@@ -137,7 +137,7 @@ def construct_include(loader, node):
                 filename
             )
         )
-
+    filename = filename.format(**dict(os.environ))
     return load_single_document_yaml(filename)
 
 
