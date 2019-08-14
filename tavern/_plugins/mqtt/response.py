@@ -24,7 +24,7 @@ class MQTTResponse(BaseResponse):
         self.test_block_config = test_block_config
         self.name = name
 
-        self._check_for_validate_functions(expected.get("payload", {}))
+        self._check_for_validate_functions(expected)
 
         self.expected = expected
         self.response = None
@@ -164,7 +164,9 @@ class MQTTResponse(BaseResponse):
             msg = None
             time_spent += time.time() - t0
 
-        if not msg:
+        if msg:
+            self._maybe_run_validate_functions(msg)
+        else:
             self._adderr(
                 "Expected '%s' on topic '%s' but no such message received",
                 expected_payload,
