@@ -73,6 +73,15 @@ class TestHeaders:
             verify_tests(test_dict)
 
 
+class TestParameters:
+    def test_header_request_list(self, test_dict):
+        """Parameters must always be a dict"""
+        test_dict["stages"][0]["request"]["params"] = [1, "text", -1]
+
+        with pytest.raises(BadSchemaError):
+            verify_tests(test_dict)
+
+
 class TestTimeout:
     @pytest.mark.parametrize("incorrect_value", ("abc", True, {"a": 2}, [1, 2, 3]))
     def test_timeout_single_fail(self, test_dict, incorrect_value):

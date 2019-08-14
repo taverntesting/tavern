@@ -60,6 +60,9 @@ class MQTTResponse(BaseResponse):
 
     def _await_response(self):
         """Actually wait for response"""
+
+        # pylint: disable=too-many-statements
+
         topic = self.expected["topic"]
         timeout = self.expected.get("timeout", 1)
 
@@ -69,8 +72,8 @@ class MQTTResponse(BaseResponse):
         # eg, if a message was received but it didn't match, message had payload, etc.
         warnings = []
 
-        def addwarning(w, *args, exc_info=False):
-            logger.warning(w, *args, exc_info=exc_info)
+        def addwarning(w, *args, **kwargs):
+            logger.warning(w, *args, **kwargs)
             warnings.append(w % args)
 
         time_spent = 0
@@ -103,7 +106,7 @@ class MQTTResponse(BaseResponse):
                     continue
 
             if expected_payload is None:
-                if msg.payload is None:
+                if msg.payload is None or msg.payload == "":
                     logger.info(
                         "Got message with no payload (as expected) on '%s'", topic
                     )
