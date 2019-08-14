@@ -7,6 +7,11 @@ desc: Matches test blocks
 
 schema;any_request_json:
   func: validate_request_json
+  type: any
+  required: false
+
+schema;any_map:
+  func: validate_request_json
   type: map
   required: false
   mapping:
@@ -113,7 +118,7 @@ schema;stage:
           required: false
 
         re;(params|headers):
-          include: any_request_json
+          include: any_map
 
         data:
           type: any
@@ -201,7 +206,7 @@ schema;stage:
               unique: true
 
         re;(headers|redirect_query_params):
-          include: any_request_json
+          include: any_map
 
         body:
           include: any_request_json
