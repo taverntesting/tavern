@@ -283,6 +283,7 @@ def validate_data_key(value, rule_obj, path):
     We could handle lists of tuples, but it seems entirely pointless to maintain
     compatibility for something which is more verbose and does the same thing
     """
+    # pylint: disable=unused-argument
 
     if isinstance(value, dict):
         # Fine
@@ -318,6 +319,7 @@ def validate_request_json(value, rule_obj, path):
     """ Performs the above match, but also matches a dict or a list. This it
     just because it seems like you can't match a dict OR a list in pykwalify
     """
+    # pylint: disable=unused-argument
 
     def nested_values(d):
         if isinstance(d, dict):

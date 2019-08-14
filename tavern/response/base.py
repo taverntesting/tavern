@@ -215,4 +215,6 @@ class BaseResponse(object):
         if isinstance(to_save, dict):
             return to_save
         elif to_save is not None:
-            self._adderr("Unexpected return value '%s' from $ext save function")
+            self._adderr("Unexpected return value '%s' from $ext save function", to_save)
+
+        return {}
