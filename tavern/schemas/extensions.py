@@ -34,6 +34,7 @@ is_int_like = validate_type_and_token(is_int, IntToken)
 is_float_like = validate_type_and_token(is_float, FloatToken)
 is_bool_like = validate_type_and_token(is_bool, BoolToken)
 
+
 # These plug into the pykwalify extension function API
 def validator_like(validate, description):
     def validator(value, rule_obj, path):
@@ -109,7 +110,12 @@ def get_wrapped_response_function(ext):
     """
     args = ext.get("extra_args") or ()
     kwargs = ext.get("extra_kwargs") or {}
-    func = import_ext_function(ext["function"])
+    try:
+        func = import_ext_function(ext["function"])
+    except KeyError:
+        raise exceptions.BadSchemaError(
+            "No function specified in external function block"
+        )
 
     @functools.wraps(func)
     def inner(response):
@@ -136,7 +142,7 @@ def get_wrapped_create_function(ext):
     return inner
 
 
-def validate_extensions(value, rule_obj, path, must_iter=True):
+def validate_extensions(value, rule_obj, path):
     """Given a specification for calling a validation function, make sure that
     the arguments are valid (ie, function is valid, arguments are of the
     correct type...)
@@ -154,50 +160,38 @@ def validate_extensions(value, rule_obj, path, must_iter=True):
     Raises:
         BadSchemaError: Something in the validation function spec was wrong
     """
+
     # pylint: disable=unused-argument
 
-    if must_iter:
-        try:
-            iter(value)
-        except TypeError as e:
-            raise_from(
-                BadSchemaError(
-                    "Invalid value for key - things like body/params/headers/data have to be iterable (list, dictionary, string), not a single value"
-                ),
-                e,
-            )
-
-    if isinstance(value, dict) and "$ext" in value:
+    def validate_one_extension(input_value):
         expected_keys = {"function", "extra_args", "extra_kwargs"}
-
-        validate_keys = value["$ext"]
-
-        extra = set(validate_keys) - expected_keys
+        extra = set(input_value) - expected_keys
         if extra:
             raise BadSchemaError("Unexpected keys passed to $ext: {}".format(extra))
-
-        if "function" not in validate_keys:
+        if "function" not in input_value:
             raise BadSchemaError("No function specified for validation")
-
         try:
-            import_ext_function(validate_keys["function"])
+            import_ext_function(input_value["function"])
         except Exception as e:  # pylint: disable=broad-except
             raise_from(
-                BadSchemaError("Couldn't load {}".format(validate_keys["function"])), e
+                BadSchemaError("Couldn't load {}".format(input_value["function"])), e
             )
-
-        extra_args = validate_keys.get("extra_args")
-        extra_kwargs = validate_keys.get("extra_kwargs")
-
+        extra_args = input_value.get("extra_args")
+        extra_kwargs = input_value.get("extra_kwargs")
         if extra_args and not isinstance(extra_args, list):
             raise BadSchemaError(
                 "Expected a list of extra_args, got {}".format(type(extra_args))
             )
-
         if extra_kwargs and not isinstance(extra_kwargs, dict):
             raise BadSchemaError(
                 "Expected a dict of extra_kwargs, got {}".format(type(extra_args))
             )
+
+    if isinstance(value, list):
+        for vf in value:
+            validate_one_extension(vf)
+    if isinstance(value, dict):
+        validate_one_extension(value)
 
     return True
 
@@ -277,7 +271,7 @@ def check_parametrize_marks(value, rule_obj, path):
     return True
 
 
-def validate_data_key_with_ext_function(value, rule_obj, path):
+def validate_data_key(value, rule_obj, path):
     """Validate the 'data' key in a http request
 
     From requests docs:
@@ -289,7 +283,6 @@ def validate_data_key_with_ext_function(value, rule_obj, path):
     We could handle lists of tuples, but it seems entirely pointless to maintain
     compatibility for something which is more verbose and does the same thing
     """
-    validate_extensions(value, rule_obj, path)
 
     if isinstance(value, dict):
         # Fine
@@ -321,11 +314,10 @@ def validate_data_key_with_ext_function(value, rule_obj, path):
     return True
 
 
-def validate_json_with_extensions(value, rule_obj, path):
+def validate_request_json(value, rule_obj, path):
     """ Performs the above match, but also matches a dict or a list. This it
     just because it seems like you can't match a dict OR a list in pykwalify
     """
-    validate_extensions(value, rule_obj, path, must_iter=False)
 
     def nested_values(d):
         if isinstance(d, dict):
