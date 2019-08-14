@@ -134,6 +134,9 @@ class BaseResponse(object):
                 for k, v in expected_block.items():
                     check_keys_match_recursive(v, block[k], [k], strict=True)
             except exceptions.KeyMismatchError:
+                if "$ext" in expected_block:
+                    logger.warning("Matching failed, but $ext was found in block - this has moved")
+
                 self._adderr("Value mismatch in %s: %s", blockname, e)
             else:
                 msg = "Checking keys worked using 'legacy' comparison, which will not match dictionary keys at the top level of the response. This behaviour will be changed in a future version"
