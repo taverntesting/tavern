@@ -1,0 +1,107 @@
+---
+
+test_name: Use one function
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: simple match
+    request:
+      url: "{host}/token"
+      method: GET
+    response:
+      status_code: 200
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_regex
+        extra_kwargs:
+          expression: '<a src=\".*\">'
+
+---
+
+test_name: Use one function in a list
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: simple match
+    request:
+      url: "{host}/token"
+      method: GET
+    response:
+      status_code: 200
+      verify_response_with:
+        - function: tavern.testutils.helpers:validate_regex
+          extra_kwargs:
+            expression: '<a src=\".*\">'
+
+---
+
+test_name: Use two functions
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: simple match
+    request:
+      url: "{host}/token"
+      method: GET
+    response:
+      status_code: 200
+      verify_response_with:
+        - function: tavern.testutils.helpers:validate_regex
+          extra_kwargs:
+            expression: '<a src=\".*\">'
+        - function: tavern.testutils.helpers:validate_regex
+          extra_kwargs:
+            expression: '<a src=\".*\">'
+
+---
+
+test_name: Test first function failing will cause test to fail
+
+includes:
+  - !include common.yaml
+
+_xfail: run
+
+stages:
+  - name: simple match
+    request:
+      url: "{host}/token"
+      method: GET
+    response:
+      status_code: 200
+      verify_response_with:
+        - function: tavern.testutils.helpers:validate_regex
+          extra_kwargs:
+            expression: 'bkllelkkkkkkkkkkfff'
+        - function: tavern.testutils.helpers:validate_regex
+          extra_kwargs:
+            expression: '<a src=\".*\">'
+
+---
+
+test_name: Test second function failing will cause test to fail
+
+includes:
+  - !include common.yaml
+
+_xfail: run
+
+stages:
+  - name: simple match
+    request:
+      url: "{host}/token"
+      method: GET
+    response:
+      status_code: 200
+      verify_response_with:
+        - function: tavern.testutils.helpers:validate_regex
+          extra_kwargs:
+            expression: '<a src=\".*\">'
+        - function: tavern.testutils.helpers:validate_regex
+          extra_kwargs:
+            expression: 'bkllelkkkkkkkkkkfff'
