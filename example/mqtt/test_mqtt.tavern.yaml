@@ -51,6 +51,30 @@ stages:
 
 ---
 
+test_name: Test ext functions work with MQTT
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - name: Echo json
+    mqtt_publish:
+      topic: /device/123/echo
+      json:
+        message: hello world
+    mqtt_response:
+      topic: /device/123/echo/response
+      json:
+        message: hello world
+      timeout: 5
+      qos: 1
+      verify_response_with:
+        function: testing_utils:message_says_hello
+
+---
+
 test_name: Test retain key
 
 includes:
