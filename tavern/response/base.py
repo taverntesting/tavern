@@ -85,6 +85,10 @@ class BaseResponse(object):
 
         if isinstance(block, Mapping):
             block = dict(block)
+            
+        if type(expected_block).__name__ == 'InnerFormattedString':
+            import json
+            expected_block = json.loads(str(expected_block))
 
         logger.debug("expected = %s, actual = %s", expected_block, block)
 
