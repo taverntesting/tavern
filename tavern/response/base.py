@@ -135,7 +135,9 @@ class BaseResponse(object):
                     check_keys_match_recursive(v, block[k], [k], strict=True)
             except exceptions.KeyMismatchError:
                 if "$ext" in expected_block:
-                    logger.warning("Matching failed, but $ext was found in block - this has moved")
+                    logger.warning(
+                        "Matching failed, but $ext was found in block - this has moved"
+                    )
 
                 self._adderr("Value mismatch in %s: %s", blockname, e)
             else:
@@ -218,6 +220,8 @@ class BaseResponse(object):
         if isinstance(to_save, dict):
             return to_save
         elif to_save is not None:
-            self._adderr("Unexpected return value '%s' from $ext save function", to_save)
+            self._adderr(
+                "Unexpected return value '%s' from $ext save function", to_save
+            )
 
         return {}
