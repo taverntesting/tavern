@@ -1,11 +1,9 @@
 import collections
 import logging
 import warnings
-from builtins import str as ustr
 
 import jmespath
 from box import Box
-from future.utils import raise_from
 
 from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
 from . import exceptions
@@ -13,7 +11,7 @@ from . import exceptions
 logger = logging.getLogger(__name__)
 
 
-class _FormattedString(object):
+class _FormattedString(str):
     """Wrapper class for things that have already been formatted
 
     This is only used below and should not be used outside this module
@@ -100,12 +98,9 @@ def recurse_access_key(data, query):
         try:
             from_recurse = _recurse_access_key(data, query.split("."))
         except (IndexError, KeyError) as e:
-            raise_from(
-                exceptions.KeySearchNotFoundError(
-                    "Error searching for key in given data"
-                ),
-                e,
-            )
+            raise exceptions.KeySearchNotFoundError(
+                "Error searching for key in given data"
+            ) from e
 
         # If we found a key using 'old' style searching, which will be deprecated
         warnings.warn(msg, FutureWarning)
@@ -120,7 +115,7 @@ def recurse_access_key(data, query):
 
 
 def check_is_simple_value(found, query):
-    if not isinstance(found, (float, int, str, ustr)):
+    if not isinstance(found, (float, int, str)):
         raise exceptions.InvalidQueryResultTypeError(
             "Key '{}' was found in given data, but it was '{}' when it should be a 'simple' type (float, int, string)".format(
                 query, type(found)

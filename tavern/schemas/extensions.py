@@ -172,7 +172,9 @@ def validate_extensions(value, rule_obj, path):
         try:
             import_ext_function(input_value["function"])
         except Exception as e:  # pylint: disable=broad-except
-            raise BadSchemaError("Couldn't load {}".format(input_value["function"])) from e
+            raise BadSchemaError(
+                "Couldn't load {}".format(input_value["function"])
+            ) from e
 
         extra_args = input_value.get("extra_args")
         extra_kwargs = input_value.get("extra_kwargs")

@@ -5,6 +5,7 @@ from collections.abc import Mapping
 
 from abc import abstractmethod
 
+from tavern.util import exceptions
 from tavern.schemas.extensions import get_wrapped_response_function
 from textwrap import indent
 from tavern.util.dict_util import check_keys_match_recursive
