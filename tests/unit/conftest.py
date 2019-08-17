@@ -1,3 +1,4 @@
+from mock import Mock
 import pytest
 
 
@@ -13,6 +14,7 @@ def fix_example_includes():
         },
         "backends": {"mqtt": "paho-mqtt", "http": "requests"},
         "strict": True,
+        "tavern_internal": {"pytest_hook_caller": Mock()},
     }
 
     return includes.copy()
