@@ -34,7 +34,8 @@ initialisation:
             type: str
           port:
             required: false
-            type: int
+            type: any
+            func: int_variable
           keepalive:
             required: false
             type: float

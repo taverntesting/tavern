@@ -76,6 +76,36 @@ stages:
 
 ---
 
+test_name: Test we can save a single value with jmespath
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get item
+    request:
+      url: "{host}/get_single_json_item"
+      method: GET
+    response:
+      status_code: 200
+      body: c82bfa63-fd2a-419a-8c06-21cb283fd9f7
+      save:
+        body:
+          saved_with_at: "@"
+
+  - name: Echo back the value and it should be as expected
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{saved_with_at}"
+    response:
+      status_code: 200
+      body:
+        value: c82bfa63-fd2a-419a-8c06-21cb283fd9f7
+
+---
+
 test_name: Test querying for presence of value
 
 includes:
