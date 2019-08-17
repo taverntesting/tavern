@@ -1,7 +1,4 @@
 import contextlib
-import os
-import tempfile
-from textwrap import dedent
 import copy
 import os
 import tempfile
@@ -10,13 +7,11 @@ from textwrap import dedent
 
 import pytest
 import yaml
-
 from mock import Mock, patch
 
 from tavern.schemas.extensions import validate_extensions
 from tavern.schemas.files import wrapfile
 from tavern.util import exceptions
-from tavern.util.loader import ANYTHING, IncludeLoader, construct_include
 from tavern.util.dict_util import (
     deep_dict_merge,
     check_keys_match_recursive,
@@ -24,6 +19,7 @@ from tavern.util.dict_util import (
     recurse_access_key,
 )
 from tavern.util.loader import ANYTHING, IncludeLoader, load_single_document_yaml
+from tavern.util.loader import construct_include
 
 
 class TestValidateFunctions:
@@ -296,6 +292,18 @@ class TestFormatKeys:
         format_variables = {"b": final_value}
 
         assert format_keys(to_format, format_variables)["a"] == final_value
+
+    def test_no_double_format_failure(self):
+        to_format = "{{b}}"
+
+        final_value = "{b}"
+
+        format_variables = {"b": final_value}
+
+        formatted = format_keys(to_format, format_variables)
+        assert formatted == final_value
+        formatted_2 = format_keys(formatted, {})
+        assert formatted_2 == final_value
 
 
 class TestRecurseAccess:

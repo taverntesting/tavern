@@ -5,53 +5,44 @@ import mimetypes
 import os
 import time
 
-from flask import Flask, request, jsonify, Response
+from flask import Flask, request, jsonify, Response, redirect
 
 app = Flask(__name__)
 
 
 @app.route("/token", methods=["GET"])
 def token():
-    return '<div><a src="http://127.0.0.1:5003/verify?token=c9bb34ba-131b-11e8-b642-0ed5f89f718b">Link</a></div>', 200
+    return (
+        '<div><a src="http://127.0.0.1:5003/verify?token=c9bb34ba-131b-11e8-b642-0ed5f89f718b">Link</a></div>',
+        200,
+    )
 
 
 @app.route("/headers", methods=["GET"])
 def headers():
-    return 'OK', 200, {
-        'X-Integration-Value': "_HelloWorld1",
-        "ATestHEader": "orange",
-    }
+    return "OK", 200, {"X-Integration-Value": "_HelloWorld1", "ATestHEader": "orange"}
 
 
 @app.route("/verify", methods=["GET"])
 def verify():
-    if request.args.get('token') == 'c9bb34ba-131b-11e8-b642-0ed5f89f718b':
-        return '', 200
+    if request.args.get("token") == "c9bb34ba-131b-11e8-b642-0ed5f89f718b":
+        return "", 200
     else:
-        return '', 401
+        return "", 401
 
 
 @app.route("/get_thing_slow", methods=["GET"])
 def get_slow():
     time.sleep(0.25)
 
-    response = {
-        "status": "OK",
-    }
+    response = {"status": "OK"}
     return jsonify(response), 200
 
 
 @app.route("/fake_dictionary", methods=["GET"])
 def get_fake_dictionary():
     fake = {
-        "top": {
-            "Thing": "value",
-            "nested": {
-                "doubly": {
-                    "inner": "value",
-                }
-            }
-        },
+        "top": {"Thing": "value", "nested": {"doubly": {"inner": "value"}}},
         "an_integer": 123,
         "a_string": "abc",
         "a_bool": True,
@@ -62,38 +53,20 @@ def get_fake_dictionary():
 
 @app.route("/fake_list", methods=["GET"])
 def list_response():
-    list_response = [
-        "a",
-        "b",
-        "c",
-        1,
-        2,
-        3,
-        -1.0,
-        -2.0,
-        -3.0,
-    ]
+    list_response = ["a", "b", "c", 1, 2, 3, -1.0, -2.0, -3.0]
     return jsonify(list_response), 200
 
 
 @app.route("/nested_list", methods=["GET"])
 def nested_list_response():
-    response = {
-        "top": [
-            "a",
-            "b",
-            {
-                "key": "val",
-            }
-        ]
-    }
+    response = {"top": ["a", "b", {"key": "val"}]}
     return jsonify(response), 200
 
 
 @app.route("/fake_upload_file", methods=["POST"])
 def upload_fake_file():
     if not request.files:
-        return '', 401
+        return "", 401
 
     if not mimetypes.inited:
         mimetypes.init()
@@ -112,7 +85,7 @@ def upload_fake_file():
         path = os.path.join("/tmp", file_to_save.filename)
         file_to_save.save(path)
 
-    return '', 200
+    return "", 200
 
 
 @app.route("/fake_upload_file_data", methods=["POST"])
@@ -148,17 +121,13 @@ def upload_fake_file_and_data():
 
 @app.route("/nested/again", methods=["GET"])
 def multiple_path_items_response():
-    response = {
-        "status": "OK",
-    }
+    response = {"status": "OK"}
     return jsonify(response), 200
 
 
 @app.route("/pi", methods=["GET"])
 def return_fp_number():
-    response = {
-        "pi": math.pi
-    }
+    response = {"pi": math.pi}
     return jsonify(response), 200
 
 
@@ -205,19 +174,13 @@ def echo_values():
 def expect_raw_data():
     raw_data = request.stream.read().decode("utf8")
     if raw_data == "OK":
-        response = {
-            "status": "ok",
-        }
+        response = {"status": "ok"}
         code = 200
     elif raw_data == "DENIED":
-        response = {
-            "status": "denied",
-        }
+        response = {"status": "denied"}
         code = 401
     else:
-        response = {
-            "status": "err: '{}'".format(raw_data),
-        }
+        response = {"status": "err: '{}'".format(raw_data)}
         code = 400
 
     return jsonify(response), code
@@ -234,24 +197,26 @@ def echo_form_values():
 @app.route("/stream_file", methods=["GET"])
 def stream_file():
     def iter():
-        for data in range(1,10):
+        for data in range(1, 10):
             yield bytes(data)
-    response = Response(iter(), mimetype='application/octet-stream')
-    response.headers['Content-Disposition'] = 'attachment; filename=tmp.txt'
+
+    response = Response(iter(), mimetype="application/octet-stream")
+    response.headers["Content-Disposition"] = "attachment; filename=tmp.txt"
     return response
 
 
-statuses = itertools.cycle(['processing', 'ready'])
+statuses = itertools.cycle(["processing", "ready"])
 
 
 @app.route("/poll", methods=["GET"])
 def poll():
-    response = {'status': next(statuses)}
+    response = {"status": next(statuses)}
     return jsonify(response)
 
 
 def _maybe_get_cookie_name():
     return (request.get_json() or {}).get("cookie_name", "tavern-cookie")
+
 
 @app.route("/get_cookie", methods=["POST"])
 def give_cookie():
@@ -265,6 +230,24 @@ def give_cookie():
 def expect_cookie():
     cookie_name = _maybe_get_cookie_name()
     if cookie_name not in request.cookies:
-        return jsonify({"error": "No cookie named {} in request".format(cookie_name)}), 400
+        return (
+            jsonify({"error": "No cookie named {} in request".format(cookie_name)}),
+            400,
+        )
     else:
         return jsonify({"status": "ok"}), 200
+
+
+@app.route("/redirect/source", methods=["GET"])
+def redirect_to_other_endpoint():
+    return redirect("/redirect/destination", 302)
+
+
+@app.route("/redirect/destination", methods=["GET"])
+def get_redirected_to_here():
+    return jsonify({"status": "successful redirect"}), 200
+
+
+@app.route("/get_single_json_item", methods=["GET"])
+def return_one_item():
+    return jsonify("c82bfa63-fd2a-419a-8c06-21cb283fd9f7"), 200

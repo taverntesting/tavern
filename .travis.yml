@@ -12,9 +12,18 @@ sudo: required
 dist: xenial
 language: python
 
-cache: pip
+branches:
+  only:
+    - master
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+    - .tox
+
 services:
   - docker
+
 jobs:
   fast_finish: true
   include:
@@ -39,15 +48,9 @@ jobs:
       env: TOXENV=py37 TOXCFG=tox.ini
       stage: basic-tests
     - python: 2.7
-      env: TOXENV=py27 TOXCFG=tox.ini
-      stage: basic-tests
-    - python: 3.7
-      env: TOXENV=py37 TOXCFG=tox.ini
-      stage: basic-tests
-    - python: 2.7
       env: TOXENV=py27lint TOXCFG=tox.ini
       stage: basic-tests
-    - python: 3.6
+    - python: 3.7
       env: TOXENV=py36lint TOXCFG=tox.ini
       stage: basic-tests
 

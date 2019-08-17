@@ -383,3 +383,32 @@ _connection_ timeout, and the second value will be the response timeout. By
 default this uses the Requests implementation of timeouts - see [their
 documentation](http://docs.python-requests.org/en/master/user/advanced/#timeouts)
 for more details.
+
+## Redirects
+
+By default, Tavern will not follow redirects. This allows you to check whether
+an endpoint is indeed redirecting a user to a certain page.
+
+To disable this behaviour, use either the `--tavern-always-follow-redirects`
+command line flag or set `tavern-always-follow-redirects` to True in your Pytest
+settings file.
+
+This can also be disabled or enabled on a per-stage basis by using the `follow_redirects` flag:
+
+```yaml
+---
+test_name: Expect a redirect when setting the flag
+
+stages:
+  - name: Expect to be redirected
+    request:
+      url: "{host}/redirect/source"
+      follow_redirects: true
+    response:
+      status_code: 200
+      body:
+        status: successful redirect
+``` 
+
+Specifying `follow_redirects` on a stage will override any global setting, so if
+you just want to change the behaviour for one stage then use this flag.

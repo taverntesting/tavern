@@ -1,0 +1,30 @@
+---
+
+includes:
+  - !include common.yaml
+
+test_name: Test redirecting without setting flag works
+
+stages:
+  - name: Expect a 302 without setting the flag
+    request:
+      url: "{host}/redirect/source"
+    response:
+      status_code: 302
+
+---
+
+includes:
+  - !include common.yaml
+
+test_name: Expect a redirect when setting the flag
+
+stages:
+  - name: Expect to be redirected
+    request:
+      url: "{host}/redirect/source"
+      follow_redirects: true
+    response:
+      status_code: 200
+      body:
+        status: successful redirect
