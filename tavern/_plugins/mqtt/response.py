@@ -2,7 +2,6 @@ import logging
 import json
 import time
 
-from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util import exceptions
 from tavern.response.base import BaseResponse
 from tavern.util.dict_util import check_keys_match_recursive
@@ -19,12 +18,7 @@ class MQTTResponse(BaseResponse):
 
         self.name = name
 
-        payload = expected.get("payload")
-
-        self.validate_function = None
-        if isinstance(payload, dict):
-            if "$ext" in payload:
-                self.validate_function = get_wrapped_response_function(payload["$ext"])
+        self._check_for_validate_functions(expected.get("payload", {}))
 
         self.expected = expected
         self.response = None

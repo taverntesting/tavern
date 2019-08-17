@@ -1,12 +1,12 @@
-import logging
-import re
 import functools
 import importlib
+import logging
+import re
 
 from pykwalify.types import is_int, is_float, is_bool
 
-from tavern.util.exceptions import BadSchemaError
 from tavern.util import exceptions
+from tavern.util.exceptions import BadSchemaError
 from tavern.util.loader import ApproxScalar, IntToken, FloatToken, BoolToken
 
 
@@ -135,7 +135,7 @@ def get_wrapped_create_function(ext):
     return inner
 
 
-def validate_extensions(value, rule_obj, path):
+def validate_extensions(value, rule_obj, path, must_iter=True):
     """Given a specification for calling a validation function, make sure that
     the arguments are valid (ie, function is valid, arguments are of the
     correct type...)
@@ -155,10 +155,11 @@ def validate_extensions(value, rule_obj, path):
     """
     # pylint: disable=unused-argument
 
-    try:
-        iter(value)
-    except TypeError as e:
-        raise BadSchemaError(
+    if must_iter:
+        try:
+            iter(value)
+        except TypeError as e:
+            raise BadSchemaError(
             "Invalid value for key - things like body/params/headers/data have to be iterable (list from dictionary, string, not a single value"
         ) from e
 
@@ -320,10 +321,7 @@ def validate_json_with_extensions(value, rule_obj, path):
     """ Performs the above match, but also matches a dict or a list. This it
     just because it seems like you can't match a dict OR a list in pykwalify
     """
-    validate_extensions(value, rule_obj, path)
-
-    if not isinstance(value, (list, dict)):
-        raise BadSchemaError("Error at {} - expected a list or dict".format(path))
+    validate_extensions(value, rule_obj, path, must_iter=False)
 
     def nested_values(d):
         if isinstance(d, dict):

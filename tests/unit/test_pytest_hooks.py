@@ -1,6 +1,3 @@
-import base64
-import os
-
 import pytest
 from faker import Faker
 from unittest.mock import Mock

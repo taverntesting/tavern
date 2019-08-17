@@ -1,11 +1,13 @@
 import logging
 
+
 from collections.abc import Mapping
 
 from abc import abstractmethod
 
+from tavern.schemas.extensions import get_wrapped_response_function
 from textwrap import indent
-from tavern.util.dict_util import format_keys, check_keys_match_recursive
+from tavern.util.dict_util import check_keys_match_recursive
 
 logger = logging.getLogger(__name__)
 
@@ -21,8 +23,12 @@ class BaseResponse(object):
         # all errors in this response
         self.errors = []
 
+        self.validate_function = None
+
         # None by default?
         self.test_block_config = {"variables": {}}
+
+        self.expected = {}
 
     def _str_errors(self):
         return "- " + "\n- ".join(self.errors)
@@ -58,9 +64,10 @@ class BaseResponse(object):
             logger.debug("No expected %s to check against", blockname)
             return
 
-        expected_block = format_keys(
-            expected_block, self.test_block_config["variables"]
-        )
+        # This should be done _before_ it gets to this point - typically in get_expected_from_request from plugin
+        # expected_block = format_keys(
+        #     expected_block, self.test_block_config["variables"]
+        # )
 
         if block is None:
             self._adderr(
@@ -77,3 +84,8 @@ class BaseResponse(object):
         logger.debug("expected = %s, actual = %s", expected_block, block)
 
         check_keys_match_recursive(expected_block, block, [], strict)
+
+    def _check_for_validate_functions(self, payload):
+        if isinstance(payload, dict):
+            if "$ext" in payload:
+                self.validate_function = get_wrapped_response_function(payload["$ext"])

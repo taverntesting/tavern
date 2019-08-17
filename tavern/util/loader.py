@@ -27,7 +27,6 @@ def makeuuid(loader, node):
 
 
 class RememberComposer(Composer):
-
     """A composer that doesn't forget anchors across documents
     """
 
@@ -132,7 +131,7 @@ def construct_include(loader, node):
     )
     extension = os.path.splitext(filename)[1].lstrip(".")
 
-    if extension not in ("yaml", "yml"):
+    if extension not in ("yaml", "yml", "json"):
         raise BadSchemaError(
             "Unknown filetype '{}' (included files must be in YAML format and end with .yaml or .yml)".format(
                 filename
@@ -338,3 +337,15 @@ def load_single_document_yaml(filename):
             raise exceptions.UnexpectedDocumentsError(msg) from e
 
     return contents
+
+
+def error_on_empty_scalar(self, mark):  # pylint: disable=unused-argument
+    location = "{mark.name:s}:{mark.line:d} - column {mark.column:d}".format(mark=mark)
+    error = "Error at {} - cannot define an empty value in test - either give it a value or explicitly set it to None".format(
+        location
+    )
+
+    raise exceptions.BadSchemaError(error)
+
+
+yaml.parser.Parser.process_empty_scalar = error_on_empty_scalar

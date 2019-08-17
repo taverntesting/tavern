@@ -121,8 +121,20 @@ This can be saved into the value `first_val` with this response block:
 response:
   save:
     body:
-      fourth_val: thing.nested.0
+      first_val: thing.nested[0]
 ```
+
+The query should be defined as a JMES query (see http://jmespath.org/
+for more information). In the above example, this essentially performs
+the operation `json["thing"]["nested"][0]`. This can be used to perform
+powerful queries on response data, but note that only 'simple' values
+like integers, strings, or float values can be saved. Trying to save a
+'block' of data such as a JSON list or object is currently unsupported
+and will cause the test to fail.
+
+**NOTE**: The behaviour of these queries used to be different and indexing into
+an array was done like `thing.nested.0`. This will be deprecated in the
+1.0 release.
 
 It is also possible to save data using function calls, explained below.
 
@@ -144,7 +156,7 @@ request:
   json:
     variable_key: "{key_name:s}"
     # or
-    variable_key: "{key_name}"
+    # variable_key: "{key_name}"
 ```
 
 This is formatted using Python's [string formatting
@@ -188,7 +200,7 @@ stages:
       status_code: 200
       body:
         user_id: "{tavern.request_vars.params.user_id}"
-        new_welcome_message: "{tavern.request_vars.json.message}"
+        new_welcome_message: "{tavern.request_vars.json.welcome_message}"
 ```
 
 This example uses `json` and `params` - we can also use any of the other request
@@ -244,7 +256,7 @@ There are two external functions built in to Tavern: `validate_jwt` and
 additional arguments that are passed directly to the `decode` method in the
 [PyJWT](https://github.com/jpadilla/pyjwt/blob/master/jwt/api_jwt.py#L59)
 library. **NOTE: Make sure the keyword arguments you are passing are correct
-or PyJWT will silently ignore them. In thr future, this function will likely be
+or PyJWT will silently ignore them. In the future, this function will likely be
 changed to use a different library to avoid this issue.**
 
 ```yaml
@@ -291,15 +303,90 @@ response:
 If an external function you are using raises any exception, the test will be
 considered failed. The return value from these functions is ignored.
 
-### Saving data with external functions
+### Using external functions for other things
 
-An external function can also be used to save data from the response. To do this,
-the function must return a dict where each key either points to a single value or
+External functions can be used to inject arbitrary data into tests or to save
+data from the response.
+
+An external function must return a dict where each key either points to a single value or
 to an object which is accessible using dot notation. The easiest way to do this
-is to return a [Box](https://pypi.python.org/pypi/python-box/) object. Each key in
+is to return a [Box](https://pypi.python.org/pypi/python-box/) object.
+
+To make sure that Tavern can find external functions you need to make sure that
+it is in the Python path. For example, if `utils.py` is in the 'tests' folder,
+you will need to run your tests something like (on Linux):
+
+```shell
+$ PYTHONPATH=$PYTHONPATH:tests py.test tests/
+```
+
+Strictly, `$ext` functions can be used anywhere in `tests_schema.yaml` that
+calls `validate_extensions` - this includes:
+
+- HTTP Request:
+    - `json`
+    - `params`
+    - `headers`
+    - `auth`
+- HTTP Response:
+    - `headers`
+    - `redirect_query_params`
+    - `body`
+    - `save` 
+
+- MQTT Publish:
+    - `json`
+- MQTT Response:
+    - `json`
+
+
+**Note**: Functions used in the `body` (HTTP) or `json` (MQTT) block in the 
+_response_ block take the response as the first argument. Functions used anywhere
+else should take _no_ arguments. This might be changed in future to be less
+confusing.
+
+#### Injecting external data into a request
+
+A use case for this is trying to insert some data into a response that is
+either calculated dynamically or fetched from an external source. If we want to
+generate some authentication headers to access our API for example, we can use
+an `$ext` function to calculate it dynamically (note as above that this function
+should _not_ take any arguments):
+
+```python
+# utils.py
+from box import Box
+
+def generate_bearer_token():
+    token = sign_a_jwt()
+    auth_header = {
+        "Authorization": "Bearer {}".format(token)
+    }
+    return Box(auth_header)
+```
+
+This can be used as so:
+
+```yaml
+- name: login
+  request:
+    url: http://server.com/login
+    headers:
+      $ext:
+        function: utils:generate_bearer_token
+    json:
+      username: test_user
+      password: abc123
+  response:
+    status_code: 200
+```
+
+#### Saving data from a response
+
+When using the `$ext` key in the `save` block there is special behaviour - each key in
 the returned object will be saved as if it had been specified separately in the
-**save** object. The function is called in the same way as a validator function,
-in the **$ext** key of the **save** object.
+`save` object. The function is called in the same way as a validator function,
+in the `$ext` key of the `save` object.
 
 Say that we have a server which returns a response like this:
 
@@ -307,20 +394,23 @@ Say that we have a server which returns a response like this:
 {
     "user": {
         "name": "John Smith",
-        "id": "abcdef12345",
+        "id": "abcdef12345"
     }
 }
 ```
 
-If our test function extracts the key `name` from the response body:
+If our test function extracts the key `name` from the response body (note as above
+that this function should take the response object as the first argument):
 
 ```python
 # utils.py
+from box import Box
+
 def test_function(response):
-    return {"test_user_name": response.json()["user"]["name"]}
+    return Box({"test_user_name": response.json()["user"]["name"]})
 ```
 
-We would use it in the **save** object like this:
+We would use it in the `save` object like this:
 
 ```yaml
 save:
@@ -333,13 +423,7 @@ save:
 In this case, both `{test_user_name}` and `{test_user_id}` are available for use
 in later requests.
 
-To make sure that Tavern can find this test function you need to make sure that
-it is in the Python path. For example, if `utils.py` is in the 'tests' folder,
-you will need to run your tests something like (on Linux):
-
-```shell
-$ PYTHONPATH=$PYTHONPATH:tests py.test tests/
-```
+#### A more complicated example
 
 For a more practical example, the built in `validate_jwt` function also returns the
 decoded token as a dictionary wrapped in a [Box]
@@ -488,7 +572,7 @@ py.test --tavern-strict body headers -- my_test_folder/
 This behaves identically to the command line option, but will be read from
 whichever configuration file Pytest is using.
 
-```editorconfig
+```ini
 [pytest]
 tavern-strict=body headers
 ```
@@ -1017,7 +1101,8 @@ at the command line using the `--tavern-global-cfg` flag. The variables in
 `common.yaml` will then be available for formatting in *all* tests during that
 test run.
 
-**NOTE**: `tavern-ci` uses argparse to read this from the command line:
+**NOTE**: `tavern-ci` is just an alias for `py.test` and
+will take the same options.
 
 ```
 # These will all work
@@ -1072,6 +1157,156 @@ tavern-global-cfg=
     common.yaml
     test_urls.yaml
 ```
+
+### Sharing stages in configuration files
+
+If you have a stage that is shared across a huge number of tests and it
+is infeasible to put all the tests which share that stage into one file,
+you can also define stages in configuration files and use them in your
+tests.
+
+Say we have a login stage that needs to be run before every test in our
+test suite. Stages are defined in a configuration file like this:
+
+```yaml
+# auth_stage.yaml
+---
+
+name: Authentication stage
+description:
+  Reusable test stage for authentication
+
+variables:
+  user:
+    user: test-user
+    pass: correct-password
+
+stages:
+  - id: login_get_token
+    name: Login and acquire token
+    request:
+      url: "{service:s}/login"
+      json:
+        user: "{user.user:s}"
+        password: "{user.pass:s}"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      headers:
+        content-type: application/json
+      save:
+        body:
+          test_login_token: token
+```
+
+Each stage should have a uniquely identifiable `id`, but other than that
+the stage can be define just as other tests (including using format
+variables).
+
+This can be included in a test by specifying the `id` of the test like
+this:
+
+```yaml
+---
+
+test_name: Test authenticated /hello
+
+includes:
+  - !include auth_stage.yaml
+
+stages:
+  - type: ref
+    id: login_get_token
+  - name: Authenticated /hello
+    request:
+      url: "{service:s}/hello/Jim"
+      method: GET
+      headers:
+        Content-Type: application/json
+        Authorization: "Bearer {test_login_token}"
+    response:
+      status_code: 200
+      headers:
+        content-type: application/json
+      body:
+        data: "Hello, Jim"
+
+```
+
+### Directly including test data
+
+If your test just has a huge amount of data that you would like to keep
+in a separate file, you can also (ab)use the `!include` tag to directly
+include data into a test. Say we have a huge amount of JSON that we want
+to send to a server and we don't want hundreds of lines in the test:
+
+```json
+// test_data.json
+[
+  {
+    "_id": "5c965b1373f3fe071a9cb2b7",
+    "index": 0,
+    "guid": "ef3f8c42-522a-4d6b-84ec-79a07009460d",
+    "isActive": false,
+    "balance": "$3,103.47",
+    "picture": "http://placehold.it/32x32",
+    "age": 26,
+    "eyeColor": "green",
+    "name": "Cannon Wood",
+    "gender": "male",
+    "company": "CANDECOR",
+    "email": "cannonwood@candecor.com",
+    "phone": "+1 (944) 549-2826",
+    "address": "528 Woodpoint Road, Snowville, Kansas, 140",
+    "about": "Dolore in consequat exercitation esse esse velit eu velit aliquip ex. Reprehenderit est consectetur excepteur sint sint dolore. Anim minim dolore est ut fugiat. Occaecat tempor tempor mollit dolore anim commodo laboris commodo aute quis ex irure voluptate. Sunt magna tempor veniam cillum exercitation quis minim est eiusmod aliqua.\r\n",
+    "registered": "2015-12-27T11:30:18 -00:00",
+    "latitude": -2.515302,
+    "longitude": -98.678105,
+    "tags": [
+      "proident",
+      "aliqua",
+      "velit",
+      "labore",
+      "consequat",
+      "esse",
+      "ea"
+    ],
+    "friends": [
+      {
+        "id": 0,
+        "etc": []
+      }
+    ]
+  }
+]
+```
+
+(Handily generated by https://www.json-generator.com/)
+
+Putting this whole thing into the test would be a bit overkill, but it
+can be inject directly into your test like this:
+
+```yaml
+---
+
+test_name: Post a lot of data
+
+stages:
+  - name: Create new user
+    request:
+      url: "{service:s}/new_user"
+      method: POST
+      json: !include test_data.json
+    response:
+      status_code: 201
+      body:
+        status: user created
+```
+
+This works with YAML as well, the only caveat being that the filename
+_must_ end with `.yaml`, `.yml`, or `.json`.
 
 ## Using the run() function
 
@@ -1191,6 +1426,20 @@ request:
   json:
     an_integer: !!int "{my_integer:d}" # Error
     an_integer: !int "{my_integer:d}" # Works
+```
+
+Because curly braces are automatically formatted, trying to send one
+in a string might cause some unexpected issues. This can be mitigated
+by using the `!raw` tag, which will not perform string formatting.
+
+*Note*: This is just shorthand for replacing a `{` with a `{{` in the
+string
+
+```yaml
+request:
+  json:
+    # Sent as {"raw_braces": "{not_escaped}"}
+    raw_braces: !raw "{not_escaped}"
 ```
 
 ## Adding a delay between tests
@@ -1612,6 +1861,9 @@ This will result in 6 tests:
 - cheap rotten apple
 - cheap fresh orange
 - cheap unripe pear
+
+**NOTE**: Due to implementation reasons it is currently impossible to
+parametrize either the HTTP method or the MQTT QoS parameter.
 
 #### usefixtures
 

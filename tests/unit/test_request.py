@@ -52,8 +52,10 @@ class TestRequests(object):
         with pytest.warns(RuntimeWarning):
             RestRequest(Mock(), req, includes)
 
+
+class TestHttpRedirects(object):
     def test_session_called_no_redirects(self, req, includes):
-        """Always disable redirects
+        """Always disable redirects by defauly
         """
 
         rmock = Mock(spec=requests.Session)
@@ -61,6 +63,32 @@ class TestRequests(object):
 
         assert rmock.request.called
         assert rmock.request.call_args[1]["allow_redirects"] == False
+
+    @pytest.mark.parametrize("do_follow", [True, False])
+    def test_session_do_follow_redirects_based_on_test(self, req, includes, do_follow):
+        """Locally enable following redirects in test"""
+
+        req["follow_redirects"] = do_follow
+
+        rmock = Mock(spec=requests.Session)
+        RestRequest(rmock, req, includes).run()
+
+        assert rmock.request.called
+        assert rmock.request.call_args[1]["allow_redirects"] == do_follow
+
+    @pytest.mark.parametrize("do_follow", [True, False])
+    def test_session_do_follow_redirects_based_on_global_flag(
+        self, req, includes, do_follow
+    ):
+        """Globally enable following redirects in test"""
+
+        includes["follow_redirects"] = do_follow
+
+        rmock = Mock(spec=requests.Session)
+        RestRequest(rmock, req, includes).run()
+
+        assert rmock.request.called
+        assert rmock.request.call_args[1]["allow_redirects"] == do_follow
 
 
 class TestRequestArgs(object):
@@ -145,12 +173,19 @@ class TestRequestArgs(object):
 
         assert args["data"]["array"] == ["def456", "def456"]
 
-    def test_file_and_data_fails(self, req, includes):
-        """Can't send json/form data and files at once"""
+    def test_file_and_json_fails(self, req, includes):
+        """Can't send json and files at once"""
         req["files"] = ["abc"]
+        req["json"] = {"key": "value"}
 
         with pytest.raises(exceptions.BadSchemaError):
             get_request_args(req, includes)
+
+    def test_file_and_data_succeeds(self, req, includes):
+        """Can send form data and files at once"""
+        req["files"] = ["abc"]
+
+        get_request_args(req, includes)
 
     @pytest.mark.parametrize("extra_headers", ({}, {"x-cool-header": "plark"}))
     def test_headers_no_content_type_change(self, req, includes, extra_headers):

@@ -33,6 +33,12 @@ def pytest_addoption(parser):
         type="bool",
         default=False,
     )
+    parser.addini(
+        "tavern-always-follow-redirects",
+        help="Always follow HTTP redirects",
+        type="bool",
+        default=False,
+    )
 
 
 def pytest_collect_file(parent, path):

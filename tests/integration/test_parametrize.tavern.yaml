@@ -145,31 +145,32 @@ stages:
       body:
         value: "klskdfiogj4iji34o"
 
----
-
-test_name: Test empty vals raises error
-
-includes:
-  - !include common.yaml
-
-marks:
-  - parametrize:
-      key: to_send
-      vals:
-
-_xfail: verify
-
-stages:
-  - name: Echo back a unicode value and make sure it matches
-    request:
-      url: "{host}/echo"
-      method: POST
-      json:
-        value: "{to_send}"
-    response:
-      status_code: 200
-      body:
-        value: "{to_send}"
+#This is now a validation error
+#---
+#
+#test_name: Test empty vals raises error
+#
+#includes:
+#  - !include common.yaml
+#
+#marks:
+#  - parametrize:
+#      key: to_send
+#      vals:
+#
+#_xfail: verify
+#
+#stages:
+#  - name: Echo back a unicode value and make sure it matches
+#    request:
+#      url: "{host}/echo"
+#      method: POST
+#      json:
+#        value: "{to_send}"
+#    response:
+#      status_code: 200
+#      body:
+#        value: "{to_send}"
 
 ---
 
@@ -470,3 +471,29 @@ stages:
       status_code: 200
       body:
         value: "{generic_str}-{edible}"
+
+---
+
+test_name: Test that double formatting something in
+
+marks:
+  - parametrize:
+      key:
+        - line
+        - text
+      vals:
+        # NOTE: "\" requires doubling, !raw will take care of "{" and "}"
+        - [1, "XYZ[\\]^_`abcdefghijk"]
+        - [2, !raw "lmnopqrstuvwxyz{|}~*"]
+
+stages:
+  - name: Echo back parametrized text
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "{line}-{text}"
+    response:
+      status_code: 200
+      body:
+        value: "{line}-{text}"

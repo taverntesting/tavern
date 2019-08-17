@@ -307,3 +307,50 @@ stages:
       payload: !anything
       timeout: 3
       qos: 1
+
+---
+
+test_name: Test raw token formatting in response
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - name: Echo json
+    mqtt_publish:
+      topic: /device/123/echo
+      json:
+        message: !raw "Hello {world}"
+    mqtt_response:
+      topic: /device/123/echo/response
+      json:
+        message: !raw "Hello {world}"
+      timeout: 5
+      qos: 1
+
+---
+
+test_name: Test can use type token with mqtt port
+
+includes:
+  - !include common.yaml
+
+paho-mqtt:
+  client:
+    transport: websockets
+    client_id: tavern-tester
+  connect:
+    host: "{mqtt_host}"
+    port: !int "{mqtt_port:d}"
+    timeout: 3
+
+stages:
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /device/123/ping
+    mqtt_response:
+      topic: /device/123/pong
+      timeout: 5
+      qos: 1

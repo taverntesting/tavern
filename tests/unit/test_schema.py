@@ -1,10 +1,14 @@
+import contextlib
+import os
+import tempfile
 from textwrap import dedent
 
 import pytest
 import yaml
 
-from tavern.util.exceptions import BadSchemaError
 from tavern.schemas.files import verify_tests
+from tavern.util.exceptions import BadSchemaError
+from tavern.util.loader import load_single_document_yaml
 
 
 @pytest.fixture(name="test_dict")
@@ -51,20 +55,6 @@ class TestJSON:
         test_dict["stages"][0]["response"]["body"] = [1, "text", -1]
 
         verify_tests(test_dict)
-
-    def test_json_value_request(self, test_dict):
-        """Don't match other stuff"""
-        test_dict["stages"][0]["request"]["json"] = "Hello"
-
-        with pytest.raises(BadSchemaError):
-            verify_tests(test_dict)
-
-    def test_json_value_response(self, test_dict):
-        """Don't match other stuff"""
-        test_dict["stages"][0]["response"]["body"] = "Hi"
-
-        with pytest.raises(BadSchemaError):
-            verify_tests(test_dict)
 
 
 class TestHeaders:
@@ -132,3 +122,77 @@ class TestVerify:
         test_dict["stages"][0]["request"]["verify"] = incorrect_value
         with pytest.raises(BadSchemaError):
             verify_tests(test_dict)
+
+
+class TestBadSchemaAtCollect:
+    """Some errors happen at collection time - harder to test"""
+
+    @staticmethod
+    @contextlib.contextmanager
+    def wrapfile_nondict(to_wrap):
+        with tempfile.NamedTemporaryFile(
+            suffix=".yaml", prefix="test_", delete=False
+        ) as wrapped_tmp:
+            # put into a file
+            wrapped_tmp.write(to_wrap.encode("utf8"))
+            wrapped_tmp.close()
+
+            try:
+                yield wrapped_tmp.name
+            finally:
+                os.remove(wrapped_tmp.name)
+
+    def test_empty_dict_val(self):
+        """Defining an empty mapping value is not allowed"""
+
+        text = dedent(
+            """
+        ---
+
+        test_name: Test cannot send a set
+
+        stages:
+          - name: match top level
+            request:
+              url: "{host}/fake_dictionary"
+              method: GET
+              json: {a, b}
+            response:
+              status_code: 200
+              body:
+                top: !anything
+        """
+        )
+
+        with TestBadSchemaAtCollect.wrapfile_nondict(text) as filename:
+            with pytest.raises(BadSchemaError):
+                load_single_document_yaml(filename)
+
+    def test_empty_list_val(self):
+        """Defining an empty list value is not allowed"""
+
+        text = dedent(
+            """
+        ---
+
+        test_name: Test cannot send a set
+
+        stages:
+          - name: match top level
+            request:
+              url: "{host}/fake_dictionary"
+              method: GET
+              json:
+                - a
+                -
+                - b
+            response:
+              status_code: 200
+              body:
+                top: !anything
+        """
+        )
+
+        with TestBadSchemaAtCollect.wrapfile_nondict(text) as filename:
+            with pytest.raises(BadSchemaError):
+                load_single_document_yaml(filename)

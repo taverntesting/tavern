@@ -1,3 +1,4 @@
+import contextlib
 import copy
 import os
 import tempfile
@@ -6,6 +7,7 @@ from textwrap import dedent
 
 import pytest
 import yaml
+from mock import Mock, patch
 
 from tavern.schemas.extensions import validate_extensions
 from tavern.schemas.files import wrapfile
@@ -14,8 +16,10 @@ from tavern.util.dict_util import (
     deep_dict_merge,
     check_keys_match_recursive,
     format_keys,
+    recurse_access_key,
 )
 from tavern.util.loader import ANYTHING, IncludeLoader, load_single_document_yaml
+from tavern.util.loader import construct_include
 
 
 class TestValidateFunctions:
@@ -233,6 +237,61 @@ class TestFormatKeys:
 
         assert format_keys(to_format, format_variables)["a"] == final_value
 
+    def test_no_double_format_failure(self):
+        to_format = "{{b}}"
+
+        final_value = "{b}"
+
+        format_variables = {"b": final_value}
+
+        formatted = format_keys(to_format, format_variables)
+        assert formatted == final_value
+        formatted_2 = format_keys(formatted, {})
+        assert formatted_2 == final_value
+
+
+class TestRecurseAccess:
+    @pytest.fixture
+    def nested_data(self):
+        data = {"a": ["b", {"c": "d"}]}
+
+        return data
+
+    @pytest.mark.parametrize(
+        "old_query, new_query, expected_data",
+        (("a.0", "a[0]", "b"), ("a.1.c", "a[1].c", "d")),
+    )
+    def test_search_old_style(self, nested_data, old_query, new_query, expected_data):
+        """Make sure old style searches perform the same as jmes queries"""
+
+        with pytest.warns(FutureWarning):
+            old_val = recurse_access_key(nested_data, old_query)
+        new_val = recurse_access_key(nested_data, new_query)
+
+        assert old_val == new_val == expected_data
+
+    @pytest.mark.parametrize("old_query, new_query", (("a", "a"), ("a.1", "a[1]")))
+    def test_invalid_searches(self, nested_data, old_query, new_query):
+        """Make sure a search that returns a value that is not a simple value raises an error"""
+
+        with pytest.raises(exceptions.InvalidQueryResultTypeError):
+            recurse_access_key(nested_data, old_query)
+
+        with pytest.raises(exceptions.InvalidQueryResultTypeError):
+            recurse_access_key(nested_data, new_query)
+
+    @pytest.mark.parametrize(
+        "old_query, new_query", (("f", "f"), ("a.3", "a[3]"), ("a.1.x", "a[1].x"))
+    )
+    def test_missing_search(self, nested_data, old_query, new_query):
+        """Searching for data not in given data raises an exception"""
+
+        with pytest.raises(exceptions.KeySearchNotFoundError):
+            recurse_access_key(nested_data, old_query)
+
+        with pytest.raises(exceptions.KeySearchNotFoundError):
+            recurse_access_key(nested_data, new_query)
+
 
 class TestLoadCfg:
     def test_load_one(self):
@@ -255,3 +314,34 @@ class TestLoadCfg:
                     load_single_document_yaml(wrapped_tmp.name)
             finally:
                 os.remove(wrapped_tmp.name)
+
+
+class TestLoadFile:
+    @staticmethod
+    @contextlib.contextmanager
+    def magic_wrap(to_wrap, suffix):
+        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as wrapped_tmp:
+            dumped = yaml.dump(to_wrap, default_flow_style=False)
+            wrapped_tmp.write(dumped.encode("utf8"))
+            wrapped_tmp.close()
+
+            try:
+                yield wrapped_tmp.name
+            finally:
+                os.remove(wrapped_tmp.name)
+
+    @pytest.mark.parametrize("suffix", (".yaml", ".yml", ".json"))
+    def test_load_extensions(self, suffix):
+        example = {"a": "b"}
+
+        with TestLoadFile.magic_wrap(example, suffix) as tmpfile:
+            with patch("tavern.util.loader.os.path.join", return_value=tmpfile):
+                assert example == construct_include(Mock(), Mock())
+
+    def test_load_bad_extension(self):
+        example = {"a": "b"}
+
+        with TestLoadFile.magic_wrap(example, ".bllakjf") as tmpfile:
+            with patch("tavern.util.loader.os.path.join", return_value=tmpfile):
+                with pytest.raises(exceptions.BadSchemaError):
+                    construct_include(Mock(), Mock())
