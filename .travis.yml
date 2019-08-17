@@ -52,12 +52,6 @@ jobs:
     # 'Full' tests
     # This runs for different versions of Python that we support as well as the
     # full integration test suite
-    - python: 3.4
-      env: TOXENV=py34 TOXCFG=tox.ini
-      stage: full-tests
-    - python: 3.5
-      env: TOXENV=py35 TOXCFG=tox.ini
-      stage: full-tests
     - python: 3.6
       env: TOXENV=py36 TOXCFG=tox.ini
       stage: full-tests
@@ -68,12 +62,6 @@ jobs:
     #   env: TOXENV=pypy3 TOXCFG=tox.ini
     #   stage: full-tests
 
-    - python: 3.4
-      env: TOXENV=py34-generic TOXCFG=tox-integration.ini
-      stage: full-tests
-    - python: 3.5
-      env: TOXENV=py35-generic TOXCFG=tox-integration.ini
-      stage: full-tests
     - python: 3.6
       env: TOXENV=py36-generic TOXCFG=tox-integration.ini
       stage: full-tests
