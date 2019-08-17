@@ -115,16 +115,16 @@ class TestTavernRepr:
 
         assert not rmock.called
 
-    def test_not_called_if_flag_not_enabled(self, fake_item):
-        """Not called by default for tavern exceptions"""
+    def test_called_by_default(self, fake_item):
+        """called by default for tavern exceptions"""
         fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
 
         with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
             fake_item.repr_failure(fake_info)
 
-        assert not rmock.called
+        assert rmock.called
 
-    def test_called_for_tavern_exception_ini(self, fake_item):
+    def test_not_called_ini(self, fake_item):
         """Enable ini flag, should be called"""
         fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
 
@@ -132,9 +132,9 @@ class TestTavernRepr:
             with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
-        assert rmock.called
+        assert not rmock.called
 
-    def test_called_for_tavern_exception_cli(self, fake_item):
+    def test_not_called_cli(self, fake_item):
         """Enable cli flag, should be called"""
         fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
 
@@ -142,7 +142,7 @@ class TestTavernRepr:
             with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
-        assert rmock.called
+        assert not rmock.called
 
 
 @pytest.fixture(name="nested_response")

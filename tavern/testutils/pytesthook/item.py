@@ -167,9 +167,11 @@ class YamlItem(pytest.Item):
             failed rather than a traceback
         """
 
-        if self.config.getini("tavern-use-default-traceback") or self.config.getoption(
-            "tavern_use_default_traceback"
-        ) or not issubclass(excinfo.type, exceptions.TavernException):
+        if (
+            self.config.getini("tavern-use-default-traceback")
+            or self.config.getoption("tavern_use_default_traceback")
+            or not issubclass(excinfo.type, exceptions.TavernException)
+        ):
             return super(YamlItem, self).repr_failure(excinfo)
 
         return ReprdError(excinfo, self)
