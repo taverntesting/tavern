@@ -56,7 +56,9 @@ def pytest_collect_file(parent, path, config):
     test files
     """
 
-    pattern = get_option_generic(config, "tavern-file-path-regex", r".+\.tavern\.ya?ml$")
+    pattern = get_option_generic(
+        config, "tavern-file-path-regex", r".+\.tavern\.ya?ml$"
+    )
 
     try:
         compiled = re.compile(pattern)
