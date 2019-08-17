@@ -139,6 +139,8 @@ class YamlItem(pytest.Item):
 
         load_plugins(self.global_cfg)
 
+        self.global_cfg["tavern_internal"] = {"pytest_hook_caller": self.config.hook}
+
         # INTERNAL
         # NOTE - now that we can 'mark' tests, we could use pytest.mark.xfail
         # instead. This doesn't differentiate between an error in verification
@@ -146,10 +148,17 @@ class YamlItem(pytest.Item):
         xfail = self.spec.get("_xfail", False)
 
         try:
-            verify_tests(self.spec)
-
             fixture_values = self._load_fixture_values()
             self.global_cfg["variables"].update(fixture_values)
+
+            self.global_cfg["tavern_internal"][
+                "pytest_hook_caller"
+            ].pytest_tavern_before_every_test_run(
+                test_dict=self.spec,
+                variables=self.global_cfg["variables"]
+            )
+
+            verify_tests(self.spec)
 
             run_test(self.path, self.spec, self.global_cfg)
         except exceptions.BadSchemaError:
