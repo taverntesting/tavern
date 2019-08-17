@@ -24,6 +24,8 @@ def retry(stage, test_block_config):
             def wrapped(*args, **kwargs):
                 try:
                     res = fn(*args, **kwargs)
+                except exceptions.BadSchemaError:
+                    raise
                 except exceptions.TavernException as e:
                     raise exceptions.TestFailError(
                         "Test '{}' failed: stage did not succeed in {} retries.".format(
@@ -47,6 +49,8 @@ def retry(stage, test_block_config):
                 for i in range(max_retries + 1):
                     try:
                         res = fn(*args, **kwargs)
+                    except exceptions.BadSchemaError:
+                        raise
                     except exceptions.TavernException as e:
                         if i < max_retries:
                             logger.info(
