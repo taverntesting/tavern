@@ -222,8 +222,7 @@ def _maybe_get_cookie_name():
 def give_cookie():
     cookie_name = _maybe_get_cookie_name()
     response = Response()
-    response.set_cookie(cookie_name,
-                        base64.b64encode(os.urandom(16)).decode("utf8"))
+    response.set_cookie(cookie_name, base64.b64encode(os.urandom(16)).decode("utf8"))
     return response, 200
 
 
@@ -231,8 +230,10 @@ def give_cookie():
 def expect_cookie():
     cookie_name = _maybe_get_cookie_name()
     if cookie_name not in request.cookies:
-        return jsonify(
-            {"error": "No cookie named {} in request".format(cookie_name)}), 400
+        return (
+            jsonify({"error": "No cookie named {} in request".format(cookie_name)}),
+            400,
+        )
     else:
         return jsonify({"status": "ok"}), 200
 
