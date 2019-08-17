@@ -121,7 +121,6 @@ class YamlItem(pytest.Item):
         return values
 
     def runtest(self):
-        logger.critical(self.spec)
         self.global_cfg = load_global_cfg(self.config)
 
         self.global_cfg.setdefault("variables", {})
