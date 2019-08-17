@@ -84,7 +84,10 @@ class BaseResponse(object):
 
         logger.debug("expected = %s, actual = %s", expected_block, block)
 
-        check_keys_match_recursive(expected_block, block, [], strict)
+        try:
+            check_keys_match_recursive(expected_block, block, [], strict)
+        except exceptions.KeyMismatchError as e:
+            self._adderr("Key mismatch", e=e)
 
     def _check_for_validate_functions(self, response_block):
         """

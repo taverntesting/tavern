@@ -70,7 +70,7 @@ class TestRunAlone:
         assert pmock.called
 
     def test_extra_args(self):
-        with pytest.warns(FutureWarning):
+        with pytest.raises(TypeError):
             with patch("tavern.core.pytest.main") as pmock:
                 run(
                     **{
@@ -83,7 +83,7 @@ class TestRunAlone:
                     }
                 )
 
-        assert pmock.called
+        assert not pmock.called
 
 
 class TestTavernRepr:

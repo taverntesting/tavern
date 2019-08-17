@@ -34,10 +34,6 @@ class TestBasicRun:
 
         assert not len(warn_rec)
 
-    def test_warns_about_extra_kwargs(self):
-        with pytest.warns(FutureWarning):
-            run("", a=123)
-
 
 class TestParseGlobalCfg:
     def test_path_correct(self):

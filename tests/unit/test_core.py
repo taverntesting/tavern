@@ -1,12 +1,12 @@
 import json
-import uuid
 import os
-from unittest.mock import patch, Mock, MagicMock
+import uuid
 from copy import deepcopy
+from unittest.mock import patch, Mock, MagicMock
 
+import paho.mqtt.client as paho
 import pytest
 import requests
-import paho.mqtt.client as paho
 
 from tavern._plugins.mqtt.client import MQTTClient
 from tavern.core import run_test
@@ -199,14 +199,14 @@ class TestIncludeStages:
 
         includes["stages"] = fake_stages
 
-        with pytest.warns(FutureWarning):
+        with pytest.raises(exceptions.DuplicateStageDefinitionError):
             with patch(
                 "tavern._plugins.rest.request.requests.Session.request",
                 return_value=mock_response,
             ) as pmock:
                 run_test("heif", newtest, includes)
 
-        self.check_mocks_called(pmock)
+        assert not pmock.called
 
     def test_neither(self, fulltest, mockargs, includes, fake_stages):
         """ Raises error if not defined
@@ -336,7 +336,7 @@ class TestTavernMetaFormat:
             "a_format_key": "{tavern.env_vars.%s}" % env_key
         }
 
-        with pytest.raises(exceptions.MissingFormatError):
+        with pytest.raises(exceptions.TestFailError):
             run_test("heif", fulltest, includes)
 
 

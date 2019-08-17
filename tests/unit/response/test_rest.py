@@ -272,9 +272,7 @@ class TestMatchStatusCodes:
 
 class TestNestedValidate:
     def test_validate_nested_null(self, example_response, includes):
-        """Check that nested 'null' comparisons work
-
-        This will be removed in a future version
+        """Check that nested 'null' comparisons do not work
         """
 
         example_response["body"] = {"nested": {"subthing": None}}
@@ -283,10 +281,9 @@ class TestNestedValidate:
 
         r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        with pytest.warns(FutureWarning):
-            r._validate_block("body", expected)
+        r._validate_block("body", expected)
 
-        assert not r.errors
+        assert r.errors
 
     def test_validate_nested_anything(self, example_response, includes):
         """Check that nested 'anything' comparisons work

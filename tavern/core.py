@@ -67,7 +67,9 @@ def _get_included_stages(tavern_box, test_block_config, test_spec, available_sta
             for stage in included.get("stages", {}):
                 if stage["id"] in stage_ids(available_stages):
                     raise exceptions.DuplicateStageDefinitionError(
-                        "Stage id '{}' defined in stage-included test which was already defined in global configuration"
+                        "Stage id '{}' defined in stage-included test which was already defined in global configuration".format(
+                            stage["id"]
+                        )
                     )
 
         included_stages = []
@@ -279,7 +281,7 @@ def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
 
 def run(
     in_file,
-    tavern_global_cfg,
+    tavern_global_cfg=None,
     tavern_mqtt_backend=None,
     tavern_http_backend=None,
     tavern_strict=None,
