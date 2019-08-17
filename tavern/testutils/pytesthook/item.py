@@ -154,8 +154,7 @@ class YamlItem(pytest.Item):
             self.global_cfg["tavern_internal"][
                 "pytest_hook_caller"
             ].pytest_tavern_before_every_test_run(
-                test_dict=self.spec,
-                variables=self.global_cfg["variables"]
+                test_dict=self.spec, variables=self.global_cfg["variables"]
             )
 
             verify_tests(self.spec)
