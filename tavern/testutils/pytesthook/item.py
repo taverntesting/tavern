@@ -167,13 +167,12 @@ class YamlItem(pytest.Item):
             failed rather than a traceback
         """
 
-        if self.config.getini("tavern-beta-new-traceback") or self.config.getoption(
-            "tavern_beta_new_traceback"
-        ):
-            if issubclass(excinfo.type, exceptions.TavernException):
-                return ReprdError(excinfo, self)
+        if self.config.getini("tavern-use-default-traceback") or self.config.getoption(
+            "tavern_use_default_traceback"
+        ) or not issubclass(excinfo.type, exceptions.TavernException):
+            return super(YamlItem, self).repr_failure(excinfo)
 
-        return super(YamlItem, self).repr_failure(excinfo)
+        return ReprdError(excinfo, self)
 
     def reportinfo(self):
         return self.fspath, 0, "{s.path}::{s.name:s}".format(s=self)

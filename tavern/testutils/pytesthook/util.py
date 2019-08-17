@@ -40,8 +40,8 @@ def add_parser_options(parser_addoption, with_defaults=True):
         choices=["body", "headers", "redirect_query_params"],
     )
     parser_addoption(
-        "--tavern-beta-new-traceback",
-        help="Use new traceback style (beta)",
+        "--tavern-use-default-traceback",
+        help="Use normal python-style traceback",
         default=False,
         action="store_true",
     )

@@ -28,8 +28,8 @@ def pytest_addoption(parser):
         default=None,
     )
     parser.addini(
-        "tavern-beta-new-traceback",
-        help="Use new traceback style (beta)",
+        "tavern-use-default-traceback",
+        help="Use normal python-style traceback",
         type="bool",
         default=False,
     )
