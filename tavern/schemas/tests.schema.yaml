@@ -5,24 +5,18 @@ desc: Matches test blocks
 # http://www.kuwata-lab.com/kwalify/ruby/users-guide.01.html
 # https://pykwalify.readthedocs.io/en/unstable/validation-rules.html
 
-schema;any_map_with_ext_function:
-  # Anchor matches any key: value, and if there's an $ext function
-  # in it it will check that it can be loaded at schema validation
-  # time instead of run time. This means there can be both
-  # checking for key: value matches as well as passing it to a
-  # function for more advanced manipulation
-  func: validate_extensions
+schema;any_request_json:
+  func: validate_request_json
+  type: any
+  required: false
+
+schema;any_map:
+  func: validate_request_json
   type: map
   required: false
   mapping:
     re;(.*):
       type: any
-
-schema;any_json_with_ext_function:
-  # Similar, but we want to match lists or dicts
-  func: validate_json_with_extensions
-  type: any
-  required: false
 
 schema;stage:
   type: map
@@ -73,7 +67,7 @@ schema;stage:
           type: str
           required: false
         json:
-          include: any_json_with_ext_function
+          include: any_request_json
         qos:
           type: any
           func: int_variable
@@ -82,6 +76,7 @@ schema;stage:
           type: any
           func: bool_variable
           required: false
+
     mqtt_response:
       type: map
       required: false
@@ -93,7 +88,7 @@ schema;stage:
           type: any
           required: false
         json:
-          include: any_json_with_ext_function
+          include: any_request_json
         timeout:
           type: any
           func: float_variable
@@ -106,6 +101,9 @@ schema;stage:
             - 0
             - 1
             - 2
+        verify_response_with:
+          func: validate_extensions
+          include: any_request_json
 
     request:
       type: map
@@ -120,11 +118,11 @@ schema;stage:
           required: false
 
         re;(params|headers):
-          include: any_map_with_ext_function
+          include: any_map
 
         data:
           type: any
-          func: validate_data_key_with_ext_function
+          func: validate_data_key
           required: false
 
         stream:
@@ -146,7 +144,7 @@ schema;stage:
             - type: str
 
         json:
-          include: any_json_with_ext_function
+          include: any_request_json
 
         files:
           required: false
@@ -208,16 +206,20 @@ schema;stage:
               unique: true
 
         re;(headers|redirect_query_params):
-          include: any_map_with_ext_function
+          include: any_map
 
         body:
-          include: any_json_with_ext_function
+          include: any_request_json
 
         save:
-          include: any_map_with_ext_function
+          include: any_request_json
           mapping:
             re;(\$ext|body|headers|redirect_query_params):
               type: any
+
+        verify_response_with:
+          func: validate_extensions
+          include: any_request_json
 
 schema;stage_ref:
   type: map

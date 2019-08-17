@@ -1,12 +1,10 @@
 import json
 import logging
-import traceback
 
 from urllib.parse import urlparse, parse_qs
 
 from requests.status_codes import _codes
 
-from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util.dict_util import recurse_access_key, deep_dict_merge
 from tavern.util import exceptions
 from tavern.util.exceptions import TestFailError
@@ -25,7 +23,7 @@ class RestResponse(BaseResponse):
 
         self.name = name
 
-        self._check_for_validate_functions(expected.get("body", {}))
+        self._check_for_validate_functions(expected)
 
         self.expected = deep_dict_merge(defaults, expected)
         self.response = None
@@ -149,60 +147,36 @@ class RestResponse(BaseResponse):
         self.response = response
         self.status_code = response.status_code
 
+        # Get things to use from the response
         try:
             body = response.json()
         except ValueError:
             body = None
 
+        redirect_query_params = self._get_redirect_query_params(response)
+
+        # Run validation on response
         self._check_status_code(response.status_code, body)
 
-        if self.validate_function:
-            try:
-                self.validate_function(response)
-            except Exception as e:  # pylint: disable=broad-except
-                self._adderr(
-                    "Error calling validate function '%s':\n%s",
-                    self.validate_function.func,
-                    indent_err_text(traceback.format_exc()),
-                    e=e,
-                )
+        self._validate_block("body", body)
+        self._validate_block("headers", response.headers)
+        self._validate_block("redirect_query_params", redirect_query_params)
+
+        self._maybe_run_validate_functions(response)
 
         # Get any keys to save
         saved = {}
-
-        redirect_query_params = self._get_redirect_query_params(response)
 
         saved.update(self._save_value("body", body))
         saved.update(self._save_value("headers", response.headers))
         saved.update(self._save_value("redirect_query_params", redirect_query_params))
 
+        saved.update(self.maybe_get_save_values_from_ext(response, self.expected))
+
+        # Check cookies
         for cookie in self.expected.get("cookies", []):
             if cookie not in response.cookies:
                 self._adderr("No cookie named '%s' in response", cookie)
-
-        try:
-            wrapped = get_wrapped_response_function(self.expected["save"]["$ext"])
-        except KeyError:
-            logger.debug("No save function for this stage")
-        else:
-            try:
-                to_save = wrapped(response)
-            except Exception as e:  # pylint: disable=broad-except
-                self._adderr(
-                    "Error calling save function '%s':\n%s",
-                    wrapped.func,
-                    indent_err_text(traceback.format_exc()),
-                    e=e,
-                )
-            else:
-                if isinstance(to_save, dict):
-                    saved.update(to_save)
-                elif to_save is not None:
-                    self._adderr("Unexpected return value '%s' from $ext save function")
-
-        self._validate_block("body", body)
-        self._validate_block("headers", response.headers)
-        self._validate_block("redirect_query_params", redirect_query_params)
 
         if self.errors:
             raise TestFailError(
@@ -223,18 +197,6 @@ class RestResponse(BaseResponse):
             expected_block = self.expected[blockname] or {}
         except KeyError:
             expected_block = {}
-
-        if isinstance(expected_block, dict):
-            special = ["$ext"]
-            # This has to be a dict at the moment - might be possible at some
-            # point in future to allow a list of multiple ext functions as well
-            # but would require some changes in init. Probably need to abtract
-            # out the 'checking' a bit more.
-            for s in special:
-                try:
-                    expected_block.pop(s)
-                except KeyError:
-                    pass
 
         if blockname == "headers":
             # Special case for headers. These need to be checked in a case

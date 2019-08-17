@@ -29,7 +29,7 @@ class TestValidateFunctions:
         This doesn't check the signature at the time of writing
         """
 
-        spec = {"$ext": {"function": "operator:add"}}
+        spec = {"function": "operator:add"}
 
         validate_extensions(spec, None, None)
 
@@ -37,7 +37,7 @@ class TestValidateFunctions:
         """Nonexistent module
         """
 
-        spec = {"$ext": {"function": "bleuuerhug:add"}}
+        spec = {"function": "bleuuerhug:add"}
 
         with pytest.raises(exceptions.BadSchemaError):
             validate_extensions(spec, None, None)
@@ -46,7 +46,7 @@ class TestValidateFunctions:
         """No name in module
         """
 
-        spec = {"$ext": {"function": "os:aaueurhg"}}
+        spec = {"function": "os:aaueurhg"}
 
         with pytest.raises(exceptions.BadSchemaError):
             validate_extensions(spec, None, None)
