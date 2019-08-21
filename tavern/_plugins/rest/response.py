@@ -9,6 +9,7 @@ except ImportError:
 
 from requests.status_codes import _codes
 
+from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util.dict_util import recurse_access_key, deep_dict_merge
 from tavern.util import exceptions
@@ -148,6 +149,13 @@ class RestResponse(BaseResponse):
             TestFailError: Something went wrong with validating the response
         """
         self._verbose_log_response(response)
+
+        call_hook(
+            self.test_block_config,
+            "pytest_tavern_after_every_response",
+            expected=self.expected,
+            response=response,
+        )
 
         self.response = response
         self.status_code = response.status_code

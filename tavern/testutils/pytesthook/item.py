@@ -10,7 +10,7 @@ from tavern.core import run_test
 from tavern.plugins import load_plugins
 from tavern.schemas.files import verify_tests
 from tavern.util import exceptions
-from testutils.pytesthook.newhooks import call_hook
+from tavern.testutils.pytesthook.newhooks import call_hook
 
 from .error import ReprdError
 from .util import load_global_cfg
