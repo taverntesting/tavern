@@ -10,6 +10,7 @@ from tavern.core import run_test
 from tavern.plugins import load_plugins
 from tavern.schemas.files import verify_tests
 from tavern.util import exceptions
+from testutils.pytesthook.newhooks import call_hook
 
 from .error import ReprdError
 from .util import load_global_cfg
@@ -151,10 +152,11 @@ class YamlItem(pytest.Item):
             fixture_values = self._load_fixture_values()
             self.global_cfg["variables"].update(fixture_values)
 
-            self.global_cfg["tavern_internal"][
-                "pytest_hook_caller"
-            ].pytest_tavern_before_every_test_run(
-                test_dict=self.spec, variables=self.global_cfg["variables"]
+            call_hook(
+                self.global_cfg,
+                "pytest_tavern_before_every_test_run",
+                test_dict=self.spec,
+                variables=self.global_cfg["variables"],
             )
 
             verify_tests(self.spec)
