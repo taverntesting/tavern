@@ -22,6 +22,19 @@ def pytest_tavern_before_every_test_run(test_dict, variables):
     """
 
 
+def pytest_tavern_after_every_response(expected, response):
+    """Called after every _response_ - including MQTT/HTTP/etc
+
+    Note:
+        - The response object type and the expected dict depends on what plugin you're using, and which kind of response it is!
+        - MQTT responses will call this hook multiple times if multiple messages are received
+
+    Args:
+        response (object): Response object.
+        expected (dict): Response block in stage
+    """
+
+
 def call_hook(test_block_config, hookname, **kwargs):
     """Utility to call the hooks"""
     try:
