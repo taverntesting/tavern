@@ -1,4 +1,7 @@
 # pylint: disable=unused-argument
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def pytest_tavern_before_every_test_run(test_dict, variables):
@@ -17,3 +20,20 @@ def pytest_tavern_before_every_test_run(test_dict, variables):
         test_dict (dict): Test to run
         variables (dict): Available variables
     """
+
+
+def call_hook(test_block_config, hookname, **kwargs):
+    """Utility to call the hooks"""
+    try:
+        hook = getattr(
+            test_block_config["tavern_internal"]["pytest_hook_caller"], hookname
+        )
+    except AttributeError:
+        logger.critical("Error getting tavern hook!")
+        raise
+
+    try:
+        hook(**kwargs)
+    except AttributeError:
+        logger.error("Error calling tavern hook!")
+        raise
