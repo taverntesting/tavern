@@ -48,5 +48,5 @@ def call_hook(test_block_config, hookname, **kwargs):
     try:
         hook(**kwargs)
     except AttributeError:
-        logger.error("Error calling tavern hook!")
+        logger.error("Unexpected error calling tavern hook")
         raise
