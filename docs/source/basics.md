@@ -1424,7 +1424,7 @@ values. Say we want to convert a value from an included file to an integer:
 ```yaml
 request:
   json:
-    an_integer: !!int "{my_integer:d}" # Error
+    # an_integer: !!int "{my_integer:d}" # Error
     an_integer: !int "{my_integer:d}" # Works
 ```
 
@@ -1939,3 +1939,58 @@ There are some limitations on fixtures:
 - Fixtures should be 'function' or 'session' scoped. 'module' scoped fixtures
   will raise an error and 'class' scoped fixtures may not behave as you expect.
 - Parametrizing fixtures does not work - this is a limitation in Pytest.
+
+
+## Hooks
+
+As well as fixtures as mentioned in the previous section, since version 0.28.0
+there is a couple of hooks which can be used to extract more information from
+tests.
+
+These hooks are used by defining a function with the name of the hook in your
+`conftest.py` that take the same arguments _with the same names_ - these hooks
+will then be picked up at runtime and called appropriately
+
+### Before every test run
+
+This hook is called after fixtures, global configuration, and plugins have been
+loaded, but _before_ formatting is done on the test and the schema of the test
+is checked. This can be used to 'inject' extra things into the test before it is
+run, such as configurations blocks for a plugin, or just for some kind of
+logging.
+
+Args: 
+- test_dict (dict): Test to run
+- variables (dict): Available variables
+
+Example usage:
+
+```python
+import logging
+
+def pytest_tavern_before_every_test_run(test_dict, variables):
+    logging.info("Starting test %s", test_dict["test_name"])
+    
+    variables["extra_var"] = "abc123"
+```
+
+### After every response
+
+This hook is called after every _response_ for each _stage_ - this includes HTTP
+responses, but also MQTT responses if you are using MQTT. This means if you are
+using MQTT it might be called multiple times for each stage!
+
+Args: 
+- response (object): Response object. Could be whatever kind of response object
+  is returned by whatever plugin is used - if using the default HTTP
+  implementation which uses Requests, this will be a `requests.Response` object.
+  If using MQTT, this will be a paho-mqtt `Message` object.
+- expected (dict): Formatted response block from the stage.
+
+Example usage:
+
+```python
+def pytest_tavern_after_every_response(expected, response):
+    with open("logfile.txt", "a") as logfile:
+        logfile.write("Got response: {}".format(response.json()))
+```
