@@ -3,7 +3,12 @@ import requests
 from mock import Mock
 from requests.cookies import RequestsCookieJar
 
-from tavern._plugins.rest.request import RestRequest, get_request_args, _check_allow_redirects
+from tavern._plugins.rest.request import (
+    RestRequest,
+    get_request_args,
+    _check_allow_redirects,
+    _read_expected_cookies,
+)
 from tavern.util import exceptions
 
 
@@ -50,7 +55,9 @@ class TestRequests(object):
         req["method"] = "GET"
 
         with pytest.warns(RuntimeWarning):
-            RestRequest(Mock(spec=requests.Session, cookies=RequestsCookieJar()), req, includes)
+            RestRequest(
+                Mock(spec=requests.Session, cookies=RequestsCookieJar()), req, includes
+            )
 
 
 class TestHttpRedirects(object):
@@ -70,13 +77,55 @@ class TestHttpRedirects(object):
 
     @pytest.mark.parametrize("do_follow", [True, False])
     def test_session_do_follow_redirects_based_on_global_flag(
-            self, req, includes, do_follow
+        self, req, includes, do_follow
     ):
         """Globally enable following redirects in test"""
 
         includes["follow_redirects"] = do_follow
 
         assert _check_allow_redirects(req, includes) == do_follow
+
+
+class TestCookies(object):
+    @pytest.fixture
+    def mock_session(self):
+        return Mock(spec=requests.Session, cookies=RequestsCookieJar())
+
+    def test_no_expected_none_available(self, mock_session, req, includes):
+        """No cookies expected and none available = OK"""
+
+        req["cookies"] = []
+
+        assert _read_expected_cookies(mock_session, req, includes) == {}
+
+    def test_available_not_waited(self, req, includes):
+        """some available but not set"""
+
+        cookiejar = RequestsCookieJar()
+        cookiejar.set("a", 2)
+        mock_session = Mock(spec=requests.Session, cookies=cookiejar)
+
+        assert _read_expected_cookies(mock_session, req, includes) == {}
+
+    def test_not_available_but_wanted(self, mock_session, req, includes):
+        """Some wanted but not available"""
+
+        req["cookies"] = ["a"]
+
+        with pytest.raises(exceptions.MissingCookieError):
+            _read_expected_cookies(mock_session, req, includes)
+
+    def test_available_and_waited(self, req, includes):
+        """some available and wanted"""
+
+        cookiejar = RequestsCookieJar()
+        cookiejar.set("a", 2)
+
+        req["cookies"] = ["a"]
+
+        mock_session = Mock(spec=requests.Session, cookies=cookiejar)
+
+        assert _read_expected_cookies(mock_session, req, includes) == {"a": 2}
 
 
 class TestRequestArgs(object):
