@@ -209,6 +209,26 @@ def _check_allow_redirects(rspec, test_block_config):
     return allow_redirects
 
 
+def _read_expected_cookies(session, rspec, test_block_config):
+    # Need to do this down here - it is separate from getting request args as
+    # it depends on the state of the session
+    existing_cookies = session.cookies.get_dict()
+    missing = set(rspec["cookies"]) - set(existing_cookies.keys())
+
+    if missing:
+        logger.error("Missing cookies")
+        raise exceptions.MissingCookieError(
+            "Tried to use cookies '{}' in request but only had '{}' available".format(
+                rspec["cookies"], existing_cookies
+            )
+        )
+
+    return format_keys(
+        {c: existing_cookies.get(c) for c in rspec["cookies"]},
+        test_block_config["variables"],
+    )
+
+
 class RestRequest(BaseRequest):
     def __init__(self, session, rspec, test_block_config):
         """Prepare request
@@ -251,24 +271,8 @@ class RestRequest(BaseRequest):
 
         request_args = get_request_args(rspec, test_block_config)
 
-        # Need to do this down here - it is separate from getting request args as
-        # it depends on the state of the session
-        if "cookies" in rspec:
-            existing_cookies = session.cookies.get_dict()
-            missing = set(rspec["cookies"]) - set(existing_cookies.keys())
-            if missing:
-                logger.error("Missing cookies")
-                raise exceptions.MissingCookieError(
-                    "Tried to use cookies '{}' in request but only had '{}' available".format(
-                        rspec["cookies"], existing_cookies
-                    )
-                )
-            request_args["cookies"] = format_keys(
-                {c: existing_cookies.get(c) for c in rspec["cookies"]},
-                test_block_config["variables"],
-            )
-
-        request_args.update(_check_allow_redirects(rspec, test_block_config)
+        request_args.update(_read_expected_cookies(session, rspec, test_block_config))
+        request_args.update(_check_allow_redirects(rspec, test_block_config))
 
         logger.debug("Request args: %s", request_args)
 
