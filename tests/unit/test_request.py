@@ -127,6 +127,19 @@ class TestCookies(object):
 
         assert _read_expected_cookies(mock_session, req, includes) == {"a": 2}
 
+    def test_format_cookies(self, req, includes):
+        """cookies in request should be formatted"""
+
+        cookiejar = RequestsCookieJar()
+        cookiejar.set("a", 2)
+
+        req["cookies"] = ["{cookiename}"]
+        includes["variables"]["cookiename"] = "a"
+
+        mock_session = Mock(spec=requests.Session, cookies=cookiejar)
+
+        assert _read_expected_cookies(mock_session, req, includes) == {"a": 2}
+
 
 class TestRequestArgs(object):
     def test_default_method(self, req, includes):
