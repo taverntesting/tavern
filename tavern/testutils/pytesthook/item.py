@@ -154,7 +154,7 @@ class YamlItem(pytest.Item):
 
             call_hook(
                 self.global_cfg,
-                "pytest_tavern_before_every_test_run",
+                "pytest_tavern_beta_before_every_test_run",
                 test_dict=self.spec,
                 variables=self.global_cfg["variables"],
             )

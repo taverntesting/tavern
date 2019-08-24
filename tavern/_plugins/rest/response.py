@@ -152,7 +152,7 @@ class RestResponse(BaseResponse):
 
         call_hook(
             self.test_block_config,
-            "pytest_tavern_after_every_response",
+            "pytest_tavern_beta_after_every_response",
             expected=self.expected,
             response=response,
         )

@@ -1949,7 +1949,11 @@ tests.
 
 These hooks are used by defining a function with the name of the hook in your
 `conftest.py` that take the same arguments _with the same names_ - these hooks
-will then be picked up at runtime and called appropriately
+will then be picked up at runtime and called appropriately.
+
+**NOTE**: These hooks should be considered a 'beta' feature, they are ready to
+use but the names and arguments they take should be considered unstable and may
+change in a future release (and more may also be added).
 
 ### Before every test run
 
@@ -1968,7 +1972,7 @@ Example usage:
 ```python
 import logging
 
-def pytest_tavern_before_every_test_run(test_dict, variables):
+def pytest_tavern_beta_before_every_test_run(test_dict, variables):
     logging.info("Starting test %s", test_dict["test_name"])
     
     variables["extra_var"] = "abc123"
@@ -1990,7 +1994,7 @@ Args:
 Example usage:
 
 ```python
-def pytest_tavern_after_every_response(expected, response):
+def pytest_tavern_beta_after_every_response(expected, response):
     with open("logfile.txt", "a") as logfile:
         logfile.write("Got response: {}".format(response.json()))
 ```

@@ -14,7 +14,7 @@ def setup_logging():
     logging.basicConfig(level=logging.INFO)
 
 
-def pytest_tavern_after_every_response(expected, response):
+def pytest_tavern_beta_after_every_response(expected, response):
     global name
     logging.debug(expected)
     logging.debug(response)
