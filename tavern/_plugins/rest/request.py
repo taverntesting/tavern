@@ -234,7 +234,9 @@ def _read_expected_cookies(session, rspec, test_block_config):
     # Need to do this down here - it is separate from getting request args as
     # it depends on the state of the session
     existing_cookies = session.cookies.get_dict()
-    available_cookies = rspec.get("cookies", [])
+    available_cookies = format_keys(rspec.get("cookies", []),
+                                    test_block_config["variables"],
+                                    )
     missing = set(available_cookies) - set(existing_cookies.keys())
 
     if missing:
@@ -245,10 +247,7 @@ def _read_expected_cookies(session, rspec, test_block_config):
             )
         )
 
-    return format_keys(
-        {c: existing_cookies.get(c) for c in available_cookies},
-        test_block_config["variables"],
-    )
+    return {c: existing_cookies.get(c) for c in available_cookies}
 
 
 class RestRequest(BaseRequest):
