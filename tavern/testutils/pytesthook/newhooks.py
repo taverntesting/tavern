@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def pytest_tavern_before_every_test_run(test_dict, variables):
+def pytest_tavern_beta_before_every_test_run(test_dict, variables):
     """Called:
 
     - directly after fixtures are loaded for a test
@@ -21,7 +21,7 @@ def pytest_tavern_before_every_test_run(test_dict, variables):
     """
 
 
-def pytest_tavern_after_every_response(expected, response):
+def pytest_tavern_beta_after_every_response(expected, response):
     """Called after every _response_ - including MQTT/HTTP/etc
 
     Note:
