@@ -234,7 +234,7 @@ def _read_expected_cookies(session, rspec, test_block_config):
     # Need to do this down here - it is separate from getting request args as
     # it depends on the state of the session
     existing_cookies = session.cookies.get_dict()
-    available_cookies = rspec.get("cookies", {})
+    available_cookies = rspec.get("cookies", [])
     missing = set(available_cookies) - set(existing_cookies.keys())
 
     if missing:
@@ -299,7 +299,9 @@ class RestRequest(BaseRequest):
             request_args.update(cookies=expected_cookies)
 
         # Check for redirects
-        request_args.update(allow_redirects=_check_allow_redirects(rspec, test_block_config))
+        request_args.update(
+            allow_redirects=_check_allow_redirects(rspec, test_block_config)
+        )
 
         logger.debug("Request args: %s", request_args)
 
