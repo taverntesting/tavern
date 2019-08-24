@@ -1,9 +1,7 @@
-import sqlite3
-import datetime
 import functools
-from flask import Flask, jsonify, request, g, session
-import jwt
+import sqlite3
 
+from flask import Flask, jsonify, request, g, session
 
 app = Flask(__name__)
 app.secret_key = "t1uNraxw+9oxUyCuXHO2G0u38ig="
