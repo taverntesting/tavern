@@ -187,6 +187,16 @@ def _set_cookies_for_request(session, request_args):
 
 
 def _check_allow_redirects(rspec, test_block_config):
+    """
+    Check for allow_redirects flag in settings/stage
+
+    Args:
+        rspec (dict): request dictionary
+        test_block_config (dict): config available for test
+
+    Returns:
+        bool: Whether to allow redirects for this stage or not
+    """
     # By default, don't follow redirects
     allow_redirects = False
 
@@ -210,21 +220,33 @@ def _check_allow_redirects(rspec, test_block_config):
 
 
 def _read_expected_cookies(session, rspec, test_block_config):
+    """
+    Read cookies to inject into request, ignoring others which are present
+
+    Args:
+        session (Session): session object
+        rspec (dict): test spec
+        test_block_config (dict): config available for test
+
+    Returns:
+        dict: cookies to use in request, if any
+    """
     # Need to do this down here - it is separate from getting request args as
     # it depends on the state of the session
     existing_cookies = session.cookies.get_dict()
-    missing = set(rspec["cookies"]) - set(existing_cookies.keys())
+    available_cookies = rspec.get("cookies", {})
+    missing = set(available_cookies) - set(existing_cookies.keys())
 
     if missing:
         logger.error("Missing cookies")
         raise exceptions.MissingCookieError(
             "Tried to use cookies '{}' in request but only had '{}' available".format(
-                rspec["cookies"], existing_cookies
+                available_cookies, existing_cookies
             )
         )
 
     return format_keys(
-        {c: existing_cookies.get(c) for c in rspec["cookies"]},
+        {c: existing_cookies.get(c) for c in available_cookies},
         test_block_config["variables"],
     )
 
@@ -271,8 +293,13 @@ class RestRequest(BaseRequest):
 
         request_args = get_request_args(rspec, test_block_config)
 
-        request_args.update(_read_expected_cookies(session, rspec, test_block_config))
-        request_args.update(_check_allow_redirects(rspec, test_block_config))
+        # If there was a 'cookies' key, set it in the request
+        expected_cookies = _read_expected_cookies(session, rspec, test_block_config)
+        if expected_cookies:
+            request_args.update(cookies=expected_cookies)
+
+        # Check for redirects
+        request_args.update(allow_redirects=_check_allow_redirects(rspec, test_block_config))
 
         logger.debug("Request args: %s", request_args)
 

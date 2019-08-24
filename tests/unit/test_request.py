@@ -1,9 +1,9 @@
-from mock import Mock
-import requests
-
 import pytest
+import requests
+from mock import Mock
+from requests.cookies import RequestsCookieJar
 
-from tavern._plugins.rest.request import RestRequest, get_request_args
+from tavern._plugins.rest.request import RestRequest, get_request_args, _check_allow_redirects
 from tavern.util import exceptions
 
 
@@ -50,7 +50,7 @@ class TestRequests(object):
         req["method"] = "GET"
 
         with pytest.warns(RuntimeWarning):
-            RestRequest(Mock(), req, includes)
+            RestRequest(Mock(spec=requests.Session, cookies=RequestsCookieJar()), req, includes)
 
 
 class TestHttpRedirects(object):
@@ -58,11 +58,7 @@ class TestHttpRedirects(object):
         """Always disable redirects by defauly
         """
 
-        rmock = Mock(spec=requests.Session)
-        RestRequest(rmock, req, includes).run()
-
-        assert rmock.request.called
-        assert rmock.request.call_args[1]["allow_redirects"] == False
+        assert _check_allow_redirects(req, includes) == False
 
     @pytest.mark.parametrize("do_follow", [True, False])
     def test_session_do_follow_redirects_based_on_test(self, req, includes, do_follow):
@@ -70,25 +66,17 @@ class TestHttpRedirects(object):
 
         req["follow_redirects"] = do_follow
 
-        rmock = Mock(spec=requests.Session)
-        RestRequest(rmock, req, includes).run()
-
-        assert rmock.request.called
-        assert rmock.request.call_args[1]["allow_redirects"] == do_follow
+        assert _check_allow_redirects(req, includes) == do_follow
 
     @pytest.mark.parametrize("do_follow", [True, False])
     def test_session_do_follow_redirects_based_on_global_flag(
-        self, req, includes, do_follow
+            self, req, includes, do_follow
     ):
         """Globally enable following redirects in test"""
 
         includes["follow_redirects"] = do_follow
 
-        rmock = Mock(spec=requests.Session)
-        RestRequest(rmock, req, includes).run()
-
-        assert rmock.request.called
-        assert rmock.request.call_args[1]["allow_redirects"] == do_follow
+        assert _check_allow_redirects(req, includes) == do_follow
 
 
 class TestRequestArgs(object):
