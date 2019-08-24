@@ -102,6 +102,9 @@ jobs:
     - python: 3.7
       env: TOXENV=py37-advanced TOXCFG=tox-integration.ini
       stage: full-tests
+    - python: 3.7
+      env: TOXENV=py37-hooks TOXCFG=tox-integration.ini
+      stage: full-tests
     - stage: deploy
       script: skip
       deploy:
