@@ -186,6 +186,29 @@ def _set_cookies_for_request(session, request_args):
         yield
 
 
+def _check_allow_redirects(rspec, test_block_config):
+    # By default, don't follow redirects
+    allow_redirects = False
+
+    # Then check to see if we should follow redirects based on settings
+    global_follow_redirects = test_block_config.get("follow_redirects")
+    if global_follow_redirects is not None:
+        allow_redirects = global_follow_redirects
+
+    # ... and test flags
+    test_follow_redirects = rspec.pop("follow_redirects", None)
+    if test_follow_redirects is not None:
+        if global_follow_redirects is not None:
+            logger.info(
+                "Overriding global follow_redirects setting of %s with test-level specification of %s",
+                global_follow_redirects,
+                test_follow_redirects,
+            )
+        allow_redirects = test_follow_redirects
+
+    return allow_redirects
+
+
 class RestRequest(BaseRequest):
     def __init__(self, session, rspec, test_block_config):
         """Prepare request
@@ -240,26 +263,12 @@ class RestRequest(BaseRequest):
                         rspec["cookies"], existing_cookies
                     )
                 )
-            request_args["cookies"] = {
-                c: existing_cookies.get(c) for c in rspec["cookies"]
-            }
+            request_args["cookies"] = format_keys(
+                {c: existing_cookies.get(c) for c in rspec["cookies"]},
+                test_block_config["variables"],
+            )
 
-        # By default, don't follow redirects
-        request_args.update(allow_redirects=False)
-        # Then check to see if we should follow redirects based on settings
-        global_follow_redirects = test_block_config.get("follow_redirects")
-        if global_follow_redirects is not None:
-            request_args.update(allow_redirects=global_follow_redirects)
-        # ... and test flags
-        test_follow_redirects = rspec.pop("follow_redirects", None)
-        if test_follow_redirects is not None:
-            if global_follow_redirects is not None:
-                logger.info(
-                    "Overriding global follow_redirects setting of %s with test-level specification of %s",
-                    global_follow_redirects,
-                    test_follow_redirects,
-                )
-            request_args.update(allow_redirects=test_follow_redirects)
+        request_args.update(_check_allow_redirects(rspec, test_block_config)
 
         logger.debug("Request args: %s", request_args)
 
