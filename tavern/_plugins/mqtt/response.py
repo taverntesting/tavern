@@ -1,9 +1,9 @@
-import logging
 import json
+import logging
 import time
 
-from tavern.util import exceptions
 from tavern.response.base import BaseResponse
+from tavern.util import exceptions
 from tavern.util.dict_util import check_keys_match_recursive
 from tavern.util.loader import ANYTHING
 from tavern.testutils.pytesthook.newhooks import call_hook
@@ -60,10 +60,21 @@ class MQTTResponse(BaseResponse):
 
     def _await_response(self):
         """Actually wait for response"""
+
+        # pylint: disable=too-many-statements
+
         topic = self.expected["topic"]
         timeout = self.expected.get("timeout", 1)
 
-        payload, json_payload = self._get_payload_vals()
+        expected_payload, expect_json_payload = self._get_payload_vals()
+
+        # Any warnings to do with the request
+        # eg, if a message was received but it didn't match, message had payload, etc.
+        warnings = []
+
+        def addwarning(w, *args, **kwargs):
+            logger.warning(w, *args, **kwargs)
+            warnings.append(w % args)
 
         time_spent = 0
 
@@ -89,11 +100,11 @@ class MQTTResponse(BaseResponse):
 
             msg.payload = msg.payload.decode("utf8")
 
-            if json_payload:
+            if expect_json_payload:
                 try:
                     msg.payload = json.loads(msg.payload)
                 except LoadException:
-                    logger.warning(
+                    addwarning(
                         "Expected a json payload but got '%s'",
                         msg.payload,
                         exc_info=True,
@@ -101,23 +112,24 @@ class MQTTResponse(BaseResponse):
                     msg = None
                     continue
 
-            if not payload:
-                if not msg.payload:
+            if expected_payload is None:
+                if msg.payload is None or msg.payload == "":
                     logger.info(
                         "Got message with no payload (as expected) on '%s'", topic
                     )
                     break
                 else:
-                    logger.warning(
-                        "Message had payload '%s' but we expected no payload"
+                    addwarning(
+                        "Message had payload '%s' but we expected no payload",
+                        msg.payload,
                     )
-            elif payload is ANYTHING:
+            elif expected_payload is ANYTHING:
                 logger.info("Got message on %s matching !anything token", topic)
                 break
-            elif msg.payload != payload:
-                if json_payload:
+            elif msg.payload != expected_payload:
+                if expect_json_payload:
                     try:
-                        check_keys_match_recursive(payload, msg.payload, [])
+                        check_keys_match_recursive(expected_payload, msg.payload, [])
                     except exceptions.KeyMismatchError:
                         # Just want to log the mismatch
                         pass
@@ -129,14 +141,14 @@ class MQTTResponse(BaseResponse):
                         )
                         break
 
-                logger.warning(
+                addwarning(
                     "Got unexpected payload on topic '%s': '%s' (expected '%s')",
                     msg.topic,
                     msg.payload,
-                    payload,
+                    expected_payload,
                 )
             elif msg.topic != topic:
-                logger.warning(
+                addwarning(
                     "Got unexpected message in '%s' with payload '%s'",
                     msg.topic,
                     msg.payload,
@@ -155,17 +167,22 @@ class MQTTResponse(BaseResponse):
         if not msg:
             self._adderr(
                 "Expected '%s' on topic '%s' but no such message received",
-                payload,
+                expected_payload,
                 topic,
             )
 
         if self.errors:
+            if warnings:
+                self._adderr("\n".join(warnings))
+
             raise exceptions.TestFailError(
                 "Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()),
                 failures=self.errors,
             )
 
-        return {}
+        saved = {}
+
+        return saved
 
     def verify(self, response):
         """Ensure mqtt message has arrived
