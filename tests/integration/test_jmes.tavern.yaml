@@ -14,25 +14,25 @@ stages:
       status_code: 200
       body:
         an_integer: 123
-      verify_response_with:
-        function: tavern.testutils.helpers:validate_content
-        extra_kwargs:
-          comparisons:
-            - jmespath: "an_integer"
-              operator: "eq"
-              expected: 123
-            - jmespath: "an_integer"
-              operator: "type"
-              expected: int
-            - jmespath: "a_string"
-              operator: "eq"
-              expected: abc
-            - jmespath: "top.Thing"
-              operator: "type"
-              expected: str
-            - jmespath: "top.nested.doubly.inner"
-              operator: "eq"
-              expected: value
+        $ext:
+          function: tavern.testutils.helpers:validate_content
+          extra_kwargs:
+            comparisons:
+              - jmespath: "an_integer"
+                operator: "eq"
+                expected: 123
+              - jmespath: "an_integer"
+                operator: "type"
+                expected: int
+              - jmespath: "a_string"
+                operator: "eq"
+                expected: abc
+              - jmespath: "top.Thing"
+                operator: "type"
+                expected: str
+              - jmespath: "top.nested.doubly.inner"
+                operator: "eq"
+                expected: value
 
 ---
 
@@ -48,30 +48,31 @@ stages:
       method: GET
     response:
       status_code: 200
-      verify_response_with:
-        function: tavern.testutils.helpers:validate_content
-        extra_kwargs:
-          comparisons:
-            - jmespath: "[1]"
-              operator: "type"
-              expected: str
-            - jmespath: "[1]"
-              operator: "eq"
-              expected: b
+      body:
+        $ext:
+          function: tavern.testutils.helpers:validate_content
+          extra_kwargs:
+            comparisons:
+              - jmespath: "[1]"
+                operator: "type"
+                expected: str
+              - jmespath: "[1]"
+                operator: "eq"
+                expected: b
 
-            - jmespath: "[5]"
-              operator: "type"
-              expected: int
-            - jmespath: "[5]"
-              operator: "eq"
-              expected: 3
+              - jmespath: "[5]"
+                operator: "type"
+                expected: int
+              - jmespath: "[5]"
+                operator: "eq"
+                expected: 3
 
-            - jmespath: "[8]"
-              operator: "type"
-              expected: float
-            - jmespath: "[8]"
-              operator: "eq"
-              expected: -3.0
+              - jmespath: "[8]"
+                operator: "type"
+                expected: float
+              - jmespath: "[8]"
+                operator: "eq"
+                expected: -3.0
 
 ---
 

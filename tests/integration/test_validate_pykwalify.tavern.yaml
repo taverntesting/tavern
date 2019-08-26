@@ -12,26 +12,27 @@ stages:
       method: GET
     response:
       status_code: 200
-      verify_response_with:
-        function: tavern.testutils.helpers:validate_pykwalify
-        extra_kwargs:
-          schema:
-            type: map
-            required: true
-            mapping:
-              top:
-                type: seq
-                required: true
-                sequence:
-                  - type: str
-                    required: true
-                  - type: str
-                    required: true
-                  - type: map
-                    mapping:
-                      key:
-                        type: str
-                        required: true
+      body:
+        $ext:
+          function: tavern.testutils.helpers:validate_pykwalify
+          extra_kwargs:
+            schema:
+              type: map
+              required: true
+              mapping:
+                top:
+                  type: seq
+                  required: true
+                  sequence:
+                    - type: str
+                      required: true
+                    - type: str
+                      required: true
+                    - type: map
+                      mapping:
+                        key:
+                          type: str
+                          required: true
 
 ---
 
@@ -49,16 +50,17 @@ stages:
       method: GET
     response:
       status_code: 200
-      verify_response_with:
-        function: tavern.testutils.helpers:validate_pykwalify
-        extra_kwargs:
-          schema:
-            type: mapping
-            required: true
-            map:
-              top:
-                type: mapping
-                map:
-                  invalid:
-                    type: str
-                    require: true
+      body:
+        $ext:
+          function: tavern.testutils.helpers:validate_pykwalify
+          extra_kwargs:
+            schema:
+              type: mapping
+              required: true
+              map:
+                top:
+                  type: mapping
+                  map:
+                    invalid:
+                      type: str
+                      require: true
