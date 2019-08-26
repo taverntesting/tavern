@@ -147,6 +147,9 @@ def _validate_one_extension(input_value):
     extra = set(input_value) - expected_keys
 
     if extra:
+        logger = _getlogger()
+        logger.warning(extra)
+        logger.warning(input_value)
         raise BadSchemaError("Unexpected keys passed to $ext: {}".format(extra))
 
     if "function" not in input_value:
@@ -197,7 +200,7 @@ def validate_extensions(value, rule_obj, path):
     if isinstance(value, list):
         for vf in value:
             _validate_one_extension(vf)
-    if isinstance(value, dict):
+    elif isinstance(value, dict):
         _validate_one_extension(value)
 
     return True
@@ -348,6 +351,20 @@ def validate_request_json(value, rule_obj, path):
                     path
                 )
             )
+
+    return True
+
+
+def validate_json_with_ext(value, rule_obj, path):
+    """Validate json with extensions"""
+    validate_request_json(value, rule_obj, path)
+
+    if isinstance(value, dict):
+        maybe_ext_val = value.get("$ext", None)
+        if isinstance(maybe_ext_val, dict):
+            validate_extensions(maybe_ext_val, rule_obj, path)
+        elif maybe_ext_val is not None:
+            raise BadSchemaError("Unexpected $ext key in block at {}".format(path))
 
     return True
 
