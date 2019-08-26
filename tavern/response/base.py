@@ -1,6 +1,7 @@
 import logging
 import traceback
 
+
 try:
     from collections.abc import Mapping
 except ImportError:
@@ -12,6 +13,7 @@ import warnings
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util import exceptions
 from tavern.util.python_2_util import indent
+from tavern.util.dict_util import recurse_access_key
 from tavern.util.dict_util import check_keys_match_recursive
 
 logger = logging.getLogger(__name__)
@@ -24,16 +26,20 @@ def indent_err_text(err):
 
 
 class BaseResponse(object):
-    def __init__(self):
+    def __init__(self, name, expected, test_block_config):
+        self.name = name
+
         # all errors in this response
         self.errors = []
 
         self.validate_functions = []
+        self._check_for_validate_functions(expected)
 
-        # None by default?
-        self.test_block_config = {"variables": {}}
+        self.test_block_config = test_block_config
 
-        self.expected = {}
+        self.expected = expected
+
+        self.response = None
 
     def _str_errors(self):
         return "- " + "\n- ".join(self.errors)
@@ -239,3 +245,47 @@ class BaseResponse(object):
             )
 
         return {}
+
+    def maybe_get_save_values_from_save_block(self, key, to_check):
+        """Save a value from a specific block in the response
+
+        This is different from maybe_get_save_values_from_ext - depends on the kind of response
+
+        Args:
+            to_check (dict): An element of the response from which the given key
+                is extracted
+            key (str): Key to use
+
+        Returns:
+            dict: dictionary of save_name: value, where save_name is the key we
+                wanted to save this value as
+        """
+        saved = {}
+
+        try:
+            expected = self.expected["save"][key]
+        except KeyError:
+            logger.debug("Nothing expected to save for %s", key)
+            return {}
+
+        if not to_check:
+            self._adderr("No %s in response (wanted to save %s)", key, expected)
+        else:
+            for save_as, joined_key in expected.items():
+                try:
+                    saved[save_as] = recurse_access_key(to_check, joined_key)
+                except (
+                    exceptions.InvalidQueryResultTypeError,
+                    exceptions.KeySearchNotFoundError,
+                ) as e:
+                    self._adderr(
+                        "Wanted to save '%s' from '%s', but it did not exist in the response",
+                        joined_key,
+                        key,
+                        e=e,
+                    )
+
+        if saved:
+            logger.debug("Saved %s for '%s' from response", saved, key)
+
+        return saved

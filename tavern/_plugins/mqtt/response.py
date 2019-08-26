@@ -3,10 +3,10 @@ import logging
 import time
 
 from tavern.response.base import BaseResponse
+from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
 from tavern.util.dict_util import check_keys_match_recursive
 from tavern.util.loader import ANYTHING
-from tavern.testutils.pytesthook.newhooks import call_hook
 
 try:
     LoadException = json.decoder.JSONDecodeError
@@ -19,15 +19,7 @@ logger = logging.getLogger(__name__)
 
 class MQTTResponse(BaseResponse):
     def __init__(self, client, name, expected, test_block_config):
-        super(MQTTResponse, self).__init__()
-
-        self.test_block_config = test_block_config
-        self.name = name
-
-        self._check_for_validate_functions(expected)
-
-        self.expected = expected
-        self.response = None
+        super(MQTTResponse, self).__init__(name, expected, test_block_config)
 
         self._client = client
 
@@ -183,6 +175,8 @@ class MQTTResponse(BaseResponse):
             )
 
         saved = {}
+
+        saved.update(self.maybe_get_save_values_from_save_block("json", msg.payload))
 
         saved.update(self.maybe_get_save_values_from_ext(msg, self.expected))
 

@@ -53,7 +53,9 @@ class TestSave:
 
         r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        saved = r._save_value("body", example_response["body"])
+        saved = r.maybe_get_save_values_from_save_block(
+            "body", example_response["body"]
+        )
 
         assert saved == {"test_code": example_response["body"]["code"]}
 
@@ -65,7 +67,9 @@ class TestSave:
 
         r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        saved = r._save_value("body", example_response["body"])
+        saved = r.maybe_get_save_values_from_save_block(
+            "body", example_response["body"]
+        )
 
         assert saved == {
             "test_nested_thing": example_response["body"]["nested"]["subthing"]
@@ -79,7 +83,9 @@ class TestSave:
 
         r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        saved = r._save_value("body", example_response["body"])
+        saved = r.maybe_get_save_values_from_save_block(
+            "body", example_response["body"]
+        )
 
         assert saved == {
             "test_nested_thing": example_response["body"]["nested"]["subthing"][0]
@@ -92,7 +98,9 @@ class TestSave:
 
         r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        saved = r._save_value("headers", example_response["headers"])
+        saved = r.maybe_get_save_values_from_save_block(
+            "headers", example_response["headers"]
+        )
 
         assert saved == {"next_location": example_response["headers"]["location"]}
 
@@ -103,7 +111,9 @@ class TestSave:
 
         r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        saved = r._save_value("redirect_query_params", {"search": "breadsticks"})
+        saved = r.maybe_get_save_values_from_save_block(
+            "redirect_query_params", {"search": "breadsticks"}
+        )
 
         assert saved == {"test_search": "breadsticks"}
 
@@ -113,7 +123,7 @@ class TestSave:
 
         r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        saved = r._save_value(save_from, {})
+        saved = r.maybe_get_save_values_from_save_block(save_from, {})
 
         assert not saved
 
