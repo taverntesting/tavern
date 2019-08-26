@@ -39,9 +39,7 @@ class TestValidateFunctions:
         This doesn't check the signature at the time of writing
         """
 
-        spec = [
-            {"function": "operator:add"}
-        ]
+        spec = [{"function": "operator:add"}]
 
         validate_extensions(spec, None, None)
 
@@ -51,8 +49,7 @@ class TestValidateFunctions:
         This doesn't check the signature at the time of writing
         """
 
-        spec = [
-        ]
+        spec = []
 
         validate_extensions(spec, None, None)
 
