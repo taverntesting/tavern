@@ -184,6 +184,8 @@ class MQTTResponse(BaseResponse):
 
         saved = {}
 
+        saved.update(self.maybe_get_save_values_from_ext(msg, self.expected))
+
         return saved
 
     def verify(self, response):
