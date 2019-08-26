@@ -209,11 +209,12 @@ class RestResponse(BaseResponse):
         except KeyError:
             expected_block = {}
 
-        if expected_block.pop("$ext"):
-            logger.warning(
-                "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
-                blockname,
-            )
+        if isinstance(expected_block, dict):
+            if expected_block.pop("$ext", None):
+                logger.warning(
+                    "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
+                    blockname,
+                )
 
         if blockname == "headers":
             # Special case for headers. These need to be checked in a case

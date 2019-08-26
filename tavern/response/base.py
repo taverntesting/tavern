@@ -161,19 +161,21 @@ class BaseResponse(object):
                     "Badly formatted 'verify_response_with' block"
                 )
 
-        check_ext_functions(response_block.get("verify_response_with", {}))
+        check_ext_functions(response_block.get("verify_response_with", None))
 
         def check_deprecated_validate(name):
             nfuncs = len(self.validate_functions)
-            check_ext_functions(response_block.get(name, {}).get("$ext", {}))
-            if nfuncs != len(self.validate_functions):
-                logger.warning(
-                    "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
-                    name,
-                )
+            block = response_block.get(name, {})
+            if isinstance(block, dict):
+                check_ext_functions(block.get("$ext", None))
+                if nfuncs != len(self.validate_functions):
+                    logger.warning(
+                        "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
+                        name,
+                    )
 
+        # Could put in an isinstance check here
         check_deprecated_validate("body")
-        check_deprecated_validate("payload")
         check_deprecated_validate("json")
 
     def _maybe_run_validate_functions(self, response):
