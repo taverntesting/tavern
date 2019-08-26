@@ -145,22 +145,28 @@ def get_wrapped_create_function(ext):
 def _validate_one_extension(input_value):
     expected_keys = {"function", "extra_args", "extra_kwargs"}
     extra = set(input_value) - expected_keys
+
     if extra:
         raise BadSchemaError("Unexpected keys passed to $ext: {}".format(extra))
+
     if "function" not in input_value:
         raise BadSchemaError("No function specified for validation")
+
     try:
         import_ext_function(input_value["function"])
     except Exception as e:  # pylint: disable=broad-except
         raise_from(
             BadSchemaError("Couldn't load {}".format(input_value["function"])), e
         )
+
     extra_args = input_value.get("extra_args")
     extra_kwargs = input_value.get("extra_kwargs")
+
     if extra_args and not isinstance(extra_args, list):
         raise BadSchemaError(
             "Expected a list of extra_args, got {}".format(type(extra_args))
         )
+
     if extra_kwargs and not isinstance(extra_kwargs, dict):
         raise BadSchemaError(
             "Expected a dict of extra_kwargs, got {}".format(type(extra_args))
