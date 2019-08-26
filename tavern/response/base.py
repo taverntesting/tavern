@@ -134,11 +134,6 @@ class BaseResponse(object):
                 for k, v in expected_block.items():
                     check_keys_match_recursive(v, block[k], [k], strict=True)
             except exceptions.KeyMismatchError:
-                if "$ext" in expected_block:
-                    logger.warning(
-                        "Matching failed, but $ext was found in block - this has moved"
-                    )
-
                 self._adderr("Value mismatch in %s: %s", blockname, e)
             else:
                 msg = "Checking keys worked using 'legacy' comparison, which will not match dictionary keys at the top level of the response. This behaviour will be changed in a future version"
@@ -152,17 +147,34 @@ class BaseResponse(object):
         Args:
             response_block (dict): block of external functions to call
         """
-        verify_block = response_block.get("verify_response_with")
 
-        if isinstance(verify_block, list):
-            for vf in verify_block:
-                self.validate_functions.append(get_wrapped_response_function(vf))
-        elif isinstance(verify_block, dict):
-            self.validate_functions.append(get_wrapped_response_function(verify_block))
-        elif verify_block is not None:
-            raise exceptions.BadSchemaError(
-                "Badly formatted 'verify_response_with' block"
-            )
+        def check_ext_functions(verify_block):
+            if isinstance(verify_block, list):
+                for vf in verify_block:
+                    self.validate_functions.append(get_wrapped_response_function(vf))
+            elif isinstance(verify_block, dict):
+                self.validate_functions.append(
+                    get_wrapped_response_function(verify_block)
+                )
+            elif verify_block is not None:
+                raise exceptions.BadSchemaError(
+                    "Badly formatted 'verify_response_with' block"
+                )
+
+        check_ext_functions(response_block.get("verify_response_with", {}))
+
+        def check_deprecated_validate(name):
+            nfuncs = len(self.validate_functions)
+            check_ext_functions(response_block.get(name, {}).get("$ext", {}))
+            if nfuncs != len(self.validate_functions):
+                logger.warning(
+                    "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
+                    name,
+                )
+
+        check_deprecated_validate("body")
+        check_deprecated_validate("payload")
+        check_deprecated_validate("json")
 
     def _maybe_run_validate_functions(self, response):
         """Run validation functions if available
