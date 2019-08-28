@@ -51,6 +51,30 @@ stages:
 
 ---
 
+test_name: Test old style ext functions work with MQTT
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - name: Echo json
+    mqtt_publish:
+      topic: /device/123/echo
+      json:
+        message: hello world
+    mqtt_response:
+      topic: /device/123/echo/response
+      json:
+        message: hello world
+        $ext:
+          function: testing_utils:message_says_hello
+      timeout: 5
+      qos: 1
+
+---
+
 test_name: Test ext functions work with MQTT
 
 includes:
@@ -181,7 +205,8 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
-  - name: step 0 - reset devices
+  - &reset_devices
+    name: step 0 - reset devices
     request:
       url: "{host}/reset"
       method: POST
@@ -237,14 +262,7 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
-  - name: step 0 - reset devices
-    request:
-      url: "{host}/reset"
-      method: POST
-      headers:
-        content-type: application/json
-    response:
-      status_code: 204
+  - *reset_devices
 
   - name: Check lights status is off
     mqtt_publish:
@@ -376,5 +394,42 @@ stages:
       topic: /device/123/ping
     mqtt_response:
       topic: /device/123/pong
+      timeout: 5
+      qos: 1
+
+---
+
+test_name: Test saving
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - *reset_devices
+
+  - name: Get lights status and save
+    mqtt_publish:
+      topic: /device/123/status
+    mqtt_response:
+      topic: /device/123/status/response
+      json:
+        lights: 0
+      timeout: 3
+      qos: 1
+      save:
+        json:
+          lights_status: lights
+
+  - name: Use saved variable
+    mqtt_publish:
+      topic: /device/123/echo
+      json:
+        status: "{lights_status}"
+    mqtt_response:
+      topic: /device/123/echo/response
+      json:
+        status: 0
       timeout: 5
       qos: 1

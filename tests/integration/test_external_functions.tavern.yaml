@@ -1,5 +1,25 @@
 ---
 
+test_name: Use one function with old style ext block
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: simple match
+    request:
+      url: "{host}/token"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        $ext:
+          function: tavern.testutils.helpers:validate_regex
+          extra_kwargs:
+            expression: '<a src=\".*\">'
+
+---
+
 test_name: Use one function
 
 includes:
