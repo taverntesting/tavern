@@ -426,7 +426,7 @@ stages:
     mqtt_publish:
       topic: /device/123/echo
       json:
-        status: "{lights_status}"
+        status: !int "{lights_status}"
     mqtt_response:
       topic: /device/123/echo/response
       json:

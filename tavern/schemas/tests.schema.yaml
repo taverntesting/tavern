@@ -110,6 +110,12 @@ schema;stage:
           func: validate_extensions
           type: any
 
+        save:
+          include: any_json_with_ext
+          mapping:
+            json:
+              type: any
+
     request:
       type: map
       required: false
