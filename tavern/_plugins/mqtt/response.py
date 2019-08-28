@@ -41,6 +41,12 @@ class MQTTResponse(BaseResponse):
 
             payload = self.expected["json"]
             json_payload = True
+
+            if payload.pop("$ext", None):
+                logger.warning(
+                    "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
+                    "json",
+                )
         elif "payload" in self.expected:
             payload = self.expected["payload"]
             json_payload = False
