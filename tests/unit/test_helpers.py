@@ -124,9 +124,19 @@ class TestTavernRepr:
 
         assert not rmock.called
 
-    def test_called_for_tavern_exception_ini(self, fake_item):
+    def test_not_called_for_badschema_tavern_exception_(self, fake_item):
         """Enable ini flag, should be called"""
         fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
+
+        with patch.object(fake_item.config, "getini", return_value=True):
+            with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
+                fake_item.repr_failure(fake_info)
+
+        assert not rmock.called
+
+    def test_called_for_tavern_exception_ini(self, fake_item):
+        """Enable ini flag, should be called"""
+        fake_info = self._make_fake_exc_info(exceptions.InvalidSettingsError)
 
         with patch.object(fake_item.config, "getini", return_value=True):
             with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
@@ -136,7 +146,7 @@ class TestTavernRepr:
 
     def test_called_for_tavern_exception_cli(self, fake_item):
         """Enable cli flag, should be called"""
-        fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
+        fake_info = self._make_fake_exc_info(exceptions.InvalidSettingsError)
 
         with patch.object(fake_item.config, "getoption", return_value=True):
             with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
