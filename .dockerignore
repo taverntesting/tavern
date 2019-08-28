@@ -92,8 +92,6 @@ tags
 .pytest_cache
 
 .bumpversion.cfg
-.cache
-.coverage
 dist
 docker
 docs
@@ -104,12 +102,10 @@ example
 LICENSE
 # MANIFEST.in
 .pylintrc
-.pytest_cache
 README.rst
 requirements.txt
 # setup.cfg
 # setup.py
-tags
 # tavern
 tavern.egg-info
 tests
@@ -117,3 +113,6 @@ tests
 tox.ini
 tox-integration.ini
 .travis.yml
+
+venv
+.idea
