@@ -147,9 +147,6 @@ def _validate_one_extension(input_value):
     extra = set(input_value) - expected_keys
 
     if extra:
-        logger = _getlogger()
-        logger.warning(extra)
-        logger.warning(input_value)
         raise BadSchemaError("Unexpected keys passed to $ext: {}".format(extra))
 
     if "function" not in input_value:
