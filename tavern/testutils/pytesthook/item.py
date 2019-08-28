@@ -192,7 +192,8 @@ class YamlItem(pytest.Item):
             "tavern_beta_new_traceback"
         ):
             if issubclass(excinfo.type, exceptions.TavernException):
-                return ReprdError(excinfo, self)
+                if not issubclass(excinfo.type, exceptions.BadSchemaError):
+                    return ReprdError(excinfo, self)
 
         return super(YamlItem, self).repr_failure(excinfo)
 
