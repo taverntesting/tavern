@@ -1,5 +1,9 @@
+import os
+import tempfile
+
 import pytest
 import requests
+from contextlib2 import ExitStack
 from mock import Mock
 from requests.cookies import RequestsCookieJar
 
@@ -8,6 +12,7 @@ from tavern._plugins.rest.request import (
     get_request_args,
     _check_allow_redirects,
     _read_expected_cookies,
+    _get_file_arguments,
 )
 from tavern.util import exceptions
 
@@ -303,3 +308,35 @@ class TestOptionalDefaults:
         args = get_request_args(req, includes)
 
         assert args["verify"] == verify
+
+
+class TestGetFiles(object):
+    @pytest.fixture
+    def mock_stack(self):
+        return Mock(spec=ExitStack)
+
+    def test_get_no_files(self, mock_stack):
+        """No files in request -> no files"""
+
+        request_args = {}
+
+        assert _get_file_arguments(request_args, mock_stack) == {}
+
+    def test_get_empty_files_list(self, mock_stack):
+        """No specific files specified -> no files"""
+
+        request_args = {"files": {}}
+
+        assert _get_file_arguments(request_args, mock_stack) == {}
+
+    def test_a_file(self, mock_stack):
+        """Json file should have the correct mimetype etc."""
+
+        with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
+            request_args = {"files": {"file1": tfile.name}}
+
+            file_spec = _get_file_arguments(request_args, mock_stack)
+
+        file = file_spec["files"]["file1"]
+        assert file[0] == os.path.basename(tfile.name)
+        assert file[2] == "application/json"
