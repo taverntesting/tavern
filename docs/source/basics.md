@@ -247,6 +247,51 @@ You can write your own functions or use those built in to Tavern. Each function
 should take the response as its first argument, and you can pass extra arguments
 using the **extra_kwargs** key.
 
+To make sure that Tavern can find external functions you need to make sure that
+it is in the Python path. For example, if `utils.py` is in the 'tests' folder,
+you will need to run your tests something like (on Linux):
+
+```shell
+$ PYTHONPATH=$PYTHONPATH:tests py.test tests/
+```
+
+### Checking the response using external functions
+
+The function(s) should be put into the `verify_response_with` block of a
+response (HTTP or MQTT):
+
+```yaml
+  - name: Check friendly mess
+    request:
+      url: "{host}/token"
+      method: GET
+    response:
+      status_code: 200
+      verify_response_with:
+        function: testing_utils:message_says_hello
+```
+
+```python
+# testing_utils.py
+def message_says_hello(response):
+    """Make sure that the response was friendly
+    """
+    assert response.json().get("message") == "hello world"
+```
+
+A list of functions can also be passed to `verify_response_with` if you need to
+check multiple things:
+
+```yaml
+    response:
+      status_code: 200
+      verify_response_with:
+        - function: testing_utils:message_says_hello
+        - function: testing_utils:message_says_something_else
+          extra_kwargs:
+            should_say: hello
+```
+
 ### Built-in validators
 
 There are two external functions built in to Tavern: `validate_jwt` and
@@ -263,15 +308,14 @@ changed to use a different library to avoid this issue.**
 # Make sure the response contains a key called 'token', the value of which is a
 # valid jwt which is signed by the given key.
 response:
-  body:
-    $ext:
-      function: tavern.testutils.helpers:validate_jwt
-      extra_kwargs:
-        jwt_key: "token"
-        key: CGQgaG7GYvTcpaQZqosLy4
-        options:
-          verify_signature: true
-          verify_aud: false
+  verify_response_with:
+    function: tavern.testutils.helpers:validate_jwt
+    extra_kwargs:
+      jwt_key: "token"
+      key: CGQgaG7GYvTcpaQZqosLy4
+      options:
+        verify_signature: true
+        verify_aud: false
 ```
 
 `validate_pykwalify` takes a
@@ -281,23 +325,22 @@ body of the response against it.
 ```yaml
 # Make sure the response matches the given schema - a sequence of dictionaries,
 # which has to contain a user name and may contain a user number.
-response:
-  body:
-    $ext:
-      function: tavern.testutils.helpers:validate_pykwalify
-      extra_kwargs:
-        schema:
-          type: seq
-          required: True
-          sequence:
-          - type: map
-            mapping:
-              user_number:
-                type: int
-                required: False
-              user_name:
-                type: str
-                required: True
+response: 
+  verify_response_with:
+    function: tavern.testutils.helpers:validate_pykwalify
+    extra_kwargs:
+      schema:
+        type: seq
+        required: True
+        sequence:
+        - type: map
+          mapping:
+            user_number:
+              type: int
+              required: False
+            user_name:
+              type: str
+              required: True
 ```
 
 If an external function you are using raises any exception, the test will be
@@ -312,46 +355,18 @@ An external function must return a dict where each key either points to a single
 to an object which is accessible using dot notation. The easiest way to do this
 is to return a [Box](https://pypi.python.org/pypi/python-box/) object.
 
-To make sure that Tavern can find external functions you need to make sure that
-it is in the Python path. For example, if `utils.py` is in the 'tests' folder,
-you will need to run your tests something like (on Linux):
-
-```shell
-$ PYTHONPATH=$PYTHONPATH:tests py.test tests/
-```
-
-Strictly, `$ext` functions can be used anywhere in `tests_schema.yaml` that
-calls `validate_extensions` - this includes:
-
-- HTTP Request:
-    - `json`
-    - `params`
-    - `headers`
-    - `auth`
-- HTTP Response:
-    - `headers`
-    - `redirect_query_params`
-    - `body`
-    - `save` 
-
-- MQTT Publish:
-    - `json`
-- MQTT Response:
-    - `json`
-
-
-**Note**: Functions used in the `body` (HTTP) or `json` (MQTT) block in the 
-_response_ block take the response as the first argument. Functions used anywhere
-else should take _no_ arguments. This might be changed in future to be less
-confusing.
+**Note**: Functions used in the `verify_response_with` block in the
+_response_ block take the response as the first argument. Functions used
+anywhere else should take _no_ arguments. This might be changed in future to be
+less confusing.
 
 #### Injecting external data into a request
 
-A use case for this is trying to insert some data into a response that is
-either calculated dynamically or fetched from an external source. If we want to
+A use case for this is trying to insert some data into a response that is either
+calculated dynamically or fetched from an external source. If we want to
 generate some authentication headers to access our API for example, we can use
-an `$ext` function to calculate it dynamically (note as above that this function
-should _not_ take any arguments):
+an external function using the `$ext` key to calculate it dynamically (note as
+above that this function should _not_ take any arguments):
 
 ```python
 # utils.py
@@ -443,17 +458,17 @@ For example, if our server saves the user ID in the 'sub' field of the JWT:
       password: abc123
   response:
     status_code: 200
-    body:
+    verify_response_with:
       # Make sure a token exists
-      $ext:
-        function: tavern.testutils.helpers:validate_jwt
-        extra_kwargs:
-          jwt_key: "token"
-          options:
-            verify_signature: false
+      function: tavern.testutils.helpers:validate_jwt
+      extra_kwargs:
+        jwt_key: "token"
+        options:
+          verify_signature: false
     save:
       # Saves a jwt token returned as 'token' in the body as 'jwt'
       # in the test configuration for use in future tests
+      # Note the use of $ext again
       $ext:
         function: tavern.testutils.helpers:validate_jwt
         extra_kwargs:
@@ -878,13 +893,12 @@ stages:
       save:
         body:
           test_user_login_token: token
-      body:
-        $ext:
-          function: tavern.testutils.helpers:validate_jwt
-          extra_kwargs:
-            jwt_key: "token"
-            options:
-              verify_signature: false
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_jwt
+        extra_kwargs:
+          jwt_key: "token"
+          options:
+            verify_signature: false
 
   - name: Get user location
     request:
