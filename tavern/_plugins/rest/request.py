@@ -216,6 +216,8 @@ def _check_allow_redirects(rspec, test_block_config):
             )
         allow_redirects = test_follow_redirects
 
+    logger.debug("Allow redirects in stage: %s", allow_redirects)
+
     return allow_redirects
 
 
@@ -235,8 +237,16 @@ def _read_expected_cookies(session, rspec, test_block_config):
     # it depends on the state of the session
     existing_cookies = session.cookies.get_dict()
     available_cookies = format_keys(
-        rspec.get("cookies", []), test_block_config["variables"]
+        rspec.get("cookies", None), test_block_config["variables"]
     )
+
+    if available_cookies is None:
+        logger.debug("No cookies specified in request, sending all")
+        return None
+    elif available_cookies == [] or available_cookies == {}:
+        logger.debug("Not sending any cookies with request")
+        return {}
+
     missing = set(available_cookies) - set(existing_cookies.keys())
 
     if missing:
@@ -294,7 +304,8 @@ class RestRequest(BaseRequest):
 
         # If there was a 'cookies' key, set it in the request
         expected_cookies = _read_expected_cookies(session, rspec, test_block_config)
-        if expected_cookies:
+        if expected_cookies is not None:
+            logger.debug("Sending cookies %s in request", expected_cookies.keys())
             request_args.update(cookies=expected_cookies)
 
         # Check for redirects
