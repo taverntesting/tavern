@@ -105,6 +105,17 @@ class TestCookies(object):
         cookiejar.set("a", 2)
         mock_session = Mock(spec=requests.Session, cookies=cookiejar)
 
+        assert _read_expected_cookies(mock_session, req, includes) == None
+
+    def test_ask_for_nothing(self, req, includes):
+        """explicitly ask fo rno cookies"""
+
+        cookiejar = RequestsCookieJar()
+        cookiejar.set("a", 2)
+        mock_session = Mock(spec=requests.Session, cookies=cookiejar)
+
+        req["cookies"] = []
+
         assert _read_expected_cookies(mock_session, req, includes) == {}
 
     def test_not_available_but_wanted(self, mock_session, req, includes):
