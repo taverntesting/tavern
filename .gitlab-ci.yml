@@ -48,9 +48,9 @@ py27:
   <<: *basetest
   image: python:2.7-alpine
 
-py34:
+py35:
   <<: *basetest
-  image: python:3.4-alpine
+  image: python:3.5-alpine
 
   # Make this job push the cache. It doesn't hugely matter if the cache is out
   # of date, so just do it in one job.
@@ -58,10 +58,6 @@ py34:
     key: tavern-project-cache
     paths:
       - ./pip-cache/
-
-py35:
-  <<: *basetest
-  image: python:3.5-alpine
 
 py36:
   <<: *basetest
@@ -106,10 +102,6 @@ py36lint:
 py27-cookies:
   <<: *inttest
   image: python:2.7-alpine
-
-py34-cookies:
-  <<: *inttest
-  image: python:3.4-alpine
 
 py35-cookies:
   <<: *inttest
