@@ -156,6 +156,31 @@ class TestCookies(object):
 
         assert _read_expected_cookies(mock_session, req, includes) == {"a": 2}
 
+    def test_no_overwrite_cookie(self, req, includes):
+        """cant redefine a cookie from previous request"""
+
+        cookiejar = RequestsCookieJar()
+        cookiejar.set("a", 2)
+
+        req["cookies"] = ["a", {"a": "sjidfsd"}]
+
+        mock_session = Mock(spec=requests.Session, cookies=cookiejar)
+
+        with pytest.raises(exceptions.DuplicateCookieError):
+            _read_expected_cookies(mock_session, req, includes)
+
+    def test_no_duplicate_cookie(self, req, includes):
+        """Can't override a cookiev alue twice"""
+
+        cookiejar = RequestsCookieJar()
+
+        req["cookies"] = [{"a": "sjidfsd"}, {"a": "fjhj"}]
+
+        mock_session = Mock(spec=requests.Session, cookies=cookiejar)
+
+        with pytest.raises(exceptions.DuplicateCookieError):
+            _read_expected_cookies(mock_session, req, includes)
+
 
 class TestRequestArgs(object):
     def test_default_method(self, req, includes):
