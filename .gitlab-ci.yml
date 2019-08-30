@@ -54,8 +54,12 @@ py36lint:
 # Unit tests
 ########################################
 
-py27:
+.precheck: &precheck
   <<: *basetest
+  stage: precheck
+
+py27:
+  <<: *precheck
   image: python:2.7-alpine
 
   # Make this job push the cache. It doesn't hugely matter if the cache is out
@@ -66,15 +70,15 @@ py27:
       - ./pip-cache/
 
 pypy:
-  <<: *basetest
+  <<: *precheck
   image: pypy:2-slim
 
 pypy3:
-  <<: *basetest
+  <<: *precheck
   image: pypy:3-slim
 
 py27lint:
-  <<: *basetest
+  <<: *precheck
   image: python:2.7-alpine
 
 
