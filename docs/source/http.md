@@ -178,6 +178,31 @@ stages:
         status: access denied
 ```
 
+#### Overriding cookies
+
+If you want to override the value of a cookie, then instead of passing a string
+to the `cookies` block in the request, use a mapping of `cookie name: cookie
+value`:
+
+```yaml
+  - name: Override cookie value
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      cookies:
+        - tavern-cookie-2: abc
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+```
+
+This will create a new cookie with the name `tavern-cookie-2` with the value
+`abc` and send it in the request. If this cookie already exists from a previous
+stage, it will be overwritten. Trying to override the cookie multiple times in
+one stage will cause an error to occur at runtime.
+
 ### HTTP Basic Auth
 
 For a server that expects HTTP Basic Auth, the `auth` keyword can be used in the

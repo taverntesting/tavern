@@ -4,6 +4,7 @@ import logging
 import mimetypes
 import os
 import warnings
+from itertools import tee
 
 try:
     from urllib.parse import quote_plus
@@ -11,6 +12,7 @@ except ImportError:
     from urllib import quote_plus  # type: ignore
 
 from contextlib2 import ExitStack
+from future.moves.itertools import filterfalse
 from future.utils import raise_from
 import requests
 from requests.cookies import cookiejar_from_dict
@@ -18,7 +20,7 @@ from requests.utils import dict_from_cookiejar
 from box import Box
 
 from tavern.util import exceptions
-from tavern.util.dict_util import format_keys, check_expected_keys
+from tavern.util.dict_util import format_keys, check_expected_keys, deep_dict_merge
 from tavern.schemas.extensions import get_wrapped_create_function
 
 from tavern.request.base import BaseRequest
@@ -236,28 +238,58 @@ def _read_expected_cookies(session, rspec, test_block_config):
     # Need to do this down here - it is separate from getting request args as
     # it depends on the state of the session
     existing_cookies = session.cookies.get_dict()
-    available_cookies = format_keys(
+    cookies_to_use = format_keys(
         rspec.get("cookies", None), test_block_config["variables"]
     )
 
-    if available_cookies is None:
+    if cookies_to_use is None:
         logger.debug("No cookies specified in request, sending all")
         return None
-    elif available_cookies == [] or available_cookies == {}:
+    elif cookies_to_use in ([], {}):
         logger.debug("Not sending any cookies with request")
         return {}
 
-    missing = set(available_cookies) - set(existing_cookies.keys())
+    def partition(pred, iterable):
+        """From itertools documentation"""
+        t1, t2 = tee(iterable)
+        return list(filterfalse(pred, t1)), list(filter(pred, t2))
+
+    # Cookies are either a single list item, specitying which cookie to send, or
+    # a mapping, specifying cookies to override
+    expected, extra = partition(lambda x: isinstance(x, dict), cookies_to_use)
+
+    missing = set(expected) - set(existing_cookies.keys())
 
     if missing:
         logger.error("Missing cookies")
         raise exceptions.MissingCookieError(
             "Tried to use cookies '{}' in request but only had '{}' available".format(
-                available_cookies, existing_cookies
+                expected, existing_cookies
             )
         )
 
-    return {c: existing_cookies.get(c) for c in available_cookies}
+    # 'extra' should be a list of dictionaries - merge them into one here
+    from_extra = {k: v for mapping in extra for (k, v) in mapping.items()}
+
+    if len(extra) != len(from_extra):
+        logger.error("Duplicate cookie override values specified")
+        raise exceptions.DuplicateCookieError(
+            "Tried to override the value of a cookie multiple times in one request"
+        )
+
+    overwritten = [i for i in expected if i in from_extra]
+
+    if overwritten:
+        logger.error("Duplicate cookies found in request")
+        raise exceptions.DuplicateCookieError(
+            "Asked to use cookie {} from previous request but also redefined it as {}".format(
+                overwritten, from_extra
+            )
+        )
+
+    from_cookiejar = {c: existing_cookies.get(c) for c in expected}
+
+    return deep_dict_merge(from_cookiejar, from_extra)
 
 
 def _get_file_arguments(request_args, stack):

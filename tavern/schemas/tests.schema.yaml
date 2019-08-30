@@ -153,6 +153,10 @@ schema;stage:
           required: false
           sequence:
             - type: str
+            - type: map
+              mapping:
+                re;(.*):
+                  type: str
 
         json:
           include: any_json_with_ext

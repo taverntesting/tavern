@@ -107,3 +107,7 @@ class InvalidQueryResultTypeError(TavernException):
 
 class UnexpectedDocumentsError(TavernException):
     """Multiple documents were found in a YAML file when only one was expected"""
+
+
+class DuplicateCookieError(TavernException):
+    """User tried to reuse a cookie from a previous request and override it in the same request"""
