@@ -1,0 +1,128 @@
+---
+
+test_name: Test timeout to server
+
+includes:
+- !include common.yaml
+
+stages:
+- name: Test single timeout parameter
+  request:
+    url: "{host}/get_thing_slow"
+    method: GET
+    timeout: 0.4
+  response:
+    status_code: 200
+
+---
+
+test_name: Test timeout to server tuple
+
+includes:
+- !include common.yaml
+
+stages:
+- name: Test tuple timeout parameter
+  request:
+    url: "{host}/get_thing_slow"
+    method: GET
+    timeout:
+    - 0.1
+    - 0.4
+  response:
+    status_code: 200
+---
+
+test_name: Test timeout to server actually times out
+
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Test single timeout parameter
+    request:
+      url: "{host}/get_thing_slow"
+      method: GET
+      timeout: 0.1
+    response:
+      status_code: 200
+
+---
+
+test_name: Test timeout to server tuple actually times out
+
+_xfail: run
+
+includes:
+- !include common.yaml
+
+stages:
+- name: Test tuple timeout parameter
+  request:
+    url: "{host}/get_thing_slow"
+    method: GET
+    timeout:
+      - 0.1
+      - 0.1
+  response:
+    status_code: 200
+
+---
+
+test_name: Test timeout tuple too short
+
+_xfail: verify
+
+includes:
+- !include common.yaml
+
+stages:
+- name: Test tuple timeout parameter
+  request:
+    url: "{host}/get_thing_slow"
+    method: GET
+    timeout:
+      - 0.1
+  response:
+    status_code: 200
+
+---
+
+test_name: Test timeout tuple too long
+
+_xfail: verify
+
+includes:
+- !include common.yaml
+
+stages:
+- name: Test tuple timeout parameter
+  request:
+    url: "{host}/get_thing_slow"
+    method: GET
+    timeout:
+      - 0.1
+      - 0.4
+      - 1
+  response:
+    status_code: 200
+
+---
+
+test_name: Test timeout wrong type
+
+_xfail: verify
+
+includes:
+- !include common.yaml
+
+stages:
+- name: Test incorrect timeout parameter
+  request:
+    url: "{host}/get_thing_slow"
+    method: GET
+    timeout: hello
+  response:
+    status_code: 200

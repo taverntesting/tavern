@@ -1,12 +1,17 @@
-import json
 import importlib
+import json
 import logging
 import re
+
 import jwt
 from box import Box
+from future.utils import raise_from
 
-from tavern.schemas.files import wrapfile, verify_generic
-
+from tavern.schemas.files import verify_generic
+from tavern.testutils.jmesutils import validate_comparison, actual_validation
+from tavern.util import exceptions
+from tavern.util.dict_util import check_keys_match_recursive
+from tavern.util.jmespath_util import check_jmespath_match
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +37,9 @@ def check_exception_raised(response, exception_location):
         assert dumped["error"] == exception.error_title
 
     actual_description = dumped.get("description", dumped.get("error_description"))
-    expected_description = getattr(exception, "error_description", getattr(exception, "description"))
+    expected_description = getattr(
+        exception, "error_description", getattr(exception, "description")
+    )
 
     try:
         assert actual_description == expected_description
@@ -80,17 +87,27 @@ def validate_pykwalify(response, schema):
         response (Response): reqeusts.Response object
         schema (dict): Schema for response
     """
-    with wrapfile(response.json()) as rdump, wrapfile(schema) as sdump:
-        verify_generic(rdump, sdump)
+    try:
+        to_verify = response.json()
+    except TypeError as e:
+        raise_from(
+            exceptions.BadSchemaError(
+                "Tried to match a pykwalify schema against a non-json response"
+            ),
+            e,
+        )
+    else:
+        verify_generic(to_verify, schema)
 
 
 def validate_regex(response, expression, header=None):
     """Make sure the response matches a regex expression
 
     Args:
-        response (Response): reqeusts.Response object
+        response (Response): requests.Response object
         expression (str): Regex expression to use
         header (str): Match against a particular header instead of the body
+
     Returns:
         dict: dictionary of regex: boxed name capture groups
     """
@@ -102,6 +119,35 @@ def validate_regex(response, expression, header=None):
     match = re.search(expression, content)
     assert match
 
-    return {
-        "regex": Box(match.groupdict())
-    }
+    return {"regex": Box(match.groupdict())}
+
+
+def validate_content(response, comparisons):
+    """Asserts expected value with actual value using JMES path expression
+
+    Args:
+        response (Response): reqeusts.Response object.
+        comparisons(list):
+            A list of dict containing the following keys:
+                1. jmespath : JMES path expression to extract data from.
+                2. operator : Operator to use to compare data.
+                3. expected : The expected value to match for
+    """
+    for each_comparison in comparisons:
+        path, _operator, expected = validate_comparison(each_comparison)
+        logger.debug("Searching for '%s' in '%s'", path, response.json())
+
+        actual = check_jmespath_match(response.json(), path)
+
+        expession = " ".join([str(path), str(_operator), str(expected)])
+        parsed_expession = " ".join([str(actual), str(_operator), str(expected)])
+
+        if _operator == "eq" and 0:
+            check_keys_match_recursive(expected, actual, [])
+        else:
+            try:
+                actual_validation(
+                    _operator, actual, expected, parsed_expession, expession
+                )
+            except AssertionError as e:
+                raise_from(exceptions.JMESError("Error validating JMES"), e)

@@ -12,11 +12,29 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
-        $ext:
-          function: tavern.testutils.helpers:validate_regex
-          extra_kwargs:
-            expression: '<a src=\".*\">'
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_regex
+        extra_kwargs:
+          expression: '<a src=\".*\">'
+
+---
+
+test_name: Use saved value
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: simple match
+    request:
+      url: "{host}/token"
+      method: GET
+    response:
+      status_code: 200
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_regex
+        extra_kwargs:
+          expression: '<a src=\".*\">'
 
   - name: save groups
     request:

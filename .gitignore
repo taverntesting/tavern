@@ -93,3 +93,24 @@ tags
 
 # Sublimetext
 *.sublime-*
+
+# Vim
+*.swp
+*.swo
+
+# Pycharm
+.idea
+
+# vs
+.vs
+
+tavern.lock
+pytype_output
+
+.mypy_cache
+
+.vscode
+
+out/
+**/*.iml
+.idea

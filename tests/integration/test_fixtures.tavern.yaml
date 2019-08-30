@@ -1,0 +1,100 @@
+---
+
+test_name: Test empty usefixtures errors
+
+includes:
+  - !include common.yaml
+
+_xfail: verify
+
+marks:
+  # Breaks validation somehow...?
+  - usefixtures: {}
+  - usefixtures:
+      - str_fixture
+      - yield_str_fixture
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{str_fixture}"
+    response:
+      status_code: 200
+      body:
+        value: "{yield_str_fixture}"
+
+---
+
+test_name: Test usefixtures being a mapping errors
+
+includes:
+  - !include common.yaml
+
+_xfail: verify
+
+marks:
+  - usefixtures: str_fixture
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{str_fixture}"
+    response:
+      status_code: 200
+      body:
+        value: "{yield_str_fixture}"
+
+---
+
+test_name: Test usefixtures
+
+includes:
+  - !include common.yaml
+
+marks:
+  - usefixtures:
+      - str_fixture
+      - yield_str_fixture
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{str_fixture}"
+    response:
+      status_code: 200
+      body:
+        value: "{yield_str_fixture}"
+
+---
+
+test_name: Test yielding fixture
+
+includes:
+  - !include common.yaml
+
+marks:
+  - usefixtures:
+      - yielder
+      - str_fixture
+      - yield_str_fixture
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{str_fixture}"
+    response:
+      status_code: 200
+      body:
+        value: "{yield_str_fixture}"

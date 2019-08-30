@@ -14,14 +14,16 @@ SERVERNAME = "testserver"
 
 
 def get_db():
-    db = getattr(g, '_database', None)
+    db = getattr(g, "_database", None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
 
         with db:
             try:
-                db.execute("CREATE TABLE numbers_table (name TEXT NOT NULL, number INTEGER NOT NULL)")
-            except:
+                db.execute(
+                    "CREATE TABLE numbers_table (name TEXT NOT NULL, number INTEGER NOT NULL)"
+                )
+            except Exception:
                 pass
 
     return db
@@ -29,7 +31,7 @@ def get_db():
 
 @app.teardown_appcontext
 def close_connection(exception):
-    db = getattr(g, '_database', None)
+    db = getattr(g, "_database", None)
     if db is not None:
         db.close()
 
@@ -44,7 +46,7 @@ def login():
     payload = {
         "sub": "test-user",
         "aud": SERVERNAME,
-        "exp": datetime.datetime.now() + datetime.timedelta(hours=1)
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
     }
 
     token = jwt.encode(payload, SECRET, algorithm="HS256").decode("utf8")
@@ -70,7 +72,7 @@ def requires_jwt(endpoint):
 
         try:
             jwt.decode(token, SECRET, audience=SERVERNAME, algorithms=["HS256"])
-        except:
+        except Exception:
             return jsonify({"error": "Invalid token"}), 401
 
         return endpoint(*args, **kwargs)

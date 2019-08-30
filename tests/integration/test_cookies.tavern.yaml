@@ -1,0 +1,330 @@
+---
+
+test_name: Test receiving and sending cookie
+
+includes:
+  - !include common.yaml
+
+stages:
+  - &no-cookie-error
+    name: No cookie - error
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+    response:
+      status_code: 400
+      body:
+        error: "No cookie named tavern-cookie in request"
+
+  - name: Expect a cookie returned
+    request:
+      url: "{host}/get_cookie"
+      method: POST
+    response:
+      status_code: 200
+      cookies:
+        - tavern-cookie
+
+  - name: Now we have the cookie - success
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Test sending the wrong cookie when multiple are present
+
+includes:
+  - !include common.yaml
+
+stages:
+  - *no-cookie-error
+
+  - &get-cookie-1
+    name: Get tavern-cookie-1
+    request:
+      url: "{host}/get_cookie"
+      method: POST
+      json:
+        cookie_name: tavern-cookie-1
+    response:
+      status_code: 200
+      cookies:
+        - tavern-cookie-1
+
+  - &get-cookie-2
+    name: Get tavern-cookie-2
+    request:
+      url: "{host}/get_cookie"
+      method: POST
+      json:
+        cookie_name: tavern-cookie-2
+    response:
+      status_code: 200
+      cookies:
+        - tavern-cookie-2
+
+  - name: Send the wrong cookie - error
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-1
+      cookies:
+        - tavern-cookie-2
+    response:
+      status_code: 400
+      body:
+        error: "No cookie named tavern-cookie-1 in request"
+
+  - name: Send the wrong cookie again - error
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-2
+      cookies:
+        - tavern-cookie-1
+    response:
+      status_code: 400
+      body:
+        error: "No cookie named tavern-cookie-2 in request"
+
+---
+
+test_name: Test sending the right cookie when multiple are present
+
+includes:
+  - !include common.yaml
+
+stages:
+  - *no-cookie-error
+
+  - *get-cookie-1
+
+  - *get-cookie-2
+
+  - name: Send the right cookie - success
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-1
+      cookies:
+        - tavern-cookie-1
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+  - name: Send the right cookie - success
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-2
+      cookies:
+        - tavern-cookie-2
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Test sending no cookie fails even if we have a cookie
+
+includes:
+  - !include common.yaml
+
+stages:
+  - *no-cookie-error
+
+  - *get-cookie-1
+
+  - name: Send the right cookie - success
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-1
+      cookies:
+        - tavern-cookie-1
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+  - name: No cookie - error
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      # Explicitly send no cookie
+      cookies: []
+      json:
+        cookie_name: tavern-cookie-1
+    response:
+      status_code: 400
+      body:
+        error: "No cookie named tavern-cookie-1 in request"
+
+  - name: but it is still available
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-1
+      cookies:
+        - tavern-cookie-1
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Test trying to send a cookie that we don't have fails
+
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send a cookie which doesn't exist
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-1
+      cookies:
+        - tavern-cookie-1
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Test trying to send a cookie that we don't have fails, even if we do have a cookie
+
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - *get-cookie-1
+
+  - name: Send a cookie which doesn't exist
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-2
+      cookies:
+        - tavern-cookie-2
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Trying to override the value of a cookie multiple times causes an error
+
+# TODO: Make this fail in verify instead?
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - *get-cookie-1
+
+  - name: Send a cookie which doesn't exist
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-2
+      cookies:
+        - cookie-1: abc
+        - cookie-1: abc
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Override a cookie on the first stage
+
+includes:
+  - !include common.yaml
+
+stages:
+  - *get-cookie-1
+
+  - name: Send a cookie which doesn't exist
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-2
+      cookies:
+        - tavern-cookie-2: abc
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Override a cookie on the first stage
+
+includes:
+  - !include common.yaml
+
+stages:
+  - *get-cookie-1
+
+  - name: Override cookie value
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-2
+      cookies:
+        - tavern-cookie-2: abc
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Override a cookie on the first stage, with formatting
+
+includes:
+  - !include common.yaml
+
+stages:
+  - *get-cookie-1
+
+  - name: Override cookie value
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: "{formatted-cookie-name}"
+      cookies:
+        - tavern-cookie-2: abc
+    response:
+      status_code: 200
+      body:
+        status: ok

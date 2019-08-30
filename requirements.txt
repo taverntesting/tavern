@@ -1,8 +1,12 @@
-pyyaml
-pykwalify>=1.6.1
-requests
-pyjwt
-python-box
-future
-contextlib2
-stevedore
+# Install all requirements
+-e .[tests]
+
+# tests
+tox
+flask
+
+# Useful for development
+black
+bump2version
+pre-commit
+pygments

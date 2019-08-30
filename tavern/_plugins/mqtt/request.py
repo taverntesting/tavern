@@ -25,7 +25,9 @@ def get_publish_args(rspec, test_block_config):
 
     if "json" in rspec:
         if "payload" in rspec:
-            raise exceptions.BadSchemaError("Can only specify one of 'payload' or 'json' in MQTT request")
+            raise exceptions.BadSchemaError(
+                "Can only specify one of 'payload' or 'json' in MQTT request"
+            )
 
         fspec["payload"] = json.dumps(fspec.pop("json"))
 
@@ -39,13 +41,7 @@ class MQTTRequest(BaseRequest):
     """
 
     def __init__(self, client, rspec, test_block_config):
-        expected = {
-            "topic",
-            "payload",
-            "json",
-            "qos",
-            # TODO retain?
-        }
+        expected = {"topic", "payload", "json", "qos", "retain"}
 
         check_expected_keys(expected, rspec)
 

@@ -34,7 +34,7 @@ class DeployPypi(Command):
     ]
 
     def initialize_options(self):
-        self.repository = None
+        self.repository = None  # pylint: disable=attribute-defined-outside-init
 
     def finalize_options(self):
         if not self.repository:
@@ -56,34 +56,24 @@ class DeployPypi(Command):
             msg="Uploading package to pypi")
 
 
-SETUP_REQUIRES = [
-    "setuptools>=36",
-    "pytest-runner",
-]
-
-
 TESTS_REQUIRE = [
-    "pytest>=3.1.0",
     "pytest-cov",
     "colorlog",
     "mock",
-    "paho-mqtt==1.3.1",
-    "pytest-remove-stale-bytecode",
+    "faker"
 ]
-
 
 setup(
     name="tavern",
-
-    setup_requires=SETUP_REQUIRES,
 
     cmdclass={
         "docs": BuildDocs,
         "upload_twine": DeployPypi,
     },
-
     tests_require=TESTS_REQUIRE,
     extras_require={
         "tests": TESTS_REQUIRE
-    }
+    },
+
+    zip_safe=True
 )

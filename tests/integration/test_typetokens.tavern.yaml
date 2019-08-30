@@ -23,6 +23,16 @@ stages:
       status_code: 200
       body:
         top: !anything
+---
+
+test_name: Test 'anything' token will match any response, from included stage
+
+includes:
+  - !include common.yaml
+
+stages:
+  - type: ref
+    id: typetoken-anything-match
 
 ---
 
@@ -187,7 +197,7 @@ stages:
 
 ---
 
-test_name: Match a number approximately
+test_name: Test converting to a bool from a formatted string
 
 includes:
   - !include common.yaml
@@ -200,6 +210,7 @@ stages:
       json:
         value: !bool "{v_bool}"
         dtype: bool
+        dvalue: False
     response:
       status_code: 200
 
@@ -212,12 +223,73 @@ stages:
   #     json:
   #       value: !bool "true"
   #       dtype: bool
+  #       dvalue: True
   #   response:
   #     status_code: 200
 
 ---
 
-test_name: Test conversion to an bool from included files
+test_name: Test using a converted bool as part of the validated schema
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Validate converted bool
+    request:
+      url: "{host}/pi"
+      method: GET
+      verify: !bool "{verify_false}"
+    response:
+      status_code: 200
+
+---
+
+test_name: Test can't use approx numbers in a request
+
+includes:
+  - !include common.yaml
+
+_xfail: verify
+
+stages:
+  - name: Match pi approximately
+    request:
+      url: "{host}/pi"
+      method: GET
+      json:
+        pi: !approx 2.4
+        bkd:
+          a:
+            b: 342
+    response:
+      status_code: 200
+
+---
+
+# This actually raises an error when first loading the file, so it's not easy to
+# test like this
+
+# test_name: Test approximate numbers must be a float
+#
+# includes:
+#   - !include common.yaml
+#
+# _xfail: run
+#
+# stages:
+#   - name: Match pi approximately
+#     request:
+#       url: "{host}/pi"
+#       method: GET
+#     response:
+#       status_code: 200
+#       body:
+#         pi: !approx about three
+#
+# ---
+
+test_name: Test approximate numbers
 
 includes:
   - !include common.yaml
@@ -234,7 +306,7 @@ stages:
 
 ---
 
-test_name: Test conversion to an integer from included files
+test_name: Test converting to an integer
 
 includes:
   - !include common.yaml
@@ -247,6 +319,7 @@ stages:
       json:
         value: !int "{v_int}"
         dtype: int
+        dvalue: 123
     response:
       status_code: 200
 
@@ -257,6 +330,7 @@ stages:
       json:
         value: !int "1"
         dtype: int
+        dvalue: 1
     response:
       status_code: 200
 
@@ -269,8 +343,24 @@ stages:
   #     json:
   #       value: !int "{v_float}"
   #       dtype: int
+  #       dvalue: 123
   #   response:
   #     status_code: 200
+
+---
+
+test_name: Test using a converted int as part of the validated schema
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Validate converted int
+    request:
+      url: "{host}/pi"
+      method: GET
+    response:
+      status_code: !int "{status_200}"
 
 ---
 
@@ -287,6 +377,7 @@ stages:
       json:
         value: !float "{v_int}"
         dtype: float
+        dvalue: 123.0
     response:
       status_code: 200
 
@@ -297,6 +388,7 @@ stages:
       json:
         value: !float "1"
         dtype: float
+        dvalue: 1
     response:
       status_code: 200
 
@@ -307,6 +399,7 @@ stages:
       json:
         value: !float "{v_float}"
         dtype: float
+        dvalue: 4.56
     response:
       status_code: 200
 
@@ -317,6 +410,23 @@ stages:
       json:
         value: !float "5.67"
         dtype: float
+        dvalue: 5.67
+    response:
+      status_code: 200
+
+---
+
+test_name: Test using a converted float as part of the validated schema
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Validate converted float
+    delay_before: !float "{delay_before_0_1}"
+    request:
+      url: "{host}/pi"
+      method: GET
     response:
       status_code: 200
 
@@ -349,5 +459,63 @@ stages:
       json:
         value: !float "{saved_float_value}"
         dtype: float
+        dvalue: 123.0
     response:
       status_code: 200
+
+---
+
+test_name: Ignore variable syntax with double braces
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Do not convert double braces
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: '{{"query": "{{ val1 {{ val2 {{ val3 {{ val4, val5 }} }} }} }}"}}'
+        dtype: str
+        dvalue: '{{"query": "{{ val1 {{ val2 {{ val3 {{ val4, val5 }} }} }} }}"}}'
+    response:
+      status_code: 200
+
+---
+
+test_name: Test not converting a raw string (ignore variable like syntax)
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Do not convert raw string
+    request:
+      url: "{host}/expect_dtype"
+      method: POST
+      json:
+        value: !raw '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'
+        dtype: str
+        dvalue: '{{"query": "{{ val1 {{ val2 {{ val3 {{ val4, val5 }} }} }} }}"}}'
+    response:
+      status_code: 200
+
+---
+
+test_name: Test raw token works in response as well
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Post raw, expect raw
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: !raw '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'
+    response:
+      status_code: 200
+      body:
+        value: !raw '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'

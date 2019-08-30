@@ -19,3 +19,96 @@ stages:
       method: GET
     response:
       status_code: 200
+
+---
+
+test_name: Test unconditional skip with pytest marker
+
+includes:
+  - !include common.yaml
+
+marks:
+  - skip
+
+stages:
+  - name: This test should not run
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 999
+
+---
+
+test_name: Test skipif with pytest marker
+
+includes:
+  - !include common.yaml
+
+marks:
+  - skipif: "100 > 50"
+
+stages:
+  - name: This test should not run
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 999
+
+---
+
+test_name: Test skipif with pytest marker with a formatted integer
+
+includes:
+  - !include common.yaml
+
+marks:
+  - skipif: "{v_int} > 50"
+
+stages:
+  - name: This test should not run
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 999
+
+---
+
+test_name: Test skipif with pytest marker with a formatted string
+
+includes:
+  - !include common.yaml
+
+marks:
+  - skipif: "'https' not in '{host}'"
+
+stages:
+  - name: This test should not run
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 999
+
+---
+
+test_name: Test skipif failure goes on to test failure
+
+includes:
+  - !include common.yaml
+
+marks:
+  # ie, only run this test against insecure server. incorrect logic.
+  - skipif: "'https' in '{host}'"
+
+_xfail: run
+
+stages:
+  - name: This test should not run
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 999

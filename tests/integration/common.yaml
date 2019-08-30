@@ -12,3 +12,20 @@ variables:
   v_str: "abc"
   v_float: 4.56
   v_bool: false
+
+  status_200: 200
+  verify_false: "False"
+  delay_before_0_1: 0.1
+
+  formatted-cookie-name: tavern-cookie-2
+
+stages:
+  - id: typetoken-anything-match
+    name: match top level
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        top: !anything

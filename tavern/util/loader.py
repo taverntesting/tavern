@@ -1,21 +1,22 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
 
 import logging
-import uuid
 import os.path
+import uuid
+from distutils.util import strtobool
+
 import pytest
 from future.utils import raise_from
-
 import yaml
-from yaml.reader import Reader
-from yaml.scanner import Scanner
-from yaml.parser import Parser
 from yaml.composer import Composer
 from yaml.constructor import SafeConstructor
+from yaml.parser import Parser
+from yaml.reader import Reader
 from yaml.resolver import Resolver
+from yaml.scanner import Scanner
 
+from tavern.util import exceptions
 from tavern.util.exceptions import BadSchemaError
-
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,6 @@ def makeuuid(loader, node):
 
 
 class RememberComposer(Composer):
-
     """A composer that doesn't forget anchors across documents
     """
 
@@ -47,15 +47,66 @@ class RememberComposer(Composer):
         return node
 
 
+def create_node_class(cls):
+    class node_class(cls):
+        def __init__(self, x, start_mark, end_mark):
+            cls.__init__(self, x)
+            self.start_mark = start_mark
+            self.end_mark = end_mark
+
+        # def __new__(self, x, start_mark, end_mark):
+        #     return cls.__new__(self, x)
+
+    node_class.__name__ = "%s_node" % cls.__name__
+    return node_class
+
+
+dict_node = create_node_class(dict)
+list_node = create_node_class(list)
+
+
+class SourceMappingConstructor(SafeConstructor):
+    # To support lazy loading, the original constructors first yield
+    # an empty object, then fill them in when iterated. Due to
+    # laziness we omit this behaviour (and will only do "deep
+    # construction") by first exhausting iterators, then yielding
+    # copies.
+    def construct_yaml_map(self, node):
+        obj, = SafeConstructor.construct_yaml_map(self, node)
+        return dict_node(obj, node.start_mark, node.end_mark)
+
+    def construct_yaml_seq(self, node):
+        obj, = SafeConstructor.construct_yaml_seq(self, node)
+        return list_node(obj, node.start_mark, node.end_mark)
+
+
+SourceMappingConstructor.add_constructor(
+    u"tag:yaml.org,2002:map", SourceMappingConstructor.construct_yaml_map
+)
+
+SourceMappingConstructor.add_constructor(
+    u"tag:yaml.org,2002:seq", SourceMappingConstructor.construct_yaml_seq
+)
+
+yaml.add_representer(dict_node, yaml.representer.SafeRepresenter.represent_dict)
+yaml.add_representer(list_node, yaml.representer.SafeRepresenter.represent_list)
+
+
 # pylint: disable=too-many-ancestors
-class IncludeLoader(Reader, Scanner, Parser, RememberComposer, SafeConstructor, Resolver):
+class IncludeLoader(
+    Reader,
+    Scanner,
+    Parser,
+    RememberComposer,
+    Resolver,
+    SourceMappingConstructor,
+    SafeConstructor,
+):
     """YAML Loader with `!include` constructor and which can remember anchors
     between documents"""
 
     def __init__(self, stream):
         """Initialise Loader."""
-
-        # pylint: disable=non-parent-init-called
 
         try:
             self._root = os.path.split(stream.name)[0]
@@ -68,22 +119,26 @@ class IncludeLoader(Reader, Scanner, Parser, RememberComposer, SafeConstructor, 
         RememberComposer.__init__(self)
         SafeConstructor.__init__(self)
         Resolver.__init__(self)
+        SourceMappingConstructor.__init__(self)
 
 
 def construct_include(loader, node):
     """Include file referenced at node."""
 
     # pylint: disable=protected-access
-    filename = os.path.abspath(os.path.join(
-        loader._root, loader.construct_scalar(node)
-    ))
-    extension = os.path.splitext(filename)[1].lstrip('.')
+    filename = os.path.abspath(
+        os.path.join(loader._root, loader.construct_scalar(node))
+    )
+    extension = os.path.splitext(filename)[1].lstrip(".")
 
-    if extension not in ('yaml', 'yml'):
-        raise BadSchemaError("Unknown filetype '{}'".format(filename))
+    if extension not in ("yaml", "yml", "json"):
+        raise BadSchemaError(
+            "Unknown filetype '{}' (included files must be in YAML format and end with .yaml or .yml)".format(
+                filename
+            )
+        )
 
-    with open(filename, 'r') as f:
-        return yaml.load(f, IncludeLoader)
+    return load_single_document_yaml(filename)
 
 
 IncludeLoader.add_constructor("!include", construct_include)
@@ -96,6 +151,7 @@ class TypeSentinel(yaml.YAMLObject):
     'hint' to the validator that it should expect a specific type in the
     response.
     """
+
     yaml_loader = IncludeLoader
 
     @classmethod
@@ -103,24 +159,34 @@ class TypeSentinel(yaml.YAMLObject):
         return cls()
 
     def __str__(self):
-        return "<Tavern YAML sentinel for {}>".format(self.constructor) # pylint: disable=no-member
+        # pylint: disable=no-member
+        return "<Tavern YAML sentinel for {}>".format(self.constructor)
+
+    @classmethod
+    def to_yaml(cls, dumper, data):
+        node = yaml.nodes.ScalarNode(cls.yaml_tag, "", style=cls.yaml_flow_style)
+        return node
 
 
 class IntSentinel(TypeSentinel):
     yaml_tag = "!anyint"
     constructor = int
 
+
 class FloatSentinel(TypeSentinel):
     yaml_tag = "!anyfloat"
     constructor = float
+
 
 class StrSentinel(TypeSentinel):
     yaml_tag = "!anystr"
     constructor = str
 
+
 class BoolSentinel(TypeSentinel):
     yaml_tag = "!anybool"
     constructor = bool
+
 
 class AnythingSentinel(TypeSentinel):
     yaml_tag = "!anything"
@@ -130,13 +196,17 @@ class AnythingSentinel(TypeSentinel):
     def from_yaml(cls, loader, node):
         return ANYTHING
 
-    @classmethod
-    def to_yaml(cls, dumper, data):
-        node = yaml.nodes.ScalarNode(cls.yaml_tag, "", style=cls.yaml_flow_style)
-        return node
+    def __deepcopy__(self, memo):
+        """Return ANYTHING when doing a deep copy
+
+        This is required because the checks in various parts of the code assume
+        that ANYTHING is a singleton, but doing a deep copy creates a new object
+        by default
+        """
+        return ANYTHING
 
 
-# One instance of this
+# One instance of this (see above)
 ANYTHING = AnythingSentinel()
 
 
@@ -153,6 +223,7 @@ class TypeConvertToken(yaml.YAMLObject):
     So this preserves the actual value that the type should be up until the
     point that it actually needs to be formatted
     """
+
     yaml_loader = IncludeLoader
 
     def __init__(self, value):
@@ -164,7 +235,7 @@ class TypeConvertToken(yaml.YAMLObject):
 
         try:
             # See if it's already a valid value (eg, if we do `!int "2"`)
-            converted = cls.constructor(value) # pylint: disable=no-member
+            converted = cls.constructor(value)  # pylint: disable=no-member
         except ValueError:
             # If not (eg, `!int "{int_value:d}"`)
             return cls(value)
@@ -173,7 +244,9 @@ class TypeConvertToken(yaml.YAMLObject):
 
     @classmethod
     def to_yaml(cls, dumper, data):
-        return yaml.nodes.ScalarNode(cls.yaml_tag, data.value, style=cls.yaml_flow_style)
+        return yaml.nodes.ScalarNode(
+            cls.yaml_tag, data.value, style=cls.yaml_flow_style
+        )
 
 
 class IntToken(TypeConvertToken):
@@ -186,13 +259,33 @@ class FloatToken(TypeConvertToken):
     constructor = float
 
 
+class StrToBoolConstructor(object):
+    """Using `bool` as a constructor directly will evaluate all strings to `True`."""
+
+    def __new__(cls, s):
+        return bool(strtobool(s))
+
+
 class BoolToken(TypeConvertToken):
     yaml_tag = "!bool"
-    constructor = bool
+    constructor = StrToBoolConstructor
+
+
+class StrToRawConstructor(object):
+    """Used when we want to ignore brace formatting syntax"""
+
+    def __new__(cls, s):
+        return str(s.replace("{", "{{").replace("}", "}}"))
+
+
+class RawStrToken(TypeConvertToken):
+    yaml_tag = "!raw"
+    constructor = StrToRawConstructor
 
 
 # Sort-of hack to try and avoid future API changes
 ApproxScalar = type(pytest.approx(1.0))
+
 
 class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
     yaml_tag = "!approx"
@@ -200,19 +293,59 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
 
     @classmethod
     def from_yaml(cls, loader, node):
-        # pylint: disable=unused-argument
         try:
             val = float(node.value)
-        except TypeError as e:
-            logger.error("Could not coerce '%s' to a float for use with !approx", type(node.value))
+        except (ValueError, TypeError) as e:
+            logger.error(
+                "Could not coerce '%s' to a float for use with !approx",
+                type(node.value),
+            )
             raise_from(BadSchemaError, e)
-
-        return pytest.approx(val)
+        else:
+            return pytest.approx(val)
 
     @classmethod
     def to_yaml(cls, dumper, data):
-        return yaml.nodes.ScalarNode("!approx", str(data.expected), style=cls.yaml_flow_style)
+        return yaml.nodes.ScalarNode(
+            "!approx", str(data.expected), style=cls.yaml_flow_style
+        )
 
 
 # Apparently this isn't done automatically?
 yaml.dumper.Dumper.add_representer(ApproxScalar, ApproxSentinel.to_yaml)
+
+
+def load_single_document_yaml(filename):
+    """
+    Load a yaml file and expect only one document
+
+    Args:
+        filename (str): path to document
+
+    Returns:
+        dict: content of file
+
+    Raises:
+        UnexpectedDocumentsError: If more than one document was in the file
+    """
+
+    with open(filename, "r") as fileobj:
+        try:
+            contents = yaml.load(fileobj, Loader=IncludeLoader)
+        except yaml.composer.ComposerError as e:
+            msg = "Expected only one document in this file but found multiple"
+            raise_from(exceptions.UnexpectedDocumentsError(msg), e)
+
+    return contents
+
+
+def error_on_empty_scalar(self, mark):  # pylint: disable=unused-argument
+    location = "{mark.name:s}:{mark.line:d} - column {mark.column:d}".format(mark=mark)
+    error = "Error at {} - cannot define an empty value in test - either give it a value or explicitly set it to None".format(
+        location
+    )
+
+    raise exceptions.BadSchemaError(error)
+
+
+yaml.parser.Parser.process_empty_scalar = error_on_empty_scalar

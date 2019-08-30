@@ -1,0 +1,30 @@
+---
+
+test_name: Make sure server doubles number properly
+
+stages:
+  - name: Make sure number is returned correctly
+    request:
+      url: http://localhost:5000/double
+      json:
+        number: 5
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      body:
+        double: 10
+
+  - name: Make sure number is returned correctly again
+    request:
+      url: http://localhost:5000/double
+      json:
+        number: 10
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      body:
+        double: 20

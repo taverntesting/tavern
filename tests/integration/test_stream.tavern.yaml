@@ -1,0 +1,15 @@
+---
+
+test_name: Test streaming (downloading) file
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Stream file
+    request:
+      url: "{host}/stream_file"
+      method: GET
+      stream: True
+    response:
+      status_code: 200

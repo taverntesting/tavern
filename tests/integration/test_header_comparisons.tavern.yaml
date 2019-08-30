@@ -1,0 +1,56 @@
+---
+
+test_name: Test matching both headers
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match case sensitive
+    request:
+      url: "{host}/headers"
+      method: GET
+    response:
+      status_code: 200
+      headers:
+        X-Integration-Value: _HelloWorld1
+        ATestHEader: orange
+
+  - name: Match case insensitive, upper
+    request:
+      url: "{host}/headers"
+      method: GET
+    response:
+      status_code: 200
+      headers:
+        X-INTEGRATION-VALUE: _HelloWorld1
+        ATESTHEADER: orange
+
+  - name: Match case insensitive, lower
+    request:
+      url: "{host}/headers"
+      method: GET
+    response:
+      status_code: 200
+      headers:
+        x-integration-value: _HelloWorld1
+        atestheader: orange
+
+---
+
+test_name: Test mismatch in header value
+
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match case sensitive
+    request:
+      url: "{host}/headers"
+      method: GET
+    response:
+      status_code: 200
+      headers:
+        X-Integration-Value: incorrect

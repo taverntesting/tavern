@@ -1,23 +1,23 @@
-import logging
 import argparse
-from argparse import ArgumentParser #, ArgumentTypeError
+from argparse import ArgumentParser
+import logging.config
+from textwrap import dedent
 
-from .testutils.pytesthook import add_parser_options
 from .core import run
 
 
 class TavernArgParser(ArgumentParser):
-
     def __init__(self):
+        description = """Parse yaml + make requests against an API
+
+        Any extra arguments will be passed directly to Pytest. Run py.test --help for a list"""
+
         super(TavernArgParser, self).__init__(
-            description="""Parse yaml + make requests against an API""",
+            description=dedent(description),
             formatter_class=argparse.RawDescriptionHelpFormatter,
         )
 
-        self.add_argument(
-            "in_file",
-            help="Input file with tests in",
-        )
+        self.add_argument("in_file", help="Input file with tests in")
 
         self.add_argument(
             "--log-to-file",
@@ -27,10 +27,7 @@ class TavernArgParser(ArgumentParser):
         )
 
         self.add_argument(
-            "--stdout",
-            help="Log output stdout",
-            action="store_true",
-            default=False,
+            "--stdout", help="Log output stdout", action="store_true", default=False
         )
 
         self.add_argument(
@@ -40,11 +37,9 @@ class TavernArgParser(ArgumentParser):
             default=False,
         )
 
-        add_parser_options(self.add_argument)
-
 
 def main():
-    args = TavernArgParser().parse_args()
+    args, remaining = TavernArgParser().parse_known_args()
     vargs = vars(args)
 
     if vargs.pop("debug"):
@@ -59,7 +54,7 @@ def main():
             "default": {
                 "format": "%(asctime)s [%(levelname)s]: (%(name)s:%(lineno)d) %(message)s",
                 "style": "%",
-            },
+            }
         },
         "handlers": {
             "to_stdout": {
@@ -67,36 +62,26 @@ def main():
                 "formatter": "default",
                 "stream": "ext://sys.stdout",
             },
-            "nothing": {
-                "class": "logging.NullHandler",
-            }
+            "nothing": {"class": "logging.NullHandler"},
         },
         "loggers": {
-            "tavern": {
-                "handlers": [
-                    "nothing",
-                ],
-                "level": log_level,
-            },
-            "": {
-                "handlers": [
-                    "nothing",
-                ],
-                "level": log_level,
-            }
-        }
+            "tavern": {"handlers": ["nothing"], "level": log_level},
+            "": {"handlers": ["nothing"], "level": log_level},
+        },
     }
 
     log_loc = vargs.pop("log_to_file")
 
     if log_loc:
-        log_cfg["handlers"].update({
-            "to_file": {
-                "class": "logging.FileHandler",
-                "filename": log_loc,
-                "formatter": "default",
+        log_cfg["handlers"].update(
+            {
+                "to_file": {
+                    "class": "logging.FileHandler",
+                    "filename": log_loc,
+                    "formatter": "default",
+                }
             }
-        })
+        )
 
         log_cfg["loggers"]["tavern"]["handlers"].append("to_file")
 
@@ -105,4 +90,7 @@ def main():
 
     logging.config.dictConfig(log_cfg)
 
-    exit(not run(**vargs))
+    in_file = vargs.pop("in_file")
+    global_cfg = vargs.pop("tavern_global_cfg", {})
+
+    raise SystemExit(run(in_file, global_cfg, pytest_args=remaining, **vargs))

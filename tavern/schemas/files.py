@@ -1,4 +1,5 @@
 import os
+import copy
 import tempfile
 import functools
 import logging
@@ -10,32 +11,96 @@ import yaml
 from pykwalify import core
 import pykwalify
 from tavern.util.exceptions import BadSchemaError
-from tavern.plugins import load_schema_plugins
+from tavern.plugins import load_plugins
 
-from tavern.util.loader import IncludeLoader
+from tavern.util.loader import IncludeLoader, load_single_document_yaml
+
 core.yaml.safe_load = functools.partial(yaml.load, Loader=IncludeLoader)
 
 logger = logging.getLogger(__name__)
 
 
-def verify_generic(to_verify, schema_filename):
-    """Verify a generic file against a given schema file
+class SchemaCache(object):
+    """Caches loaded schemas"""
+
+    def __init__(self):
+        self._loaded = {}
+
+    def _load_base_schema(self, schema_filename):
+        try:
+            return self._loaded[schema_filename]
+        except KeyError:
+            self._loaded[schema_filename] = load_single_document_yaml(schema_filename)
+
+            logger.debug("Loaded schema from %s", schema_filename)
+
+            return self._loaded[schema_filename]
+
+    def _load_schema_with_plugins(self, schema_filename):
+        mangled = "{}-plugins".format(schema_filename)
+
+        try:
+            return self._loaded[mangled]
+        except KeyError:
+            plugins = load_plugins()
+            base_schema = copy.deepcopy(self._load_base_schema(schema_filename))
+
+            logger.debug("Adding plugins to schema: %s", plugins)
+
+            for p in plugins:
+                try:
+                    plugin_schema = p.plugin.schema
+                except AttributeError:
+                    # Don't require a schema
+                    logger.debug("No schema defined for %s", p.name)
+                else:
+                    base_schema["mapping"].update(
+                        plugin_schema.get("initialisation", {})
+                    )
+
+            self._loaded[mangled] = base_schema
+            return self._loaded[mangled]
+
+    def __call__(self, schema_filename, with_plugins):
+        """Load the schema file and cache it for future use
+
+        Args:
+            schema_filename (str): filename of schema
+            with_plugins (bool): Whether to load plugin schema into this schema as well
+
+        Returns:
+            dict: loaded schema
+        """
+
+        if with_plugins:
+            schema = self._load_schema_with_plugins(schema_filename)
+        else:
+            schema = self._load_base_schema(schema_filename)
+
+        return schema
+
+
+load_schema_file = SchemaCache()
+
+
+def verify_generic(to_verify, schema):
+    """Verify a generic file against a given schema
 
     Args:
-        to_verify (str): filename of file to check
-        schema_filename (str): filename of schema
+        to_verify (dict): Filename of source tests to check
+        schema (dict): Schema to verify against
 
     Raises:
         BadSchemaError: Schema did not match
     """
-    logger.debug("Verifying %s against %s", to_verify, schema_filename)
+    logger.debug("Verifying %s against %s", to_verify, schema)
 
     here = os.path.dirname(os.path.abspath(__file__))
     extension_module_filename = os.path.join(here, "extensions.py")
 
     verifier = core.Core(
-        to_verify,
-        [schema_filename],
+        source_data=to_verify,
+        schema_data=schema,
         extensions=[extension_module_filename],
     )
 
@@ -63,12 +128,13 @@ def wrapfile(to_wrap):
         wrapped_tmp.write(dumped.encode("utf8"))
         wrapped_tmp.close()
 
-        yield wrapped_tmp.name
+        try:
+            yield wrapped_tmp.name
+        finally:
+            os.remove(wrapped_tmp.name)
 
-        os.remove(wrapped_tmp.name)
 
-
-def verify_tests(test_spec):
+def verify_tests(test_spec, with_plugins=True):
     """Verify that a specific test block is correct
 
     Todo:
@@ -80,13 +146,9 @@ def verify_tests(test_spec):
     Raises:
         BadSchemaError: Schema did not match
     """
-    with wrapfile(test_spec) as test_tmp:
-        here = os.path.dirname(os.path.abspath(__file__))
-        schema_filename = os.path.join(here, "tests.schema.yaml")
+    here = os.path.dirname(os.path.abspath(__file__))
 
-        # TODO
-        # cache this
-        schema_with_plugins = load_schema_plugins(schema_filename)
+    schema_filename = os.path.join(here, "tests.schema.yaml")
+    schema = load_schema_file(schema_filename, with_plugins)
 
-        with wrapfile(schema_with_plugins) as schema_tmp:
-            verify_generic(test_tmp, schema_tmp)
+    verify_generic(test_spec, schema)

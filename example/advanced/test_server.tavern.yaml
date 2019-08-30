@@ -99,6 +99,8 @@ stages:
       status_code: 200
       body:
         number: 246
+        $ext:
+          function: testing_utils:assert_quick_response
       headers:
         content-type: application/json
 
@@ -142,5 +144,29 @@ stages:
       status_code: 404
       body:
         error: Unknown number
+      headers:
+        content-type: application/json
+
+---
+
+test_name: Create a jwt ourselves to authorize
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: post a number and crate our own authorization
+    request:
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/numbers"
+      json:
+        name: smallnumber
+        number: 123
+      method: POST
+      headers:
+        content-type: application/json
+        $ext:
+          function: testing_utils:create_bearer_token
+    response:
+      status_code: 201
       headers:
         content-type: application/json
