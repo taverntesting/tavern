@@ -5,30 +5,19 @@ variables:
 
 stages:
   - precheck
-  - tests
+  - quick-tests
+  - long-tests
   - deploy
 
 
 ########################################
 # Initial checks
-########################################
-
 # Make sure there's nothing horrendously wrong first
-Run pyflakes:
-  stage: precheck
-  image: python:3.6-alpine
-  before_script:
-    - pip3 install pyflakes
-  script:
-    - pyflakes tavern
-
-
-########################################
-# Unit tests
 ########################################
 
+# Base script for tests
 .basetest: &basetest
-  stage: tests
+  stage: quick-tests
   cache:
     key: tavern-project-cache
     paths:
@@ -37,20 +26,37 @@ Run pyflakes:
 
   before_script:
     - echo "install_command = pip install --cache-dir=./pip-cache/ {opts} {packages}" >> tox.ini
-    - pip install --upgrade tox pip setuptools --cache-dir=./pip-cache/
+    - pip install --upgrade tox --cache-dir=./pip-cache/
   script:
     - tox -c ${TOXCFG} -e ${CI_JOB_NAME}
 
   variables:
     TOXCFG: tox.ini
 
-py27:
+py27flakes:
   <<: *basetest
   image: python:2.7-alpine
 
-py35:
+py37black:
   <<: *basetest
-  image: python:3.5-alpine
+  image: python:3.7-alpine
+
+py37:
+  <<: *basetest
+  image: python:3.7-alpine
+
+py36lint:
+  <<: *basetest
+  image: python:3.6-alpine
+
+
+########################################
+# Unit tests
+########################################
+
+py27:
+  <<: *basetest
+  image: python:2.7-alpine
 
   # Make this job push the cache. It doesn't hugely matter if the cache is out
   # of date, so just do it in one job.
@@ -58,10 +64,6 @@ py35:
     key: tavern-project-cache
     paths:
       - ./pip-cache/
-
-py36:
-  <<: *basetest
-  image: python:3.6-alpine
 
 pypy:
   <<: *basetest
@@ -75,10 +77,6 @@ py27lint:
   <<: *basetest
   image: python:2.7-alpine
 
-py36lint:
-  <<: *basetest
-  image: python:3.6-alpine
-
 
 ########################################
 # Integration tests
@@ -87,6 +85,7 @@ py36lint:
 # Different cfg file and needs docker running
 .integrationtest: &inttest
   <<: *basetest
+  stage: long-tests
   variables:
     TOXCFG: tox-integration.ini
     # DOCKER_HOST: tcp://docker:2375
