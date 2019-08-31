@@ -43,6 +43,66 @@ _err_vals = {
 logger = logging.getLogger(__name__)
 
 
+def _handle_tls_args(tls_args):
+    """Make sure TLS options are valid
+    """
+
+    if not tls_args:
+        return None
+
+    if "enable" in tls_args:
+        if not tls_args.pop("enable"):
+            # if enable=false, return immediately
+            return None
+
+    if "keyfile" in tls_args and "certfile" not in tls_args:
+        raise exceptions.MQTTTLSError(
+            "If specifying a TLS keyfile, a certfile also needs to be specified"
+        )
+
+    def check_file_exists(key):
+        try:
+            with open(tls_args[key], "r"):
+                pass
+        except LoadError as e:
+            raise_from(
+                exceptions.MQTTTLSError(
+                    "Couldn't load '{}' from '{}'".format(key, tls_args[key])
+                ),
+                e,
+            )
+        except KeyError:
+            pass
+
+    # could be moved to schema validation stage
+    check_file_exists("cert_reqs")
+    check_file_exists("certfile")
+    check_file_exists("keyfile")
+
+    # This shouldn't raise an AttributeError because it's enumerated
+    try:
+        tls_args["cert_reqs"] = getattr(ssl, tls_args["cert_reqs"])
+    except KeyError:
+        pass
+
+    try:
+        tls_args["tls_version"] = getattr(ssl, tls_args["tls_version"])
+    except AttributeError as e:
+        raise_from(
+            exceptions.MQTTTLSError(
+                "Error getting TLS version from "
+                "ssl module - ssl module had no attribute '{}'. Check the "
+                "documentation for the version of python you're using to see "
+                "if this a valid option.".format(tls_args["tls_version"])
+            ),
+            e,
+        )
+    except KeyError:
+        pass
+
+    return tls_args
+
+
 class MQTTClient(object):
     # pylint: disable=too-many-instance-attributes
 
@@ -93,10 +153,10 @@ class MQTTClient(object):
         self._connect_timeout = self._connect_args.pop("timeout", 3)
 
         # If there is any tls kwarg (including 'enable'), enable tls
-        self._tls_args = kwargs.pop("tls", {})
-        check_expected_keys(expected_blocks["tls"], self._tls_args)
-        self._handle_tls_args()
-        logger.debug("TLS is %s", "enabled" if self._enable_tls else "disabled")
+        file_tls_args = kwargs.pop("tls", {})
+        check_expected_keys(expected_blocks["tls"], file_tls_args)
+        self._tls_args = _handle_tls_args(file_tls_args)
+        logger.debug("TLS is %s", "enabled" if self._tls_args else "disabled")
 
         logger.debug("Paho client args: %s", self._client_args)
         self._client = paho.Client(**self._client_args)
@@ -107,7 +167,7 @@ class MQTTClient(object):
 
         self._client.on_message = self._on_message
 
-        if self._enable_tls:
+        if self._tls_args:
             try:
                 self._client.tls_set(**self._tls_args)
             except ValueError as e:

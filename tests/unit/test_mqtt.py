@@ -2,7 +2,7 @@ import pytest
 from mock import patch, Mock
 import paho.mqtt.client as paho
 
-from tavern._plugins.mqtt.client import MQTTClient
+from tavern._plugins.mqtt.client import MQTTClient, _handle_tls_args
 from tavern._plugins.mqtt.request import MQTTRequest
 from tavern.util import exceptions
 
@@ -85,30 +85,29 @@ class TestClient(object):
 
 
 class TestTLS(object):
+    def test_missing_cert_gives_error(self):
+        """Missing TLS cert gives an error"""
+        args = {"certfile": "/lcliueurhug/ropko3kork32"}
+
+        with pytest.raises(exceptions.MQTTTLSError):
+            _handle_tls_args(args)
+
     def test_disabled_tls(self):
         """Even if there are other invalid options, disable tls and early exit
         without checking other args
         """
-        args = {
-            "connect": {"host": "localhost"},
-            "tls": {"certfile": "/lcliueurhug/ropko3kork32"},
-        }
+        args = {"certfile": "/lcliueurhug/ropko3kork32", "enable": False}
 
-        with pytest.raises(exceptions.MQTTTLSError):
-            MQTTClient(**args)
-
-        args["tls"]["enable"] = False
-
-        c = MQTTClient(**args)
-        assert not c._enable_tls
+        parsed_args = _handle_tls_args(args)
+        assert not parsed_args
 
     def test_invalid_tls_ver(self):
         """Bad tls versions raise exception
         """
-        args = {"connect": {"host": "localhost"}, "tls": {"tls_version": "custom_tls"}}
+        args = {"tls_version": "custom_tls"}
 
         with pytest.raises(exceptions.MQTTTLSError):
-            MQTTClient(**args)
+            _handle_tls_args(args)
 
 
 @pytest.fixture(name="req")
