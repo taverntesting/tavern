@@ -1,5 +1,8 @@
+import contextlib
+import threading
+
 import pytest
-from mock import patch, Mock
+from mock import patch, Mock, MagicMock
 import paho.mqtt.client as paho
 
 from tavern._plugins.mqtt.client import MQTTClient, _handle_tls_args
@@ -51,7 +54,7 @@ class TestClient(object):
         """returns self on success"""
 
         with patch.object(fake_client._client, "loop_start"), patch.object(
-                fake_client._client, "connect_async"
+            fake_client._client, "connect_async"
         ):
             fake_client._client._state = paho.mqtt_cs_connected
             with fake_client as x:
@@ -65,7 +68,7 @@ class TestClient(object):
             rc = 1
 
         with patch.object(fake_client._client, "subscribe"), patch.object(
-                fake_client._client, "publish", return_value=FakeMessage()
+            fake_client._client, "publish", return_value=FakeMessage()
         ):
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")
@@ -78,7 +81,7 @@ class TestClient(object):
             rc = 2342423
 
         with patch.object(fake_client._client, "subscribe"), patch.object(
-                fake_client._client, "publish", return_value=FakeMessage()
+            fake_client._client, "publish", return_value=FakeMessage()
         ):
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")
@@ -141,15 +144,14 @@ class TestRequests:
 
 
 class TestSubscription(object):
-    def get_mock_client_with(self, subcribe_action):
-        mock_paho = Mock(
-            spec=paho.Client,
-            subscribe=subcribe_action
-        )
+    @staticmethod
+    def get_mock_client_with(subcribe_action):
+        mock_paho = Mock(spec=paho.Client, subscribe=subcribe_action)
         mock_client = Mock(
             spec=MQTTClient,
             _client=mock_paho,
-            _subscribed={}
+            _subscribed={},
+            _subscribe_lock=MagicMock(),
         )
         return mock_client
 
@@ -157,7 +159,7 @@ class TestSubscription(object):
         def subscribe_success(topic, *args, **kwargs):
             return (0, 123)
 
-        mock_client = self.get_mock_client_with(subscribe_success)
+        mock_client = TestSubscription.get_mock_client_with(subscribe_success)
 
         MQTTClient.subscribe(mock_client, "abc")
 
@@ -167,8 +169,18 @@ class TestSubscription(object):
         def subscribe_err(topic, *args, **kwargs):
             return (1, 123)
 
-        mock_client = self.get_mock_client_with(subscribe_err)
+        mock_client = TestSubscription.get_mock_client_with(subscribe_err)
 
         MQTTClient.subscribe(mock_client, "abc")
+
+        assert mock_client._subscribed == {}
+
+    def test_no_subscribe_on_unrecognised_suback(self):
+        def subscribe_success(topic, *args, **kwargs):
+            return (0, 123)
+
+        mock_client = TestSubscription.get_mock_client_with(subscribe_success)
+
+        MQTTClient._on_subscribe(mock_client, "abc", {}, 123, 0)
 
         assert mock_client._subscribed == {}
