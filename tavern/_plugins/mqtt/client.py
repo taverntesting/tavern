@@ -1,5 +1,6 @@
 import logging
 import ssl
+import threading
 import time
 
 try:
@@ -190,6 +191,8 @@ class MQTTClient(object):
         # of (topic, sub_status) where sub_status is true or false based on
         # whether it has finished subscribing or not
         self._subscribed = {}
+        # Lock to ensure there is no race condition when subscribing
+        self._subscribe_lock = threading.RLock()
         # callback
         self._client.on_subscribe = self._on_subscribe
 
@@ -293,33 +296,38 @@ class MQTTClient(object):
             logger.debug("Finished subscribing to all topics")
 
     def subscribe(self, topic, *args, **kwargs):
-        """Subcribe to topic
+        """Subscribe to topic
 
         should be called for every expected message in mqtt_response
         """
         logger.debug("Subscribing to topic '%s'", topic)
-        (status, mid) = self._client.subscribe(topic, *args, **kwargs)
 
-        if status == 0:
-            self._subscribed[mid] = (topic, False)
-        else:
-            logger.error("Error subscribing to '%s'", topic)
+        with self._subscribe_lock:
+            (status, mid) = self._client.subscribe(topic, *args, **kwargs)
+
+            if status == 0:
+                self._subscribed[mid] = (topic, False)
+            else:
+                logger.error("Error subscribing to '%s'", topic)
 
     def unsubscribe_all(self):
         """Unsubscribe from all topics"""
-        for (topic, _) in self._subscribed.values():
-            self._client.unsubscribe(topic)
+        with self._subscribe_lock:
+            for (topic, _) in self._subscribed.values():
+                self._client.unsubscribe(topic)
 
     def _on_subscribe(self, client, userdata, mid, granted_qos):
         # pylint: disable=unused-argument
-        if mid in self._subscribed:
-            topic = self._subscribed[mid][0]
-            logger.debug("Successfully subscribed to '%s'", topic)
-            self._subscribed[mid] = (topic, True)
-        else:
-            logger.warning(
-                "Got SUBACK message with mid '%s', but did not recognise that mid", mid
-            )
+        with self._subscribe_lock:
+            if mid in self._subscribed:
+                topic = self._subscribed[mid][0]
+                logger.debug("Successfully subscribed to '%s'", topic)
+                self._subscribed[mid] = (topic, True)
+            else:
+                logger.warning(
+                    "Got SUBACK message with mid '%s', but did not recognise that mid - will try later",
+                    mid,
+                )
 
     def __enter__(self):
         logger.debug("Connecting to %s", self._connect_args)
