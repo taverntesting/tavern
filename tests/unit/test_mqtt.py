@@ -5,7 +5,7 @@ import pytest
 from mock import patch, Mock, MagicMock
 import paho.mqtt.client as paho
 
-from tavern._plugins.mqtt.client import MQTTClient, _handle_tls_args
+from tavern._plugins.mqtt.client import MQTTClient, _handle_tls_args, _Subscription
 from tavern._plugins.mqtt.request import MQTTRequest
 from tavern.util import exceptions
 
@@ -163,7 +163,8 @@ class TestSubscription(object):
 
         MQTTClient.subscribe(mock_client, "abc")
 
-        assert mock_client._subscribed == {123: ("abc", False)}
+        assert mock_client._subscribed[123].topic == "abc"
+        assert mock_client._subscribed[123].subscribed == False
 
     def test_no_subscribe_on_err(self):
         def subscribe_err(topic, *args, **kwargs):
