@@ -51,7 +51,7 @@ class TestClient(object):
         """returns self on success"""
 
         with patch.object(fake_client._client, "loop_start"), patch.object(
-            fake_client._client, "connect_async"
+                fake_client._client, "connect_async"
         ):
             fake_client._client._state = paho.mqtt_cs_connected
             with fake_client as x:
@@ -65,7 +65,7 @@ class TestClient(object):
             rc = 1
 
         with patch.object(fake_client._client, "subscribe"), patch.object(
-            fake_client._client, "publish", return_value=FakeMessage()
+                fake_client._client, "publish", return_value=FakeMessage()
         ):
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")
@@ -78,7 +78,7 @@ class TestClient(object):
             rc = 2342423
 
         with patch.object(fake_client._client, "subscribe"), patch.object(
-            fake_client._client, "publish", return_value=FakeMessage()
+                fake_client._client, "publish", return_value=FakeMessage()
         ):
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")
@@ -138,3 +138,37 @@ class TestRequests:
         """All format variables should be present
         """
         MQTTRequest(Mock(), req, includes)
+
+
+class TestSubscription(object):
+    def get_mock_client_with(self, subcribe_action):
+        mock_paho = Mock(
+            spec=paho.Client,
+            subscribe=subcribe_action
+        )
+        mock_client = Mock(
+            spec=MQTTClient,
+            _client=mock_paho,
+            _subscribed={}
+        )
+        return mock_client
+
+    def test_handles_subscriptions(self):
+        def subscribe_success(topic, *args, **kwargs):
+            return (0, 123)
+
+        mock_client = self.get_mock_client_with(subscribe_success)
+
+        MQTTClient.subscribe(mock_client, "abc")
+
+        assert mock_client._subscribed == {123: ("abc", False)}
+
+    def test_no_subscribe_on_err(self):
+        def subscribe_err(topic, *args, **kwargs):
+            return (1, 123)
+
+        mock_client = self.get_mock_client_with(subscribe_err)
+
+        MQTTClient.subscribe(mock_client, "abc")
+
+        assert mock_client._subscribed == {}
