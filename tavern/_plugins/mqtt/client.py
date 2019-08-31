@@ -193,68 +193,6 @@ class MQTTClient(object):
         # callback
         self._client.on_subscribe = self._on_subscribe
 
-    def _handle_tls_args(self):
-        """Make sure TLS options are valid
-        """
-
-        if self._tls_args:
-            # If _any_ options are specified, first assume we DO want it enabled
-            self._enable_tls = True
-        else:
-            self._enable_tls = False
-            return
-
-        if "enable" in self._tls_args:
-            if not self._tls_args.pop("enable"):
-                # if enable=false, return immediately
-                self._enable_tls = False
-                return
-
-        if "keyfile" in self._tls_args and "certfile" not in self._tls_args:
-            raise exceptions.MQTTTLSError(
-                "If specifying a TLS keyfile, a certfile also needs to be specified"
-            )
-
-        def check_file_exists(key):
-            try:
-                with open(self._tls_args[key], "r"):
-                    pass
-            except LoadError as e:
-                raise_from(
-                    exceptions.MQTTTLSError(
-                        "Couldn't load '{}' from '{}'".format(key, self._tls_args[key])
-                    ),
-                    e,
-                )
-            except KeyError:
-                pass
-
-        # could be moved to schema validation stage
-        check_file_exists("cert_reqs")
-        check_file_exists("certfile")
-        check_file_exists("keyfile")
-
-        # This shouldn't raise an AttributeError because it's enumerated
-        try:
-            self._tls_args["cert_reqs"] = getattr(ssl, self._tls_args["cert_reqs"])
-        except KeyError:
-            pass
-
-        try:
-            self._tls_args["tls_version"] = getattr(ssl, self._tls_args["tls_version"])
-        except AttributeError as e:
-            raise_from(
-                exceptions.MQTTTLSError(
-                    "Error getting TLS version from "
-                    "ssl module - ssl module had no attribute '{}'. Check the "
-                    "documentation for the version of python you're using to see "
-                    "if this a valid option.".format(self._tls_args["tls_version"])
-                ),
-                e,
-            )
-        except KeyError:
-            pass
-
     @staticmethod
     def _on_message(client, userdata, message):
         """Add any messages received to the queue
@@ -296,40 +234,7 @@ class MQTTClient(object):
     def publish(self, topic, payload=None, qos=None, retain=None):
         """publish message using paho library
         """
-        logger.debug("Checking subscriptions")
-
-        def not_finished_subcribing_to():
-            """Get topic names for topics which have not finished subcribing to"""
-            return [i[0] for i in self._subscribed.values() if not i[1]]
-
-        to_wait_for = not_finished_subcribing_to()
-
-        if to_wait_for:
-            elapsed = 0.0
-            while elapsed < self._connect_timeout:
-                # TODO
-                # configurable?
-                time.sleep(0.25)
-                elapsed += 0.25
-
-                to_wait_for = not_finished_subcribing_to()
-
-                if not to_wait_for:
-                    logger.debug("Finished subcribing to all topics")
-                    break
-
-                logger.debug(
-                    "Not finished subcribing to '%s' after %.2f seconds",
-                    to_wait_for,
-                    elapsed,
-                )
-
-            if to_wait_for:
-                logger.warning(
-                    "Did not finish subscribing to '%s' before publishing - going ahead anyway"
-                )
-        else:
-            logger.debug("Finished subcribing to all topics")
+        self._wait_for_subscriptions()
 
         logger.debug("Publishing on '%s'", topic)
 
@@ -349,12 +254,50 @@ class MQTTClient(object):
 
         return msg
 
+    def _wait_for_subscriptions(self):
+        """Wait for all pending subscriptions to finish"""
+        logger.debug("Checking subscriptions")
+
+        def not_finished_subscribing_to():
+            """Get topic names for topics which have not finished subcribing to"""
+            return [i[0] for i in self._subscribed.values() if not i[1]]
+
+        to_wait_for = not_finished_subscribing_to()
+
+        if to_wait_for:
+            elapsed = 0.0
+            while elapsed < self._connect_timeout:
+                # TODO
+                # configurable?
+                time.sleep(0.25)
+                elapsed += 0.25
+
+                to_wait_for = not_finished_subscribing_to()
+
+                if not to_wait_for:
+                    break
+
+                logger.debug(
+                    "Not finished subscribing to '%s' after %.2f seconds",
+                    to_wait_for,
+                    elapsed,
+                )
+
+            if to_wait_for:
+                logger.warning(
+                    "Did not finish subscribing to '%s' before publishing - going ahead anyway",
+                    to_wait_for,
+                )
+
+        if not to_wait_for:
+            logger.debug("Finished subscribing to all topics")
+
     def subscribe(self, topic, *args, **kwargs):
         """Subcribe to topic
 
         should be called for every expected message in mqtt_response
         """
-        logger.debug("subscribing to topic '%s'", topic)
+        logger.debug("Subscribing to topic '%s'", topic)
         (status, mid) = self._client.subscribe(topic, *args, **kwargs)
 
         if status == 0:
