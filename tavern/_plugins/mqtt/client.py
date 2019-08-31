@@ -40,8 +40,13 @@ _err_vals = {
     15: "MQTT_ERR_QUEUE_SIZE",
 }
 
-
 logger = logging.getLogger(__name__)
+
+
+class _Subscription(object):
+    def __init__(self, topic, subscribed=False):
+        self.topic = topic
+        self.subscribed = subscribed
 
 
 def _handle_tls_args(tls_args):
@@ -263,7 +268,7 @@ class MQTTClient(object):
 
         def not_finished_subscribing_to():
             """Get topic names for topics which have not finished subcribing to"""
-            return [i[0] for i in self._subscribed.values() if not i[1]]
+            return [i.topic for i in self._subscribed.values() if not i.subscribed]
 
         to_wait_for = not_finished_subscribing_to()
 
@@ -306,23 +311,24 @@ class MQTTClient(object):
             (status, mid) = self._client.subscribe(topic, *args, **kwargs)
 
             if status == 0:
-                self._subscribed[mid] = (topic, False)
+                self._subscribed[mid] = _Subscription(topic, False)
             else:
                 logger.error("Error subscribing to '%s'", topic)
 
     def unsubscribe_all(self):
         """Unsubscribe from all topics"""
         with self._subscribe_lock:
-            for (topic, _) in self._subscribed.values():
-                self._client.unsubscribe(topic)
+            for subscription in self._subscribed.values():
+                self._client.unsubscribe(subscription.topic)
 
     def _on_subscribe(self, client, userdata, mid, granted_qos):
         # pylint: disable=unused-argument
         with self._subscribe_lock:
             if mid in self._subscribed:
-                topic = self._subscribed[mid][0]
-                logger.debug("Successfully subscribed to '%s'", topic)
-                self._subscribed[mid] = (topic, True)
+                self._subscribed[mid].subscribed = True
+                logger.debug(
+                    "Successfully subscribed to '%s'", self._subscribed[mid].topic
+                )
             else:
                 logger.warning(
                     "Got SUBACK message with mid '%s', but did not recognise that mid - will try later",
