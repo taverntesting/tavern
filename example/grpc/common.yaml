@@ -1,0 +1,7 @@
+---
+name: test includes
+description: used for testing against local server
+
+variables:
+  grpc_host: localhost
+  grpc_port: 50051

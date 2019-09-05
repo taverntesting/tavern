@@ -22,6 +22,9 @@ def pytest_addoption(parser):
         "tavern-mqtt-backend", help="Which mqtt backend to use", default="paho-mqtt"
     )
     parser.addini(
+        "tavern-grpc-backend", help="Which grpc backend to use", default="grpc"
+    )
+    parser.addini(
         "tavern-strict",
         help="Default response matching strictness",
         type="args",

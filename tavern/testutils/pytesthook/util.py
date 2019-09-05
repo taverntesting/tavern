@@ -36,6 +36,11 @@ def add_parser_options(parser_addoption, with_defaults=True):
         default="paho-mqtt" if with_defaults else None,
     )
     parser_addoption(
+        "--tavern-grpc-backend",
+        help="Which grpc backend to use",
+        default="grpc" if with_defaults else None,
+    )
+    parser_addoption(
         "--tavern-strict",
         help="Default response matching strictness",
         default=None,
@@ -101,7 +106,7 @@ def _load_global_backends(pytest_config):
     """Load which backend should be used"""
     backend_settings = {}
 
-    backends = ["http", "mqtt"]
+    backends = ["http", "mqtt", "grpc"]
     for b in backends:
         # similar logic to above - use ini, then cmdline if present
         ini_opt = pytest_config.getini("tavern-{}-backend".format(b))

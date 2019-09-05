@@ -1,0 +1,10 @@
+---
+version: '2'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: server.Dockerfile
+    ports:
+      - "50051:50051"

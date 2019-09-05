@@ -45,13 +45,13 @@ def is_valid_reqresp_plugin(ext):
         "session_type",
         # RestRequest, MQTTRequest
         "request_type",
-        # request, mqtt_publish
+        # request, mqtt_publish, grpc_request
         "request_block_name",
         # Some function that returns a dict
         "get_expected_from_request",
         # MQTTResponse, RestResponse
         "verifier_type",
-        # response, mqtt_response
+        # response, mqtt_response, grpc_request
         "response_block_name",
         # dictionary with pykwalify schema
         "schema",
@@ -100,7 +100,7 @@ class _PluginCache(object):
 
         plugins = []
 
-        for backend in ["http", "mqtt"]:
+        for backend in ["http", "mqtt", "grpc"]:
             namespace = "tavern_{}".format(backend)
 
             def enabled(ext):

@@ -250,6 +250,7 @@ def _run_pytest(
     tavern_global_cfg,
     tavern_mqtt_backend=None,
     tavern_http_backend=None,
+    tavern_grpc_backend=None,
     tavern_strict=None,
     pytest_args=None,
     **kwargs
@@ -263,6 +264,8 @@ def _run_pytest(
             specified, uses tavern-mqtt
         tavern_http_backend (str, optional): name of HTTP plugin to use. If not
             specified, use tavern-http
+        tavern_grpc_backend (str, optional): name of GRPC plugin to use. If not
+            specified, use tavern-grpc
         tavern_strict (bool, optional): Strictness of checking for responses.
             See documentation for details
         pytest_args (list, optional): List of extra arguments to pass directly
@@ -287,6 +290,8 @@ def _run_pytest(
         pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
     if tavern_http_backend:
         pytest_args += ["--tavern-http-backend", tavern_http_backend]
+    if tavern_grpc_backend:
+        pytest_args += ["--tavern-grpc-backend", tavern_grpc_backend]
     if tavern_strict:
         pytest_args += ["--tavern-strict", tavern_strict]
 

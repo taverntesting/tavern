@@ -5,6 +5,7 @@ import re
 
 from future.utils import raise_from
 from pykwalify.types import is_int, is_float, is_bool
+from grpc import StatusCode
 
 from tavern.util import exceptions
 from tavern.util.exceptions import BadSchemaError
@@ -217,6 +218,30 @@ def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path):
             raise BadSchemaError(err_msg)
 
     return True
+
+
+def validate_grpc_status_is_valid_or_list_of_names(value, rule_obj, path):
+    """ Validate GRPC statuses https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
+    """
+    # pylint: disable=unused-argument
+    err_msg = "status has to be an valid grpc status name (got {})".format(value)
+
+    if not isinstance(value, list) and not is_grpc_status(value):
+        raise BadSchemaError(err_msg)
+
+    if isinstance(value, list):
+        if not all(is_grpc_status(i) for i in value):
+            raise BadSchemaError(err_msg)
+
+    return True
+
+
+def is_grpc_status(value):
+    value = value.upper()
+    for status in StatusCode:
+        if status.name == value:
+            return True
+    return False
 
 
 def check_usefixtures(value, rule_obj, path):

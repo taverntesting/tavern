@@ -12,7 +12,7 @@ def fix_example_includes():
             "callback_url": "www.yahoo.co.uk",
             "request_topic": "/abc",
         },
-        "backends": {"mqtt": "paho-mqtt", "http": "requests"},
+        "backends": {"mqtt": "paho-mqtt", "http": "requests", "grpc": "grpc"},
         "strict": True,
         "tavern_internal": {"pytest_hook_caller": Mock()},
     }

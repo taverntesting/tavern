@@ -1,0 +1,22 @@
+---
+
+test_name: Test grpc message echo
+
+includes:
+  - !include common.yaml
+
+grpc: &grpc_spec
+  connect:
+    host: "{grpc_host}"
+    port: !int "{grpc_port}"
+    timeout: 3
+
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      body:
+        message: "Hello, John!"

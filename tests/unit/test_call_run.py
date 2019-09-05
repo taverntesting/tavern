@@ -25,7 +25,12 @@ class TestBasicRun:
 
     @pytest.mark.parametrize(
         "expected_kwarg",
-        ("tavern_mqtt_backend", "tavern_http_backend", "tavern_strict"),
+        (
+            "tavern_mqtt_backend",
+            "tavern_http_backend",
+            "tavern_grpc_backend",
+            "tavern_strict",
+        ),
     )
     def test_doesnt_warn_about_expected_kwargs(self, expected_kwarg):
         kw = {expected_kwarg: 123}
