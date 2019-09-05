@@ -20,6 +20,7 @@ request_block_name = "grpc_request"
 
 
 def get_expected_from_request(stage, test_block_config, session):
+    # pylint: disable=unused-argument
     # grpc response is not required
     grpc_expected = stage.get("grpc_response")
     if grpc_expected:
