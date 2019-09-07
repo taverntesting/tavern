@@ -21,12 +21,15 @@ class _FormattedString(str):
         super(_FormattedString, self).__init__(s)
 
 
-def format_keys(val, variables):
+def format_keys(val, variables, no_double_format=True):
     """recursively format a dictionary with the given values
 
     Args:
         val (object): Input dictionary to format
         variables (dict): Dictionary of keys to format it with
+        no_double_format (bool): Whether to use the 'inner formatted string' class to avoid double formatting
+            This is required if passing something via pytest-xdist, such as markers:
+            https://github.com/taverntesting/tavern/issues/431
 
     Returns:
         dict: recursively formatted dictionary
@@ -56,7 +59,8 @@ def format_keys(val, variables):
             logger.error("Empty format values are invalid")
             raise exceptions.MissingFormatError(e.args) from e
 
-        formatted = _FormattedString(formatted)
+        if no_double_format:
+            formatted = _FormattedString(formatted)
     elif isinstance(val, TypeConvertToken):
         value = format_keys(val.value, box_vars)
         formatted = val.constructor(value)
@@ -109,18 +113,7 @@ def recurse_access_key(data, query):
     else:
         found = from_jmespath
 
-    check_is_simple_value(found, query)
-
     return found
-
-
-def check_is_simple_value(found, query):
-    if not isinstance(found, (float, int, str)):
-        raise exceptions.InvalidQueryResultTypeError(
-            "Key '{}' was found in given data, but it was '{}' when it should be a 'simple' type (float, int, string)".format(
-                query, type(found)
-            )
-        )
 
 
 def _recurse_access_key(current_val, keys):

@@ -1,9 +1,19 @@
-from unittest.mock import Mock
-import requests
+import os
+import tempfile
 
 import pytest
+import requests
+from contextlib2 import ExitStack
+from unittest.mock import Mock
+from requests.cookies import RequestsCookieJar
 
-from tavern._plugins.rest.request import RestRequest, get_request_args
+from tavern._plugins.rest.request import (
+    RestRequest,
+    get_request_args,
+    _check_allow_redirects,
+    _read_expected_cookies,
+    _get_file_arguments,
+)
 from tavern.util import exceptions
 
 
@@ -50,7 +60,9 @@ class TestRequests(object):
         req["method"] = "GET"
 
         with pytest.warns(RuntimeWarning):
-            RestRequest(Mock(), req, includes)
+            RestRequest(
+                Mock(spec=requests.Session, cookies=RequestsCookieJar()), req, includes
+            )
 
 
 class TestHttpRedirects(object):
@@ -58,11 +70,7 @@ class TestHttpRedirects(object):
         """Always disable redirects by defauly
         """
 
-        rmock = Mock(spec=requests.Session)
-        RestRequest(rmock, req, includes).run()
-
-        assert rmock.request.called
-        assert rmock.request.call_args[1]["allow_redirects"] == False
+        assert _check_allow_redirects(req, includes) == False
 
     @pytest.mark.parametrize("do_follow", [True, False])
     def test_session_do_follow_redirects_based_on_test(self, req, includes, do_follow):
@@ -70,11 +78,7 @@ class TestHttpRedirects(object):
 
         req["follow_redirects"] = do_follow
 
-        rmock = Mock(spec=requests.Session)
-        RestRequest(rmock, req, includes).run()
-
-        assert rmock.request.called
-        assert rmock.request.call_args[1]["allow_redirects"] == do_follow
+        assert _check_allow_redirects(req, includes) == do_follow
 
     @pytest.mark.parametrize("do_follow", [True, False])
     def test_session_do_follow_redirects_based_on_global_flag(
@@ -84,11 +88,98 @@ class TestHttpRedirects(object):
 
         includes["follow_redirects"] = do_follow
 
-        rmock = Mock(spec=requests.Session)
-        RestRequest(rmock, req, includes).run()
+        assert _check_allow_redirects(req, includes) == do_follow
 
-        assert rmock.request.called
-        assert rmock.request.call_args[1]["allow_redirects"] == do_follow
+
+class TestCookies(object):
+    @pytest.fixture
+    def mock_session(self):
+        return Mock(spec=requests.Session, cookies=RequestsCookieJar())
+
+    def test_no_expected_none_available(self, mock_session, req, includes):
+        """No cookies expected and none available = OK"""
+
+        req["cookies"] = []
+
+        assert _read_expected_cookies(mock_session, req, includes) == {}
+
+    def test_available_not_waited(self, req, includes):
+        """some available but not set"""
+
+        cookiejar = RequestsCookieJar()
+        cookiejar.set("a", 2)
+        mock_session = Mock(spec=requests.Session, cookies=cookiejar)
+
+        assert _read_expected_cookies(mock_session, req, includes) == None
+
+    def test_ask_for_nothing(self, req, includes):
+        """explicitly ask fo rno cookies"""
+
+        cookiejar = RequestsCookieJar()
+        cookiejar.set("a", 2)
+        mock_session = Mock(spec=requests.Session, cookies=cookiejar)
+
+        req["cookies"] = []
+
+        assert _read_expected_cookies(mock_session, req, includes) == {}
+
+    def test_not_available_but_wanted(self, mock_session, req, includes):
+        """Some wanted but not available"""
+
+        req["cookies"] = ["a"]
+
+        with pytest.raises(exceptions.MissingCookieError):
+            _read_expected_cookies(mock_session, req, includes)
+
+    def test_available_and_waited(self, req, includes):
+        """some available and wanted"""
+
+        cookiejar = RequestsCookieJar()
+        cookiejar.set("a", 2)
+
+        req["cookies"] = ["a"]
+
+        mock_session = Mock(spec=requests.Session, cookies=cookiejar)
+
+        assert _read_expected_cookies(mock_session, req, includes) == {"a": 2}
+
+    def test_format_cookies(self, req, includes):
+        """cookies in request should be formatted"""
+
+        cookiejar = RequestsCookieJar()
+        cookiejar.set("a", 2)
+
+        req["cookies"] = ["{cookiename}"]
+        includes["variables"]["cookiename"] = "a"
+
+        mock_session = Mock(spec=requests.Session, cookies=cookiejar)
+
+        assert _read_expected_cookies(mock_session, req, includes) == {"a": 2}
+
+    def test_no_overwrite_cookie(self, req, includes):
+        """cant redefine a cookie from previous request"""
+
+        cookiejar = RequestsCookieJar()
+        cookiejar.set("a", 2)
+
+        req["cookies"] = ["a", {"a": "sjidfsd"}]
+
+        mock_session = Mock(spec=requests.Session, cookies=cookiejar)
+
+        with pytest.raises(exceptions.DuplicateCookieError):
+            _read_expected_cookies(mock_session, req, includes)
+
+    def test_no_duplicate_cookie(self, req, includes):
+        """Can't override a cookiev alue twice"""
+
+        cookiejar = RequestsCookieJar()
+
+        req["cookies"] = [{"a": "sjidfsd"}, {"a": "fjhj"}]
+
+        mock_session = Mock(spec=requests.Session, cookies=cookiejar)
+
+        with pytest.raises(exceptions.DuplicateCookieError):
+            _read_expected_cookies(mock_session, req, includes)
 
 
 class TestRequestArgs(object):
@@ -242,3 +333,35 @@ class TestOptionalDefaults:
         args = get_request_args(req, includes)
 
         assert args["verify"] == verify
+
+
+class TestGetFiles(object):
+    @pytest.fixture
+    def mock_stack(self):
+        return Mock(spec=ExitStack)
+
+    def test_get_no_files(self, mock_stack):
+        """No files in request -> no files"""
+
+        request_args = {}
+
+        assert _get_file_arguments(request_args, mock_stack) == {}
+
+    def test_get_empty_files_list(self, mock_stack):
+        """No specific files specified -> no files"""
+
+        request_args = {"files": {}}
+
+        assert _get_file_arguments(request_args, mock_stack) == {}
+
+    def test_a_file(self, mock_stack):
+        """Json file should have the correct mimetype etc."""
+
+        with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
+            request_args = {"files": {"file1": tfile.name}}
+
+            file_spec = _get_file_arguments(request_args, mock_stack)
+
+        file = file_spec["files"]["file1"]
+        assert file[0] == os.path.basename(tfile.name)
+        assert file[2] == "application/json"

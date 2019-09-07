@@ -232,3 +232,99 @@ stages:
       status_code: 200
       body:
         status: ok
+
+---
+
+test_name: Trying to override the value of a cookie multiple times causes an error
+
+# TODO: Make this fail in verify instead?
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - *get-cookie-1
+
+  - name: Send a cookie which doesn't exist
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-2
+      cookies:
+        - cookie-1: abc
+        - cookie-1: abc
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Override a cookie on the first stage
+
+includes:
+  - !include common.yaml
+
+stages:
+  - *get-cookie-1
+
+  - name: Send a cookie which doesn't exist
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-2
+      cookies:
+        - tavern-cookie-2: abc
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Override a cookie on the first stage
+
+includes:
+  - !include common.yaml
+
+stages:
+  - *get-cookie-1
+
+  - name: Override cookie value
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-2
+      cookies:
+        - tavern-cookie-2: abc
+    response:
+      status_code: 200
+      body:
+        status: ok
+
+---
+
+test_name: Override a cookie on the first stage, with formatting
+
+includes:
+  - !include common.yaml
+
+stages:
+  - *get-cookie-1
+
+  - name: Override cookie value
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: "{formatted-cookie-name}"
+      cookies:
+        - tavern-cookie-2: abc
+    response:
+      status_code: 200
+      body:
+        status: ok

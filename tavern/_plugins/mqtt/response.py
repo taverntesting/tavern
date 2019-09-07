@@ -3,6 +3,7 @@ import logging
 import time
 
 from tavern.response.base import BaseResponse
+from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
 from tavern.util.dict_util import check_keys_match_recursive
 from tavern.util.loader import ANYTHING
@@ -12,16 +13,7 @@ logger = logging.getLogger(__name__)
 
 class MQTTResponse(BaseResponse):
     def __init__(self, client, name, expected, test_block_config):
-        # pylint: disable=unused-argument
-
-        super(MQTTResponse, self).__init__()
-
-        self.name = name
-
-        self._check_for_validate_functions(expected)
-
-        self.expected = expected
-        self.response = None
+        super(MQTTResponse, self).__init__(name, expected, test_block_config)
 
         self._client = client
 
@@ -43,6 +35,12 @@ class MQTTResponse(BaseResponse):
 
             payload = self.expected["json"]
             json_payload = True
+
+            if payload.pop("$ext", None):
+                logger.warning(
+                    "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
+                    "json",
+                )
         elif "payload" in self.expected:
             payload = self.expected["payload"]
             json_payload = False
@@ -82,6 +80,13 @@ class MQTTResponse(BaseResponse):
             if not msg:
                 # timed out
                 break
+
+            call_hook(
+                self.test_block_config,
+                "pytest_tavern_beta_after_every_response",
+                expected=self.expected,
+                response=msg,
+            )
 
             self.received_messages.append(msg)
 
@@ -170,6 +175,8 @@ class MQTTResponse(BaseResponse):
             )
 
         saved = {}
+
+        saved.update(self.maybe_get_save_values_from_save_block("json", msg.payload))
 
         saved.update(self.maybe_get_save_values_from_ext(msg, self.expected))
 

@@ -174,3 +174,33 @@ See 57f2a10e58a88325c185258d2c83b07a532aa93a for details
 # 0.22.0          fix selection of tests when using run() function interface
 
 ## 0.22.1          allow referenced stages to be included from global configuration files
+
+# 0.23.0          Fix 'only' keyword
+
+# 0.24.0          Fix typetoken validation and correctly unsubscribe from MQTT topics after a stage
+
+# 0.25.0          Allow specifying custom SSL certificates in HTTP requests
+
+## 0.25.1          Fix fancy traceback when comments in yaml files contain special characters
+
+# 0.26.0          Add more advanced cookie behaviour
+
+## 0.26.1          Fix matching 'anything' type token in MQTT
+
+## 0.26.2          Fix loading global config via run function
+
+## 0.26.3          Fix raw token formatting
+
+## 0.26.4          Allow loading of json files using include directive
+
+## 0.26.5          Lock pytest version to stop internal error
+
+# 0.27.0 release
+    
+    - Fix various typos in documentation
+    - Allow sending form data and files in a single request
+    - Fix double formatting of some string causing issues
+    - Add a global and stage specific flag to tell Tavern to not always follow redirects
+    - Fix not being able to use type tokens to format MQTT port
+    - Allow sending single values as JSON body as according to RFC 7159
+    - Change 'save' selector to use JMESpath

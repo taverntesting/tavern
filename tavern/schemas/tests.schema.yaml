@@ -10,6 +10,11 @@ schema;any_request_json:
   type: any
   required: false
 
+schema;any_json_with_ext:
+  func: validate_json_with_ext
+  type: any
+  required: false
+
 schema;any_map:
   func: validate_request_json
   type: map
@@ -67,7 +72,7 @@ schema;stage:
           type: str
           required: false
         json:
-          include: any_request_json
+          include: any_json_with_ext
         qos:
           type: any
           func: int_variable
@@ -88,7 +93,7 @@ schema;stage:
           type: any
           required: false
         json:
-          include: any_request_json
+          include: any_json_with_ext
         timeout:
           type: any
           func: float_variable
@@ -103,7 +108,13 @@ schema;stage:
             - 2
         verify_response_with:
           func: validate_extensions
-          include: any_request_json
+          type: any
+
+        save:
+          include: any_json_with_ext
+          mapping:
+            json:
+              type: any
 
     request:
       type: map
@@ -131,7 +142,7 @@ schema;stage:
           required: false
 
         auth:
-          func: validate_extensions
+          func: validate_json_with_ext
           type: seq
           required: false
           sequence:
@@ -142,9 +153,13 @@ schema;stage:
           required: false
           sequence:
             - type: str
+            - type: map
+              mapping:
+                re;(.*):
+                  type: str
 
         json:
-          include: any_request_json
+          include: any_json_with_ext
 
         files:
           required: false
@@ -209,17 +224,17 @@ schema;stage:
           include: any_map
 
         body:
-          include: any_request_json
+          include: any_json_with_ext
 
         save:
-          include: any_request_json
+          include: any_json_with_ext
           mapping:
             re;(\$ext|body|headers|redirect_query_params):
               type: any
 
         verify_response_with:
           func: validate_extensions
-          include: any_request_json
+          type: any
 
 schema;stage_ref:
   type: map

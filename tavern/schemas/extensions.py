@@ -141,6 +141,35 @@ def get_wrapped_create_function(ext):
     return inner
 
 
+def _validate_one_extension(input_value):
+    expected_keys = {"function", "extra_args", "extra_kwargs"}
+    extra = set(input_value) - expected_keys
+
+    if extra:
+        raise BadSchemaError("Unexpected keys passed to $ext: {}".format(extra))
+
+    if "function" not in input_value:
+        raise BadSchemaError("No function specified for validation")
+
+    try:
+        import_ext_function(input_value["function"])
+    except Exception as e:  # pylint: disable=broad-except
+        raise BadSchemaError("Couldn't load {}".format(input_value["function"])) from e
+
+    extra_args = input_value.get("extra_args")
+    extra_kwargs = input_value.get("extra_kwargs")
+
+    if extra_args and not isinstance(extra_args, list):
+        raise BadSchemaError(
+            "Expected a list of extra_args, got {}".format(type(extra_args))
+        )
+
+    if extra_kwargs and not isinstance(extra_kwargs, dict):
+        raise BadSchemaError(
+            "Expected a dict of extra_kwargs, got {}".format(type(extra_args))
+        )
+
+
 def validate_extensions(value, rule_obj, path):
     """Given a specification for calling a validation function, make sure that
     the arguments are valid (ie, function is valid, arguments are of the
@@ -162,36 +191,11 @@ def validate_extensions(value, rule_obj, path):
 
     # pylint: disable=unused-argument
 
-    def validate_one_extension(input_value):
-        expected_keys = {"function", "extra_args", "extra_kwargs"}
-        extra = set(input_value) - expected_keys
-        if extra:
-            raise BadSchemaError("Unexpected keys passed to $ext: {}".format(extra))
-        if "function" not in input_value:
-            raise BadSchemaError("No function specified for validation")
-        try:
-            import_ext_function(input_value["function"])
-        except Exception as e:  # pylint: disable=broad-except
-            raise BadSchemaError(
-                "Couldn't load {}".format(input_value["function"])
-            ) from e
-
-        extra_args = input_value.get("extra_args")
-        extra_kwargs = input_value.get("extra_kwargs")
-        if extra_args and not isinstance(extra_args, list):
-            raise BadSchemaError(
-                "Expected a list of extra_args, got {}".format(type(extra_args))
-            )
-        if extra_kwargs and not isinstance(extra_kwargs, dict):
-            raise BadSchemaError(
-                "Expected a dict of extra_kwargs, got {}".format(type(extra_args))
-            )
-
     if isinstance(value, list):
         for vf in value:
-            validate_one_extension(vf)
-    if isinstance(value, dict):
-        validate_one_extension(value)
+            _validate_one_extension(vf)
+    elif isinstance(value, dict):
+        _validate_one_extension(value)
 
     return True
 
@@ -319,6 +323,7 @@ def validate_request_json(value, rule_obj, path):
     """ Performs the above match, but also matches a dict or a list. This it
     just because it seems like you can't match a dict OR a list in pykwalify
     """
+
     # pylint: disable=unused-argument
 
     def nested_values(d):
@@ -340,6 +345,20 @@ def validate_request_json(value, rule_obj, path):
                     path
                 )
             )
+
+    return True
+
+
+def validate_json_with_ext(value, rule_obj, path):
+    """Validate json with extensions"""
+    validate_request_json(value, rule_obj, path)
+
+    if isinstance(value, dict):
+        maybe_ext_val = value.get("$ext", None)
+        if isinstance(maybe_ext_val, dict):
+            validate_extensions(maybe_ext_val, rule_obj, path)
+        elif maybe_ext_val is not None:
+            raise BadSchemaError("Unexpected $ext key in block at {}".format(path))
 
     return True
 

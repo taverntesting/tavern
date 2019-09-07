@@ -17,6 +17,8 @@ variables:
   verify_false: "False"
   delay_before_0_1: 0.1
 
+  formatted-cookie-name: tavern-cookie-2
+
 stages:
   - id: typetoken-anything-match
     name: match top level

@@ -54,3 +54,10 @@ def pytest_collect_file(parent, path):
         return YamlFile(path, parent)
 
     return None
+
+
+def pytest_addhooks(pluginmanager):
+    """Add our custom tavern hooks"""
+    from . import newhooks
+
+    pluginmanager.add_hookspecs(newhooks)

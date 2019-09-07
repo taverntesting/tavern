@@ -1,0 +1,34 @@
+# This is what we expect:
+# top:
+#   Thing: value
+#   nested:
+#     doubly:
+#       inner: value
+# an_integer: 123
+# a_string: abc
+# a_bool: true
+
+---
+
+test_name: Test saving a dict
+
+stages:
+  - name: Save whole dict
+    request:
+      url: "{host}/fake_dictionary"
+    response:
+      status_code: 200
+      save:
+        body:
+          top_value: top
+
+  - name: Use a saved dict value
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{top_value.Thing}"
+    response:
+      status_code: 200
+      body:
+        value: value

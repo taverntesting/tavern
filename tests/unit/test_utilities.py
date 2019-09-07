@@ -33,6 +33,26 @@ class TestValidateFunctions:
 
         validate_extensions(spec, None, None)
 
+    def test_get_extension_list(self):
+        """Loads a validation function correctly
+
+        This doesn't check the signature at the time of writing
+        """
+
+        spec = [{"function": "operator:add"}]
+
+        validate_extensions(spec, None, None)
+
+    def test_get_extension_list_empty(self):
+        """Loads a validation function correctly
+
+        This doesn't check the signature at the time of writing
+        """
+
+        spec = []
+
+        validate_extensions(spec, None, None)
+
     def test_get_invalid_module(self):
         """Nonexistent module
         """
@@ -269,16 +289,6 @@ class TestRecurseAccess:
         new_val = recurse_access_key(nested_data, new_query)
 
         assert old_val == new_val == expected_data
-
-    @pytest.mark.parametrize("old_query, new_query", (("a", "a"), ("a.1", "a[1]")))
-    def test_invalid_searches(self, nested_data, old_query, new_query):
-        """Make sure a search that returns a value that is not a simple value raises an error"""
-
-        with pytest.raises(exceptions.InvalidQueryResultTypeError):
-            recurse_access_key(nested_data, old_query)
-
-        with pytest.raises(exceptions.InvalidQueryResultTypeError):
-            recurse_access_key(nested_data, new_query)
 
     @pytest.mark.parametrize(
         "old_query, new_query", (("f", "f"), ("a.3", "a[3]"), ("a.1.x", "a[1].x"))

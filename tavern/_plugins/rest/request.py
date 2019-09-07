@@ -1,23 +1,24 @@
 import contextlib
-from contextlib import ExitStack
 import json
 import logging
 import mimetypes
 import os
 import warnings
-
+from contextlib import ExitStack
+from itertools import tee
 from urllib.parse import quote_plus
 
 import requests
+from box import Box
+from contextlib2 import ExitStack
+from future.moves.itertools import filterfalse
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
-from box import Box
-
-from tavern.util import exceptions
-from tavern.util.dict_util import format_keys, check_expected_keys
-from tavern.schemas.extensions import get_wrapped_create_function
 
 from tavern.request.base import BaseRequest
+from tavern.schemas.extensions import get_wrapped_create_function
+from tavern.util import exceptions
+from tavern.util.dict_util import format_keys, check_expected_keys, deep_dict_merge
 
 logger = logging.getLogger(__name__)
 
@@ -182,6 +183,156 @@ def _set_cookies_for_request(session, request_args):
         yield
 
 
+def _check_allow_redirects(rspec, test_block_config):
+    """
+    Check for allow_redirects flag in settings/stage
+
+    Args:
+        rspec (dict): request dictionary
+        test_block_config (dict): config available for test
+
+    Returns:
+        bool: Whether to allow redirects for this stage or not
+    """
+    # By default, don't follow redirects
+    allow_redirects = False
+
+    # Then check to see if we should follow redirects based on settings
+    global_follow_redirects = test_block_config.get("follow_redirects")
+    if global_follow_redirects is not None:
+        allow_redirects = global_follow_redirects
+
+    # ... and test flags
+    test_follow_redirects = rspec.pop("follow_redirects", None)
+    if test_follow_redirects is not None:
+        if global_follow_redirects is not None:
+            logger.info(
+                "Overriding global follow_redirects setting of %s with test-level specification of %s",
+                global_follow_redirects,
+                test_follow_redirects,
+            )
+        allow_redirects = test_follow_redirects
+
+    logger.debug("Allow redirects in stage: %s", allow_redirects)
+
+    return allow_redirects
+
+
+def _read_expected_cookies(session, rspec, test_block_config):
+    """
+    Read cookies to inject into request, ignoring others which are present
+
+    Args:
+        session (Session): session object
+        rspec (dict): test spec
+        test_block_config (dict): config available for test
+
+    Returns:
+        dict: cookies to use in request, if any
+    """
+    # Need to do this down here - it is separate from getting request args as
+    # it depends on the state of the session
+    existing_cookies = session.cookies.get_dict()
+    cookies_to_use = format_keys(
+        rspec.get("cookies", None), test_block_config["variables"]
+    )
+
+    if cookies_to_use is None:
+        logger.debug("No cookies specified in request, sending all")
+        return None
+    elif cookies_to_use in ([], {}):
+        logger.debug("Not sending any cookies with request")
+        return {}
+
+    def partition(pred, iterable):
+        """From itertools documentation"""
+        t1, t2 = tee(iterable)
+        return list(filterfalse(pred, t1)), list(filter(pred, t2))
+
+    # Cookies are either a single list item, specitying which cookie to send, or
+    # a mapping, specifying cookies to override
+    expected, extra = partition(lambda x: isinstance(x, dict), cookies_to_use)
+
+    missing = set(expected) - set(existing_cookies.keys())
+
+    if missing:
+        logger.error("Missing cookies")
+        raise exceptions.MissingCookieError(
+            "Tried to use cookies '{}' in request but only had '{}' available".format(
+                expected, existing_cookies
+            )
+        )
+
+    # 'extra' should be a list of dictionaries - merge them into one here
+    from_extra = {k: v for mapping in extra for (k, v) in mapping.items()}
+
+    if len(extra) != len(from_extra):
+        logger.error("Duplicate cookie override values specified")
+        raise exceptions.DuplicateCookieError(
+            "Tried to override the value of a cookie multiple times in one request"
+        )
+
+    overwritten = [i for i in expected if i in from_extra]
+
+    if overwritten:
+        logger.error("Duplicate cookies found in request")
+        raise exceptions.DuplicateCookieError(
+            "Asked to use cookie {} from previous request but also redefined it as {}".format(
+                overwritten, from_extra
+            )
+        )
+
+    from_cookiejar = {c: existing_cookies.get(c) for c in expected}
+
+    return deep_dict_merge(from_cookiejar, from_extra)
+
+
+def _get_file_arguments(request_args, stack):
+    """Get corect arguments for anything that should be passed as a file to
+    requests
+
+    Args:
+        stack (ExitStack): context stack to add file objects to so they're
+            closed correctly after use
+
+    Returns:
+        dict: mapping of {"files": ...} to pass directly to requests
+    """
+
+    files_to_send = {}
+
+    for key, filepath in request_args.get("files", {}).items():
+        if not mimetypes.inited:
+            mimetypes.init()
+
+        filename = os.path.basename(filepath)
+
+        # a 2-tuple ('filename', fileobj)
+        file_spec = [filename, stack.enter_context(open(filepath, "rb"))]
+
+        # If it doesn't have a mimetype, or can't guess it, don't
+        # send the content type for the file
+        content_type, encoding = mimetypes.guess_type(filepath)
+        if content_type:
+            # a 3-tuple ('filename', fileobj, 'content_type')
+            logger.debug("content_type for '%s' = '%s'", filename, content_type)
+            file_spec.append(content_type)
+            if encoding:
+                # or a 4-tuple ('filename', fileobj, 'content_type', custom_headers)
+                logger.debug("encoding for '%s' = '%s'", filename, encoding)
+                # encoding is None for no encoding or the name of the
+                # program used to encode (e.g. compress or gzip). The
+                # encoding is suitable for use as a Content-Encoding header.
+                file_spec.append({"Content-Encoding": encoding})
+
+        files_to_send[key] = tuple(file_spec)
+
+    if files_to_send:
+        return {"files": files_to_send}
+    else:
+        return {}
+
+
 class RestRequest(BaseRequest):
     def __init__(self, session, rspec, test_block_config):
         """Prepare request
@@ -224,38 +375,16 @@ class RestRequest(BaseRequest):
 
         request_args = get_request_args(rspec, test_block_config)
 
-        # Need to do this down here - it is separate from getting request args as
-        # it depends on the state of the session
-        if "cookies" in rspec:
-            existing_cookies = session.cookies.get_dict()
-            missing = set(rspec["cookies"]) - set(existing_cookies.keys())
-            if missing:
-                logger.error("Missing cookies")
-                raise exceptions.MissingCookieError(
-                    "Tried to use cookies '{}' in request but only had '{}' available".format(
-                        rspec["cookies"], existing_cookies
-                    )
-                )
-            request_args["cookies"] = {
-                c: existing_cookies.get(c) for c in rspec["cookies"]
-            }
+        # If there was a 'cookies' key, set it in the request
+        expected_cookies = _read_expected_cookies(session, rspec, test_block_config)
+        if expected_cookies is not None:
+            logger.debug("Sending cookies %s in request", expected_cookies.keys())
+            request_args.update(cookies=expected_cookies)
 
-        # By default, don't follow redirects
-        request_args.update(allow_redirects=False)
-        # Then check to see if we should follow redirects based on settings
-        global_follow_redirects = test_block_config.get("follow_redirects")
-        if global_follow_redirects is not None:
-            request_args.update(allow_redirects=global_follow_redirects)
-        # ... and test flags
-        test_follow_redirects = rspec.pop("follow_redirects", None)
-        if test_follow_redirects is not None:
-            if global_follow_redirects is not None:
-                logger.info(
-                    "Overriding global follow_redirects setting of %s with test-level specification of %s",
-                    global_follow_redirects,
-                    test_follow_redirects,
-                )
-            request_args.update(allow_redirects=test_follow_redirects)
+        # Check for redirects
+        request_args.update(
+            allow_redirects=_check_allow_redirects(rspec, test_block_config)
+        )
 
         logger.debug("Request args: %s", request_args)
 
@@ -271,55 +400,10 @@ class RestRequest(BaseRequest):
             # they will be closed at the end of the request.
             with ExitStack() as stack:
                 stack.enter_context(_set_cookies_for_request(session, request_args))
-                self._request_args.update(self._get_file_arguments(stack))
+                self._request_args.update(_get_file_arguments(request_args, stack))
                 return session.request(**self._request_args)
 
         self._prepared = prepared_request
-
-    def _get_file_arguments(self, stack):
-        """Get corect arguments for anything that should be passed as a file to
-        requests
-
-        Args:
-            stack (ExitStack): context stack to add file objects to so they're
-                closed correctly after use
-
-        Returns:
-            dict: mapping of {"files": ...} to pass directly to requests
-        """
-
-        files_to_send = {}
-
-        for key, filepath in self._request_args.get("files", {}).items():
-            if not mimetypes.inited:
-                mimetypes.init()
-
-            filename = os.path.basename(filepath)
-
-            # a 2-tuple ('filename', fileobj)
-            file_spec = [filename, stack.enter_context(open(filepath, "rb"))]
-
-            # If it doesn't have a mimetype, or can't guess it, don't
-            # send the content type for the file
-            content_type, encoding = mimetypes.guess_type(filepath)
-            if content_type:
-                # a 3-tuple ('filename', fileobj, 'content_type')
-                logger.debug("content_type for '%s' = '%s'", filename, content_type)
-                file_spec.append(content_type)
-                if encoding:
-                    # or a 4-tuple ('filename', fileobj, 'content_type', custom_headers)
-                    logger.debug("encoding for '%s' = '%s'", filename, encoding)
-                    # encoding is None for no encoding or the name of the
-                    # program used to encode (e.g. compress or gzip). The
-                    # encoding is suitable for use as a Content-Encoding header.
-                    file_spec.append({"Content-Encoding": encoding})
-
-            files_to_send[key] = tuple(file_spec)
-
-        if files_to_send:
-            return {"files": files_to_send}
-        else:
-            return {}
 
     def run(self):
         """ Runs the prepared request and times it

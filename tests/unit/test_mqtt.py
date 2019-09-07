@@ -1,8 +1,11 @@
+import contextlib
+import threading
+
 import pytest
-from unittest.mock import patch, Mock
+from unittest.mock import patch, Mock, MagicMock
 import paho.mqtt.client as paho
 
-from tavern._plugins.mqtt.client import MQTTClient
+from tavern._plugins.mqtt.client import MQTTClient, _handle_tls_args, _Subscription
 from tavern._plugins.mqtt.request import MQTTRequest
 from tavern.util import exceptions
 
@@ -85,30 +88,29 @@ class TestClient(object):
 
 
 class TestTLS(object):
+    def test_missing_cert_gives_error(self):
+        """Missing TLS cert gives an error"""
+        args = {"certfile": "/lcliueurhug/ropko3kork32"}
+
+        with pytest.raises(exceptions.MQTTTLSError):
+            _handle_tls_args(args)
+
     def test_disabled_tls(self):
         """Even if there are other invalid options, disable tls and early exit
         without checking other args
         """
-        args = {
-            "connect": {"host": "localhost"},
-            "tls": {"certfile": "/lcliueurhug/ropko3kork32"},
-        }
+        args = {"certfile": "/lcliueurhug/ropko3kork32", "enable": False}
 
-        with pytest.raises(exceptions.MQTTTLSError):
-            MQTTClient(**args)
-
-        args["tls"]["enable"] = False
-
-        c = MQTTClient(**args)
-        assert not c._enable_tls
+        parsed_args = _handle_tls_args(args)
+        assert not parsed_args
 
     def test_invalid_tls_ver(self):
         """Bad tls versions raise exception
         """
-        args = {"connect": {"host": "localhost"}, "tls": {"tls_version": "custom_tls"}}
+        args = {"tls_version": "custom_tls"}
 
         with pytest.raises(exceptions.MQTTTLSError):
-            MQTTClient(**args)
+            _handle_tls_args(args)
 
 
 @pytest.fixture(name="req")
@@ -139,3 +141,47 @@ class TestRequests:
         """All format variables should be present
         """
         MQTTRequest(Mock(), req, includes)
+
+
+class TestSubscription(object):
+    @staticmethod
+    def get_mock_client_with(subcribe_action):
+        mock_paho = Mock(spec=paho.Client, subscribe=subcribe_action)
+        mock_client = Mock(
+            spec=MQTTClient,
+            _client=mock_paho,
+            _subscribed={},
+            _subscribe_lock=MagicMock(),
+        )
+        return mock_client
+
+    def test_handles_subscriptions(self):
+        def subscribe_success(topic, *args, **kwargs):
+            return (0, 123)
+
+        mock_client = TestSubscription.get_mock_client_with(subscribe_success)
+
+        MQTTClient.subscribe(mock_client, "abc")
+
+        assert mock_client._subscribed[123].topic == "abc"
+        assert mock_client._subscribed[123].subscribed == False
+
+    def test_no_subscribe_on_err(self):
+        def subscribe_err(topic, *args, **kwargs):
+            return (1, 123)
+
+        mock_client = TestSubscription.get_mock_client_with(subscribe_err)
+
+        MQTTClient.subscribe(mock_client, "abc")
+
+        assert mock_client._subscribed == {}
+
+    def test_no_subscribe_on_unrecognised_suback(self):
+        def subscribe_success(topic, *args, **kwargs):
+            return (0, 123)
+
+        mock_client = TestSubscription.get_mock_client_with(subscribe_success)
+
+        MQTTClient._on_subscribe(mock_client, "abc", {}, 123, 0)
+
+        assert mock_client._subscribed == {}

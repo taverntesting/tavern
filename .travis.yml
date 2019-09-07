@@ -30,19 +30,19 @@ jobs:
     # Initial checks
     # Just pyflakes for now but there might be an isort/pep8 check in future too
     - python: 3.7
-      env: TOXENV=py37flakes TOXCFG=tox.ini
+      env: TOXENV=py37black TOXCFG=tox.ini
       stage: check
     - python: 3.7
-      env: TOXENV=py37black TOXCFG=tox.ini
+      env: TOXENV=py37 TOXCFG=tox.ini
+      stage: check
+    - python: 3.7
+      env: TOXENV=py36lint TOXCFG=tox.ini
       stage: check
 
     # 'Basic' tests
     # This runs pylint and the most basic tests for python 2/3
     - python: 3.7
       env: TOXENV=py37 TOXCFG=tox.ini
-      stage: basic-tests
-    - python: 3.7
-      env: TOXENV=py36lint TOXCFG=tox.ini
       stage: basic-tests
 
     - python: 3.7
@@ -77,6 +77,9 @@ jobs:
       stage: full-tests
     - python: 3.7
       env: TOXENV=py37-advanced TOXCFG=tox-integration.ini
+      stage: full-tests
+    - python: 3.7
+      env: TOXENV=py37-hooks TOXCFG=tox-integration.ini
       stage: full-tests
     - stage: deploy
       script: skip

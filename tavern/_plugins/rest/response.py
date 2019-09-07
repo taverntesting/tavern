@@ -5,8 +5,8 @@ from urllib.parse import urlparse, parse_qs
 
 from requests.status_codes import _codes
 
-from tavern.util.dict_util import recurse_access_key, deep_dict_merge
-from tavern.util import exceptions
+from tavern.testutils.pytesthook.newhooks import call_hook
+from tavern.util.dict_util import deep_dict_merge
 from tavern.util.exceptions import TestFailError
 from tavern.response.base import BaseResponse, indent_err_text
 
@@ -17,17 +17,12 @@ class RestResponse(BaseResponse):
     def __init__(self, session, name, expected, test_block_config):
         # pylint: disable=unused-argument
 
-        super(RestResponse, self).__init__()
-
         defaults = {"status_code": 200}
 
-        self.name = name
+        super(RestResponse, self).__init__(
+            name, deep_dict_merge(defaults, expected), test_block_config
+        )
 
-        self._check_for_validate_functions(expected)
-
-        self.expected = deep_dict_merge(defaults, expected)
-        self.response = None
-        self.test_block_config = test_block_config
         self.status_code = None
 
         def check_code(code):
@@ -144,6 +139,13 @@ class RestResponse(BaseResponse):
         """
         self._verbose_log_response(response)
 
+        call_hook(
+            self.test_block_config,
+            "pytest_tavern_beta_after_every_response",
+            expected=self.expected,
+            response=response,
+        )
+
         self.response = response
         self.status_code = response.status_code
 
@@ -167,9 +169,15 @@ class RestResponse(BaseResponse):
         # Get any keys to save
         saved = {}
 
-        saved.update(self._save_value("body", body))
-        saved.update(self._save_value("headers", response.headers))
-        saved.update(self._save_value("redirect_query_params", redirect_query_params))
+        saved.update(self.maybe_get_save_values_from_save_block("body", body))
+        saved.update(
+            self.maybe_get_save_values_from_save_block("headers", response.headers)
+        )
+        saved.update(
+            self.maybe_get_save_values_from_save_block(
+                "redirect_query_params", redirect_query_params
+            )
+        )
 
         saved.update(self.maybe_get_save_values_from_ext(response, self.expected))
 
@@ -198,6 +206,13 @@ class RestResponse(BaseResponse):
         except KeyError:
             expected_block = {}
 
+        if isinstance(expected_block, dict):
+            if expected_block.pop("$ext", None):
+                logger.warning(
+                    "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
+                    blockname,
+                )
+
         if blockname == "headers":
             # Special case for headers. These need to be checked in a case
             # insensitive manner
@@ -215,46 +230,3 @@ class RestResponse(BaseResponse):
             block_strictness = test_strictness
 
         self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
-
-    def _save_value(self, key, to_check):
-        """Save a value in the response for use in future tests
-
-        Args:
-            to_check (dict): An element of the response from which the given key
-                is extracted
-            key (str): Key to use
-
-        Returns:
-            dict: dictionary of save_name: value, where save_name is the key we
-                wanted to save this value as
-        """
-        espec = self.expected
-        saved = {}
-
-        try:
-            expected = espec["save"][key]
-        except KeyError:
-            logger.debug("Nothing expected to save for %s", key)
-            return {}
-
-        if not to_check:
-            self._adderr("No %s in response (wanted to save %s)", key, expected)
-        else:
-            for save_as, joined_key in expected.items():
-                try:
-                    saved[save_as] = recurse_access_key(to_check, joined_key)
-                except (
-                    exceptions.InvalidQueryResultTypeError,
-                    exceptions.KeySearchNotFoundError,
-                ) as e:
-                    self._adderr(
-                        "Wanted to save '%s' from '%s', but it did not exist in the response",
-                        joined_key,
-                        key,
-                        e=e,
-                    )
-
-        if saved:
-            logger.debug("Saved %s for '%s' from response", saved, key)
-
-        return saved

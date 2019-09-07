@@ -247,6 +247,51 @@ You can write your own functions or use those built in to Tavern. Each function
 should take the response as its first argument, and you can pass extra arguments
 using the **extra_kwargs** key.
 
+To make sure that Tavern can find external functions you need to make sure that
+it is in the Python path. For example, if `utils.py` is in the 'tests' folder,
+you will need to run your tests something like (on Linux):
+
+```shell
+$ PYTHONPATH=$PYTHONPATH:tests py.test tests/
+```
+
+### Checking the response using external functions
+
+The function(s) should be put into the `verify_response_with` block of a
+response (HTTP or MQTT):
+
+```yaml
+  - name: Check friendly mess
+    request:
+      url: "{host}/token"
+      method: GET
+    response:
+      status_code: 200
+      verify_response_with:
+        function: testing_utils:message_says_hello
+```
+
+```python
+# testing_utils.py
+def message_says_hello(response):
+    """Make sure that the response was friendly
+    """
+    assert response.json().get("message") == "hello world"
+```
+
+A list of functions can also be passed to `verify_response_with` if you need to
+check multiple things:
+
+```yaml
+    response:
+      status_code: 200
+      verify_response_with:
+        - function: testing_utils:message_says_hello
+        - function: testing_utils:message_says_something_else
+          extra_kwargs:
+            should_say: hello
+```
+
 ### Built-in validators
 
 There are two external functions built in to Tavern: `validate_jwt` and
@@ -263,15 +308,14 @@ changed to use a different library to avoid this issue.**
 # Make sure the response contains a key called 'token', the value of which is a
 # valid jwt which is signed by the given key.
 response:
-  body:
-    $ext:
-      function: tavern.testutils.helpers:validate_jwt
-      extra_kwargs:
-        jwt_key: "token"
-        key: CGQgaG7GYvTcpaQZqosLy4
-        options:
-          verify_signature: true
-          verify_aud: false
+  verify_response_with:
+    function: tavern.testutils.helpers:validate_jwt
+    extra_kwargs:
+      jwt_key: "token"
+      key: CGQgaG7GYvTcpaQZqosLy4
+      options:
+        verify_signature: true
+        verify_aud: false
 ```
 
 `validate_pykwalify` takes a
@@ -281,23 +325,22 @@ body of the response against it.
 ```yaml
 # Make sure the response matches the given schema - a sequence of dictionaries,
 # which has to contain a user name and may contain a user number.
-response:
-  body:
-    $ext:
-      function: tavern.testutils.helpers:validate_pykwalify
-      extra_kwargs:
-        schema:
-          type: seq
-          required: True
-          sequence:
-          - type: map
-            mapping:
-              user_number:
-                type: int
-                required: False
-              user_name:
-                type: str
-                required: True
+response: 
+  verify_response_with:
+    function: tavern.testutils.helpers:validate_pykwalify
+    extra_kwargs:
+      schema:
+        type: seq
+        required: True
+        sequence:
+        - type: map
+          mapping:
+            user_number:
+              type: int
+              required: False
+            user_name:
+              type: str
+              required: True
 ```
 
 If an external function you are using raises any exception, the test will be
@@ -312,46 +355,18 @@ An external function must return a dict where each key either points to a single
 to an object which is accessible using dot notation. The easiest way to do this
 is to return a [Box](https://pypi.python.org/pypi/python-box/) object.
 
-To make sure that Tavern can find external functions you need to make sure that
-it is in the Python path. For example, if `utils.py` is in the 'tests' folder,
-you will need to run your tests something like (on Linux):
-
-```shell
-$ PYTHONPATH=$PYTHONPATH:tests py.test tests/
-```
-
-Strictly, `$ext` functions can be used anywhere in `tests_schema.yaml` that
-calls `validate_extensions` - this includes:
-
-- HTTP Request:
-    - `json`
-    - `params`
-    - `headers`
-    - `auth`
-- HTTP Response:
-    - `headers`
-    - `redirect_query_params`
-    - `body`
-    - `save` 
-
-- MQTT Publish:
-    - `json`
-- MQTT Response:
-    - `json`
-
-
-**Note**: Functions used in the `body` (HTTP) or `json` (MQTT) block in the 
-_response_ block take the response as the first argument. Functions used anywhere
-else should take _no_ arguments. This might be changed in future to be less
-confusing.
+**Note**: Functions used in the `verify_response_with` block in the
+_response_ block take the response as the first argument. Functions used
+anywhere else should take _no_ arguments. This might be changed in future to be
+less confusing.
 
 #### Injecting external data into a request
 
-A use case for this is trying to insert some data into a response that is
-either calculated dynamically or fetched from an external source. If we want to
+A use case for this is trying to insert some data into a response that is either
+calculated dynamically or fetched from an external source. If we want to
 generate some authentication headers to access our API for example, we can use
-an `$ext` function to calculate it dynamically (note as above that this function
-should _not_ take any arguments):
+an external function using the `$ext` key to calculate it dynamically (note as
+above that this function should _not_ take any arguments):
 
 ```python
 # utils.py
@@ -443,17 +458,17 @@ For example, if our server saves the user ID in the 'sub' field of the JWT:
       password: abc123
   response:
     status_code: 200
-    body:
+    verify_response_with:
       # Make sure a token exists
-      $ext:
-        function: tavern.testutils.helpers:validate_jwt
-        extra_kwargs:
-          jwt_key: "token"
-          options:
-            verify_signature: false
+      function: tavern.testutils.helpers:validate_jwt
+      extra_kwargs:
+        jwt_key: "token"
+        options:
+          verify_signature: false
     save:
       # Saves a jwt token returned as 'token' in the body as 'jwt'
       # in the test configuration for use in future tests
+      # Note the use of $ext again
       $ext:
         function: tavern.testutils.helpers:validate_jwt
         extra_kwargs:
@@ -878,13 +893,12 @@ stages:
       save:
         body:
           test_user_login_token: token
-      body:
-        $ext:
-          function: tavern.testutils.helpers:validate_jwt
-          extra_kwargs:
-            jwt_key: "token"
-            options:
-              verify_signature: false
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_jwt
+        extra_kwargs:
+          jwt_key: "token"
+          options:
+            verify_signature: false
 
   - name: Get user location
     request:
@@ -1424,7 +1438,7 @@ values. Say we want to convert a value from an included file to an integer:
 ```yaml
 request:
   json:
-    an_integer: !!int "{my_integer:d}" # Error
+    # an_integer: !!int "{my_integer:d}" # Error
     an_integer: !int "{my_integer:d}" # Works
 ```
 
@@ -1521,8 +1535,6 @@ response to achieve something similar.
 
 ## Marking tests
 
-**The section on marking tests only applies if you are using Pytest**
-
 Since 0.11.0, it is possible to 'mark' tests. This uses Pytest behind the
 scenes - see the [pytest mark documentation](https://docs.pytest.org/en/latest/example/markers.html)
 for details on their implementation and prerequisites for use.
@@ -1588,14 +1600,33 @@ $ py.test -m "fast"
 Marks can only be applied to a whole test, not to individual stages (with the
 exception of `skip`, see below).
 
+### Formatting marks
+
+Marks can be formatted just like other variables:
+
+```yaml
+---
+test_name: Get server info from slow endpoint
+
+marks:
+  - "{specialmarker}"
+```
+
+This is mainly for combining with one or more of the special marks as mentioned
+below.
+
+**NOTE**: Do _not_ use the `!raw` token or rely on double curly brace formatting
+when formatting markers. Due to pytest-xdist, some behaviour with the formatting
+of markers is subtly different than other places in Tavern.
+
 ### Special marks
 
 There are 4 different 'special' marks from Pytest which behave the same as if
 they were used on a Python test.
 
-**NOTE**: If you look in the Tavern integration tests, you may notice a
-`_xfail` key being used in some of the tests. This is for INTERNAL USE ONLY and
-may be removed in future without warning.
+**NOTE**: If you look in the Tavern integration tests, you may notice a `_xfail`
+key being used in some of the tests. This is for INTERNAL USE ONLY and may be
+removed in future without warning.
 
 #### skip
 
@@ -1939,3 +1970,62 @@ There are some limitations on fixtures:
 - Fixtures should be 'function' or 'session' scoped. 'module' scoped fixtures
   will raise an error and 'class' scoped fixtures may not behave as you expect.
 - Parametrizing fixtures does not work - this is a limitation in Pytest.
+
+
+## Hooks
+
+As well as fixtures as mentioned in the previous section, since version 0.28.0
+there is a couple of hooks which can be used to extract more information from
+tests.
+
+These hooks are used by defining a function with the name of the hook in your
+`conftest.py` that take the same arguments _with the same names_ - these hooks
+will then be picked up at runtime and called appropriately.
+
+**NOTE**: These hooks should be considered a 'beta' feature, they are ready to
+use but the names and arguments they take should be considered unstable and may
+change in a future release (and more may also be added).
+
+### Before every test run
+
+This hook is called after fixtures, global configuration, and plugins have been
+loaded, but _before_ formatting is done on the test and the schema of the test
+is checked. This can be used to 'inject' extra things into the test before it is
+run, such as configurations blocks for a plugin, or just for some kind of
+logging.
+
+Args: 
+- test_dict (dict): Test to run
+- variables (dict): Available variables
+
+Example usage:
+
+```python
+import logging
+
+def pytest_tavern_beta_before_every_test_run(test_dict, variables):
+    logging.info("Starting test %s", test_dict["test_name"])
+    
+    variables["extra_var"] = "abc123"
+```
+
+### After every response
+
+This hook is called after every _response_ for each _stage_ - this includes HTTP
+responses, but also MQTT responses if you are using MQTT. This means if you are
+using MQTT it might be called multiple times for each stage!
+
+Args: 
+- response (object): Response object. Could be whatever kind of response object
+  is returned by whatever plugin is used - if using the default HTTP
+  implementation which uses Requests, this will be a `requests.Response` object.
+  If using MQTT, this will be a paho-mqtt `Message` object.
+- expected (dict): Formatted response block from the stage.
+
+Example usage:
+
+```python
+def pytest_tavern_beta_after_every_response(expected, response):
+    with open("logfile.txt", "a") as logfile:
+        logfile.write("Got response: {}".format(response.json()))
+```

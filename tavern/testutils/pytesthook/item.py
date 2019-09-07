@@ -8,16 +8,15 @@ from tavern.core import run_test
 from tavern.plugins import load_plugins
 from tavern.schemas.files import verify_tests
 from tavern.util import exceptions
+from tavern.testutils.pytesthook.newhooks import call_hook
 
 from .error import ReprdError
 from .util import load_global_cfg
-
 
 logger = logging.getLogger(__name__)
 
 
 class YamlItem(pytest.Item):
-
     """Simple wrapper around new test type that can report errors more
     accurately than the default pytest reporting stuff
 
@@ -127,6 +126,8 @@ class YamlItem(pytest.Item):
 
         load_plugins(self.global_cfg)
 
+        self.global_cfg["tavern_internal"] = {"pytest_hook_caller": self.config.hook}
+
         # INTERNAL
         # NOTE - now that we can 'mark' tests, we could use pytest.mark.xfail
         # instead. This doesn't differentiate between an error in verification
@@ -134,10 +135,17 @@ class YamlItem(pytest.Item):
         xfail = self.spec.get("_xfail", False)
 
         try:
-            verify_tests(self.spec)
-
             fixture_values = self._load_fixture_values()
             self.global_cfg["variables"].update(fixture_values)
+
+            call_hook(
+                self.global_cfg,
+                "pytest_tavern_beta_before_every_test_run",
+                test_dict=self.spec,
+                variables=self.global_cfg["variables"],
+            )
+
+            verify_tests(self.spec)
 
             run_test(self.path, self.spec, self.global_cfg)
         except exceptions.BadSchemaError:
@@ -170,10 +178,11 @@ class YamlItem(pytest.Item):
             self.config.getini("tavern-use-default-traceback")
             or self.config.getoption("tavern_use_default_traceback")
             or not issubclass(excinfo.type, exceptions.TavernException)
+            or issubclass(excinfo.type, exceptions.BadSchemaError)
         ):
-            return super(YamlItem, self).repr_failure(excinfo)
+            return ReprdError(excinfo, self)
 
-        return ReprdError(excinfo, self)
+        return super(YamlItem, self).repr_failure(excinfo)
 
     def reportinfo(self):
         return self.fspath, 0, "{s.path}::{s.name:s}".format(s=self)
