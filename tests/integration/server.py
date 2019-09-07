@@ -251,3 +251,28 @@ def get_redirected_to_here():
 @app.route("/get_single_json_item", methods=["GET"])
 def return_one_item():
     return jsonify("c82bfa63-fd2a-419a-8c06-21cb283fd9f7"), 200
+
+
+@app.route("/authtest/basic", methods=["GET"])
+def expect_basic_auth():
+    auth = request.authorization
+
+    if auth is None:
+        return jsonify({"status": "No authorisation"}), 403
+
+    if auth.type == "basic":
+        if auth.username == "fakeuser" and auth.password == "fakepass":
+            return (
+                jsonify(
+                    {
+                        "auth_type": auth.type,
+                        "auth_user": auth.username,
+                        "auth_pass": auth.password,
+                    }
+                ),
+                200,
+            )
+        else:
+            return jsonify({"error": "Wrong username/password"}), 401
+    else:
+        return jsonify({"error": "unrecognised auth type"}), 403
