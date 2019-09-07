@@ -1535,8 +1535,6 @@ response to achieve something similar.
 
 ## Marking tests
 
-**The section on marking tests only applies if you are using Pytest**
-
 Since 0.11.0, it is possible to 'mark' tests. This uses Pytest behind the
 scenes - see the [pytest mark documentation](https://docs.pytest.org/en/latest/example/markers.html)
 for details on their implementation and prerequisites for use.
@@ -1602,14 +1600,33 @@ $ py.test -m "fast"
 Marks can only be applied to a whole test, not to individual stages (with the
 exception of `skip`, see below).
 
+### Formatting marks
+
+Marks can be formatted just like other variables:
+
+```yaml
+---
+test_name: Get server info from slow endpoint
+
+marks:
+  - "{specialmarker}"
+```
+
+This is mainly for combining with one or more of the special marks as mentioned
+below.
+
+**NOTE**: Do _not_ use the `!raw` token or rely on double curly brace formatting
+when formatting markers. Due to pytest-xdist, some behaviour with the formatting
+of markers is subtly different than other places in Tavern.
+
 ### Special marks
 
 There are 4 different 'special' marks from Pytest which behave the same as if
 they were used on a Python test.
 
-**NOTE**: If you look in the Tavern integration tests, you may notice a
-`_xfail` key being used in some of the tests. This is for INTERNAL USE ONLY and
-may be removed in future without warning.
+**NOTE**: If you look in the Tavern integration tests, you may notice a `_xfail`
+key being used in some of the tests. This is for INTERNAL USE ONLY and may be
+removed in future without warning.
 
 #### skip
 

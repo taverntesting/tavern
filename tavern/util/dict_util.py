@@ -23,12 +23,15 @@ class _FormattedString(object):
         super(_FormattedString, self).__init__(s)
 
 
-def format_keys(val, variables):
+def format_keys(val, variables, no_double_format=True):
     """recursively format a dictionary with the given values
 
     Args:
         val (object): Input dictionary to format
         variables (dict): Dictionary of keys to format it with
+        no_double_format (bool): Whether to use the 'inner formatted string' class to avoid double formatting
+            This is required if passing something via pytest-xdist, such as markers:
+            https://github.com/taverntesting/tavern/issues/431
 
     Returns:
         dict: recursively formatted dictionary
@@ -58,10 +61,12 @@ def format_keys(val, variables):
             logger.error("Empty format values are invalid")
             raise_from(exceptions.MissingFormatError(e.args), e)
 
-        class InnerFormattedString(_FormattedString, type(val)):
-            """Hack for python 2"""
+        if no_double_format:
 
-        formatted = InnerFormattedString(formatted)
+            class InnerFormattedString(_FormattedString, type(val)):
+                """Hack for python 2"""
+
+            formatted = InnerFormattedString(formatted)
     elif isinstance(val, TypeConvertToken):
         value = format_keys(val.value, box_vars)
         formatted = val.constructor(value)
