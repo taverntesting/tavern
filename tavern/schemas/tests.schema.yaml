@@ -142,7 +142,7 @@ schema;stage:
           required: false
 
         auth:
-          func: validate_extensions
+          func: validate_json_with_ext
           type: seq
           required: false
           sequence:
