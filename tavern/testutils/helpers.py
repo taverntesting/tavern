@@ -116,7 +116,7 @@ def validate_regex(response, expression, header=None):
     else:
         content = response.text
 
-    match = re.search(expression, content)
+    match = re.search(expression, content) or False
     assert match
 
     return {"regex": Box(match.groupdict())}
