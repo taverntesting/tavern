@@ -70,10 +70,16 @@ def _generate_proto_import(source, output):
 
 
 def _import_grpc_module(output):
+    output_path = []
     if os.path.exists(output):
-        sys.path.append(output)
-        for (_, name, _) in pkgutil.iter_modules([output]):
-            import_module("." + name, package=output)
+        output_path.append(output)
+    else:
+        mod = __import__(output, fromlist=[""])
+        output_path.extend(mod.__path__)
+
+    sys.path.extend(output_path)
+    for (_, name, _) in pkgutil.iter_modules(output_path):
+        import_module("." + name, package=output)
 
 
 class GRPCClient(object):
@@ -200,12 +206,15 @@ class GRPCClient(object):
         except grpc.RpcError as rpc_error:  # Since this object is guaranteed to be a grpc.Call, might as well include that in its name.
             logger.error("Call failure: %s", rpc_error)
             status = rpc_status.from_call(rpc_error)
-            logger.warning(
-                "Unable get %s service reflection information code %s detail %s",
-                service,
-                status.code,
-                status.details,
-            )
+            if status is None:
+                logger.warning("Error occurred %s", rpc_error)
+            else:
+                logger.warning(
+                    "Unable get %s service reflection information code %s detail %s",
+                    service,
+                    status.code,
+                    status.details,
+                )
             raise_from(exceptions.GRPCRequestException, rpc_error)
 
         return self._get_grpc_service(channel, service, method)
