@@ -344,6 +344,6 @@ def run(in_file, tavern_global_cfg=None, **kwargs):
             for details
 
     Returns:
-        bool: False if there were test failures, True otherwise
+        int: 0 if tests were successful and nonzero if tests failed.
     """
     return _run_pytest(in_file, tavern_global_cfg, **kwargs)
