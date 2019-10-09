@@ -175,7 +175,7 @@ Tavern uses to send the request, and any format variables. This is used like any
 other Pytest flag:
 
 1. Passed on on the command line using `--tavern-beta-new-traceback`
-2. Put in the Pytest configuration file (pytest.ini, setup.cfg, ...) `tavern_beta_new_traceback = True`
+2. Put in the Pytest configuration file (pytest.ini, setup.cfg, ...) `tavern-beta-new-traceback = True`
 
 Rather than the Python traceback as shown above, we get an error output like this:
 
