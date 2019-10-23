@@ -25,6 +25,8 @@ def _resolve_test_stages(test_spec, available_stages):
     test_stages = []
     for raw_stage in test_spec["stages"]:
         stage = raw_stage
+        if stage.get("ignore", False):
+            continue
         if stage.get("type") == "ref":
             if "id" in stage:
                 ref_id = stage["id"]
