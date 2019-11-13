@@ -50,7 +50,11 @@ def format_keys(val, variables, no_double_format=True):
         logger.debug("Already formatted %s, not double-formatting", formatted)
     elif isinstance(val, (ustr, str)):
         try:
-            formatted = val.format(**box_vars)
+            formatted = val.format(**dict(map(
+                lambda k: (k, Box(variables[k]))
+                if isinstance(variables[k], dict)
+                else (k, variables[k]),
+                variables)))
         except KeyError as e:
             logger.error(
                 "Failed to resolve string [%s] with variables [%s]", val, box_vars
