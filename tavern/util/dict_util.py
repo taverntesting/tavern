@@ -56,7 +56,7 @@ def format_keys(val, variables, no_double_format=True):
                         lambda k: (k, Box(variables[k]))
                         if isinstance(variables[k], dict)
                         else (k, variables[k]),
-                        variables
+                        variables,
                     )
                 )
             )
