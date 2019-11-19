@@ -72,11 +72,11 @@ class SourceMappingConstructor(SafeConstructor):
     # construction") by first exhausting iterators, then yielding
     # copies.
     def construct_yaml_map(self, node):
-        obj, = SafeConstructor.construct_yaml_map(self, node)
+        (obj,) = SafeConstructor.construct_yaml_map(self, node)
         return dict_node(obj, node.start_mark, node.end_mark)
 
     def construct_yaml_seq(self, node):
-        obj, = SafeConstructor.construct_yaml_seq(self, node)
+        (obj,) = SafeConstructor.construct_yaml_seq(self, node)
         return list_node(obj, node.start_mark, node.end_mark)
 
 
