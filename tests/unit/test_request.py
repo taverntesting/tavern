@@ -3,7 +3,7 @@ import tempfile
 
 import pytest
 import requests
-from contextlib2 import ExitStack
+from contextlib import ExitStack
 from unittest.mock import Mock
 from requests.cookies import RequestsCookieJar
 

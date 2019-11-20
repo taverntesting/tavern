@@ -5,13 +5,12 @@ import mimetypes
 import os
 import warnings
 from contextlib import ExitStack
+from itertools import filterfalse
 from itertools import tee
 from urllib.parse import quote_plus
 
 import requests
 from box import Box
-from contextlib2 import ExitStack
-from future.moves.itertools import filterfalse
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
 
