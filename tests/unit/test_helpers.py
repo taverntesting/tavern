@@ -1,15 +1,17 @@
-from mock import patch
-import yaml
 import sys
-import pytest
-import _pytest
 from textwrap import dedent
 
-from tavern.util import exceptions
-from tavern.testutils.helpers import validate_pykwalify
+import _pytest
+import pytest
+import yaml
+from mock import patch
+
 from tavern.core import run
+from tavern.testutils.helpers import validate_pykwalify
 from tavern.testutils.helpers import validate_regex, validate_content
 from tavern.testutils.pytesthook.item import YamlItem
+from tavern.util import exceptions
+from tavern.util.dict_util import _check_parsed_values, format_keys
 
 
 class FakeResponse:
@@ -244,3 +246,20 @@ class TestPykwalifyExtension:
             validate_pykwalify(
                 nested_response, yaml.load(correct_schema, Loader=yaml.SafeLoader)
             )
+
+
+class TestCheckParseValues(object):
+    @pytest.mark.parametrize("item", [[134], {"a": 2}, yaml, yaml.load, yaml.SafeLoader])
+    def test_warns_bad_type(self, item):
+        with patch("tavern.util.dict_util.logger.warning") as wmock:
+            _check_parsed_values("{fd}", {"fd": item})
+
+        assert wmock.called_with(
+            "Formatting 'fd' will result in it being coerced to a string (it is a {})".format(type(item)))
+
+    @pytest.mark.parametrize("item", [1, "a", 1.3, format_keys("{s}", dict(s=2))])
+    def test_no_warn_good_type(self, item):
+        with patch("tavern.util.dict_util.logger.warning") as wmock:
+            _check_parsed_values("{fd}", {"fd": item})
+
+        assert not wmock.called
