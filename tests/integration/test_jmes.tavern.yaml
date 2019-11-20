@@ -106,6 +106,25 @@ stages:
 
 ---
 
+test_name: Test we can save a single value with jmespath if it has a dot in
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get item with dot in a name
+    request:
+      url: "{host}/jmes/with_dot"
+      method: GET
+    response:
+      status_code: 200
+      save:
+        body:
+          saved_with_dot_a: '"data.a"'
+          saved_with_dot_b: '"data.b"'
+
+---
+
 test_name: Test 'negative' jmespath tests
 
 includes:

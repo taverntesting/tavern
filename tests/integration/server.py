@@ -284,3 +284,11 @@ def return_empty_paged():
         "pages": 0,
         "data": []
     }), 200
+
+
+@app.route("/jmes/with_dot", methods=["GET"])
+def return_with_dot():
+    return jsonify({
+        "data.a": "a",
+        "data.b": "b"
+    }), 200
