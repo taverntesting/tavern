@@ -1,12 +1,15 @@
 import sys
+import tempfile
 from textwrap import dedent
 
 import _pytest
 import pytest
 import yaml
+from mock import Mock
 from mock import patch
 
 from tavern.core import run
+from tavern.schemas.extensions import validate_file_spec
 from tavern.testutils.helpers import validate_pykwalify
 from tavern.testutils.helpers import validate_regex, validate_content
 from tavern.testutils.pytesthook.item import YamlItem
@@ -268,3 +271,28 @@ class TestCheckParseValues(object):
             _check_parsed_values("{fd}", {"fd": item})
 
         assert not wmock.called
+
+
+class TestCheckFileSpec(object):
+    def _wrap_test_block(self, dowith):
+        validate_file_spec({"files": dowith}, Mock(), Mock())
+
+    def test_string_valid(self):
+        with tempfile.NamedTemporaryFile() as tfile:
+            self._wrap_test_block(tfile.name)
+
+    def test_dict_valid(self):
+        with tempfile.NamedTemporaryFile() as tfile:
+            self._wrap_test_block({"file_path": tfile.name})
+
+    def test_nonexistsnt_string(self):
+        with pytest.raises(exceptions.BadSchemaError):
+            self._wrap_test_block("kdsfofs")
+
+    def nonexistent_dict(self):
+        with pytest.raises(exceptions.BadSchemaError):
+            self._wrap_test_block({"file_path": "gogfgl"})
+
+    def extra_keys_dict(self):
+        with pytest.raises(exceptions.BadSchemaError):
+            self._wrap_test_block({"file_path": "gogfgl", "blop": 123})

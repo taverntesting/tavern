@@ -365,3 +365,24 @@ class TestGetFiles(object):
         file = file_spec["files"]["file1"]
         assert file[0] == os.path.basename(tfile.name)
         assert file[2] == "application/json"
+
+    def test_use_long_form_content_type(self, mock_stack):
+        """Use custom content type"""
+
+        with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
+            request_args = {
+                "files": {
+                    "file1": {
+                        "file_path": tfile.name,
+                        "content_type": "abc123",
+                        "content_encoding": "def456",
+                    }
+                }
+            }
+
+            file_spec = _get_file_arguments(request_args, mock_stack)
+
+        file = file_spec["files"]["file1"]
+        assert file[0] == os.path.basename(tfile.name)
+        assert file[2] == "abc123"
+        assert file[3] == {"Content-Encoding": "def456"}
