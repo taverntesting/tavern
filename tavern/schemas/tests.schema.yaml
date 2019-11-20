@@ -166,7 +166,8 @@ schema;stage:
           type: map
           mapping:
             re;(.*):
-              type: str
+              type: any
+          func: validate_file_spec
 
         method:
           type: str

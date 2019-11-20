@@ -292,6 +292,33 @@ def _read_expected_cookies(session, rspec, test_block_config):
     return deep_dict_merge(from_cookiejar, from_extra)
 
 
+def _read_filespec(filespec):
+    """
+    Get configuration for uploading file
+
+    Can either be just a path to a file or a 'long' format including content type/encoding
+
+    Args:
+        filespec: Either a string with the path to a file or a dictionary with file_path and possible content_type and/or content_encoding
+
+    Returns:
+        tuple: (file path, content type, content encoding)
+    """
+    if isinstance(filespec, str):
+        return filespec, None, None
+    elif isinstance(filespec, dict):
+        return (
+            filespec.get("file_path"),
+            filespec.get("content_type"),
+            filespec.get("content_encoding"),
+        )
+    else:
+        # Could remove, also done in schema check
+        raise exceptions.BadSchemaError(
+            "File specification must be a path or a dictionary"
+        )
+
+
 def _get_file_arguments(request_args, stack):
     """Get corect arguments for anything that should be passed as a file to
     requests
@@ -306,18 +333,24 @@ def _get_file_arguments(request_args, stack):
 
     files_to_send = {}
 
-    for key, filepath in request_args.get("files", {}).items():
+    for key, filespec in request_args.get("files", {}).items():
         if not mimetypes.inited:
             mimetypes.init()
+
+        filepath, content_type, encoding = _read_filespec(filespec)
 
         filename = os.path.basename(filepath)
 
         # a 2-tuple ('filename', fileobj)
         file_spec = [filename, stack.enter_context(open(filepath, "rb"))]
 
+        # Try to guess as well, but don't override what the user specified
+        guessed_content_type, guessed_encoding = mimetypes.guess_type(filepath)
+        content_type = content_type or guessed_content_type
+        encoding = encoding or guessed_encoding
+
         # If it doesn't have a mimetype, or can't guess it, don't
         # send the content type for the file
-        content_type, encoding = mimetypes.guess_type(filepath)
         if content_type:
             # a 3-tuple ('filename', fileobj, 'content_type')
             logger.debug("content_type for '%s' = '%s'", filename, content_type)
