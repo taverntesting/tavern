@@ -249,13 +249,18 @@ class TestPykwalifyExtension:
 
 
 class TestCheckParseValues(object):
-    @pytest.mark.parametrize("item", [[134], {"a": 2}, yaml, yaml.load, yaml.SafeLoader])
+    @pytest.mark.parametrize(
+        "item", [[134], {"a": 2}, yaml, yaml.load, yaml.SafeLoader]
+    )
     def test_warns_bad_type(self, item):
         with patch("tavern.util.dict_util.logger.warning") as wmock:
             _check_parsed_values("{fd}", {"fd": item})
 
         assert wmock.called_with(
-            "Formatting 'fd' will result in it being coerced to a string (it is a {})".format(type(item)))
+            "Formatting 'fd' will result in it being coerced to a string (it is a {})".format(
+                type(item)
+            )
+        )
 
     @pytest.mark.parametrize("item", [1, "a", 1.3, format_keys("{s}", dict(s=2))])
     def test_no_warn_good_type(self, item):
