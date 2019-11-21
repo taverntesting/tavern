@@ -1,9 +1,10 @@
+import io
 import logging
 import re
-import io
+
+from _pytest._code.code import FormattedExcinfo
 import py
 import yaml
-from _pytest._code.code import FormattedExcinfo
 
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys

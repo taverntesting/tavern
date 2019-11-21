@@ -1,7 +1,7 @@
-import re
-import operator
-
 from builtins import str
+import operator
+import re
+
 from future.utils import raise_from
 
 from tavern.util import exceptions

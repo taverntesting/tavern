@@ -1,20 +1,18 @@
+from abc import abstractmethod
 import logging
 import traceback
+import warnings
 
+from tavern.schemas.extensions import get_wrapped_response_function
+from tavern.util import exceptions
+from tavern.util.dict_util import check_keys_match_recursive, recurse_access_key
+from tavern.util.python_2_util import indent
 
 try:
     from collections.abc import Mapping
 except ImportError:
     from collections import Mapping
 
-from abc import abstractmethod
-import warnings
-
-from tavern.schemas.extensions import get_wrapped_response_function
-from tavern.util import exceptions
-from tavern.util.python_2_util import indent
-from tavern.util.dict_util import recurse_access_key
-from tavern.util.dict_util import check_keys_match_recursive
 
 logger = logging.getLogger(__name__)
 

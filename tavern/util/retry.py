@@ -1,5 +1,5 @@
-import logging
 from functools import wraps
+import logging
 
 from future.utils import raise_from
 

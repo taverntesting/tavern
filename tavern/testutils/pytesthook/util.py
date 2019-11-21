@@ -1,15 +1,17 @@
 import logging
 import os
 
+from box import Box
+
+from tavern.util import exceptions
+from tavern.util.dict_util import format_keys
+from tavern.util.general import load_global_config
+
 try:
     from functools import lru_cache
 except ImportError:
     from backports.functools_lru_cache import lru_cache
 
-from box import Box
-from tavern.util import exceptions
-from tavern.util.dict_util import format_keys
-from tavern.util.general import load_global_config
 
 logger = logging.getLogger(__name__)
 

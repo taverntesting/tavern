@@ -1,17 +1,18 @@
 import json
 import logging
 
+from requests.status_codes import _codes
+
+from tavern.response.base import BaseResponse, indent_err_text
+from tavern.testutils.pytesthook.newhooks import call_hook
+from tavern.util.dict_util import deep_dict_merge
+from tavern.util.exceptions import TestFailError
+
 try:
     from urllib.parse import urlparse, parse_qs
 except ImportError:
     from urlparse import urlparse, parse_qs  # type: ignore
 
-from requests.status_codes import _codes
-
-from tavern.testutils.pytesthook.newhooks import call_hook
-from tavern.util.dict_util import deep_dict_merge
-from tavern.util.exceptions import TestFailError
-from tavern.response.base import BaseResponse, indent_err_text
 
 logger = logging.getLogger(__name__)
 

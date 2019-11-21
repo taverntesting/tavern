@@ -1,14 +1,13 @@
 import logging
-from os.path import join, abspath, dirname
+from os.path import abspath, dirname, join
 
 import yaml
 
 from tavern.util.dict_util import format_keys
 
+from .client import MQTTClient
 from .request import MQTTRequest
 from .response import MQTTResponse
-from .client import MQTTClient
-
 
 logger = logging.getLogger(__name__)
 

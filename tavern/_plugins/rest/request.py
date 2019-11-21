@@ -1,29 +1,29 @@
 import contextlib
+from itertools import tee
 import json
 import logging
 import mimetypes
 import os
 import warnings
-from itertools import tee
 
-try:
-    from urllib.parse import quote_plus
-except ImportError:
-    from urllib import quote_plus  # type: ignore
-
+from box import Box
 from contextlib2 import ExitStack
 from future.moves.itertools import filterfalse
 from future.utils import raise_from
 import requests
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
-from box import Box
-
-from tavern.util import exceptions
-from tavern.util.dict_util import format_keys, check_expected_keys, deep_dict_merge
-from tavern.schemas.extensions import get_wrapped_create_function
 
 from tavern.request.base import BaseRequest
+from tavern.schemas.extensions import get_wrapped_create_function
+from tavern.util import exceptions
+from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
+
+try:
+    from urllib.parse import quote_plus
+except ImportError:
+    from urllib import quote_plus  # type: ignore
+
 
 logger = logging.getLogger(__name__)
 

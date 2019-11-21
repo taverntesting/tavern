@@ -1,18 +1,17 @@
-import os
+import contextlib
 import copy
-import tempfile
 import functools
 import logging
-import contextlib
+import os
+import tempfile
 
 from future.utils import raise_from
-
-import yaml
-from pykwalify import core
 import pykwalify
-from tavern.util.exceptions import BadSchemaError
-from tavern.plugins import load_plugins
+from pykwalify import core
+import yaml
 
+from tavern.plugins import load_plugins
+from tavern.util.exceptions import BadSchemaError
 from tavern.util.loader import IncludeLoader, load_single_document_yaml
 
 core.yaml.safe_load = functools.partial(yaml.load, Loader=IncludeLoader)

@@ -1,5 +1,5 @@
-import warnings
 from functools import partial
+import warnings
 
 
 class partialmethod(partial):
