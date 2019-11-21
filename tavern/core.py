@@ -1,21 +1,20 @@
-import logging
-from distutils.util import strtobool
-import warnings
-import os
 from copy import deepcopy
+from distutils.util import strtobool
+import logging
+import os
+import warnings
 
+from box import Box
+from contextlib2 import ExitStack
 import pytest
 
-from contextlib2 import ExitStack
-from box import Box
-
 from tavern.schemas.files import wrapfile
-from .util import exceptions
-from .util.dict_util import format_keys
-from .util.delay import delay
-from .util.retry import retry
 
-from .plugins import get_extra_sessions, get_request_type, get_verifiers, get_expected
+from .plugins import get_expected, get_extra_sessions, get_request_type, get_verifiers
+from .util import exceptions
+from .util.delay import delay
+from .util.dict_util import format_keys
+from .util.retry import retry
 
 logger = logging.getLogger(__name__)
 

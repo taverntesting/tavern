@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
-import os
-
-from subprocess import check_call
 from distutils.core import Command
+import os
+from subprocess import check_call
+
 from setuptools import setup
 
 

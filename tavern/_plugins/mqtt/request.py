@@ -1,15 +1,13 @@
-import logging
-import json
 import functools
+import json
+import logging
 
-from future.utils import raise_from
 from box import Box
-
-from tavern.util import exceptions
-from tavern.util.dict_util import format_keys, check_expected_keys
+from future.utils import raise_from
 
 from tavern.request.base import BaseRequest
-
+from tavern.util import exceptions
+from tavern.util.dict_util import check_expected_keys, format_keys
 
 logger = logging.getLogger(__name__)
 

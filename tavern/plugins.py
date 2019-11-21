@@ -5,10 +5,11 @@ significantly if/when a proper plugin system is implemented!
 """
 import logging
 
-import stevedore
 from future.utils import raise_from
+import stevedore
 
 from tavern.util.dict_util import format_keys
+
 from .util import exceptions
 
 logger = logging.getLogger(__name__)

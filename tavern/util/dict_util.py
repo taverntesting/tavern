@@ -1,14 +1,15 @@
+from builtins import str as ustr
 import collections
 import logging
 import string
 import warnings
-from builtins import str as ustr
 
-import jmespath
-from future.utils import raise_from
 from box import Box
+from future.utils import raise_from
+import jmespath
 
-from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
+from tavern.util.loader import ANYTHING, TypeConvertToken, TypeSentinel
+
 from . import exceptions
 
 logger = logging.getLogger(__name__)

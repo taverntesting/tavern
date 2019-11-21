@@ -1,19 +1,20 @@
+from builtins import str as ustr
 import copy
 import functools
 import itertools
 import logging
 import os
-from builtins import str as ustr
 
-import pytest
-import yaml
 from box import Box
 from future.utils import raise_from
+import pytest
+import yaml
 
 from tavern.schemas.files import verify_tests
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys
 from tavern.util.loader import IncludeLoader
+
 from .item import YamlItem
 from .util import load_global_cfg
 

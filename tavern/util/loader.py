@@ -1,12 +1,12 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
 
+from distutils.util import strtobool
 import logging
 import os.path
 import uuid
-from distutils.util import strtobool
 
-import pytest
 from future.utils import raise_from
+import pytest
 import yaml
 from yaml.composer import Composer
 from yaml.constructor import SafeConstructor
