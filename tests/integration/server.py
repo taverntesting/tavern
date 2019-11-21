@@ -280,15 +280,9 @@ def expect_basic_auth():
 
 @app.route("/jmes/return_empty_paged", methods=["GET"])
 def return_empty_paged():
-    return jsonify({
-        "pages": 0,
-        "data": []
-    }), 200
+    return jsonify({"pages": 0, "data": []}), 200
 
 
 @app.route("/jmes/with_dot", methods=["GET"])
 def return_with_dot():
-    return jsonify({
-        "data.a": "a",
-        "data.b": "b"
-    }), 200
+    return jsonify({"data.a": "a", "data.b": "b"}), 200
