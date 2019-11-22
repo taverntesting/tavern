@@ -1,6 +1,7 @@
 from builtins import str as ustr
 import collections
 import logging
+import re
 import string
 import warnings
 
@@ -8,7 +9,12 @@ from box import Box
 from future.utils import raise_from
 import jmespath
 
-from tavern.util.loader import ANYTHING, TypeConvertToken, TypeSentinel
+from tavern.util.loader import (
+    ANYTHING,
+    ForceIncludeToken,
+    TypeConvertToken,
+    TypeSentinel,
+)
 
 from . import exceptions
 
@@ -25,7 +31,7 @@ class _FormattedString(object):
         super(_FormattedString, self).__init__(s)
 
 
-def _check_parsed_values(to_format, box_vars):
+def _check_and_format_values(to_format, box_vars):
     formatter = string.Formatter()
     would_format = formatter.parse(to_format)
 
@@ -51,6 +57,45 @@ def _check_parsed_values(to_format, box_vars):
                     field_name,
                     type(would_replace),
                 )
+
+    return to_format.format(**box_vars)
+
+
+def _attempt_find_include(to_format, box_vars):
+    formatter = string.Formatter()
+    would_format = list(formatter.parse(to_format))
+
+    yaml_tag = ForceIncludeToken.yaml_tag
+
+    if len(would_format) != 1:
+        raise exceptions.InvalidFormattedJsonError(
+            "When using {}, there can only be one exactly format value, but got {}".format(
+                yaml_tag, len(would_format)
+            )
+        )
+
+    (_, field_name, format_spec, conversion) = would_format[0]
+
+    if field_name is None:
+        raise exceptions.InvalidFormattedJsonError(
+            "Invalid string used for {}".format(yaml_tag)
+        )
+
+    pattern = r"{" + field_name + r".*}"
+
+    if not re.match(pattern, to_format):
+        raise exceptions.InvalidFormattedJsonError(
+            "Invalid format specifier '{}' for {}".format(to_format, yaml_tag)
+        )
+
+    if format_spec:
+        logger.warning(
+            "Conversion specifier '%s' will be ignored for %s", format_spec, to_format
+        )
+
+    would_replace = formatter.get_field(field_name, [], box_vars)[0]
+
+    return formatter.convert_field(would_replace, conversion)
 
 
 def format_keys(val, variables, no_double_format=True):
@@ -79,8 +124,7 @@ def format_keys(val, variables, no_double_format=True):
     elif isinstance(formatted, _FormattedString):
         logger.debug("Already formatted %s, not double-formatting", formatted)
     elif isinstance(val, (ustr, str)):
-        _check_parsed_values(val, box_vars)
-        formatted = val.format(**box_vars)
+        formatted = _check_and_format_values(val, box_vars)
 
         if no_double_format:
 
@@ -89,8 +133,12 @@ def format_keys(val, variables, no_double_format=True):
 
             formatted = InnerFormattedString(formatted)
     elif isinstance(val, TypeConvertToken):
-        value = format_keys(val.value, box_vars)
-        formatted = val.constructor(value)
+        if isinstance(val, ForceIncludeToken):
+            initial_formatted = _attempt_find_include(val.value, box_vars)
+            formatted = format_keys(initial_formatted, box_vars)
+        else:
+            value = format_keys(val.value, box_vars)
+            formatted = val.constructor(value)
     else:
         logger.debug("Not formatting something of type '%s'", type(formatted))
 
