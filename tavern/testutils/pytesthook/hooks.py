@@ -49,7 +49,7 @@ def pytest_addoption(parser):
         "tavern-file-path-regex",
         help="Regex to search for Tavern YAML test files",
         default=r".+\.tavern\.ya?ml$",
-        type="args"
+        type="args",
     )
 
 
@@ -64,7 +64,9 @@ def pytest_collect_file(parent, path):
 
     if isinstance(pattern, list):
         if len(pattern) != 1:
-            raise exceptions.InvalidConfigurationException("tavern-file-path-regex must have exactly one option")
+            raise exceptions.InvalidConfigurationException(
+                "tavern-file-path-regex must have exactly one option"
+            )
         pattern = pattern[0]
 
     try:
