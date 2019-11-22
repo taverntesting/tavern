@@ -113,28 +113,17 @@ def _load_global_backends(pytest_config):
 
     backends = ["http", "mqtt"]
     for b in backends:
-        # similar logic to above - use ini, then cmdline if present
-        ini_opt = pytest_config.getini("tavern-{}-backend".format(b))
-        cli_opt = pytest_config.getoption("tavern_{}_backend".format(b))
-
-        in_use = ini_opt
-        if cli_opt and (cli_opt != ini_opt):
-            in_use = cli_opt
-
-        backend_settings[b] = in_use
+        backend_settings[b] = get_option_generic(
+            pytest_config, "tavern-{}-backend".format(b), None
+        )
 
     return backend_settings
 
 
 def _load_global_strictness(pytest_config):
     """Load the global 'strictness' setting"""
-    strict = []
-    if pytest_config.getini("tavern-strict") is not None:
-        # Lowest priority
-        strict = pytest_config.getini("tavern-strict")
-    elif pytest_config.getoption("tavern_strict") is not None:
-        # Middle priority
-        strict = pytest_config.getoption("tavern_strict")
+
+    strict = get_option_generic(pytest_config, "tavern-strict", [])
 
     if isinstance(strict, list):
         valid_keys = ["body", "headers", "redirect_query_params"]
@@ -149,9 +138,7 @@ def _load_global_strictness(pytest_config):
 
 def _load_global_follow_redirects(pytest_config):
     """Load the global 'follow redirects' setting"""
-    return pytest_config.getini(
-        "tavern-always-follow-redirects"
-    ) or pytest_config.getoption("tavern_always_follow_redirects")
+    return get_option_generic(pytest_config, "tavern-always-follow-redirects", False)
 
 
 def get_option_generic(pytest_config, flag, default):

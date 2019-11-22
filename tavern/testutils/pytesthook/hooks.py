@@ -63,7 +63,7 @@ def pytest_collect_file(parent, path):
 
     try:
         compiled = re.compile(pattern)
-    except Exception as e:
+    except Exception as e:  # pylint: disable=broad-except
         raise_from(exceptions.InvalidConfigurationException(e), e)
 
     match_tavern_file = compiled.match
