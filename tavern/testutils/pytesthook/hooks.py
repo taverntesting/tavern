@@ -49,6 +49,7 @@ def pytest_addoption(parser):
         "tavern-file-path-regex",
         help="Regex to search for Tavern YAML test files",
         default=r".+\.tavern\.ya?ml$",
+        type="args"
     )
 
 
@@ -61,14 +62,19 @@ def pytest_collect_file(parent, path):
         parent.config, "tavern-file-path-regex", r".+\.tavern\.ya?ml$"
     )
 
+    if isinstance(pattern, list):
+        if len(pattern) != 1:
+            raise exceptions.InvalidConfigurationException("tavern-file-path-regex must have exactly one option")
+        pattern = pattern[0]
+
     try:
         compiled = re.compile(pattern)
     except Exception as e:  # pylint: disable=broad-except
         raise_from(exceptions.InvalidConfigurationException(e), e)
 
-    match_tavern_file = compiled.match
+    match_tavern_file = compiled.search
 
-    if path.basename.startswith("test") and match_tavern_file(path.strpath):
+    if match_tavern_file(path.strpath):
         return YamlFile(path, parent)
 
     return None
