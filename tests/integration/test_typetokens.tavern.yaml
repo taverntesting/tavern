@@ -551,3 +551,29 @@ stages:
       status_code: 200
       body:
         value: !raw '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'
+
+---
+
+test_name: Test magic format token
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get dictionary
+    request:
+      url: "{host}/fake_dictionary"
+    response:
+      status_code: 200
+      save:
+        body:
+          whole_body: "@"
+
+  - name: reuse dictionary
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: !force_format_include "{whole_body}"
+    response:
+      status_code: 200
+      body: !force_format_include "{tavern.request_vars.json}"
