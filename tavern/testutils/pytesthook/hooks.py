@@ -52,13 +52,13 @@ def pytest_addoption(parser):
     )
 
 
-def pytest_collect_file(parent, path, config):
+def pytest_collect_file(parent, path):
     """On collecting files, get any files that end in .tavern.yaml or .tavern.yml as tavern
     test files
     """
 
     pattern = get_option_generic(
-        config, "tavern-file-path-regex", r".+\.tavern\.ya?ml$"
+        parent.config, "tavern-file-path-regex", r".+\.tavern\.ya?ml$"
     )
 
     try:
