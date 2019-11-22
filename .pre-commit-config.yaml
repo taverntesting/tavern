@@ -10,6 +10,10 @@ repos:
       - id: pyflakes
         language_version: python3.7
   - repo: https://github.com/pre-commit/mirrors-isort
-    rev: "4.3.21"
+    rev: v4.3.21
     hooks:
       - id: isort
+        args:
+          - --settings-path=.isort.cfg
+
+exclude: (docs/|example/|tests/|setup.py)
