@@ -3,6 +3,7 @@ import re
 from future.utils import raise_from
 
 from tavern.util import exceptions
+
 from .file import YamlFile
 from .util import add_parser_options, get_option_generic
 
