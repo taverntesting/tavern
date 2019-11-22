@@ -155,14 +155,21 @@ def _load_global_follow_redirects(pytest_config):
 
 
 def get_option_generic(pytest_config, flag, default):
-    ini_flag = flag.replace("-", "_")
-    cli_flag = flag
+    """Get a configuration option or return the default
+
+    Priority order is cmdline, then ini, then default"""
+    cli_flag = flag.replace("-", "_")
+    ini_flag = flag
+
+    # Lowest priority
+    use = default
 
     if pytest_config.getini(ini_flag) is not None:
-        # Lowest priority
-        return pytest_config.getini(ini_flag)
-    elif pytest_config.getoption(cli_flag) is not None:
         # Middle priority
-        return pytest_config.getoption(cli_flag)
-    else:
-        return default
+        use = pytest_config.getini(ini_flag)
+
+    if pytest_config.getoption(cli_flag) is not None:
+        # Top priority
+        use = pytest_config.getoption(cli_flag)
+
+    return use
