@@ -25,7 +25,6 @@ def add_parser_options(parser_addoption, with_defaults=True):
     parser_addoption(
         "--tavern-global-cfg",
         help="One or more global configuration files to include in every test",
-        required=False,
         nargs="+",
     )
     parser_addoption(
