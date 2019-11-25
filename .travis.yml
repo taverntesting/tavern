@@ -39,7 +39,7 @@ jobs:
       env: TOXENV=py37 TOXCFG=tox.ini
       stage: check
     - python: 3.7
-      env: TOXENV=py36lint TOXCFG=tox.ini
+      env: TOXENV=py37lint TOXCFG=tox.ini
       stage: check
     - python: 3.7
       env: TOXENV=py37isort TOXCFG=tox.ini
@@ -64,18 +64,8 @@ jobs:
     # 'Full' tests
     # This runs for different versions of Python that we support as well as the
     # full integration test suite
-    - python: 3.6
-      env: TOXENV=py36 TOXCFG=tox.ini
-      stage: full-tests
-    - python: pypy3
-      env: TOXENV=pypy3 TOXCFG=tox.ini
-      stage: full-tests
-
-    - python: 3.6
-      env: TOXENV=py36-generic TOXCFG=tox-integration.ini
-      stage: full-tests
     - python: 3.8
-      env: TOXENV=py36-generic TOXCFG=tox-integration.ini
+      env: TOXENV=py38-generic TOXCFG=tox-integration.ini
       stage: full-tests
     - python: pypy3
       env: TOXENV=pypy3-generic TOXCFG=tox-integration.ini
@@ -90,6 +80,8 @@ jobs:
     - python: 3.7
       env: TOXENV=py37-hooks TOXCFG=tox-integration.ini
       stage: full-tests
+
+    # deploy
     - stage: deploy
       script: skip
       deploy:
