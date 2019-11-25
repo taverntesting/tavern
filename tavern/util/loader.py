@@ -191,6 +191,16 @@ class BoolSentinel(TypeSentinel):
     constructor = bool
 
 
+class ListSentinel(TypeSentinel):
+    yaml_tag = "!anylist"
+    constructor = list
+
+
+class DictSentinel(TypeSentinel):
+    yaml_tag = "!anydict"
+    constructor = dict
+
+
 class AnythingSentinel(TypeSentinel):
     yaml_tag = "!anything"
     constructor = "anything"
