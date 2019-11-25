@@ -154,12 +154,15 @@ class TypeSentinel(yaml.YAMLObject):
 
     yaml_loader = IncludeLoader
 
+    @staticmethod
+    def constructor(_):
+        raise NotImplementedError
+
     @classmethod
     def from_yaml(cls, loader, node):
         return cls()
 
     def __str__(self):
-        # pylint: disable=no-member
         return "<Tavern YAML sentinel for {}>".format(self.constructor)
 
     @classmethod
