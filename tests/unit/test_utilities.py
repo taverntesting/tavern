@@ -18,7 +18,17 @@ from tavern.util.dict_util import (
     format_keys,
     recurse_access_key,
 )
-from tavern.util.loader import ANYTHING, IncludeLoader, load_single_document_yaml
+from tavern.util.loader import (
+    ANYTHING,
+    IncludeLoader,
+    load_single_document_yaml,
+    IntSentinel,
+    ListSentinel,
+    DictSentinel,
+    FloatSentinel,
+    FloatSentinel,
+    StrSentinel,
+)
 from tavern.util.loader import construct_include
 
 
@@ -191,6 +201,35 @@ class TestMatchRecursive:
 
         with pytest.raises(exceptions.KeyMismatchError):
             check_keys_match_recursive(a, b, [])
+
+    @pytest.mark.parametrize(
+        "token, response",
+        [
+            (IntSentinel(), 2),
+            (ListSentinel(), [1, 2, 3]),
+            (DictSentinel(), {2: 2}),
+            (FloatSentinel(), 4.5),
+            (StrSentinel(), "dood"),
+        ],
+    )
+    def test_type_token_matches(self, token, response):
+        """Make sure type tokens match with generic types"""
+        check_keys_match_recursive(token, response, [])
+
+    @pytest.mark.parametrize(
+        "token, response",
+        [
+            (IntSentinel(), 2.3),
+            (ListSentinel(), 1),
+            (DictSentinel(), [4, 5, 6]),
+            (FloatSentinel(), "4"),
+            (StrSentinel(), {"a": 2}),
+        ],
+    )
+    def test_type_token_no_match_errors(self, token, response):
+        """Make sure type tokens do not match if the type is wrong"""
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(token, response, [])
 
 
 @pytest.fixture(name="test_yaml")
