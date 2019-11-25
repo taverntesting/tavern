@@ -3,6 +3,12 @@ import ssl
 import threading
 import time
 
+from future.utils import raise_from
+import paho.mqtt.client as paho
+
+from tavern.util import exceptions
+from tavern.util.dict_util import check_expected_keys
+
 try:
     from queue import Queue, Full, Empty
 
@@ -11,12 +17,6 @@ except ImportError:
     from Queue import Queue, Full, Empty  # type: ignore
 
     LoadError = FileNotFoundError  # noqa
-
-from future.utils import raise_from
-import paho.mqtt.client as paho
-
-from tavern.util.dict_util import check_expected_keys
-from tavern.util import exceptions
 
 
 # MQTT error values

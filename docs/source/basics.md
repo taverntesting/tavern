@@ -23,8 +23,15 @@ stages:
 ```
 
 If using the pytest plugin (the recommended way of using Tavern), this needs to
-be in a file called `test_x.tavern.yaml`, where `x` is a description of the
-contained tests.
+be in a file called `test_x.tavern.yaml`, where `x` should be a description of
+the contained tests.
+
+If you want to call your files something different (though this is not
+recommended) it is also possible to specify a custom regular expression to match
+filenames. For example, if you want to call all of your files
+`tavern_test_x.yaml`, `tavern_test_y.yaml`, etc. then use the
+`tavern-file-path-regex` option in the configuration file or on the command
+line. For example, `py.test --tavern-file-path-regex "tavern_test_.*.yaml"`
 
 **test_name** is, as expected, the name of that test. If the pytest plugin is
 being used to run integration tests, this is what the test will show up as in
@@ -1535,8 +1542,6 @@ response to achieve something similar.
 
 ## Marking tests
 
-**The section on marking tests only applies if you are using Pytest**
-
 Since 0.11.0, it is possible to 'mark' tests. This uses Pytest behind the
 scenes - see the [pytest mark documentation](https://docs.pytest.org/en/latest/example/markers.html)
 for details on their implementation and prerequisites for use.
@@ -1602,14 +1607,33 @@ $ py.test -m "fast"
 Marks can only be applied to a whole test, not to individual stages (with the
 exception of `skip`, see below).
 
+### Formatting marks
+
+Marks can be formatted just like other variables:
+
+```yaml
+---
+test_name: Get server info from slow endpoint
+
+marks:
+  - "{specialmarker}"
+```
+
+This is mainly for combining with one or more of the special marks as mentioned
+below.
+
+**NOTE**: Do _not_ use the `!raw` token or rely on double curly brace formatting
+when formatting markers. Due to pytest-xdist, some behaviour with the formatting
+of markers is subtly different than other places in Tavern.
+
 ### Special marks
 
 There are 4 different 'special' marks from Pytest which behave the same as if
 they were used on a Python test.
 
-**NOTE**: If you look in the Tavern integration tests, you may notice a
-`_xfail` key being used in some of the tests. This is for INTERNAL USE ONLY and
-may be removed in future without warning.
+**NOTE**: If you look in the Tavern integration tests, you may notice a `_xfail`
+key being used in some of the tests. This is for INTERNAL USE ONLY and may be
+removed in future without warning.
 
 #### skip
 

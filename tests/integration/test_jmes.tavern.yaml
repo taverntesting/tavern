@@ -103,3 +103,51 @@ stages:
       status_code: 200
       body:
         value: c82bfa63-fd2a-419a-8c06-21cb283fd9f7
+
+---
+
+test_name: Test we can save a single value with jmespath if it has a dot in
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get item with dot in a name
+    request:
+      url: "{host}/jmes/with_dot"
+      method: GET
+    response:
+      status_code: 200
+      save:
+        body:
+          saved_with_dot_a: '"data.a"'
+          saved_with_dot_b: '"data.b"'
+
+---
+
+test_name: Test 'negative' jmespath tests
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Check can match empty/zero jmespath checks
+    request:
+      url: "{host}/jmes/return_empty_paged"
+      method: GET
+    response:
+      status_code: 200
+      body:
+        pages: 0
+        data: []
+      verify_response_with:
+        - function: tavern.testutils.helpers:validate_content
+          extra_kwargs:
+            comparisons:
+              - jmespath: pages
+                operator: "equals"
+                expected: 0
+
+              - jmespath: "data[?id=='bllp']"
+                operator: "equals"
+                expected: []

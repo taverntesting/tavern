@@ -41,6 +41,9 @@ jobs:
     - python: 3.7
       env: TOXENV=py36lint TOXCFG=tox.ini
       stage: check
+    - python: 3.7
+      env: TOXENV=py37isort TOXCFG=tox.ini
+      stage: check
 
     # 'Basic' tests
     # Run more involved tests for python 2 and integration tests

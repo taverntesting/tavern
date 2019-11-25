@@ -1,13 +1,15 @@
+from builtins import str as ustr
 import collections
 import logging
+import string
 import warnings
-from builtins import str as ustr
 
-import jmespath
-from future.utils import raise_from
 from box import Box
+from future.utils import raise_from
+import jmespath
 
-from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
+from tavern.util.loader import ANYTHING, TypeConvertToken, TypeSentinel
+
 from . import exceptions
 
 logger = logging.getLogger(__name__)
@@ -23,12 +25,43 @@ class _FormattedString(object):
         super(_FormattedString, self).__init__(s)
 
 
-def format_keys(val, variables):
+def _check_parsed_values(to_format, box_vars):
+    formatter = string.Formatter()
+    would_format = formatter.parse(to_format)
+
+    for (_, field_name, _, _) in would_format:
+        if field_name is None:
+            continue
+
+        try:
+            would_replace = formatter.get_field(field_name, [], box_vars)[0]
+        except KeyError as e:
+            logger.error(
+                "Failed to resolve string [%s] with variables [%s]", to_format, box_vars
+            )
+            logger.error("Key(s) not found in format: %s", field_name)
+            raise_from(exceptions.MissingFormatError(field_name), e)
+        except IndexError as e:
+            logger.error("Empty format values are invalid")
+            raise_from(exceptions.MissingFormatError(field_name), e)
+        else:
+            if not isinstance(would_replace, (str, ustr, int, float)):
+                logger.warning(
+                    "Formatting '%s' will result in it being coerced to a string (it is a %s)",
+                    field_name,
+                    type(would_replace),
+                )
+
+
+def format_keys(val, variables, no_double_format=True):
     """recursively format a dictionary with the given values
 
     Args:
         val (object): Input dictionary to format
         variables (dict): Dictionary of keys to format it with
+        no_double_format (bool): Whether to use the 'inner formatted string' class to avoid double formatting
+            This is required if passing something via pytest-xdist, such as markers:
+            https://github.com/taverntesting/tavern/issues/431
 
     Returns:
         dict: recursively formatted dictionary
@@ -46,22 +79,15 @@ def format_keys(val, variables):
     elif isinstance(formatted, _FormattedString):
         logger.debug("Already formatted %s, not double-formatting", formatted)
     elif isinstance(val, (ustr, str)):
-        try:
-            formatted = val.format(**box_vars)
-        except KeyError as e:
-            logger.error(
-                "Failed to resolve string [%s] with variables [%s]", val, box_vars
-            )
-            logger.error("Key(s) not found in format: %s", e.args)
-            raise_from(exceptions.MissingFormatError(e.args), e)
-        except IndexError as e:
-            logger.error("Empty format values are invalid")
-            raise_from(exceptions.MissingFormatError(e.args), e)
+        _check_parsed_values(val, box_vars)
+        formatted = val.format(**box_vars)
 
-        class InnerFormattedString(_FormattedString, type(val)):
-            """Hack for python 2"""
+        if no_double_format:
 
-        formatted = InnerFormattedString(formatted)
+            class InnerFormattedString(_FormattedString, type(val)):
+                """Hack for python 2"""
+
+            formatted = InnerFormattedString(formatted)
     elif isinstance(val, TypeConvertToken):
         value = format_keys(val.value, box_vars)
         formatted = val.constructor(value)
@@ -98,7 +124,9 @@ def recurse_access_key(data, query):
     # The value might actually be None, in which case we will search twice for no reason,
     # but this shouldn't cause any issues
     if from_jmespath is None:
-        logger.debug("JMES path search was None - trying old implementation")
+        logger.debug(
+            "JMES path search for '%s' was None - trying old implementation", query
+        )
 
         try:
             from_recurse = _recurse_access_key(data, query.split("."))

@@ -1,15 +1,15 @@
-import itertools
 from builtins import str as ustr
-
 import copy
+import functools
+import itertools
 import logging
 import os
 
+from box import Box
+from future.utils import raise_from
 import pytest
 import yaml
-from future.utils import raise_from
 
-from box import Box
 from tavern.schemas.files import verify_tests
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys
@@ -19,6 +19,9 @@ from .item import YamlItem
 from .util import load_global_cfg
 
 logger = logging.getLogger(__name__)
+
+
+_format_without_inner = functools.partial(format_keys, no_double_format=False)
 
 
 def _format_test_marks(original_marks, fmt_vars, test_name):
@@ -57,7 +60,7 @@ def _format_test_marks(original_marks, fmt_vars, test_name):
     for m in original_marks:
         if isinstance(m, str):
             # a normal mark
-            m = format_keys(m, fmt_vars)
+            m = _format_without_inner(m, fmt_vars)
             pytest_marks.append(getattr(pytest.mark, m))
         elif isinstance(m, dict):
             # skipif or parametrize (for now)
@@ -66,7 +69,7 @@ def _format_test_marks(original_marks, fmt_vars, test_name):
                 # cannot do 'skipif' and rely on a parametrized
                 # argument.
                 try:
-                    extra_arg = format_keys(extra_arg, fmt_vars)
+                    extra_arg = _format_without_inner(extra_arg, fmt_vars)
                 except exceptions.MissingFormatError as e:
                     msg = "Tried to use mark '{}' (with value '{}') in test '{}' but one or more format variables was not in any configuration file used by the test".format(
                         markname, extra_arg, test_name
@@ -239,7 +242,7 @@ class YamlFile(pytest.File):
         tavern_box = Box({"tavern": {"env_vars": dict(os.environ)}})
 
         try:
-            fmt_vars = format_keys(fmt_vars, tavern_box)
+            fmt_vars = _format_without_inner(fmt_vars, tavern_box)
         except exceptions.MissingFormatError as e:
             # eg, if we have {tavern.env_vars.DOESNT_EXIST}
             msg = "Tried to use tavern format variable that did not exist"

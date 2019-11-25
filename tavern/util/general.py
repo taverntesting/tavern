@@ -1,6 +1,7 @@
 import logging
 
 from tavern.util.loader import load_single_document_yaml
+
 from .dict_util import deep_dict_merge
 
 logger = logging.getLogger(__name__)
