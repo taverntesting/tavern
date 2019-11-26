@@ -114,6 +114,8 @@ def recurse_access_key(data, query):
         # TODO: In 1.0, this will raise an error instead
         logger.debug("Error parsing JMES query - %s", msg, exc_info=True)
         from_jmespath = None
+        import pytest
+        pytest.fail("This should not pass in 1.0")
 
     # The value might actually be None, in which case we will search twice for no reason,
     # but this shouldn't cause any issues
