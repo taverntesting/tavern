@@ -1,5 +1,5 @@
-import logging
 from functools import wraps
+import logging
 
 from . import exceptions
 from .delay import delay

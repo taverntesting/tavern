@@ -2,14 +2,12 @@ import logging
 
 import requests
 
-
-from tavern.util.dict_util import format_keys
 from tavern.plugins import PluginHelperBase
 from tavern.util import exceptions
+from tavern.util.dict_util import format_keys
 
 from .request import RestRequest
 from .response import RestResponse
-
 
 logger = logging.getLogger(__name__)
 

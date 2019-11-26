@@ -7,8 +7,8 @@ import logging
 
 import stevedore
 
-
 from tavern.util.dict_util import format_keys
+
 from .util import exceptions
 
 logger = logging.getLogger(__name__)

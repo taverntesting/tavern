@@ -1,12 +1,11 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
 
+from distutils.util import strtobool
 import logging
 import os.path
 import uuid
-from distutils.util import strtobool
 
 import pytest
-
 import yaml
 from yaml.composer import Composer
 from yaml.constructor import SafeConstructor
@@ -72,11 +71,11 @@ class SourceMappingConstructor(SafeConstructor):
     # construction") by first exhausting iterators, then yielding
     # copies.
     def construct_yaml_map(self, node):
-        obj, = SafeConstructor.construct_yaml_map(self, node)
+        (obj,) = SafeConstructor.construct_yaml_map(self, node)
         return dict_node(obj, node.start_mark, node.end_mark)
 
     def construct_yaml_seq(self, node):
-        obj, = SafeConstructor.construct_yaml_seq(self, node)
+        (obj,) = SafeConstructor.construct_yaml_seq(self, node)
         return list_node(obj, node.start_mark, node.end_mark)
 
 

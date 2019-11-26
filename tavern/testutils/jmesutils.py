@@ -1,5 +1,5 @@
-import re
 import operator
+import re
 
 from tavern.util import exceptions
 

@@ -2,10 +2,11 @@ import collections
 import logging
 import warnings
 
-import jmespath
 from box import Box
+import jmespath
 
-from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
+from tavern.util.loader import ANYTHING, TypeConvertToken, TypeSentinel
+
 from . import exceptions
 
 logger = logging.getLogger(__name__)

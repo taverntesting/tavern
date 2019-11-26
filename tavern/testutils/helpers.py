@@ -3,11 +3,11 @@ import json
 import logging
 import re
 
-import jwt
 from box import Box
+import jwt
 
 from tavern.schemas.files import verify_generic
-from tavern.testutils.jmesutils import validate_comparison, actual_validation
+from tavern.testutils.jmesutils import actual_validation, validate_comparison
 from tavern.util import exceptions
 from tavern.util.dict_util import check_keys_match_recursive
 from tavern.util.jmespath_util import check_jmespath_match

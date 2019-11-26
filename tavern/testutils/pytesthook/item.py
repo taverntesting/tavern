@@ -1,14 +1,14 @@
 import logging
 
+from _pytest import fixtures
 import attr
 import pytest
-from _pytest import fixtures
 
 from tavern.core import run_test
 from tavern.plugins import load_plugins
 from tavern.schemas.files import verify_tests
-from tavern.util import exceptions
 from tavern.testutils.pytesthook.newhooks import call_hook
+from tavern.util import exceptions
 
 from .error import ReprdError
 from .util import load_global_cfg

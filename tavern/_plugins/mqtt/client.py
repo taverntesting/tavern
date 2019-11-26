@@ -1,14 +1,13 @@
 import logging
+from queue import Empty, Full, Queue
 import ssl
 import threading
 import time
 
-from queue import Queue, Full, Empty
-
 import paho.mqtt.client as paho
 
-from tavern.util.dict_util import check_expected_keys
 from tavern.util import exceptions
+from tavern.util.dict_util import check_expected_keys
 
 # MQTT error values
 _err_vals = {

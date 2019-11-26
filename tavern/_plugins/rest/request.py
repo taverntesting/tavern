@@ -1,23 +1,22 @@
 import contextlib
+from contextlib import ExitStack
+from itertools import filterfalse, tee
 import json
 import logging
 import mimetypes
 import os
-import warnings
-from contextlib import ExitStack
-from itertools import filterfalse
-from itertools import tee
 from urllib.parse import quote_plus
+import warnings
 
-import requests
 from box import Box
+import requests
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
 
 from tavern.request.base import BaseRequest
 from tavern.schemas.extensions import get_wrapped_create_function
 from tavern.util import exceptions
-from tavern.util.dict_util import format_keys, check_expected_keys, deep_dict_merge
+from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
 
 logger = logging.getLogger(__name__)
 

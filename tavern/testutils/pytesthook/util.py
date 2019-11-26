@@ -1,9 +1,9 @@
+from functools import lru_cache
 import logging
 import os
 
-from functools import lru_cache
-
 from box import Box
+
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys
 from tavern.util.general import load_global_config

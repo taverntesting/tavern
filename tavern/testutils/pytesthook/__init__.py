@@ -1,4 +1,4 @@
-from .hooks import pytest_collect_file, pytest_addoption, pytest_addhooks
+from .hooks import pytest_addhooks, pytest_addoption, pytest_collect_file
 from .util import add_parser_options
 
 __all__ = [

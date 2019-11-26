@@ -4,14 +4,15 @@ import itertools
 import logging
 import os
 
+from box import Box
 import pytest
 import yaml
-from box import Box
 
 from tavern.schemas.files import verify_tests
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys
 from tavern.util.loader import IncludeLoader
+
 from .item import YamlItem
 from .util import load_global_cfg
 
