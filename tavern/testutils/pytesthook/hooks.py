@@ -1,7 +1,5 @@
 import re
 
-from future.utils import raise_from
-
 from tavern.util import exceptions
 
 from .file import YamlFile
@@ -72,7 +70,7 @@ def pytest_collect_file(parent, path):
     try:
         compiled = re.compile(pattern)
     except Exception as e:  # pylint: disable=broad-except
-        raise_from(exceptions.InvalidConfigurationException(e), e)
+        raise exceptions.InvalidConfigurationException(e) from e
 
     match_tavern_file = compiled.search
 

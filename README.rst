@@ -170,11 +170,6 @@ If you want to add a feature to get merged back into mainline Tavern:
        plugin system implemented.
 -  Open a `pull request <https://github.com/taverntesting/tavern/pulls>`__.
 
-Note that Tavern supports Python 2.7 (for the time being), so any code
-you add has to be compatible with it. We currently use the
-`future <https://pypi.python.org/pypi/future>`__ library to provide
-backwards compatibility.
-
 Acknowledgements
 ----------------
 
