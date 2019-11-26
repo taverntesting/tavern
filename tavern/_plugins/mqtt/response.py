@@ -37,7 +37,7 @@ class MQTTResponse(BaseResponse):
             json_payload = True
 
             if payload.pop("$ext", None):
-                logger.warning(
+                raise exceptions.BadSchemaError(
                     "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
                     "json",
                 )

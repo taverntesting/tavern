@@ -7,7 +7,7 @@ from requests.status_codes import _codes
 from tavern.response.base import BaseResponse, indent_err_text
 from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util.dict_util import deep_dict_merge
-from tavern.util.exceptions import TestFailError
+from tavern.util import exceptions
 
 logger = logging.getLogger(__name__)
 
@@ -186,7 +186,7 @@ class RestResponse(BaseResponse):
                 self._adderr("No cookie named '%s' in response", cookie)
 
         if self.errors:
-            raise TestFailError(
+            raise exceptions.TestFailError(
                 "Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()),
                 failures=self.errors,
             )
@@ -207,7 +207,7 @@ class RestResponse(BaseResponse):
 
         if isinstance(expected_block, dict):
             if expected_block.pop("$ext", None):
-                logger.warning(
+                raise exceptions.BadSchemaError(
                     "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
                     blockname,
                 )
