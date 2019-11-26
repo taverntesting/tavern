@@ -1,5 +1,6 @@
 import collections
 import logging
+import string
 import warnings
 
 from box import Box
@@ -20,6 +21,34 @@ class _FormattedString(str):
 
     def __init(self, s):
         super(_FormattedString, self).__init__(s)
+
+
+def _check_parsed_values(to_format, box_vars):
+    formatter = string.Formatter()
+    would_format = formatter.parse(to_format)
+
+    for (_, field_name, _, _) in would_format:
+        if field_name is None:
+            continue
+
+        try:
+            would_replace = formatter.get_field(field_name, [], box_vars)[0]
+        except KeyError as e:
+            logger.error(
+                "Failed to resolve string [%s] with variables [%s]", to_format, box_vars
+            )
+            logger.error("Key(s) not found in format: %s", field_name)
+            raise exceptions.MissingFormatError(field_name) from e
+        except IndexError as e:
+            logger.error("Empty format values are invalid")
+            raise exceptions.MissingFormatError(field_name) from e
+        else:
+            if not isinstance(would_replace, (str, int, float)):
+                logger.warning(
+                    "Formatting '%s' will result in it being coerced to a string (it is a %s)",
+                    field_name,
+                    type(would_replace),
+                )
 
 
 def format_keys(val, variables, no_double_format=True):
@@ -48,17 +77,8 @@ def format_keys(val, variables, no_double_format=True):
     elif isinstance(formatted, _FormattedString):
         logger.debug("Already formatted %s, not double-formatting", formatted)
     elif isinstance(val, str):
-        try:
-            formatted = val.format(**box_vars)
-        except KeyError as e:
-            logger.error(
-                "Failed to resolve string [%s] with variables [%s]", val, box_vars
-            )
-            logger.error("Key(s) not found in format: %s", e.args)
-            raise exceptions.MissingFormatError(e.args) from e
-        except IndexError as e:
-            logger.error("Empty format values are invalid")
-            raise exceptions.MissingFormatError(e.args) from e
+        _check_parsed_values(val, box_vars)
+        formatted = val.format(**box_vars)
 
         if no_double_format:
             formatted = _FormattedString(formatted)
@@ -98,7 +118,9 @@ def recurse_access_key(data, query):
     # The value might actually be None, in which case we will search twice for no reason,
     # but this shouldn't cause any issues
     if from_jmespath is None:
-        logger.debug("JMES path search was None - trying old implementation")
+        logger.debug(
+            "JMES path search for '%s' was None - trying old implementation", query
+        )
 
         try:
             from_recurse = _recurse_access_key(data, query.split("."))

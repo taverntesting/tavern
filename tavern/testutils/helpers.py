@@ -4,13 +4,13 @@ import logging
 import re
 
 from box import Box
+import jmespath
 import jwt
 
 from tavern.schemas.files import verify_generic
 from tavern.testutils.jmesutils import actual_validation, validate_comparison
 from tavern.util import exceptions
 from tavern.util.dict_util import check_keys_match_recursive
-from tavern.util.jmespath_util import check_jmespath_match
 
 logger = logging.getLogger(__name__)
 
@@ -113,7 +113,7 @@ def validate_regex(response, expression, header=None):
     else:
         content = response.text
 
-    match = re.search(expression, content)
+    match = re.search(expression, content) or False
     assert match
 
     return {"regex": Box(match.groupdict())}
@@ -134,7 +134,7 @@ def validate_content(response, comparisons):
         path, _operator, expected = validate_comparison(each_comparison)
         logger.debug("Searching for '%s' in '%s'", path, response.json())
 
-        actual = check_jmespath_match(response.json(), path)
+        actual = jmespath.search(path, response.json())
 
         expession = " ".join([str(path), str(_operator), str(expected)])
         parsed_expession = " ".join([str(actual), str(_operator), str(expected)])

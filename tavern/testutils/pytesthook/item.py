@@ -45,6 +45,9 @@ class YamlItem(pytest.Item):
         self.fixturenames = fixtureinfo.names_closure
         self._request = fixtures.FixtureRequest(self)
 
+    #     Hack to stop issue with pytest-rerunfailures
+    _initrequest = initialise_fixture_attrs
+
     def setup(self):
         super(YamlItem, self).setup()
         fixtures.fillfixtures(self)

@@ -153,12 +153,15 @@ class TypeSentinel(yaml.YAMLObject):
 
     yaml_loader = IncludeLoader
 
+    @staticmethod
+    def constructor(_):
+        raise NotImplementedError
+
     @classmethod
     def from_yaml(cls, loader, node):
         return cls()
 
     def __str__(self):
-        # pylint: disable=no-member
         return "<Tavern YAML sentinel for {}>".format(self.constructor)
 
     @classmethod
@@ -185,6 +188,16 @@ class StrSentinel(TypeSentinel):
 class BoolSentinel(TypeSentinel):
     yaml_tag = "!anybool"
     constructor = bool
+
+
+class ListSentinel(TypeSentinel):
+    yaml_tag = "!anylist"
+    constructor = list
+
+
+class DictSentinel(TypeSentinel):
+    yaml_tag = "!anydict"
+    constructor = dict
 
 
 class AnythingSentinel(TypeSentinel):
@@ -225,6 +238,10 @@ class TypeConvertToken(yaml.YAMLObject):
 
     yaml_loader = IncludeLoader
 
+    @staticmethod
+    def constructor(_):
+        raise NotImplementedError
+
     def __init__(self, value):
         self.value = value
 
@@ -234,7 +251,7 @@ class TypeConvertToken(yaml.YAMLObject):
 
         try:
             # See if it's already a valid value (eg, if we do `!int "2"`)
-            converted = cls.constructor(value)  # pylint: disable=no-member
+            converted = cls.constructor(value)
         except ValueError:
             # If not (eg, `!int "{int_value:d}"`)
             return cls(value)

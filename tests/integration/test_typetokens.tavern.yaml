@@ -88,6 +88,38 @@ stages:
 
 ---
 
+test_name: Test list type match
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match any list
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      body: !anylist
+
+---
+
+test_name: Test dict type match
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match any dict
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      body: !anydict
+
+---
+
 test_name: Test string type match
 
 includes:

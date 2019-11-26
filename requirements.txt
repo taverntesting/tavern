@@ -6,7 +6,7 @@ tox
 flask
 
 # Useful for development
-black
+black==19.10b0
 bump2version
 pre-commit
 pygments

@@ -71,3 +71,22 @@ stages:
         test: testfile.txt
     response:
       status_code: 200
+
+---
+
+test_name: Test long form file upload
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Upload with long spec
+    request:
+      url: "{host}/fake_upload_file"
+      method: POST
+      files:
+        test:
+          file_path: testfile.txt
+          content_type: application/txt
+    response:
+      status_code: 200

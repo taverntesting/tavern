@@ -202,4 +202,3 @@ Maintenance
 Tavern is currently maintained by
 
 - @michaelboulton
-- @benhowes

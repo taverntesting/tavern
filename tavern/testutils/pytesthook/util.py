@@ -8,6 +8,11 @@ from tavern.util import exceptions
 from tavern.util.dict_util import format_keys
 from tavern.util.general import load_global_config
 
+try:
+    from functools import lru_cache
+except ImportError:
+    from backports.functools_lru_cache import lru_cache
+
 logger = logging.getLogger(__name__)
 
 
@@ -15,11 +20,12 @@ def add_parser_options(parser_addoption, with_defaults=True):
     """Add argparse options
 
     This is shared between the CLI and pytest (for now)
+
+    See also testutils.pytesthook.hooks.pytest_addoption
     """
     parser_addoption(
         "--tavern-global-cfg",
         help="One or more global configuration files to include in every test",
-        required=False,
         nargs="+",
     )
     parser_addoption(
@@ -50,6 +56,13 @@ def add_parser_options(parser_addoption, with_defaults=True):
         help="Always follow HTTP redirects",
         default=False,
         action="store_true",
+    )
+    parser_addoption(
+        "--tavern-file-path-regex",
+        help="Regex to search for Tavern YAML test files",
+        default=r".+\.tavern\.ya?ml$",
+        action="store",
+        nargs=1,
     )
 
 
@@ -100,40 +113,50 @@ def _load_global_backends(pytest_config):
 
     backends = ["http", "mqtt"]
     for b in backends:
-        # similar logic to above - use ini, then cmdline if present
-        ini_opt = pytest_config.getini("tavern-{}-backend".format(b))
-        cli_opt = pytest_config.getoption("tavern_{}_backend".format(b))
-
-        in_use = ini_opt
-        if cli_opt and (cli_opt != ini_opt):
-            in_use = cli_opt
-
-        backend_settings[b] = in_use
+        backend_settings[b] = get_option_generic(
+            pytest_config, "tavern-{}-backend".format(b), None
+        )
 
     return backend_settings
 
 
 def _load_global_strictness(pytest_config):
     """Load the global 'strictness' setting"""
-    strict = []
-    if pytest_config.getini("tavern-strict") is not None:
-        # Lowest priority
-        strict = pytest_config.getini("tavern-strict")
-        if isinstance(strict, list):
-            if any(
-                i not in ["body", "headers", "redirect_query_params"] for i in strict
-            ):
-                raise exceptions.UnexpectedKeysError(
-                    "Invalid values for 'strict' use in config file"
-                )
-    elif pytest_config.getoption("tavern_strict") is not None:
-        # Middle priority
-        strict = pytest_config.getoption("tavern_strict")
+
+    strict = get_option_generic(pytest_config, "tavern-strict", [])
+
+    if isinstance(strict, list):
+        valid_keys = ["body", "headers", "redirect_query_params"]
+        if any(i not in valid_keys for i in strict):
+            msg = "Invalid values for 'strict' given - expected one of {}, got {}".format(
+                valid_keys, strict
+            )
+            raise exceptions.InvalidConfigurationException(msg)
+
     return strict
 
 
 def _load_global_follow_redirects(pytest_config):
     """Load the global 'follow redirects' setting"""
-    return pytest_config.getini(
-        "tavern-always-follow-redirects"
-    ) or pytest_config.getoption("tavern_always_follow_redirects")
+    return get_option_generic(pytest_config, "tavern-always-follow-redirects", False)
+
+
+def get_option_generic(pytest_config, flag, default):
+    """Get a configuration option or return the default
+
+    Priority order is cmdline, then ini, then default"""
+    cli_flag = flag.replace("-", "_")
+    ini_flag = flag
+
+    # Lowest priority
+    use = default
+
+    if pytest_config.getini(ini_flag) is not None:
+        # Middle priority
+        use = pytest_config.getini(ini_flag)
+
+    if pytest_config.getoption(cli_flag) is not None:
+        # Top priority
+        use = pytest_config.getoption(cli_flag)
+
+    return use

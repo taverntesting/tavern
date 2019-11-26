@@ -1,3 +1,4 @@
+from builtins import str as ustr
 import copy
 import functools
 import itertools
