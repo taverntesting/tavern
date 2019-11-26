@@ -26,5 +26,5 @@ stages:
       status_code: 200
       headers:
         content-type: application/json
-      body:
+      json:
         data: "Hello, Jim"

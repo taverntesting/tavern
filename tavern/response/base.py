@@ -126,7 +126,6 @@ class BaseResponse(object):
                     )
 
         # Could put in an isinstance check here
-        check_deprecated_validate("body")
         check_deprecated_validate("json")
 
     def _maybe_run_validate_functions(self, response):

@@ -31,7 +31,7 @@ stages:
 
 Note that there is no way to do something like this for the body of the
 response, so unless you are expecting the same response body for every possible
-status code, the `body` key should be left blank.
+status code, the `json` key should be left blank.
 
 ## Sending form encoded data
 
@@ -73,7 +73,7 @@ stages:
       method: GET
     response:
       status_code: 401
-      body:
+      json:
         error: "no login information"
       headers:
         content-type: application/json
@@ -100,7 +100,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         name: test-user
       headers:
         content-type: application/json
@@ -141,7 +141,7 @@ stages:
         - tavern-cookie-1
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 ```
 
@@ -174,7 +174,7 @@ stages:
       cookies: []
     response:
       status_code: 403
-      body:
+      json:
         status: access denied
 ```
 
@@ -193,7 +193,7 @@ value`:
         - tavern-cookie-2: abc
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
 ```
@@ -227,7 +227,7 @@ stages:
         - password123
     response:
       status_code: 200
-      body:
+      json:
         user_id: 123
       headers:
         content-type: application/json
@@ -261,7 +261,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         $ext: &verify_token
           function: tavern.testutils.helpers:validate_jwt
           extra_kwargs:
@@ -275,7 +275,7 @@ stages:
       headers:
         content-type: application/json
       save:
-        body:
+        json:
           test_login_token: token
 
   - name: Get user info
@@ -285,7 +285,7 @@ stages:
       Authorization: "Bearer {test_login_token:s}"
     response:
       status_code: 200
-      body:
+      json:
         user_id: 123
       headers:
         content-type: application/json
@@ -424,7 +424,7 @@ stages:
       timeout: 0.5
     response:
       status_code: 200
-      body:
+      json:
         n_users: 2048
         n_queries: 10000
 ```
@@ -458,7 +458,7 @@ stages:
       follow_redirects: true
     response:
       status_code: 200
-      body:
+      json:
         status: successful redirect
 ``` 
 

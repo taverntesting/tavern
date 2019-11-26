@@ -309,7 +309,7 @@ def fix_test_yaml():
             content-type: application/json
         response:
           status_code: 200
-          body:
+          json:
             double: !float 10
     """
     )
@@ -326,7 +326,7 @@ class TestCustomTokens:
         stages = yaml.load(test_yaml, Loader=IncludeLoader)["stages"][0]
 
         self.assert_type_value(stages["request"]["json"]["number"], int, 5)
-        self.assert_type_value(stages["response"]["body"]["double"], float, 10.0)
+        self.assert_type_value(stages["response"]["json"]["double"], float, 10.0)
         self.assert_type_value(stages["request"]["json"]["return_float"], bool, True)
         self.assert_type_value(stages["request"]["json"]["is_sensitive"], bool, False)
         self.assert_type_value(

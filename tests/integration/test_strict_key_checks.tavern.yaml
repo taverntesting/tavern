@@ -30,7 +30,7 @@ test_name: Test setting 'strict' to a dict fails
 _xfail: verify
 
 strict:
-  body: true
+  json: true
 
 stages:
   - name: match top level
@@ -69,7 +69,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -84,7 +84,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -99,7 +99,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -114,7 +114,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         # top:
         #   Thing: value
         #   nested:
@@ -140,7 +140,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -174,7 +174,7 @@ test_name: Test strict key matching against body fails
 _xfail: run
 
 strict:
-  - body
+  - json
 
 includes:
   - !include common.yaml
@@ -185,7 +185,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -203,7 +203,7 @@ test_name: Test strict key matching against body fails with dict missing when sp
 _xfail: run
 
 strict:
-  - body
+  - json
 
 includes:
   - !include common.yaml
@@ -214,7 +214,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         # top:
         #   Thing: value
         #   nested:
@@ -239,9 +239,9 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       strict:
-        - body
+        - json
       status_code: 200
-      body:
+      json:
         # top:
         #   Thing: value
         #   nested:
@@ -268,7 +268,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -284,7 +284,7 @@ stages:
 test_name: Test strict key matching against exact body is fine when strict is specified in the test
 
 strict:
-  - body
+  - json
 
 includes:
   - !include common.yaml
@@ -295,7 +295,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -310,7 +310,7 @@ stages:
 test_name: Test strict key matching against exact body is fine when strict is specified in the stage
 
 strict:
-  - body
+  - json
 
 includes:
   - !include common.yaml
@@ -321,7 +321,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -344,7 +344,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -359,9 +359,9 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       strict:
-        - body
+        - json
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -376,7 +376,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -391,7 +391,7 @@ stages:
 test_name: Test non-strict key matching one list item
 
 strict:
-  - body
+  - json
 
 includes:
   - !include common.yaml
@@ -403,7 +403,7 @@ stages:
     response:
       status_code: 200
       strict: false
-      body:
+      json:
         - a
 
   - name: match a middle item in the list
@@ -412,7 +412,7 @@ stages:
     response:
       status_code: 200
       strict: false
-      body:
+      json:
         - c
 
   - name: match a number in the middle of the list
@@ -421,7 +421,7 @@ stages:
     response:
       status_code: 200
       strict: false
-      body:
+      json:
         - 2
 
 ---
@@ -431,7 +431,7 @@ test_name: Test strict key matching one list item fails
 _xfail: run
 
 strict:
-  - body
+  - json
 
 includes:
   - !include common.yaml
@@ -443,7 +443,7 @@ stages:
     response:
       status_code: 200
       strict: true
-      body:
+      json:
         - c
 
 ---
@@ -460,7 +460,7 @@ stages:
     response:
       status_code: 200
       strict: False
-      body:
+      json:
         top:
           Thing: value
         an_integer: 123
@@ -483,7 +483,7 @@ stages:
     response:
       status_code: 200
       strict: True
-      body:
+      json:
         top:
           Thing: value
         an_integer: 123
@@ -495,7 +495,7 @@ stages:
 test_name: Test non-strict key matching one list item
 
 strict:
-  - body
+  - json
 
 includes:
   - !include common.yaml
@@ -507,7 +507,7 @@ stages:
     response:
       status_code: 200
       strict: false
-      body:
+      json:
         - c
 
 ---
@@ -517,7 +517,7 @@ test_name: Test strict key matching one list item fails
 _xfail: run
 
 strict:
-  - body
+  - json
 
 includes:
   - !include common.yaml
@@ -529,5 +529,5 @@ stages:
     response:
       status_code: 200
       strict: true
-      body:
+      json:
         - c

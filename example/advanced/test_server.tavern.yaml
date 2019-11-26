@@ -33,7 +33,7 @@ stages:
       save:
         $ext:
           <<: *verify_token
-        body:
+        json:
           test_login_token: token
 
 ---
@@ -80,7 +80,7 @@ stages:
         Authorization: "bearer {test_login_token:s}"
     response:
       status_code: 200
-      body:
+      json:
         number: 123
       headers:
         content-type: application/json
@@ -96,7 +96,7 @@ stages:
         Authorization: "bearer {test_login_token:s}"
     response:
       status_code: 200
-      body:
+      json:
         number: 246
       verify_response_with:
         function: testing_utils:assert_quick_response
@@ -114,7 +114,7 @@ stages:
         Authorization: "bearer {test_login_token:s}"
     response:
       status_code: 200
-      body:
+      json:
         number: 246
       headers:
         content-type: application/json
@@ -141,7 +141,7 @@ stages:
         Authorization: "bearer {test_login_token:s}"
     response:
       status_code: 404
-      body:
+      json:
         error: Unknown number
       headers:
         content-type: application/json

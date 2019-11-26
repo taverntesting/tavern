@@ -84,7 +84,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         number: 123
       headers:
         content-type: application/json
@@ -99,7 +99,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         number: 246
       headers:
         content-type: application/json
@@ -114,7 +114,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         number: 246
       headers:
         content-type: application/json
@@ -140,7 +140,7 @@ stages:
         content-type: application/json
     response:
       status_code: 404
-      body:
+      json:
         error: Unknown number
       headers:
         content-type: application/json
@@ -167,7 +167,7 @@ stages:
         content-type: application/json
     response:
       status_code: 404
-      body:
+      json:
         error: Unknown number
       headers:
         content-type: application/json

@@ -13,7 +13,7 @@ stages:
       method: GET
     response:
       status_code: 400
-      body:
+      json:
         error: "No cookie named tavern-cookie in request"
 
   - name: Expect a cookie returned
@@ -31,7 +31,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
 ---
@@ -78,7 +78,7 @@ stages:
         - tavern-cookie-2
     response:
       status_code: 400
-      body:
+      json:
         error: "No cookie named tavern-cookie-1 in request"
 
   - name: Send the wrong cookie again - error
@@ -91,7 +91,7 @@ stages:
         - tavern-cookie-1
     response:
       status_code: 400
-      body:
+      json:
         error: "No cookie named tavern-cookie-2 in request"
 
 ---
@@ -118,7 +118,7 @@ stages:
         - tavern-cookie-1
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
   - name: Send the right cookie - success
@@ -131,7 +131,7 @@ stages:
         - tavern-cookie-2
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
 ---
@@ -156,7 +156,7 @@ stages:
         - tavern-cookie-1
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
   - name: No cookie - error
@@ -169,7 +169,7 @@ stages:
         cookie_name: tavern-cookie-1
     response:
       status_code: 400
-      body:
+      json:
         error: "No cookie named tavern-cookie-1 in request"
 
   - name: but it is still available
@@ -182,7 +182,7 @@ stages:
         - tavern-cookie-1
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
 ---
@@ -205,7 +205,7 @@ stages:
         - tavern-cookie-1
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
 ---
@@ -230,7 +230,7 @@ stages:
         - tavern-cookie-2
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
 ---
@@ -257,7 +257,7 @@ stages:
         - cookie-1: abc
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
 ---
@@ -280,7 +280,7 @@ stages:
         - tavern-cookie-2: abc
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
 ---
@@ -303,7 +303,7 @@ stages:
         - tavern-cookie-2: abc
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
 ---
@@ -326,5 +326,5 @@ stages:
         - tavern-cookie-2: abc
     response:
       status_code: 200
-      body:
+      json:
         status: ok

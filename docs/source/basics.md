@@ -15,10 +15,10 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         id: 1
       save:
-        body:
+        json:
           returned_id: id
 ```
 
@@ -96,9 +96,9 @@ the response:
 - `status_code` - an integer corresponding to the status code that we expect, or
   a list of status codes if you are expecting one of a few status codes.
   Defaults to `200` if not defined.
-- `body` - Assuming the response is json, check the body against the values
-  given. Expects a mapping (possibly nested) key: value pairs/lists.
-  This can also use an external check function, described further down.
+- `json` - Assuming the response is json, check the body against the values
+  given. Expects a mapping (possibly nested) key: value pairs/lists. This can
+  also use an external check function, described further down.
 - `headers` - a mapping of key: value pairs that will be checked against the
   headers.
 - `redirect_query_params` - Checks the query parameters of a redirect url passed
@@ -127,7 +127,7 @@ This can be saved into the value `first_val` with this response block:
 ```yaml
 response:
   save:
-    body:
+    json:
       first_val: thing.nested[0]
 ```
 
@@ -205,7 +205,7 @@ stages:
         user_id: abc123
     response:
       status_code: 200
-      body:
+      json:
         user_id: "{tavern.request_vars.params.user_id}"
         new_welcome_message: "{tavern.request_vars.json.welcome_message}"
 ```
@@ -231,7 +231,7 @@ stages:
       url: "www.example.com/get_info"
     response:
       status_code: 401
-      body:
+      json:
         error: "No authorization"
 
   - name: Get information with admin token
@@ -242,7 +242,7 @@ stages:
         Authorization: "Basic {tavern.env_vars.SECRET_CI_COMMIT_AUTH}"
     response:
       status_code: 200
-      body:
+      json:
         name: "Joe Bloggs"
 ```
 
@@ -438,7 +438,7 @@ We would use it in the `save` object like this:
 save:
   $ext:
     function: utils:test_function
-  body:
+  json:
     test_user_id: user.id
 ```
 
@@ -536,7 +536,7 @@ This is what we would put in our Tavern test:
 ```yaml
 ...
 response:
-  body:
+  json:
     first: 1
     second:
       nested: 2
@@ -586,7 +586,7 @@ stage if wanted.
 
 ```shell
 # Enable strict checking for body and headers only
-py.test --tavern-strict body headers -- my_test_folder/
+py.test --tavern-strict json headers -- my_test_folder/
 ```
 
 ### In the Pytest config file
@@ -596,13 +596,13 @@ whichever configuration file Pytest is using.
 
 ```ini
 [pytest]
-tavern-strict=body headers
+tavern-strict=json headers
 ```
 
 ### Per test
 
 Strictness can also be enabled or disabled on a per-test basis. The `strict` key
-at the top level of the test should be one of `body`, `headers`, or
+at the top level of the test should be one of `json`, `headers`, or
 `redirect_query_params`, or a list consisting of a combination of the three.
 
 ```yaml
@@ -627,7 +627,7 @@ stages:
         content-type: application/json
         content-length: 20
         x-my-custom-header: chocolate
-      body:
+      json:
         id: 1
 ---
 
@@ -643,7 +643,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         q:
           x:
             z:
@@ -654,7 +654,7 @@ test_name: Make sure the headers and body match what I expect exactly
 
 strict:
   - headers
-  - body
+  - json
 
 stages:
   - name: Try to get user
@@ -667,7 +667,7 @@ stages:
         content-type: application/json
         content-length: 20
         x-my-custom-header: chocolate
-      body:
+      json:
         id: 1
         first_name: joe
         last_name: bloggs
@@ -691,7 +691,7 @@ Two examples for doing this - these examples should behave identically:
 test_name: Login and create a new user
 
 strict:
-  - body
+  - json
 
 stages:
   - name: log in
@@ -716,7 +716,7 @@ stages:
         email: joe@bloggs.com
     response:
       status_code: 200
-      body:
+      json:
         <<: *create_user
         id: 1
 ```
@@ -750,8 +750,8 @@ stages:
         email: joe@bloggs.com
     response:
       status_code: 200
-      strict: body
-      body:
+      strict: json
+      json:
         <<: *create_user
         id: 1
 ```
@@ -898,7 +898,7 @@ stages:
     response:
       status_code: 200
       save:
-        body:
+        json:
           test_user_login_token: token
       verify_response_with:
         function: tavern.testutils.helpers:validate_jwt
@@ -915,7 +915,7 @@ stages:
         Authorization: "Bearer {test_user_login_token}"
     response:
       status_code: 200
-      body:
+      json:
     location:
           road: 123 Fake Street
           country: England
@@ -935,7 +935,7 @@ stages:
         Authorization: "Bearer {test_user_login_token}"
     response:
       status_code: 200
-      body:
+      json:
         has_premium: false
 
   - name: Give user premium
@@ -953,7 +953,7 @@ stages:
       <<: *has_premium_request_anchor
     response:
       status_code: 200
-      body:
+      json:
         has_premium: true
 ```
 
@@ -1042,7 +1042,7 @@ stages:
         universe: "{universe:s}"
     response:
       status_code: 200
-      body:
+      json:
         hashed: "{expected_hash:s}"
 
 ---
@@ -1060,7 +1060,7 @@ stages:
         <<: *input_data
     response:
       status_code: 200
-      body:
+      json:
         hashed: "{expected_hash:s}"
 ```
 
@@ -1218,7 +1218,7 @@ stages:
       headers:
         content-type: application/json
       save:
-        body:
+        json:
           test_login_token: token
 ```
 
@@ -1251,7 +1251,7 @@ stages:
       status_code: 200
       headers:
         content-type: application/json
-      body:
+      json:
         data: "Hello, Jim"
 
 ```
@@ -1322,7 +1322,7 @@ stages:
       json: !include test_data.json
     response:
       status_code: 201
-      body:
+      json:
         status: user created
 ```
 
@@ -1389,7 +1389,7 @@ value to match in the **response** block:
 
 ```yaml
 response:
-  body:
+  json:
     # Will assert that there is a 'returned_uuid' key, but will do no checking
     # on the actual value of it
     returned_block: !anything
@@ -1406,7 +1406,7 @@ returned_block:
 ```
 
 Using the magic `!anything` value should only ever be used inside pre-defined
-blocks in the response block (for example, `headers`, `params`, and `body` for a
+blocks in the response block (for example, `headers`, `params`, and `json` for a
 HTTP response).
 
 **NOTE**: Up until version 0.7.0 this was done by setting the value as `null`.
@@ -1498,7 +1498,7 @@ stages:
         user_id: 123
     response:
       status_code: 200
-      body:
+      json:
         task: completed
 ```
 
@@ -1526,7 +1526,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         status: ready
 ```
 
@@ -1570,7 +1570,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         n_users: 2048
         n_queries: 10000
 
@@ -1587,7 +1587,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         n_items: 2048
         n_queries: 5
 ```
@@ -1660,7 +1660,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         n_users: 2048
         n_queries: 10000
 ```
@@ -1687,7 +1687,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         n_users: 2048
         n_queries: 10000
 ```
@@ -1717,7 +1717,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         middle_name: Jimmy
 
 ---
@@ -1733,7 +1733,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         middle_name: Jimmy
 ```
 
@@ -1959,7 +1959,7 @@ stages:
         authorization: "Basic {server_password}"
     response:
       status_code: 200
-      body:
+      json:
         ...
 ```
 

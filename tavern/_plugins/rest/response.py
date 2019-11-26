@@ -159,7 +159,7 @@ class RestResponse(BaseResponse):
         # Run validation on response
         self._check_status_code(response.status_code, body)
 
-        self._validate_block("body", body)
+        self._validate_block("json", body)
         self._validate_block("headers", response.headers)
         self._validate_block("redirect_query_params", redirect_query_params)
 
@@ -168,7 +168,7 @@ class RestResponse(BaseResponse):
         # Get any keys to save
         saved = {}
 
-        saved.update(self.maybe_get_save_values_from_save_block("body", body))
+        saved.update(self.maybe_get_save_values_from_save_block("json", body))
         saved.update(
             self.maybe_get_save_values_from_save_block("headers", response.headers)
         )

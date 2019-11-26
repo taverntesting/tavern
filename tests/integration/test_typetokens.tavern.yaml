@@ -21,7 +21,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         top: !anything
 ---
 
@@ -48,7 +48,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         a_bool: true
 
   - name: match top level
@@ -57,7 +57,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         a_bool: !anybool
 
 ---
@@ -74,7 +74,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         an_integer: 123
 
   - name: match top level
@@ -83,7 +83,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         an_integer: !anyint
 
 ---
@@ -100,7 +100,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body: !anylist
+      json: !anylist
 
 ---
 
@@ -116,7 +116,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body: !anydict
+      json: !anydict
 
 ---
 
@@ -132,7 +132,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         a_string: "abc"
 
   - name: match top level
@@ -141,7 +141,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         a_string: !anystr
 
 ---
@@ -158,7 +158,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: !anystr
           nested: !anything
@@ -179,7 +179,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         - a
         - b
         - !anystr
@@ -204,7 +204,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         top: !anything
 
 ---
@@ -221,7 +221,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         top:
           - a
           - !anystr
@@ -316,7 +316,7 @@ stages:
 #       method: GET
 #     response:
 #       status_code: 200
-#       body:
+#       json:
 #         pi: !approx about three
 #
 # ---
@@ -333,7 +333,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         pi: !approx 3.1415926
 
 ---
@@ -478,10 +478,10 @@ stages:
         value: !float "{v_int}"
     response:
       status_code: 200
-      body:
+      json:
         value: !float "{tavern.request_vars.json.value}"
       save:
-        body:
+        json:
           saved_float_value: value
 
   - name: Try to use it again and make sure it can be converted to the correct type
@@ -549,5 +549,5 @@ stages:
         value: !raw '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'
     response:
       status_code: 200
-      body:
+      json:
         value: !raw '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'

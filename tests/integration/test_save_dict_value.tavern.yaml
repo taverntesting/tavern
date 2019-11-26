@@ -19,7 +19,7 @@ stages:
     response:
       status_code: 200
       save:
-        body:
+        json:
           top_value: top
 
   - name: Use a saved dict value
@@ -30,5 +30,5 @@ stages:
         value: "{top_value.Thing}"
     response:
       status_code: 200
-      body:
+      json:
         value: value

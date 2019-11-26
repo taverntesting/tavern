@@ -42,7 +42,7 @@ def add_parser_options(parser_addoption, with_defaults=True):
         help="Default response matching strictness",
         default=None,
         nargs="+",
-        choices=["body", "headers", "redirect_query_params"],
+        choices=["json", "headers", "redirect_query_params"],
     )
     parser_addoption(
         "--tavern-use-default-traceback",
@@ -125,7 +125,7 @@ def _load_global_strictness(pytest_config):
     strict = get_option_generic(pytest_config, "tavern-strict", [])
 
     if isinstance(strict, list):
-        valid_keys = ["body", "headers", "redirect_query_params"]
+        valid_keys = ["json", "headers", "redirect_query_params"]
         if any(i not in valid_keys for i in strict):
             msg = "Invalid values for 'strict' given - expected one of {}, got {}".format(
                 valid_keys, strict

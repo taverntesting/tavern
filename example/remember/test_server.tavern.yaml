@@ -22,7 +22,7 @@ stages:
       meta:
         - clear_session_cookies # Simulate browser close before request.
     response:
-      body:
+      json:
         regular: foo
       status_code: 200
 
@@ -55,7 +55,7 @@ stages:
       url: http://localhost:5000/protected
       method: GET
     response:
-      body:
+      json:
         protected: bar
       status_code: 200
 

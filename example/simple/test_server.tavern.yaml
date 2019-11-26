@@ -13,7 +13,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         double: 10
 
 ---
@@ -31,7 +31,7 @@ stages:
         content-type: application/json
     response:
       status_code: 400
-      body:
+      json:
         error: a number was not passed
 
   - name: Make sure it raises an error if a number isn't passed
@@ -44,7 +44,7 @@ stages:
         content-type: application/json
     response:
       status_code: 400
-      body:
+      json:
         error: no number passed
 
 ---
@@ -63,7 +63,7 @@ stages:
     response:
       status_code: 200
       save:
-        body:
+        json:
           value: double
 
   - name: Double the number again and save the result
@@ -77,7 +77,7 @@ stages:
     response:
       status_code: 200
       save:
-        body:
+        json:
           doubled_value: double
 
   - name: Make sure number is the same as before
@@ -90,5 +90,5 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         double: !int "{doubled_value:d}"

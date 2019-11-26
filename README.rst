@@ -58,7 +58,7 @@ Then, let's create a basic test, ``test_minimal.tavern.yaml``:
         # ...and the expected response code and body
         response:
           status_code: 200
-          body:
+          json:
             id: 1
 
 This file can have any name, but if you intend to use Pytest with
@@ -97,7 +97,7 @@ experience. If you absolutely can't use Pytest for some reason, use the
       "userId": 1,
       "id": 1,
       "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
-      "body": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
+      "json": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
     })
     2017-11-08 16:17:00,239 [INFO]: (tavern.printer:9) PASSED: Make sure we have the right ID [200]
 

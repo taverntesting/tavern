@@ -23,7 +23,7 @@ def fix_example_test():
                 "request": {"url": "http://www.google.com", "method": "GET"},
                 "response": {
                     "status_code": 200,
-                    "body": {"key": "value"},
+                    "json": {"key": "value"},
                     "headers": {"content-type": "application/json"},
                 },
             }
@@ -36,7 +36,7 @@ def fix_example_test():
 @pytest.fixture(name="mockargs")
 def fix_mock_response_args(fulltest):
     response = fulltest["stages"][0]["response"]
-    content = response["body"]
+    content = response["json"]
 
     args = {
         "spec": requests.Response,
@@ -127,7 +127,7 @@ class TestIncludeStages:
                 "request": {"url": "http://www.bing.com", "method": "GET"},
                 "response": {
                     "status_code": 200,
-                    "body": {"key": "value"},
+                    "json": {"key": "value"},
                     "headers": {"content-type": "application/json"},
                 },
             }
@@ -351,7 +351,7 @@ class TestFormatRequestVars:
         fulltest["stages"][0]["request"][request_key] = {"a_format_key": sent_value}
 
         if request_key == "json":
-            resp_key = "body"
+            resp_key = "json"
             mockargs[request_key] = lambda: {"returned": sent_value}
         else:
             resp_key = request_key
