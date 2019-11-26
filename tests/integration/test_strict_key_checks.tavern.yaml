@@ -60,6 +60,8 @@ stages:
 test_name: Test legacy key matching against body works
 # should be removed in 1.0 when api changes
 
+_xfail: run
+
 includes:
   - !include common.yaml
 
