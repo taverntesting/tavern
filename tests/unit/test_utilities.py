@@ -379,23 +379,17 @@ class TestRecurseAccess:
     def test_search_old_style(self, nested_data, old_query, new_query, expected_data):
         """Make sure old style searches perform the same as jmes queries"""
 
-        with pytest.warns(FutureWarning):
-            old_val = recurse_access_key(nested_data, old_query)
-        new_val = recurse_access_key(nested_data, new_query)
-
-        assert old_val == new_val == expected_data
-
-    @pytest.mark.parametrize(
-        "old_query, new_query", (("f", "f"), ("a.3", "a[3]"), ("a.1.x", "a[1].x"))
-    )
-    def test_missing_search(self, nested_data, old_query, new_query):
-        """Searching for data not in given data raises an exception"""
-
-        with pytest.raises(exceptions.KeySearchNotFoundError):
+        with pytest.raises(exceptions.JMESError):
             recurse_access_key(nested_data, old_query)
 
-        with pytest.raises(exceptions.KeySearchNotFoundError):
-            recurse_access_key(nested_data, new_query)
+        new_val = recurse_access_key(nested_data, new_query)
+        assert new_val == expected_data
+
+    @pytest.mark.parametrize("new_query", ("f", "a[3]", "a[1].x"))
+    def test_missing_search(self, nested_data, new_query):
+        """Searching for data not in given data returns None, because of the way the jmespath library works..."""
+
+        assert recurse_access_key(nested_data, new_query) is None
 
 
 class TestLoadCfg:

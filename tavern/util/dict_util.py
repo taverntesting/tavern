@@ -1,7 +1,6 @@
 import collections
 import logging
 import string
-import warnings
 
 from box import Box
 import jmespath
@@ -95,8 +94,12 @@ def recurse_access_key(data, query):
     """
     Search for something in the given data using the given query.
 
-    Note:
-        Falls back to old _recurse_access_key if not found - will be removed in 1.0
+    Example:
+
+        >>> recurse_access_key({'a': 'b'}, 'a')
+        'b'
+        >>> recurse_access_key({'a': {'b': ['c', 'd']}}, 'a.b[0]')
+        'c'
 
     Args:
         data (dict, list): Data to search in
@@ -106,42 +109,27 @@ def recurse_access_key(data, query):
         object: Whatever was found by the search
     """
 
-    msg = "In a future version of Tavern, selecting for values to save in nested objects will have to be done as a JMES path query - see http://jmespath.org/ for more information"
-
     try:
         from_jmespath = jmespath.search(query, data)
-    except jmespath.exceptions.ParseError:
-        # TODO: In 1.0, this will raise an error instead
-        logger.debug("Error parsing JMES query - %s", msg, exc_info=True)
-        from_jmespath = None
-        import pytest
-        pytest.fail("This should not pass in 1.0")
-
-    # The value might actually be None, in which case we will search twice for no reason,
-    # but this shouldn't cause any issues
-    if from_jmespath is None:
-        logger.debug(
-            "JMES path search for '%s' was None - trying old implementation", query
-        )
+    except jmespath.exceptions.ParseError as e:
+        logger.error("Error parsing JMES query")
 
         try:
-            from_recurse = _recurse_access_key(data, query.split("."))
-        except (IndexError, KeyError) as e:
-            raise exceptions.KeySearchNotFoundError(
-                "Error searching for key in given data"
-            ) from e
+            _deprecated_recurse_access_key(data, query.split("."))
+        except (IndexError, KeyError):
+            logger.debug("Nothing found searching using old method")
+        else:
+            # If we found a key using 'old' style searching
+            logger.warning(
+                "Something was found using 'old style' searching in the response - please change the query to use jmespath instead - see http://jmespath.org/ for more information"
+            )
 
-        # If we found a key using 'old' style searching, which will be deprecated
-        warnings.warn(msg, FutureWarning)
+        raise exceptions.JMESError("Invalid JMES query") from e
 
-        found = from_recurse
-    else:
-        found = from_jmespath
-
-    return found
+    return from_jmespath
 
 
-def _recurse_access_key(current_val, keys):
+def _deprecated_recurse_access_key(current_val, keys):
     """ Given a list of keys and a dictionary, recursively access the dicionary
     using the keys until we find the key its looking for
 
@@ -149,9 +137,9 @@ def _recurse_access_key(current_val, keys):
 
     Example:
 
-        >>> _recurse_access_key({'a': 'b'}, ['a'])
+        >>> _deprecated_recurse_access_key({'a': 'b'}, ['a'])
         'b'
-        >>> _recurse_access_key({'a': {'b': ['c', 'd']}}, ['a', 'b', '0'])
+        >>> _deprecated_recurse_access_key({'a': {'b': ['c', 'd']}}, ['a', 'b', '0'])
         'c'
 
     Args:
@@ -178,7 +166,7 @@ def _recurse_access_key(current_val, keys):
             pass
 
         try:
-            return _recurse_access_key(current_val[current_key], keys)
+            return _deprecated_recurse_access_key(current_val[current_key], keys)
         except (IndexError, KeyError, TypeError) as e:
             logger.error(
                 "%s accessing data - looking for '%s' in '%s'",

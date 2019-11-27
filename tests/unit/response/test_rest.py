@@ -79,7 +79,7 @@ class TestSave:
         """Save a key from the body into the right name
         """
         example_response["json"]["nested"] = {"subthing": ["abc", "def"]}
-        example_response["save"] = {"json": {"test_nested_thing": "nested.subthing.0"}}
+        example_response["save"] = {"json": {"test_nested_thing": "nested.subthing[0]"}}
 
         r = RestResponse(Mock(), "Test 1", example_response, includes)
 
