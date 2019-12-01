@@ -194,7 +194,7 @@ def run_test(in_file, test_spec, global_cfg):
                 test_block_config["strict"] = stage_strictness
             elif default_strictness:
                 logger.debug(
-                    "Default strictness '%s' ignored for this stage", default_strictness
+                    "Default strictness '%s' used for this stage", default_strictness
                 )
 
             # Wrap run_stage with retry helper

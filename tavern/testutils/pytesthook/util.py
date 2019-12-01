@@ -150,12 +150,12 @@ def get_option_generic(pytest_config, flag, default):
     # Lowest priority
     use = default
 
+    # Middle priority
     if pytest_config.getini(ini_flag) is not None:
-        # Middle priority
         use = pytest_config.getini(ini_flag)
 
+    # Top priority
     if pytest_config.getoption(cli_flag) is not None:
-        # Top priority
         use = pytest_config.getoption(cli_flag)
 
     return use

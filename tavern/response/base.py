@@ -36,9 +36,7 @@ class BaseResponse(object):
     def _str_errors(self):
         return "- " + "\n- ".join(self.errors)
 
-    def _adderr(self, msg, *args, **kwargs):
-        e = kwargs.get("e")
-
+    def _adderr(self, msg, *args, e=None):
         if e:
             logger.exception(msg, *args)
         else:
