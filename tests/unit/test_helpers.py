@@ -15,11 +15,9 @@ from tavern.testutils.helpers import validate_pykwalify
 from tavern.testutils.helpers import validate_regex, validate_content
 from tavern.testutils.pytesthook.item import YamlItem
 from tavern.util import exceptions
-from tavern.util.dict_util import (
-    _check_and_format_values,
-    format_keys,
-)
+from tavern.util.dict_util import _check_and_format_values, format_keys
 from tavern.util.loader import ForceIncludeToken
+from tavern.util.strict_util import validate_and_parse_option
 
 
 class FakeResponse:
@@ -327,3 +325,32 @@ class TestCheckFileSpec(object):
     def extra_keys_dict(self):
         with pytest.raises(exceptions.BadSchemaError):
             self._wrap_test_block({"file_path": "gogfgl", "blop": 123})
+
+
+class TestStrictUtils:
+    @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
+    @pytest.mark.parametrize("setting", ["on", "off"])
+    def test_parse_option(self, section, setting):
+        option = "{}:{}".format(section, setting)
+        match = validate_and_parse_option(option)
+
+        assert match.section == section
+
+        if setting == "on":
+            assert match.is_on()
+        else:
+            assert not match.is_on()
+
+    @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
+    def test_unset_defaults(self, section):
+        match = validate_and_parse_option(section)
+
+        if section == "json":
+            assert match.is_on()
+        else:
+            assert not match.is_on()
+
+    @pytest.mark.parametrize("setting", ["true", "1", "hi", ""])
+    def test_fails_bad_setting(self, setting):
+        with pytest.raises(exceptions.InvalidConfigurationException):
+            validate_and_parse_option("json:{}".format(setting))
