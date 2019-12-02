@@ -21,8 +21,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      json:
-        top: !anything
+      json: !anything
 ---
 
 test_name: Test 'anything' token will match any response, from included stage
@@ -37,6 +36,9 @@ stages:
 ---
 
 test_name: Test bool type match
+
+strict:
+  - json:off
 
 includes:
   - !include common.yaml
@@ -63,6 +65,9 @@ stages:
 ---
 
 test_name: Test integer type match
+
+strict:
+  - json:off
 
 includes:
   - !include common.yaml
@@ -122,6 +127,9 @@ stages:
 
 test_name: Test string type match
 
+strict:
+  - json:off
+
 includes:
   - !include common.yaml
 
@@ -164,6 +172,7 @@ stages:
           nested: !anything
         an_integer: !anyint
         a_string: !anystr
+        a_bool: !anybool
 
 ---
 

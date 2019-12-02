@@ -27,5 +27,4 @@ stages:
       method: GET
     response:
       status_code: 200
-      json:
-        top: !anything
+      json: !anything
