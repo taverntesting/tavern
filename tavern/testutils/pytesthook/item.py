@@ -181,9 +181,9 @@ class YamlItem(pytest.Item):
             or not issubclass(excinfo.type, exceptions.TavernException)
             or issubclass(excinfo.type, exceptions.BadSchemaError)
         ):
-            return ReprdError(excinfo, self)
+            return super(YamlItem, self).repr_failure(excinfo)
 
-        return super(YamlItem, self).repr_failure(excinfo)
+        return ReprdError(excinfo, self)
 
     def reportinfo(self):
         return self.fspath, 0, "{s.path}::{s.name:s}".format(s=self)
