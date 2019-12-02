@@ -87,7 +87,7 @@ class BaseResponse(object):
         try:
             check_keys_match_recursive(expected_block, block, [], strict)
         except exceptions.KeyMismatchError as e:
-            self._adderr("Key mismatch", e=e)
+            self._adderr(e.args[0], e=e)
 
     def _check_for_validate_functions(self, response_block):
         """

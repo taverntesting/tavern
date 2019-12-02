@@ -24,6 +24,8 @@ def retry(stage, test_block_config):
             def wrapped(*args, **kwargs):
                 try:
                     res = fn(*args, **kwargs)
+                except exceptions.TestFailError:
+                    raise
                 except exceptions.BadSchemaError:
                     raise
                 except exceptions.TavernException as e:
@@ -65,12 +67,15 @@ def retry(stage, test_block_config):
                                 stage["name"],
                                 max_retries,
                             )
-                            raise exceptions.TestFailError(
-                                "Test '{}' failed: stage did not succeed in {} retries.".format(
-                                    stage["name"], max_retries
-                                )
-                            ) from e
 
+                            if isinstance(e, exceptions.TestFailError):
+                                raise
+                            else:
+                                raise exceptions.TestFailError(
+                                    "Test '{}' failed: stage did not succeed in {} retries.".format(
+                                        stage["name"], max_retries
+                                    )
+                                ) from e
                     else:
                         break
 
