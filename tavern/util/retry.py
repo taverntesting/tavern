@@ -18,6 +18,7 @@ def retry(stage, test_block_config):
     max_retries = stage.get("max_retries", 0)
 
     if max_retries == 0:
+
         def catch_wrapper(fn):
             @wraps(fn)
             def wrapped(*args, **kwargs):
@@ -29,6 +30,7 @@ def retry(stage, test_block_config):
 
         return catch_wrapper
     else:
+
         def retry_wrapper(fn):
             @wraps(fn)
             def wrapped(*args, **kwargs):

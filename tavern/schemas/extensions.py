@@ -9,6 +9,7 @@ from pykwalify.types import is_bool, is_float, is_int
 from tavern.util import exceptions
 from tavern.util.exceptions import BadSchemaError
 from tavern.util.loader import ApproxScalar, BoolToken, FloatToken, IntToken
+from tavern.util.strict_util import StrictLevel
 
 
 def _getlogger():
@@ -371,8 +372,8 @@ def check_strict_key(value, rule_obj, path):
     if not isinstance(value, list) and not is_bool_like(value):
         raise BadSchemaError("'strict' has to be either a boolean or a list")
     elif isinstance(value, list):
-        if not {"json", "headers", "redirect_query_params"} >= set(value):
-            raise BadSchemaError("Invalid 'strict' keys passed: {}".format(value))
+        # Reuse validation here
+        StrictLevel.from_options(value)
 
     return True
 

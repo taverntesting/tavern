@@ -51,7 +51,7 @@ def validate_and_parse_option(key):
     if not match:
         raise exceptions.InvalidConfigurationException(
             "Invalid value for 'strict' given - expected one of {}, got '{}'".format(
-                valid_keys, key
+                ["{}[:on/off]".format(key) for key in valid_keys], key
             )
         )
 
