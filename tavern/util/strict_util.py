@@ -84,3 +84,9 @@ class StrictLevel:
             raise exceptions.InvalidConfigurationException(
                 "No setting for '{}'".format(section)
             ) from e
+
+    @classmethod
+    def all_on(cls):
+        """Only used for unit tests
+        """
+        return cls([i + ":on" for i in valid_keys])
