@@ -12,8 +12,6 @@ stages:
       method: GET
     response:
       status_code: 200
-      json:
-        an_integer: 123
       verify_response_with:
         function: tavern.testutils.helpers:validate_content
         extra_kwargs:
