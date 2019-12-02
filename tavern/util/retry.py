@@ -18,31 +18,17 @@ def retry(stage, test_block_config):
     max_retries = stage.get("max_retries", 0)
 
     if max_retries == 0:
-        # Just catch exceptions
         def catch_wrapper(fn):
             @wraps(fn)
             def wrapped(*args, **kwargs):
-                try:
-                    res = fn(*args, **kwargs)
-                except exceptions.TestFailError:
-                    raise
-                except exceptions.BadSchemaError:
-                    raise
-                except exceptions.TavernException as e:
-                    raise exceptions.TestFailError(
-                        "Test '{}' failed: stage did not succeed in {} retries.".format(
-                            stage["name"], max_retries
-                        )
-                    ) from e
-                else:
-                    logger.debug("Stage '%s' succeeded.", stage["name"])
-                    return res
+                res = fn(*args, **kwargs)
+                logger.debug("Stage '%s' succeeded.", stage["name"])
+                return res
 
             return wrapped
 
         return catch_wrapper
     else:
-
         def retry_wrapper(fn):
             @wraps(fn)
             def wrapped(*args, **kwargs):
