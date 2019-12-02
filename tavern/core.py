@@ -8,6 +8,7 @@ from box import Box
 import pytest
 
 from tavern.schemas.files import wrapfile
+from tavern.util.strict_util import StrictLevel
 
 from .plugins import get_expected, get_extra_sessions, get_request_type, get_verifiers
 from .util import exceptions
@@ -142,9 +143,6 @@ def run_test(in_file, test_spec, global_cfg):
 
     test_block_name = test_spec["test_name"]
 
-    # Strict on body by default
-    default_strictness = test_block_config["strict"]
-
     logger.info("Running test : %s", test_block_name)
 
     with ExitStack() as stack:
@@ -172,30 +170,7 @@ def run_test(in_file, test_spec, global_cfg):
             elif has_only and not getonly(stage):
                 continue
 
-            test_block_config["strict"] = default_strictness
-
-            # Can be overridden per stage
-            # NOTE
-            # this is hardcoded to check for the 'response' block. In the far
-            # future there might not be a response block, but at the moment it
-            # is the hardcoded value for any HTTP request.
-            if stage.get("response", {}):
-                if stage.get("response").get("strict", None) is not None:
-                    stage_strictness = stage.get("response").get("strict", None)
-                elif test_spec.get("strict", None) is not None:
-                    stage_strictness = test_spec.get("strict", None)
-                else:
-                    stage_strictness = default_strictness
-
-                logger.debug(
-                    "Strict key checking for this stage is '%s'", stage_strictness
-                )
-
-                test_block_config["strict"] = stage_strictness
-            elif default_strictness:
-                logger.debug(
-                    "Default strictness '%s' used for this stage", default_strictness
-                )
+            _calculate_stage_strictness(stage, test_block_config, test_spec)
 
             # Wrap run_stage with retry helper
             run_stage_with_retries = retry(stage, test_block_config)(run_stage)
@@ -209,6 +184,34 @@ def run_test(in_file, test_spec, global_cfg):
 
             if getonly(stage):
                 break
+
+
+def _calculate_stage_strictness(stage, test_block_config, test_spec):
+    """Figure out the strictness for this stage
+
+    Can be overridden per stage, or per test
+
+    Priority is global (see pytest util file) <= test <= stage
+    """
+    stage_options = None
+
+    if test_spec.get("strict", None) is not None:
+        stage_options = test_spec["strict"]
+
+    if stage.get("response", {}).get("strict", None) is not None:
+        stage_options = stage["response"]["strict"]
+    elif stage.get("mqtt_response", {}).get("strict", None) is not None:
+        stage_options = stage["mqtt_response"]["strict"]
+
+    if stage_options:
+        logger.debug("Overriding global strictness")
+        test_block_config["strict"] = StrictLevel.from_options(stage_options)
+    else:
+        logger.debug("Global default strictness used for this stage")
+
+    logger.debug(
+        "Strict key checking for this stage is '%s'", test_block_config["strict"]
+    )
 
 
 def run_stage(sessions, stage, tavern_box, test_block_config):
