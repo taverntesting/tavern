@@ -3,9 +3,9 @@ import os
 
 from box import Box
 
-from tavern.util import exceptions
 from tavern.util.dict_util import format_keys
 from tavern.util.general import load_global_config
+from tavern.util.strict_util import StrictLevel
 
 try:
     from functools import lru_cache
@@ -122,17 +122,9 @@ def _load_global_backends(pytest_config):
 def _load_global_strictness(pytest_config):
     """Load the global 'strictness' setting"""
 
-    strict = get_option_generic(pytest_config, "tavern-strict", [])
+    options = get_option_generic(pytest_config, "tavern-strict", [])
 
-    if isinstance(strict, list):
-        valid_keys = ["json", "headers", "redirect_query_params"]
-        if any(i not in valid_keys for i in strict):
-            msg = "Invalid values for 'strict' given - expected one of {}, got {}".format(
-                valid_keys, strict
-            )
-            raise exceptions.InvalidConfigurationException(msg)
-
-    return strict
+    return StrictLevel.from_options(options)
 
 
 def _load_global_follow_redirects(pytest_config):

@@ -171,10 +171,8 @@ class YamlItem(pytest.Item):
     def repr_failure(self, excinfo):
         """ called when self.runtest() raises an exception.
 
-        Todo:
-            This stuff is copied from pytest at the moment - needs a bit of
-            modifying so that it shows the yaml and all the reasons the test
-            failed rather than a traceback
+        By default, will raise a custom formatted traceback if it's a tavern error. if not, will use the default
+        python traceback
         """
 
         if (

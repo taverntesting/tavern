@@ -17,7 +17,11 @@ from tavern.testutils.pytesthook.item import YamlItem
 from tavern.util import exceptions
 from tavern.util.dict_util import _check_and_format_values, format_keys
 from tavern.util.loader import ForceIncludeToken
-from tavern.util.strict_util import validate_and_parse_option, StrictLevel, _StrictSetting
+from tavern.util.strict_util import (
+    validate_and_parse_option,
+    StrictLevel,
+    _StrictSetting,
+)
 
 
 class FakeResponse:

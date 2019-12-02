@@ -220,12 +220,6 @@ class RestResponse(BaseResponse):
 
         logger.debug("Validating response %s against %s", blockname, expected_block)
 
-        # 'strict' could be a list, in which case we only want to enable strict
-        # key checking for that specific bit of the response
         test_strictness = self.test_block_config["strict"]
-        if isinstance(test_strictness, list):
-            block_strictness = blockname in test_strictness
-        else:
-            block_strictness = test_strictness
-
+        block_strictness = test_strictness.setting_for(blockname)
         self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
