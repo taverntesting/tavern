@@ -2,6 +2,8 @@ from distutils.util import strtobool
 import enum
 import re
 
+import attr
+
 from tavern.util import exceptions
 
 
@@ -14,12 +16,12 @@ class _StrictSetting(enum.Enum):
 valid_keys = ["json", "headers", "redirect_query_params"]
 
 
-def _setting_factory(setting):
-    """Converts from cmdlin/setting file to an enum"""
-    if setting is None:
+def setting_factory(str_setting):
+    """Converts from cmdline/setting file to an enum"""
+    if str_setting is None:
         return _StrictSetting.UNSET
     else:
-        parsed = strtobool(setting)
+        parsed = strtobool(str_setting)
 
         if parsed:
             return _StrictSetting.ON
@@ -27,10 +29,10 @@ def _setting_factory(setting):
             return _StrictSetting.OFF
 
 
+@attr.s(frozen=True)
 class _StrictOption:
-    def __init__(self, section, setting):
-        self.section = section
-        self.setting = _setting_factory(setting)
+    section = attr.ib(type=str)
+    setting = attr.ib(type=_StrictSetting)
 
     def is_on(self):
         if self.section == "json":
@@ -53,15 +55,32 @@ def validate_and_parse_option(key):
             )
         )
 
-    return _StrictOption(**match.groupdict())
+    as_dict = match.groupdict()
+    return _StrictOption(as_dict["section"], setting_factory(as_dict["setting"]))
 
 
+@attr.s(frozen=True)
 class StrictLevel:
-    def __init__(self, option):
-        if isinstance(option, str):
-            option = [option]
+    json = attr.ib(default=_StrictOption("json", setting_factory(None)))
+    headers = attr.ib(default=_StrictOption("headers", setting_factory(None)))
+    redirect_query_params = attr.ib(
+        default=_StrictOption("redirect_query_params", setting_factory(None))
+    )
 
-        self.matched = [validate_and_parse_option(key) for key in option]
+    @classmethod
+    def from_options(cls, options):
+        if isinstance(options, str):
+            options = [options]
 
-    def setting_for(self, setting):
-        return self.matched[setting]
+        parsed = [validate_and_parse_option(key) for key in options]
+
+        return cls(**{i.section: i for i in parsed})
+
+    def setting_for(self, section):
+        """Provides a string-based way of getting strict settings for a section"""
+        try:
+            return getattr(self, section)
+        except AttributeError as e:
+            raise exceptions.InvalidConfigurationException(
+                "No setting for '{}'".format(section)
+            ) from e
