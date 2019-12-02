@@ -17,7 +17,7 @@ from tavern.testutils.pytesthook.item import YamlItem
 from tavern.util import exceptions
 from tavern.util.dict_util import _check_and_format_values, format_keys
 from tavern.util.loader import ForceIncludeToken
-from tavern.util.strict_util import validate_and_parse_option
+from tavern.util.strict_util import validate_and_parse_option, StrictLevel, _StrictSetting
 
 
 class FakeResponse:
@@ -354,3 +354,40 @@ class TestStrictUtils:
     def test_fails_bad_setting(self, setting):
         with pytest.raises(exceptions.InvalidConfigurationException):
             validate_and_parse_option("json:{}".format(setting))
+
+    @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
+    def test_defaults(self, section):
+        level = StrictLevel([])
+
+        if section == "json":
+            assert level.setting_for(section)
+        else:
+            assert not level.setting_for(section)
+
+    @pytest.mark.parametrize("section", ["true", "1", "hi", ""])
+    def test_defaults(self, section):
+        level = StrictLevel([])
+
+        with pytest.raises(exceptions.InvalidConfigurationException):
+            level.setting_for(section)
+
+    # These tests could be removed, they are testing implementation details...
+    @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
+    def test_set_on(self, section):
+        level = StrictLevel.from_options([section + ":on"])
+
+        assert level.setting_for(section).setting == _StrictSetting.ON
+        assert level.setting_for(section).is_on()
+
+    @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
+    def test_set_off(self, section):
+        level = StrictLevel.from_options([section + ":off"])
+
+        assert level.setting_for(section).setting == _StrictSetting.OFF
+        assert not level.setting_for(section).is_on()
+
+    @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
+    def test_unset(self, section):
+        level = StrictLevel.from_options([section])
+
+        assert level.setting_for(section).setting == _StrictSetting.UNSET
