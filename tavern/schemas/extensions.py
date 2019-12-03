@@ -374,8 +374,11 @@ def check_strict_key(value, rule_obj, path):
     if not isinstance(value, list) and not is_bool_like(value):
         raise BadSchemaError("'strict' has to be either a boolean or a list")
     elif isinstance(value, list):
-        # Reuse validation here
-        StrictLevel.from_options(value)
+        try:
+            # Reuse validation here
+            StrictLevel.from_options(value)
+        except exceptions.InvalidConfigurationException as e:
+            raise BadSchemaError from e
 
     return True
 
