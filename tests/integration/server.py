@@ -173,7 +173,7 @@ def echo_values():
 
 @app.route("/expect_raw_data", methods=["POST"])
 def expect_raw_data():
-    raw_data = request.stream.read().decode("utf8")
+    raw_data = request.stream.read().decode("utf8").strip()
     if raw_data == "OK":
         response = {"status": "ok"}
         code = 200
