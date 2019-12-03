@@ -203,9 +203,16 @@ def _calculate_stage_strictness(stage, test_block_config, test_spec):
     elif stage.get("mqtt_response", {}).get("strict", None) is not None:
         stage_options = stage["mqtt_response"]["strict"]
 
-    if stage_options:
+    if stage_options is not None:
         logger.debug("Overriding global strictness")
-        test_block_config["strict"] = StrictLevel.from_options(stage_options)
+        if stage_options is True:
+            strict_level = StrictLevel.all_on()
+        elif stage_options is False:
+            strict_level = StrictLevel.all_off()
+        else:
+            strict_level = StrictLevel.from_options(stage_options)
+
+        test_block_config["strict"] = strict_level
     else:
         logger.debug("Global default strictness used for this stage")
 
