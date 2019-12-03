@@ -1,8 +1,9 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
-
+from abc import abstractmethod
 from distutils.util import strtobool
 import logging
 import os.path
+import re
 import uuid
 
 import pytest
@@ -198,6 +199,54 @@ class ListSentinel(TypeSentinel):
 class DictSentinel(TypeSentinel):
     yaml_tag = "!anydict"
     constructor = dict
+
+
+class RegexSentinel(TypeSentinel):
+    """Sentinel that matches a regex in a part of the response
+
+    This shouldn't be used directly and instead one of the below match/fullmatch/search tokens will be used
+    """
+
+    constructor = str
+    compiled = None
+
+    def __str__(self):
+        return "<Tavern Regex sentinel for {}>".format(self.compiled.pattern)
+
+    @property
+    def yaml_tag(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def passes(self, string):
+        raise NotImplementedError
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        c = cls()
+        c.compiled = re.compile(node.value)
+        return c
+
+
+class _RegexMatchSentinel(RegexSentinel):
+    yaml_tag = "!re_match"
+
+    def passes(self, string):
+        return self.compiled.match(string) is not None
+
+
+class _RegexFullMatchSentinel(RegexSentinel):
+    yaml_tag = "!re_fullmatch"
+
+    def passes(self, string):
+        return self.compiled.fullmatch(string) is not None
+
+
+class _RegexSearchSentinel(RegexSentinel):
+    yaml_tag = "!re_search"
+
+    def passes(self, string):
+        return self.compiled.search(string) is not None
 
 
 class AnythingSentinel(TypeSentinel):
