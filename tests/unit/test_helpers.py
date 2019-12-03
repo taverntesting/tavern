@@ -119,32 +119,24 @@ class TestTavernRepr:
         return excinfo
 
     def test_not_called_for_normal_exception(self, fake_item):
-        """Should now call tavern repr by default"""
+        """Does not call tavern repr for non tavern errors"""
         fake_info = self._make_fake_exc_info(RuntimeError)
 
         with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
             fake_item.repr_failure(fake_info)
 
-        assert rmock.called
+        assert not rmock.called
 
-    def test_called_by_default(self, fake_item):
-        """called by default for tavern exceptions"""
+    @pytest.mark.parametrize("ini_flag", [True, False])
+    def test_not_called_for_badschema_tavern_exception_(self, fake_item, ini_flag):
+        """Does not call taven repr for badschemerror - tavern repr gives no useful information in this case"""
         fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
 
-        with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
-            fake_item.repr_failure(fake_info)
-
-        assert rmock.called
-
-    def test_not_called_for_badschema_tavern_exception_(self, fake_item):
-        """Enable ini flag, should call old style exception, even with badschema"""
-        fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
-
-        with patch.object(fake_item.config, "getini", return_value=True):
+        with patch.object(fake_item.config, "getini", return_value=ini_flag):
             with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
-        assert rmock.called
+        assert not rmock.called
 
     def test_not_called_ini(self, fake_item):
         """Enable ini flag, should call old style"""
@@ -154,7 +146,7 @@ class TestTavernRepr:
             with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
-        assert rmock.called
+        assert not rmock.called
 
     def test_not_called_cli(self, fake_item):
         """Enable cli flag, should call old style"""
@@ -164,7 +156,7 @@ class TestTavernRepr:
             with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
-        assert rmock.called
+        assert not rmock.called
 
 
 @pytest.fixture(name="nested_response")
