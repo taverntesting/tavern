@@ -613,3 +613,59 @@ stages:
         - -1.0
         - -2.0
         - -3.0
+
+---
+
+test_name: Match a regex at top level
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match token
+    request:
+      url: "{host}/get_single_json_item"
+      method: GET
+    response:
+      status_code: 200
+      json: !re_match "c82bfa63-.*"
+
+---
+
+test_name: Match a regex in a nested thing
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match token
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        top:
+          nested:
+            doubly:
+              inner: !re_match "value"
+
+---
+
+test_name: Match a regex number doesnt work because its the wrong type
+
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: try to match number
+    request:
+      url: "{host}/pi"
+      method: GET
+    response:
+      strict: false
+      status_code: 200
+      json:
+        pi: !re_match "3.14.*"

@@ -9,6 +9,7 @@ import jmespath
 from tavern.util.loader import (
     ANYTHING,
     ForceIncludeToken,
+    RegexSentinel,
     TypeConvertToken,
     TypeSentinel,
 )
@@ -409,11 +410,16 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
 
         if not (expected_val is ANYTHING):  # pylint: disable=superfluous-parens
             if not expected_matches:
-                raise exceptions.KeyMismatchError(
-                    "Type of returned data was different than expected ({})".format(
+                if isinstance(expected_val, RegexSentinel):
+                    msg = "Expected a string to match regex '{}' ({})".format(
+                        expected_val.compiled, full_err()
+                    )
+                else:
+                    msg = "Type of returned data was different than expected ({})".format(
                         full_err()
                     )
-                ) from e
+
+                raise exceptions.KeyMismatchError(msg) from e
 
         if isinstance(expected_val, dict):
             akeys = set(actual_val.keys())
@@ -525,6 +531,12 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
         elif expected_val is ANYTHING:
             logger.debug("Actual value = '%s' - matches !anything", actual_val)
         elif isinstance(expected_val, TypeSentinel) and expected_matches:
+            if isinstance(expected_val, RegexSentinel):
+                if not expected_val.passes(actual_val):
+                    raise exceptions.KeyMismatchError(
+                        "Regex mismatch: ({})".format(full_err())
+                    ) from e
+
             logger.debug(
                 "Actual value = '%s' - matches !any%s",
                 actual_val,
