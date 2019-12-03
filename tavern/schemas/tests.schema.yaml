@@ -41,6 +41,13 @@ schema;stage:
       range:
         min: 0
 
+    variables:
+      type: map
+      required: false
+      mapping:
+        re;(.*):
+          type: any
+
     skip:
       type: any
       func: bool_variable

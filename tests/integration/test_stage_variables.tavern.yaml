@@ -1,0 +1,77 @@
+---
+
+test_name: Test setting a stage variable and using it
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send stage variable
+    variables:
+      stage_variable_fmt: hello
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: "{stage_variable_fmt}"
+    response:
+      status_code: 200
+      json: "{stage_variable_fmt}"
+
+---
+
+test_name: Test setting a stage variable and using it from 'tavern.request'
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send stage variable
+    variables:
+      stage_variable_fmt: hello
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: "{stage_variable_fmt}"
+    response:
+      status_code: 200
+      json: "{tavern.request_vars.json}"
+
+---
+
+test_name: Test setting a stage variable and checking explicitly
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send stage variable
+    variables:
+      stage_variable_fmt: hello
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: "{stage_variable_fmt}"
+    response:
+      status_code: 200
+      json: "hello"
+
+---
+
+test_name: Using a variable which is already defined will fail
+
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send something
+    variables:
+      first_part: hello
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: "hello"
+    response:
+      status_code: 200
+      json: "hello"

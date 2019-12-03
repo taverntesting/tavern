@@ -172,6 +172,17 @@ def run_test(in_file, test_spec, global_cfg):
             elif has_only and not getonly(stage):
                 continue
 
+            stage_variables = stage.pop("variables", {})
+            if stage_variables:
+                duplicated = set(stage_variables) & set(test_block_config["variables"])
+                if any(duplicated):
+                    raise exceptions.DuplicateKeysError(
+                        "Duplicated keys '{}' in stage variables that already existed in global variables!".format(
+                            duplicated
+                        )
+                    )
+                test_block_config["variables"].update(stage_variables)
+
             test_block_config["strict"] = default_strictness
 
             # Can be overridden per stage
@@ -206,6 +217,15 @@ def run_test(in_file, test_spec, global_cfg):
                 e.stage = stage
                 e.test_block_config = test_block_config
                 raise
+
+            for s in stage_variables:
+                # Already checked above to see that there were no duplicates, but they might have been added
+                if test_block_config["variables"][s] != stage_variables[s]:
+                    logger.warning(
+                        "Variable '%s' was a stage variable but was then overridden be saving a value to it in a test. This variable will be DELETED",
+                        s,
+                    )
+                test_block_config["variables"].pop(s)
 
             if getonly(stage):
                 break
