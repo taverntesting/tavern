@@ -162,6 +162,7 @@ test_name: Test strict key matching against headers with mismatch body passes
 
 strict:
   - headers
+  - json:off
 
 includes:
   - !include common.yaml
@@ -242,6 +243,9 @@ test_name: Test strict key matching works for specific test stages
 includes:
   - !include common.yaml
 
+strict:
+  - json:off
+
 stages:
   - name: match with one key missing
     request:
@@ -297,8 +301,6 @@ test_name: Test non-strict key matching one list item
 strict:
   - json
 
-_xfail: run
-
 includes:
   - !include common.yaml
 
@@ -311,24 +313,26 @@ stages:
       strict: false
       json:
         - a
-#
-#  - name: match a middle item in the list
-#    request:
-#      url: "{host}/fake_list"
-#    response:
-#      status_code: 200
-#      strict: false
-#      json:
-#        - c
-#
-#  - name: match a number in the middle of the list
-#    request:
-#      url: "{host}/fake_list"
-#    response:
-#      status_code: 200
-#      strict: false
-#      json:
-#        - 2
+
+  - name: match a middle item in the list
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+#      Use new syntax
+      strict:
+        - json:off
+      json:
+        - c
+
+  - name: match a number in the middle of the list
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      strict: false
+      json:
+        - 2
 
 ---
 

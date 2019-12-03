@@ -378,6 +378,8 @@ def check_strict_key(value, rule_obj, path):
         except exceptions.InvalidConfigurationException as e:
             raise BadSchemaError from e
 
+    # Might be a bool as well, in which case it's processed further down the line - no validation required
+
     return True
 
 
