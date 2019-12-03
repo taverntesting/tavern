@@ -169,6 +169,10 @@ schema;stage:
               type: any
           func: validate_file_spec
 
+        file_body:
+          type: str
+          required: false
+
         method:
           type: str
           enum:

@@ -66,7 +66,7 @@ def get_request_args(rspec, test_block_config):
         logger.debug("Using default GET method")
         rspec["method"] = "GET"
 
-    content_keys = ["data", "json", "files"]
+    content_keys = ["data", "json", "files", "file_body"]
 
     in_request = [c for c in content_keys if c in rspec]
     if len(in_request) > 1:
@@ -83,7 +83,7 @@ def get_request_args(rspec, test_block_config):
     headers = rspec.get("headers", {})
     has_content_header = "content-type" in [h.lower() for h in headers.keys()]
 
-    if "files" in rspec:
+    if "files" in rspec or "file_body" in rspec:
         if has_content_header:
             logger.warning(
                 "Tried to specify a content-type header while sending a file - this will be ignored"
@@ -394,6 +394,7 @@ class RestRequest(BaseRequest):
             "json",
             "verify",
             "files",
+            "file_body",
             "stream",
             "timeout",
             "cookies",
@@ -431,7 +432,17 @@ class RestRequest(BaseRequest):
             # they will be closed at the end of the request.
             with ExitStack() as stack:
                 stack.enter_context(_set_cookies_for_request(session, request_args))
-                self._request_args.update(_get_file_arguments(request_args, stack))
+
+                # These are mutually exclusive
+                if rspec.get("file_body"):
+                    with open(rspec.get("file_body"), "rb") as ffff:
+                        logger.critical(ffff.read().decode("utf8"))
+
+                    file = stack.enter_context(open(rspec.get("file_body"), "rb"))
+                    request_args.update(data=file)
+                else:
+                    self._request_args.update(_get_file_arguments(request_args, stack))
+
                 return session.request(**self._request_args)
 
         self._prepared = prepared_request
