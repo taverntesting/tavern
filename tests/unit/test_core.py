@@ -336,7 +336,7 @@ class TestTavernMetaFormat:
             "a_format_key": "{tavern.env_vars.%s}" % env_key
         }
 
-        with pytest.raises(exceptions.TestFailError):
+        with pytest.raises(exceptions.MissingFormatError):
             run_test("heif", fulltest, includes)
 
 
