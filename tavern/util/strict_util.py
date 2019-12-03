@@ -71,6 +71,8 @@ class StrictLevel:
     def from_options(cls, options):
         if isinstance(options, str):
             options = [options]
+        elif not isinstance(options, list):
+            raise exceptions.InvalidConfigurationException("'strict' setting should be a bool or a list")
 
         parsed = [validate_and_parse_option(key) for key in options]
 
@@ -89,4 +91,4 @@ class StrictLevel:
     def all_on(cls):
         """Only used for unit tests
         """
-        return cls([i + ":on" for i in valid_keys])
+        return cls.from_options([i + ":on" for i in valid_keys])
