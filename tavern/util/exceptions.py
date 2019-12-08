@@ -115,3 +115,7 @@ class DuplicateCookieError(TavernException):
 
 class InvalidConfigurationException(TavernException):
     """A configuration value (from the cli or the ini file) was invalid"""
+
+
+class InvalidFormattedJsonError(TavernException):
+    """Tried to use the magic json format tag in an invalid way"""

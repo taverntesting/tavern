@@ -299,6 +299,16 @@ class RawStrToken(TypeConvertToken):
     constructor = StrToRawConstructor
 
 
+class ForceIncludeToken(TypeConvertToken):
+    """Magic tag that changes the way string formatting works"""
+
+    yaml_tag = "!force_format_include"
+
+    @staticmethod
+    def constructor(_):
+        raise ValueError
+
+
 # Sort-of hack to try and avoid future API changes
 ApproxScalar = type(pytest.approx(1.0))
 
