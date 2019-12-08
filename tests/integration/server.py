@@ -4,6 +4,7 @@ import math
 import mimetypes
 import os
 import time
+import uuid
 
 from flask import Flask, request, jsonify, Response, redirect
 
@@ -286,3 +287,8 @@ def return_empty_paged():
 @app.route("/jmes/with_dot", methods=["GET"])
 def return_with_dot():
     return jsonify({"data.a": "a", "data.b": "b"}), 200
+
+
+@app.route("/uuid/v4", methods=["GET"])
+def get_uuid_v4():
+    return jsonify({"uuid": uuid.uuid4()}), 200
