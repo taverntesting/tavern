@@ -669,3 +669,20 @@ stages:
       status_code: 200
       json:
         pi: !re_match "3.14.*"
+
+---
+
+test_name: Match a uuid v4
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match a uuid v4
+    request:
+      url: "{host}/uuid/v4"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        uuid: !re_fullmatch "[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"

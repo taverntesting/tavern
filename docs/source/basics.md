@@ -1426,6 +1426,36 @@ use one of the following markers instead:
 - `!anylist`: Matches any list
 - `!anydict`: Matches any dict/'mapping'
 
+### Matching via a regular expression
+
+Sometimes you know something will be a string, but you also want to make sure
+that the string matches some kind of regular expression. This can be done using
+external functions, but as a shorthand there is also the `!re_` family of custom
+YAML tags that can be used to match part of a response. Say that we want to make
+sure that a UUID returned is a
+[version 4 UUID](https://tools.ietf.org/html/rfc4122#section-4.1.3), where the
+third block must start with 4 and the third block must start with 8, 9, "A", or
+"B".
+
+```yaml
+  - name: Check that uuidv4 is returned
+    request:
+      url: {host}/get_uuid/v4
+      method: GET
+    response:
+      status_code: 200
+      json:
+        uuid: !re_fullmatch "[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89AB][0-9a-f]{3}-[0-9a-f]{12}"
+```
+
+This is using the `!re_fullmatch` variant of the tag - this calls
+[`re.fullmatch`](https://docs.python.org/3.7/library/re.html#re.fullmatch) under
+the hood, which means that the regex given needs to match the _entire_ part of
+the response that is being checked for it to pass. There is also `!re_search`
+which will pass if it matches _part_ of the thing being checked, or `!re_match`
+which will match _part_ of the thing being checked, as long as it is at the
+_beginning_ of the string. See the Python documentation for more details.
+
 ## Type conversions
 
 [YAML](http://yaml.org/spec/1.1/current.html#id867381) has some magic variables
