@@ -507,17 +507,22 @@ the same request in each test to re-fetch the data.
 
 ## Strict key checking
 
-**NOTE**: At the time of writing, Tavern will by default not perform 'strict'
-key checking on the top level keys in the response, but will perform it on all
-keys below that. This 'legacy' behaviour will be changed in a future version, see below for details.
-
 'Strict' key checking can be enabled or disabled globally, per test, or per
 stage. 'Strict' key checking refers to whether extra keys in the response should
-be ignored or whether they should raise an error. There are currently 3 levels
-of strict checking in Tavern, which only apply to HTTP tests. With strict key
-checking enabled, all keys in dictionaries at all levels have to match or it
-will raise an error. With it disabled, Extra keys in the response will be
-ignored. If it is not set at all, 'legacy' behaviour is used.
+be ignored or whether they should raise an error. With strict key checking
+enabled, all keys in dictionaries at all levels have to match or it will raise
+an error. With it disabled, Extra keys in the response will be ignored as long
+as the ones in your response block are present.
+
+Strict key checking can be controlled individually for the response for the JSON
+body,the redirect query parameter, or the headers.
+
+By default, strict key checking is _disabled_ for headers and redirect query
+parameters in the response, but _enabled_ for JSON (as well as when checking for
+JSON in an mqtt response). This is because although there may be a lot of
+'extra' things in things like the response headers (such as server agent
+headers, cache control headers, etc), the expected JSON body will likely always
+want to be matched exactly.
 
 This is best explained through an example. If we expect this response from a
 server:
@@ -544,22 +549,12 @@ response:
 
 The behaviour of various levels of 'strictness' based on the response:
 
-
-| Response | True | False | 'legacy' |
+| Response | True | False |
 | ---- | -------- | ------ | ------- |
-| `{ "first": 1, "second": { "nested": 2 } }`  | PASS | PASS | PASS |
-| `{ "first": 1 }`  | FAIL | PASS | PASS |
-| `{ "first": 1, "second": { "another": 2 } }`  | FAIL | FAIL | FAIL |
-| `{ "first": 1, "second": { "nested": 2, "another": 2 } }`  | FAIL | PASS | FAIL |
-
-
-As you can see from the table, the 'legacy' behaviour only cares about keys
-below the top level which was a design flaw. This behaviour will be removed in a
-future version, but has been left in for the time being to maintain backwards
-compatability.
-
-The strictness setting does not only apply to the body however, it can also be
-used on the headers and redirect query parameters.
+| `{ "first": 1, "second": { "nested": 2 } }`  | PASS | PASS |
+| `{ "first": 1 }`  | FAIL | PASS |
+| `{ "first": 1, "second": { "another": 2 } }`  | FAIL | FAIL |
+| `{ "first": 1, "second": { "nested": 2, "another": 2 } }`  | FAIL | PASS |
 
 This setting can be controlled in 3 different ways, the order of priority being:
 
@@ -570,23 +565,28 @@ This setting can be controlled in 3 different ways, the order of priority being:
 This means that using the command line option will _not_ override any settings
 for specific tests.
 
-**NOTE**: 'strict' key checking can currently only be _enabled_ via the command line
-and the pytest config file, not _disabled_.
+Each of these methods is done by passing a sequence of strings indicating which
+section (`json`/`redirect_query_params`/`headers`) should be affected, and
+optionally whether it is on or off.
+
+- `json:off headers:on` - turn off for the body, but on for the headers.
+  `redirect_query_params` will stay default off. 
+- `json:off headers:off` - turn body and header strict checking off
+- `redirect_query_params:on json:on` redirect parameters is turned on and json
+  is kept on (as it is on by default), header strict matching is kept off (as
+  default).
+
+Leaving the 'on' or 'off' at the end of each setting will imply 'on' - ie, using
+`json headers redirect_query_params` as an option will turn them all on.
 
 ### Command line
 
 There is a command line argument, `--tavern-strict`, which controls the default
-global strictness setting. If not set, this uses the 'legacy' behaviour - in
-future, this will default to 'strict' key checking being disabled. This is
-mainly because a lot of web programs will return a huge number of headers which
-you don't want to include in every test, and when checking the body you normally
-only want to check that it returns the data you want and not care about any
-extra metadata sent with the response. This can be re-enabled per test or per
-stage if wanted.
+global strictness setting.
 
 ```shell
 # Enable strict checking for body and headers only
-py.test --tavern-strict json headers -- my_test_folder/
+py.test --tavern-strict json:on headers:on redirect_query_params:off -- my_test_folder/
 ```
 
 ### In the Pytest config file
@@ -596,25 +596,23 @@ whichever configuration file Pytest is using.
 
 ```ini
 [pytest]
-tavern-strict=json headers
+tavern-strict=json:off headers:on
 ```
 
 ### Per test
 
 Strictness can also be enabled or disabled on a per-test basis. The `strict` key
-at the top level of the test should be one of `json`, `headers`, or
-`redirect_query_params`, or a list consisting of a combination of the three.
+at the top level of the test should a list consisting of one or more strictness
+setting as described in the previous section.
 
 ```yaml
 ---
 
 test_name: Make sure the headers match what I expect exactly
 
-strict: headers
-
-# This can also be done like this:
-# strict:
-#   - headers
+strict:
+  - headers:on
+  - json:off
 
 stages:
   - name: Try to get user
@@ -628,9 +626,15 @@ stages:
         content-length: 20
         x-my-custom-header: chocolate
       json:
+        # As long as "id: 1" is in the response, this will pass and other keys will be ignored
         id: 1
----
+```
 
+A special option that can be done at the test level (or at the stage level, as
+described in the next section) is just to pass a boolean. This will turn strict
+checking on or off for all settings for the duration of that test/stage.
+
+```yaml
 test_name: Just check for one thing in a big nested dict
 
 # completely disable strict key checking for this whole test
@@ -648,30 +652,6 @@ stages:
           x:
             z:
               a: 1
----
-
-test_name: Make sure the headers and body match what I expect exactly
-
-strict:
-  - headers
-  - json
-
-stages:
-  - name: Try to get user
-    request:
-      url: "{host}/users/joebloggs"
-      method: GET
-    response:
-      status_code: 200
-      headers:
-        content-type: application/json
-        content-length: 20
-        x-my-custom-header: chocolate
-      json:
-        id: 1
-        first_name: joe
-        last_name: bloggs
-        email: joe@bloggs.com
 ```
 
 ### Per stage
@@ -690,8 +670,9 @@ Two examples for doing this - these examples should behave identically:
 
 test_name: Login and create a new user
 
+# Force re-enable strict checking, in case it was turned off globally
 strict:
-  - json
+  - json:on
 
 stages:
   - name: log in
@@ -716,16 +697,16 @@ stages:
         email: joe@bloggs.com
     response:
       status_code: 200
+      # Because strict was set 'on' at the test level, this must match exactly
       json:
         <<: *create_user
         id: 1
 ```
 
+Or if strict json key checking was enabled at the global level:
+
 ```yaml
 ---
-
-# Enable strict checking only for the second stage (assuming strict checking is
-# globally disabled).
 
 test_name: Login and create a new user
 
@@ -735,25 +716,14 @@ stages:
       url: "{host}/users/joebloggs"
       method: GET
     response:
+      strict:
+        - json:off
       status_code: 200
       json:
         logged_in: True
-        # Ignores any extra metadata like user id, last login, etc.
 
   - name: Create a new user
-    request:
-      url: "{host}/users/joebloggs"
-      method: POST
-      json: &create_user
-        first_name: joe
-        last_name: bloggs
-        email: joe@bloggs.com
-    response:
-      status_code: 200
-      strict: json
-      json:
-        <<: *create_user
-        id: 1
+    request: ...
 ```
 
 ## Reusing requests and YAML fragments
