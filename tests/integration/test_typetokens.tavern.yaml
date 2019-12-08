@@ -577,3 +577,39 @@ stages:
     response:
       status_code: 200
       body: !force_format_include "{tavern.request_vars.json}"
+
+---
+
+test_name: Test magic format token with list
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get dictionary
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      body: !anylist
+      save:
+        body:
+          whole_list_body: "@"
+
+  - name: reuse dictionary
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: !force_format_include "{whole_list_body}"
+    response:
+      status_code: 200
+      body:
+        - a
+        - b
+        - c
+        - 1
+        - 2
+        - 3
+        - -1.0
+        - -2.0
+        - -3.0

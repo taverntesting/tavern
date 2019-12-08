@@ -134,8 +134,7 @@ def format_keys(val, variables, no_double_format=True):
             formatted = InnerFormattedString(formatted)
     elif isinstance(val, TypeConvertToken):
         if isinstance(val, ForceIncludeToken):
-            initial_formatted = _attempt_find_include(val.value, box_vars)
-            formatted = format_keys(initial_formatted, box_vars)
+            formatted = _attempt_find_include(val.value, box_vars)
         else:
             value = format_keys(val.value, box_vars)
             formatted = val.constructor(value)
