@@ -566,7 +566,7 @@ stages:
     response:
       status_code: 200
       save:
-        body:
+        json:
           whole_body: "@"
 
   - name: reuse dictionary
@@ -576,7 +576,7 @@ stages:
       json: !force_format_include "{whole_body}"
     response:
       status_code: 200
-      body: !force_format_include "{tavern.request_vars.json}"
+      json: !force_format_include "{tavern.request_vars.json}"
 
 ---
 
@@ -591,9 +591,9 @@ stages:
       url: "{host}/fake_list"
     response:
       status_code: 200
-      body: !anylist
+      json: !anylist
       save:
-        body:
+        json:
           whole_list_body: "@"
 
   - name: reuse dictionary
@@ -603,7 +603,7 @@ stages:
       json: !force_format_include "{whole_list_body}"
     response:
       status_code: 200
-      body:
+      json:
         - a
         - b
         - c

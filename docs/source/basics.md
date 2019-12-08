@@ -1490,9 +1490,9 @@ could be done by
     response:
       status_code: 200
       # Expect a list of users
-      body: !anylist
+      json: !anylist
       save:
-        body:
+        json:
           # Save the list as 'all_users'
           all_users: "@"
       
@@ -1512,7 +1512,7 @@ could be done by
     response:
       status_code: 200
       # Expect no users
-      body: []
+      json: []
 ```
 
 Any blocks of JSON that are included this way will not be recursively formatted.
