@@ -58,6 +58,9 @@ class MQTTResponse(BaseResponse):
         topic = self.expected["topic"]
         timeout = self.expected.get("timeout", 1)
 
+        test_strictness = self.test_block_config["strict"]
+        block_strictness = test_strictness.setting_for("json").is_on()
+
         expected_payload, expect_json_payload = self._get_payload_vals()
 
         # Any warnings to do with the request
@@ -121,7 +124,9 @@ class MQTTResponse(BaseResponse):
             elif msg.payload != expected_payload:
                 if expect_json_payload:
                     try:
-                        check_keys_match_recursive(expected_payload, msg.payload, [])
+                        check_keys_match_recursive(
+                            expected_payload, msg.payload, [], strict=block_strictness
+                        )
                     except exceptions.KeyMismatchError:
                         # Just want to log the mismatch
                         pass
