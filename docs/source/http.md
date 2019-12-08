@@ -380,6 +380,25 @@ By default, the sending of files is handled by the Requests library - to see the
 implementation details, see their
 [documentation](http://docs.python-requests.org/en/master/user/quickstart/#post-a-multipart-encoded-file).
 
+### Uploading a file as the body of a request
+
+In some cases it may be required to upload the entire contents of a file in the
+request body - for example, when posting a binary data blob from a file. This
+can be done for JSON and YAML using the `!include` tag, but for other data
+formats the `file_body` key can be used:
+
+```yaml
+  - name: Upload a file in the request body
+    request:
+      url: "{host}/data_blob"
+      method: POST
+      file_body: "/path/to/blobfile
+    response:
+      status_code: 200
+```
+
+Like the `files` key, this is mutually exclusive with the `json` key.
+
 ### Specifying custom content type and encoding
 
 If you need to use a custom file type and/or encoding when uploading the file,
