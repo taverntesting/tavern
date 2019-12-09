@@ -552,7 +552,7 @@ response:
 The behaviour of various levels of 'strictness' based on the response:
 
 | Response | strict=on | strict=off |
-| ---- | -------- | ------ | ------- |
+| ---- | -------- | ------ |
 | `{ "first": 1, "second": { "nested": 2 } }`  | PASS | PASS |
 | `{ "first": 1 }`  | FAIL | PASS |
 | `{ "first": 1, "second": { "another": 2 } }`  | FAIL | FAIL |
