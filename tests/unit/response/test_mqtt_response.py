@@ -4,6 +4,7 @@ from unittest.mock import Mock
 from tavern._plugins.mqtt.client import MQTTClient
 from tavern.util import exceptions
 from tavern._plugins.mqtt.response import MQTTResponse
+from tavern.util.strict_util import StrictLevel
 
 
 def test_nothing_returned_fails():
@@ -12,7 +13,9 @@ def test_nothing_returned_fails():
 
     expected = {"topic": "/a/b/c", "payload": "hello"}
 
-    verifier = MQTTResponse(fake_client, "Test stage", expected, {})
+    verifier = MQTTResponse(
+        fake_client, "Test stage", expected, {"strict": StrictLevel.all_on()}
+    )
 
     with pytest.raises(exceptions.TestFailError):
         verifier.verify(expected)
