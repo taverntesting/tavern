@@ -51,6 +51,60 @@ stages:
 
 ---
 
+test_name: Test mqtt message echo json with non strict checking
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+strict:
+  - json:off
+
+stages:
+  - name: Check that at least part of response is echoed
+    mqtt_publish:
+      topic: /device/123/echo
+      json:
+        key_1: message1
+        key_2: message2
+    mqtt_response:
+      topic: /device/123/echo/response
+      json:
+        key_1: message1
+      timeout: 5
+      qos: 1
+
+---
+
+test_name: Test mqtt message match fails with strict on and non matching response
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+strict:
+  - json:on
+
+_xfail: run
+
+stages:
+  - name: Check that at least part of response is echoed
+    mqtt_publish:
+      topic: /device/123/echo
+      json:
+        key_1: message1
+        key_2: message2
+    mqtt_response:
+      topic: /device/123/echo/response
+      json:
+        key_1: message1
+      timeout: 5
+      qos: 1
+
+---
+
 test_name: Test ext functions work with MQTT
 
 includes:
