@@ -524,6 +524,8 @@ JSON in an mqtt response). This is because although there may be a lot of
 headers, cache control headers, etc), the expected JSON body will likely always
 want to be matched exactly.
 
+### Effect of different settings
+
 This is best explained through an example. If we expect this response from a
 server:
 
@@ -549,12 +551,34 @@ response:
 
 The behaviour of various levels of 'strictness' based on the response:
 
-| Response | True | False |
+| Response | strict=on | strict=off |
 | ---- | -------- | ------ | ------- |
 | `{ "first": 1, "second": { "nested": 2 } }`  | PASS | PASS |
 | `{ "first": 1 }`  | FAIL | PASS |
 | `{ "first": 1, "second": { "another": 2 } }`  | FAIL | FAIL |
 | `{ "first": 1, "second": { "nested": 2, "another": 2 } }`  | FAIL | PASS |
+
+Turning 'strict' off also means that extra items in lists will be ignored as
+long as the ones specified in the test response are present. For example, if the
+response from a server is `[ 1, 2, 3 ]` then strict being on - the default for
+the JSON response body - will match _only_ `[1, 2, 3]`.
+
+With strict being turned off for the body, any of these in the test will pass:
+
+- `[1, 2, 3]`
+- `[1]`
+- `[2]`
+- `[3]`
+- `[1, 2]`
+- `[2, 3]`
+- `[1, 3]`
+
+But not:
+
+- `[3, 1]`, `[2, 1]` - items present, but out of order
+- `[2, 4]` - '4' not present in response from the server
+
+### Changing the setting
 
 This setting can be controlled in 3 different ways, the order of priority being:
 
@@ -579,7 +603,7 @@ optionally whether it is on or off.
 Leaving the 'on' or 'off' at the end of each setting will imply 'on' - ie, using
 `json headers redirect_query_params` as an option will turn them all on.
 
-### Command line
+#### Command line
 
 There is a command line argument, `--tavern-strict`, which controls the default
 global strictness setting.
@@ -589,7 +613,7 @@ global strictness setting.
 py.test --tavern-strict json:on headers:on redirect_query_params:off -- my_test_folder/
 ```
 
-### In the Pytest config file
+#### In the Pytest config file
 
 This behaves identically to the command line option, but will be read from
 whichever configuration file Pytest is using.
@@ -599,7 +623,7 @@ whichever configuration file Pytest is using.
 tavern-strict=json:off headers:on
 ```
 
-### Per test
+#### Per test
 
 Strictness can also be enabled or disabled on a per-test basis. The `strict` key
 at the top level of the test should a list consisting of one or more strictness
@@ -654,7 +678,7 @@ stages:
               a: 1
 ```
 
-### Per stage
+#### Per stage
 
 Often you have a standard stage before other stages, such as logging in to your
 server, where you only care if it returns a 200 to indicate that you're logged
