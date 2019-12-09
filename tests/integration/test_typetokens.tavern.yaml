@@ -646,6 +646,9 @@ test_name: Match a regex in a nested thing
 includes:
   - !include common.yaml
 
+strict:
+  - json:off
+
 stages:
   - name: match token
     request:
