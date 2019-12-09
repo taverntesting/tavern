@@ -435,9 +435,6 @@ class RestRequest(BaseRequest):
 
                 # These are mutually exclusive
                 if rspec.get("file_body"):
-                    with open(rspec.get("file_body"), "rb") as ffff:
-                        logger.critical(ffff.read().decode("utf8"))
-
                     file = stack.enter_context(open(rspec.get("file_body"), "rb"))
                     request_args.update(data=file)
                 else:
