@@ -135,7 +135,9 @@ def get_wrapped_create_function(ext):
 
     @functools.wraps(func)
     def inner():
-        return func(*args, **kwargs)
+        result = func(*args, **kwargs)
+        _getlogger().info("Result of calling '%s': '%s'", func, result)
+        return result
 
     inner.func = func
 
