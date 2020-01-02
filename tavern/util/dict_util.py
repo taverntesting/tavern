@@ -1,13 +1,21 @@
+from builtins import str as ustr
 import collections
 import logging
+import re
+import string
 import warnings
-from builtins import str as ustr
 
-import jmespath
-from future.utils import raise_from
 from box import Box
+from future.utils import raise_from
+import jmespath
 
-from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
+from tavern.util.loader import (
+    ANYTHING,
+    ForceIncludeToken,
+    TypeConvertToken,
+    TypeSentinel,
+)
+
 from . import exceptions
 
 logger = logging.getLogger(__name__)
@@ -21,6 +29,73 @@ class _FormattedString(object):
 
     def __init(self, s):
         super(_FormattedString, self).__init__(s)
+
+
+def _check_and_format_values(to_format, box_vars):
+    formatter = string.Formatter()
+    would_format = formatter.parse(to_format)
+
+    for (_, field_name, _, _) in would_format:
+        if field_name is None:
+            continue
+
+        try:
+            would_replace = formatter.get_field(field_name, [], box_vars)[0]
+        except KeyError as e:
+            logger.error(
+                "Failed to resolve string [%s] with variables [%s]", to_format, box_vars
+            )
+            logger.error("Key(s) not found in format: %s", field_name)
+            raise_from(exceptions.MissingFormatError(field_name), e)
+        except IndexError as e:
+            logger.error("Empty format values are invalid")
+            raise_from(exceptions.MissingFormatError(field_name), e)
+        else:
+            if not isinstance(would_replace, (str, ustr, int, float)):
+                logger.warning(
+                    "Formatting '%s' will result in it being coerced to a string (it is a %s)",
+                    field_name,
+                    type(would_replace),
+                )
+
+    return to_format.format(**box_vars)
+
+
+def _attempt_find_include(to_format, box_vars):
+    formatter = string.Formatter()
+    would_format = list(formatter.parse(to_format))
+
+    yaml_tag = ForceIncludeToken.yaml_tag
+
+    if len(would_format) != 1:
+        raise exceptions.InvalidFormattedJsonError(
+            "When using {}, there can only be one exactly format value, but got {}".format(
+                yaml_tag, len(would_format)
+            )
+        )
+
+    (_, field_name, format_spec, conversion) = would_format[0]
+
+    if field_name is None:
+        raise exceptions.InvalidFormattedJsonError(
+            "Invalid string used for {}".format(yaml_tag)
+        )
+
+    pattern = r"{" + field_name + r".*}"
+
+    if not re.match(pattern, to_format):
+        raise exceptions.InvalidFormattedJsonError(
+            "Invalid format specifier '{}' for {}".format(to_format, yaml_tag)
+        )
+
+    if format_spec:
+        logger.warning(
+            "Conversion specifier '%s' will be ignored for %s", format_spec, to_format
+        )
+
+    would_replace = formatter.get_field(field_name, [], box_vars)[0]
+
+    return formatter.convert_field(would_replace, conversion)
 
 
 def format_keys(val, variables, no_double_format=True):
@@ -49,17 +124,7 @@ def format_keys(val, variables, no_double_format=True):
     elif isinstance(formatted, _FormattedString):
         logger.debug("Already formatted %s, not double-formatting", formatted)
     elif isinstance(val, (ustr, str)):
-        try:
-            formatted = val.format(**box_vars)
-        except KeyError as e:
-            logger.error(
-                "Failed to resolve string [%s] with variables [%s]", val, box_vars
-            )
-            logger.error("Key(s) not found in format: %s", e.args)
-            raise_from(exceptions.MissingFormatError(e.args), e)
-        except IndexError as e:
-            logger.error("Empty format values are invalid")
-            raise_from(exceptions.MissingFormatError(e.args), e)
+        formatted = _check_and_format_values(val, box_vars)
 
         if no_double_format:
 
@@ -68,8 +133,11 @@ def format_keys(val, variables, no_double_format=True):
 
             formatted = InnerFormattedString(formatted)
     elif isinstance(val, TypeConvertToken):
-        value = format_keys(val.value, box_vars)
-        formatted = val.constructor(value)
+        if isinstance(val, ForceIncludeToken):
+            formatted = _attempt_find_include(val.value, box_vars)
+        else:
+            value = format_keys(val.value, box_vars)
+            formatted = val.constructor(value)
     else:
         logger.debug("Not formatting something of type '%s'", type(formatted))
 
@@ -103,7 +171,9 @@ def recurse_access_key(data, query):
     # The value might actually be None, in which case we will search twice for no reason,
     # but this shouldn't cause any issues
     if from_jmespath is None:
-        logger.debug("JMES path search was None - trying old implementation")
+        logger.debug(
+            "JMES path search for '%s' was None - trying old implementation", query
+        )
 
         try:
             from_recurse = _recurse_access_key(data, query.split("."))

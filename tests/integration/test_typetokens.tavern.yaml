@@ -88,6 +88,38 @@ stages:
 
 ---
 
+test_name: Test list type match
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match any list
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      body: !anylist
+
+---
+
+test_name: Test dict type match
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match any dict
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      body: !anydict
+
+---
+
 test_name: Test string type match
 
 includes:
@@ -519,3 +551,65 @@ stages:
       status_code: 200
       body:
         value: !raw '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'
+
+---
+
+test_name: Test magic format token
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get dictionary
+    request:
+      url: "{host}/fake_dictionary"
+    response:
+      status_code: 200
+      save:
+        body:
+          whole_body: "@"
+
+  - name: reuse dictionary
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: !force_format_include "{whole_body}"
+    response:
+      status_code: 200
+      body: !force_format_include "{tavern.request_vars.json}"
+
+---
+
+test_name: Test magic format token with list
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get dictionary
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      body: !anylist
+      save:
+        body:
+          whole_list_body: "@"
+
+  - name: reuse dictionary
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: !force_format_include "{whole_list_body}"
+    response:
+      status_code: 200
+      body:
+        - a
+        - b
+        - c
+        - 1
+        - 2
+        - 3
+        - -1.0
+        - -2.0
+        - -3.0

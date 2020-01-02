@@ -380,6 +380,33 @@ By default, the sending of files is handled by the Requests library - to see the
 implementation details, see their
 [documentation](http://docs.python-requests.org/en/master/user/quickstart/#post-a-multipart-encoded-file).
 
+### Specifying custom content type and encoding
+
+If you need to use a custom file type and/or encoding when uploading the file,
+there is a 'long form' specification for uploading files. Instead of just
+passing the path to the file to upload, use the `file_path` and
+`content_type`/`content_encoding` in the block for the file:
+
+```yaml
+---
+
+test_name: Test files can be uploaded with tavern
+
+stages:
+  - name: Upload multiple files
+    request:
+      url: "{host}/fake_upload_file"
+      method: POST
+      files:
+        # simple style - guess the content type and encoding
+        test_files: "test_files.tavern.yaml"
+        # long style - specify them manually
+        common:
+          file_path: "common.yaml"
+          content_type: "application/customtype"
+          content_encoding: "UTF16"
+```
+
 ## Timeout on requests
 
 If you want to specify a timeout for a request, this can be done using the

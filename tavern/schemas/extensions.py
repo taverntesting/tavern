@@ -1,15 +1,16 @@
 import functools
 import importlib
 import logging
+import os
 import re
 
 from future.utils import raise_from
-from pykwalify.types import is_int, is_float, is_bool
+from pykwalify.types import is_bool, is_float, is_int
 from grpc import StatusCode
 
 from tavern.util import exceptions
 from tavern.util.exceptions import BadSchemaError
-from tavern.util.loader import ApproxScalar, IntToken, FloatToken, BoolToken
+from tavern.util.loader import ApproxScalar, BoolToken, FloatToken, IntToken
 
 
 def _getlogger():
@@ -458,5 +459,44 @@ def validate_cert_tuple_or_str(value, rule_obj, path):
             raise BadSchemaError(err_msg)
         elif not all(isinstance(i, str) for i in value):
             raise BadSchemaError(err_msg)
+
+    return True
+
+
+def validate_file_spec(value, rule_obj, path):
+    """Validate file upload arguments """
+    # pylint: disable=unused-argument
+
+    if not isinstance(value, dict):
+        raise BadSchemaError(
+            "File specification must be a mapping of file names to file specs"
+        )
+
+    for _, filespec in value.items():
+        if isinstance(filespec, str):
+            file_path = filespec
+        elif isinstance(filespec, dict):
+            valid = {"file_path", "content_type", "content_encoding"}
+            extra = set(filespec.keys()) - valid
+            if extra:
+                raise BadSchemaError(
+                    "Invalid extra keys passed to file upload block: {}".format(extra)
+                )
+
+            try:
+                file_path = filespec["file_path"]
+            except KeyError:
+                raise BadSchemaError(
+                    "When using 'long form' file uplaod spec, the file_path must be present"
+                )
+        else:
+            raise BadSchemaError(
+                "File specification must be a file path or a dictionary"
+            )
+
+        if not os.path.exists(file_path):
+            raise BadSchemaError(
+                "Path to file to upload '{}' was not found".format(file_path)
+            )
 
     return True

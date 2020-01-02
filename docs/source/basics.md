@@ -23,8 +23,15 @@ stages:
 ```
 
 If using the pytest plugin (the recommended way of using Tavern), this needs to
-be in a file called `test_x.tavern.yaml`, where `x` is a description of the
-contained tests.
+be in a file called `test_x.tavern.yaml`, where `x` should be a description of
+the contained tests.
+
+If you want to call your files something different (though this is not
+recommended) it is also possible to specify a custom regular expression to match
+filenames. For example, if you want to call all of your files
+`tavern_test_x.yaml`, `tavern_test_y.yaml`, etc. then use the
+`tavern-file-path-regex` option in the configuration file or on the command
+line. For example, `py.test --tavern-file-path-regex "tavern_test_.*.yaml"`
 
 **test_name** is, as expected, the name of that test. If the pytest plugin is
 being used to run integration tests, this is what the test will show up as in
@@ -1416,6 +1423,8 @@ use one of the following markers instead:
 - `!anyfloat`: Matches any float (note that this will NOT match integers!)
 - `!anystr`: Matches any string
 - `!anybool`: Matches any boolean (this will NOT match `null`)
+- `!anylist`: Matches any list
+- `!anydict`: Matches any dict/'mapping'
 
 ## Type conversions
 
@@ -1455,6 +1464,60 @@ request:
     # Sent as {"raw_braces": "{not_escaped}"}
     raw_braces: !raw "{not_escaped}"
 ```
+
+### Including raw JSON data
+
+Sometimes there are situations where you need to directly include a block of
+JSON, such as a list, rather than just one value. To do this, there is a
+`!force_format_include` tag which will include whatever variable is being
+referenced in the format block rather than coercing it to a string.
+
+For example, if we have an API that will return a list of users on a GET and
+will bulk delete a list of users on a DELETE, a test that all users are deleted
+could be done by
+
+1. GET all users
+
+2. DELETE the list you just got
+
+3. GET again and expect an empty list
+
+```yaml
+  - name: Get all users
+    request:
+      url: "{host}/users"
+      method: GET
+    response:
+      status_code: 200
+      # Expect a list of users
+      body: !anylist
+      save:
+        body:
+          # Save the list as 'all_users'
+          all_users: "@"
+      
+  - name: delete all users
+    request:
+      url: "{host}/users"
+      method: DELETE
+      # 'all_users' list will be sent in the request as a list, not a string
+      json: !force_format_include "{all_users}"
+    response:
+      status_code: 204
+      
+  - name: Get no users
+    request:
+      url: "{host}/users"
+      method: GET
+    response:
+      status_code: 200
+      # Expect no users
+      body: []
+```
+
+Any blocks of JSON that are included this way will not be recursively formatted.
+When using this token, do not use a conversion specifier (eg "{all_users:s}") as
+it will be ignored.
 
 ## Adding a delay between tests
 
