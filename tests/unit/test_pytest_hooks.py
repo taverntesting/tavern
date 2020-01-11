@@ -1,3 +1,4 @@
+import py
 import pytest
 from faker import Faker
 from unittest.mock import Mock
@@ -8,7 +9,7 @@ from tavern.testutils.pytesthook.file import YamlFile
 def mock_args():
     """Get a basic test config to initialise a YamlFile object with"""
 
-    fspath = "abc"
+    fspath = py.path.local("abc")
 
     cargs = {"rootdir": "abc", "fspath": fspath}
 
