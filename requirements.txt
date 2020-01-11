@@ -10,3 +10,5 @@ black==19.10b0
 bump2version
 pre-commit
 pygments
+twine
+wheel
