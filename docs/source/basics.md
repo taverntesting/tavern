@@ -143,7 +143,7 @@ and will cause the test to fail.
 an array was done like `thing.nested.0`. This will be deprecated in the
 1.0 release.
 
-It is also possible to save data using function calls, [explained below](https://tavern.readthedocs.io/en/latest/basics.html#saving-data-from-a-response).
+It is also possible to save data using function calls, [explained below](#saving-data-from-a-response).
 
 For a more formal definition of the schema that the tests are validated against,
 check [tests schema](https://github.com/taverntesting/tavern/blob/master/tavern/schemas/tests.schema.yaml) in the main Tavern repository.
