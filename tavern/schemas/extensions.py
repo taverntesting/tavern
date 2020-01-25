@@ -480,3 +480,11 @@ def validate_file_spec(value, rule_obj, path):
             )
 
     return True
+
+
+def raise_body_error(value, rule_obj, path):
+    """Raise an error about the deprecated 'body' key"""
+    # pylint: disable=unused-argument
+
+    msg = "The 'body' key has been replaced with 'json' in 1.0 to make it more in line with other blocks. see https://github.com/taverntesting/tavern/issues/495 for details."
+    raise BadSchemaError(msg)

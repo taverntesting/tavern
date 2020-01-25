@@ -1,9 +1,9 @@
 import contextlib
 import threading
+from unittest.mock import MagicMock, Mock, patch
 
-import pytest
-from unittest.mock import patch, Mock, MagicMock
 import paho.mqtt.client as paho
+import pytest
 
 from tavern._plugins.mqtt.client import MQTTClient, _handle_tls_args, _Subscription
 from tavern._plugins.mqtt.request import MQTTRequest

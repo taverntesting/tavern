@@ -119,8 +119,9 @@ class BaseResponse(object):
                 check_ext_functions(block.get("$ext", None))
                 if nfuncs != len(self.validate_functions):
                     raise exceptions.BadSchemaError(
-                        "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
-                        name,
+                        "$ext function found in block {} - this has been moved to verify_response_with block - see documentation".format(
+                            name,
+                        )
                     )
 
         # Could put in an isinstance check here

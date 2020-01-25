@@ -82,6 +82,6 @@ def pytest_collect_file(parent, path):
 
 def pytest_addhooks(pluginmanager):
     """Add our custom tavern hooks"""
-    from . import newhooks
+    from . import newhooks  # pylint: disable=import-outside-toplevel
 
     pluginmanager.add_hookspecs(newhooks)

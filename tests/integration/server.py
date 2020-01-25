@@ -6,7 +6,7 @@ import os
 import time
 import uuid
 
-from flask import Flask, request, jsonify, Response, redirect
+from flask import Flask, Response, jsonify, redirect, request
 
 app = Flask(__name__)
 

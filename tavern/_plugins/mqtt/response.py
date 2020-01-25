@@ -38,8 +38,9 @@ class MQTTResponse(BaseResponse):
 
             if payload.pop("$ext", None):
                 raise exceptions.BadSchemaError(
-                    "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
-                    "json",
+                    "$ext function found in block {} - this has been moved to verify_response_with block - see documentation".format(
+                        "json",
+                    )
                 )
         elif "payload" in self.expected:
             payload = self.expected["payload"]
@@ -108,6 +109,7 @@ class MQTTResponse(BaseResponse):
                     continue
 
             if expected_payload is None:
+                # pylint: disable=no-else-break
                 if msg.payload is None or msg.payload == "":
                     logger.info(
                         "Got message with no payload (as expected) on '%s'", topic

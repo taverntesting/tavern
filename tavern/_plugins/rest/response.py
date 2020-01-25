@@ -2,7 +2,7 @@ import json
 import logging
 from urllib.parse import parse_qs, urlparse
 
-from requests.status_codes import _codes
+from requests.status_codes import codes
 
 from tavern.response.base import BaseResponse, indent_err_text
 from tavern.testutils.pytesthook.newhooks import call_hook
@@ -25,7 +25,7 @@ class RestResponse(BaseResponse):
         self.status_code = None
 
         def check_code(code):
-            if code not in _codes:
+            if code not in codes:
                 logger.warning("Unexpected status code '%s'", code)
 
         if isinstance(self.expected["status_code"], int):
@@ -208,8 +208,9 @@ class RestResponse(BaseResponse):
         if isinstance(expected_block, dict):
             if expected_block.pop("$ext", None):
                 raise exceptions.BadSchemaError(
-                    "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
-                    blockname,
+                    "$ext function found in block {} - this has been moved to verify_response_with block - see documentation".format(
+                        blockname,
+                    )
                 )
 
         if blockname == "headers":

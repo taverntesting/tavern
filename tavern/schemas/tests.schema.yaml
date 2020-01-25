@@ -161,6 +161,10 @@ schema;stage:
         json:
           include: any_json_with_ext
 
+        body:
+          type: any
+          func: raise_body_error
+
         files:
           required: false
           type: map

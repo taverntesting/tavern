@@ -1,35 +1,34 @@
+from collections import OrderedDict
 import contextlib
 import copy
 import os
 import tempfile
-from collections import OrderedDict
 from textwrap import dedent
 
+from mock import Mock, patch
 import pytest
 import yaml
-from mock import Mock, patch
 
 from tavern.schemas.extensions import validate_extensions
 from tavern.schemas.files import wrapfile
 from tavern.util import exceptions
 from tavern.util.dict_util import (
-    deep_dict_merge,
     check_keys_match_recursive,
+    deep_dict_merge,
     format_keys,
     recurse_access_key,
 )
 from tavern.util.loader import (
     ANYTHING,
-    IncludeLoader,
-    load_single_document_yaml,
-    IntSentinel,
-    ListSentinel,
     DictSentinel,
     FloatSentinel,
-    FloatSentinel,
+    IncludeLoader,
+    IntSentinel,
+    ListSentinel,
     StrSentinel,
+    construct_include,
+    load_single_document_yaml,
 )
-from tavern.util.loader import construct_include
 
 
 class TestValidateFunctions:

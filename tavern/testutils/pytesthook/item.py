@@ -173,7 +173,7 @@ class YamlItem(pytest.Item):
                     "Expected test to fail at {} stage".format(xfail)
                 )
 
-    def repr_failure(self, excinfo):
+    def repr_failure(self, excinfo, style=None):
         """ called when self.runtest() raises an exception.
 
         By default, will raise a custom formatted traceback if it's a tavern error. if not, will use the default
@@ -187,6 +187,9 @@ class YamlItem(pytest.Item):
             or issubclass(excinfo.type, exceptions.BadSchemaError)
         ):
             return super(YamlItem, self).repr_failure(excinfo)
+
+        if style is not None:
+            logger.info("Ignoring style '%s", style)
 
         return ReprdError(excinfo, self)
 

@@ -362,7 +362,7 @@ class ForceIncludeToken(TypeConvertToken):
 ApproxScalar = type(pytest.approx(1.0))
 
 
-class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
+class ApproxSentinel(yaml.YAMLObject, ApproxScalar):  # type:ignore
     yaml_tag = "!approx"
     yaml_loader = IncludeLoader
 
@@ -423,4 +423,4 @@ def error_on_empty_scalar(self, mark):  # pylint: disable=unused-argument
     raise exceptions.BadSchemaError(error)
 
 
-yaml.parser.Parser.process_empty_scalar = error_on_empty_scalar
+yaml.parser.Parser.process_empty_scalar = error_on_empty_scalar  # type:ignore

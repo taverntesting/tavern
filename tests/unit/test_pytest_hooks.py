@@ -1,7 +1,8 @@
+from unittest.mock import Mock
+
+from faker import Faker
 import py
 import pytest
-from faker import Faker
-from unittest.mock import Mock
 
 from tavern.testutils.pytesthook.file import YamlFile
 

@@ -1,3 +1,4 @@
+from functools import lru_cache
 import logging
 import os
 
@@ -6,11 +7,6 @@ from box import Box
 from tavern.util.dict_util import format_keys
 from tavern.util.general import load_global_config
 from tavern.util.strict_util import StrictLevel
-
-try:
-    from functools import lru_cache
-except ImportError:
-    from backports.functools_lru_cache import lru_cache
 
 logger = logging.getLogger(__name__)
 

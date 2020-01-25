@@ -167,7 +167,7 @@ def run_test(in_file, test_spec, global_cfg):
         for stage in test_spec["stages"]:
             if stage.get("skip"):
                 continue
-            elif has_only and not getonly(stage):
+            if has_only and not getonly(stage):
                 continue
 
             _calculate_stage_strictness(stage, test_block_config, test_spec)

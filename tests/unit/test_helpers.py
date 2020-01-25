@@ -4,23 +4,25 @@ from textwrap import dedent
 from unittest.mock import patch
 
 import _pytest
+from mock import Mock, patch
 import pytest
 import yaml
-from mock import Mock
-from mock import patch
 
 from tavern.core import run
 from tavern.schemas.extensions import validate_file_spec
-from tavern.testutils.helpers import validate_pykwalify
-from tavern.testutils.helpers import validate_regex, validate_content
+from tavern.testutils.helpers import (
+    validate_content,
+    validate_pykwalify,
+    validate_regex,
+)
 from tavern.testutils.pytesthook.item import YamlItem
 from tavern.util import exceptions
 from tavern.util.dict_util import _check_and_format_values, format_keys
 from tavern.util.loader import ForceIncludeToken
 from tavern.util.strict_util import (
-    validate_and_parse_option,
     StrictLevel,
     _StrictSetting,
+    validate_and_parse_option,
 )
 
 
