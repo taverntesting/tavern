@@ -1,3 +1,4 @@
+import copy
 import logging
 
 from _pytest import fixtures
