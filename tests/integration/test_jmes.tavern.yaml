@@ -103,6 +103,88 @@ stages:
 
 ---
 
+test_name: Test saving an item from a list
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get item
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      save:
+        json:
+          first_item: "[0]"
+          second_item: "[1]"
+
+  - name: Echo back the first value and it should be as expected
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{first_item}"
+    response:
+      status_code: 200
+      json:
+        value: "a"
+
+  - name: Echo back the second value and it should be as expected
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{second_item}"
+    response:
+      status_code: 200
+      json:
+        value: "b"
+
+---
+
+test_name: Test saving an item from a dict inside a list
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get item
+    request:
+      url: "{host}/complicated_list"
+      method: GET
+    response:
+      status_code: 200
+      save:
+        json:
+          first_item: "[0]"
+          second_item: "[1]"
+
+  - name: Echo back the first value and it should be as expected
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{first_item}"
+    response:
+      status_code: 200
+      json:
+        value: "a"
+
+  - name: Echo back the second value and it should be as expected
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{second_item.b}"
+    response:
+      status_code: 200
+      json:
+        value: "c"
+
+---
+
 test_name: Test we can save a single value with jmespath if it has a dot in
 
 includes:

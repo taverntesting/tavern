@@ -58,6 +58,12 @@ def list_response():
     return jsonify(list_response), 200
 
 
+@app.route("/complicated_list", methods=["GET"])
+def complicated_list():
+    list_response = ["a", {"b": "c"}]
+    return jsonify(list_response), 200
+
+
 @app.route("/nested_list", methods=["GET"])
 def nested_list_response():
     response = {"top": ["a", "b", {"key": "val"}]}
