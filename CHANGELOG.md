@@ -195,8 +195,8 @@ See 57f2a10e58a88325c185258d2c83b07a532aa93a for details
 
 ## 0.26.5          Lock pytest version to stop internal error
 
-# 0.27.0 release
-    
+# 0.27.0
+
     - Fix various typos in documentation
     - Allow sending form data and files in a single request
     - Fix double formatting of some string causing issues
@@ -204,3 +204,30 @@ See 57f2a10e58a88325c185258d2c83b07a532aa93a for details
     - Fix not being able to use type tokens to format MQTT port
     - Allow sending single values as JSON body as according to RFC 7159
     - Change 'save' selector to use JMESpath
+
+# 1.0.0
+
+- 'body' key changes to 'json' in HTTP response
+
+- Python 2 dropped
+
+- Changes to the way strictness works
+
+- remove 'null' checking on body matching anything
+
+- 'run' entry point slightly reworked
+
+- New error traceback is the default
+
+- External function blocks changes
+
+- Save value path changes to jmespath
+
+-    Add key to allow uploading the raw content of a file as a request body
+
+-    Add new token which can match regex values in parts of responses
+
+-    Strict key checking should now work with MQTT json payloads
+
+
+See https://github.com/taverntesting/tavern/issues/495 for details
