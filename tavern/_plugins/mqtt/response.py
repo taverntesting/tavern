@@ -37,11 +37,7 @@ class MQTTResponse(BaseResponse):
             json_payload = True
 
             if payload.pop("$ext", None):
-                raise exceptions.BadSchemaError(
-                    "$ext function found in block {} - this has been moved to verify_response_with block - see documentation".format(
-                        "json",
-                    )
-                )
+                raise exceptions.InvalidExtBlockException("json",)
         elif "payload" in self.expected:
             payload = self.expected["payload"]
             json_payload = False

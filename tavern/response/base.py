@@ -118,11 +118,7 @@ class BaseResponse(object):
             if isinstance(block, dict):
                 check_ext_functions(block.get("$ext", None))
                 if nfuncs != len(self.validate_functions):
-                    raise exceptions.BadSchemaError(
-                        "$ext function found in block {} - this has been moved to verify_response_with block - see documentation".format(
-                            name,
-                        )
-                    )
+                    raise exceptions.InvalidExtBlockException(name,)
 
         # Could put in an isinstance check here
         check_deprecated_validate("json")

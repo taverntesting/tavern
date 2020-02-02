@@ -207,11 +207,7 @@ class RestResponse(BaseResponse):
 
         if isinstance(expected_block, dict):
             if expected_block.pop("$ext", None):
-                raise exceptions.BadSchemaError(
-                    "$ext function found in block {} - this has been moved to verify_response_with block - see documentation".format(
-                        blockname,
-                    )
-                )
+                raise exceptions.InvalidExtBlockException(blockname,)
 
         if blockname == "headers":
             # Special case for headers. These need to be checked in a case
