@@ -7,6 +7,11 @@
 .. image:: https://readthedocs.org/projects/pip/badge/?version=latest&style=flat
     :target: https://tavern.readthedocs.io/en/latest/
 
+1.0 Release
+===========
+
+See here for details about **breaking** changes with the upcoming 1.0 release: https://github.com/taverntesting/tavern/issues/495
+
 Easier API testing
 ==================
 
