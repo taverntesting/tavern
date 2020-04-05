@@ -1,7 +1,8 @@
-import pytest
-import os
-import yaml
 import logging.config
+import os
+
+import pytest
+import yaml
 
 
 @pytest.fixture(scope="function", autouse=True)

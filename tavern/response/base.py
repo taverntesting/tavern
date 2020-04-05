@@ -1,18 +1,12 @@
 from abc import abstractmethod
+from collections.abc import Mapping
 import logging
+from textwrap import indent
 import traceback
-import warnings
 
 from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util import exceptions
 from tavern.util.dict_util import check_keys_match_recursive, recurse_access_key
-from tavern.util.python_2_util import indent
-
-try:
-    from collections.abc import Mapping
-except ImportError:
-    from collections import Mapping
-
 
 logger = logging.getLogger(__name__)
 
@@ -42,9 +36,7 @@ class BaseResponse(object):
     def _str_errors(self):
         return "- " + "\n- ".join(self.errors)
 
-    def _adderr(self, msg, *args, **kwargs):
-        e = kwargs.get("e")
-
+    def _adderr(self, msg, *args, e=None):
         if e:
             logger.exception(msg, *args)
         else:
@@ -95,54 +87,7 @@ class BaseResponse(object):
         try:
             check_keys_match_recursive(expected_block, block, [], strict)
         except exceptions.KeyMismatchError as e:
-            # TODO
-            # This block be removed in 1.0 as it is a breaking API change, and
-            # replaced with a simple self._adderr. This is just here to maintain
-            # 'legacy' key checking which was in fact broken.
-
-            if strict:
-                logger.debug("Failing because 'strict' was true")
-                # This should always raise an error
-                self._adderr("Value mismatch in %s: %s", blockname, e)
-                return
-
-            if blockname != "body":
-                logger.debug("Failing because it isn't the body")
-                # This should always raise an error
-                self._adderr("Value mismatch in %s: %s", blockname, e)
-                return
-
-            if not isinstance(expected_block, type(block)):
-                logger.debug("Failing because it was a type mismatch")
-                # This should always raise an error
-                self._adderr("Value mismatch in %s: %s", blockname, e)
-                return
-
-            if isinstance(block, list):
-                logger.debug("Failing because its a list")
-                # This should always raise an error
-                self._adderr("Value mismatch in %s: %s", blockname, e)
-                return
-
-            # At this point it will always be a dict - run the check again just
-            # matching the top level keys then run it again on each individual
-            # item, like it ran before.
-            c_expected = {i: None for i in expected_block}
-            c_actual = {i: None for i in block}
-            try:
-                check_keys_match_recursive(c_expected, c_actual, [], strict=False)
-
-                # An error will be raised above if there are more expected keys
-                # than returned. At this point we might have more returned that
-                # expected, so fall back to 'legacy' behaviour
-                for k, v in expected_block.items():
-                    check_keys_match_recursive(v, block[k], [k], strict=True)
-            except exceptions.KeyMismatchError:
-                self._adderr("Value mismatch in %s: %s", blockname, e)
-            else:
-                msg = "Checking keys worked using 'legacy' comparison, which will not match dictionary keys at the top level of the response. This behaviour will be changed in a future version"
-                warnings.warn(msg, FutureWarning)
-                logger.warning(msg, exc_info=True)
+            self._adderr(e.args[0], e=e)
 
     def _check_for_validate_functions(self, response_block):
         """
@@ -173,13 +118,9 @@ class BaseResponse(object):
             if isinstance(block, dict):
                 check_ext_functions(block.get("$ext", None))
                 if nfuncs != len(self.validate_functions):
-                    logger.warning(
-                        "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
-                        name,
-                    )
+                    raise exceptions.InvalidExtBlockException(name,)
 
         # Could put in an isinstance check here
-        check_deprecated_validate("body")
         check_deprecated_validate("json")
 
     def _maybe_run_validate_functions(self, response):

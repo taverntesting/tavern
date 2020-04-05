@@ -1,18 +1,18 @@
+from contextlib import ExitStack
 import os
 import tempfile
+from unittest.mock import Mock
 
 import pytest
 import requests
-from contextlib2 import ExitStack
-from mock import Mock
 from requests.cookies import RequestsCookieJar
 
 from tavern._plugins.rest.request import (
     RestRequest,
-    get_request_args,
     _check_allow_redirects,
-    _read_expected_cookies,
     _get_file_arguments,
+    _read_expected_cookies,
+    get_request_args,
 )
 from tavern.util import exceptions
 

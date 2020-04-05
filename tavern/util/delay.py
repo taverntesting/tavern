@@ -12,6 +12,7 @@ def delay(stage, when, variables):
     Args:
         stage (dict): test stage
         when (str): 'before' or 'after'
+        variables (dict): Variables to format with
     """
 
     try:

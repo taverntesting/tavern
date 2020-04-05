@@ -30,7 +30,7 @@ test_name: Test setting 'strict' to a dict fails
 _xfail: verify
 
 strict:
-  body: true
+  json: true
 
 stages:
   - name: match top level
@@ -57,102 +57,6 @@ stages:
 
 ---
 
-test_name: Test legacy key matching against body works
-# should be removed in 1.0 when api changes
-
-includes:
-  - !include common.yaml
-
-stages:
-  - name: match with bool missing
-    request:
-      url: "{host}/fake_dictionary"
-    response:
-      status_code: 200
-      body:
-        top:
-          Thing: value
-          nested:
-            doubly:
-              inner: value
-        an_integer: 123
-        a_string: abc
-        # a_bool: true
-
-  - name: match with string missing
-    request:
-      url: "{host}/fake_dictionary"
-    response:
-      status_code: 200
-      body:
-        top:
-          Thing: value
-          nested:
-            doubly:
-              inner: value
-        an_integer: 123
-        # a_string: abc
-        a_bool: true
-
-  - name: match with int missing
-    request:
-      url: "{host}/fake_dictionary"
-    response:
-      status_code: 200
-      body:
-        top:
-          Thing: value
-          nested:
-            doubly:
-              inner: value
-        # an_integer: 123
-        a_string: abc
-        a_bool: true
-
-  - name: match with dict missing
-    request:
-      url: "{host}/fake_dictionary"
-    response:
-      status_code: 200
-      body:
-        # top:
-        #   Thing: value
-        #   nested:
-        #     doubly:
-        #       inner: value
-        an_integer: 123
-        a_string: abc
-        a_bool: true
-
----
-
-test_name: Test legacy key matching against body still fails if there's keys that aren't returned
-# should be removed in 1.0 when api changes
-
-includes:
-  - !include common.yaml
-
-_xfail: run
-
-stages:
-  - name: match with bool missing
-    request:
-      url: "{host}/fake_dictionary"
-    response:
-      status_code: 200
-      body:
-        top:
-          Thing: value
-          nested:
-            doubly:
-              inner: value
-        an_integer: 123
-        a_string: abc
-        # a_bool: true
-        cool_key: 123
-
----
-
 test_name: Test key matching matches headers case insensitive
 
 includes:
@@ -174,7 +78,7 @@ test_name: Test strict key matching against body fails
 _xfail: run
 
 strict:
-  - body
+  - json
 
 includes:
   - !include common.yaml
@@ -185,7 +89,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -203,7 +107,7 @@ test_name: Test strict key matching against body fails with dict missing when sp
 _xfail: run
 
 strict:
-  - body
+  - json
 
 includes:
   - !include common.yaml
@@ -214,7 +118,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         # top:
         #   Thing: value
         #   nested:
@@ -239,9 +143,9 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       strict:
-        - body
+        - json
       status_code: 200
-      body:
+      json:
         # top:
         #   Thing: value
         #   nested:
@@ -258,6 +162,7 @@ test_name: Test strict key matching against headers with mismatch body passes
 
 strict:
   - headers
+  - json:off
 
 includes:
   - !include common.yaml
@@ -268,7 +173,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -284,7 +189,7 @@ stages:
 test_name: Test strict key matching against exact body is fine when strict is specified in the test
 
 strict:
-  - body
+  - json
 
 includes:
   - !include common.yaml
@@ -295,7 +200,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -310,7 +215,7 @@ stages:
 test_name: Test strict key matching against exact body is fine when strict is specified in the stage
 
 strict:
-  - body
+  - json
 
 includes:
   - !include common.yaml
@@ -321,7 +226,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -338,13 +243,16 @@ test_name: Test strict key matching works for specific test stages
 includes:
   - !include common.yaml
 
+strict:
+  - json:off
+
 stages:
   - name: match with one key missing
     request:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -359,9 +267,9 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       strict:
-        - body
+        - json
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -376,7 +284,7 @@ stages:
       url: "{host}/fake_dictionary"
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: value
           nested:
@@ -385,6 +293,68 @@ stages:
         # an_integer: 123
         a_string: abc
         a_bool: true
+
+---
+
+test_name: Test non-strict key matching one list item
+
+strict:
+  - json
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match first item in list
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      strict: false
+      json:
+        - a
+
+  - name: match a middle item in the list
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+#      Use new syntax
+      strict:
+        - json:off
+      json:
+        - c
+
+  - name: match a number in the middle of the list
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      strict: false
+      json:
+        - 2
+
+---
+
+test_name: Test strict key matching one list item fails
+
+_xfail: run
+
+strict:
+  - json
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match 'e' in list
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      strict: true
+      json:
+        - c
 
 ---
 
@@ -400,7 +370,7 @@ stages:
     response:
       status_code: 200
       strict: False
-      body:
+      json:
         top:
           Thing: value
         an_integer: 123
@@ -423,9 +393,51 @@ stages:
     response:
       status_code: 200
       strict: True
-      body:
+      json:
         top:
           Thing: value
         an_integer: 123
         a_string: abc
         a_bool: true
+
+---
+
+test_name: Test non-strict key matching one list item
+
+strict:
+  - json
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match 'e' in list
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      strict: false
+      json:
+        - c
+
+---
+
+test_name: Test strict key matching one list item fails
+
+_xfail: run
+
+strict:
+  - json
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match 'e' in list
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      strict: true
+      json:
+        - c

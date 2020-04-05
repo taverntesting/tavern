@@ -4,8 +4,9 @@ import math
 import mimetypes
 import os
 import time
+import uuid
 
-from flask import Flask, request, jsonify, Response, redirect
+from flask import Flask, Response, jsonify, redirect, request
 
 app = Flask(__name__)
 
@@ -54,6 +55,12 @@ def get_fake_dictionary():
 @app.route("/fake_list", methods=["GET"])
 def list_response():
     list_response = ["a", "b", "c", 1, 2, 3, -1.0, -2.0, -3.0]
+    return jsonify(list_response), 200
+
+
+@app.route("/complicated_list", methods=["GET"])
+def complicated_list():
+    list_response = ["a", {"b": "c"}]
     return jsonify(list_response), 200
 
 
@@ -172,7 +179,7 @@ def echo_values():
 
 @app.route("/expect_raw_data", methods=["POST"])
 def expect_raw_data():
-    raw_data = request.stream.read().decode("utf8")
+    raw_data = request.stream.read().decode("utf8").strip()
     if raw_data == "OK":
         response = {"status": "ok"}
         code = 200
@@ -286,3 +293,8 @@ def return_empty_paged():
 @app.route("/jmes/with_dot", methods=["GET"])
 def return_with_dot():
     return jsonify({"data.a": "a", "data.b": "b"}), 200
+
+
+@app.route("/uuid/v4", methods=["GET"])
+def get_uuid_v4():
+    return jsonify({"uuid": uuid.uuid4()}), 200

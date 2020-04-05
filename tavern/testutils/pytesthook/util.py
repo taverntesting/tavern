@@ -1,16 +1,12 @@
+from functools import lru_cache
 import logging
 import os
 
 from box import Box
 
-from tavern.util import exceptions
 from tavern.util.dict_util import format_keys
 from tavern.util.general import load_global_config
-
-try:
-    from functools import lru_cache
-except ImportError:
-    from backports.functools_lru_cache import lru_cache
+from tavern.util.strict_util import StrictLevel
 
 logger = logging.getLogger(__name__)
 
@@ -42,11 +38,11 @@ def add_parser_options(parser_addoption, with_defaults=True):
         help="Default response matching strictness",
         default=None,
         nargs="+",
-        choices=["body", "headers", "redirect_query_params"],
+        choices=["json", "headers", "redirect_query_params"],
     )
     parser_addoption(
-        "--tavern-beta-new-traceback",
-        help="Use new traceback style (beta)",
+        "--tavern-use-default-traceback",
+        help="Use normal python-style traceback",
         default=False,
         action="store_true",
     )
@@ -122,17 +118,9 @@ def _load_global_backends(pytest_config):
 def _load_global_strictness(pytest_config):
     """Load the global 'strictness' setting"""
 
-    strict = get_option_generic(pytest_config, "tavern-strict", [])
+    options = get_option_generic(pytest_config, "tavern-strict", [])
 
-    if isinstance(strict, list):
-        valid_keys = ["body", "headers", "redirect_query_params"]
-        if any(i not in valid_keys for i in strict):
-            msg = "Invalid values for 'strict' given - expected one of {}, got {}".format(
-                valid_keys, strict
-            )
-            raise exceptions.InvalidConfigurationException(msg)
-
-    return strict
+    return StrictLevel.from_options(options)
 
 
 def _load_global_follow_redirects(pytest_config):
@@ -150,12 +138,12 @@ def get_option_generic(pytest_config, flag, default):
     # Lowest priority
     use = default
 
+    # Middle priority
     if pytest_config.getini(ini_flag) is not None:
-        # Middle priority
         use = pytest_config.getini(ini_flag)
 
+    # Top priority
     if pytest_config.getoption(cli_flag) is not None:
-        # Top priority
         use = pytest_config.getoption(cli_flag)
 
     return use

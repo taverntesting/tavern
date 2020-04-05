@@ -1,15 +1,14 @@
 import contextlib
-from itertools import tee
+from contextlib import ExitStack
+from itertools import filterfalse, tee
 import json
 import logging
 import mimetypes
 import os
+from urllib.parse import quote_plus
 import warnings
 
 from box import Box
-from contextlib2 import ExitStack
-from future.moves.itertools import filterfalse
-from future.utils import raise_from
 import requests
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
@@ -18,12 +17,6 @@ from tavern.request.base import BaseRequest
 from tavern.schemas.extensions import get_wrapped_create_function
 from tavern.util import exceptions
 from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
-
-try:
-    from urllib.parse import quote_plus
-except ImportError:
-    from urllib import quote_plus  # type: ignore
-
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +66,7 @@ def get_request_args(rspec, test_block_config):
         logger.debug("Using default GET method")
         rspec["method"] = "GET"
 
-    content_keys = ["data", "json", "files"]
+    content_keys = ["data", "json", "files", "file_body"]
 
     in_request = [c for c in content_keys if c in rspec]
     if len(in_request) > 1:
@@ -401,6 +394,7 @@ class RestRequest(BaseRequest):
             "json",
             "verify",
             "files",
+            "file_body",
             "stream",
             "timeout",
             "cookies",
@@ -438,7 +432,14 @@ class RestRequest(BaseRequest):
             # they will be closed at the end of the request.
             with ExitStack() as stack:
                 stack.enter_context(_set_cookies_for_request(session, request_args))
-                self._request_args.update(_get_file_arguments(request_args, stack))
+
+                # These are mutually exclusive
+                if rspec.get("file_body"):
+                    file = stack.enter_context(open(rspec.get("file_body"), "rb"))
+                    request_args.update(data=file)
+                else:
+                    self._request_args.update(_get_file_arguments(request_args, stack))
+
                 return session.request(**self._request_args)
 
         self._prepared = prepared_request
@@ -457,7 +458,7 @@ class RestRequest(BaseRequest):
             return self._prepared()
         except requests.exceptions.RequestException as e:
             logger.exception("Error running prepared request")
-            raise_from(exceptions.RestRequestException, e)
+            raise exceptions.RestRequestException from e
 
     @property
     def request_vars(self):

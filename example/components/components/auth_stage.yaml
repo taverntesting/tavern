@@ -26,5 +26,5 @@ stages:
       headers:
         content-type: application/json
       save:
-        body:
+        json:
           test_login_token: token

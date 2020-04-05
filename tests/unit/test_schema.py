@@ -29,7 +29,7 @@ def fix_test_dict():
             content-type: application/json
         response:
           status_code: 200
-          body:
+          json:
             double: 10
     """
     )
@@ -52,7 +52,7 @@ class TestJSON:
 
     def test_json_list_response(self, test_dict):
         """Response contains a list"""
-        test_dict["stages"][0]["response"]["body"] = [1, "text", -1]
+        test_dict["stages"][0]["response"]["json"] = [1, "text", -1]
 
         verify_tests(test_dict)
 
@@ -168,7 +168,7 @@ class TestBadSchemaAtCollect:
               json: {a, b}
             response:
               status_code: 200
-              body:
+              json:
                 top: !anything
         """
         )
@@ -197,7 +197,7 @@ class TestBadSchemaAtCollect:
                 - b
             response:
               status_code: 200
-              body:
+              json:
                 top: !anything
         """
         )

@@ -1,12 +1,12 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
-
+from abc import abstractmethod
 from distutils.util import strtobool
 from itertools import chain
 import logging
 import os.path
+import re
 import uuid
 
-from future.utils import raise_from
 import pytest
 import yaml
 from yaml.composer import Composer
@@ -234,6 +234,54 @@ class DictSentinel(TypeSentinel):
     constructor = dict
 
 
+class RegexSentinel(TypeSentinel):
+    """Sentinel that matches a regex in a part of the response
+
+    This shouldn't be used directly and instead one of the below match/fullmatch/search tokens will be used
+    """
+
+    constructor = str
+    compiled = None
+
+    def __str__(self):
+        return "<Tavern Regex sentinel for {}>".format(self.compiled.pattern)
+
+    @property
+    def yaml_tag(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def passes(self, string):
+        raise NotImplementedError
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        c = cls()
+        c.compiled = re.compile(node.value)
+        return c
+
+
+class _RegexMatchSentinel(RegexSentinel):
+    yaml_tag = "!re_match"
+
+    def passes(self, string):
+        return self.compiled.match(string) is not None
+
+
+class _RegexFullMatchSentinel(RegexSentinel):
+    yaml_tag = "!re_fullmatch"
+
+    def passes(self, string):
+        return self.compiled.fullmatch(string) is not None
+
+
+class _RegexSearchSentinel(RegexSentinel):
+    yaml_tag = "!re_search"
+
+    def passes(self, string):
+        return self.compiled.search(string) is not None
+
+
 class AnythingSentinel(TypeSentinel):
     yaml_tag = "!anything"
     constructor = "anything"
@@ -347,7 +395,7 @@ class ForceIncludeToken(TypeConvertToken):
 ApproxScalar = type(pytest.approx(1.0))
 
 
-class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
+class ApproxSentinel(yaml.YAMLObject, ApproxScalar):  # type:ignore
     yaml_tag = "!approx"
     yaml_loader = IncludeLoader
 
@@ -360,7 +408,7 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
                 "Could not coerce '%s' to a float for use with !approx",
                 type(node.value),
             )
-            raise_from(BadSchemaError, e)
+            raise BadSchemaError from e
         else:
             return pytest.approx(val)
 
@@ -394,7 +442,7 @@ def load_single_document_yaml(filename):
             contents = yaml.load(fileobj, Loader=IncludeLoader)
         except yaml.composer.ComposerError as e:
             msg = "Expected only one document in this file but found multiple"
-            raise_from(exceptions.UnexpectedDocumentsError(msg), e)
+            raise exceptions.UnexpectedDocumentsError(msg) from e
 
     return contents
 
@@ -408,4 +456,4 @@ def error_on_empty_scalar(self, mark):  # pylint: disable=unused-argument
     raise exceptions.BadSchemaError(error)
 
 
-yaml.parser.Parser.process_empty_scalar = error_on_empty_scalar
+yaml.parser.Parser.process_empty_scalar = error_on_empty_scalar  # type:ignore

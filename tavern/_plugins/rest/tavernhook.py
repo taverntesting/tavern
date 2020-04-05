@@ -1,6 +1,5 @@
 import logging
 
-from future.utils import raise_from
 import requests
 
 from tavern.plugins import PluginHelperBase
@@ -26,7 +25,7 @@ class TavernRestPlugin(PluginHelperBase):
             r_expected = stage["response"]
         except KeyError as e:
             logger.error("Need a 'response' block if a 'request' is being sent")
-            raise_from(exceptions.MissingSettingsError, e)
+            raise exceptions.MissingSettingsError from e
 
         f_expected = format_keys(r_expected, test_block_config["variables"])
         return f_expected
