@@ -1,6 +1,6 @@
 import re
 
-from future.utils import raise_from
+import pytest
 
 from tavern.util import exceptions
 
@@ -37,8 +37,8 @@ def pytest_addoption(parser):
         default=None,
     )
     parser.addini(
-        "tavern-beta-new-traceback",
-        help="Use new traceback style (beta)",
+        "tavern-use-default-traceback",
+        help="Use normal python-style traceback",
         type="bool",
         default=False,
     )
@@ -61,6 +61,9 @@ def pytest_collect_file(parent, path):
     test files
     """
 
+    if int(pytest.__version__.split(".")[0]) < 5:
+        raise exceptions.TavernException("Only pytest >=5 is supported")
+
     pattern = get_option_generic(
         parent.config, "tavern-file-path-regex", r".+\.tavern\.ya?ml$"
     )
@@ -75,7 +78,7 @@ def pytest_collect_file(parent, path):
     try:
         compiled = re.compile(pattern)
     except Exception as e:  # pylint: disable=broad-except
-        raise_from(exceptions.InvalidConfigurationException(e), e)
+        raise exceptions.InvalidConfigurationException(e) from e
 
     match_tavern_file = compiled.search
 
@@ -87,6 +90,6 @@ def pytest_collect_file(parent, path):
 
 def pytest_addhooks(pluginmanager):
     """Add our custom tavern hooks"""
-    from . import newhooks
+    from . import newhooks  # pylint: disable=import-outside-toplevel
 
     pluginmanager.add_hookspecs(newhooks)

@@ -195,7 +195,7 @@ See 57f2a10e58a88325c185258d2c83b07a532aa93a for details
 
 ## 0.26.5          Lock pytest version to stop internal error
 
-# 0.27.0 
+# 0.27.0
 
 - Fix various typos in documentation
 - Allow sending form data and files in a single request
@@ -205,34 +205,34 @@ See 57f2a10e58a88325c185258d2c83b07a532aa93a for details
 - Allow sending single values as JSON body as according to RFC 7159
 - Change 'save' selector to use JMESpath
 
-# 0.28.0 
+# 0.28.0
 
 Add a couple of initial hooks
 
 The initial 2 hooks should allow a user to do something before every test and
 after every stage
 
-# 0.29.0 
+# 0.29.0
 
 Allow saving in MQTT tests and move calling external verification functions into their own block
 
-# 0.30.0 
+# 0.30.0
 
 Allow formatting of cookie names and allow overriding cookie values in a request
 
-## 0.30.1 
+## 0.30.1
 
 Fix MQTT subscription race condition
 
-## 0.30.2 
+## 0.30.2
 
 Fix parsing auth header
 
-## 0.30.3 
+## 0.30.3
 
 Fix marker serialisation for pytest-xdist
 
-# 0.31.0 
+# 0.31.0
 
 - Add isort
 - Fix pytest warnings from None check
@@ -241,14 +241,42 @@ Fix marker serialisation for pytest-xdist
 - Fix compatability with pytest-rerunfailures
 - Add options to specify custom content type and encoding for files
 
-# 0.32.0 
+# 0.32.0
 
 Add option to control which files to search for rather than having it hardcoded
 
-# 0.33.0 
+# 0.33.0
 
 Add extra type tokens for matching arbitrary lists and dicts
 
-# 0.34.0 
+# 0.34.0
 
 Add new magic tag that includes something as json rather than a string
+
+
+# 1.0.0
+
+- 'body' key changes to 'json' in HTTP response
+
+- Python 2 dropped
+
+- Changes to the way strictness works
+
+- remove 'null' checking on body matching anything
+
+- 'run' entry point slightly reworked
+
+- New error traceback is the default
+
+- External function blocks changes
+
+- Save value path changes to jmespath
+
+-    Add key to allow uploading the raw content of a file as a request body
+
+-    Add new token which can match regex values in parts of responses
+
+-    Strict key checking should now work with MQTT json payloads
+
+
+See https://github.com/taverntesting/tavern/issues/495 for details

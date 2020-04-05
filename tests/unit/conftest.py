@@ -1,6 +1,8 @@
 from mock import Mock
 import pytest
 
+from tavern.util.strict_util import StrictLevel
+
 
 @pytest.fixture(name="includes")
 def fix_example_includes():
@@ -13,7 +15,7 @@ def fix_example_includes():
             "request_topic": "/abc",
         },
         "backends": {"mqtt": "paho-mqtt", "http": "requests", "grpc": "grpc"},
-        "strict": True,
+        "strict": StrictLevel.all_on(),
         "tavern_internal": {"pytest_hook_caller": Mock()},
     }
 

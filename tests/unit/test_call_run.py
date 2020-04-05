@@ -1,5 +1,6 @@
+from unittest.mock import patch
+
 import pytest
-from mock import patch
 
 from tavern.core import run
 from tavern.util import exceptions
@@ -38,10 +39,6 @@ class TestBasicRun:
             run("", **kw)
 
         assert not len(warn_rec)
-
-    def test_warns_about_extra_kwargs(self):
-        with pytest.warns(FutureWarning):
-            run("", a=123)
 
 
 class TestParseGlobalCfg:

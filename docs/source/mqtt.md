@@ -202,7 +202,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         lights: "off"
       headers:
         content-type: application/json
@@ -224,7 +224,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         lights: "on"
       headers:
         content-type: application/json
@@ -264,7 +264,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         topic: "/device/123"
       headers:
         content-type: application/json

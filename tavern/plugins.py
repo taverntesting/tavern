@@ -5,7 +5,6 @@ significantly if/when a proper plugin system is implemented!
 """
 import logging
 
-from future.utils import raise_from
 import stevedore
 
 from tavern.util.dict_util import format_keys
@@ -24,7 +23,7 @@ def plugin_load_error(mgr, entry_point, err):
     """
     # pylint: disable=unused-argument
     msg = "Error loading plugin {} - {}".format(entry_point, err)
-    raise_from(exceptions.PluginLoadError(msg), err)
+    raise exceptions.PluginLoadError(msg) from err
 
 
 def is_valid_reqresp_plugin(ext):

@@ -26,5 +26,5 @@ stages:
       follow_redirects: true
     response:
       status_code: 200
-      body:
+      json:
         status: successful redirect

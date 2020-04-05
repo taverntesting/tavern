@@ -51,25 +51,55 @@ stages:
 
 ---
 
-test_name: Test old style ext functions work with MQTT
+test_name: Test mqtt message echo json with non strict checking
 
 includes:
   - !include common.yaml
 
 paho-mqtt: *mqtt_spec
 
+strict:
+  - json:off
+
 stages:
-  - name: Echo json
+  - name: Check that at least part of response is echoed
     mqtt_publish:
       topic: /device/123/echo
       json:
-        message: hello world
+        key_1: message1
+        key_2: message2
     mqtt_response:
       topic: /device/123/echo/response
       json:
-        message: hello world
-        $ext:
-          function: testing_utils:message_says_hello
+        key_1: message1
+      timeout: 5
+      qos: 1
+
+---
+
+test_name: Test mqtt message match fails with strict on and non matching response
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+strict:
+  - json:on
+
+_xfail: run
+
+stages:
+  - name: Check that at least part of response is echoed
+    mqtt_publish:
+      topic: /device/123/echo
+      json:
+        key_1: message1
+        key_2: message2
+    mqtt_response:
+      topic: /device/123/echo/response
+      json:
+        key_1: message1
       timeout: 5
       qos: 1
 
@@ -186,7 +216,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         topic: "/device/123"
       headers:
         content-type: application/json
@@ -205,8 +235,7 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
-  - &reset_devices
-    name: step 0 - reset devices
+  - name: step 0 - reset devices
     request:
       url: "{host}/reset"
       method: POST
@@ -225,7 +254,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         lights: "off"
       headers:
         content-type: application/json
@@ -247,7 +276,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         lights: "on"
       headers:
         content-type: application/json
@@ -262,7 +291,14 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
-  - *reset_devices
+  - name: step 0 - reset devices
+    request:
+      url: "{host}/reset"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 204
 
   - name: Check lights status is off
     mqtt_publish:
@@ -394,42 +430,5 @@ stages:
       topic: /device/123/ping
     mqtt_response:
       topic: /device/123/pong
-      timeout: 5
-      qos: 1
-
----
-
-test_name: Test saving
-
-includes:
-  - !include common.yaml
-
-paho-mqtt: *mqtt_spec
-
-stages:
-  - *reset_devices
-
-  - name: Get lights status and save
-    mqtt_publish:
-      topic: /device/123/status
-    mqtt_response:
-      topic: /device/123/status/response
-      json:
-        lights: 0
-      timeout: 3
-      qos: 1
-      save:
-        json:
-          lights_status: lights
-
-  - name: Use saved variable
-    mqtt_publish:
-      topic: /device/123/echo
-      json:
-        status: !int "{lights_status}"
-    mqtt_response:
-      topic: /device/123/echo/response
-      json:
-        status: 0
       timeout: 5
       qos: 1

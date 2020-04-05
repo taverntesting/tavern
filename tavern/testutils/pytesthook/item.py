@@ -1,6 +1,5 @@
+import copy
 import logging
-import sys
-import warnings
 
 from _pytest import fixtures
 import attr
@@ -19,7 +18,6 @@ logger = logging.getLogger(__name__)
 
 
 class YamlItem(pytest.Item):
-
     """Simple wrapper around new test type that can report errors more
     accurately than the default pytest reporting stuff
 
@@ -31,8 +29,6 @@ class YamlItem(pytest.Item):
         spec (dict): The whole dictionary of the test
     """
 
-    py2_warned = False
-
     def __init__(self, name, parent, spec, path):
         super(YamlItem, self).__init__(name, parent)
         self.path = path
@@ -40,17 +36,14 @@ class YamlItem(pytest.Item):
 
         self.global_cfg = {}
 
-        if sys.version_info < (3, 0, 0):
-            if not YamlItem.py2_warned:
-                warnings.warn(
-                    "Tavern will drop support for Python 2 in a future release, please switch to using Python 3 (see https://docs.pytest.org/en/latest/py27-py34-deprecation.html)",
-                    FutureWarning,
-                )
-                YamlItem.py2_warned = True
-
     def initialise_fixture_attrs(self):
         # pylint: disable=protected-access,attribute-defined-outside-init
         self.funcargs = {}
+
+        # _get_direct_parametrize_args checks parametrize arguments in Python
+        # functions, but we don't care about that in Tavern.
+        self.session._fixturemanager._get_direct_parametrize_args = lambda _: []
+
         fixtureinfo = self.session._fixturemanager.getfixtureinfo(
             self, self.obj, type(self), funcargs=False
         )
@@ -136,7 +129,8 @@ class YamlItem(pytest.Item):
         return values
 
     def runtest(self):
-        self.global_cfg = load_global_cfg(self.config)
+        # Do a deep copy because this sometimes still retains things from previous tests(?)
+        self.global_cfg = copy.deepcopy(load_global_cfg(self.config))
 
         self.global_cfg.setdefault("variables", {})
 
@@ -181,23 +175,25 @@ class YamlItem(pytest.Item):
                     "Expected test to fail at {} stage".format(xfail)
                 )
 
-    def repr_failure(self, excinfo):
+    def repr_failure(self, excinfo, style=None):
         """ called when self.runtest() raises an exception.
 
-        Todo:
-            This stuff is copied from pytest at the moment - needs a bit of
-            modifying so that it shows the yaml and all the reasons the test
-            failed rather than a traceback
+        By default, will raise a custom formatted traceback if it's a tavern error. if not, will use the default
+        python traceback
         """
 
-        if self.config.getini("tavern-beta-new-traceback") or self.config.getoption(
-            "tavern_beta_new_traceback"
+        if (
+            self.config.getini("tavern-use-default-traceback")
+            or self.config.getoption("tavern_use_default_traceback")
+            or not issubclass(excinfo.type, exceptions.TavernException)
+            or issubclass(excinfo.type, exceptions.BadSchemaError)
         ):
-            if issubclass(excinfo.type, exceptions.TavernException):
-                if not issubclass(excinfo.type, exceptions.BadSchemaError):
-                    return ReprdError(excinfo, self)
+            return super(YamlItem, self).repr_failure(excinfo)
 
-        return super(YamlItem, self).repr_failure(excinfo)
+        if style is not None:
+            logger.info("Ignoring style '%s", style)
+
+        return ReprdError(excinfo, self)
 
     def reportinfo(self):
         return self.fspath, 0, "{s.path}::{s.name:s}".format(s=self)

@@ -1,14 +1,14 @@
+from contextlib import ExitStack
 from copy import deepcopy
 from distutils.util import strtobool
 import logging
 import os
-import warnings
 
 from box import Box
-from contextlib2 import ExitStack
 import pytest
 
 from tavern.schemas.files import wrapfile
+from tavern.util.strict_util import StrictLevel
 
 from .plugins import get_expected, get_extra_sessions, get_request_type, get_verifiers
 from .util import exceptions
@@ -68,11 +68,11 @@ def _get_included_stages(tavern_box, test_block_config, test_spec, available_sta
         for included in test_spec["includes"]:
             for stage in included.get("stages", {}):
                 if stage["id"] in stage_ids(available_stages):
-                    msg = "Stage id '{}' defined in stage-included test which was already defined in global configuration - this will be an error in future!".format(
-                        stage["id"]
+                    raise exceptions.DuplicateStageDefinitionError(
+                        "Stage id '{}' defined in stage-included test which was already defined in global configuration".format(
+                            stage["id"]
+                        )
                     )
-                    logger.warning(msg)
-                    warnings.warn(msg, FutureWarning)
 
         included_stages = []
 
@@ -143,9 +143,6 @@ def run_test(in_file, test_spec, global_cfg):
 
     test_block_name = test_spec["test_name"]
 
-    # Strict on body by default
-    default_strictness = test_block_config["strict"]
-
     logger.info("Running test : %s", test_block_name)
 
     with ExitStack() as stack:
@@ -170,33 +167,10 @@ def run_test(in_file, test_spec, global_cfg):
         for stage in test_spec["stages"]:
             if stage.get("skip"):
                 continue
-            elif has_only and not getonly(stage):
+            if has_only and not getonly(stage):
                 continue
 
-            test_block_config["strict"] = default_strictness
-
-            # Can be overridden per stage
-            # NOTE
-            # this is hardcoded to check for the 'response' block. In the far
-            # future there might not be a response block, but at the moment it
-            # is the hardcoded value for any HTTP request.
-            if stage.get("response", {}):
-                if stage.get("response").get("strict", None) is not None:
-                    stage_strictness = stage.get("response").get("strict", None)
-                elif test_spec.get("strict", None) is not None:
-                    stage_strictness = test_spec.get("strict", None)
-                else:
-                    stage_strictness = default_strictness
-
-                logger.debug(
-                    "Strict key checking for this stage is '%s'", stage_strictness
-                )
-
-                test_block_config["strict"] = stage_strictness
-            elif default_strictness:
-                logger.debug(
-                    "Default strictness '%s' ignored for this stage", default_strictness
-                )
+            _calculate_stage_strictness(stage, test_block_config, test_spec)
 
             # Wrap run_stage with retry helper
             run_stage_with_retries = retry(stage, test_block_config)(run_stage)
@@ -210,6 +184,41 @@ def run_test(in_file, test_spec, global_cfg):
 
             if getonly(stage):
                 break
+
+
+def _calculate_stage_strictness(stage, test_block_config, test_spec):
+    """Figure out the strictness for this stage
+
+    Can be overridden per stage, or per test
+
+    Priority is global (see pytest util file) <= test <= stage
+    """
+    stage_options = None
+
+    if test_spec.get("strict", None) is not None:
+        stage_options = test_spec["strict"]
+
+    if stage.get("response", {}).get("strict", None) is not None:
+        stage_options = stage["response"]["strict"]
+    elif stage.get("mqtt_response", {}).get("strict", None) is not None:
+        stage_options = stage["mqtt_response"]["strict"]
+
+    if stage_options is not None:
+        logger.debug("Overriding global strictness")
+        if stage_options is True:
+            strict_level = StrictLevel.all_on()
+        elif stage_options is False:
+            strict_level = StrictLevel.all_off()
+        else:
+            strict_level = StrictLevel.from_options(stage_options)
+
+        test_block_config["strict"] = strict_level
+    else:
+        logger.debug("Global default strictness used for this stage")
+
+    logger.debug(
+        "Strict key checking for this stage is '%s'", test_block_config["strict"]
+    )
 
 
 def run_stage(sessions, stage, tavern_box, test_block_config):
@@ -242,63 +251,6 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
 
     tavern_box.pop("request_vars")
     delay(stage, "after", test_block_config["variables"])
-
-
-def _run_pytest(
-    in_file,
-    tavern_global_cfg,
-    tavern_mqtt_backend=None,
-    tavern_http_backend=None,
-    tavern_grpc_backend=None,
-    tavern_strict=None,
-    pytest_args=None,
-    **kwargs
-):  # pylint: disable=too-many-arguments
-    """Run all tests contained in a file using pytest.main()
-
-    Args:
-        in_file (str): file to run tests on
-        tavern_global_cfg (str, dict): Extra global config
-        tavern_mqtt_backend (str, optional): name of MQTT plugin to use. If not
-            specified, uses tavern-mqtt
-        tavern_http_backend (str, optional): name of HTTP plugin to use. If not
-            specified, use tavern-http
-        tavern_grpc_backend (str, optional): name of GRPC plugin to use. If not
-            specified, use tavern-grpc
-        tavern_strict (bool, optional): Strictness of checking for responses.
-            See documentation for details
-        pytest_args (list, optional): List of extra arguments to pass directly
-            to Pytest as if they were command line arguments
-        **kwargs (dict): ignored
-
-    Returns:
-        bool: Whether ALL tests passed or not
-    """
-
-    if kwargs:
-        logger.warning("Unexpected keyword args: %s", kwargs)
-        warnings.warn(
-            "Passing extra keyword args to run() when using pytest is used are ignored.",
-            FutureWarning,
-        )
-
-    pytest_args = pytest_args or []
-    pytest_args += [in_file]
-
-    if tavern_mqtt_backend:
-        pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
-    if tavern_http_backend:
-        pytest_args += ["--tavern-http-backend", tavern_http_backend]
-    if tavern_grpc_backend:
-        pytest_args += ["--tavern-grpc-backend", tavern_grpc_backend]
-    if tavern_strict:
-        pytest_args += ["--tavern-strict", tavern_strict]
-
-    with ExitStack() as stack:
-        if tavern_global_cfg:
-            global_filename = _get_or_wrap_global_cfg(stack, tavern_global_cfg)
-            pytest_args += ["--tavern-global-cfg", global_filename]
-        return pytest.main(args=pytest_args)
 
 
 def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
@@ -338,16 +290,49 @@ def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
     return global_filename
 
 
-def run(in_file, tavern_global_cfg=None, **kwargs):
-    """Run tests in file
+def run(
+    in_file,
+    tavern_global_cfg=None,
+    tavern_mqtt_backend=None,
+    tavern_http_backend=None,
+    tavern_grpc_backend=None,
+    tavern_strict=None,
+    pytest_args=None,
+):  # pylint: disable=too-many-arguments
+    """Run all tests contained in a file using pytest.main()
 
     Args:
-        in_file (str): file to run tests for
+        in_file (str): file to run tests on
         tavern_global_cfg (str, dict): Extra global config
-        **kwargs: any extra arguments to pass to _run_pytest, see that function
-            for details
+        tavern_mqtt_backend (str, optional): name of MQTT plugin to use. If not
+            specified, uses tavern-mqtt
+        tavern_http_backend (str, optional): name of HTTP plugin to use. If not
+            specified, use tavern-http
+        tavern_grpc_backend (str, optional): name of GRPC plugin to use. If not
+            specified, use tavern-grpc
+        tavern_strict (bool, optional): Strictness of checking for responses.
+            See documentation for details
+        pytest_args (list, optional): List of extra arguments to pass directly
+            to Pytest as if they were command line arguments
 
     Returns:
-        int: 0 if tests were successful and nonzero if tests failed.
+        bool: Whether ALL tests passed or not
     """
-    return _run_pytest(in_file, tavern_global_cfg, **kwargs)
+
+    pytest_args = pytest_args or []
+    pytest_args += [in_file]
+
+    if tavern_mqtt_backend:
+        pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
+    if tavern_http_backend:
+        pytest_args += ["--tavern-http-backend", tavern_http_backend]
+    if tavern_grpc_backend:
+        pytest_args += ["--tavern-grpc-backend", tavern_grpc_backend]
+    if tavern_strict:
+        pytest_args += ["--tavern-strict", tavern_strict]
+
+    with ExitStack() as stack:
+        if tavern_global_cfg:
+            global_filename = _get_or_wrap_global_cfg(stack, tavern_global_cfg)
+            pytest_args += ["--tavern-global-cfg", global_filename]
+        return pytest.main(args=pytest_args)
