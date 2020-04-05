@@ -3,7 +3,6 @@ import json
 import logging
 
 from box import Box
-from future.utils import raise_from
 
 from tavern.request.base import BaseRequest
 from tavern.util import exceptions
@@ -63,7 +62,7 @@ class MQTTRequest(BaseRequest):
             return self._prepared()
         except ValueError as e:
             logger.exception("Error publishing")
-            raise_from(exceptions.MQTTRequestException, e)
+            raise exceptions.MQTTRequestException from e
 
     @property
     def request_vars(self):

@@ -23,7 +23,7 @@ stages:
         value: "{str_fixture}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{yield_str_fixture}"
 
 ---
@@ -47,7 +47,7 @@ stages:
         value: "{str_fixture}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{yield_str_fixture}"
 
 ---
@@ -71,7 +71,7 @@ stages:
         value: "{str_fixture}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{yield_str_fixture}"
 
 ---
@@ -96,5 +96,5 @@ stages:
         value: "{str_fixture}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{yield_str_fixture}"

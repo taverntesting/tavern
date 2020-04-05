@@ -4,12 +4,12 @@ import logging
 import os
 import re
 
-from future.utils import raise_from
 from pykwalify.types import is_bool, is_float, is_int
 
 from tavern.util import exceptions
 from tavern.util.exceptions import BadSchemaError
 from tavern.util.loader import ApproxScalar, BoolToken, FloatToken, IntToken
+from tavern.util.strict_util import StrictLevel
 
 
 def _getlogger():
@@ -77,21 +77,21 @@ def import_ext_function(entrypoint):
     except ValueError as e:
         msg = "Expected entrypoint in the form module.submodule:function"
         logger.exception(msg)
-        raise_from(exceptions.InvalidExtFunctionError(msg), e)
+        raise exceptions.InvalidExtFunctionError(msg) from e
 
     try:
         module = importlib.import_module(module)
     except ImportError as e:
         msg = "Error importing module {}".format(module)
         logger.exception(msg)
-        raise_from(exceptions.InvalidExtFunctionError(msg), e)
+        raise exceptions.InvalidExtFunctionError(msg) from e
 
     try:
         function = getattr(module, funcname)
     except AttributeError as e:
         msg = "No function named {} in {}".format(funcname, module)
         logger.exception(msg)
-        raise_from(exceptions.InvalidExtFunctionError(msg), e)
+        raise exceptions.InvalidExtFunctionError(msg) from e
 
     return function
 
@@ -136,7 +136,9 @@ def get_wrapped_create_function(ext):
 
     @functools.wraps(func)
     def inner():
-        return func(*args, **kwargs)
+        result = func(*args, **kwargs)
+        _getlogger().info("Result of calling '%s': '%s'", func, result)
+        return result
 
     inner.func = func
 
@@ -156,9 +158,7 @@ def _validate_one_extension(input_value):
     try:
         import_ext_function(input_value["function"])
     except Exception as e:  # pylint: disable=broad-except
-        raise_from(
-            BadSchemaError("Couldn't load {}".format(input_value["function"])), e
-        )
+        raise BadSchemaError("Couldn't load {}".format(input_value["function"])) from e
 
     extra_args = input_value.get("extra_args")
     extra_kwargs = input_value.get("extra_kwargs")
@@ -343,7 +343,7 @@ def validate_request_json(value, rule_obj, path):
 
     if any(isinstance(i, ApproxScalar) for i in nested_values(value)):
         # If this is a request data block
-        if not re.search(r"^/stages/\d/(response/body|mqtt_response/json)", path):
+        if not re.search(r"^/stages/\d/(response/json|mqtt_response/json)", path):
             raise BadSchemaError(
                 "Error at {} - Cannot use a '!approx' in anything other than an expected http response body or mqtt response json".format(
                     path
@@ -374,8 +374,13 @@ def check_strict_key(value, rule_obj, path):
     if not isinstance(value, list) and not is_bool_like(value):
         raise BadSchemaError("'strict' has to be either a boolean or a list")
     elif isinstance(value, list):
-        if not set(["body", "headers", "redirect_query_params"]) >= set(value):
-            raise BadSchemaError("Invalid 'strict' keys passed: {}".format(value))
+        try:
+            # Reuse validation here
+            StrictLevel.from_options(value)
+        except exceptions.InvalidConfigurationException as e:
+            raise BadSchemaError from e
+
+    # Might be a bool as well, in which case it's processed further down the line - no validation required
 
     return True
 
@@ -475,3 +480,11 @@ def validate_file_spec(value, rule_obj, path):
             )
 
     return True
+
+
+def raise_body_error(value, rule_obj, path):
+    """Raise an error about the deprecated 'body' key"""
+    # pylint: disable=unused-argument
+
+    msg = "The 'body' key has been replaced with 'json' in 1.0 to make it more in line with other blocks. see https://github.com/taverntesting/tavern/issues/495 for details."
+    raise BadSchemaError(msg)

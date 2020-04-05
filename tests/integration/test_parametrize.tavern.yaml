@@ -22,7 +22,7 @@ stages:
         value: "{to_send}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{to_send}"
 
 ---
@@ -55,7 +55,7 @@ stages:
         value: "{fruit}-{edible}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{fruit}-{edible}"
 
 ---
@@ -86,7 +86,7 @@ stages:
         value: "{fruit}-{edible}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{fruit}-{edible}"
 
 ---
@@ -114,7 +114,7 @@ stages:
         value: "{to_send}"
     response:
       status_code: 503
-      body:
+      json:
         value: "klskdfiogj4iji34o"
 
 ---
@@ -142,7 +142,7 @@ stages:
         value: "{to_send}"
     response:
       status_code: 503
-      body:
+      json:
         value: "klskdfiogj4iji34o"
 
 #This is now a validation error
@@ -169,7 +169,7 @@ stages:
 #        value: "{to_send}"
 #    response:
 #      status_code: 200
-#      body:
+#      json:
 #        value: "{to_send}"
 
 ---
@@ -196,7 +196,7 @@ stages:
         value: "{to_send}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{to_send}"
 
 ---
@@ -218,7 +218,7 @@ stages:
         value: "{to_send}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{to_send}"
 
 ---
@@ -247,7 +247,7 @@ stages:
         value: "{fruit}-{edible}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{fruit}-{edible}"
 
 ---
@@ -281,7 +281,7 @@ stages:
         value: "{fruit}-{edible}_{to_send}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{fruit}-{edible}_{to_send}"
 
 ---
@@ -317,7 +317,7 @@ stages:
         value: "{fruit}-{edible}_{first_half}-{second_half}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{fruit}-{edible}_{first_half}-{second_half}"
 
 ---
@@ -346,7 +346,7 @@ stages:
         value: "{fruit}-{edible}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{fruit}-{edible}-nope"
 
 ---
@@ -376,7 +376,7 @@ stages:
         value: "{fruit}-{edible}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{fruit}-{edible}-nope"
 
 ---
@@ -405,7 +405,7 @@ stages:
         value: "{fruit}-{edible}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{fruit}-{edible}-nope"
 
 ---
@@ -438,7 +438,7 @@ stages:
         value: "{generic_str}-{edible}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{generic_str}-{edible}"
 
 ---
@@ -469,7 +469,7 @@ stages:
         value: "{generic_str}-{edible}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{generic_str}-{edible}"
 
 ---
@@ -495,5 +495,5 @@ stages:
         value: "{line}-{text}"
     response:
       status_code: 200
-      body:
+      json:
         value: "{line}-{text}"

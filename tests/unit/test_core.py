@@ -1,12 +1,12 @@
-import json
-import uuid
-import os
-from mock import patch, Mock, MagicMock
 from copy import deepcopy
+import json
+import os
+from unittest.mock import MagicMock, Mock, patch
+import uuid
 
+import paho.mqtt.client as paho
 import pytest
 import requests
-import paho.mqtt.client as paho
 
 from tavern._plugins.mqtt.client import MQTTClient
 from tavern.core import run_test
@@ -23,7 +23,7 @@ def fix_example_test():
                 "request": {"url": "http://www.google.com", "method": "GET"},
                 "response": {
                     "status_code": 200,
-                    "body": {"key": "value"},
+                    "json": {"key": "value"},
                     "headers": {"content-type": "application/json"},
                 },
             }
@@ -36,7 +36,7 @@ def fix_example_test():
 @pytest.fixture(name="mockargs")
 def fix_mock_response_args(fulltest):
     response = fulltest["stages"][0]["response"]
-    content = response["body"]
+    content = response["json"]
 
     args = {
         "spec": requests.Response,
@@ -127,7 +127,7 @@ class TestIncludeStages:
                 "request": {"url": "http://www.bing.com", "method": "GET"},
                 "response": {
                     "status_code": 200,
-                    "body": {"key": "value"},
+                    "json": {"key": "value"},
                     "headers": {"content-type": "application/json"},
                 },
             }
@@ -199,14 +199,14 @@ class TestIncludeStages:
 
         includes["stages"] = fake_stages
 
-        with pytest.warns(FutureWarning):
+        with pytest.raises(exceptions.DuplicateStageDefinitionError):
             with patch(
                 "tavern._plugins.rest.request.requests.Session.request",
                 return_value=mock_response,
             ) as pmock:
                 run_test("heif", newtest, includes)
 
-        self.check_mocks_called(pmock)
+        assert not pmock.called
 
     def test_neither(self, fulltest, mockargs, includes, fake_stages):
         """ Raises error if not defined
@@ -351,7 +351,7 @@ class TestFormatRequestVars:
         fulltest["stages"][0]["request"][request_key] = {"a_format_key": sent_value}
 
         if request_key == "json":
-            resp_key = "body"
+            resp_key = "json"
             mockargs[request_key] = lambda: {"returned": sent_value}
         else:
             resp_key = request_key

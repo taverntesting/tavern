@@ -1,7 +1,6 @@
 ---
 conditions: v1
 stages:
-  - name: check
   - name: basic-tests
   - name: full-tests
     if: branch = master OR type = pull_request OR tag IS present
@@ -27,58 +26,42 @@ services:
 jobs:
   fast_finish: true
   include:
-    # Initial checks
-    # Check basic py3 functionality and python 2 syntax via pyflakes
-    - python: 2.7
-      env: TOXENV=py27flakes TOXCFG=tox.ini
-      stage: check
-    - python: 3.7
-      env: TOXENV=py37black TOXCFG=tox.ini
-      stage: check
-    - python: 3.7
-      env: TOXENV=py37 TOXCFG=tox.ini
-      stage: check
-    - python: 3.7
-      env: TOXENV=py37lint TOXCFG=tox.ini
-      stage: check
-    - python: 3.7
-      env: TOXENV=py37isort TOXCFG=tox.ini
-      stage: check
-
-    # 'Basic' tests
-    # Run more involved tests for python 2 and integration tests
-    - python: 2.7
-      env: TOXENV=py27 TOXCFG=tox.ini
+    # 'Basic' tests and checks
+    # Pylint, formatting/sorting, and quickest unit/integration tests
+    - python: 3.8
+      env: TOXENV=py38black TOXCFG=tox.ini
       stage: basic-tests
-    - python: 2.7
-      env: TOXENV=py27lint TOXCFG=tox.ini
+    - python: 3.8
+      env: TOXENV=py38 TOXCFG=tox.ini
       stage: basic-tests
-
-    - python: 2.7
-      env: TOXENV=py27-generic TOXCFG=tox-integration.ini
+    - python: 3.8
+      env: TOXENV=py38lint TOXCFG=tox.ini
       stage: basic-tests
-    - python: 3.7
-      env: TOXENV=py37-generic TOXCFG=tox-integration.ini
+    - python: 3.8
+      env: TOXENV=py38isort TOXCFG=tox.ini
+      stage: basic-tests
+    - python: 3.8
+      env: TOXENV=py38-generic TOXCFG=tox-integration.ini
       stage: basic-tests
 
     # 'Full' tests
     # This runs for different versions of Python that we support as well as the
     # full integration test suite
-    - python: 3.8
-      env: TOXENV=py38-generic TOXCFG=tox-integration.ini
+    - python: 3.7
+      env: TOXENV=py37-generic TOXCFG=tox-integration.ini
       stage: full-tests
     - python: pypy3
       env: TOXENV=pypy3-generic TOXCFG=tox-integration.ini
       stage: full-tests
 
-    - python: 3.7
-      env: TOXENV=py37-mqtt TOXCFG=tox-integration.ini
+    - python: 3.8
+      env: TOXENV=py38-mqtt TOXCFG=tox-integration.ini
       stage: full-tests
-    - python: 3.7
-      env: TOXENV=py37-advanced TOXCFG=tox-integration.ini
+    - python: 3.8
+      env: TOXENV=py38-advanced TOXCFG=tox-integration.ini
       stage: full-tests
-    - python: 3.7
-      env: TOXENV=py37-hooks TOXCFG=tox-integration.ini
+    - python: 3.8
+      env: TOXENV=py38-hooks TOXCFG=tox-integration.ini
       stage: full-tests
 
     # deploy

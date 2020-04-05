@@ -1,8 +1,5 @@
-from builtins import str
 import operator
 import re
-
-from future.utils import raise_from
 
 from tavern.util import exceptions
 
@@ -67,10 +64,9 @@ def validate_comparison(each_comparison):
     try:
         assert set(each_comparison.keys()) == {"jmespath", "operator", "expected"}
     except KeyError as e:
-        raise_from(
-            exceptions.BadSchemaError("Invalid keys given to JMES validation function"),
-            e,
-        )
+        raise exceptions.BadSchemaError(
+            "Invalid keys given to JMES validation function"
+        ) from e
 
     jmespath, _operator, expected = (
         each_comparison["jmespath"],
@@ -81,7 +77,7 @@ def validate_comparison(each_comparison):
     try:
         COMPARATORS[_operator]
     except KeyError as e:
-        raise_from(exceptions.BadSchemaError("Invalid comparator given"), e)
+        raise exceptions.BadSchemaError("Invalid comparator given") from e
 
     return jmespath, _operator, expected
 

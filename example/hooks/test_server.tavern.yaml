@@ -13,7 +13,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         double: 10
 
   - name: Make sure number is returned correctly again
@@ -26,5 +26,5 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         double: 20

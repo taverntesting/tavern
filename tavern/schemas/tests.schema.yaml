@@ -161,6 +161,10 @@ schema;stage:
         json:
           include: any_json_with_ext
 
+        body:
+          type: any
+          func: raise_body_error
+
         files:
           required: false
           type: map
@@ -168,6 +172,10 @@ schema;stage:
             re;(.*):
               type: any
           func: validate_file_spec
+
+        file_body:
+          type: str
+          required: false
 
         method:
           type: str
@@ -224,13 +232,13 @@ schema;stage:
         re;(headers|redirect_query_params):
           include: any_map
 
-        body:
+        json:
           include: any_json_with_ext
 
         save:
           include: any_json_with_ext
           mapping:
-            re;(\$ext|body|headers|redirect_query_params):
+            re;(\$ext|json|headers|redirect_query_params):
               type: any
 
         verify_response_with:

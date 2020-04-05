@@ -1,18 +1,13 @@
 import json
 import logging
+from urllib.parse import parse_qs, urlparse
 
-from requests.status_codes import _codes
+from requests.status_codes import codes
 
 from tavern.response.base import BaseResponse, indent_err_text
 from tavern.testutils.pytesthook.newhooks import call_hook
+from tavern.util import exceptions
 from tavern.util.dict_util import deep_dict_merge
-from tavern.util.exceptions import TestFailError
-
-try:
-    from urllib.parse import urlparse, parse_qs
-except ImportError:
-    from urlparse import urlparse, parse_qs  # type: ignore
-
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +25,7 @@ class RestResponse(BaseResponse):
         self.status_code = None
 
         def check_code(code):
-            if code not in _codes:
+            if code not in codes:
                 logger.warning("Unexpected status code '%s'", code)
 
         if isinstance(self.expected["status_code"], int):
@@ -164,7 +159,7 @@ class RestResponse(BaseResponse):
         # Run validation on response
         self._check_status_code(response.status_code, body)
 
-        self._validate_block("body", body)
+        self._validate_block("json", body)
         self._validate_block("headers", response.headers)
         self._validate_block("redirect_query_params", redirect_query_params)
 
@@ -173,7 +168,7 @@ class RestResponse(BaseResponse):
         # Get any keys to save
         saved = {}
 
-        saved.update(self.maybe_get_save_values_from_save_block("body", body))
+        saved.update(self.maybe_get_save_values_from_save_block("json", body))
         saved.update(
             self.maybe_get_save_values_from_save_block("headers", response.headers)
         )
@@ -191,7 +186,7 @@ class RestResponse(BaseResponse):
                 self._adderr("No cookie named '%s' in response", cookie)
 
         if self.errors:
-            raise TestFailError(
+            raise exceptions.TestFailError(
                 "Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()),
                 failures=self.errors,
             )
@@ -212,10 +207,7 @@ class RestResponse(BaseResponse):
 
         if isinstance(expected_block, dict):
             if expected_block.pop("$ext", None):
-                logger.warning(
-                    "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
-                    blockname,
-                )
+                raise exceptions.InvalidExtBlockException(blockname,)
 
         if blockname == "headers":
             # Special case for headers. These need to be checked in a case
@@ -225,12 +217,6 @@ class RestResponse(BaseResponse):
 
         logger.debug("Validating response %s against %s", blockname, expected_block)
 
-        # 'strict' could be a list, in which case we only want to enable strict
-        # key checking for that specific bit of the response
         test_strictness = self.test_block_config["strict"]
-        if isinstance(test_strictness, list):
-            block_strictness = blockname in test_strictness
-        else:
-            block_strictness = test_strictness
-
+        block_strictness = test_strictness.setting_for(blockname).is_on()
         self.recurse_check_key_match(expected_block, block, blockname, block_strictness)

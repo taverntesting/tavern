@@ -12,7 +12,7 @@ stages:
         - "fakepass"
     response:
       status_code: 200
-      body:
+      json:
         auth_type: basic
         auth_user: fakeuser
         auth_pass: fakepass
@@ -31,5 +31,5 @@ stages:
         - "wrongpass"
     response:
       status_code: 401
-      body:
+      json:
         "error": "Wrong username/password"

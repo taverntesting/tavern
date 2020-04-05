@@ -15,20 +15,20 @@ test_name: Test saving a dict
 stages:
   - name: Save whole dict
     request:
-      url: "{host}/fake_dictionary"
+      url: "{global_host}/fake_dictionary"
     response:
       status_code: 200
       save:
-        body:
+        json:
           top_value: top
 
   - name: Use a saved dict value
     request:
-      url: "{host}/echo"
+      url: "{global_host}/echo"
       method: POST
       json:
         value: "{top_value.Thing}"
     response:
       status_code: 200
-      body:
+      json:
         value: value
