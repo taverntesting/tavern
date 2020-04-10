@@ -19,6 +19,8 @@ variables:
 
   formatted-cookie-name: tavern-cookie-2
 
+  file_body_ref: "OK.txt"
+
 stages:
   - id: typetoken-anything-match
     name: match top level

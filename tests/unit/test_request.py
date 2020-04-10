@@ -335,6 +335,20 @@ class TestOptionalDefaults:
         assert args["verify"] == verify
 
 
+class TestFileBody:
+    def test_file_body(self, req, includes):
+        """Test getting file body"""
+
+        req.pop("data")
+        req["file_body"] = "{callback_url}"
+
+        includes["abcdef"] = "Hello"
+
+        args = get_request_args(req, includes)
+
+        assert args["file_body"] == includes["variables"]["callback_url"]
+
+
 class TestGetFiles(object):
     @pytest.fixture
     def mock_stack(self):
