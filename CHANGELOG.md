@@ -278,5 +278,6 @@ Add new magic tag that includes something as json rather than a string
 
 -    Strict key checking should now work with MQTT json payloads
 
+- Fix bug where saved variables were not cleared between tests
 
 See https://github.com/taverntesting/tavern/issues/495 for details
