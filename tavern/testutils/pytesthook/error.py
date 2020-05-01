@@ -191,10 +191,12 @@ class ReprdError(object):
         self._print_test_stage(tw, code_lines, missing_format_vars, line_start)
         tw.line("")
 
-        if not missing_format_vars and stage:
-            self._print_formatted_stage(tw, stage)
+        if not stage:
+            tw.line("Stage not found", red=True, bold=True)
+        elif missing_format_vars:
+            tw.line("Missing format vars for stage", red=True, bold=True)
         else:
-            tw.line("Unable to get formatted stage", white=True, bold=True)
+            self._print_formatted_stage(tw, stage)
 
         tw.line("")
 
