@@ -59,6 +59,61 @@ def add_parser_options(parser_addoption, with_defaults=True):
         action="store",
         nargs=1,
     )
+    parser_addoption(
+        "--tavern-merge-ext-function-values",
+        help="Merge values from external functions in http requests",
+        default=False,
+        action="store_true",
+    )
+
+
+def add_ini_options(parser):
+    """Add an option to pass in a global config file for tavern
+
+    See also testutils.pytesthook.util.add_parser_options
+    """
+    parser.addini(
+        "tavern-global-cfg",
+        help="One or more global configuration files to include in every test",
+        type="linelist",
+        default=[],
+    )
+    parser.addini(
+        "tavern-http-backend", help="Which http backend to use", default="requests"
+    )
+    parser.addini(
+        "tavern-mqtt-backend", help="Which mqtt backend to use", default="paho-mqtt"
+    )
+    parser.addini(
+        "tavern-strict",
+        help="Default response matching strictness",
+        type="args",
+        default=None,
+    )
+    parser.addini(
+        "tavern-use-default-traceback",
+        help="Use normal python-style traceback",
+        type="bool",
+        default=False,
+    )
+    parser.addini(
+        "tavern-always-follow-redirects",
+        help="Always follow HTTP redirects",
+        type="bool",
+        default=False,
+    )
+    parser.addini(
+        "tavern-file-path-regex",
+        help="Regex to search for Tavern YAML test files",
+        default=r".+\.tavern\.ya?ml$",
+        type="args",
+    )
+    parser.addini(
+        "tavern-merge-ext-function-values",
+        help="Merge values from external functions in http requests",
+        default=False,
+        type="bool",
+    )
 
 
 @lru_cache()
@@ -96,6 +151,7 @@ def load_global_cfg(pytest_config):
     global_cfg["strict"] = _load_global_strictness(pytest_config)
     global_cfg["follow_redirects"] = _load_global_follow_redirects(pytest_config)
     global_cfg["backends"] = _load_global_backends(pytest_config)
+    global_cfg["merge_ext_values"] = _load_global_merge_ext(pytest_config)
 
     logger.debug("Global config: %s", global_cfg)
 
@@ -126,6 +182,11 @@ def _load_global_strictness(pytest_config):
 def _load_global_follow_redirects(pytest_config):
     """Load the global 'follow redirects' setting"""
     return get_option_generic(pytest_config, "tavern-always-follow-redirects", False)
+
+
+def _load_global_merge_ext(pytest_config):
+    """Load the global setting about whether external values should be merged or not"""
+    return get_option_generic(pytest_config, "tavern-merge-ext-function-values", True)
 
 
 def get_option_generic(pytest_config, flag, default):
