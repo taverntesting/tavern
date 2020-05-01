@@ -245,7 +245,7 @@ def deep_dict_merge(initial_dct, merge_dct):
         if (
             k in dct
             and isinstance(dct[k], dict)
-            and isinstance(merge_dct[k], collections.Mapping)
+            and isinstance(merge_dct[k], collections.abc.Mapping)
         ):
             dct[k] = deep_dict_merge(dct[k], merge_dct[k])
         else:
