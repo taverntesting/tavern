@@ -130,7 +130,9 @@ def get_request_args(rspec, test_block_config):
         except (KeyError, TypeError, AttributeError):
             pass
         else:
-            if test_block_config.get("merge_ext_values"):
+            merge_ext_values = test_block_config.get("merge_ext_values")
+            logger.debug("Will merge ext values? %s", merge_ext_values)
+            if merge_ext_values:
                 request_args[key] = deep_dict_merge(request_args[key], func())
             else:
                 request_args[key] = func()
