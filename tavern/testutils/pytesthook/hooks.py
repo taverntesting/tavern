@@ -3,8 +3,9 @@ import re
 import pytest
 
 from tavern.util import exceptions
+
 from .file import YamlFile
-from .util import get_option_generic, add_ini_options, add_parser_options
+from .util import add_ini_options, add_parser_options, get_option_generic
 
 
 def pytest_addoption(parser):
