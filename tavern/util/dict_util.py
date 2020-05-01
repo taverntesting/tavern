@@ -1,10 +1,14 @@
+import abc
 import collections
+import functools
 import logging
 import re
 import string
+import typing
+from dataclasses import dataclass, astuple
 
-from box import Box
 import jmespath
+from box import Box
 
 from tavern.util.loader import (
     ANYTHING,
@@ -12,8 +16,8 @@ from tavern.util.loader import (
     RegexSentinel,
     TypeConvertToken,
     TypeSentinel,
+    AnythingSentinel,
 )
-
 from . import exceptions
 
 logger = logging.getLogger(__name__)
@@ -243,9 +247,9 @@ def deep_dict_merge(initial_dct, merge_dct):
 
     for k in merge_dct:
         if (
-            k in dct
-            and isinstance(dct[k], dict)
-            and isinstance(merge_dct[k], collections.Mapping)
+                k in dct
+                and isinstance(dct[k], dict)
+                and isinstance(merge_dct[k], collections.Mapping)
         ):
             dct[k] = deep_dict_merge(dct[k], merge_dct[k])
         else:
@@ -256,6 +260,17 @@ def deep_dict_merge(initial_dct, merge_dct):
 
 def check_expected_keys(expected, actual):
     """Check that a set of expected keys is a superset of the actual keys
+
+    Example:
+
+        >>> check_expected_keys(["a", "b", "c"], ["a", "b", "c"]) is None
+        True
+        >>> check_expected_keys(["a", "b", "c"], ["a", "c"]) is None
+        True
+        >>> check_expected_keys(["a", "c"], ["a", "b", "c"]) is None
+        Traceback (most recent call last):
+          File "/home/michael/code/tavern/tavern/util/dict_util.py", line 288, in check_expected_keys
+        tavern.util.exceptions.UnexpectedKeysError: Unexpected keys {'b'}
 
     Args:
         expected (list, set, dict): keys we expect
@@ -277,7 +292,9 @@ def check_expected_keys(expected, actual):
         raise exceptions.UnexpectedKeysError(msg)
 
 
-def check_keys_match_recursive(expected_val, actual_val, keys: list, strict: bool = True):
+def check_keys_match_recursive(
+        expected_val, actual_val, keys: list, strict: bool = True
+):
     """Utility to recursively check response values
 
     expected and actual both have to be of the same type or it will raise an
@@ -291,10 +308,6 @@ def check_keys_match_recursive(expected_val, actual_val, keys: list, strict: boo
         Traceback (most recent call last):
           File "/home/michael/code/tavern/tavern/tavern/util/dict_util.py", line 223, in check_keys_match_recursive
         tavern.util.exceptions.KeyMismatchError: Key mismatch: (expected["a"]["b"] = 'c', actual["a"]["b"] = 'd')
-
-    Todo:
-        This could be turned into a single-dispatch function for cleaner
-        code and to remove a load of the isinstance checks
 
     Args:
         expected_val (dict, list, str): expected value
@@ -310,28 +323,6 @@ def check_keys_match_recursive(expected_val, actual_val, keys: list, strict: boo
         KeyMismatchError: expected_val and actual_val did not match
     """
 
-    # pylint: disable=too-many-locals,too-many-statements
-
-    def full_err():
-        """Get error in the format:
-
-        a["b"]["c"] = 4, b["b"]["c"] = {'key': 'value'}
-        """
-
-        def _format_err(which):
-            return "{}{}".format(which, "".join('["{}"]'.format(key) for key in keys))
-
-        e_formatted = _format_err("expected")
-        a_formatted = _format_err("actual")
-        return "{} = '{}' (type = {}), {} = '{}' (type = {})".format(
-            e_formatted,
-            expected_val,
-            type(expected_val),
-            a_formatted,
-            actual_val,
-            type(actual_val),
-        )
-
     actual_type = type(actual_val)
 
     if expected_val is ANYTHING:
@@ -346,13 +337,13 @@ def check_keys_match_recursive(expected_val, actual_val, keys: list, strict: boo
         # Normal matching
         expected_matches = (
             # If they are the same type
-            isinstance(expected_val, actual_type)
-            or
-            # Handles the case where, for example, the 'actual type' returned by
-            # a custom backend returns an OrderedDict, which is a subclass of
-            # dict but will raise a confusing error if the contents are
-            # different
-            issubclass(actual_type, type(expected_val))
+                isinstance(expected_val, actual_type)
+                or
+                # Handles the case where, for example, the 'actual type' returned by
+                # a custom backend returns an OrderedDict, which is a subclass of
+                # dict but will raise a confusing error if the contents are
+                # different
+                issubclass(actual_type, type(expected_val))
         )
 
     try:
@@ -361,141 +352,185 @@ def check_keys_match_recursive(expected_val, actual_val, keys: list, strict: boo
         # At this point, there is likely to be an error unless we're using any
         # of the type sentinels
 
-        if not (expected_val is ANYTHING):  # pylint: disable=superfluous-parens
-            if not expected_matches:
-                if isinstance(expected_val, RegexSentinel):
-                    msg = "Expected a string to match regex '{}' ({})".format(
-                        expected_val.compiled, full_err()
-                    )
-                else:
-                    msg = "Type of returned data was different than expected ({})".format(
-                        full_err()
-                    )
+        match_vals = MatchVals(
+            actual_val, expected_val, keys, e, expected_matches, strict
+        )
 
-                raise exceptions.KeyMismatchError(msg) from e
+        if not ((expected_val is ANYTHING) or expected_matches):
+            if isinstance(expected_val, RegexSentinel):
+                msg = f"Expected a string to match regex '{expected_val.compiled}' ({match_vals.full_err()})"
+            else:
+                msg = f"Type of returned data was different than expected ({match_vals.full_err()})"
 
-        if isinstance(expected_val, dict):
-            akeys = set(actual_val.keys())
-            ekeys = set(expected_val.keys())
+            raise exceptions.KeyMismatchError(msg) from e
 
-            if akeys != ekeys:
-                extra_actual_keys = akeys - ekeys
-                extra_expected_keys = ekeys - akeys
+        return match(actual_val, match_vals)
 
-                msg = ""
-                if extra_actual_keys:
-                    msg += " - Extra keys in response: {}".format(extra_actual_keys)
-                if extra_expected_keys:
-                    msg += " - Keys missing from response: {}".format(
-                        extra_expected_keys
-                    )
 
-                full_msg = "Structure of returned data was different than expected {} ({})".format(
-                    msg, full_err()
-                )
+@dataclass
+class MatchVals(metaclass=abc.ABCMeta):
+    actual_val: typing.Any
+    expected_val: typing.Any
+    keys: list
+    e: Exception
+    expected_matches: bool
+    strict: bool = True
 
-                # If there are more keys in 'expected' compared to 'actual',
-                # this is still a hard error and we shouldn't continue
-                if extra_expected_keys or strict:
-                    raise exceptions.KeyMismatchError(full_msg) from e
+    def full_err(self):
+        """Get error in the format:
+
+        a["b"]["c"] = 4, b["b"]["c"] = {'key': 'value'}
+        """
+
+        def _format_err(which):
+            return "{}{}".format(
+                which, "".join('["{}"]'.format(key) for key in self.keys)
+            )
+
+        e_formatted = _format_err("expected")
+        a_formatted = _format_err("actual")
+        return f"{e_formatted} = '{self.expected_val}' (type = {type(self.expected_val)}) {a_formatted} = '{self.actual_val}' (type = {type(self.actual_val)})"
+
+
+@functools.singledispatch
+def match(_, match_vals: MatchVals):
+    actual_val, expected_val, keys, e, expected_matches, strict = astuple(match_vals)
+
+    raise exceptions.KeyMismatchError(
+        f"Key mismatch: ({(match_vals.full_err())})"
+    ) from e
+
+
+@match.register
+def match_anything(actual_val: AnythingSentinel, match_vals: MatchVals):
+    logger.debug("Actual value = '%s' - matches !anything", match_vals.actual_val)
+
+
+@match.register
+def match_dict(_: dict, match_vals: MatchVals):
+    actual_val, expected_val, keys, e, expected_matches, strict = astuple(match_vals)
+
+    akeys = set(actual_val.keys())
+    ekeys = set(expected_val.keys())
+
+    if akeys != ekeys:
+        extra_actual_keys = akeys - ekeys
+        extra_expected_keys = ekeys - akeys
+
+        msg = ""
+        if extra_actual_keys:
+            msg += " - Extra keys in response: {}".format(extra_actual_keys)
+        if extra_expected_keys:
+            msg += " - Keys missing from response: {}".format(extra_expected_keys)
+
+        full_msg = "Structure of returned data was different than expected {} ({})".format(
+            msg, match_vals.full_err()
+        )
+
+        # If there are more keys in 'expected' compared to 'actual',
+        # this is still a hard error and we shouldn't continue
+        if extra_expected_keys or strict:
+            raise exceptions.KeyMismatchError(full_msg) from e
+        else:
+            logger.debug(
+                "Mismatch in returned data, continuing due to strict=%s: %s",
+                strict,
+                full_msg,
+                exc_info=True,
+            )
+
+    # If strict is True, an error will be raised above. If not, recurse
+    # through both sets of keys and just ignore missing ones
+    to_recurse = akeys | ekeys
+
+    for key in to_recurse:
+        try:
+            check_keys_match_recursive(
+                expected_val[key], actual_val[key], keys + [key], strict
+            )
+        except KeyError:
+            logger.debug(
+                "Skipping comparing missing key '%s' due to strict=%s", key, strict,
+            )
+
+
+@match.register
+def match_list(_: list, match_vals: MatchVals):
+    actual_val, expected_val, keys, e, expected_matches, strict = astuple(match_vals)
+
+    if not strict:
+        missing = []
+
+        actual_iter = iter(actual_val)
+
+        # Iterate over list items to see if any of them match _IN ORDER_
+        for i, e_val in enumerate(expected_val):
+            while 1:
+                try:
+                    current_response_val = next(actual_iter)
+                except StopIteration:
+                    # Still iterating checking for a value, but ran out of response values
+                    logger.debug("Ran out of list response items to check")
+                    missing.append(e_val)
+                    break
                 else:
                     logger.debug(
-                        "Mismatch in returned data, continuing due to strict=%s: %s",
-                        strict,
-                        full_msg,
-                        exc_info=True,
+                        "Got '%s' from response to check against '%s' from expected",
+                        current_response_val,
+                        e_val,
                     )
 
-            # If strict is True, an error will be raised above. If not, recurse
-            # through both sets of keys and just ignore missing ones
-            to_recurse = akeys | ekeys
-
-            for key in to_recurse:
+                # Found one - check if it matches
                 try:
                     check_keys_match_recursive(
-                        expected_val[key], actual_val[key], keys + [key], strict
+                        e_val, current_response_val, keys + [i], strict
                     )
-                except KeyError:
+                except exceptions.KeyMismatchError:
+                    # Doesn't match what we're looking for
                     logger.debug(
-                        "Skipping comparing missing key '%s' due to strict=%s",
-                        key,
-                        strict,
+                        "%s did not match next response value %s",
+                        e_val,
+                        current_response_val,
                     )
-        elif isinstance(expected_val, list):
-            if not strict:
-                missing = []
+                else:
+                    logger.debug("'%s' present in response", e_val)
+                    break
 
-                actual_iter = iter(actual_val)
+        if missing:
+            msg = "List item(s) not present in response: {}".format(missing)
+            raise exceptions.KeyMismatchError(msg) from e
 
-                # Iterate over list items to see if any of them match _IN ORDER_
-                for i, e_val in enumerate(expected_val):
-                    while 1:
-                        try:
-                            current_response_val = next(actual_iter)
-                        except StopIteration:
-                            # Still iterating checking for a value, but ran out of response values
-                            logger.debug("Ran out of list response items to check")
-                            missing.append(e_val)
-                            break
-                        else:
-                            logger.debug(
-                                "Got '%s' from response to check against '%s' from expected",
-                                current_response_val,
-                                e_val,
-                            )
-
-                        # Found one - check if it matches
-                        try:
-                            check_keys_match_recursive(
-                                e_val, current_response_val, keys + [i], strict
-                            )
-                        except exceptions.KeyMismatchError:
-                            # Doesn't match what we're looking for
-                            logger.debug(
-                                "%s did not match next response value %s",
-                                e_val,
-                                current_response_val,
-                            )
-                        else:
-                            logger.debug("'%s' present in response", e_val)
-                            break
-
-                if missing:
-                    msg = "List item(s) not present in response: {}".format(missing)
-                    raise exceptions.KeyMismatchError(msg) from e
-
-                logger.debug("All expected list items present")
-            else:
-                if len(expected_val) != len(actual_val):
-                    raise exceptions.KeyMismatchError(
-                        "Length of returned list was different than expected - expected {} items from got {} ({}".format(
-                            len(expected_val), len(actual_val), full_err()
-                        )
-                    ) from e
-
-                for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
-                    try:
-                        check_keys_match_recursive(e_val, a_val, keys + [i], strict)
-                    except exceptions.KeyMismatchError as sub_e:
-                        # This should _ALWAYS_ raise an error, but it will be more
-                        # obvious where the error came from (in python 3 at least)
-                        # and will take ANYTHING into account
-                        raise sub_e from e
-        elif expected_val is ANYTHING:
-            logger.debug("Actual value = '%s' - matches !anything", actual_val)
-        elif isinstance(expected_val, TypeSentinel) and expected_matches:
-            if isinstance(expected_val, RegexSentinel):
-                if not expected_val.passes(actual_val):
-                    raise exceptions.KeyMismatchError(
-                        "Regex mismatch: ({})".format(full_err())
-                    ) from e
-
-            logger.debug(
-                "Actual value = '%s' - matches !any%s",
-                actual_val,
-                expected_val.constructor,
-            )
-        else:
+        logger.debug("All expected list items present")
+    else:
+        if len(expected_val) != len(actual_val):
             raise exceptions.KeyMismatchError(
-                "Key mismatch: ({})".format(full_err())
+                "Length of returned list was different than expected - expected {} items from got {} ({}".format(
+                    len(expected_val), len(actual_val), match_vals.full_err()
+                )
             ) from e
+
+        for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
+            try:
+                check_keys_match_recursive(e_val, a_val, keys + [i], strict)
+            except exceptions.KeyMismatchError as sub_e:
+                # This should _ALWAYS_ raise an error, but it will be more
+                # obvious where the error came from (in python 3 at least)
+                # and will take ANYTHING into account
+                raise sub_e from e
+
+
+@match.register
+def match_type_sentinel(_: TypeSentinel, match_vals: MatchVals):
+    actual_val, expected_val, keys, e, expected_matches, strict = astuple(match_vals)
+
+    if not expected_matches:
+        return match(actual_val, match_vals)
+
+    if not expected_val.passes(actual_val):
+        raise exceptions.KeyMismatchError(
+            "Regex mismatch: ({})".format(match_vals.full_err())
+        ) from e
+
+    logger.debug(
+        "Actual value = '%s' - matches !any%s", actual_val, expected_val.constructor,
+    )
