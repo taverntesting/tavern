@@ -66,7 +66,6 @@ def add_ini_options(parser):
 
     See also testutils.pytesthook.util.add_parser_options
     """
-    add_parser_options(parser.addoption, with_defaults=False)
     parser.addini(
         "tavern-global-cfg",
         help="One or more global configuration files to include in every test",
