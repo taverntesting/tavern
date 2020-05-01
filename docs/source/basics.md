@@ -616,7 +616,7 @@ section (`json`/`redirect_query_params`/`headers`) should be affected, and
 optionally whether it is on or off.
 
 - `json:off headers:on` - turn off for the body, but on for the headers.
-  `redirect_query_params` will stay default off. 
+  `redirect_query_params` will stay default off.
 - `json:off headers:off` - turn body and header strict checking off
 - `redirect_query_params:on json:on` redirect parameters is turned on and json
   is kept on (as it is on by default), header strict matching is kept off (as
@@ -1605,6 +1605,15 @@ stages:
 Having `delay_before` in the second stage of the test is semantically identical
 to having `delay_after` in the first stage of the test - feel free to use
 whichever seems most appropriate.
+
+A saved/config variable can be used by using a type token conversion, such as:
+
+```yaml
+stages:
+  - name: Trigger task
+    ...
+    delay_after: !float "{sleep_time}"
+```
 
 ## Retrying tests
 
