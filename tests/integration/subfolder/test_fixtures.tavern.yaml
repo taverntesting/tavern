@@ -17,3 +17,4 @@ stages:
       status_code: 200
       json:
         value: "def-fixture-value"
+        f: g
