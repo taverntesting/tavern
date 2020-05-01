@@ -39,7 +39,7 @@ def get_request_args(rspec, test_block_config):
         BadSchemaError: Tried to pass a body in a GET request
     """
 
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals,too-many-statements
 
     request_args = {}
 
@@ -93,6 +93,10 @@ def get_request_args(rspec, test_block_config):
             }
 
     fspec = format_keys(rspec, test_block_config["variables"])
+
+    send_in_body = fspec.get("file_body")
+    if send_in_body:
+        request_args["file_body"] = send_in_body
 
     def add_request_args(keys, optional):
         for key in keys:
@@ -407,6 +411,9 @@ class RestRequest(BaseRequest):
 
         request_args = get_request_args(rspec, test_block_config)
 
+        # Used further down, but pop it asap to avoid unwanted side effects
+        file_body = request_args.pop("file_body", None)
+
         # If there was a 'cookies' key, set it in the request
         expected_cookies = _read_expected_cookies(session, rspec, test_block_config)
         if expected_cookies is not None:
@@ -434,8 +441,8 @@ class RestRequest(BaseRequest):
                 stack.enter_context(_set_cookies_for_request(session, request_args))
 
                 # These are mutually exclusive
-                if rspec.get("file_body"):
-                    file = stack.enter_context(open(rspec.get("file_body"), "rb"))
+                if file_body:
+                    file = stack.enter_context(open(file_body, "rb"))
                     request_args.update(data=file)
                 else:
                     self._request_args.update(_get_file_arguments(request_args, stack))
