@@ -277,54 +277,7 @@ def check_expected_keys(expected, actual):
         raise exceptions.UnexpectedKeysError(msg)
 
 
-def yield_keyvals(block):
-    """Return indexes, keys and expected values for matching recursive keys
-
-    Given a list or dict, return a 3-tuple of the 'split' key (key split on
-    dots), the original key, and the expected value. If the input is a list, it
-    is enumerated so the 'keys' are just [0, 1, 2, ...]
-
-    Example:
-
-        Matching a dictionary with a couple of keys:
-
-        >>> gen = yield_keyvals({"a": {"b": "c"}})
-        >>> next(gen)
-        (['a'], 'a', {'b': 'c'})
-
-        Matching nested key access:
-
-        >>> gen = yield_keyvals({"a.b.c": "d"})
-        >>> next(gen)
-        (['a', 'b', 'c'], 'a.b.c', 'd')
-
-        Matching a list of items:
-
-        >>> gen = yield_keyvals(["a", "b", "c"])
-        >>> next(gen)
-        (['0'], '0', 'a')
-        >>> next(gen)
-        (['1'], '1', 'b')
-        >>> next(gen)
-        (['2'], '2', 'c')
-
-    Args:
-        block (dict, list): input matches
-
-    Yields:
-        (list, str, str): key split on dots, key, expected value
-    """
-    if isinstance(block, dict):
-        for joined_key, expected_val in block.items():
-            split_key = joined_key.split(".")
-            yield split_key, joined_key, expected_val
-    else:
-        for idx, val in enumerate(block):
-            sidx = str(idx)
-            yield [sidx], sidx, val
-
-
-def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
+def check_keys_match_recursive(expected_val, actual_val, keys: list, strict: bool = True):
     """Utility to recursively check response values
 
     expected and actual both have to be of the same type or it will raise an
