@@ -79,7 +79,10 @@ class YamlItem(pytest.Item):
     def add_markers(self, pytest_marks):
         for pm in pytest_marks:
             if pm.name == "usefixtures":
-                if not isinstance(pm.mark.args, (list, tuple)) or len(pm.mark.args) == 0:
+                if (
+                    not isinstance(pm.mark.args, (list, tuple))
+                    or len(pm.mark.args) == 0
+                ):
                     logger.error(
                         "'usefixtures' was an invalid type (should"
                         " be a list of fixture names)"
