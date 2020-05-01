@@ -1,4 +1,5 @@
 import io
+import json
 import logging
 import re
 
@@ -68,7 +69,16 @@ class ReprdError(object):
         # values of function call variables
         tw.line("Format variables:", white=True, bold=True)
         for var in format_variables:
-            if re.match(r"^\s*\{\}\s*", var):
+            # Empty dict
+            if re.match(r"^\s*{}\s*", var):
+                continue
+
+            # If it's valid json, it's not a format value
+            try:
+                json.loads(var)
+            except json.JSONDecodeError:
+                pass
+            else:
                 continue
 
             try:

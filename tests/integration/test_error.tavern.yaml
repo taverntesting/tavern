@@ -15,4 +15,6 @@ stages:
   response:
     status_code: 200
     json:
-      value: ""
+      value: { "id": 0 }
+
+_xfail: run
