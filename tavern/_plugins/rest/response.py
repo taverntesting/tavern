@@ -2,7 +2,7 @@ import json
 import logging
 from urllib.parse import parse_qs, urlparse
 
-from requests.status_codes import codes
+from requests.status_codes import _codes
 
 from tavern.response.base import BaseResponse, indent_err_text
 from tavern.testutils.pytesthook.newhooks import call_hook
@@ -25,14 +25,18 @@ class RestResponse(BaseResponse):
         self.status_code = None
 
         def check_code(code):
-            if code not in codes:
+            if int(code) not in _codes:
                 logger.warning("Unexpected status code '%s'", code)
 
-        if isinstance(self.expected["status_code"], int):
-            check_code(self.expected["status_code"])
-        else:
-            for code in self.expected["status_code"]:
-                check_code(code)
+        in_file = self.expected["status_code"]
+        try:
+            if isinstance(in_file, list):
+                for code_ in in_file:
+                    check_code(code_)
+            else:
+                check_code(in_file)
+        except TypeError as e:
+            raise exceptions.BadSchemaError("Invalid code") from e
 
     def __str__(self):
         if self.response:
