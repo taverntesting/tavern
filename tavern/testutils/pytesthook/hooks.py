@@ -5,52 +5,12 @@ import pytest
 from tavern.util import exceptions
 
 from .file import YamlFile
-from .util import add_parser_options, get_option_generic
+from .util import add_ini_options, add_parser_options, get_option_generic
 
 
 def pytest_addoption(parser):
-    """Add an option to pass in a global config file for tavern
-
-    See also testutils.pytesthook.util.add_parser_options
-    """
     add_parser_options(parser.addoption, with_defaults=False)
-
-    parser.addini(
-        "tavern-global-cfg",
-        help="One or more global configuration files to include in every test",
-        type="linelist",
-        default=[],
-    )
-    parser.addini(
-        "tavern-http-backend", help="Which http backend to use", default="requests"
-    )
-    parser.addini(
-        "tavern-mqtt-backend", help="Which mqtt backend to use", default="paho-mqtt"
-    )
-    parser.addini(
-        "tavern-strict",
-        help="Default response matching strictness",
-        type="args",
-        default=None,
-    )
-    parser.addini(
-        "tavern-use-default-traceback",
-        help="Use normal python-style traceback",
-        type="bool",
-        default=False,
-    )
-    parser.addini(
-        "tavern-always-follow-redirects",
-        help="Always follow HTTP redirects",
-        type="bool",
-        default=False,
-    )
-    parser.addini(
-        "tavern-file-path-regex",
-        help="Regex to search for Tavern YAML test files",
-        default=r".+\.tavern\.ya?ml$",
-        type="args",
-    )
+    add_ini_options(parser)
 
 
 def pytest_collect_file(parent, path):
