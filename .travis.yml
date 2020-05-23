@@ -5,7 +5,7 @@ stages:
   - name: full-tests
     if: branch = master OR type = pull_request OR tag IS present
   - name: deploy
-    if: tag IS present
+    if: branch = master AND tag IS present
 
 sudo: required
 dist: xenial
@@ -14,7 +14,6 @@ language: python
 branches:
   only:
     - master
-    - /^\d+\.\d+\.\d+$/
 
 cache:
   directories:
@@ -27,6 +26,43 @@ services:
 jobs:
   fast_finish: true
   include:
+    # 'Basic' tests and checks
+    # Pylint, formatting/sorting, and quickest unit/integration tests
+    - python: 3.8
+      env: TOXENV=py38black TOXCFG=tox.ini
+      stage: basic-tests
+    - python: 3.8
+      env: TOXENV=py38 TOXCFG=tox.ini
+      stage: basic-tests
+    - python: 3.8
+      env: TOXENV=py38lint TOXCFG=tox.ini
+      stage: basic-tests
+    - python: 3.8
+      env: TOXENV=py38isort TOXCFG=tox.ini
+      stage: basic-tests
+    - python: 3.8
+      env: TOXENV=py38-generic TOXCFG=tox-integration.ini
+      stage: basic-tests
+
+    # 'Full' tests
+    # This runs for different versions of Python that we support as well as the
+    # full integration test suite
+    - python: 3.7
+      env: TOXENV=py37-generic TOXCFG=tox-integration.ini
+      stage: full-tests
+    - python: pypy3
+      env: TOXENV=pypy3-generic TOXCFG=tox-integration.ini
+      stage: full-tests
+
+    - python: 3.8
+      env: TOXENV=py38-mqtt TOXCFG=tox-integration.ini
+      stage: full-tests
+    - python: 3.8
+      env: TOXENV=py38-advanced TOXCFG=tox-integration.ini
+      stage: full-tests
+    - python: 3.8
+      env: TOXENV=py38-hooks TOXCFG=tox-integration.ini
+      stage: full-tests
 
     # deploy
     - stage: deploy
