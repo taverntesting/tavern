@@ -4,10 +4,10 @@ variables:
   GIT_SUBMODULE_STRATEGY: none
 
 stages:
-  - precheck
-  - quick-tests
-  - long-tests
-  - deploy
+- precheck
+- quick-tests
+- long-tests
+- deploy
 
 
 # Base script for tests
@@ -16,22 +16,17 @@ stages:
   cache:
     key: tavern-project-cache
     paths:
-      - ./pip-cache/
+    - ./pip-cache/
     policy: pull
 
   before_script:
-    - echo "install_command = pip install --cache-dir=./pip-cache/ {opts} {packages}" >> tox.ini
-    - pip install --upgrade tox --cache-dir=./pip-cache/
+  - echo "install_command = pip install --cache-dir=./pip-cache/ {opts} {packages}" >> tox.ini
+  - pip install --upgrade tox --cache-dir=./pip-cache/
   script:
-    - tox -c ${TOXCFG} -e ${CI_JOB_NAME}
+  - tox -c ${TOXCFG} -e ${CI_JOB_NAME}
 
   variables:
     TOXCFG: tox.ini
-
-# Simple initial checks
-.precheck: &precheck
-  <<: *basetest
-  stage: precheck
 
 # Different cfg file and needs docker running
 .integrationtest: &inttest
@@ -41,105 +36,67 @@ stages:
     TOXCFG: tox-integration.ini
     # DOCKER_HOST: tcp://docker:2375
   services:
-    - docker:dind
+  - docker:dind
   before_script:
-    - pip install --upgrade docker-compose tox pip setuptools --cache-dir=./pip-cache/
-    - mkdir -p /root/.docker/
-    - touch /root/.docker/config.json
-    - docker-compose --verbose -f ./tests/integration/docker-compose.yaml images
-    - echo "install_command = pip install --cache-dir=./pip-cache/ {opts} {packages}" >> tox-integration.ini
+  - pip3 install --upgrade docker-compose tox pip setuptools --cache-dir=./pip-cache/
+  - mkdir -p /root/.docker/
+  - touch /root/.docker/config.json
+  - docker-compose --verbose -f ./tests/integration/docker-compose.yaml images
+  - echo "install_command = pip install --cache-dir=./pip-cache/ {opts} {packages}" >> tox-integration.ini
 
 ########################################
 # Initial checks
 # Make sure there's nothing horrendously wrong first
 ########################################
 
-py27flakes:
-  <<: *precheck
-  image: python:2.7-alpine
-
-py37black:
-  <<: *precheck
-  image: python:3.7-alpine
-
-py37:
-  <<: *precheck
-  image: python:3.7-alpine
-
-py36lint:
-  <<: *precheck
-  image: python:3.6-alpine
-
-
-########################################
-# Unit tests
-########################################
-
-
-py27:
+py38black:
   <<: *basetest
-  image: python:2.7-alpine
+  image: python:3.8-alpine
+
+py38:
+  <<: *basetest
+  image: python:3.8-alpine
 
   # Make this job push the cache. It doesn't hugely matter if the cache is out
   # of date, so just do it in one job.
   cache:
     key: tavern-project-cache
     paths:
-      - ./pip-cache/
+    - ./pip-cache/
 
-pypy:
+py38lint:
   <<: *basetest
-  image: pypy:2-slim
+  image: python:3.8-alpine
 
-pypy3:
+py38isort:
   <<: *basetest
-  image: pypy:3-slim
+  image: python:3.8-alpine
 
-py27lint:
+py38-generic:
   <<: *basetest
-  image: python:2.7-alpine
-
-py37-generic:
-  <<: *inttest
-#  Override here
-  stage: quick-tests
-  image: python:3.7-alpine
-
+  image: python:3.8-alpine
 
 ########################################
 # Integration tests
 ########################################
 
-py27-cookies:
-  <<: *inttest
-  image: python:2.7-alpine
-
-py35-cookies:
-  <<: *inttest
-  image: python:3.5-alpine
-
-py36-cookies:
-  <<: *inttest
-  image: python:3.6-alpine
-
-pypy-cookies:
-  <<: *inttest
-  image: pypy:2-slim
-
-pypy3-cookies:
-  <<: *inttest
+pypy3-generic:
+  <<: *basetest
   image: pypy:3-slim
 
-
-# Extra integration tests
-py27-generic:
+py37-generic:
   <<: *inttest
-  image: python:2.7-alpine
+  #  Override here
+  image: python:3.7-alpine
 
-py36-mqtt:
+py38-mqtt:
   <<: *inttest
-  image: python:3.6-alpine
+  image: python:3.8-alpine
 
-py36-advanced:
+py38-hooks:
   <<: *inttest
-  image: python:3.6-alpine
+  image: python:3.8-alpine
+
+py38-advanced:
+  <<: *inttest
+  image: python:3.8-alpine
