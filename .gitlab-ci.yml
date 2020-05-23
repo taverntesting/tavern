@@ -42,7 +42,7 @@ stages:
   - mkdir -p /root/.docker/
   - touch /root/.docker/config.json
   - docker-compose --verbose -f ./tests/integration/docker-compose.yaml images
-  - echo "install_command = pip install --cache-dir=./pip-cache/ {opts} {packages}" >> tox-integration.ini
+  - echo "install_command = pip install --cache-dir={toxinidir}/pip-cache/ {opts} {packages}" >> tox-integration.ini
 
 ########################################
 # Initial checks
@@ -57,13 +57,6 @@ py38:
   <<: *basetest
   image: python:3.8-alpine
 
-  # Make this job push the cache. It doesn't hugely matter if the cache is out
-  # of date, so just do it in one job.
-  cache:
-    key: tavern-project-cache
-    paths:
-    - ./pip-cache/
-
 py38lint:
   <<: *basetest
   image: python:3.8-alpine
@@ -75,6 +68,17 @@ py38isort:
 py38-generic:
   <<: *basetest
   image: python:3.8-alpine
+
+  # This one requires integration tox file
+  variables:
+    TOXCFG: tox-integration.ini
+
+  # Make this job push the cache. It doesn't hugely matter if the cache is out
+  # of date, so just do it in one job.
+  cache:
+    key: tavern-project-cache
+    paths:
+    - ./pip-cache/1
 
 ########################################
 # Integration tests
