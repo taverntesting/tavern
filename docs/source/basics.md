@@ -15,16 +15,23 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         id: 1
       save:
-        body:
+        json:
           returned_id: id
 ```
 
 If using the pytest plugin (the recommended way of using Tavern), this needs to
-be in a file called `test_x.tavern.yaml`, where `x` is a description of the
-contained tests.
+be in a file called `test_x.tavern.yaml`, where `x` should be a description of
+the contained tests.
+
+If you want to call your files something different (though this is not
+recommended) it is also possible to specify a custom regular expression to match
+filenames. For example, if you want to call all of your files
+`tavern_test_x.yaml`, `tavern_test_y.yaml`, etc. then use the
+`tavern-file-path-regex` option in the configuration file or on the command
+line. For example, `py.test --tavern-file-path-regex "tavern_test_.*.yaml"`
 
 **test_name** is, as expected, the name of that test. If the pytest plugin is
 being used to run integration tests, this is what the test will show up as in
@@ -89,9 +96,9 @@ the response:
 - `status_code` - an integer corresponding to the status code that we expect, or
   a list of status codes if you are expecting one of a few status codes.
   Defaults to `200` if not defined.
-- `body` - Assuming the response is json, check the body against the values
-  given. Expects a mapping (possibly nested) key: value pairs/lists.
-  This can also use an external check function, described further down.
+- `json` - Assuming the response is json, check the body against the values
+  given. Expects a mapping (possibly nested) key: value pairs/lists. This can
+  also use an external check function, described further down.
 - `headers` - a mapping of key: value pairs that will be checked against the
   headers.
 - `redirect_query_params` - Checks the query parameters of a redirect url passed
@@ -120,11 +127,11 @@ This can be saved into the value `first_val` with this response block:
 ```yaml
 response:
   save:
-    body:
+    json:
       first_val: thing.nested[0]
 ```
 
-The query should be defined as a JMES query (see http://jmespath.org/
+The query should be defined as a JMES query (see [JMESPath](http://jmespath.org/)
 for more information). In the above example, this essentially performs
 the operation `json["thing"]["nested"][0]`. This can be used to perform
 powerful queries on response data, but note that only 'simple' values
@@ -136,10 +143,10 @@ and will cause the test to fail.
 an array was done like `thing.nested.0`. This will be deprecated in the
 1.0 release.
 
-It is also possible to save data using function calls, explained below.
+It is also possible to save data using function calls, [explained below](#saving-data-from-a-response).
 
 For a more formal definition of the schema that the tests are validated against,
-check `tavern/schemas/tests.schema.yaml` in the main Tavern repository.
+check [tests schema](https://github.com/taverntesting/tavern/blob/master/tavern/schemas/tests.schema.yaml) in the main Tavern repository.
 
 ## Variable formatting
 
@@ -160,9 +167,9 @@ request:
 ```
 
 This is formatted using Python's [string formatting
-syntax](https://docs.python.org/2/library/string.html#format-string-syntax). The
+syntax](https://docs.python.org/3/library/string.html#format-string-syntax). The
 variable to be used is encased in curly brackets and an optional
-[type code](https://docs.python.org/2/library/string.html#format-specification-mini-language)
+[type code](https://docs.python.org/3/library/string.html#format-specification-mini-language)
 can be passed after a colon.
 
 This means that if you want to pass a literal `{` or `}` in a request (or expect
@@ -198,7 +205,7 @@ stages:
         user_id: abc123
     response:
       status_code: 200
-      body:
+      json:
         user_id: "{tavern.request_vars.params.user_id}"
         new_welcome_message: "{tavern.request_vars.json.welcome_message}"
 ```
@@ -224,7 +231,7 @@ stages:
       url: "www.example.com/get_info"
     response:
       status_code: 401
-      body:
+      json:
         error: "No authorization"
 
   - name: Get information with admin token
@@ -235,7 +242,7 @@ stages:
         Authorization: "Basic {tavern.env_vars.SECRET_CI_COMMIT_AUTH}"
     response:
       status_code: 200
-      body:
+      json:
         name: "Joe Bloggs"
 ```
 
@@ -325,7 +332,7 @@ body of the response against it.
 ```yaml
 # Make sure the response matches the given schema - a sequence of dictionaries,
 # which has to contain a user name and may contain a user number.
-response: 
+response:
   verify_response_with:
     function: tavern.testutils.helpers:validate_pykwalify
     extra_kwargs:
@@ -396,6 +403,29 @@ This can be used as so:
     status_code: 200
 ```
 
+By default, using the `$ext` key will replace anything already present in that block.
+Input from external functions can be merged into a request instead by specifying the
+`tavern-merge-ext-function-values` option in your pytest.ini or on the command line:
+
+```python
+# ext_functions.py
+
+def return_hello():
+    return {"hello": "there"}
+```
+```yaml
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        goodbye: "now"
+        $ext:
+          function: ext_functions:return_hello
+```
+
+If `tavern-merge-ext-function-values` is set, this will send "hello" and "goodbye" in 
+the request. If not, it will just sent "hello". 
+
 #### Saving data from a response
 
 When using the `$ext` key in the `save` block there is special behaviour - each key in
@@ -431,7 +461,7 @@ We would use it in the `save` object like this:
 save:
   $ext:
     function: utils:test_function
-  body:
+  json:
     test_user_id: user.id
 ```
 
@@ -441,8 +471,7 @@ in later requests.
 #### A more complicated example
 
 For a more practical example, the built in `validate_jwt` function also returns the
-decoded token as a dictionary wrapped in a [Box]
-(https://pypi.python.org/pypi/python-box/) object, which allows dot-notation
+decoded token as a dictionary wrapped in a [Box](https://pypi.python.org/pypi/python-box/) object, which allows dot-notation
 access to members. This means that the contents of the token can be used for
 future requests. Because Tavern will already be in the Python path (because you
 installed it as a library) you do not need to modify the `PYTHONPATH`.
@@ -500,17 +529,24 @@ the same request in each test to re-fetch the data.
 
 ## Strict key checking
 
-**NOTE**: At the time of writing, Tavern will by default not perform 'strict'
-key checking on the top level keys in the response, but will perform it on all
-keys below that. This 'legacy' behaviour will be changed in a future version, see below for details.
-
 'Strict' key checking can be enabled or disabled globally, per test, or per
 stage. 'Strict' key checking refers to whether extra keys in the response should
-be ignored or whether they should raise an error. There are currently 3 levels
-of strict checking in Tavern, which only apply to HTTP tests. With strict key
-checking enabled, all keys in dictionaries at all levels have to match or it
-will raise an error. With it disabled, Extra keys in the response will be
-ignored. If it is not set at all, 'legacy' behaviour is used.
+be ignored or whether they should raise an error. With strict key checking
+enabled, all keys in dictionaries at all levels have to match or it will raise
+an error. With it disabled, Extra keys in the response will be ignored as long
+as the ones in your response block are present.
+
+Strict key checking can be controlled individually for the response for the JSON
+body,the redirect query parameter, or the headers.
+
+By default, strict key checking is _disabled_ for headers and redirect query
+parameters in the response, but _enabled_ for JSON (as well as when checking for
+JSON in an mqtt response). This is because although there may be a lot of
+'extra' things in things like the response headers (such as server agent
+headers, cache control headers, etc), the expected JSON body will likely always
+want to be matched exactly.
+
+### Effect of different settings
 
 This is best explained through an example. If we expect this response from a
 server:
@@ -529,7 +565,7 @@ This is what we would put in our Tavern test:
 ```yaml
 ...
 response:
-  body:
+  json:
     first: 1
     second:
       nested: 2
@@ -537,22 +573,34 @@ response:
 
 The behaviour of various levels of 'strictness' based on the response:
 
+| Response | strict=on | strict=off |
+| ---- | -------- | ------ |
+| `{ "first": 1, "second": { "nested": 2 } }`  | PASS | PASS |
+| `{ "first": 1 }`  | FAIL | PASS |
+| `{ "first": 1, "second": { "another": 2 } }`  | FAIL | FAIL |
+| `{ "first": 1, "second": { "nested": 2, "another": 2 } }`  | FAIL | PASS |
 
-| Response | True | False | 'legacy' |
-| ---- | -------- | ------ | ------- |
-| `{ "first": 1, "second": { "nested": 2 } }`  | PASS | PASS | PASS |
-| `{ "first": 1 }`  | FAIL | PASS | PASS |
-| `{ "first": 1, "second": { "another": 2 } }`  | FAIL | FAIL | FAIL |
-| `{ "first": 1, "second": { "nested": 2, "another": 2 } }`  | FAIL | PASS | FAIL |
+Turning 'strict' off also means that extra items in lists will be ignored as
+long as the ones specified in the test response are present. For example, if the
+response from a server is `[ 1, 2, 3 ]` then strict being on - the default for
+the JSON response body - will match _only_ `[1, 2, 3]`.
 
+With strict being turned off for the body, any of these in the test will pass:
 
-As you can see from the table, the 'legacy' behaviour only cares about keys
-below the top level which was a design flaw. This behaviour will be removed in a
-future version, but has been left in for the time being to maintain backwards
-compatability.
+- `[1, 2, 3]`
+- `[1]`
+- `[2]`
+- `[3]`
+- `[1, 2]`
+- `[2, 3]`
+- `[1, 3]`
 
-The strictness setting does not only apply to the body however, it can also be
-used on the headers and redirect query parameters.
+But not:
+
+- `[3, 1]`, `[2, 1]` - items present, but out of order
+- `[2, 4]` - '4' not present in response from the server
+
+### Changing the setting
 
 This setting can be controlled in 3 different ways, the order of priority being:
 
@@ -563,51 +611,54 @@ This setting can be controlled in 3 different ways, the order of priority being:
 This means that using the command line option will _not_ override any settings
 for specific tests.
 
-**NOTE**: 'strict' key checking can currently only be _enabled_ via the command line
-and the pytest config file, not _disabled_.
+Each of these methods is done by passing a sequence of strings indicating which
+section (`json`/`redirect_query_params`/`headers`) should be affected, and
+optionally whether it is on or off.
 
-### Command line
+- `json:off headers:on` - turn off for the body, but on for the headers.
+  `redirect_query_params` will stay default off.
+- `json:off headers:off` - turn body and header strict checking off
+- `redirect_query_params:on json:on` redirect parameters is turned on and json
+  is kept on (as it is on by default), header strict matching is kept off (as
+  default).
+
+Leaving the 'on' or 'off' at the end of each setting will imply 'on' - ie, using
+`json headers redirect_query_params` as an option will turn them all on.
+
+#### Command line
 
 There is a command line argument, `--tavern-strict`, which controls the default
-global strictness setting. If not set, this uses the 'legacy' behaviour - in
-future, this will default to 'strict' key checking being disabled. This is
-mainly because a lot of web programs will return a huge number of headers which
-you don't want to include in every test, and when checking the body you normally
-only want to check that it returns the data you want and not care about any
-extra metadata sent with the response. This can be re-enabled per test or per
-stage if wanted.
+global strictness setting.
 
 ```shell
 # Enable strict checking for body and headers only
-py.test --tavern-strict body headers -- my_test_folder/
+py.test --tavern-strict json:on headers:on redirect_query_params:off -- my_test_folder/
 ```
 
-### In the Pytest config file
+#### In the Pytest config file
 
 This behaves identically to the command line option, but will be read from
 whichever configuration file Pytest is using.
 
 ```ini
 [pytest]
-tavern-strict=body headers
+tavern-strict=json:off headers:on
 ```
 
-### Per test
+#### Per test
 
 Strictness can also be enabled or disabled on a per-test basis. The `strict` key
-at the top level of the test should be one of `body`, `headers`, or
-`redirect_query_params`, or a list consisting of a combination of the three.
+at the top level of the test should a list consisting of one or more strictness
+setting as described in the previous section.
 
 ```yaml
 ---
 
 test_name: Make sure the headers match what I expect exactly
 
-strict: headers
-
-# This can also be done like this:
-# strict:
-#   - headers
+strict:
+  - headers:on
+  - json:off
 
 stages:
   - name: Try to get user
@@ -620,10 +671,16 @@ stages:
         content-type: application/json
         content-length: 20
         x-my-custom-header: chocolate
-      body:
+      json:
+        # As long as "id: 1" is in the response, this will pass and other keys will be ignored
         id: 1
----
+```
 
+A special option that can be done at the test level (or at the stage level, as
+described in the next section) is just to pass a boolean. This will turn strict
+checking on or off for all settings for the duration of that test/stage.
+
+```yaml
 test_name: Just check for one thing in a big nested dict
 
 # completely disable strict key checking for this whole test
@@ -636,38 +693,14 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         q:
           x:
             z:
               a: 1
----
-
-test_name: Make sure the headers and body match what I expect exactly
-
-strict:
-  - headers
-  - body
-
-stages:
-  - name: Try to get user
-    request:
-      url: "{host}/users/joebloggs"
-      method: GET
-    response:
-      status_code: 200
-      headers:
-        content-type: application/json
-        content-length: 20
-        x-my-custom-header: chocolate
-      body:
-        id: 1
-        first_name: joe
-        last_name: bloggs
-        email: joe@bloggs.com
 ```
 
-### Per stage
+#### Per stage
 
 Often you have a standard stage before other stages, such as logging in to your
 server, where you only care if it returns a 200 to indicate that you're logged
@@ -683,8 +716,9 @@ Two examples for doing this - these examples should behave identically:
 
 test_name: Login and create a new user
 
+# Force re-enable strict checking, in case it was turned off globally
 strict:
-  - body
+  - json:on
 
 stages:
   - name: log in
@@ -709,16 +743,16 @@ stages:
         email: joe@bloggs.com
     response:
       status_code: 200
-      body:
+      # Because strict was set 'on' at the test level, this must match exactly
+      json:
         <<: *create_user
         id: 1
 ```
 
+Or if strict json key checking was enabled at the global level:
+
 ```yaml
 ---
-
-# Enable strict checking only for the second stage (assuming strict checking is
-# globally disabled).
 
 test_name: Login and create a new user
 
@@ -728,25 +762,14 @@ stages:
       url: "{host}/users/joebloggs"
       method: GET
     response:
+      strict:
+        - json:off
       status_code: 200
       json:
         logged_in: True
-        # Ignores any extra metadata like user id, last login, etc.
 
   - name: Create a new user
-    request:
-      url: "{host}/users/joebloggs"
-      method: POST
-      json: &create_user
-        first_name: joe
-        last_name: bloggs
-        email: joe@bloggs.com
-    response:
-      status_code: 200
-      strict: body
-      body:
-        <<: *create_user
-        id: 1
+    request: ...
 ```
 
 ## Reusing requests and YAML fragments
@@ -891,7 +914,7 @@ stages:
     response:
       status_code: 200
       save:
-        body:
+        json:
           test_user_login_token: token
       verify_response_with:
         function: tavern.testutils.helpers:validate_jwt
@@ -908,7 +931,7 @@ stages:
         Authorization: "Bearer {test_user_login_token}"
     response:
       status_code: 200
-      body:
+      json:
     location:
           road: 123 Fake Street
           country: England
@@ -928,7 +951,7 @@ stages:
         Authorization: "Bearer {test_user_login_token}"
     response:
       status_code: 200
-      body:
+      json:
         has_premium: false
 
   - name: Give user premium
@@ -946,7 +969,7 @@ stages:
       <<: *has_premium_request_anchor
     response:
       status_code: 200
-      body:
+      json:
         has_premium: true
 ```
 
@@ -1035,7 +1058,7 @@ stages:
         universe: "{universe:s}"
     response:
       status_code: 200
-      body:
+      json:
         hashed: "{expected_hash:s}"
 
 ---
@@ -1053,7 +1076,7 @@ stages:
         <<: *input_data
     response:
       status_code: 200
-      body:
+      json:
         hashed: "{expected_hash:s}"
 ```
 
@@ -1211,7 +1234,7 @@ stages:
       headers:
         content-type: application/json
       save:
-        body:
+        json:
           test_login_token: token
 ```
 
@@ -1244,7 +1267,7 @@ stages:
       status_code: 200
       headers:
         content-type: application/json
-      body:
+      json:
         data: "Hello, Jim"
 
 ```
@@ -1297,7 +1320,7 @@ to send to a server and we don't want hundreds of lines in the test:
 ]
 ```
 
-(Handily generated by https://www.json-generator.com/)
+(Handily generated by [JSON Generator](https://www.json-generator.com/))
 
 Putting this whole thing into the test would be a bit overkill, but it
 can be inject directly into your test like this:
@@ -1315,7 +1338,7 @@ stages:
       json: !include test_data.json
     response:
       status_code: 201
-      body:
+      json:
         status: user created
 ```
 
@@ -1382,7 +1405,7 @@ value to match in the **response** block:
 
 ```yaml
 response:
-  body:
+  json:
     # Will assert that there is a 'returned_uuid' key, but will do no checking
     # on the actual value of it
     returned_block: !anything
@@ -1399,7 +1422,7 @@ returned_block:
 ```
 
 Using the magic `!anything` value should only ever be used inside pre-defined
-blocks in the response block (for example, `headers`, `params`, and `body` for a
+blocks in the response block (for example, `headers`, `params`, and `json` for a
 HTTP response).
 
 **NOTE**: Up until version 0.7.0 this was done by setting the value as `null`.
@@ -1416,6 +1439,38 @@ use one of the following markers instead:
 - `!anyfloat`: Matches any float (note that this will NOT match integers!)
 - `!anystr`: Matches any string
 - `!anybool`: Matches any boolean (this will NOT match `null`)
+- `!anylist`: Matches any list
+- `!anydict`: Matches any dict/'mapping'
+
+### Matching via a regular expression
+
+Sometimes you know something will be a string, but you also want to make sure
+that the string matches some kind of regular expression. This can be done using
+external functions, but as a shorthand there is also the `!re_` family of custom
+YAML tags that can be used to match part of a response. Say that we want to make
+sure that a UUID returned is a
+[version 4 UUID](https://tools.ietf.org/html/rfc4122#section-4.1.3), where the
+third block must start with 4 and the third block must start with 8, 9, "A", or
+"B".
+
+```yaml
+  - name: Check that uuidv4 is returned
+    request:
+      url: {host}/get_uuid/v4
+      method: GET
+    response:
+      status_code: 200
+      json:
+        uuid: !re_fullmatch "[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89AB][0-9a-f]{3}-[0-9a-f]{12}"
+```
+
+This is using the `!re_fullmatch` variant of the tag - this calls
+[`re.fullmatch`](https://docs.python.org/3.7/library/re.html#re.fullmatch) under
+the hood, which means that the regex given needs to match the _entire_ part of
+the response that is being checked for it to pass. There is also `!re_search`
+which will pass if it matches _part_ of the thing being checked, or `!re_match`
+which will match _part_ of the thing being checked, as long as it is at the
+_beginning_ of the string. See the Python documentation for more details.
 
 ## Type conversions
 
@@ -1456,6 +1511,60 @@ request:
     raw_braces: !raw "{not_escaped}"
 ```
 
+### Including raw JSON data
+
+Sometimes there are situations where you need to directly include a block of
+JSON, such as a list, rather than just one value. To do this, there is a
+`!force_format_include` tag which will include whatever variable is being
+referenced in the format block rather than coercing it to a string.
+
+For example, if we have an API that will return a list of users on a GET and
+will bulk delete a list of users on a DELETE, a test that all users are deleted
+could be done by
+
+1. GET all users
+
+2. DELETE the list you just got
+
+3. GET again and expect an empty list
+
+```yaml
+  - name: Get all users
+    request:
+      url: "{host}/users"
+      method: GET
+    response:
+      status_code: 200
+      # Expect a list of users
+      json: !anylist
+      save:
+        json:
+          # Save the list as 'all_users'
+          all_users: "@"
+
+  - name: delete all users
+    request:
+      url: "{host}/users"
+      method: DELETE
+      # 'all_users' list will be sent in the request as a list, not a string
+      json: !force_format_include "{all_users}"
+    response:
+      status_code: 204
+
+  - name: Get no users
+    request:
+      url: "{host}/users"
+      method: GET
+    response:
+      status_code: 200
+      # Expect no users
+      json: []
+```
+
+Any blocks of JSON that are included this way will not be recursively formatted.
+When using this token, do not use a conversion specifier (eg "{all_users:s}") as
+it will be ignored.
+
 ## Adding a delay between tests
 
 Sometimes you might need to wait for some kind of uncontrollable external event
@@ -1489,13 +1598,22 @@ stages:
         user_id: 123
     response:
       status_code: 200
-      body:
+      json:
         task: completed
 ```
 
 Having `delay_before` in the second stage of the test is semantically identical
 to having `delay_after` in the first stage of the test - feel free to use
 whichever seems most appropriate.
+
+A saved/config variable can be used by using a type token conversion, such as:
+
+```yaml
+stages:
+  - name: Trigger task
+    ...
+    delay_after: !float "{sleep_time}"
+```
 
 ## Retrying tests
 
@@ -1517,7 +1635,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         status: ready
 ```
 
@@ -1534,8 +1652,6 @@ is what you want - you could also try increasing the timeout on an expected MQTT
 response to achieve something similar.
 
 ## Marking tests
-
-**The section on marking tests only applies if you are using Pytest**
 
 Since 0.11.0, it is possible to 'mark' tests. This uses Pytest behind the
 scenes - see the [pytest mark documentation](https://docs.pytest.org/en/latest/example/markers.html)
@@ -1563,7 +1679,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         n_users: 2048
         n_queries: 10000
 
@@ -1580,7 +1696,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         n_items: 2048
         n_queries: 5
 ```
@@ -1602,14 +1718,33 @@ $ py.test -m "fast"
 Marks can only be applied to a whole test, not to individual stages (with the
 exception of `skip`, see below).
 
+### Formatting marks
+
+Marks can be formatted just like other variables:
+
+```yaml
+---
+test_name: Get server info from slow endpoint
+
+marks:
+  - "{specialmarker}"
+```
+
+This is mainly for combining with one or more of the special marks as mentioned
+below.
+
+**NOTE**: Do _not_ use the `!raw` token or rely on double curly brace formatting
+when formatting markers. Due to pytest-xdist, some behaviour with the formatting
+of markers is subtly different than other places in Tavern.
+
 ### Special marks
 
 There are 4 different 'special' marks from Pytest which behave the same as if
 they were used on a Python test.
 
-**NOTE**: If you look in the Tavern integration tests, you may notice a
-`_xfail` key being used in some of the tests. This is for INTERNAL USE ONLY and
-may be removed in future without warning.
+**NOTE**: If you look in the Tavern integration tests, you may notice a `_xfail`
+key being used in some of the tests. This is for INTERNAL USE ONLY and may be
+removed in future without warning.
 
 #### skip
 
@@ -1634,7 +1769,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         n_users: 2048
         n_queries: 10000
 ```
@@ -1661,7 +1796,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         n_users: 2048
         n_queries: 10000
 ```
@@ -1691,7 +1826,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         middle_name: Jimmy
 
 ---
@@ -1707,7 +1842,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         middle_name: Jimmy
 ```
 
@@ -1933,7 +2068,7 @@ stages:
         authorization: "Basic {server_password}"
     response:
       status_code: 200
-      body:
+      json:
         ...
 ```
 
@@ -1977,7 +2112,7 @@ is checked. This can be used to 'inject' extra things into the test before it is
 run, such as configurations blocks for a plugin, or just for some kind of
 logging.
 
-Args: 
+Args:
 - test_dict (dict): Test to run
 - variables (dict): Available variables
 
@@ -1988,7 +2123,7 @@ import logging
 
 def pytest_tavern_beta_before_every_test_run(test_dict, variables):
     logging.info("Starting test %s", test_dict["test_name"])
-    
+
     variables["extra_var"] = "abc123"
 ```
 
@@ -1998,7 +2133,7 @@ This hook is called after every _response_ for each _stage_ - this includes HTTP
 responses, but also MQTT responses if you are using MQTT. This means if you are
 using MQTT it might be called multiple times for each stage!
 
-Args: 
+Args:
 - response (object): Response object. Could be whatever kind of response object
   is returned by whatever plugin is used - if using the default HTTP
   implementation which uses Requests, this will be a `requests.Response` object.

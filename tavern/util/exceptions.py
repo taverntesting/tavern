@@ -111,3 +111,22 @@ class UnexpectedDocumentsError(TavernException):
 
 class DuplicateCookieError(TavernException):
     """User tried to reuse a cookie from a previous request and override it in the same request"""
+
+
+class InvalidConfigurationException(TavernException):
+    """A configuration value (from the cli or the ini file) was invalid"""
+
+
+class InvalidFormattedJsonError(TavernException):
+    """Tried to use the magic json format tag in an invalid way"""
+
+
+class InvalidExtBlockException(TavernException):
+    """Tried to use the '$ext' block in a place it is no longer valid to use it"""
+
+    def __init__(self, block):
+        super().__init__(
+            "$ext function found in block {} - this has been moved to verify_response_with block - see documentation".format(
+                block
+            )
+        )

@@ -1,0 +1,35 @@
+---
+
+test_name: Test basic auth header
+
+stages:
+  - name: Send with basic auth
+    request:
+      url: "{global_host}/authtest/basic"
+      method: GET
+      auth:
+        - "fakeuser"
+        - "fakepass"
+    response:
+      status_code: 200
+      json:
+        auth_type: basic
+        auth_user: fakeuser
+        auth_pass: fakepass
+
+---
+
+test_name: Test basic auth header with wrong username/pass
+
+stages:
+  - name: Send with basic auth
+    request:
+      url: "{global_host}/authtest/basic"
+      method: GET
+      auth:
+        - "fakeuser"
+        - "wrongpass"
+    response:
+      status_code: 401
+      json:
+        "error": "Wrong username/password"

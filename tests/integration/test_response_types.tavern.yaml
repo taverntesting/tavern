@@ -12,7 +12,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         - a
         - b
         - c
@@ -29,7 +29,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body: [a, b, c, 1, 2, 3, -1.0, -2.0, -3.0]
+      json: [a, b, c, 1, 2, 3, -1.0, -2.0, -3.0]
 
 ---
 
@@ -47,7 +47,7 @@ stages:
         value: 手机号格式不正确
     response:
       status_code: 200
-      body:
+      json:
         value: 手机号格式不正确
 
 ---
@@ -65,7 +65,7 @@ stages:
       json: "json_string"
     response:
       status_code: 200
-      body: "json_string"
+      json: "json_string"
 
 ---
 
@@ -82,7 +82,7 @@ stages:
       json: False
     response:
       status_code: 200
-      body: False
+      json: False
 
 ---
 
@@ -99,7 +99,7 @@ stages:
       json: 1337
     response:
       status_code: 200
-      body: 1337
+      json: 1337
 
 ---
 
@@ -116,4 +116,4 @@ stages:
       json: null
     response:
       status_code: 200
-      body: null
+      json: null

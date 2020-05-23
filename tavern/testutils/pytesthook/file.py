@@ -1,15 +1,13 @@
-import itertools
-from builtins import str as ustr
-
 import copy
+import functools
+import itertools
 import logging
 import os
 
+from box import Box
 import pytest
 import yaml
-from future.utils import raise_from
 
-from box import Box
 from tavern.schemas.files import verify_tests
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys
@@ -19,6 +17,8 @@ from .item import YamlItem
 from .util import load_global_cfg
 
 logger = logging.getLogger(__name__)
+
+_format_without_inner = functools.partial(format_keys, no_double_format=False)
 
 
 def _format_test_marks(original_marks, fmt_vars, test_name):
@@ -57,7 +57,7 @@ def _format_test_marks(original_marks, fmt_vars, test_name):
     for m in original_marks:
         if isinstance(m, str):
             # a normal mark
-            m = format_keys(m, fmt_vars)
+            m = _format_without_inner(m, fmt_vars)
             pytest_marks.append(getattr(pytest.mark, m))
         elif isinstance(m, dict):
             # skipif or parametrize (for now)
@@ -66,7 +66,7 @@ def _format_test_marks(original_marks, fmt_vars, test_name):
                 # cannot do 'skipif' and rely on a parametrized
                 # argument.
                 try:
-                    extra_arg = format_keys(extra_arg, fmt_vars)
+                    extra_arg = _format_without_inner(extra_arg, fmt_vars)
                 except exceptions.MissingFormatError as e:
                     msg = "Tried to use mark '{}' (with value '{}') in test '{}' but one or more format variables was not in any configuration file used by the test".format(
                         markname, extra_arg, test_name
@@ -75,7 +75,7 @@ def _format_test_marks(original_marks, fmt_vars, test_name):
                     # we could continue and let it fail in the test, but
                     # this gives a better indication of what actually
                     # happened (even if it is difficult to test)
-                    raise_from(exceptions.MissingFormatError(msg), e)
+                    raise exceptions.MissingFormatError(msg) from e
                 else:
                     pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
                     formatted_marks.append({markname: extra_arg})
@@ -100,7 +100,7 @@ def _generate_parametrized_test_items(keys, vals_combination):
         key, value = pair
         # NOTE: If test is invalid, test names generated here will be
         # very weird looking
-        if isinstance(key, (str, ustr)):
+        if isinstance(key, str):
             variables[key] = value
             flattened_values += [value]
         else:
@@ -111,26 +111,6 @@ def _generate_parametrized_test_items(keys, vals_combination):
     logger.debug("Variables for this combination: %s", variables)
     logger.debug("Values for this combination: %s", flattened_values)
 
-    def u2string(s):
-        """
-        Takes an int, string, or bytes and gets it in a format suitable
-        for formatting
-
-        Args:
-            s (object): something to format
-
-        Returns:
-            str: correctly formatted string
-        """
-        if isinstance(s, str):
-            return s
-        elif isinstance(s, ustr):
-            return s.encode("utf8")
-        else:
-            return s
-
-    flattened_values = list(map(u2string, flattened_values))
-
     # Use for formatting parametrized values - eg {}-{}, {}-{}-{}, etc.
     inner_fmt = "-".join(["{}"] * len(flattened_values))
     inner_formatted = inner_fmt.format(*flattened_values)
@@ -139,7 +119,6 @@ def _generate_parametrized_test_items(keys, vals_combination):
 
 
 class YamlFile(pytest.File):
-
     """Custom `File` class that loads each test block as a different test
     """
 
@@ -171,18 +150,10 @@ class YamlFile(pytest.File):
 
         try:
             combined = itertools.product(*vals)
-        except TypeError:
-            # HACK
-            # This is mainly to get around Python 2 limitations (which we should
-            # stop supporting!!). If the input is invalid, then this will raise
-            # a typerror, which is then raised below when verify_tests is
-            # called. We can just raise an error during collection, but the
-            # error on Python 2 is completely useless because it has no
-            # 'raise x from y' syntax for exception causes. This will still
-            # raise an error at validation, but the test name will be a bit
-            # mangled
-            vals = [["TAVERNERR"]]
-            combined = itertools.product(*vals)
+        except TypeError as e:
+            raise exceptions.BadSchemaError(
+                "Invalid match between numbers of keys and number of values in parametrize mark"
+            ) from e
 
         keys = [i["parametrize"]["key"] for i in parametrize_marks]
 
@@ -239,11 +210,11 @@ class YamlFile(pytest.File):
         tavern_box = Box({"tavern": {"env_vars": dict(os.environ)}})
 
         try:
-            fmt_vars = format_keys(fmt_vars, tavern_box)
+            fmt_vars = _format_without_inner(fmt_vars, tavern_box)
         except exceptions.MissingFormatError as e:
             # eg, if we have {tavern.env_vars.DOESNT_EXIST}
             msg = "Tried to use tavern format variable that did not exist"
-            raise_from(exceptions.MissingFormatError(msg), e)
+            raise exceptions.MissingFormatError(msg) from e
 
         return fmt_vars
 
@@ -277,16 +248,14 @@ class YamlFile(pytest.File):
             ]
 
             if parametrize_marks:
-                # no 'yield from' in python 2...
-                for new_item in self.get_parametrized_items(
+                yield from self.get_parametrized_items(
                     test_spec, parametrize_marks, pytest_marks
-                ):
-                    yield new_item
+                )
 
                 # Only yield the parametrized ones
                 return
-
-            item.add_markers(pytest_marks)
+            else:
+                item.add_markers(pytest_marks)
 
         yield item
 
@@ -303,7 +272,7 @@ class YamlFile(pytest.File):
                 yaml.load_all(self.fspath.open(encoding="utf-8"), Loader=IncludeLoader)
             )
         except yaml.parser.ParserError as e:
-            raise_from(exceptions.BadSchemaError, e)
+            raise exceptions.BadSchemaError from e
 
         for test_spec in all_tests:
             if not test_spec:

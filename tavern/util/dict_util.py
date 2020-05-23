@@ -1,19 +1,25 @@
 import collections
 import logging
-import warnings
-from builtins import str as ustr
+import re
+import string
 
-import jmespath
-from future.utils import raise_from
 from box import Box
+import jmespath
 
-from tavern.util.loader import TypeConvertToken, ANYTHING, TypeSentinel
+from tavern.util.loader import (
+    ANYTHING,
+    ForceIncludeToken,
+    RegexSentinel,
+    TypeConvertToken,
+    TypeSentinel,
+)
+
 from . import exceptions
 
 logger = logging.getLogger(__name__)
 
 
-class _FormattedString(object):
+class _FormattedString(str):
     """Wrapper class for things that have already been formatted
 
     This is only used below and should not be used outside this module
@@ -23,12 +29,82 @@ class _FormattedString(object):
         super(_FormattedString, self).__init__(s)
 
 
-def format_keys(val, variables):
+def _check_and_format_values(to_format, box_vars):
+    formatter = string.Formatter()
+    would_format = formatter.parse(to_format)
+
+    for (_, field_name, _, _) in would_format:
+        if field_name is None:
+            continue
+
+        try:
+            would_replace = formatter.get_field(field_name, [], box_vars)[0]
+        except KeyError as e:
+            logger.error(
+                "Failed to resolve string [%s] with variables [%s]", to_format, box_vars
+            )
+            logger.error("Key(s) not found in format: %s", field_name)
+            raise exceptions.MissingFormatError(field_name) from e
+        except IndexError as e:
+            logger.error("Empty format values are invalid")
+            raise exceptions.MissingFormatError(field_name) from e
+        else:
+            if not isinstance(would_replace, (str, int, float)):
+                logger.warning(
+                    "Formatting '%s' will result in it being coerced to a string (it is a %s)",
+                    field_name,
+                    type(would_replace),
+                )
+
+    return to_format.format(**box_vars)
+
+
+def _attempt_find_include(to_format, box_vars):
+    formatter = string.Formatter()
+    would_format = list(formatter.parse(to_format))
+
+    yaml_tag = ForceIncludeToken.yaml_tag
+
+    if len(would_format) != 1:
+        raise exceptions.InvalidFormattedJsonError(
+            "When using {}, there can only be one exactly format value, but got {}".format(
+                yaml_tag, len(would_format)
+            )
+        )
+
+    (_, field_name, format_spec, conversion) = would_format[0]
+
+    if field_name is None:
+        raise exceptions.InvalidFormattedJsonError(
+            "Invalid string used for {}".format(yaml_tag)
+        )
+
+    pattern = r"{" + field_name + r".*}"
+
+    if not re.match(pattern, to_format):
+        raise exceptions.InvalidFormattedJsonError(
+            "Invalid format specifier '{}' for {}".format(to_format, yaml_tag)
+        )
+
+    if format_spec:
+        logger.warning(
+            "Conversion specifier '%s' will be ignored for %s", format_spec, to_format
+        )
+
+    would_replace = formatter.get_field(field_name, [], box_vars)[0]
+
+    return formatter.convert_field(would_replace, conversion)
+
+
+def format_keys(val, variables, no_double_format=True):
     """recursively format a dictionary with the given values
 
     Args:
         val (object): Input dictionary to format
         variables (dict): Dictionary of keys to format it with
+        no_double_format (bool): Whether to use the 'inner formatted string' class to avoid double formatting
+            This is required if passing something via pytest-xdist, such as markers:
+            https://github.com/taverntesting/tavern/issues/431
 
     Returns:
         dict: recursively formatted dictionary
@@ -45,26 +121,17 @@ def format_keys(val, variables):
         formatted = [format_keys(item, box_vars) for item in val]
     elif isinstance(formatted, _FormattedString):
         logger.debug("Already formatted %s, not double-formatting", formatted)
-    elif isinstance(val, (ustr, str)):
-        try:
-            formatted = val.format(**box_vars)
-        except KeyError as e:
-            logger.error(
-                "Failed to resolve string [%s] with variables [%s]", val, box_vars
-            )
-            logger.error("Key(s) not found in format: %s", e.args)
-            raise_from(exceptions.MissingFormatError(e.args), e)
-        except IndexError as e:
-            logger.error("Empty format values are invalid")
-            raise_from(exceptions.MissingFormatError(e.args), e)
+    elif isinstance(val, str):
+        formatted = _check_and_format_values(val, box_vars)
 
-        class InnerFormattedString(_FormattedString, type(val)):
-            """Hack for python 2"""
-
-        formatted = InnerFormattedString(formatted)
+        if no_double_format:
+            formatted = _FormattedString(formatted)
     elif isinstance(val, TypeConvertToken):
-        value = format_keys(val.value, box_vars)
-        formatted = val.constructor(value)
+        if isinstance(val, ForceIncludeToken):
+            formatted = _attempt_find_include(val.value, box_vars)
+        else:
+            value = format_keys(val.value, box_vars)
+            formatted = val.constructor(value)
     else:
         logger.debug("Not formatting something of type '%s'", type(formatted))
 
@@ -75,8 +142,12 @@ def recurse_access_key(data, query):
     """
     Search for something in the given data using the given query.
 
-    Note:
-        Falls back to old _recurse_access_key if not found - will be removed in 1.0
+    Example:
+
+        >>> recurse_access_key({'a': 'b'}, 'a')
+        'b'
+        >>> recurse_access_key({'a': {'b': ['c', 'd']}}, 'a.b[0]')
+        'c'
 
     Args:
         data (dict, list): Data to search in
@@ -86,41 +157,27 @@ def recurse_access_key(data, query):
         object: Whatever was found by the search
     """
 
-    msg = "In a future version of Tavern, selecting for values to save in nested objects will have to be done as a JMES path query - see http://jmespath.org/ for more information"
-
     try:
         from_jmespath = jmespath.search(query, data)
-    except jmespath.exceptions.ParseError:
-        # TODO: In 1.0, this will raise an error instead
-        logger.debug("Error parsing JMES query - %s", msg, exc_info=True)
-        from_jmespath = None
-
-    # The value might actually be None, in which case we will search twice for no reason,
-    # but this shouldn't cause any issues
-    if from_jmespath is None:
-        logger.debug("JMES path search was None - trying old implementation")
+    except jmespath.exceptions.ParseError as e:
+        logger.error("Error parsing JMES query")
 
         try:
-            from_recurse = _recurse_access_key(data, query.split("."))
-        except (IndexError, KeyError) as e:
-            raise_from(
-                exceptions.KeySearchNotFoundError(
-                    "Error searching for key in given data"
-                ),
-                e,
+            _deprecated_recurse_access_key(data, query.split("."))
+        except (IndexError, KeyError):
+            logger.debug("Nothing found searching using old method")
+        else:
+            # If we found a key using 'old' style searching
+            logger.warning(
+                "Something was found using 'old style' searching in the response - please change the query to use jmespath instead - see http://jmespath.org/ for more information"
             )
 
-        # If we found a key using 'old' style searching, which will be deprecated
-        warnings.warn(msg, FutureWarning)
+        raise exceptions.JMESError("Invalid JMES query") from e
 
-        found = from_recurse
-    else:
-        found = from_jmespath
-
-    return found
+    return from_jmespath
 
 
-def _recurse_access_key(current_val, keys):
+def _deprecated_recurse_access_key(current_val, keys):
     """ Given a list of keys and a dictionary, recursively access the dicionary
     using the keys until we find the key its looking for
 
@@ -128,9 +185,9 @@ def _recurse_access_key(current_val, keys):
 
     Example:
 
-        >>> _recurse_access_key({'a': 'b'}, ['a'])
+        >>> _deprecated_recurse_access_key({'a': 'b'}, ['a'])
         'b'
-        >>> _recurse_access_key({'a': {'b': ['c', 'd']}}, ['a', 'b', '0'])
+        >>> _deprecated_recurse_access_key({'a': {'b': ['c', 'd']}}, ['a', 'b', '0'])
         'c'
 
     Args:
@@ -157,7 +214,7 @@ def _recurse_access_key(current_val, keys):
             pass
 
         try:
-            return _recurse_access_key(current_val[current_key], keys)
+            return _deprecated_recurse_access_key(current_val[current_key], keys)
         except (IndexError, KeyError, TypeError) as e:
             logger.error(
                 "%s accessing data - looking for '%s' in '%s'",
@@ -188,7 +245,7 @@ def deep_dict_merge(initial_dct, merge_dct):
         if (
             k in dct
             and isinstance(dct[k], dict)
-            and isinstance(merge_dct[k], collections.Mapping)
+            and isinstance(merge_dct[k], collections.abc.Mapping)
         ):
             dct[k] = deep_dict_merge(dct[k], merge_dct[k])
         else:
@@ -322,11 +379,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
             type(actual_val),
         )
 
-    # Check required because of python 2/3 unicode compatability when loading yaml
-    if isinstance(actual_val, ustr):
-        actual_type = str
-    else:
-        actual_type = type(actual_val)
+    actual_type = type(actual_val)
 
     if expected_val is ANYTHING:
         # Match anything. We could just early exit here but having the debug
@@ -356,18 +409,17 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
         # of the type sentinels
 
         if not (expected_val is ANYTHING):  # pylint: disable=superfluous-parens
-            # NOTE
-            # Second part of this check will be removed in future - see deprecation
-            # warning below for details
-            if not expected_matches and expected_val is not None:
-                raise_from(
-                    exceptions.KeyMismatchError(
-                        "Type of returned data was different than expected ({})".format(
-                            full_err()
-                        )
-                    ),
-                    e,
-                )
+            if not expected_matches:
+                if isinstance(expected_val, RegexSentinel):
+                    msg = "Expected a string to match regex '{}' ({})".format(
+                        expected_val.compiled, full_err()
+                    )
+                else:
+                    msg = "Type of returned data was different than expected ({})".format(
+                        full_err()
+                    )
+
+                raise exceptions.KeyMismatchError(msg) from e
 
         if isinstance(expected_val, dict):
             akeys = set(actual_val.keys())
@@ -392,7 +444,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                 # If there are more keys in 'expected' compared to 'actual',
                 # this is still a hard error and we shouldn't continue
                 if extra_expected_keys or strict:
-                    raise_from(exceptions.KeyMismatchError(full_msg), e)
+                    raise exceptions.KeyMismatchError(full_msg) from e
                 else:
                     logger.debug(
                         "Mismatch in returned data, continuing due to strict=%s: %s",
@@ -412,46 +464,85 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                     )
                 except KeyError:
                     logger.debug(
-                        "Skipping comparing missing key %s due to strict=%s",
+                        "Skipping comparing missing key '%s' due to strict=%s",
                         key,
                         strict,
                     )
         elif isinstance(expected_val, list):
-            if len(expected_val) != len(actual_val):
-                raise_from(
-                    exceptions.KeyMismatchError(
-                        "Length of returned list was different than expected - expected {} items, got {} ({})".format(
+            if not strict:
+                missing = []
+
+                actual_iter = iter(actual_val)
+
+                # Iterate over list items to see if any of them match _IN ORDER_
+                for i, e_val in enumerate(expected_val):
+                    while 1:
+                        try:
+                            current_response_val = next(actual_iter)
+                        except StopIteration:
+                            # Still iterating checking for a value, but ran out of response values
+                            logger.debug("Ran out of list response items to check")
+                            missing.append(e_val)
+                            break
+                        else:
+                            logger.debug(
+                                "Got '%s' from response to check against '%s' from expected",
+                                current_response_val,
+                                e_val,
+                            )
+
+                        # Found one - check if it matches
+                        try:
+                            check_keys_match_recursive(
+                                e_val, current_response_val, keys + [i], strict
+                            )
+                        except exceptions.KeyMismatchError:
+                            # Doesn't match what we're looking for
+                            logger.debug(
+                                "%s did not match next response value %s",
+                                e_val,
+                                current_response_val,
+                            )
+                        else:
+                            logger.debug("'%s' present in response", e_val)
+                            break
+
+                if missing:
+                    msg = "List item(s) not present in response: {}".format(missing)
+                    raise exceptions.KeyMismatchError(msg) from e
+
+                logger.debug("All expected list items present")
+            else:
+                if len(expected_val) != len(actual_val):
+                    raise exceptions.KeyMismatchError(
+                        "Length of returned list was different than expected - expected {} items from got {} ({}".format(
                             len(expected_val), len(actual_val), full_err()
                         )
-                    ),
-                    e,
-                )
+                    ) from e
 
-            # TODO
-            # Check things in the wrong order?
-
-            for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
-                try:
-                    check_keys_match_recursive(e_val, a_val, keys + [i], strict)
-                except exceptions.KeyMismatchError as sub_e:
-                    # This will still raise an error, but it will be more
-                    # obvious where the error came from (in python 3 at least)
-                    # and will take ANYTHING into account
-                    raise_from(sub_e, e)
-        elif expected_val is None:
-            warnings.warn(
-                "Expected value was 'null', so this check will pass - this will be removed in a future version. IF you want to check against 'any' value, use '!anything' instead.",
-                FutureWarning,
-            )
+                for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
+                    try:
+                        check_keys_match_recursive(e_val, a_val, keys + [i], strict)
+                    except exceptions.KeyMismatchError as sub_e:
+                        # This should _ALWAYS_ raise an error, but it will be more
+                        # obvious where the error came from (in python 3 at least)
+                        # and will take ANYTHING into account
+                        raise sub_e from e
         elif expected_val is ANYTHING:
             logger.debug("Actual value = '%s' - matches !anything", actual_val)
         elif isinstance(expected_val, TypeSentinel) and expected_matches:
+            if isinstance(expected_val, RegexSentinel):
+                if not expected_val.passes(actual_val):
+                    raise exceptions.KeyMismatchError(
+                        "Regex mismatch: ({})".format(full_err())
+                    ) from e
+
             logger.debug(
                 "Actual value = '%s' - matches !any%s",
                 actual_val,
                 expected_val.constructor,
             )
         else:
-            raise_from(
-                exceptions.KeyMismatchError("Key mismatch: ({})".format(full_err())), e
-            )
+            raise exceptions.KeyMismatchError(
+                "Key mismatch: ({})".format(full_err())
+            ) from e

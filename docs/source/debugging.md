@@ -105,7 +105,7 @@ from Tavern but we have an error in the yaml:
       headers:
         content-type: application/json
       # This key will not actually be present in the response
-      body:
+      json:
         a_key: missing
 ```
 
@@ -175,7 +175,7 @@ Tavern uses to send the request, and any format variables. This is used like any
 other Pytest flag:
 
 1. Passed on on the command line using `--tavern-beta-new-traceback`
-2. Put in the Pytest configuration file (pytest.ini, setup.cfg, ...) `tavern_beta_new_traceback = True`
+2. Put in the Pytest configuration file (pytest.ini, setup.cfg, ...) `tavern-beta-new-traceback = True`
 
 Rather than the Python traceback as shown above, we get an error output like this:
 
@@ -192,7 +192,7 @@ Source test stage:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         status: OKdfokd
 
 Formatted stage:
@@ -201,13 +201,13 @@ Formatted stage:
     method: GET
     url: 'http://localhost:5003/nested/again'
   response:
-    body:
+    json:
       status: OKdfokd
     status_code: 200
 
 Errors:
 E   tavern.util.exceptions.TestFailError: Test 'Make requests using environment variables' failed:
-    - Value mismatch in body: Key mismatch: (expected["status"] = 'OKdfokd', actual["status"] = 'OK')
+    - Value mismatch in json: Key mismatch: (expected["status"] = 'OKdfokd', actual["status"] = 'OK')
 ```
 
 - Format variables shows all the variables which are used for formatting in that

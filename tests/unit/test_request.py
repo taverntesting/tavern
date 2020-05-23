@@ -1,18 +1,18 @@
+from contextlib import ExitStack
 import os
 import tempfile
+from unittest.mock import Mock
 
 import pytest
 import requests
-from contextlib2 import ExitStack
-from mock import Mock
 from requests.cookies import RequestsCookieJar
 
 from tavern._plugins.rest.request import (
     RestRequest,
-    get_request_args,
     _check_allow_redirects,
-    _read_expected_cookies,
     _get_file_arguments,
+    _read_expected_cookies,
+    get_request_args,
 )
 from tavern.util import exceptions
 
@@ -335,6 +335,20 @@ class TestOptionalDefaults:
         assert args["verify"] == verify
 
 
+class TestFileBody:
+    def test_file_body(self, req, includes):
+        """Test getting file body"""
+
+        req.pop("data")
+        req["file_body"] = "{callback_url}"
+
+        includes["abcdef"] = "Hello"
+
+        args = get_request_args(req, includes)
+
+        assert args["file_body"] == includes["variables"]["callback_url"]
+
+
 class TestGetFiles(object):
     @pytest.fixture
     def mock_stack(self):
@@ -365,3 +379,24 @@ class TestGetFiles(object):
         file = file_spec["files"]["file1"]
         assert file[0] == os.path.basename(tfile.name)
         assert file[2] == "application/json"
+
+    def test_use_long_form_content_type(self, mock_stack):
+        """Use custom content type"""
+
+        with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
+            request_args = {
+                "files": {
+                    "file1": {
+                        "file_path": tfile.name,
+                        "content_type": "abc123",
+                        "content_encoding": "def456",
+                    }
+                }
+            }
+
+            file_spec = _get_file_arguments(request_args, mock_stack)
+
+        file = file_spec["files"]["file1"]
+        assert file[0] == os.path.basename(tfile.name)
+        assert file[2] == "abc123"
+        assert file[3] == {"Content-Encoding": "def456"}

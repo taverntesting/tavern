@@ -1,12 +1,12 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
-
+from abc import abstractmethod
+from distutils.util import strtobool
 import logging
 import os.path
+import re
 import uuid
-from distutils.util import strtobool
 
 import pytest
-from future.utils import raise_from
 import yaml
 from yaml.composer import Composer
 from yaml.constructor import SafeConstructor
@@ -72,11 +72,11 @@ class SourceMappingConstructor(SafeConstructor):
     # construction") by first exhausting iterators, then yielding
     # copies.
     def construct_yaml_map(self, node):
-        obj, = SafeConstructor.construct_yaml_map(self, node)
+        (obj,) = SafeConstructor.construct_yaml_map(self, node)
         return dict_node(obj, node.start_mark, node.end_mark)
 
     def construct_yaml_seq(self, node):
-        obj, = SafeConstructor.construct_yaml_seq(self, node)
+        (obj,) = SafeConstructor.construct_yaml_seq(self, node)
         return list_node(obj, node.start_mark, node.end_mark)
 
 
@@ -154,12 +154,15 @@ class TypeSentinel(yaml.YAMLObject):
 
     yaml_loader = IncludeLoader
 
+    @staticmethod
+    def constructor(_):
+        raise NotImplementedError
+
     @classmethod
     def from_yaml(cls, loader, node):
         return cls()
 
     def __str__(self):
-        # pylint: disable=no-member
         return "<Tavern YAML sentinel for {}>".format(self.constructor)
 
     @classmethod
@@ -186,6 +189,64 @@ class StrSentinel(TypeSentinel):
 class BoolSentinel(TypeSentinel):
     yaml_tag = "!anybool"
     constructor = bool
+
+
+class ListSentinel(TypeSentinel):
+    yaml_tag = "!anylist"
+    constructor = list
+
+
+class DictSentinel(TypeSentinel):
+    yaml_tag = "!anydict"
+    constructor = dict
+
+
+class RegexSentinel(TypeSentinel):
+    """Sentinel that matches a regex in a part of the response
+
+    This shouldn't be used directly and instead one of the below match/fullmatch/search tokens will be used
+    """
+
+    constructor = str
+    compiled = None
+
+    def __str__(self):
+        return "<Tavern Regex sentinel for {}>".format(self.compiled.pattern)
+
+    @property
+    def yaml_tag(self):
+        raise NotImplementedError
+
+    @abstractmethod
+    def passes(self, string):
+        raise NotImplementedError
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        c = cls()
+        c.compiled = re.compile(node.value)
+        return c
+
+
+class _RegexMatchSentinel(RegexSentinel):
+    yaml_tag = "!re_match"
+
+    def passes(self, string):
+        return self.compiled.match(string) is not None
+
+
+class _RegexFullMatchSentinel(RegexSentinel):
+    yaml_tag = "!re_fullmatch"
+
+    def passes(self, string):
+        return self.compiled.fullmatch(string) is not None
+
+
+class _RegexSearchSentinel(RegexSentinel):
+    yaml_tag = "!re_search"
+
+    def passes(self, string):
+        return self.compiled.search(string) is not None
 
 
 class AnythingSentinel(TypeSentinel):
@@ -226,6 +287,10 @@ class TypeConvertToken(yaml.YAMLObject):
 
     yaml_loader = IncludeLoader
 
+    @staticmethod
+    def constructor(_):
+        raise NotImplementedError
+
     def __init__(self, value):
         self.value = value
 
@@ -235,7 +300,7 @@ class TypeConvertToken(yaml.YAMLObject):
 
         try:
             # See if it's already a valid value (eg, if we do `!int "2"`)
-            converted = cls.constructor(value)  # pylint: disable=no-member
+            converted = cls.constructor(value)
         except ValueError:
             # If not (eg, `!int "{int_value:d}"`)
             return cls(value)
@@ -283,11 +348,21 @@ class RawStrToken(TypeConvertToken):
     constructor = StrToRawConstructor
 
 
+class ForceIncludeToken(TypeConvertToken):
+    """Magic tag that changes the way string formatting works"""
+
+    yaml_tag = "!force_format_include"
+
+    @staticmethod
+    def constructor(_):
+        raise ValueError
+
+
 # Sort-of hack to try and avoid future API changes
 ApproxScalar = type(pytest.approx(1.0))
 
 
-class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
+class ApproxSentinel(yaml.YAMLObject, ApproxScalar):  # type:ignore
     yaml_tag = "!approx"
     yaml_loader = IncludeLoader
 
@@ -300,7 +375,7 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):
                 "Could not coerce '%s' to a float for use with !approx",
                 type(node.value),
             )
-            raise_from(BadSchemaError, e)
+            raise BadSchemaError from e
         else:
             return pytest.approx(val)
 
@@ -334,7 +409,7 @@ def load_single_document_yaml(filename):
             contents = yaml.load(fileobj, Loader=IncludeLoader)
         except yaml.composer.ComposerError as e:
             msg = "Expected only one document in this file but found multiple"
-            raise_from(exceptions.UnexpectedDocumentsError(msg), e)
+            raise exceptions.UnexpectedDocumentsError(msg) from e
 
     return contents
 
@@ -348,4 +423,4 @@ def error_on_empty_scalar(self, mark):  # pylint: disable=unused-argument
     raise exceptions.BadSchemaError(error)
 
 
-yaml.parser.Parser.process_empty_scalar = error_on_empty_scalar
+yaml.parser.Parser.process_empty_scalar = error_on_empty_scalar  # type:ignore

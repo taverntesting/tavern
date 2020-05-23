@@ -8,12 +8,6 @@ from tavern.util import exceptions
 from tavern.util.dict_util import check_keys_match_recursive
 from tavern.util.loader import ANYTHING
 
-try:
-    LoadException = json.decoder.JSONDecodeError
-except AttributeError:
-    # python 2 raises ValueError on json loads() error instead
-    LoadException = ValueError
-
 logger = logging.getLogger(__name__)
 
 
@@ -43,10 +37,7 @@ class MQTTResponse(BaseResponse):
             json_payload = True
 
             if payload.pop("$ext", None):
-                logger.warning(
-                    "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
-                    "json",
-                )
+                raise exceptions.InvalidExtBlockException("json",)
         elif "payload" in self.expected:
             payload = self.expected["payload"]
             json_payload = False
@@ -63,6 +54,9 @@ class MQTTResponse(BaseResponse):
 
         topic = self.expected["topic"]
         timeout = self.expected.get("timeout", 1)
+
+        test_strictness = self.test_block_config["strict"]
+        block_strictness = test_strictness.setting_for("json").is_on()
 
         expected_payload, expect_json_payload = self._get_payload_vals()
 
@@ -101,7 +95,7 @@ class MQTTResponse(BaseResponse):
             if expect_json_payload:
                 try:
                     msg.payload = json.loads(msg.payload)
-                except LoadException:
+                except json.decoder.JSONDecodeError:
                     addwarning(
                         "Expected a json payload but got '%s'",
                         msg.payload,
@@ -111,6 +105,7 @@ class MQTTResponse(BaseResponse):
                     continue
 
             if expected_payload is None:
+                # pylint: disable=no-else-break
                 if msg.payload is None or msg.payload == "":
                     logger.info(
                         "Got message with no payload (as expected) on '%s'", topic
@@ -127,7 +122,9 @@ class MQTTResponse(BaseResponse):
             elif msg.payload != expected_payload:
                 if expect_json_payload:
                     try:
-                        check_keys_match_recursive(expected_payload, msg.payload, [])
+                        check_keys_match_recursive(
+                            expected_payload, msg.payload, [], strict=block_strictness
+                        )
                     except exceptions.KeyMismatchError:
                         # Just want to log the mismatch
                         pass

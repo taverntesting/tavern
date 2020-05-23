@@ -12,27 +12,25 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
-        an_integer: 123
-        $ext:
-          function: tavern.testutils.helpers:validate_content
-          extra_kwargs:
-            comparisons:
-              - jmespath: "an_integer"
-                operator: "eq"
-                expected: 123
-              - jmespath: "an_integer"
-                operator: "type"
-                expected: int
-              - jmespath: "a_string"
-                operator: "eq"
-                expected: abc
-              - jmespath: "top.Thing"
-                operator: "type"
-                expected: str
-              - jmespath: "top.nested.doubly.inner"
-                operator: "eq"
-                expected: value
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_content
+        extra_kwargs:
+          comparisons:
+            - jmespath: "an_integer"
+              operator: "eq"
+              expected: 123
+            - jmespath: "an_integer"
+              operator: "type"
+              expected: int
+            - jmespath: "a_string"
+              operator: "eq"
+              expected: abc
+            - jmespath: "top.Thing"
+              operator: "type"
+              expected: str
+            - jmespath: "top.nested.doubly.inner"
+              operator: "eq"
+              expected: value
 
 ---
 
@@ -48,31 +46,30 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
-        $ext:
-          function: tavern.testutils.helpers:validate_content
-          extra_kwargs:
-            comparisons:
-              - jmespath: "[1]"
-                operator: "type"
-                expected: str
-              - jmespath: "[1]"
-                operator: "eq"
-                expected: b
+      verify_response_with:
+        function: tavern.testutils.helpers:validate_content
+        extra_kwargs:
+          comparisons:
+            - jmespath: "[1]"
+              operator: "type"
+              expected: str
+            - jmespath: "[1]"
+              operator: "eq"
+              expected: b
 
-              - jmespath: "[5]"
-                operator: "type"
-                expected: int
-              - jmespath: "[5]"
-                operator: "eq"
-                expected: 3
+            - jmespath: "[5]"
+              operator: "type"
+              expected: int
+            - jmespath: "[5]"
+              operator: "eq"
+              expected: 3
 
-              - jmespath: "[8]"
-                operator: "type"
-                expected: float
-              - jmespath: "[8]"
-                operator: "eq"
-                expected: -3.0
+            - jmespath: "[8]"
+              operator: "type"
+              expected: float
+            - jmespath: "[8]"
+              operator: "eq"
+              expected: -3.0
 
 ---
 
@@ -88,9 +85,9 @@ stages:
       method: GET
     response:
       status_code: 200
-      body: c82bfa63-fd2a-419a-8c06-21cb283fd9f7
+      json: c82bfa63-fd2a-419a-8c06-21cb283fd9f7
       save:
-        body:
+        json:
           saved_with_at: "@"
 
   - name: Echo back the value and it should be as expected
@@ -101,5 +98,135 @@ stages:
         value: "{saved_with_at}"
     response:
       status_code: 200
-      body:
+      json:
         value: c82bfa63-fd2a-419a-8c06-21cb283fd9f7
+
+---
+
+test_name: Test saving an item from a list
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get item
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      save:
+        json:
+          first_item: "[0]"
+          second_item: "[1]"
+
+  - name: Echo back the first value and it should be as expected
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{first_item}"
+    response:
+      status_code: 200
+      json:
+        value: "a"
+
+  - name: Echo back the second value and it should be as expected
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{second_item}"
+    response:
+      status_code: 200
+      json:
+        value: "b"
+
+---
+
+test_name: Test saving an item from a dict inside a list
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get item
+    request:
+      url: "{host}/complicated_list"
+      method: GET
+    response:
+      status_code: 200
+      save:
+        json:
+          first_item: "[0]"
+          second_item: "[1]"
+
+  - name: Echo back the first value and it should be as expected
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{first_item}"
+    response:
+      status_code: 200
+      json:
+        value: "a"
+
+  - name: Echo back the second value and it should be as expected
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{second_item.b}"
+    response:
+      status_code: 200
+      json:
+        value: "c"
+
+---
+
+test_name: Test we can save a single value with jmespath if it has a dot in
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get item with dot in a name
+    request:
+      url: "{host}/jmes/with_dot"
+      method: GET
+    response:
+      status_code: 200
+      save:
+        json:
+          saved_with_dot_a: '"data.a"'
+          saved_with_dot_b: '"data.b"'
+
+---
+
+test_name: Test 'negative' jmespath tests
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Check can match empty/zero jmespath checks
+    request:
+      url: "{host}/jmes/return_empty_paged"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        pages: 0
+        data: []
+      verify_response_with:
+        - function: tavern.testutils.helpers:validate_content
+          extra_kwargs:
+            comparisons:
+              - jmespath: pages
+                operator: "equals"
+                expected: 0
+
+              - jmespath: "data[?id=='bllp']"
+                operator: "equals"
+                expected: []

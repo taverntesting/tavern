@@ -6,7 +6,14 @@ tox
 flask
 
 # Useful for development
-black
+black==19.10b0
 bump2version
 pre-commit
 pygments
+twine
+wheel
+
+# linting
+prospector[with_pyroma,with_mypy]
+pygments
+pylint==2.4.4

@@ -14,7 +14,7 @@ stages:
         id: !uuid &sent_uuid
     response:
       status_code: 200
-      body:
+      json:
         id: *sent_uuid
 
 ---
@@ -32,7 +32,7 @@ stages:
       data: OK
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
   - name: Send 'denied' string and expect it back
@@ -42,7 +42,7 @@ stages:
       data: DENIED
     response:
       status_code: 401
-      body:
+      json:
         status: denied
 
 ---
@@ -60,7 +60,7 @@ stages:
       data: !!binary T0s=
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
   - name: Send 'denied' string and expect it back
@@ -70,7 +70,7 @@ stages:
       data: !!binary REVOSUVE
     response:
       status_code: 401
-      body:
+      json:
         status: denied
 
   - name: Send invalid string and expect it in error message
@@ -80,7 +80,7 @@ stages:
       data: !!binary RVJS
     response:
       status_code: 400
-      body:
+      json:
         status: "err: 'ERR'"
 
 ---
@@ -99,7 +99,7 @@ stages:
         - b
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
 ---
@@ -116,7 +116,7 @@ stages:
       data: 1.2
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
 ---
@@ -136,5 +136,5 @@ stages:
         b: 456
     response:
       status_code: 200
-      body:
+      json:
         status: ok

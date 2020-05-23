@@ -1,15 +1,29 @@
-from mock import patch
-import yaml
 import sys
-import pytest
-import _pytest
+import tempfile
 from textwrap import dedent
+from unittest.mock import patch
 
-from tavern.util import exceptions
-from tavern.testutils.helpers import validate_pykwalify
+import _pytest
+from mock import Mock, patch
+import pytest
+import yaml
+
 from tavern.core import run
-from tavern.testutils.helpers import validate_regex, validate_content
+from tavern.schemas.extensions import validate_file_spec
+from tavern.testutils.helpers import (
+    validate_content,
+    validate_pykwalify,
+    validate_regex,
+)
 from tavern.testutils.pytesthook.item import YamlItem
+from tavern.util import exceptions
+from tavern.util.dict_util import _check_and_format_values, format_keys
+from tavern.util.loader import ForceIncludeToken
+from tavern.util.strict_util import (
+    StrictLevel,
+    _StrictSetting,
+    validate_and_parse_option,
+)
 
 
 class FakeResponse:
@@ -70,7 +84,7 @@ class TestRunAlone:
         assert pmock.called
 
     def test_extra_args(self):
-        with pytest.warns(FutureWarning):
+        with pytest.raises(TypeError):
             with patch("tavern.core.pytest.main") as pmock:
                 run(
                     **{
@@ -83,7 +97,7 @@ class TestRunAlone:
                     }
                 )
 
-        assert pmock.called
+        assert not pmock.called
 
 
 class TestTavernRepr:
@@ -107,7 +121,7 @@ class TestTavernRepr:
         return excinfo
 
     def test_not_called_for_normal_exception(self, fake_item):
-        """Should call normal pytest repr_info"""
+        """Does not call tavern repr for non tavern errors"""
         fake_info = self._make_fake_exc_info(RuntimeError)
 
         with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
@@ -115,44 +129,36 @@ class TestTavernRepr:
 
         assert not rmock.called
 
-    def test_not_called_if_flag_not_enabled(self, fake_item):
-        """Not called by default for tavern exceptions"""
+    @pytest.mark.parametrize("ini_flag", [True, False])
+    def test_not_called_for_badschema_tavern_exception_(self, fake_item, ini_flag):
+        """Does not call taven repr for badschemerror - tavern repr gives no useful information in this case"""
         fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
 
-        with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
-            fake_item.repr_failure(fake_info)
-
-        assert not rmock.called
-
-    def test_not_called_for_badschema_tavern_exception_(self, fake_item):
-        """Enable ini flag, should be called"""
-        fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
-
-        with patch.object(fake_item.config, "getini", return_value=True):
+        with patch.object(fake_item.config, "getini", return_value=ini_flag):
             with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
         assert not rmock.called
 
-    def test_called_for_tavern_exception_ini(self, fake_item):
-        """Enable ini flag, should be called"""
+    def test_not_called_ini(self, fake_item):
+        """Enable ini flag, should call old style"""
         fake_info = self._make_fake_exc_info(exceptions.InvalidSettingsError)
 
         with patch.object(fake_item.config, "getini", return_value=True):
             with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
-        assert rmock.called
+        assert not rmock.called
 
-    def test_called_for_tavern_exception_cli(self, fake_item):
-        """Enable cli flag, should be called"""
+    def test_not_called_cli(self, fake_item):
+        """Enable cli flag, should call old style"""
         fake_info = self._make_fake_exc_info(exceptions.InvalidSettingsError)
 
         with patch.object(fake_item.config, "getoption", return_value=True):
             with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
-        assert rmock.called
+        assert not rmock.called
 
 
 @pytest.fixture(name="nested_response")
@@ -244,3 +250,142 @@ class TestPykwalifyExtension:
             validate_pykwalify(
                 nested_response, yaml.load(correct_schema, Loader=yaml.SafeLoader)
             )
+
+
+class TestCheckParseValues(object):
+    @pytest.mark.parametrize(
+        "item", [[134], {"a": 2}, yaml, yaml.load, yaml.SafeLoader]
+    )
+    def test_warns_bad_type(self, item):
+        with patch("tavern.util.dict_util.logger.warning") as wmock:
+            _check_and_format_values("{fd}", {"fd": item})
+
+        assert wmock.called_with(
+            "Formatting 'fd' will result in it being coerced to a string (it is a {})".format(
+                type(item)
+            )
+        )
+
+    @pytest.mark.parametrize("item", [1, "a", 1.3, format_keys("{s}", dict(s=2))])
+    def test_no_warn_good_type(self, item):
+        with patch("tavern.util.dict_util.logger.warning") as wmock:
+            _check_and_format_values("{fd}", {"fd": item})
+
+        assert not wmock.called
+
+
+class TestFormatWithJson(object):
+    @pytest.mark.parametrize(
+        "item", [[134], {"a": 2}, yaml, yaml.load, yaml.SafeLoader]
+    )
+    def test_custom_format(self, item):
+        """Can format everything"""
+        val = format_keys(ForceIncludeToken("{fd}"), {"fd": item})
+
+        assert val == item
+
+    def test_bad_format_string_extra(self):
+        """Extra things in format string"""
+        with pytest.raises(exceptions.InvalidFormattedJsonError):
+            format_keys(ForceIncludeToken("{fd}gg"), {"fd": "123"})
+
+    def test_bad_format_string_conversion(self):
+        """No format string"""
+        with pytest.raises(exceptions.InvalidFormattedJsonError):
+            format_keys(ForceIncludeToken(""), {"fd": "123"})
+
+    def test_bad_format_string_multiple(self):
+        """Multple format spec in string is disallowed"""
+        with pytest.raises(exceptions.InvalidFormattedJsonError):
+            format_keys(ForceIncludeToken("{a}{b}"), {"fd": "123"})
+
+
+class TestCheckFileSpec(object):
+    def _wrap_test_block(self, dowith):
+        validate_file_spec({"files": dowith}, Mock(), Mock())
+
+    def test_string_valid(self):
+        with tempfile.NamedTemporaryFile() as tfile:
+            self._wrap_test_block(tfile.name)
+
+    def test_dict_valid(self):
+        with tempfile.NamedTemporaryFile() as tfile:
+            self._wrap_test_block({"file_path": tfile.name})
+
+    def test_nonexistsnt_string(self):
+        with pytest.raises(exceptions.BadSchemaError):
+            self._wrap_test_block("kdsfofs")
+
+    def nonexistent_dict(self):
+        with pytest.raises(exceptions.BadSchemaError):
+            self._wrap_test_block({"file_path": "gogfgl"})
+
+    def extra_keys_dict(self):
+        with pytest.raises(exceptions.BadSchemaError):
+            self._wrap_test_block({"file_path": "gogfgl", "blop": 123})
+
+
+class TestStrictUtils:
+    @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
+    @pytest.mark.parametrize("setting", ["on", "off"])
+    def test_parse_option(self, section, setting):
+        option = "{}:{}".format(section, setting)
+        match = validate_and_parse_option(option)
+
+        assert match.section == section
+
+        if setting == "on":
+            assert match.is_on()
+        else:
+            assert not match.is_on()
+
+    @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
+    def test_unset_defaults(self, section):
+        match = validate_and_parse_option(section)
+
+        if section == "json":
+            assert match.is_on()
+        else:
+            assert not match.is_on()
+
+    @pytest.mark.parametrize("setting", ["true", "1", "hi", ""])
+    def test_fails_bad_setting(self, setting):
+        with pytest.raises(exceptions.InvalidConfigurationException):
+            validate_and_parse_option("json:{}".format(setting))
+
+    @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
+    def test_defaults(self, section):
+        level = StrictLevel([])
+
+        if section == "json":
+            assert level.setting_for(section)
+        else:
+            assert not level.setting_for(section)
+
+    @pytest.mark.parametrize("section", ["true", "1", "hi", ""])
+    def test_defaults(self, section):
+        level = StrictLevel([])
+
+        with pytest.raises(exceptions.InvalidConfigurationException):
+            level.setting_for(section)
+
+    # These tests could be removed, they are testing implementation details...
+    @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
+    def test_set_on(self, section):
+        level = StrictLevel.from_options([section + ":on"])
+
+        assert level.setting_for(section).setting == _StrictSetting.ON
+        assert level.setting_for(section).is_on()
+
+    @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
+    def test_set_off(self, section):
+        level = StrictLevel.from_options([section + ":off"])
+
+        assert level.setting_for(section).setting == _StrictSetting.OFF
+        assert not level.setting_for(section).is_on()
+
+    @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
+    def test_unset(self, section):
+        level = StrictLevel.from_options([section])
+
+        assert level.setting_for(section).setting == _StrictSetting.UNSET

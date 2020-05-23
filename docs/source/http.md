@@ -31,7 +31,7 @@ stages:
 
 Note that there is no way to do something like this for the body of the
 response, so unless you are expecting the same response body for every possible
-status code, the `body` key should be left blank.
+status code, the `json` key should be left blank.
 
 ## Sending form encoded data
 
@@ -73,7 +73,7 @@ stages:
       method: GET
     response:
       status_code: 401
-      body:
+      json:
         error: "no login information"
       headers:
         content-type: application/json
@@ -100,7 +100,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         name: test-user
       headers:
         content-type: application/json
@@ -141,7 +141,7 @@ stages:
         - tavern-cookie-1
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 ```
 
@@ -174,7 +174,7 @@ stages:
       cookies: []
     response:
       status_code: 403
-      body:
+      json:
         status: access denied
 ```
 
@@ -193,7 +193,7 @@ value`:
         - tavern-cookie-2: abc
     response:
       status_code: 200
-      body:
+      json:
         status: ok
 
 ```
@@ -227,7 +227,7 @@ stages:
         - password123
     response:
       status_code: 200
-      body:
+      json:
         user_id: 123
       headers:
         content-type: application/json
@@ -261,7 +261,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         $ext: &verify_token
           function: tavern.testutils.helpers:validate_jwt
           extra_kwargs:
@@ -275,7 +275,7 @@ stages:
       headers:
         content-type: application/json
       save:
-        body:
+        json:
           test_login_token: token
 
   - name: Get user info
@@ -285,7 +285,7 @@ stages:
       Authorization: "Bearer {test_login_token:s}"
     response:
       status_code: 200
-      body:
+      json:
         user_id: 123
       headers:
         content-type: application/json
@@ -380,6 +380,52 @@ By default, the sending of files is handled by the Requests library - to see the
 implementation details, see their
 [documentation](http://docs.python-requests.org/en/master/user/quickstart/#post-a-multipart-encoded-file).
 
+### Uploading a file as the body of a request
+
+In some cases it may be required to upload the entire contents of a file in the
+request body - for example, when posting a binary data blob from a file. This
+can be done for JSON and YAML using the `!include` tag, but for other data
+formats the `file_body` key can be used:
+
+```yaml
+  - name: Upload a file in the request body
+    request:
+      url: "{host}/data_blob"
+      method: POST
+      file_body: "/path/to/blobfile
+    response:
+      status_code: 200
+```
+
+Like the `files` key, this is mutually exclusive with the `json` key.
+
+### Specifying custom content type and encoding
+
+If you need to use a custom file type and/or encoding when uploading the file,
+there is a 'long form' specification for uploading files. Instead of just
+passing the path to the file to upload, use the `file_path` and
+`content_type`/`content_encoding` in the block for the file:
+
+```yaml
+---
+
+test_name: Test files can be uploaded with tavern
+
+stages:
+  - name: Upload multiple files
+    request:
+      url: "{host}/fake_upload_file"
+      method: POST
+      files:
+        # simple style - guess the content type and encoding
+        test_files: "test_files.tavern.yaml"
+        # long style - specify them manually
+        common:
+          file_path: "common.yaml"
+          content_type: "application/customtype"
+          content_encoding: "UTF16"
+```
+
 ## Timeout on requests
 
 If you want to specify a timeout for a request, this can be done using the
@@ -397,7 +443,7 @@ stages:
       timeout: 0.5
     response:
       status_code: 200
-      body:
+      json:
         n_users: 2048
         n_queries: 10000
 ```
@@ -431,7 +477,7 @@ stages:
       follow_redirects: true
     response:
       status_code: 200
-      body:
+      json:
         status: successful redirect
 ``` 
 

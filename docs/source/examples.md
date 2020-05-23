@@ -14,7 +14,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         id: 1
 ```
 
@@ -94,7 +94,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         double: 10
 
 ---
@@ -112,7 +112,7 @@ stages:
         content-type: application/json
     response:
       status_code: 400
-      body:
+      json:
         error: a number was not passed
 
   - name: Make sure it raises an error if a number isn't passed
@@ -125,7 +125,7 @@ stages:
         content-type: application/json
     response:
       status_code: 400
-      body:
+      json:
         error: no number passed
 ```
 
@@ -191,7 +191,7 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      body:
+      json:
         $ext:
           function: tavern.testutils.helpers:validate_jwt
           extra_kwargs:
@@ -203,7 +203,7 @@ stages:
       headers:
         content-type: application/json
       save:
-        body:
+        json:
           test_login_token: token
 
   - name: post a number
@@ -218,7 +218,7 @@ stages:
         Authorization: "bearer {test_login_token:s}"
     response:
       status_code: 201
-      body:
+      json:
         {}
       headers:
         content-type: application/json
@@ -234,7 +234,7 @@ stages:
         Authorization: "bearer {test_login_token:s}"
     response:
       status_code: 200
-      body:
+      json:
         number: 123
       headers:
         content-type: application/json

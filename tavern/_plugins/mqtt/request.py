@@ -1,15 +1,12 @@
-import logging
-import json
 import functools
+import json
+import logging
 
-from future.utils import raise_from
 from box import Box
 
-from tavern.util import exceptions
-from tavern.util.dict_util import format_keys, check_expected_keys
-
 from tavern.request.base import BaseRequest
-
+from tavern.util import exceptions
+from tavern.util.dict_util import check_expected_keys, format_keys
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +62,7 @@ class MQTTRequest(BaseRequest):
             return self._prepared()
         except ValueError as e:
             logger.exception("Error publishing")
-            raise_from(exceptions.MQTTRequestException, e)
+            raise exceptions.MQTTRequestException from e
 
     @property
     def request_vars(self):

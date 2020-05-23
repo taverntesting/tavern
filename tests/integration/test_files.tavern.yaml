@@ -71,3 +71,133 @@ stages:
         test: testfile.txt
     response:
       status_code: 200
+
+---
+
+test_name: Test long form file upload
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Upload with long spec
+    request:
+      url: "{host}/fake_upload_file"
+      method: POST
+      files:
+        test:
+          file_path: testfile.txt
+          content_type: application/txt
+    response:
+      status_code: 200
+
+---
+
+test_name: Test sending file body
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Upload file body
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      file_body: OK.txt
+    response:
+      status_code: 200
+      json:
+        status: ok
+
+---
+
+test_name: Test sending file body from variable ref
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Upload file body
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      file_body: "{file_body_ref}"
+    response:
+      status_code: 200
+      json:
+        status: ok
+
+---
+
+test_name: Test sending bad file body
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Upload file body
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      file_body: testfile.txt
+    response:
+      status_code: 400
+
+---
+
+test_name: Test mutually exclusive with files
+
+_xfail: verify
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Upload file body
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      file_body: testfile.txt
+      files:
+        test_files: "test_files.tavern.yaml"
+    response:
+      status_code: 200
+
+---
+
+test_name: Test mutually exclusive with data
+
+_xfail: verify
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Upload file body
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      file_body: testfile.txt
+      data: OK
+    response:
+      status_code: 200
+
+---
+
+test_name: Test mutually exclusive with json
+
+_xfail: verify
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Upload file body
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      file_body: testfile.txt
+      json:
+        test_files: "test_files.tavern.yaml"
+    response:
+      status_code: 200

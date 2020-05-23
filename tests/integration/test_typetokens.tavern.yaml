@@ -21,8 +21,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
-        top: !anything
+      json: !anything
 ---
 
 test_name: Test 'anything' token will match any response, from included stage
@@ -38,6 +37,9 @@ stages:
 
 test_name: Test bool type match
 
+strict:
+  - json:off
+
 includes:
   - !include common.yaml
 
@@ -48,7 +50,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         a_bool: true
 
   - name: match top level
@@ -57,12 +59,15 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         a_bool: !anybool
 
 ---
 
 test_name: Test integer type match
+
+strict:
+  - json:off
 
 includes:
   - !include common.yaml
@@ -74,7 +79,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         an_integer: 123
 
   - name: match top level
@@ -83,12 +88,47 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         an_integer: !anyint
 
 ---
 
+test_name: Test list type match
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match any list
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      json: !anylist
+
+---
+
+test_name: Test dict type match
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match any dict
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      json: !anydict
+
+---
+
 test_name: Test string type match
+
+strict:
+  - json:off
 
 includes:
   - !include common.yaml
@@ -100,7 +140,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         a_string: "abc"
 
   - name: match top level
@@ -109,7 +149,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         a_string: !anystr
 
 ---
@@ -126,12 +166,13 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         top:
           Thing: !anystr
           nested: !anything
         an_integer: !anyint
         a_string: !anystr
+        a_bool: !anybool
 
 ---
 
@@ -147,7 +188,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         - a
         - b
         - !anystr
@@ -172,7 +213,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         top: !anything
 
 ---
@@ -189,7 +230,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         top:
           - a
           - !anystr
@@ -284,7 +325,7 @@ stages:
 #       method: GET
 #     response:
 #       status_code: 200
-#       body:
+#       json:
 #         pi: !approx about three
 #
 # ---
@@ -301,7 +342,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      body:
+      json:
         pi: !approx 3.1415926
 
 ---
@@ -446,10 +487,10 @@ stages:
         value: !float "{v_int}"
     response:
       status_code: 200
-      body:
+      json:
         value: !float "{tavern.request_vars.json.value}"
       save:
-        body:
+        json:
           saved_float_value: value
 
   - name: Try to use it again and make sure it can be converted to the correct type
@@ -517,5 +558,143 @@ stages:
         value: !raw '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'
     response:
       status_code: 200
-      body:
+      json:
         value: !raw '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'
+
+---
+
+test_name: Test magic format token
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get dictionary
+    request:
+      url: "{host}/fake_dictionary"
+    response:
+      status_code: 200
+      save:
+        json:
+          whole_body: "@"
+
+  - name: reuse dictionary
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: !force_format_include "{whole_body}"
+    response:
+      status_code: 200
+      json: !force_format_include "{tavern.request_vars.json}"
+
+---
+
+test_name: Test magic format token with list
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get dictionary
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      json: !anylist
+      save:
+        json:
+          whole_list_body: "@"
+
+  - name: reuse dictionary
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: !force_format_include "{whole_list_body}"
+    response:
+      status_code: 200
+      json:
+        - a
+        - b
+        - c
+        - 1
+        - 2
+        - 3
+        - -1.0
+        - -2.0
+        - -3.0
+
+---
+
+test_name: Match a regex at top level
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match token
+    request:
+      url: "{host}/get_single_json_item"
+      method: GET
+    response:
+      status_code: 200
+      json: !re_match "c82bfa63-.*"
+
+---
+
+test_name: Match a regex in a nested thing
+
+includes:
+  - !include common.yaml
+
+strict:
+  - json:off
+
+stages:
+  - name: match token
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        top:
+          nested:
+            doubly:
+              inner: !re_match "value"
+
+---
+
+test_name: Match a regex number doesnt work because its the wrong type
+
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: try to match number
+    request:
+      url: "{host}/pi"
+      method: GET
+    response:
+      strict: false
+      status_code: 200
+      json:
+        pi: !re_match "3.14.*"
+
+---
+
+test_name: Match a uuid v4
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match a uuid v4
+    request:
+      url: "{host}/uuid/v4"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        uuid: !re_fullmatch "[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"

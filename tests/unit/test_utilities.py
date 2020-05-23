@@ -1,25 +1,34 @@
+from collections import OrderedDict
 import contextlib
 import copy
 import os
 import tempfile
-from collections import OrderedDict
 from textwrap import dedent
 
+from mock import Mock, patch
 import pytest
 import yaml
-from mock import Mock, patch
 
 from tavern.schemas.extensions import validate_extensions
 from tavern.schemas.files import wrapfile
 from tavern.util import exceptions
 from tavern.util.dict_util import (
-    deep_dict_merge,
     check_keys_match_recursive,
+    deep_dict_merge,
     format_keys,
     recurse_access_key,
 )
-from tavern.util.loader import ANYTHING, IncludeLoader, load_single_document_yaml
-from tavern.util.loader import construct_include
+from tavern.util.loader import (
+    ANYTHING,
+    DictSentinel,
+    FloatSentinel,
+    IncludeLoader,
+    IntSentinel,
+    ListSentinel,
+    StrSentinel,
+    construct_include,
+    load_single_document_yaml,
+)
 
 
 class TestValidateFunctions:
@@ -192,6 +201,91 @@ class TestMatchRecursive:
         with pytest.raises(exceptions.KeyMismatchError):
             check_keys_match_recursive(a, b, [])
 
+    @pytest.mark.parametrize(
+        "token, response",
+        [
+            (IntSentinel(), 2),
+            (ListSentinel(), [1, 2, 3]),
+            (DictSentinel(), {2: 2}),
+            (FloatSentinel(), 4.5),
+            (StrSentinel(), "dood"),
+        ],
+    )
+    def test_type_token_matches(self, token, response):
+        """Make sure type tokens match with generic types"""
+        check_keys_match_recursive(token, response, [])
+
+    @pytest.mark.parametrize(
+        "token, response",
+        [
+            (IntSentinel(), 2.3),
+            (ListSentinel(), 1),
+            (DictSentinel(), [4, 5, 6]),
+            (FloatSentinel(), "4"),
+            (StrSentinel(), {"a": 2}),
+        ],
+    )
+    def test_type_token_no_match_errors(self, token, response):
+        """Make sure type tokens do not match if the type is wrong"""
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(token, response, [])
+
+
+class TestNonStrictListMatching:
+    def test_match_list_items(self):
+        """Should match any 2 list items if strict is False, not if it's True"""
+        a = ["b"]
+        b = ["a", "b", "c"]
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+        check_keys_match_recursive(a, b, [], strict=False)
+
+    def test_match_multiple(self):
+        """As long as they are in the right order, it can match multiple
+        items"""
+        a = ["a", "c"]
+        b = ["a", "b", "c"]
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+        check_keys_match_recursive(a, b, [], strict=False)
+
+    def test_match_multiple_wrong_order(self):
+        """Raises an error if the expected items are in the wrong order"""
+        a = ["c", "a"]
+        b = ["a", "b", "c"]
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [], strict=False)
+
+    def test_match_wrong_type(self):
+        """Can't match incorrect type"""
+        a = [1]
+        b = ["1", "2", "3"]
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [], strict=False)
+
+    def test_match_list_items_more_as(self):
+        """One of them is present, the others aren't"""
+        a = ["a", "b", "c"]
+        b = ["a"]
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [])
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [], strict=False)
+
 
 @pytest.fixture(name="test_yaml")
 def fix_test_yaml():
@@ -214,7 +308,7 @@ def fix_test_yaml():
             content-type: application/json
         response:
           status_code: 200
-          body:
+          json:
             double: !float 10
     """
     )
@@ -231,7 +325,7 @@ class TestCustomTokens:
         stages = yaml.load(test_yaml, Loader=IncludeLoader)["stages"][0]
 
         self.assert_type_value(stages["request"]["json"]["number"], int, 5)
-        self.assert_type_value(stages["response"]["body"]["double"], float, 10.0)
+        self.assert_type_value(stages["response"]["json"]["double"], float, 10.0)
         self.assert_type_value(stages["request"]["json"]["return_float"], bool, True)
         self.assert_type_value(stages["request"]["json"]["is_sensitive"], bool, False)
         self.assert_type_value(
@@ -284,23 +378,17 @@ class TestRecurseAccess:
     def test_search_old_style(self, nested_data, old_query, new_query, expected_data):
         """Make sure old style searches perform the same as jmes queries"""
 
-        with pytest.warns(FutureWarning):
-            old_val = recurse_access_key(nested_data, old_query)
-        new_val = recurse_access_key(nested_data, new_query)
-
-        assert old_val == new_val == expected_data
-
-    @pytest.mark.parametrize(
-        "old_query, new_query", (("f", "f"), ("a.3", "a[3]"), ("a.1.x", "a[1].x"))
-    )
-    def test_missing_search(self, nested_data, old_query, new_query):
-        """Searching for data not in given data raises an exception"""
-
-        with pytest.raises(exceptions.KeySearchNotFoundError):
+        with pytest.raises(exceptions.JMESError):
             recurse_access_key(nested_data, old_query)
 
-        with pytest.raises(exceptions.KeySearchNotFoundError):
-            recurse_access_key(nested_data, new_query)
+        new_val = recurse_access_key(nested_data, new_query)
+        assert new_val == expected_data
+
+    @pytest.mark.parametrize("new_query", ("f", "a[3]", "a[1].x"))
+    def test_missing_search(self, nested_data, new_query):
+        """Searching for data not in given data returns None, because of the way the jmespath library works..."""
+
+        assert recurse_access_key(nested_data, new_query) is None
 
 
 class TestLoadCfg:

@@ -1,29 +1,22 @@
 import contextlib
+from contextlib import ExitStack
+from itertools import filterfalse, tee
 import json
 import logging
 import mimetypes
 import os
+from urllib.parse import quote_plus
 import warnings
-from itertools import tee
 
-try:
-    from urllib.parse import quote_plus
-except ImportError:
-    from urllib import quote_plus  # type: ignore
-
-from contextlib2 import ExitStack
-from future.moves.itertools import filterfalse
-from future.utils import raise_from
+from box import Box
 import requests
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
-from box import Box
-
-from tavern.util import exceptions
-from tavern.util.dict_util import format_keys, check_expected_keys, deep_dict_merge
-from tavern.schemas.extensions import get_wrapped_create_function
 
 from tavern.request.base import BaseRequest
+from tavern.schemas.extensions import get_wrapped_create_function
+from tavern.util import exceptions
+from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +39,7 @@ def get_request_args(rspec, test_block_config):
         BadSchemaError: Tried to pass a body in a GET request
     """
 
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals,too-many-statements
 
     request_args = {}
 
@@ -73,7 +66,7 @@ def get_request_args(rspec, test_block_config):
         logger.debug("Using default GET method")
         rspec["method"] = "GET"
 
-    content_keys = ["data", "json", "files"]
+    content_keys = ["data", "json", "files", "file_body"]
 
     in_request = [c for c in content_keys if c in rspec]
     if len(in_request) > 1:
@@ -100,6 +93,10 @@ def get_request_args(rspec, test_block_config):
             }
 
     fspec = format_keys(rspec, test_block_config["variables"])
+
+    send_in_body = fspec.get("file_body")
+    if send_in_body:
+        request_args["file_body"] = send_in_body
 
     def add_request_args(keys, optional):
         for key in keys:
@@ -133,7 +130,12 @@ def get_request_args(rspec, test_block_config):
         except (KeyError, TypeError, AttributeError):
             pass
         else:
-            request_args[key] = func()
+            merge_ext_values = test_block_config.get("merge_ext_values")
+            logger.debug("Will merge ext values? %s", merge_ext_values)
+            if merge_ext_values:
+                request_args[key] = deep_dict_merge(request_args[key], func())
+            else:
+                request_args[key] = func()
 
     # If there's any nested json in parameters, urlencode it
     # if you pass nested json to 'params' then requests silently fails and just
@@ -292,6 +294,33 @@ def _read_expected_cookies(session, rspec, test_block_config):
     return deep_dict_merge(from_cookiejar, from_extra)
 
 
+def _read_filespec(filespec):
+    """
+    Get configuration for uploading file
+
+    Can either be just a path to a file or a 'long' format including content type/encoding
+
+    Args:
+        filespec: Either a string with the path to a file or a dictionary with file_path and possible content_type and/or content_encoding
+
+    Returns:
+        tuple: (file path, content type, content encoding)
+    """
+    if isinstance(filespec, str):
+        return filespec, None, None
+    elif isinstance(filespec, dict):
+        return (
+            filespec.get("file_path"),
+            filespec.get("content_type"),
+            filespec.get("content_encoding"),
+        )
+    else:
+        # Could remove, also done in schema check
+        raise exceptions.BadSchemaError(
+            "File specification must be a path or a dictionary"
+        )
+
+
 def _get_file_arguments(request_args, stack):
     """Get corect arguments for anything that should be passed as a file to
     requests
@@ -306,18 +335,24 @@ def _get_file_arguments(request_args, stack):
 
     files_to_send = {}
 
-    for key, filepath in request_args.get("files", {}).items():
+    for key, filespec in request_args.get("files", {}).items():
         if not mimetypes.inited:
             mimetypes.init()
+
+        filepath, content_type, encoding = _read_filespec(filespec)
 
         filename = os.path.basename(filepath)
 
         # a 2-tuple ('filename', fileobj)
         file_spec = [filename, stack.enter_context(open(filepath, "rb"))]
 
+        # Try to guess as well, but don't override what the user specified
+        guessed_content_type, guessed_encoding = mimetypes.guess_type(filepath)
+        content_type = content_type or guessed_content_type
+        encoding = encoding or guessed_encoding
+
         # If it doesn't have a mimetype, or can't guess it, don't
         # send the content type for the file
-        content_type, encoding = mimetypes.guess_type(filepath)
         if content_type:
             # a 3-tuple ('filename', fileobj, 'content_type')
             logger.debug("content_type for '%s' = '%s'", filename, content_type)
@@ -368,6 +403,7 @@ class RestRequest(BaseRequest):
             "json",
             "verify",
             "files",
+            "file_body",
             "stream",
             "timeout",
             "cookies",
@@ -379,6 +415,9 @@ class RestRequest(BaseRequest):
         check_expected_keys(expected, rspec)
 
         request_args = get_request_args(rspec, test_block_config)
+
+        # Used further down, but pop it asap to avoid unwanted side effects
+        file_body = request_args.pop("file_body", None)
 
         # If there was a 'cookies' key, set it in the request
         expected_cookies = _read_expected_cookies(session, rspec, test_block_config)
@@ -405,7 +444,14 @@ class RestRequest(BaseRequest):
             # they will be closed at the end of the request.
             with ExitStack() as stack:
                 stack.enter_context(_set_cookies_for_request(session, request_args))
-                self._request_args.update(_get_file_arguments(request_args, stack))
+
+                # These are mutually exclusive
+                if file_body:
+                    file = stack.enter_context(open(file_body, "rb"))
+                    request_args.update(data=file)
+                else:
+                    self._request_args.update(_get_file_arguments(request_args, stack))
+
                 return session.request(**self._request_args)
 
         self._prepared = prepared_request
@@ -424,7 +470,7 @@ class RestRequest(BaseRequest):
             return self._prepared()
         except requests.exceptions.RequestException as e:
             logger.exception("Error running prepared request")
-            raise_from(exceptions.RestRequestException, e)
+            raise exceptions.RestRequestException from e
 
     @property
     def request_vars(self):
