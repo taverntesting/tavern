@@ -51,23 +51,23 @@ stages:
 
 py38black:
   <<: *basetest
-  image: python:3.8-alpine
+  image: python:3.8-slim
 
 py38:
   <<: *basetest
-  image: python:3.8-alpine
+  image: python:3.8-slim
 
 py38lint:
   <<: *basetest
-  image: python:3.8-alpine
+  image: python:3.8-slim
 
 py38isort:
   <<: *basetest
-  image: python:3.8-alpine
+  image: python:3.8-slim
 
 py38-generic:
   <<: *basetest
-  image: python:3.8-alpine
+  image: python:3.8-slim
 
   # This one requires integration tox file
   variables:
@@ -85,22 +85,22 @@ py38-generic:
 ########################################
 
 pypy3-generic:
-  <<: *basetest
+  <<: *inttest
   image: pypy:3-slim
 
 py37-generic:
   <<: *inttest
   #  Override here
-  image: python:3.7-alpine
+  image: python:3.7-slim
 
 py38-mqtt:
   <<: *inttest
-  image: python:3.8-alpine
+  image: python:3.8-slim
 
 py38-hooks:
   <<: *inttest
-  image: python:3.8-alpine
+  image: python:3.8-slim
 
 py38-advanced:
   <<: *inttest
-  image: python:3.8-alpine
+  image: python:3.8-slim
