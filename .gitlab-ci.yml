@@ -34,11 +34,11 @@ stages:
   stage: long-tests
   variables:
     TOXCFG: tox-integration.ini
-    # DOCKER_HOST: tcp://docker:2375
+    DOCKER_HOST: tcp://docker:2375
     DOCKER_DRIVER: overlay2
     DOCKER_TLS_CERTDIR: ""
   services:
-  - docker:19.03.0-dind
+  - docker:18.09-dind
   before_script:
   - pip3 install --upgrade docker-compose tox pip setuptools --cache-dir=./pip-cache/
   - mkdir -p /root/.docker/
