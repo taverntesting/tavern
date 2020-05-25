@@ -130,3 +130,7 @@ class InvalidExtBlockException(TavernException):
                 block
             )
         )
+
+
+class InvalidRetryException(TavernException):
+    """Invalid spec for max_retries"""

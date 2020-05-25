@@ -3,6 +3,7 @@ import logging
 
 from . import exceptions
 from .delay import delay
+from .dict_util import format_keys
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +16,12 @@ def retry(stage, test_block_config):
         stage (dict): test stage
     """
 
-    max_retries = stage.get("max_retries", 0)
+    if "max_retries" in stage:
+        max_retries = maybe_format_max_retries(
+            stage.get("max_retries"), test_block_config
+        )
+    else:
+        max_retries = 0
 
     if max_retries == 0:
 
@@ -73,3 +79,22 @@ def retry(stage, test_block_config):
             return wrapped
 
         return retry_wrapper
+
+
+def maybe_format_max_retries(max_retries, test_block_config):
+    """Possibly handle max_retries validation"""
+
+    # Probably a format variable, or just invalid (in which case it will fail further down)
+    max_retries = format_keys(max_retries, test_block_config["variables"])
+
+    # Missing type token will mean that max_retries is still a string and will fail here
+    # Could auto convert here as well, but keep it consistent and just fail
+    if not isinstance(max_retries, int):
+        raise exceptions.InvalidRetryException(
+            "Invalid type for max_retries - was {}".format(type(max_retries))
+        )
+
+    if max_retries < 0:
+        raise exceptions.InvalidRetryException("max_retries must be greater than 0")
+
+    return max_retries

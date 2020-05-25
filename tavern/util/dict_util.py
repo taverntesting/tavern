@@ -107,7 +107,7 @@ def format_keys(val, variables, no_double_format=True):
             https://github.com/taverntesting/tavern/issues/431
 
     Returns:
-        dict: recursively formatted dictionary
+        str,int,list,dict: recursively formatted values
     """
     formatted = val
     box_vars = Box(variables)
@@ -127,6 +127,7 @@ def format_keys(val, variables, no_double_format=True):
         if no_double_format:
             formatted = _FormattedString(formatted)
     elif isinstance(val, TypeConvertToken):
+        logger.debug("Got type convert token '%s'", val)
         if isinstance(val, ForceIncludeToken):
             formatted = _attempt_find_include(val.value, box_vars)
         else:
