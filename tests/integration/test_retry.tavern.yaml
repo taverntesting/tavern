@@ -38,6 +38,84 @@ stages:
 
 ---
 
+test_name: Format max retry variable correctly
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: polling
+    max_retries: !int '{retry_max}'
+    request:
+      url: "{host}/poll"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: ready
+
+---
+
+test_name: Format max retry variable fails if not using type token
+
+includes:
+  - !include common.yaml
+
+_xfail: verify
+
+stages:
+  - name: polling
+    max_retries: '{retry_max}'
+    request:
+      url: "{host}/poll"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: ready
+
+---
+
+test_name: Format max retry variable fails if invalid value
+
+includes:
+  - !include common.yaml
+
+_xfail: run
+
+stages:
+  - name: polling
+    max_retries: !int '{negative_int}'
+    request:
+      url: "{host}/poll"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: ready
+
+---
+
+test_name: Format max retry variable fails if using wrong type token
+
+includes:
+  - !include common.yaml
+
+_xfail: verify
+
+stages:
+  - name: polling
+    max_retries: !float '{retry_max}'
+    request:
+      url: "{host}/poll"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: ready
+
+---
+
 test_name: Setting max_retries to less than 0 should fail
 
 includes:

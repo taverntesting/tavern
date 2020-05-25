@@ -5,7 +5,7 @@ stages:
   - name: full-tests
     if: branch = master OR type = pull_request OR tag IS present
   - name: deploy
-    if: branch = master AND tag IS present
+    if: tag IS present
 
 sudo: required
 dist: xenial
@@ -14,6 +14,7 @@ language: python
 branches:
   only:
     - master
+    - /^\d+\.\d+\.\d+$/
 
 cache:
   directories:
