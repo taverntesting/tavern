@@ -35,11 +35,10 @@ schema;stage:
       required: true
       unique: true
     max_retries:
-      type: int
+      type: any
+      func: retry_variable
       required: false
       unique: true
-      range:
-        min: 0
 
     skip:
       type: any

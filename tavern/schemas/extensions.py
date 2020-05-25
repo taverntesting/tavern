@@ -488,3 +488,15 @@ def raise_body_error(value, rule_obj, path):
 
     msg = "The 'body' key has been replaced with 'json' in 1.0 to make it more in line with other blocks. see https://github.com/taverntesting/tavern/issues/495 for details."
     raise BadSchemaError(msg)
+
+
+def retry_variable(value, rule_obj, path):
+    """Check retry variables"""
+
+    int_variable(value, rule_obj, path)
+
+    if isinstance(value, int):
+        if value < 0:
+            raise BadSchemaError("max_retries must be greater than 0")
+
+    return True
