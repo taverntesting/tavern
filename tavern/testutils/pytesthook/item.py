@@ -135,6 +135,15 @@ class YamlItem(pytest.Item):
 
             values.update(mark_values)
 
+        # Use autouse fixtures as well
+        for m in self.fixturenames:
+            if m in values:
+                logger.debug("%s already explicitly used", m)
+                continue
+
+            mark_values = {m: self.funcargs[m]}
+            values.update(mark_values)
+
         return values
 
     def runtest(self):

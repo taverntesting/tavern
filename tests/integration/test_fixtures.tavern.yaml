@@ -122,3 +122,21 @@ stages:
       status_code: 200
       json:
         value: "{yield_str_fixture}"
+---
+
+test_name: Test autouse fixture
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{a_thing}"
+    response:
+      status_code: 200
+      json:
+        value: "{a_thing}"
