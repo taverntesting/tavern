@@ -1,10 +1,7 @@
 from functools import lru_cache
 import logging
-import os
 
-from box import Box
-
-from tavern.util.dict_util import format_keys
+from tavern.util.dict_util import format_keys, get_tavern_box
 from tavern.util.general import load_global_config
 from tavern.util.strict_util import StrictLevel
 
@@ -143,7 +140,7 @@ def load_global_cfg(pytest_config):
     except KeyError:
         logger.debug("Nothing to format in global config files")
     else:
-        tavern_box = Box({"tavern": {"env_vars": dict(os.environ)}})
+        tavern_box = get_tavern_box()
 
         global_cfg["variables"] = format_keys(loaded_variables, tavern_box)
 
