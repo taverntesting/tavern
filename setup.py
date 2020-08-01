@@ -57,10 +57,9 @@ class DeployPypi(Command):
 
 
 TESTS_REQUIRE = [
-    "pytest-cov",
-    "colorlog",
-    "mock",
-    "faker"
+    "pytest-cov==2.8.1",
+    "colorlog==4.1.0",
+    "faker==3.0.0"
 ]
 
 setup(

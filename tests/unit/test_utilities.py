@@ -5,7 +5,7 @@ import os
 import tempfile
 from textwrap import dedent
 
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 import pytest
 import yaml
 

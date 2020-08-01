@@ -39,6 +39,9 @@ jobs:
       env: TOXENV=py38lint TOXCFG=tox.ini
       stage: basic-tests
     - python: 3.8
+      env: TOXENV=py38mypy TOXCFG=tox.ini
+      stage: basic-tests
+    - python: 3.8
       env: TOXENV=py38isort TOXCFG=tox.ini
       stage: basic-tests
     - python: 3.8
