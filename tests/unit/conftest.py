@@ -1,4 +1,4 @@
-from mock import Mock
+from unittest.mock import Mock
 import pytest
 
 from tavern.util.strict_util import StrictLevel

@@ -4,7 +4,7 @@ from textwrap import dedent
 from unittest.mock import patch
 
 import _pytest
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 import pytest
 import yaml
 
