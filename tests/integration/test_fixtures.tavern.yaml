@@ -135,8 +135,8 @@ stages:
       url: "{host}/echo"
       method: POST
       json:
-        value: "{a_thing}"
+        value: "{autouse_thing}"
     response:
       status_code: 200
       json:
-        value: "{a_thing}"
+        value: "{autouse_thing_named}"
