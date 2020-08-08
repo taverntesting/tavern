@@ -8,7 +8,7 @@ TESTS_REQUIRE = [
     "faker",
     "prospector[with_pyroma,with_mypy]>=1.3.0,<2",
     "pygments",
-    "pylint>=2.5.3,<3",
+    "pylint==2.5.2",
     "black",
     "mypy",
     "mypy-extensions",
