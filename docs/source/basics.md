@@ -2089,6 +2089,33 @@ There are some limitations on fixtures:
   will raise an error and 'class' scoped fixtures may not behave as you expect.
 - Parametrizing fixtures does not work - this is a limitation in Pytest.
 
+Fixtures which are specified as `autouse` can also be used without explicitly
+using `usefixtures` in a test. This is a good way to essentially precompute a
+format variable without also having to use an external function or specify a
+`usefixtures` block in every test where you need it. 
+
+To do this, just pass the `autouse=True` parameter to your fixtures along with
+the relevant scope. Using 'session' will evalute the fixture once at the beginning
+of your test run and reuse the return value everywhere else it is used:
+
+```python
+@pytest.fixture(scope="session", autouse=True)
+def a_thing():
+    return "abc"
+```
+
+```yaml
+---
+test_name: Test autouse fixture
+
+stages:
+  - name: do something with fixture value
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{a_thing}"
+```
 
 ## Hooks
 

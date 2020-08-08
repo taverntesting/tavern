@@ -16,3 +16,13 @@ def bluerhug(request):
     # This doesn't really do anything at the moment. In future it might yield
     # the result or something, but it's a bit difficult to do at the moment.
     response = yield "hello"
+
+
+@pytest.fixture(scope="session", autouse=True)
+def autouse_thing():
+    return "abc"
+
+
+@pytest.fixture(scope="session", autouse=True, name="autouse_thing_named")
+def second(autouse_thing):
+    return autouse_thing
