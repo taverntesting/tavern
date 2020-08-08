@@ -174,26 +174,11 @@ class ReprdError(object):
             stage = self.exce._excinfo[1].stage
         except AttributeError:
             stage = None
-            # Fallback, we don't know which stage it is
-            spec = self.item.spec
-            stages = spec["stages"]
-
-            first_line = stages[0].start_mark.line - 1
-            last_line = stages[-1].end_mark.line
             line_start = None
         else:
-            first_line = stage.start_mark.line - 1
-            last_line = stage.end_mark.line
-            line_start = first_line + 1
+            line_start = stage.start_mark.line - 1
 
-        def read_relevant_lines(filename):
-            """Get lines between start and end mark"""
-            with io.open(filename, "r", encoding="utf8") as testfile:
-                for idx, line in enumerate(testfile.readlines()):
-                    if first_line < idx < last_line:
-                        yield line.split("#", 1)[0].rstrip()
-
-        code_lines = list(read_relevant_lines(self.item.spec.start_mark.name))
+        code_lines = self.item.format_test_stage(stage)
 
         missing_format_vars = self._print_format_variables(tw, code_lines)
         tw.line("")

@@ -1,16 +1,16 @@
 import copy
 import logging
 
-from _pytest import fixtures
 import attr
 import pytest
+from _pytest import fixtures
 
 from tavern.core import run_test
 from tavern.plugins import load_plugins
 from tavern.schemas.files import verify_tests
 from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
-
+from tavern.util.general import read_relevant_lines
 from .error import ReprdError
 from .util import load_global_cfg
 
@@ -80,8 +80,8 @@ class YamlItem(pytest.Item):
         for pm in pytest_marks:
             if pm.name == "usefixtures":
                 if (
-                    not isinstance(pm.mark.args, (list, tuple))
-                    or len(pm.mark.args) == 0
+                        not isinstance(pm.mark.args, (list, tuple))
+                        or len(pm.mark.args) == 0
                 ):
                     logger.error(
                         "'usefixtures' was an invalid type (should"
@@ -201,10 +201,10 @@ class YamlItem(pytest.Item):
         """
 
         if (
-            self.config.getini("tavern-use-default-traceback")
-            or self.config.getoption("tavern_use_default_traceback")
-            or not issubclass(excinfo.type, exceptions.TavernException)
-            or issubclass(excinfo.type, exceptions.BadSchemaError)
+                self.config.getini("tavern-use-default-traceback")
+                or self.config.getoption("tavern_use_default_traceback")
+                or not issubclass(excinfo.type, exceptions.TavernException)
+                or issubclass(excinfo.type, exceptions.BadSchemaError)
         ):
             return super(YamlItem, self).repr_failure(excinfo)
 
@@ -215,3 +215,27 @@ class YamlItem(pytest.Item):
 
     def reportinfo(self):
         return self.fspath, 0, "{s.path}::{s.name:s}".format(s=self)
+
+    def format_test_stage(self, stage):
+        """Get a test stage in a format that is nice for printing
+
+        Args:
+            stage: stage loaded from Yaml to print. If None, returns the whole test
+
+        Returns:
+            list(str): list of lines corresponding to stage
+        """
+
+        if stage is None:
+            spec = self.spec
+            stages = spec["stages"]
+
+            first_line = stages[0].start_mark.line - 1
+            last_line = stages[-1].end_mark.line
+        else:
+            first_line = stage.start_mark.line - 1
+            last_line = stage.end_mark.line
+
+        code_lines = list(read_relevant_lines(self.spec.start_mark.name, first_line, last_line))
+
+        return code_lines
