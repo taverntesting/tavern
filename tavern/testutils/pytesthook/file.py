@@ -179,7 +179,9 @@ class YamlFile(pytest.File):
                 }
             )
             # And create the new item
-            item_new = YamlItem(spec_new["test_name"], self, spec_new, self.fspath)
+            item_new = YamlItem.yamlitem_from_parent(
+                spec_new["test_name"], self, spec_new, self.fspath
+            )
             item_new.add_markers(pytest_marks)
 
             yield item_new
@@ -230,7 +232,9 @@ class YamlFile(pytest.File):
         Yields:
             YamlItem: Tavern YAML test
         """
-        item = YamlItem(test_spec["test_name"], self, test_spec, self.fspath)
+        item = YamlItem.yamlitem_from_parent(
+            test_spec["test_name"], self, test_spec, self.fspath
+        )
 
         original_marks = test_spec.get("marks", [])
 

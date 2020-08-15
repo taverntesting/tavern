@@ -40,7 +40,7 @@ def pytest_collect_file(parent, path):
     match_tavern_file = compiled.search
 
     if match_tavern_file(path.strpath):
-        return YamlFile(path, parent)
+        return YamlFile.from_parent(parent, fspath=path)
 
     return None
 
