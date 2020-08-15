@@ -1,11 +1,10 @@
-import sys
 import tempfile
 from textwrap import dedent
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import _pytest
-from unittest.mock import Mock, patch
 import pytest
+import sys
 import yaml
 
 from tavern.core import run
@@ -103,7 +102,7 @@ class TestRunAlone:
 class TestTavernRepr:
     @pytest.fixture(name="fake_item")
     def fix_fake_item(self, request):
-        item = YamlItem(
+        item = YamlItem.from_parent(
             name="Fake Test Item", parent=request.node, spec={}, path="/tmp/hello"
         )
         return item

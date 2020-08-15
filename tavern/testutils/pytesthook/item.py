@@ -36,6 +36,10 @@ class YamlItem(pytest.Item):
 
         self.global_cfg = {}
 
+    @classmethod
+    def yamlitem_from_parent(cls, name, parent, spec, path):
+        return cls.from_parent(parent, name=name, spec=spec, path=path)
+
     def initialise_fixture_attrs(self):
         # pylint: disable=protected-access,attribute-defined-outside-init
         self.funcargs = {}

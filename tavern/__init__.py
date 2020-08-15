@@ -1,2 +1,2 @@
 """Stop pytest warning about module already imported: PYTEST_DONT_REWRITE"""
-__version__ = "1.3.0"
+__version__ = "1.4.0"
