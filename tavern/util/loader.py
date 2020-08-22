@@ -404,7 +404,7 @@ def load_single_document_yaml(filename):
         UnexpectedDocumentsError: If more than one document was in the file
     """
 
-    with open(filename, "r") as fileobj:
+    with open(filename, "r", encoding="utf-8") as fileobj:
         try:
             contents = yaml.load(fileobj, Loader=IncludeLoader)
         except yaml.composer.ComposerError as e:
