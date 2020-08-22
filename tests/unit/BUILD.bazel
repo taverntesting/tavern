@@ -1,0 +1,19 @@
+load("@tavern_deps//:requirements.bzl", "requirement")
+load("@com_github_ali5h_rules_pip//:defs.bzl", "py_pytest_test")
+
+py_pytest_test(
+    name = "unit_tests",
+    srcs = glob(["**/*.py"]),
+    deps = [
+        "//:setup",
+        "//tavern",
+        requirement("faker"),
+        requirement("text_unidecode"),
+    ],
+)
+
+#load("//:rules/pytest_generate.bzl", "py_pytest_gentests")
+#
+#py_pytest_gentests(
+#    name = "k",
+#)

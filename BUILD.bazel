@@ -1,0 +1,39 @@
+load("@tavern_deps//:requirements.bzl", "requirement")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(
+    name = "setup",
+    srcs = ["setup.py"],
+    deps = [requirement("setuptools")],
+)
+
+load("@rules_python//python:defs.bzl", "py_runtime_pair")
+
+py_runtime(
+    name = "tavern_py3_runtime",
+    files = ["@python_interpreter//:files"],
+    interpreter = "@python_interpreter//:python_bin",
+    python_version = "PY3",
+)
+
+py_runtime_pair(
+    name = "tavern_py_runtime_pair",
+    py2_runtime = None,
+    py3_runtime = ":tavern_py3_runtime",
+)
+
+toolchain(
+    name = "py3_toolchain",
+    target_compatible_with = [
+        "@platforms//os:linux",
+        "@platforms//cpu:x86_64",
+    ],
+    toolchain = ":tavern_py_runtime_pair",
+    toolchain_type = "@rules_python//python:toolchain_type",
+)
+
+py_library(
+    name = "pytest",
+    deps = [requirement("pytest")],
+)

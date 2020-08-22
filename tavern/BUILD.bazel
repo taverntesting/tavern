@@ -1,0 +1,25 @@
+load("@tavern_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(
+    name = "tavern",
+    srcs = glob(["**/*.py"]),
+    deps = [
+        requirement("PyYAML"),
+        requirement("pykwalify"),
+        requirement("requests"),
+        requirement("pyjwt"),
+        requirement("paho-mqtt"),
+        requirement("jmespath"),
+        requirement("pytest"),
+        requirement("python-box"),
+        requirement("py"),
+        requirement("six"),
+        requirement("iniconfig"),
+        requirement("more_itertools"),
+        requirement("pluggy"),
+        requirement("stevedore"),
+    ],
+)
