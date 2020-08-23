@@ -1,4 +1,4 @@
-exports_files(["python_bin_{arch}"])
+exports_files(["python_bin"])
 filegroup(
     name = "files",
     srcs = glob(["bazel_install/**"], exclude = ["**/* *"]),

@@ -1,22 +1,8 @@
-PLATFORMS = ["linux_amd64"]
-#    PLATFORMS = ["linux_amd64", "darwin_amd64"]
-
 DEFAULT_VERSION = "3.8.3"
 
 SDK_VERSIONS = {
     "3.8.3": "dfab5ec723c218082fe3d5d7ae17ecbdebffa9a1aea4d64aa3a2ecdd2e795864",
 }
-
-def _register_toolchains(repo):
-    labels = [
-        "@{}//:{}".format(repo, name)
-        for name in generate_toolchain_names()
-    ]
-    native.register_toolchains(*labels)
-
-def generate_toolchain_names():
-    # keep in sync with declare_toolchains
-    return ["python_bin_" + p for p in PLATFORMS]
 
 def _sdk_build_file(ctx):
     ctx.file("ROOT")
@@ -92,7 +78,6 @@ def _python_download_sdk_impl(ctx):
 
 def python_download_sdk(name, **kwargs):
     _python_download_sdk(name = name, **kwargs)
-    _register_toolchains(name)
 
 _python_download_sdk = repository_rule(
     _python_download_sdk_impl,
