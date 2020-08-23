@@ -1,4 +1,5 @@
 load("@tavern_deps//:requirements.bzl", "requirement")
+load("@rules_foreign_cc//tools/build_defs:configure.bzl", "configure_make")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -8,12 +9,24 @@ py_library(
     deps = [requirement("setuptools")],
 )
 
+#configure_make(
+#    name = "python_built",
+#    binaries = ["python"],
+#    configure_options = ["--enable-optimizations"],
+#    install_prefix = "bazel_install",
+#    lib_source = "@python_interpreter//:sources",
+#    make_commands = [
+#        "make -j 18 python",
+#        "make install",
+#    ],
+#)
+
 load("@rules_python//python:defs.bzl", "py_runtime_pair")
 
 py_runtime(
     name = "tavern_py3_runtime",
     files = ["@python_interpreter//:files"],
-    interpreter = "@python_interpreter//:python_bin",
+    interpreter = ":python_bin",
     python_version = "PY3",
 )
 
@@ -31,9 +44,4 @@ toolchain(
     ],
     toolchain = ":tavern_py_runtime_pair",
     toolchain_type = "@rules_python//python:toolchain_type",
-)
-
-py_library(
-    name = "pytest",
-    deps = [requirement("pytest")],
 )

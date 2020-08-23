@@ -1,6 +1,13 @@
 exports_files(["python_bin"])
+
 filegroup(
     name = "files",
     srcs = glob(["bazel_install/**"], exclude = ["**/* *"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "sources",
+    srcs = glob(["**/*"]),
     visibility = ["//visibility:public"],
 )

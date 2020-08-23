@@ -4,6 +4,7 @@ load("@com_github_ali5h_rules_pip//:defs.bzl", "py_pytest_test")
 py_pytest_test(
     name = "unit_tests",
     srcs = glob(["**/*.py"]),
+    args = ["-qqq"],
     deps = [
         "//:setup",
         "//tavern",

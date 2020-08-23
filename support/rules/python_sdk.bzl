@@ -2,6 +2,7 @@ DEFAULT_VERSION = "3.8.3"
 
 SDK_VERSIONS = {
     "3.8.3": "dfab5ec723c218082fe3d5d7ae17ecbdebffa9a1aea4d64aa3a2ecdd2e795864",
+    "3.6.5": "f434053ba1b5c8a5cc597e966ead3c5143012af827fd3f0697d21450bb8d87a6",
 }
 
 def _sdk_build_file(ctx):
@@ -15,10 +16,7 @@ def _sdk_build_file(ctx):
         },
     )
 
-def _remote_sdk(ctx, url, strip_prefix, sha256):
-    if strip_prefix != "python":
-        fail("strip_prefix not supported")
-
+def _remote_sdk(ctx, url, sha256):
     ctx.download(
         url = url,
         sha256 = sha256,
@@ -27,7 +25,7 @@ def _remote_sdk(ctx, url, strip_prefix, sha256):
 
     res = ctx.execute(["tar", "-xf", "python_sdk.tar.xz", "--strip-components=1"])
     if res.return_code:
-        fail("error extracting Go SDK:\n" + res.stdout + res.stderr)
+        fail("error extracting Python SDK:\n" + res.stdout + res.stderr)
 
     ctx.execute(["rm", "python_sdk.tar.xz"])
 
@@ -49,24 +47,19 @@ def _python_download_sdk_impl(ctx):
         version = DEFAULT_VERSION
         sha256 = SDK_VERSIONS[version]
 
-    if ctx.os.name == "linux":
-        _py_configure = """
-        ./configure --prefix=$(pwd)/bazel_install
-        """
-    elif ctx.os.name == "mac os x":
-        _py_configure = """
-        ./configure --prefix=$(pwd)/bazel_install --with-openssl=$(brew --prefix openssl)
-        """
-    else:
-        fail("unsupported")
-
     url = ctx.attr.url.format(version = version)
 
     _sdk_build_file(ctx)
-    _remote_sdk(ctx, url, ctx.attr.strip_prefix, sha256)
+    _remote_sdk(ctx, url, sha256)
 
+    if ctx.os.name == "linux":
+        _py_configure = "./configure --prefix=./bazel_install"
+    elif ctx.os.name == "mac os x":
+        _py_configure = "./configure --prefix=./bazel_install --with-openssl=$(brew --prefix openssl)"
+    else:
+        fail("unsupported")
     patch_cmds = [
-        "mkdir $(pwd)/bazel_install",
+        "mkdir ./bazel_install",
         _py_configure,
         "make -j 10",
         "make -j 10 install",
@@ -74,7 +67,10 @@ def _python_download_sdk_impl(ctx):
     ]
 
     for cmd in patch_cmds:
-        ctx.execute(cmd.split(" "))
+        result = ctx.execute(cmd.strip().split(" "))
+
+        if result.return_code:
+            fail("Error running '{}': {} ({})".format(cmd.strip(), result.stdout.strip(), result.stderr.strip()))
 
 def python_download_sdk(name, **kwargs):
     _python_download_sdk(name = name, **kwargs)
@@ -85,6 +81,5 @@ _python_download_sdk = repository_rule(
         "version": attr.string(),
         "sha256": attr.string(),
         "url": attr.string(default = "https://www.python.org/ftp/python/{version}/Python-{version}.tar.xz"),
-        "strip_prefix": attr.string(default = "python"),
     },
 )
