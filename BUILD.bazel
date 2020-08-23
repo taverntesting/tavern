@@ -12,8 +12,8 @@ load("@rules_python//python:defs.bzl", "py_runtime_pair")
 
 py_runtime(
     name = "tavern_py3_runtime",
-    files = ["@python_interpreter//:files"],
-    interpreter = "@python_interpreter//:python_bin",
+    files = ["@tavern//:files"],
+    interpreter = "@tavern//:python_bin",
     python_version = "PY3",
 )
 

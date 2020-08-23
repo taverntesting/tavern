@@ -1,0 +1,6 @@
+exports_files(["python_bin_{arch}"])
+filegroup(
+    name = "files",
+    srcs = glob(["bazel_install/**"], exclude = ["**/* *"]),
+    visibility = ["//visibility:public"],
+)
