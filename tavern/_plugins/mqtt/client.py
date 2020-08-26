@@ -58,7 +58,7 @@ def _handle_tls_args(tls_args):
 
     def check_file_exists(key):
         try:
-            with open(tls_args[key], "r"):
+            with open(tls_args[key], "r", encoding="utf-8"):
                 pass
         except IOError as e:
             raise exceptions.MQTTTLSError(

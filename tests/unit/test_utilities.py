@@ -413,6 +413,20 @@ class TestLoadCfg:
             finally:
                 os.remove(wrapped_tmp.name)
 
+    @pytest.mark.parametrize("value", ("b", "三木"))
+    def test_load_utf8(self, value):
+        """if yaml has utf8 char , may load error"""
+        content = f"""a: {value}""" ""
+
+        with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as f:
+            f.write(content.encode("utf8"))
+
+        try:
+            load_single_document_yaml(f.name)
+
+        finally:
+            os.remove(f.name)
+
 
 class TestLoadFile:
     @staticmethod
