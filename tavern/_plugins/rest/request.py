@@ -124,7 +124,12 @@ def get_request_args(rspec, test_block_config):
         if isinstance(fspec["timeout"], list):
             request_args["timeout"] = tuple(fspec["timeout"])
 
-    for key in optional_in_file:
+    external_function_keys = optional_in_file[:]
+    # Support to use external function to create a url.
+    # Github issues: https://github.com/taverntesting/tavern/issues/580
+    external_function_keys.append("url")
+
+    for key in external_function_keys:
         try:
             func = get_wrapped_create_function(request_args[key].pop("$ext"))
         except (KeyError, TypeError, AttributeError):

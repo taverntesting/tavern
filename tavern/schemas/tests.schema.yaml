@@ -120,7 +120,8 @@ schema;stage:
       required: false
       mapping:
         url:
-          type: str
+          type: any
+          func: validate_data_key
           required: true
 
         follow_redirects:
