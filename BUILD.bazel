@@ -9,24 +9,37 @@ py_library(
     deps = [requirement("setuptools")],
 )
 
-#configure_make(
-#    name = "python_built",
-#    binaries = ["python"],
-#    configure_options = ["--enable-optimizations"],
-#    install_prefix = "bazel_install",
-#    lib_source = "@python_interpreter//:sources",
-#    make_commands = [
-#        "make -j 18 python",
-#        "make install",
-#    ],
-#)
+configure_make(
+    name = "python_built",
+    binaries = ["python3.8"],
+    configure_options = [
+        # Runs a load of extra tests that we don't care about
+        # "--enable-optimizations",
+        # Fixes bug (?) in CFLAGS definition
+        "CFLAGS='-Dredacted=\"redacted\"'",
+    ],
+    install_prefix = "bazel_install",
+    lib_source = "@python_src//:sources",
+    make_commands = [
+        "make -j 6",
+        "make -j 6 altinstall",
+    ],
+)
+
+genrule(
+    name = "python_interpreter",
+    srcs = [":python_built"],
+    outs = ["python3"],
+    cmd = "cp `ls $(locations :python_built) | grep bin/python3.8$$` $(@)",
+    executable = True,
+)
 
 load("@rules_python//python:defs.bzl", "py_runtime_pair")
 
 py_runtime(
     name = "tavern_py3_runtime",
-    files = ["@python_interpreter//:files"],
-    interpreter = ":python_bin",
+    files = ["@python_src//:files"],
+    interpreter = ":python_interpreter",
     python_version = "PY3",
 )
 

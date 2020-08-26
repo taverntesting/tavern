@@ -52,30 +52,7 @@ def _python_download_sdk_impl(ctx):
     _sdk_build_file(ctx)
     _remote_sdk(ctx, url, sha256)
 
-    if ctx.os.name == "linux":
-        _py_configure = "./configure --prefix=./bazel_install"
-    elif ctx.os.name == "mac os x":
-        _py_configure = "./configure --prefix=./bazel_install --with-openssl=$(brew --prefix openssl)"
-    else:
-        fail("unsupported")
-    patch_cmds = [
-        "mkdir ./bazel_install",
-        _py_configure,
-        "make -j 10",
-        "make -j 10 install",
-        "ln -s bazel_install/bin/python3 python_bin",
-    ]
-
-    for cmd in patch_cmds:
-        result = ctx.execute(cmd.strip().split(" "))
-
-        if result.return_code:
-            fail("Error running '{}': {} ({})".format(cmd.strip(), result.stdout.strip(), result.stderr.strip()))
-
-def python_download_sdk(name, **kwargs):
-    _python_download_sdk(name = name, **kwargs)
-
-_python_download_sdk = repository_rule(
+python_download_sdk = repository_rule(
     _python_download_sdk_impl,
     attrs = {
         "version": attr.string(),

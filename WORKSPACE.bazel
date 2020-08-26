@@ -43,8 +43,8 @@ rules_foreign_cc_dependencies()
 load("@tavern//support/rules:python_sdk.bzl", "python_download_sdk")
 
 python_download_sdk(
-    name = "python_interpreter",
-    #    version = "3.6.5",
+    name = "python_src",
+    version = "3.8.3",
 )
 
 register_toolchains("//:py3_toolchain")
