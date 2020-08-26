@@ -118,6 +118,7 @@ def run_test(in_file, test_spec, global_cfg):
     # Initialise test config for this test with the global configuration before
     # starting
     test_block_config = dict(global_cfg)
+    default_global_stricness = global_cfg["strict"]
 
     if "variables" not in test_block_config:
         test_block_config["variables"] = {}
@@ -167,6 +168,7 @@ def run_test(in_file, test_spec, global_cfg):
             if has_only and not getonly(stage):
                 continue
 
+            test_block_config["strict"] = default_global_stricness
             _calculate_stage_strictness(stage, test_block_config, test_spec)
 
             # Wrap run_stage with retry helper
