@@ -52,7 +52,7 @@ def get_parametrised_tests(marks):
     y = YamlFile.from_parent(args.parent, fspath=args.fspath)
     y.session = args.session
 
-    spec = {"test_name": "a test"}
+    spec = {"test_name": "a test", "stages": []}
 
     gen = y.get_parametrized_items(spec, marks, [])
 

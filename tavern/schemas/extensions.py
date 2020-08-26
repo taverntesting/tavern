@@ -233,6 +233,21 @@ def check_usefixtures(value, rule_obj, path):
     return True
 
 
+def verify_oneof_id_name(value, rule_obj, path):
+    """Checks that if 'name' is not present, 'id' is"""
+    # pylint: disable=unused-argument
+
+    name = value.get("name")
+    if not name:
+        if name == "":
+            raise BadSchemaError("Name cannot be empty")
+
+        if not value.get("id"):
+            raise BadSchemaError("If 'name' is not specified, 'id' must be specified")
+
+    return True
+
+
 def check_parametrize_marks(value, rule_obj, path):
     # pylint: disable=unused-argument
 

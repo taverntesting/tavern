@@ -179,6 +179,16 @@ class YamlItem(pytest.Item):
 
             verify_tests(self.spec)
 
+            for stage in self.spec["stages"]:
+                if not stage.get("name"):
+                    if not stage.get("id"):
+                        # Should never actually reach here, should be caught at schema check time
+                        raise exceptions.BadSchemaError(
+                            "One of name or ID must be specified"
+                        )
+
+                    stage["name"] = stage["id"]
+
             run_test(self.path, self.spec, self.global_cfg)
         except exceptions.BadSchemaError:
             if xfail == "verify":
