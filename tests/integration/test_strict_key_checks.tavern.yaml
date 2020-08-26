@@ -422,6 +422,33 @@ stages:
 
 ---
 
+test_name: Test non-strict key matching in one stage does not leak over to the next
+
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match 'c' in list, strict false
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      strict: false
+      json:
+        - c
+
+  - name: match 'c' in list, no strict
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      json:
+        - c
+
+---
+
 test_name: Test strict key matching one list item fails
 
 _xfail: run
