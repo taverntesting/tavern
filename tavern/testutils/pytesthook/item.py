@@ -38,6 +38,16 @@ class YamlItem(pytest.Item):
 
     @classmethod
     def yamlitem_from_parent(cls, name, parent, spec, path):
+        for stage in spec["stages"]:
+            if not stage.get("name"):
+                if not stage.get("id"):
+                    # Should never actually reach here, should be caught at schema check time
+                    raise exceptions.BadSchemaError(
+                        "One of name or ID must be specified"
+                    )
+
+                stage["name"] = stage["id"]
+
         return cls.from_parent(parent, name=name, spec=spec, path=path)
 
     def initialise_fixture_attrs(self):
