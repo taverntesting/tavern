@@ -112,3 +112,40 @@ stages:
       method: GET
     response:
       status_code: 999
+
+---
+
+test_name: Test skipif with env var
+
+includes:
+  - !include common.yaml
+
+marks:
+  # ie only run against https
+  - skipif: "'https' in '{tavern.env_vars.TEST_HOST}'"
+
+stages:
+  - name: Fake get
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+
+---
+
+test_name: Test skipif with env var, negative
+
+includes:
+  - !include common.yaml
+
+marks:
+  - skipif: "'http' in '{tavern.env_vars.TEST_HOST}'"
+
+stages:
+  - name: This test should not run
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 999

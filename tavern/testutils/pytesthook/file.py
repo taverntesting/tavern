@@ -2,15 +2,13 @@ import copy
 import functools
 import itertools
 import logging
-import os
 
-from box import Box
 import pytest
 import yaml
 
 from tavern.schemas.files import verify_tests
 from tavern.util import exceptions
-from tavern.util.dict_util import format_keys
+from tavern.util.dict_util import format_keys, get_tavern_box
 from tavern.util.loader import IncludeLoader
 
 from .item import YamlItem
@@ -209,7 +207,7 @@ class YamlFile(pytest.File):
             fmt_vars.update(**i.get("variables", {}))
 
         # Needed if something in a config file uses tavern.env_vars
-        tavern_box = Box({"tavern": {"env_vars": dict(os.environ)}})
+        tavern_box = get_tavern_box()
 
         try:
             fmt_vars = _format_without_inner(fmt_vars, tavern_box)
@@ -218,7 +216,8 @@ class YamlFile(pytest.File):
             msg = "Tried to use tavern format variable that did not exist"
             raise exceptions.MissingFormatError(msg) from e
 
-        return fmt_vars
+        tavern_box.merge_update(**fmt_vars)
+        return tavern_box
 
     def _generate_items(self, test_spec):
         """Modify or generate tests based on test spec
