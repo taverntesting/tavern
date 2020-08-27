@@ -129,28 +129,28 @@ stages:
         hello: "there"
 
 
-#---
-#
-#test_name: Test external function url
-#
-#includes:
-#  - !include common.yaml
-#
-#stages:
-#  - name: external function url
-#    request:
-#      url:
-#        $ext:
-#          function: ext_functions:gen_echo_url
-#          extra_kwargs:
-#            host: "{host}"
-#      method: POST
-#      json:
-#        value1: "hi"
-#        $ext:
-#          function: ext_functions:return_hello
-#    response:
-#      status_code: 200
-#      json:
-#        value1: "hi"
-#        hello: "there"
+---
+
+test_name: Test external function url
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: external function url
+    request:
+      url:
+        $ext:
+          function: ext_functions:gen_echo_url
+          extra_kwargs:
+            host: "{host}"
+      method: POST
+      json:
+        value1: "hi"
+        $ext:
+          function: ext_functions:return_hello
+    response:
+      status_code: 200
+      json:
+        value1: "hi"
+        hello: "there"

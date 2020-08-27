@@ -137,10 +137,11 @@ def get_request_args(rspec, test_block_config):
         else:
             merge_ext_values = test_block_config.get("merge_ext_values")
             logger.debug("Will merge ext values? %s", merge_ext_values)
-            if merge_ext_values:
-                request_args[key] = deep_dict_merge(request_args[key], func())
+            func_result = func()
+            if merge_ext_values and not isinstance(func_result, str):
+                request_args[key] = deep_dict_merge(request_args[key], func_result)
             else:
-                request_args[key] = func()
+                request_args[key] = func_result
 
     # If there's any nested json in parameters, urlencode it
     # if you pass nested json to 'params' then requests silently fails and just
