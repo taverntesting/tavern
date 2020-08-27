@@ -3,4 +3,4 @@ def return_hello():
 
 
 def gen_echo_url(host):
-    return "{}/echo".format(host)
+    return "{0}/echo".format(host)
