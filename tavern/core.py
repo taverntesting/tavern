@@ -15,6 +15,8 @@ from .util.delay import delay
 from .util.dict_util import format_keys, get_tavern_box
 from .util.retry import retry
 
+from tavern.testutils.pytesthook.newhooks import call_hook
+
 logger = logging.getLogger(__name__)
 
 
@@ -142,6 +144,13 @@ def run_test(in_file, test_spec, global_cfg):
     test_block_name = test_spec["test_name"]
 
     logger.info("Running test : %s", test_block_name)
+
+    call_hook(
+        test_block_config,
+        "pytest_tavern_beta_before_every_block_run",
+        test_spec=test_spec,
+        test_block_config=test_block_config
+    )
 
     with ExitStack() as stack:
         sessions = get_extra_sessions(test_spec, test_block_config)

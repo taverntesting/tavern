@@ -22,6 +22,18 @@ def pytest_tavern_beta_before_every_test_run(test_dict, variables, test_block_co
     """
 
 
+def pytest_tavern_beta_before_every_block_run(test_spec, test_block_config):
+    """Called before every test_spec run.
+
+    Note:
+        -
+
+    Args:
+        test_spec (object): Test spec object.
+        test_block_config (dict): Test block config object.
+    """
+
+
 def pytest_tavern_beta_before_every_request(request_args, test_block_config):
     """Called before every _request_ - including HTTP
 
