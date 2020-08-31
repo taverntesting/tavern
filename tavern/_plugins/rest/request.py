@@ -18,6 +18,8 @@ from tavern.schemas.extensions import get_wrapped_create_function
 from tavern.util import exceptions
 from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
 
+from tavern.testutils.pytesthook.newhooks import call_hook
+
 logger = logging.getLogger(__name__)
 
 
@@ -457,6 +459,13 @@ class RestRequest(BaseRequest):
                     request_args.update(data=file)
                 else:
                     self._request_args.update(_get_file_arguments(request_args, stack))
+
+                call_hook(
+                    test_block_config,
+                    "pytest_tavern_beta_before_every_request",
+                    request_args=self._request_args,
+                    test_block_config=test_block_config
+                )
 
                 return session.request(**self._request_args)
 

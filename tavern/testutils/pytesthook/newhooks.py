@@ -4,7 +4,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def pytest_tavern_beta_before_every_test_run(test_dict, variables):
+def pytest_tavern_beta_before_every_test_run(test_dict, variables, test_block_config):
     """Called:
 
     - directly after fixtures are loaded for a test
@@ -16,12 +16,25 @@ def pytest_tavern_beta_before_every_test_run(test_dict, variables):
     Modify the test in-place if you want to do something to it.
 
     Args:
-        test_dict (dict): Test to run
-        variables (dict): Available variables
+        test_dict (dict): Test to run.
+        variables (dict): Available variables.
+        test_block_config (dict): Test block config object.
     """
 
 
-def pytest_tavern_beta_after_every_response(expected, response):
+def pytest_tavern_beta_before_every_request(request_args, test_block_config):
+    """Called before every _request_ - including HTTP
+
+    Note:
+        - The request arguments object type depends on what plugin you're using.
+
+    Args:
+         request_args (object): Request arguments object.
+        test_block_config (dict): Test block config object.
+    """
+
+
+def pytest_tavern_beta_after_every_response(expected, response, test_block_config):
     """Called after every _response_ - including MQTT/HTTP/etc
 
     Note:
@@ -30,7 +43,8 @@ def pytest_tavern_beta_after_every_response(expected, response):
 
     Args:
         response (object): Response object.
-        expected (dict): Response block in stage
+        expected (dict): Response block in stage.
+        test_block_config (dict): Test block config object.
     """
 
 
