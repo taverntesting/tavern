@@ -15,7 +15,7 @@ from .util.delay import delay
 from .util.dict_util import format_keys, get_tavern_box
 from .util.retry import retry
 
-from tavern.testutils.pytesthook.newhooks import call_hook
+from .testutils.pytesthook.newhooks import call_hook
 
 logger = logging.getLogger(__name__)
 
