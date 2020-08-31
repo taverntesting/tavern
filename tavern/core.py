@@ -181,6 +181,12 @@ def run_test(in_file, test_spec, global_cfg):
             run_stage_with_retries = retry(stage, test_block_config)(run_stage)
 
             try:
+                call_hook(
+                    test_block_config,
+                    "pytest_tavern_beta_before_every_stage_run",
+                    stage=stage,
+                    test_spec=test_spec,
+                )
                 run_stage_with_retries(sessions, stage, test_block_config)
             except exceptions.TavernException as e:
                 e.stage = stage
