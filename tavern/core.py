@@ -10,6 +10,7 @@ from tavern.schemas.files import wrapfile
 from tavern.util.strict_util import StrictLevel
 
 from .plugins import get_expected, get_extra_sessions, get_request_type, get_verifiers
+from .testutils.pytesthook.hook_emmiter import hook_emmit
 from .util import exceptions
 from .util.delay import delay
 from .util.dict_util import format_keys, get_tavern_box
@@ -143,7 +144,7 @@ def run_test(in_file, test_spec, global_cfg):
 
     logger.info("Running test : %s", test_block_name)
 
-    call_hook(
+    hook_emmit(
         test_block_config,
         "pytest_tavern_beta_before_every_block_run",
         test_spec=test_spec,
@@ -181,7 +182,7 @@ def run_test(in_file, test_spec, global_cfg):
             run_stage_with_retries = retry(stage, test_block_config)(run_stage)
 
             try:
-                call_hook(
+                hook_emmit(
                     test_block_config,
                     "pytest_tavern_beta_before_every_stage_run",
                     stage=stage,
@@ -341,20 +342,3 @@ def run(
             global_filename = _get_or_wrap_global_cfg(stack, tavern_global_cfg)
             pytest_args += ["--tavern-global-cfg", global_filename]
         return pytest.main(args=pytest_args)
-
-
-def call_hook(test_block_config, hookname, **kwargs):
-    """Utility to call the hooks"""
-    try:
-        hook = getattr(
-            test_block_config["tavern_internal"]["pytest_hook_caller"], hookname
-        )
-    except AttributeError:
-        logger.critical("Error getting tavern hook!")
-        raise
-
-    try:
-        hook(**kwargs)
-    except AttributeError:
-        logger.error("Unexpected error calling tavern hook")
-        raise

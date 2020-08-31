@@ -1,6 +1,8 @@
 # pylint: disable=unused-argument
 import logging
 
+from .hook_emmiter import hook_emmit
+
 logger = logging.getLogger(__name__)
 
 
@@ -74,16 +76,4 @@ def pytest_tavern_beta_after_every_response(expected, response, test_block_confi
 
 def call_hook(test_block_config, hookname, **kwargs):
     """Utility to call the hooks"""
-    try:
-        hook = getattr(
-            test_block_config["tavern_internal"]["pytest_hook_caller"], hookname
-        )
-    except AttributeError:
-        logger.critical("Error getting tavern hook!")
-        raise
-
-    try:
-        hook(**kwargs)
-    except AttributeError:
-        logger.error("Unexpected error calling tavern hook")
-        raise
+    hook_emmit(test_block_config, hookname, **kwargs)
