@@ -464,7 +464,6 @@ class RestRequest(BaseRequest):
                     test_block_config,
                     "pytest_tavern_beta_before_every_request",
                     request_args=self._request_args,
-                    test_block_config=test_block_config
                 )
 
                 return session.request(**self._request_args)

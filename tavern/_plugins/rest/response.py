@@ -147,7 +147,6 @@ class RestResponse(BaseResponse):
             "pytest_tavern_beta_after_every_response",
             expected=self.expected,
             response=response,
-            test_block_config=self.test_block_config
         )
 
         self.response = response

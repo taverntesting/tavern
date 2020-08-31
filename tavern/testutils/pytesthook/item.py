@@ -175,7 +175,6 @@ class YamlItem(pytest.Item):
                 "pytest_tavern_beta_before_every_test_run",
                 test_dict=self.spec,
                 variables=self.global_cfg["variables"],
-                test_block_config=self.global_cfg
             )
 
             verify_tests(self.spec)

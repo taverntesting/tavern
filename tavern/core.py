@@ -15,8 +15,6 @@ from .util.delay import delay
 from .util.dict_util import format_keys, get_tavern_box
 from .util.retry import retry
 
-from .testutils.pytesthook.newhooks import call_hook
-
 logger = logging.getLogger(__name__)
 
 
@@ -149,7 +147,6 @@ def run_test(in_file, test_spec, global_cfg):
         test_block_config,
         "pytest_tavern_beta_before_every_block_run",
         test_spec=test_spec,
-        test_block_config=test_block_config
     )
 
     with ExitStack() as stack:
@@ -298,12 +295,12 @@ def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
 
 
 def run(
-    in_file,
-    tavern_global_cfg=None,
-    tavern_mqtt_backend=None,
-    tavern_http_backend=None,
-    tavern_strict=None,
-    pytest_args=None,
+        in_file,
+        tavern_global_cfg=None,
+        tavern_mqtt_backend=None,
+        tavern_http_backend=None,
+        tavern_strict=None,
+        pytest_args=None,
 ):  # pylint: disable=too-many-arguments
     """Run all tests contained in a file using pytest.main()
 
@@ -338,3 +335,20 @@ def run(
             global_filename = _get_or_wrap_global_cfg(stack, tavern_global_cfg)
             pytest_args += ["--tavern-global-cfg", global_filename]
         return pytest.main(args=pytest_args)
+
+
+def call_hook(test_block_config, hookname, **kwargs):
+    """Utility to call the hooks"""
+    try:
+        hook = getattr(
+            test_block_config["tavern_internal"]["pytest_hook_caller"], hookname
+        )
+    except AttributeError:
+        logger.critical("Error getting tavern hook!")
+        raise
+
+    try:
+        hook(**kwargs)
+    except AttributeError:
+        logger.error("Unexpected error calling tavern hook")
+        raise
