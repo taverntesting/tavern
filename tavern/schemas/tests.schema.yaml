@@ -15,6 +15,40 @@ schema;any_json_with_ext:
   type: any
   required: false
 
+schema;mqtt_response:
+  type: map
+  required: false
+  mapping:
+    topic:
+      type: str
+      required: true
+    payload:
+      type: any
+      required: false
+    json:
+      include: any_json_with_ext
+    timeout:
+      type: any
+      func: float_variable
+      required: false
+    qos:
+      type: any
+      func: int_variable
+      required: false
+      enum:
+        - 0
+        - 1
+        - 2
+    verify_response_with:
+      func: validate_extensions
+      type: any
+
+    save:
+      include: any_json_with_ext
+      mapping:
+        json:
+          type: any
+
 schema;any_map:
   func: validate_request_json
   type: map
@@ -85,38 +119,12 @@ schema;stage:
           required: false
 
     mqtt_response:
-      type: map
+      include: mqtt_response
+    mqtt_responses:
+      type: seq
       required: false
-      mapping:
-        topic:
-          type: str
-          required: true
-        payload:
-          type: any
-          required: false
-        json:
-          include: any_json_with_ext
-        timeout:
-          type: any
-          func: float_variable
-          required: false
-        qos:
-          type: any
-          func: int_variable
-          required: false
-          enum:
-            - 0
-            - 1
-            - 2
-        verify_response_with:
-          func: validate_extensions
-          type: any
-
-        save:
-          include: any_json_with_ext
-          mapping:
-            json:
-              type: any
+      sequence:
+        - include: mqtt_response
 
     request:
       type: map
