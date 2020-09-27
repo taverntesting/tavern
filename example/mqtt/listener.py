@@ -80,7 +80,7 @@ def handle_lights_topic(message):
             )
 
 
-def handle_request_topic(client, message):
+def handle_status_topic(client, message):
     db = get_db()
 
     device_id = message.topic.split("/")[-2]
@@ -124,7 +124,7 @@ def on_message_callback(client, userdata, message):
     elif "ping" in message.topic:
         handle_ping_topic(client, message)
     elif "status" in message.topic:
-        handle_request_topic(client, message)
+        handle_status_topic(client, message)
     else:
         logging.warning("Got unexpected MQTT topic '%s'", message.topic)
 
