@@ -78,8 +78,7 @@ class RestResponse(BaseResponse):
             log_dict_block(redirect_query_params, "Redirect URL query parameters")
 
     def _get_redirect_query_params(self, response):
-        """If there was a redirect header, get any query parameters from it
-        """
+        """If there was a redirect header, get any query parameters from it"""
 
         try:
             redirect_url = response.headers["location"]
@@ -211,7 +210,9 @@ class RestResponse(BaseResponse):
 
         if isinstance(expected_block, dict):
             if expected_block.pop("$ext", None):
-                raise exceptions.InvalidExtBlockException(blockname,)
+                raise exceptions.InvalidExtBlockException(
+                    blockname,
+                )
 
         if blockname == "headers":
             # Special case for headers. These need to be checked in a case

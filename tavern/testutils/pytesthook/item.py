@@ -179,6 +179,16 @@ class YamlItem(pytest.Item):
 
             verify_tests(self.spec)
 
+            for stage in self.spec["stages"]:
+                if not stage.get("name"):
+                    if not stage.get("id"):
+                        # Should never actually reach here, should be caught at schema check time
+                        raise exceptions.BadSchemaError(
+                            "One of name or ID must be specified"
+                        )
+
+                    stage["name"] = stage["id"]
+
             run_test(self.path, self.spec, self.global_cfg)
         except exceptions.BadSchemaError:
             if xfail == "verify":
@@ -198,7 +208,7 @@ class YamlItem(pytest.Item):
                 )
 
     def repr_failure(self, excinfo, style=None):
-        """ called when self.runtest() raises an exception.
+        """called when self.runtest() raises an exception.
 
         By default, will raise a custom formatted traceback if it's a tavern error. if not, will use the default
         python traceback
