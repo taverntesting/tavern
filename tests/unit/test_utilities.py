@@ -63,8 +63,7 @@ class TestValidateFunctions:
         validate_extensions(spec, None, None)
 
     def test_get_invalid_module(self):
-        """Nonexistent module
-        """
+        """Nonexistent module"""
 
         spec = {"function": "bleuuerhug:add"}
 
@@ -72,8 +71,7 @@ class TestValidateFunctions:
             validate_extensions(spec, None, None)
 
     def test_get_nonexistent_function(self):
-        """No name in module
-        """
+        """No name in module"""
 
         spec = {"function": "os:aaueurhg"}
 
@@ -83,8 +81,7 @@ class TestValidateFunctions:
 
 class TestDictMerge:
     def test_single_level(self):
-        """ Merge two depth-one dicts with no conflicts
-        """
+        """Merge two depth-one dicts with no conflicts"""
         dict_1 = {"key_1": "original_value_1", "key_2": "original_value_2"}
         dict_2 = {"key_2": "new_value_2", "key_3": "new_value_3"}
 
@@ -99,8 +96,7 @@ class TestDictMerge:
         }
 
     def test_recursive_merge(self):
-        """ Merge two depth-one dicts with no conflicts
-        """
+        """Merge two depth-one dicts with no conflicts"""
         dict_1 = {
             "key": {"deep_key_1": "original_value_1", "deep_key_2": "original_value_2"}
         }

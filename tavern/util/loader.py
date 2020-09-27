@@ -27,8 +27,7 @@ def makeuuid(loader, node):
 
 
 class RememberComposer(Composer):
-    """A composer that doesn't forget anchors across documents
-    """
+    """A composer that doesn't forget anchors across documents"""
 
     def compose_document(self):
         # Drop the DOCUMENT-START event.

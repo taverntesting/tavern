@@ -1,16 +1,13 @@
 class TavernException(Exception):
-    """Base exception
-    """
+    """Base exception"""
 
 
 class BadSchemaError(TavernException):
-    """Schema mismatch
-    """
+    """Schema mismatch"""
 
 
 class TestFailError(TavernException):
-    """Test failed somehow
-    """
+    """Test failed somehow"""
 
     def __init__(self, msg, failures=None):
         super(TestFailError, self).__init__(msg)
@@ -18,23 +15,19 @@ class TestFailError(TavernException):
 
 
 class KeyMismatchError(TavernException):
-    """Mismatch found while validating keys in response
-    """
+    """Mismatch found while validating keys in response"""
 
 
 class UnexpectedKeysError(TavernException):
-    """Unexpected keys used in request specification
-    """
+    """Unexpected keys used in request specification"""
 
 
 class DuplicateKeysError(TavernException):
-    """Duplicate key in request specification
-    """
+    """Duplicate key in request specification"""
 
 
 class MissingKeysError(TavernException):
-    """Missing key in request specification
-    """
+    """Missing key in request specification"""
 
 
 class MissingFormatError(TavernException):
@@ -44,13 +37,11 @@ class MissingFormatError(TavernException):
 
 
 class MissingSettingsError(TavernException):
-    """Wanted to send an MQTT message but no settings were given
-    """
+    """Wanted to send an MQTT message but no settings were given"""
 
 
 class MQTTError(TavernException):
-    """Some kind of error returned from paho library
-    """
+    """Some kind of error returned from paho library"""
 
 
 class MissingCookieError(TavernException):
@@ -60,13 +51,11 @@ class MissingCookieError(TavernException):
 
 
 class RestRequestException(TavernException):
-    """Error making requests in RestRequest()
-    """
+    """Error making requests in RestRequest()"""
 
 
 class MQTTRequestException(TavernException):
-    """Error making requests in MQTTRequest()
-    """
+    """Error making requests in MQTTRequest()"""
 
 
 class MQTTTLSError(TavernException):

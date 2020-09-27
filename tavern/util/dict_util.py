@@ -180,7 +180,7 @@ def recurse_access_key(data, query):
 
 
 def _deprecated_recurse_access_key(current_val, keys):
-    """ Given a list of keys and a dictionary, recursively access the dicionary
+    """Given a list of keys and a dictionary, recursively access the dicionary
     using the keys until we find the key its looking for
 
     If a key is an integer, it will convert it and use it as a list index
@@ -228,7 +228,7 @@ def _deprecated_recurse_access_key(current_val, keys):
 
 
 def deep_dict_merge(initial_dct, merge_dct):
-    """ Recursive dict merge. Instead of updating only top-level keys,
+    """Recursive dict merge. Instead of updating only top-level keys,
     dict_merge recurses down into dicts nested to an arbitrary depth
     and returns the merged dict. Keys values present in merge_dct take
     precedence over values in initial_dct.
@@ -417,8 +417,10 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                         expected_val.compiled, full_err()
                     )
                 else:
-                    msg = "Type of returned data was different than expected ({})".format(
-                        full_err()
+                    msg = (
+                        "Type of returned data was different than expected ({})".format(
+                            full_err()
+                        )
                     )
 
                 raise exceptions.KeyMismatchError(msg) from e

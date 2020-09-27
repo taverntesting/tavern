@@ -40,8 +40,7 @@ class _Subscription(object):
 
 
 def _handle_tls_args(tls_args):
-    """Make sure TLS options are valid
-    """
+    """Make sure TLS options are valid"""
 
     if not tls_args:
         return None
@@ -224,8 +223,7 @@ class MQTTClient(object):
             return msg
 
     def publish(self, topic, payload=None, qos=None, retain=None):
-        """publish message using paho library
-        """
+        """publish message using paho library"""
         self._wait_for_subscriptions()
 
         logger.debug("Publishing on '%s'", topic)
