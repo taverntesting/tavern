@@ -322,6 +322,36 @@ stages:
 
 ---
 
+test_name: Test include marks from a file
+
+includes:
+  - !include common.yaml
+
+marks:
+  - parametrize:
+      !include parametrize_includes.yaml
+  - parametrize:
+      key:
+        - first_half
+        - second_half
+      vals:
+        - [spear, mint]
+        - [jack, fruit]
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{fruit}-{edible}_{first_half}-{second_half}"
+    response:
+      status_code: 200
+      json:
+        value: "{fruit}-{edible}_{first_half}-{second_half}"
+
+---
+
 # NOTE: This might pass in future, if we allow parametrizing/storing JSON blocks rather than just single variables.
 test_name: Test failing when vals is a list and key isn't
 
