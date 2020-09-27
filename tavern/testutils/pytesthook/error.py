@@ -50,8 +50,7 @@ class ReprdError(object):
         """
 
         def read_formatted_vars(lines):
-            """Go over all lines and try to find format variables
-            """
+            """Go over all lines and try to find format variables"""
             for line in lines:
                 for match in re.finditer(
                     r"(.*?:\s+!raw)?(?(1).*|.*?(?P<format_var>(?<!{){[^{]*?}))", line

@@ -39,24 +39,21 @@ def fix_example_request():
 
 class TestRequests(object):
     def test_unknown_fields(self, req, includes):
-        """Unkown args should raise an error
-        """
+        """Unkown args should raise an error"""
         req["fodokfowe"] = "Hello"
 
         with pytest.raises(exceptions.UnexpectedKeysError):
             RestRequest(Mock(), req, includes)
 
     def test_missing_format(self, req, includes):
-        """All format variables should be present
-        """
+        """All format variables should be present"""
         del includes["variables"]["code"]
 
         with pytest.raises(exceptions.MissingFormatError):
             RestRequest(Mock(), req, includes)
 
     def test_bad_get_body(self, req, includes):
-        """Can't add a body with a GET request
-        """
+        """Can't add a body with a GET request"""
         req["method"] = "GET"
 
         with pytest.warns(RuntimeWarning):
@@ -67,8 +64,7 @@ class TestRequests(object):
 
 class TestHttpRedirects(object):
     def test_session_called_no_redirects(self, req, includes):
-        """Always disable redirects by defauly
-        """
+        """Always disable redirects by defauly"""
 
         assert _check_allow_redirects(req, includes) == False
 
@@ -325,8 +321,7 @@ class TestExtFunctions:
 class TestOptionalDefaults:
     @pytest.mark.parametrize("verify", (True, False))
     def test_passthrough_verify(self, req, includes, verify):
-        """Should be able to pass 'verify' through to requests.request
-        """
+        """Should be able to pass 'verify' through to requests.request"""
 
         req["verify"] = verify
 

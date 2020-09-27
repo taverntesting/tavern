@@ -208,7 +208,7 @@ class YamlItem(pytest.Item):
                 )
 
     def repr_failure(self, excinfo, style=None):
-        """ called when self.runtest() raises an exception.
+        """called when self.runtest() raises an exception.
 
         By default, will raise a custom formatted traceback if it's a tavern error. if not, will use the default
         python traceback

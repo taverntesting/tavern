@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 
 def check_exception_raised(response, exception_location):
-    """ Make sure the result from the server is the same as the exception we
+    """Make sure the result from the server is the same as the exception we
     expect to raise
 
     Args:

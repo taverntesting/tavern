@@ -117,8 +117,7 @@ def _generate_parametrized_test_items(keys, vals_combination):
 
 
 class YamlFile(pytest.File):
-    """Custom `File` class that loads each test block as a different test
-    """
+    """Custom `File` class that loads each test block as a different test"""
 
     def __init__(self, *args, **kwargs):
         super(YamlFile, self).__init__(*args, **kwargs)
