@@ -1,10 +1,19 @@
+from dataclasses import dataclass
 from unittest.mock import Mock
 
-from faker import Faker
 import py
 import pytest
+from faker import Faker
+from py._path.local import LocalPath
 
 from tavern.testutils.pytesthook.file import YamlFile
+
+
+@dataclass
+class MockArgs:
+    session: pytest.Session
+    parent: pytest.File
+    fspath: LocalPath
 
 
 def mock_args():
@@ -18,9 +27,9 @@ def mock_args():
 
     session = Mock(_initialpaths=[], config=config)
 
-    parent = Mock(config=config, parent=None, nodeid="sdlfs", **cargs)
+    parent = Mock(config=config, parent=None, nodeid="sdlfs", **cargs, session=session)
 
-    return {"session": session, "parent": parent, "fspath": fspath}
+    return MockArgs(session, parent, fspath)
 
 
 def get_basic_parametrize_mark(faker):
@@ -39,9 +48,11 @@ def get_joined_parametrize_mark(faker):
 
 
 def get_parametrised_tests(marks):
-    y = YamlFile(**mock_args())
+    args = mock_args()
+    y = YamlFile.from_parent(args.parent, fspath=args.fspath)
+    y.session = args.session
 
-    spec = {"test_name": "a test"}
+    spec = {"test_name": "a test", "stages": []}
 
     gen = y.get_parametrized_items(spec, marks, [])
 

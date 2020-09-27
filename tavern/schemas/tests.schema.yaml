@@ -26,20 +26,22 @@ schema;any_map:
 schema;stage:
   type: map
   required: true
+  func: verify_oneof_id_name
   mapping:
     id:
       type: str
       required: false
+      unique: true
     name:
       type: str
       required: true
       unique: true
+
     max_retries:
-      type: int
+      type: any
+      func: retry_variable
       required: false
       unique: true
-      range:
-        min: 0
 
     skip:
       type: any

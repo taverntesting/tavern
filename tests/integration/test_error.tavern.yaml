@@ -1,0 +1,20 @@
+---
+
+test_name: Test yielding fixture
+
+includes:
+- !include common.yaml
+
+stages:
+- name: do something
+  request:
+    method: DELETE
+    url: "{host}/echo"
+    json:
+      { "id": 0 }
+  response:
+    status_code: 200
+    json:
+      value: { "id": 0 }
+
+_xfail: run

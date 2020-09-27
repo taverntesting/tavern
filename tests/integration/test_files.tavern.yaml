@@ -111,6 +111,24 @@ stages:
 
 ---
 
+test_name: Test sending file body from variable ref
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Upload file body
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      file_body: "{file_body_ref}"
+    response:
+      status_code: 200
+      json:
+        status: ok
+
+---
+
 test_name: Test sending bad file body
 
 includes:

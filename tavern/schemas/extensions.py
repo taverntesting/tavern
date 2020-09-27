@@ -233,6 +233,21 @@ def check_usefixtures(value, rule_obj, path):
     return True
 
 
+def verify_oneof_id_name(value, rule_obj, path):
+    """Checks that if 'name' is not present, 'id' is"""
+    # pylint: disable=unused-argument
+
+    name = value.get("name")
+    if not name:
+        if name == "":
+            raise BadSchemaError("Name cannot be empty")
+
+        if not value.get("id"):
+            raise BadSchemaError("If 'name' is not specified, 'id' must be specified")
+
+    return True
+
+
 def check_parametrize_marks(value, rule_obj, path):
     # pylint: disable=unused-argument
 
@@ -488,3 +503,15 @@ def raise_body_error(value, rule_obj, path):
 
     msg = "The 'body' key has been replaced with 'json' in 1.0 to make it more in line with other blocks. see https://github.com/taverntesting/tavern/issues/495 for details."
     raise BadSchemaError(msg)
+
+
+def retry_variable(value, rule_obj, path):
+    """Check retry variables"""
+
+    int_variable(value, rule_obj, path)
+
+    if isinstance(value, int):
+        if value < 0:
+            raise BadSchemaError("max_retries must be greater than 0")
+
+    return True

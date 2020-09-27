@@ -14,6 +14,7 @@ language: python
 branches:
   only:
     - master
+    - /^\d+\.\d+\.\d+$/
 
 cache:
   directories:
@@ -36,6 +37,9 @@ jobs:
       stage: basic-tests
     - python: 3.8
       env: TOXENV=py38lint TOXCFG=tox.ini
+      stage: basic-tests
+    - python: 3.8
+      env: TOXENV=py38mypy TOXCFG=tox.ini
       stage: basic-tests
     - python: 3.8
       env: TOXENV=py38isort TOXCFG=tox.ini
@@ -69,9 +73,12 @@ jobs:
       script: skip
       deploy:
         provider: pypi
+        edge: true
         user: michaelboulton
+        distributions: bdist_wheel
+        skip_existing: true
         password:
-          secure: "OBnRGStdCmXpAIenI28wxhQ00R/2nUkxHxjpaCao4wa3+saTYQ9syobY4alSB6rdUmeemK8T/r14ikq1kmhX7aPTyrFbRMHCRfNqupU3GZox3pDsnQZd8B3ufBpda38i+OAk8z0FSrOAkH/cmODo13LljrELFh/5WDTjvqgZ0E3xosj+TgtAS2hCFZpI2dvlymd2lkC4RWE0GL4knq6pVsJELK2UrxQGEFTEv1oJeH61hecrCoJeCgo8E1iFo5yyn77Fp07rbLHXvK3gS6Nx/PkvAOQw8bUfmTP+V/8HkdG1ZHSzwUS9PCssQm6hlVy1Dh129Z395LjVV/q4MY7QtkKTSpIMoNkaaX1wLCWiVEItWzgpJQlosZ7BVh7GuWsXvLn0FgBjDB/e4CUJ8+NAzON438DcYrGrEcaYiVaxTvbwGolFIhgM+1x/LBgsjMXN9/ihuL+w1XSDwI9KV2W3SXtJOTVmFuPBzKkcR4eWn8cnjitbiXYQrXgj9QQFtGz8Hnm2T2Wp8hHYhHIPWVazrlSQA49GK5cxlF59xAc8ghTth9rzt0/7TOZoW9Y9YzfO5RyMZR+qcLeathQsqEeZtoYAvSWIOvt2uiu57hvlKONiWBuYLltHLov6OLs0MNJDdaiabQKvktjU8Nl5lDfIj6x59QXp5+ly7/DwG0gMwpc="
+          secure: "M6S6aQ0+kVbOn/C7JgxJ6Nk4X4+HXuoOjcXAshG5oyJPlPBQxrDVPyjF2H0/ymbQFlz8HnDx959wNbYsDMrW0Od8A8HzWZaoyAqqbaLQ1i5XJ6X8XELSvAzoEcmpuLcnu+NoIiGjMNYg5OtnPGKlRekKS8t8y4xH9GPiz+3AFlH+lh/QkPuzSSukw14tyU8srHQ5cLNp1lXF6TFXPYCLf5JDW2KijUAV0HIx/MookYRv0U1EXhjRzd5MkIf8yn7Bvvg8d5Ns+3v4tV+syMQXBQf5BH/1925hJt2T9M26d0tUUMKVNJpqLTENr9J/p/b8OglQuFttscDxuBpnJyrmrPuUgKckHseHs+5X4g/s4uoxFQ3BKvVY5fHBdXTraZhWrKPo0rOY8ZAI31gdb/aZBWl5NqabkmOss5d0AfdU+CYpnLZDGOe+MghzPeojFYrdSwBaQ0QgyOV5VOc1s7UrzdSeCXANYmtMYGE/Abjw+XKy1cFpdxNHdJ4cZzS3SovykbU2iHYlO2OiWE69hJeId//bCddHSwLtqfTgqp7jG8kKnfBKNf1ew9Tw4uGeJcYr+XfSvlOhp3kG7U4F+AWhq78OKizkcgc+aP5sdyDqEILZ4KTlGNRw51msMAgwDTYrXAN0lJ5tGZoPpVn4pxWbu9rkacbxsbQg0b5rie+VlV8="
         on:
           tags: true
 

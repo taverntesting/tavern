@@ -36,6 +36,10 @@ class YamlItem(pytest.Item):
 
         self.global_cfg = {}
 
+    @classmethod
+    def yamlitem_from_parent(cls, name, parent, spec, path):
+        return cls.from_parent(parent, name=name, spec=spec, path=path)
+
     def initialise_fixture_attrs(self):
         # pylint: disable=protected-access,attribute-defined-outside-init
         self.funcargs = {}
@@ -79,6 +83,15 @@ class YamlItem(pytest.Item):
     def add_markers(self, pytest_marks):
         for pm in pytest_marks:
             if pm.name == "usefixtures":
+                if (
+                    not isinstance(pm.mark.args, (list, tuple))
+                    or len(pm.mark.args) == 0
+                ):
+                    logger.error(
+                        "'usefixtures' was an invalid type (should"
+                        " be a list of fixture names)"
+                    )
+                    continue
                 # Need to do this here because we expect a list of markers from
                 # usefixtures, which pytest then wraps in a tuple. we need to
                 # extract this tuple so pytest can use both fixtures.
@@ -126,6 +139,15 @@ class YamlItem(pytest.Item):
 
             values.update(mark_values)
 
+        # Use autouse fixtures as well
+        for m in self.fixturenames:
+            if m in values:
+                logger.debug("%s already explicitly used", m)
+                continue
+
+            mark_values = {m: self.funcargs[m]}
+            values.update(mark_values)
+
         return values
 
     def runtest(self):
@@ -156,6 +178,16 @@ class YamlItem(pytest.Item):
             )
 
             verify_tests(self.spec)
+
+            for stage in self.spec["stages"]:
+                if not stage.get("name"):
+                    if not stage.get("id"):
+                        # Should never actually reach here, should be caught at schema check time
+                        raise exceptions.BadSchemaError(
+                            "One of name or ID must be specified"
+                        )
+
+                    stage["name"] = stage["id"]
 
             run_test(self.path, self.spec, self.global_cfg)
         except exceptions.BadSchemaError:

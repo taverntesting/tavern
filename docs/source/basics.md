@@ -403,6 +403,29 @@ This can be used as so:
     status_code: 200
 ```
 
+By default, using the `$ext` key will replace anything already present in that block.
+Input from external functions can be merged into a request instead by specifying the
+`tavern-merge-ext-function-values` option in your pytest.ini or on the command line:
+
+```python
+# ext_functions.py
+
+def return_hello():
+    return {"hello": "there"}
+```
+```yaml
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        goodbye: "now"
+        $ext:
+          function: ext_functions:return_hello
+```
+
+If `tavern-merge-ext-function-values` is set, this will send "hello" and "goodbye" in 
+the request. If not, it will just sent "hello". 
+
 #### Saving data from a response
 
 When using the `$ext` key in the `save` block there is special behaviour - each key in
@@ -593,7 +616,7 @@ section (`json`/`redirect_query_params`/`headers`) should be affected, and
 optionally whether it is on or off.
 
 - `json:off headers:on` - turn off for the body, but on for the headers.
-  `redirect_query_params` will stay default off. 
+  `redirect_query_params` will stay default off.
 - `json:off headers:off` - turn body and header strict checking off
 - `redirect_query_params:on json:on` redirect parameters is turned on and json
   is kept on (as it is on by default), header strict matching is kept off (as
@@ -1583,6 +1606,15 @@ Having `delay_before` in the second stage of the test is semantically identical
 to having `delay_after` in the first stage of the test - feel free to use
 whichever seems most appropriate.
 
+A saved/config variable can be used by using a type token conversion, such as:
+
+```yaml
+stages:
+  - name: Trigger task
+    ...
+    delay_after: !float "{sleep_time}"
+```
+
 ## Retrying tests
 
 If you are not sure how long the server might take to process a request, you can
@@ -2057,6 +2089,33 @@ There are some limitations on fixtures:
   will raise an error and 'class' scoped fixtures may not behave as you expect.
 - Parametrizing fixtures does not work - this is a limitation in Pytest.
 
+Fixtures which are specified as `autouse` can also be used without explicitly
+using `usefixtures` in a test. This is a good way to essentially precompute a
+format variable without also having to use an external function or specify a
+`usefixtures` block in every test where you need it. 
+
+To do this, just pass the `autouse=True` parameter to your fixtures along with
+the relevant scope. Using 'session' will evalute the fixture once at the beginning
+of your test run and reuse the return value everywhere else it is used:
+
+```python
+@pytest.fixture(scope="session", autouse=True)
+def a_thing():
+    return "abc"
+```
+
+```yaml
+---
+test_name: Test autouse fixture
+
+stages:
+  - name: do something with fixture value
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{a_thing}"
+```
 
 ## Hooks
 

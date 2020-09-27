@@ -1,9 +1,10 @@
 import collections
 import logging
+import os
 import re
 import string
 
-from box import Box
+from box import Box, box
 import jmespath
 
 from tavern.util.loader import (
@@ -41,7 +42,7 @@ def _check_and_format_values(to_format, box_vars):
             would_replace = formatter.get_field(field_name, [], box_vars)[0]
         except KeyError as e:
             logger.error(
-                "Failed to resolve string [%s] with variables [%s]", to_format, box_vars
+                "Failed to resolve string '%s' with variables '%s'", to_format, box_vars
             )
             logger.error("Key(s) not found in format: %s", field_name)
             raise exceptions.MissingFormatError(field_name) from e
@@ -107,7 +108,7 @@ def format_keys(val, variables, no_double_format=True):
             https://github.com/taverntesting/tavern/issues/431
 
     Returns:
-        dict: recursively formatted dictionary
+        str,int,list,dict: recursively formatted values
     """
     formatted = val
     box_vars = Box(variables)
@@ -127,6 +128,7 @@ def format_keys(val, variables, no_double_format=True):
         if no_double_format:
             formatted = _FormattedString(formatted)
     elif isinstance(val, TypeConvertToken):
+        logger.debug("Got type convert token '%s'", val)
         if isinstance(val, ForceIncludeToken):
             formatted = _attempt_find_include(val.value, box_vars)
         else:
@@ -245,7 +247,7 @@ def deep_dict_merge(initial_dct, merge_dct):
         if (
             k in dct
             and isinstance(dct[k], dict)
-            and isinstance(merge_dct[k], collections.Mapping)
+            and isinstance(merge_dct[k], collections.abc.Mapping)
         ):
             dct[k] = deep_dict_merge(dct[k], merge_dct[k])
         else:
@@ -546,3 +548,8 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
             raise exceptions.KeyMismatchError(
                 "Key mismatch: ({})".format(full_err())
             ) from e
+
+
+def get_tavern_box() -> box.Box:
+    """Get the 'tavern' box"""
+    return Box({"tavern": {"env_vars": dict(os.environ)}})
