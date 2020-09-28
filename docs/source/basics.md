@@ -1018,9 +1018,15 @@ stages:
       status_code: 200
 ```
 
-As long as includes.yaml is in the same folder as the tests, the variables will
+As long as includes.yaml is in the same folder as the tests or found in the
+TAVERN_INCLUDE search path, the variables will
 automatically be loaded and available for formatting as before. Multiple include
 files can be specified.
+
+The environment variable TAVERN_INCLUDE can contain a : separated list of
+paths to search for include files.  Each path in TAVERN_INCLUDE has
+environment variables expanded before it is searched. 
+
 
 ### Including global configuration files
 
