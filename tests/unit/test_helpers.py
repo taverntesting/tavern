@@ -20,7 +20,7 @@ from tavern.util.dict_util import _check_and_format_values, format_keys
 from tavern.util.loader import ForceIncludeToken
 from tavern.util.strict_util import (
     StrictLevel,
-    _StrictSetting,
+    StrictSetting,
     validate_and_parse_option,
 )
 
@@ -373,18 +373,18 @@ class TestStrictUtils:
     def test_set_on(self, section):
         level = StrictLevel.from_options([section + ":on"])
 
-        assert level.setting_for(section).setting == _StrictSetting.ON
+        assert level.setting_for(section).setting == StrictSetting.ON
         assert level.setting_for(section).is_on()
 
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     def test_set_off(self, section):
         level = StrictLevel.from_options([section + ":off"])
 
-        assert level.setting_for(section).setting == _StrictSetting.OFF
+        assert level.setting_for(section).setting == StrictSetting.OFF
         assert not level.setting_for(section).is_on()
 
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     def test_unset(self, section):
         level = StrictLevel.from_options([section])
 
-        assert level.setting_for(section).setting == _StrictSetting.UNSET
+        assert level.setting_for(section).setting == StrictSetting.UNSET
