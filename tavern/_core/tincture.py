@@ -1,13 +1,13 @@
 import inspect
 
-from tavern._core.extfunctions import get_wrapped_response_function
 from tavern._core import exceptions
+from tavern._core.extfunctions import get_wrapped_response_function
 
 
 class TinctureProvider:
     def __init__(self, stage):
         self._tinctures = TinctureProvider._accumulate_tincture_funcs(stage)
-        self._needs_response = None
+        self._needs_response = []
 
     @staticmethod
     def _accumulate_tincture_funcs(stage):
@@ -30,7 +30,11 @@ class TinctureProvider:
     def start_tinctures(self, stage):
         results = [t(stage) for t in self._tinctures]
 
-        self._needs_response = [r for r in results if inspect.isgenerator(r)]
+        for r in results:
+            if inspect.isgenerator(r):
+                # Store generator and start it
+                self._needs_response.append(r)
+                next(r)
 
     def end_tinctures(self, response):
         """
@@ -45,7 +49,6 @@ class TinctureProvider:
             )
 
         for n in self._needs_response:
-            n.send(None)
             try:
                 n.send(response)
             except StopIteration:
