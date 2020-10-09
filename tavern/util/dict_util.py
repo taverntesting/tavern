@@ -16,6 +16,7 @@ from tavern.util.loader import (
 )
 
 from . import exceptions
+from .strict_util import StrictOption, StrictSetting, strict_setting_factory
 
 logger = logging.getLogger(__name__)
 
@@ -404,6 +405,13 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
             issubclass(actual_type, type(expected_val))
         )
 
+    if isinstance(strict, StrictOption):
+        strict = strict.is_on()
+        strict_setting = strict
+    else:
+        strict = strict
+        strict_setting = strict_setting_factory(str(strict))
+
     try:
         assert actual_val == expected_val
     except AssertionError as e:
@@ -509,6 +517,8 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                             )
                         else:
                             logger.debug("'%s' present in response", e_val)
+                            if strict_setting == StrictSetting.LIST_ANY_ORDER:
+                                actual_iter = iter(actual_val)
                             break
 
                 if missing:
@@ -528,9 +538,9 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                     try:
                         check_keys_match_recursive(e_val, a_val, keys + [i], strict)
                     except exceptions.KeyMismatchError as sub_e:
-                        # This should _ALWAYS_ raise an error, but it will be more
-                        # obvious where the error came from (in python 3 at least)
-                        # and will take ANYTHING into account
+                        # This should _ALWAYS_ raise an error (unless the reason it didn't match was the
+                        # 'anything' sentinel), but it will be more obvious where the error came from
+                        # (in python 3 at least) and will take ANYTHING into account
                         raise sub_e from e
         elif expected_val is ANYTHING:
             logger.debug("Actual value = '%s' - matches !anything", actual_val)

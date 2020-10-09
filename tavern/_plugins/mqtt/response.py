@@ -58,7 +58,7 @@ class MQTTResponse(BaseResponse):
         timeout = self.expected.get("timeout", 1)
 
         test_strictness = self.test_block_config["strict"]
-        block_strictness = test_strictness.setting_for("json").is_on()
+        block_strictness = test_strictness.setting_for("json")
 
         expected_payload, expect_json_payload = self._get_payload_vals()
 
