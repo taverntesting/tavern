@@ -2,6 +2,7 @@ import importlib
 import json
 import logging
 import re
+import time
 
 from box import Box
 import jmespath
@@ -183,3 +184,16 @@ def validate_content(response, comparisons):
                 )
             except AssertionError as e:
                 raise exceptions.JMESError("Error validating JMES") from e
+
+
+def time_request(_):
+    t0 = time.time()
+    yield
+    t1 = time.time()
+    logger.warning("Request took %s", t1 - t0)
+
+
+def print_response(_, extra_print="affa"):
+    logger.warning("STARTING:")
+    r = yield
+    logger.warning("Request is %s (%s)", r, extra_print)

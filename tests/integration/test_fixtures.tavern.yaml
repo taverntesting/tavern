@@ -148,20 +148,24 @@ test_name: Test tincture
 includes:
   - !include common.yaml
 
+marks:
+  - usefixtures:
+      - yielder
+      - str_fixture
+      - yield_str_fixture
+
 stages:
   - name: do something
     tinctures:
-      - function: tavern.core:a_thing
-      - function: tavern.core:nothing
-      - function: tavern.core:nothing2
-      - function: tavern.core:nothing2
+      - function: tavern.testutils.helpers:time_request
+      - function: tavern.testutils.helpers:print_response
         extra_kwargs:
-          extra_print: "fkjiofjgk"
+          extra_print: "blooble"
     request:
       url: "{host}/echo"
       method: POST
-#      json:
-#        value: "{str_fixture}"
+      json:
+        value: "{str_fixture}"
     response:
       status_code: 200
       json:
