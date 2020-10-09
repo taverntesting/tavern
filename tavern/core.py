@@ -10,6 +10,7 @@ import pytest
 
 from tavern.schemas.files import wrapfile
 from tavern.util.strict_util import StrictLevel
+from tavern.util.tincture import TinctureProvider
 
 from .plugins import get_expected, get_extra_sessions, get_request_type, get_verifiers
 from .testutils.pytesthook import call_hook
@@ -239,6 +240,8 @@ def run_stage(sessions, stage, test_block_config):
     Args:
         sessions (dict): Dictionary of relevant 'session' objects used for this test
         stage (dict): specification of stage to be run
+        tavern_box (box.Box): Box object containing extra special format variables to be used
+            in test
         test_block_config (dict): available variables for test
     """
     stage = copy.deepcopy(stage)
@@ -252,10 +255,14 @@ def run_stage(sessions, stage, test_block_config):
     tavern_box.update(request_vars=r.request_vars)
 
     expected = get_expected(stage, test_block_config, sessions)
+    verifiers = get_verifiers(stage, test_block_config, sessions, expected)
 
     delay(stage, "before", test_block_config["variables"])
 
     logger.info("Running stage : %s", name)
+
+    provider = TinctureProvider(stage)
+    provider.start_tinctures(stage)
 
     call_hook(
         test_block_config,
@@ -265,7 +272,8 @@ def run_stage(sessions, stage, test_block_config):
 
     response = r.run()
 
-    verifiers = get_verifiers(stage, test_block_config, sessions, expected)
+    provider.end_tinctures(response)
+
     for v in verifiers:
         saved = v.verify(response)
         test_block_config["variables"].update(saved)

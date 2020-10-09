@@ -7,9 +7,9 @@ import logging
 
 import stevedore
 
-from tavern.util.dict_util import format_keys
-
+from .request import BaseRequest
 from .util import exceptions
+from .util.dict_util import format_keys
 
 logger = logging.getLogger(__name__)
 
@@ -163,7 +163,7 @@ def get_extra_sessions(test_spec, test_block_config):
     return sessions
 
 
-def get_request_type(stage, test_block_config, sessions):
+def get_request_type(stage, test_block_config, sessions) -> BaseRequest:
     """Get the request object for this stage
 
     there can only be one

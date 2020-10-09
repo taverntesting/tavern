@@ -140,3 +140,30 @@ stages:
       status_code: 200
       json:
         value: "{autouse_thing_named}"
+
+---
+
+test_name: Test tincture
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: do something
+    tinctures:
+      - function: tavern.core:a_thing
+      - function: tavern.core:nothing
+      - function: tavern.core:nothing2
+      - function: tavern.core:nothing2
+        extra_kwargs:
+          extra_print: "fkjiofjgk"
+    request:
+      url: "{host}/echo"
+      method: POST
+#      json:
+#        value: "{str_fixture}"
+    response:
+      status_code: 200
+      json:
+        value: "{yield_str_fixture}"
+        f: gf

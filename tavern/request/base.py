@@ -3,6 +3,8 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from box import Box
+
 
 class BaseRequest(object):
     @property
@@ -20,3 +22,8 @@ class BaseRequest(object):
     @abstractmethod
     def run(self):
         """Run test"""
+
+    @property
+    @abstractmethod
+    def request_vars(self) -> Box:
+        """Get any extra variables used for this request"""
