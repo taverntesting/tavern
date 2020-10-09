@@ -6,7 +6,7 @@ import pytest
 from faker import Faker
 from py._path.local import LocalPath
 
-from tavern.testutils.pytesthook.file import YamlFile
+from tavern.testutils.pytesthook.file import YamlFile, _get_parametrized_items
 
 
 @dataclass
@@ -54,7 +54,7 @@ def get_parametrised_tests(marks):
 
     spec = {"test_name": "a test", "stages": []}
 
-    gen = y.get_parametrized_items(spec, marks, [])
+    gen = _get_parametrized_items(y, spec, marks, [])
 
     return list(gen)
 
