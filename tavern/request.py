@@ -1,13 +1,15 @@
 from abc import abstractmethod
 import logging
 
+from box import Box
+
 logger = logging.getLogger(__name__)
 
 
 class BaseRequest(object):
     @property
     @abstractmethod
-    def request_vars(self):
+    def request_vars(self) -> Box:
         """
         Variables used in the request
 

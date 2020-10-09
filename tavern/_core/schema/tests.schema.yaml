@@ -28,6 +28,11 @@ schema;stage:
   required: true
   func: verify_oneof_id_name
   mapping:
+
+    tinctures:
+      func: validate_extensions
+      type: any
+
     id:
       type: str
       required: false

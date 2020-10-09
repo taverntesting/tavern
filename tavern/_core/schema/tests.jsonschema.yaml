@@ -311,6 +311,10 @@ definitions:
     - name
 
     properties:
+      tinctures:
+        type: object
+        description: Tinctures for stage
+
       id:
         type: string
         description: ID of stage for use in stage references

@@ -4,8 +4,12 @@ set -ex
 
 PYVER=39
 
+fd pycache -u | xargs rm -rf
+
 tox --parallel -c tox.ini        \
-  -e py${PYVER}flakes \
+  -e py${PYVER}flakes
+
+tox --parallel -c tox.ini        \
   -e py${PYVER}       \
   -e py${PYVER}-pytest6       \
   -e py${PYVER}black  \
