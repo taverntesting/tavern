@@ -274,6 +274,9 @@ mapping:
         # unique: true
       - type: map
         mapping:
+          filterwarnings:
+            type: str
+
           skipif:
             type: str
 
