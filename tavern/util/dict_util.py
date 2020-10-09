@@ -416,9 +416,6 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
     elif strict is None:
         strict = False
         strict_option = strict_setting_factory("false")
-    else:
-
-        raise exceptions.UnexpectedKeysError(strict)
 
     try:
         assert actual_val == expected_val
