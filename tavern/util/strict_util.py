@@ -27,6 +27,9 @@ def strict_setting_factory(str_setting):
     if str_setting is None:
         return StrictSetting.UNSET
     else:
+        if str_setting == "list_any_order":
+            return StrictSetting.LIST_ANY_ORDER
+
         parsed = strtobool(str_setting)
 
         if parsed:
@@ -43,10 +46,10 @@ class StrictOption:
     def is_on(self):
         if self.section == "json":
             # Must be specifically disabled for response body
-            return self.setting != StrictSetting.OFF
+            return self.setting not in [StrictSetting.OFF, StrictSetting.LIST_ANY_ORDER]
         else:
             # Off by default for everything else
-            return self.setting == StrictSetting.ON
+            return self.setting in [StrictSetting.ON]
 
 
 def validate_and_parse_option(key):
