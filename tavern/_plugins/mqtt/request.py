@@ -58,8 +58,6 @@ class MQTTRequest(BaseRequest):
         # Need to be able to take all of these somehow, and also match these
         # against any payload received on the topic
 
-        self.test_block_config = test_block_config
-
     def run(self):
         try:
             return self._prepared()
