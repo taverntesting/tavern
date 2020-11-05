@@ -321,11 +321,12 @@ def _read_filespec(filespec):
         )
 
 
-def _get_file_arguments(request_args, stack):
+def _get_file_arguments(request_args, stack, test_block_config):
     """Get corect arguments for anything that should be passed as a file to
     requests
 
     Args:
+        test_block_config (dict): config for test
         stack (ExitStack): context stack to add file objects to so they're
             closed correctly after use
 
@@ -340,6 +341,7 @@ def _get_file_arguments(request_args, stack):
             mimetypes.init()
 
         filepath, content_type, encoding = _read_filespec(filespec)
+        filepath = format_keys(filepath, test_block_config["variables"])
 
         filename = os.path.basename(filepath)
 
@@ -450,7 +452,9 @@ class RestRequest(BaseRequest):
                     file = stack.enter_context(open(file_body, "rb"))
                     request_args.update(data=file)
                 else:
-                    self._request_args.update(_get_file_arguments(request_args, stack))
+                    self._request_args.update(
+                        _get_file_arguments(request_args, stack, test_block_config)
+                    )
 
                 return session.request(**self._request_args)
 
