@@ -61,12 +61,6 @@ class MQTTRequest(BaseRequest):
         self.test_block_config = test_block_config
 
     def run(self):
-        call_hook(
-            self.test_block_config,
-            "pytest_tavern_beta_before_every_request",
-            request_args=self._original_publish_args,
-        )
-
         try:
             return self._prepared()
         except ValueError as e:

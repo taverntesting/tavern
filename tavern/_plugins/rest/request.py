@@ -453,12 +453,6 @@ class RestRequest(BaseRequest):
                 else:
                     self._request_args.update(_get_file_arguments(request_args, stack))
 
-                call_hook(
-                    test_block_config,
-                    "pytest_tavern_beta_before_every_request",
-                    request_args=self._request_args,
-                )
-
                 return session.request(**self._request_args)
 
         self._prepared = prepared_request

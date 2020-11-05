@@ -10,6 +10,7 @@ from tavern.schemas.files import wrapfile
 from tavern.util.strict_util import StrictLevel
 
 from .plugins import get_expected, get_extra_sessions, get_request_type, get_verifiers
+from .testutils.pytesthook.newhooks import call_hook
 from .util import exceptions
 from .util.delay import delay
 from .util.dict_util import format_keys, get_tavern_box
@@ -240,6 +241,13 @@ def run_stage(sessions, stage, test_block_config):
     delay(stage, "before", test_block_config["variables"])
 
     logger.info("Running stage : %s", name)
+
+    call_hook(
+        test_block_config,
+        "pytest_tavern_beta_before_every_request",
+        request_args=r.request_vars,
+    )
+
     response = r.run()
 
     verifiers = get_verifiers(stage, test_block_config, sessions, expected)
