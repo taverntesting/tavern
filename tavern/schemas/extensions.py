@@ -168,7 +168,6 @@ def check_parametrize_marks(value, rule_obj, path):
         #         - unripe
         err_msg = "If 'key' in parametrize is a string, 'vals' must be a list of scalar items"
         for v in vals:
-            continue
             if isinstance(v, (list, dict)):
                 raise BadSchemaError(err_msg)
 
