@@ -5,7 +5,6 @@ import logging
 from box import Box
 
 from tavern.request.base import BaseRequest
-from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
 from tavern.util.dict_util import check_expected_keys, format_keys
 
