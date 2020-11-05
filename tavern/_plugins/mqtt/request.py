@@ -5,6 +5,7 @@ import logging
 from box import Box
 
 from tavern.request.base import BaseRequest
+from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
 from tavern.util.dict_util import check_expected_keys, format_keys
 
@@ -57,7 +58,15 @@ class MQTTRequest(BaseRequest):
         # Need to be able to take all of these somehow, and also match these
         # against any payload received on the topic
 
+        self.test_block_config = test_block_config
+
     def run(self):
+        call_hook(
+            self.test_block_config,
+            "pytest_tavern_beta_before_every_request",
+            request_args=self._original_publish_args,
+        )
+
         try:
             return self._prepared()
         except ValueError as e:

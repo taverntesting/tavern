@@ -15,6 +15,7 @@ from requests.utils import dict_from_cookiejar
 
 from tavern.request.base import BaseRequest
 from tavern.schemas.extensions import get_wrapped_create_function
+from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
 from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
 
@@ -451,6 +452,12 @@ class RestRequest(BaseRequest):
                     request_args.update(data=file)
                 else:
                     self._request_args.update(_get_file_arguments(request_args, stack))
+
+                call_hook(
+                    test_block_config,
+                    "pytest_tavern_beta_before_every_request",
+                    request_args=self._request_args,
+                )
 
                 return session.request(**self._request_args)
 
