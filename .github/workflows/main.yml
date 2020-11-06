@@ -12,6 +12,29 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        # 'Basic' tests and checks
+        # Pylint, formatting/sorting, and quickest unit/integration tests
+        - TOXENV: py38black
+          TOXCFG: tox.ini
+        - TOXENV: py38
+          TOXCFG: tox.ini
+        - TOXENV: py38lint
+          TOXCFG: tox.ini
+        - TOXENV: py38mypy
+          TOXCFG: tox.ini
+        - TOXENV: py38isort
+          TOXCFG: tox.ini
+        - TOXENV: py38-generic
+          TOXCFG: tox-integration.ini
+
+    services:
+      docker:
+        image: docker
+
     env:
       TOXENV: "{{ matrix.TOXENV }}"
       TOXCFG: "{{ matrix.TOXCFG }}"
@@ -46,28 +69,6 @@ jobs:
     - name: tox
       run: |
         tox -c ${TOXCFG}
-
-services:
-  docker:
-    image: docker
-
-strategy:
-  matrix:
-    include:
-    # 'Basic' tests and checks
-    # Pylint, formatting/sorting, and quickest unit/integration tests
-    - TOXENV: py38black
-      TOXCFG: tox.ini
-    - TOXENV: py38
-      TOXCFG: tox.ini
-    - TOXENV: py38lint
-      TOXCFG: tox.ini
-    - TOXENV: py38mypy
-      TOXCFG: tox.ini
-    - TOXENV: py38isort
-      TOXCFG: tox.ini
-    - TOXENV: py38-generic
-      TOXCFG: tox-integration.ini
 
 # TODO
 #    # 'Full' tests
