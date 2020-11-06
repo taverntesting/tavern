@@ -36,8 +36,8 @@ jobs:
         image: docker
 
     env:
-      TOXENV: "{{ matrix.TOXENV }}"
-      TOXCFG: "{{ matrix.TOXCFG }}"
+      TOXENV: ${{ matrix.TOXENV }}
+      TOXCFG: ${{ matrix.TOXCFG }}
 
     steps:
     - uses: actions/checkout@v2
