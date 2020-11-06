@@ -1,0 +1,90 @@
+name: basic test
+
+on:
+  push:
+    tags:
+    - *
+    branches:
+    - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      TOXENV: "{{ matrix.TOXENV }}"
+      TOXCFG: "{{ matrix.TOXCFG }}"
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: actions/cache@v2
+      with:
+        path: .tox
+        key: ${{ runner.os }}-tox-${{ hashFiles('tox.ini', 'tox-integration.ini') }}
+        restore-keys: |
+          ${{ runner.os }}-tox-
+
+    - uses: actions/cache@v2
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'setup.cfg', 'setup.py') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: " {{ .matrix.python }}"
+
+    - name: install deps
+      run: |
+        pip install --upgrade setuptools
+        pip install tox-travis
+
+    - name: tox
+      run: |
+        tox -c ${TOXCFG}
+
+services:
+  docker:
+    image: docker
+
+strategy:
+  matrix:
+    include:
+    # 'Basic' tests and checks
+    # Pylint, formatting/sorting, and quickest unit/integration tests
+    - TOXENV: py38black
+      TOXCFG: tox.ini
+    - TOXENV: py38
+      TOXCFG: tox.ini
+    - TOXENV: py38lint
+      TOXCFG: tox.ini
+    - TOXENV: py38mypy
+      TOXCFG: tox.ini
+    - TOXENV: py38isort
+      TOXCFG: tox.ini
+    - TOXENV: py38-generic
+      TOXCFG: tox-integration.ini
+
+# TODO
+#    # 'Full' tests
+#    # This runs for different versions of Python that we support as well as the
+#    # full integration test suite
+#    - python: 3.7
+#      env: TOXENV=py37-generic TOXCFG=tox-integration.ini
+#      stage: full-tests
+#    - python: pypy3
+#      env: TOXENV=pypy3-generic TOXCFG=tox-integration.ini
+#      stage: full-tests
+#
+#    - python: 3.8
+#      env: TOXENV=py38-mqtt TOXCFG=tox-integration.ini
+#      stage: full-tests
+#    - python: 3.8
+#      env: TOXENV=py38-advanced TOXCFG=tox-integration.ini
+#      stage: full-tests
+#    - python: 3.8
+#      env: TOXENV=py38-hooks TOXCFG=tox-integration.ini
+#      stage: full-tests
