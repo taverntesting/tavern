@@ -40,7 +40,7 @@ jobs:
           python: "3.8"
           TOXCFG: tox-integration.ini
         - TOXENV: pypy3-noextra
-          python: "3.8"
+          python: pypy3
           TOXCFG: tox-integration.ini
         - TOXENV: py38-mqtt
           python: "3.8"
