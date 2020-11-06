@@ -3,7 +3,7 @@ name: basic test
 on:
   push:
     tags:
-    - *
+    - ".*"
     branches:
     - master
 
