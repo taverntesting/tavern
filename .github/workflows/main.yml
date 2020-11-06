@@ -59,7 +59,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
-        python-version: " {{ .matrix.python }}"
+        python-version: "3.8"
 
     - name: install deps
       run: |
