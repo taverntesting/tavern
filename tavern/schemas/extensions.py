@@ -489,9 +489,14 @@ def validate_file_spec(value, rule_obj, path):
             )
 
         if not os.path.exists(file_path):
-            raise BadSchemaError(
-                "Path to file to upload '{}' was not found".format(file_path)
-            )
+            if re.search(".*{.+}.*", file_path):
+                _getlogger().debug(
+                    "Could not find file path, but it might be a format variable, so continuing"
+                )
+            else:
+                raise BadSchemaError(
+                    "Path to file to upload '{}' was not found".format(file_path)
+                )
 
     return True
 
