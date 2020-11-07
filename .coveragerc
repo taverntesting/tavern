@@ -4,4 +4,5 @@ branch = False
 [paths]
 tavern =
     tavern/
-    .tox/py37-generic/lib/python3.7/site-packages/tavern/
+    .tox/py38-generic/lib/python3.8/site-packages/tavern/
+    .tox/py38-mqtt/lib/python3.8/site-packages/tavern

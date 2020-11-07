@@ -453,3 +453,30 @@ class TestLoadFile:
             with patch("tavern.util.loader.os.path.join", return_value=tmpfile):
                 with pytest.raises(exceptions.BadSchemaError):
                     construct_include(Mock(), Mock())
+
+    def test_include_path(self):
+        example = {"a": "b"}
+
+        with TestLoadFile.magic_wrap(example, ".yaml") as tmpfile:
+            tmppath, tmpfilename = os.path.split(tmpfile)
+            with pytest.raises(exceptions.BadSchemaError):
+                construct_include(
+                    Mock(
+                        _root="/does-not-exist", construct_scalar=lambda x: tmpfilename
+                    ),
+                    Mock(),
+                )
+
+            with patch("tavern.util.loader.IncludeLoader.env_path_list", None):
+                assert example == construct_include(
+                    Mock(_root=tmppath, construct_scalar=lambda x: tmpfilename), Mock()
+                )
+
+            os.environ[IncludeLoader.env_var_name] = tmppath
+            with patch("tavern.util.loader.IncludeLoader.env_path_list", None):
+                assert example == construct_include(
+                    Mock(
+                        _root="/does-not-exist", construct_scalar=lambda x: tmpfilename
+                    ),
+                    Mock(),
+                )

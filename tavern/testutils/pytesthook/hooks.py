@@ -4,7 +4,6 @@ import pytest
 
 from tavern.util import exceptions
 
-from .file import YamlFile
 from .util import add_ini_options, add_parser_options, get_option_generic
 
 
@@ -38,6 +37,8 @@ def pytest_collect_file(parent, path):
         raise exceptions.InvalidConfigurationException(e) from e
 
     match_tavern_file = compiled.search
+
+    from .file import YamlFile
 
     if match_tavern_file(path.strpath):
         return YamlFile.from_parent(parent, fspath=path)
