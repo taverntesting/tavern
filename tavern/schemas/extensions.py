@@ -1,4 +1,3 @@
-import logging
 import os
 import re
 
@@ -6,7 +5,7 @@ from pykwalify.types import is_bool, is_float, is_int
 
 from tavern.util import exceptions
 from tavern.util.exceptions import BadSchemaError
-from tavern.util.extfunctions import import_ext_function
+from tavern.util.extfunctions import get_pykwalify_logger, import_ext_function
 from tavern.util.loader import ApproxScalar, BoolToken, FloatToken, IntToken
 from tavern.util.strict_util import StrictLevel
 
@@ -309,7 +308,7 @@ def validate_timeout_tuple_or_float(value, rule_obj, path):
     err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{}' (type {})".format(
         value, type(value)
     )
-    logger = logging.getLogger("tavern.schemas.extensions")
+    logger = get_pykwalify_logger("tavern.schemas.extensions")
 
     def check_is_timeout_val(v):
         if v is True or v is False or not (is_float_like(v) or is_int_like(v)):
@@ -393,7 +392,7 @@ def validate_file_spec(value, rule_obj, path):
 
         if not os.path.exists(file_path):
             if re.search(".*{.+}.*", file_path):
-                _getlogger().debug(
+                get_pykwalify_logger("tavern.schemas.extensions").debug(
                     "Could not find file path, but it might be a format variable, so continuing"
                 )
             else:
