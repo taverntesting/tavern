@@ -10,7 +10,7 @@ from tavern.schemas.files import wrapfile
 from tavern.util.strict_util import StrictLevel
 
 from .plugins import get_expected, get_extra_sessions, get_request_type, get_verifiers
-from .testutils.pytesthook.newhooks import call_hook
+from .testutils.pytesthook import call_hook
 from .util import exceptions
 from .util.delay import delay
 from .util.dict_util import format_keys, get_tavern_box

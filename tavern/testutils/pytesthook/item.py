@@ -8,7 +8,7 @@ import pytest
 from tavern.core import run_test
 from tavern.plugins import load_plugins
 from tavern.schemas.files import verify_tests
-from tavern.testutils.pytesthook.newhooks import call_hook
+from tavern.testutils.pytesthook import call_hook
 from tavern.util import exceptions
 
 from .error import ReprdError
