@@ -34,6 +34,18 @@ def pytest_tavern_beta_after_every_response(expected, response):
     """
 
 
+def pytest_tavern_beta_before_every_request(request_args):
+    """Called just before every request - including MQTT/HTTP/etc
+
+    Note:
+        - The request object type depends on what plugin you're using, and which kind of request it is!
+
+    Args:
+        request_args (dict): Arguments passed to the request function. By default, this is Session.request for
+            HTTP and Client.publish for MQTT
+    """
+
+
 def call_hook(test_block_config, hookname, **kwargs):
     """Utility to call the hooks"""
     try:

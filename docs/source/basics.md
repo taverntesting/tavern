@@ -2137,6 +2137,9 @@ will then be picked up at runtime and called appropriately.
 use but the names and arguments they take should be considered unstable and may
 change in a future release (and more may also be added).
 
+More documentation for these can be found in the docstrings for the hooks
+in the `tavern/testutils/pytesthook/newhooks.py` file.
+
 ### Before every test run
 
 This hook is called after fixtures, global configuration, and plugins have been
@@ -2144,10 +2147,6 @@ loaded, but _before_ formatting is done on the test and the schema of the test
 is checked. This can be used to 'inject' extra things into the test before it is
 run, such as configurations blocks for a plugin, or just for some kind of
 logging.
-
-Args:
-- test_dict (dict): Test to run
-- variables (dict): Available variables
 
 Example usage:
 
@@ -2166,17 +2165,25 @@ This hook is called after every _response_ for each _stage_ - this includes HTTP
 responses, but also MQTT responses if you are using MQTT. This means if you are
 using MQTT it might be called multiple times for each stage!
 
-Args:
-- response (object): Response object. Could be whatever kind of response object
-  is returned by whatever plugin is used - if using the default HTTP
-  implementation which uses Requests, this will be a `requests.Response` object.
-  If using MQTT, this will be a paho-mqtt `Message` object.
-- expected (dict): Formatted response block from the stage.
-
 Example usage:
 
 ```python
 def pytest_tavern_beta_after_every_response(expected, response):
     with open("logfile.txt", "a") as logfile:
         logfile.write("Got response: {}".format(response.json()))
+```
+
+### Before every request
+
+This hook is called just before each request with the arguments passed to the request
+"function". By default, this is Session.request (from requests) for HTTP and Client.publish 
+(from paho-mqtt) for MQTT. 
+
+Example usage:
+
+```python
+import logging
+
+def pytest_tavern_beta_before_every_request(request_args):
+    logging.info("Making request: %s", request_args)
 ```
