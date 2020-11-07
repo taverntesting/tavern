@@ -1,6 +1,6 @@
-from contextlib import ExitStack
 import os
 import tempfile
+from contextlib import ExitStack
 from unittest.mock import Mock
 
 import pytest
@@ -349,33 +349,33 @@ class TestGetFiles(object):
     def mock_stack(self):
         return Mock(spec=ExitStack)
 
-    def test_get_no_files(self, mock_stack):
+    def test_get_no_files(self, mock_stack, includes):
         """No files in request -> no files"""
 
         request_args = {}
 
-        assert _get_file_arguments(request_args, mock_stack) == {}
+        assert _get_file_arguments(request_args, mock_stack, includes) == {}
 
-    def test_get_empty_files_list(self, mock_stack):
+    def test_get_empty_files_list(self, mock_stack, includes):
         """No specific files specified -> no files"""
 
         request_args = {"files": {}}
 
-        assert _get_file_arguments(request_args, mock_stack) == {}
+        assert _get_file_arguments(request_args, mock_stack, includes) == {}
 
-    def test_a_file(self, mock_stack):
+    def test_a_file(self, mock_stack, includes):
         """Json file should have the correct mimetype etc."""
 
         with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
             request_args = {"files": {"file1": tfile.name}}
 
-            file_spec = _get_file_arguments(request_args, mock_stack)
+            file_spec = _get_file_arguments(request_args, mock_stack, includes)
 
         file = file_spec["files"]["file1"]
         assert file[0] == os.path.basename(tfile.name)
         assert file[2] == "application/json"
 
-    def test_use_long_form_content_type(self, mock_stack):
+    def test_use_long_form_content_type(self, mock_stack, includes):
         """Use custom content type"""
 
         with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
@@ -389,9 +389,34 @@ class TestGetFiles(object):
                 }
             }
 
-            file_spec = _get_file_arguments(request_args, mock_stack)
+            file_spec = _get_file_arguments(request_args, mock_stack, includes)
 
         file = file_spec["files"]["file1"]
         assert file[0] == os.path.basename(tfile.name)
         assert file[2] == "abc123"
         assert file[3] == {"Content-Encoding": "def456"}
+
+    @pytest.mark.parametrize(
+        "file_args",
+        [
+            {
+                "file1": {
+                    "file_path": "{tmpname}",
+                    "content_type": "abc123",
+                    "content_encoding": "def456",
+                }
+            },
+            {"file1": "{tmpname}"},
+        ],
+    )
+    def test_format_filename(self, mock_stack, includes, file_args):
+        """Filenames should be formatted in short and long styles"""
+
+        with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
+            includes["variables"]["tmpname"] = tfile.name
+            request_args = {"files": {"file1": tfile.name}}
+
+            file_spec = _get_file_arguments(request_args, mock_stack, includes)
+
+        file = file_spec["files"]["file1"]
+        assert file[0] == os.path.basename(tfile.name)

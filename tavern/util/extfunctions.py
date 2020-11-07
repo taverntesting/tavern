@@ -5,14 +5,22 @@ import logging
 from . import exceptions
 
 
-def _getlogger():
+def get_pykwalify_logger(module):
     """Get logger for this module
 
     Have to do it like this because the way that pykwalify load extension
     modules means that getting the logger the normal way just result sin it
     trying to get the root logger which won't log correctly
+
+    Args:
+        module (string): name of module to get logger for
+
     """
-    return logging.getLogger("tavern.util.extfunctions")
+    return logging.getLogger(module)
+
+
+def _getlogger():
+    return get_pykwalify_logger("tavern.util.extfunctions")
 
 
 def import_ext_function(entrypoint):
