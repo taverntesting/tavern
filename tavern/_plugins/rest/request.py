@@ -16,7 +16,7 @@ from requests.utils import dict_from_cookiejar
 from tavern.request.base import BaseRequest
 from tavern.util import exceptions
 from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
-from tavern.util.extfunctions import get_wrapped_create_function
+from tavern.util.extfunctions import update_from_ext
 
 logger = logging.getLogger(__name__)
 
@@ -45,20 +45,6 @@ def get_request_args(rspec, test_block_config):
 
     # Ones that are required and are enforced to be present by the schema
     required_in_file = ["method", "url"]
-
-    optional_in_file = [
-        "json",
-        "data",
-        "params",
-        "headers",
-        "files",
-        "timeout",
-        "cert",
-        # Ideally this would just be passed through but requests seems to error
-        # if we pass a list instead of a tuple, so we have to manually convert
-        # it further down
-        # "auth"
-    ]
 
     optional_with_default = {"verify": True, "stream": False}
 
@@ -110,7 +96,7 @@ def get_request_args(rspec, test_block_config):
                 raise
 
     add_request_args(required_in_file, False)
-    add_request_args(optional_in_file, True)
+    add_request_args(RestRequest.optional_in_file, True)
 
     if "auth" in fspec:
         request_args["auth"] = tuple(fspec["auth"])
@@ -123,19 +109,6 @@ def get_request_args(rspec, test_block_config):
         # Needs to be a tuple, it being a list doesn't work
         if isinstance(fspec["timeout"], list):
             request_args["timeout"] = tuple(fspec["timeout"])
-
-    for key in optional_in_file:
-        try:
-            func = get_wrapped_create_function(request_args[key].pop("$ext"))
-        except (KeyError, TypeError, AttributeError):
-            pass
-        else:
-            merge_ext_values = test_block_config.get("merge_ext_values")
-            logger.debug("Will merge ext values? %s", merge_ext_values)
-            if merge_ext_values:
-                request_args[key] = deep_dict_merge(request_args[key], func())
-            else:
-                request_args[key] = func()
 
     # If there's any nested json in parameters, urlencode it
     # if you pass nested json to 'params' then requests silently fails and just
@@ -376,6 +349,20 @@ def _get_file_arguments(request_args, stack, test_block_config):
 
 
 class RestRequest(BaseRequest):
+    optional_in_file = [
+        "json",
+        "data",
+        "params",
+        "headers",
+        "files",
+        "timeout",
+        "cert",
+        # Ideally this would just be passed through but requests seems to error
+        # if we pass a list instead of a tuple, so we have to manually convert
+        # it further down
+        # "auth"
+    ]
+
     def __init__(self, session, rspec, test_block_config):
         """Prepare request
 
@@ -417,6 +404,11 @@ class RestRequest(BaseRequest):
         check_expected_keys(expected, rspec)
 
         request_args = get_request_args(rspec, test_block_config)
+        update_from_ext(
+            request_args,
+            RestRequest.optional_in_file,
+            test_block_config.get("merge_ext_values"),
+        )
 
         # Used further down, but pop it asap to avoid unwanted side effects
         file_body = request_args.pop("file_body", None)
