@@ -114,17 +114,19 @@ def get_wrapped_create_function(ext):
     return inner
 
 
-def update_from_ext(request_args, keys_to_check, merge_ext_values):
+def update_from_ext(request_args, keys_to_check, test_block_config):
     """
     Updates the request_args dict with any values from external functions
 
     Args:
         request_args (dict): dictionary of request args
         keys_to_check (list): list of keys in request to possibly update from
-        merge_ext_values (bool): whether to merge or replace values
+        test_block_config (dict): whether to merge or replace values
     """
 
-    logging.getLogger(__name__).debug("Will merge ext values? %s", merge_ext_values)
+    merge_ext_values = test_block_config.get("merge_ext_values")
+
+    new_args = {}
 
     for key in keys_to_check:
         try:
@@ -132,7 +134,15 @@ def update_from_ext(request_args, keys_to_check, merge_ext_values):
         except (KeyError, TypeError, AttributeError):
             pass
         else:
-            if merge_ext_values:
-                request_args[key] = deep_dict_merge(request_args[key], func())
-            else:
-                request_args[key] = func()
+            new_args[key] = func()
+
+    _getlogger().debug("Will merge ext values? %s", merge_ext_values)
+
+    if merge_ext_values:
+        _getlogger().info(request_args)
+        _getlogger().info(new_args)
+        merged_args = deep_dict_merge(request_args, new_args)
+    else:
+        merged_args = dict(request_args, **new_args)
+
+    return merged_args

@@ -1,6 +1,6 @@
+from contextlib import ExitStack
 import os
 import tempfile
-from contextlib import ExitStack
 from unittest.mock import Mock
 
 import pytest
@@ -15,6 +15,7 @@ from tavern._plugins.rest.request import (
     get_request_args,
 )
 from tavern.util import exceptions
+from tavern.util.extfunctions import update_from_ext
 
 
 @pytest.fixture(name="req")
@@ -302,7 +303,8 @@ class TestRequestArgs(object):
 
 
 class TestExtFunctions:
-    def test_get_from_function(self, req, includes):
+    @pytest.mark.parametrize("merge_values", (True, False, None))
+    def test_get_from_function(self, req, merge_values):
         """Make sure ext functions work in request
 
         This is a bit of a silly example because we're passing a dictionary
@@ -310,12 +312,19 @@ class TestExtFunctions:
         having to define another external function just for this test
         """
         to_copy = {"thing": "value"}
+        original_json = {"test": "test"}
 
-        req["data"] = {"$ext": {"function": "copy:copy", "extra_args": [to_copy]}}
+        req["json"] = {
+            "$ext": {"function": "copy:copy", "extra_args": [to_copy]},
+            **original_json,
+        }
 
-        args = get_request_args(req, includes)
+        args = update_from_ext(req, ["json"], {"merge_ext_values": merge_values})
 
-        assert args["data"] == to_copy
+        if merge_values:
+            assert args["json"] == dict(**to_copy, **original_json)
+        else:
+            assert args["json"] == to_copy
 
 
 class TestOptionalDefaults:

@@ -44,9 +44,7 @@ class MQTTRequest(BaseRequest):
         check_expected_keys(expected, rspec)
 
         publish_args = get_publish_args(rspec, test_block_config)
-        update_from_ext(
-            publish_args, ["json"], test_block_config.get("merge_ext_values")
-        )
+        update_from_ext(publish_args, ["json"], test_block_config)
 
         self._prepared = functools.partial(client.publish, **publish_args)
 
