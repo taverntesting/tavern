@@ -4,6 +4,7 @@ python_tests(
     "//tavern/util",
     "//tavern/testutils/pytesthook",
     "//tavern/_plugins/rest",
+    "//:pyest_ini",
     ":logging_config" ]
 )
 

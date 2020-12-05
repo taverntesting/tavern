@@ -3,3 +3,8 @@ python_requirements(
     "setuptools": ["pkg_resources"],
   },
 )
+
+resources(
+    name="pyest_ini",
+    sources=["pytest.ini"],
+)
