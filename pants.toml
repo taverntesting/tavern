@@ -1,0 +1,37 @@
+[GLOBAL]
+pants_version = "2.1.0"
+
+backend_packages.add = [
+    "pants.backend.python",
+    "pants.backend.python.lint.docformatter",
+    "pants.backend.python.lint.black",
+    "pants.backend.python.lint.flake8",
+    "pants.backend.python.lint.isort",
+    "pants.backend.python.typecheck.mypy",
+]
+
+[source]
+# The Python source root is the repo root. See https://www.pantsbuild.org/docs/source-roots.
+root_patterns = ["/"]
+
+[python-setup]
+# The default interpreter compatibility for code in this repo. Individual targets can override
+#  this with the `interpreter_constraints` field. See
+#  https://www.pantsbuild.org/docs/python-interpreter-compatibility.
+interpreter_constraints = [">=3.7"]
+# Use a constraints file. See https://www.pantsbuild.org/docs/python-third-party-dependencies.
+requirement_constraints = "constraints.txt"
+# We search for interpreters on both on the $PATH and in the `$(pyenv root)/versions` folder.
+#  If you're using macOS, you may want to leave off the <PATH> entry to avoid using the
+#  problematic system Pythons. See
+#  https://www.pantsbuild.org/docs/python-interpreter-compatibility#changing-the-interpreter-search-path.
+interpreter_search_paths = ["<PATH>", "<PYENV>"]
+
+[flake8]
+#config = "build-support/.flake8"
+
+[isort]
+config = [".isort.cfg"]
+
+[mypy]
+config = "mypy.ini"

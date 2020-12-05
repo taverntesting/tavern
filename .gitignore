@@ -125,3 +125,7 @@ bazel-out
 bazel-tavern
 bazel-testlogs
 
+
+/dist/
+/.pants.workdir.file_lock*
+
