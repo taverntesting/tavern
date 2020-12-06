@@ -1,11 +1,10 @@
 python_tests(
   sources=["conftest.py", "unit/**"],
   dependencies=[
-    "//tavern/util",
-    "//tavern/testutils/pytesthook",
-    "//tavern/_plugins/rest",
+    "//:tavern_wheel",
     "//:pyest_ini",
-    ":logging_config" ]
+    ":logging_config",
+   ]
 )
 
 resources(
