@@ -60,7 +60,7 @@ class YamlItem(pytest.Item):
 
     def setup(self):
         super(YamlItem, self).setup()
-        fixtures.fillfixtures(self)
+        self._request._fillfixtures()  # pylint: disable=protected-access
 
     @property
     def obj(self):

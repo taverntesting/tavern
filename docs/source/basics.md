@@ -1889,7 +1889,7 @@ formatted differently for each time. This behaves like the built in Pytest
 `parametrize` mark, where the tests will show up in the log with some extra data
 appended to show what was being run, eg `Test Name[John]`, `Test Name[John-Smythe John]`, etc.
 
-The `parametrize` make should be a mapping with `key` being the value that will
+The `parametrize` mark should be a mapping with `key` being the value that will
 be formatted and `vals` being a list of values to be formatted. Note that
 formatting of these values happens after checking for a `skipif`, so a `skipif`
 mark cannot rely on a parametrized value.
