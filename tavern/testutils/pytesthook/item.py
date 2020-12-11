@@ -60,7 +60,7 @@ class YamlItem(pytest.Item):
 
     def setup(self):
         super(YamlItem, self).setup()
-        self._request._fillfixtures()
+        self._request._fillfixtures()  # pytest: disable=protected-access
 
     @property
     def obj(self):
