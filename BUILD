@@ -1,6 +1,9 @@
 python_requirements(
   module_mapping={
     "setuptools": ["pkg_resources"],
+    "PyYAML": ["yaml"],
+    "python-box": ["box"],
+    "pyjwt": ["jwt"],
   },
 )
 
@@ -52,7 +55,11 @@ python_distribution(
                 "Topic :: Software Development :: Testing",
                 "License :: OSI Approved :: MIT License",
         ],
-
+        project_urls={
+            "Documentation": "https://taverntesting.github.io/",
+            "Source": "https://github.com/taverntesting/tavern",
+        },
+        python_requires=">=3.6",
     ).with_binaries({
       "tavern-ci": "//tavern:tavern-ci",
     }),
