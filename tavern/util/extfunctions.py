@@ -139,10 +139,8 @@ def update_from_ext(request_args, keys_to_check, test_block_config):
     _getlogger().debug("Will merge ext values? %s", merge_ext_values)
 
     if merge_ext_values:
-        _getlogger().info(request_args)
-        _getlogger().info(new_args)
         merged_args = deep_dict_merge(request_args, new_args)
     else:
         merged_args = dict(request_args, **new_args)
 
-    return merged_args
+    request_args.update(**merged_args)
