@@ -319,12 +319,12 @@ class TestExtFunctions:
             **original_json,
         }
 
-        args = update_from_ext(req, ["json"], {"merge_ext_values": merge_values})
+        update_from_ext(req, ["json"], {"merge_ext_values": merge_values})
 
         if merge_values:
-            assert args["json"] == dict(**to_copy, **original_json)
+            assert req["json"] == dict(**to_copy, **original_json)
         else:
-            assert args["json"] == to_copy
+            assert req["json"] == to_copy
 
 
 class TestOptionalDefaults:
