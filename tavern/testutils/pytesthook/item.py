@@ -60,7 +60,7 @@ class YamlItem(pytest.Item):
 
     def setup(self):
         super(YamlItem, self).setup()
-        fixtures.fillfixtures(self)
+        self._request._fillfixtures()
 
     @property
     def obj(self):
