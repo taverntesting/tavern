@@ -115,11 +115,12 @@ APIs.
 **Postman** and **Insomnia** are excellent tools which cover a wide
 range of use-cases for RESTful APIs, and indeed we use Tavern alongside
 Postman. However, specifically with regards to automated testing, Tavern
-has several advantages over Postman: - A full-featured Python
-environment for writing easily reusable custom validation functions -
-Testing of MQTT based systems in tandem with RESTful APIS. - Seamless
-integration with pytest to keep all your tests in one place - A simpler,
-less verbose and clearer testing language
+has several advantages over Postman:
+
+- A full-featured Python environment for writing easily reusable custom validation functions
+- Testing of MQTT based systems in tandem with RESTful APIS.
+- Seamless integration with pytest to keep all your tests in one place
+- A simpler, less verbose and clearer testing language
 
 Tavern does not do many of the things Postman and Insomnia do. For
 example, Tavern does not have a GUI nor does it do API monitoring or
