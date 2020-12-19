@@ -417,10 +417,8 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                         expected_val.compiled, full_err()
                     )
                 else:
-                    msg = (
-                        "Type of returned data was different than expected ({})".format(
-                            full_err()
-                        )
+                    msg = "Type of returned data was different than expected ({})".format(
+                        full_err()
                     )
 
                 raise exceptions.KeyMismatchError(msg) from e

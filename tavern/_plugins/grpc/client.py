@@ -1,27 +1,20 @@
 from distutils.spawn import find_executable
 from importlib import import_module
-import os
 import logging
+import os
+import pkgutil
 import subprocess
 import sys
-import pkgutil
 import warnings
 
-from future.utils import raise_from
-
-import grpc
-
-from grpc_reflection.v1alpha import reflection_pb2
-from grpc_reflection.v1alpha import reflection_pb2_grpc
-
-from google.protobuf import descriptor_pb2
+from google.protobuf import descriptor_pb2, json_format
 from google.protobuf import symbol_database as _symbol_database
-from google.protobuf import json_format
-
+import grpc
+from grpc_reflection.v1alpha import reflection_pb2, reflection_pb2_grpc
 from grpc_status import rpc_status
 
-from tavern.util.dict_util import check_expected_keys
 from tavern.util import exceptions
+from tavern.util.dict_util import check_expected_keys
 
 logger = logging.getLogger(__name__)
 
@@ -97,7 +90,7 @@ class GRPCClient(object):
         check_expected_keys(expected_blocks["connect"], _connect_args)
 
         metadata = kwargs.pop("metadata", {})
-        self._metadata = [(key, value) for key, value in metadata.items()]
+        self._metadata = metadata.items()
 
         _proto_args = kwargs.pop("proto", {})
         check_expected_keys(expected_blocks["proto"], _proto_args)
@@ -215,7 +208,7 @@ class GRPCClient(object):
                     status.code,
                     status.details,
                 )
-            raise_from(exceptions.GRPCRequestException, rpc_error)
+            raise exceptions.GRPCRequestException from rpc_error
 
         return self._get_grpc_service(channel, service, method)
 

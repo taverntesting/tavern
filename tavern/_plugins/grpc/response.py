@@ -1,8 +1,8 @@
 import json
 import logging
 
-from grpc import StatusCode
 from google.protobuf import json_format
+from grpc import StatusCode
 
 from tavern.response.base import BaseResponse
 from tavern.util.exceptions import TestFailError

@@ -1,14 +1,13 @@
 import logging
-
-from os.path import join, abspath, dirname
+from os.path import abspath, dirname, join
 
 import yaml
 
 from tavern.util.dict_util import format_keys
 
+from .client import GRPCClient
 from .request import GRPCRequest
 from .response import GRPCResponse
-from .client import GRPCClient
 
 logger = logging.getLogger(__name__)
 
