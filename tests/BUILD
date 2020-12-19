@@ -1,4 +1,4 @@
-python_tests(
+python3_multitests(
   sources=["conftest.py", "unit/**"],
   dependencies=[
     "//:tavern_wheel",

@@ -7,11 +7,16 @@ backend_packages.add = [
     "pants.backend.python.lint.black",
     "pants.backend.python.lint.flake8",
     "pants.backend.python.lint.isort",
+    "pants.backend.python.lint.pylint",
     "pants.backend.python.typecheck.mypy",
 ]
 
 pants_ignore_use_gitignore = true
 pants_ignore = ["bazel-*"]
+
+build_file_prelude_globs = [
+    "pants-plugins/macros.py",
+]
 
 [source]
 # The Python source root is the repo root. See https://www.pantsbuild.org/docs/source-roots.
@@ -28,7 +33,7 @@ requirement_constraints = "constraints.txt"
 #  If you're using macOS, you may want to leave off the <PATH> entry to avoid using the
 #  problematic system Pythons. See
 #  https://www.pantsbuild.org/docs/python-interpreter-compatibility#changing-the-interpreter-search-path.
-interpreter_search_paths = ["<PATH>", "<PYENV>"]
+interpreter_search_paths = [ "<PYENV>"]
 
 [flake8]
 #config = "build-support/.flake8"
@@ -38,3 +43,9 @@ config = [".isort.cfg"]
 
 [mypy]
 config = "mypy.ini"
+
+[pylint]
+config = ".pylintrc"
+
+[pytest]
+version = "pytest>=5.4.3,<7"

@@ -1,5 +1,4 @@
 # tests
-tox
 flask
 
 # Useful for development
