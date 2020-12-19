@@ -405,7 +405,9 @@ class RestRequest(BaseRequest):
 
         request_args = get_request_args(rspec, test_block_config)
         update_from_ext(
-            request_args, RestRequest.optional_in_file, test_block_config,
+            request_args,
+            RestRequest.optional_in_file,
+            test_block_config,
         )
 
         # Used further down, but pop it asap to avoid unwanted side effects

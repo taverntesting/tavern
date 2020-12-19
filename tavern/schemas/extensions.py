@@ -122,8 +122,7 @@ def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path):
 
 
 def validate_grpc_status_is_valid_or_list_of_names(value, rule_obj, path):
-    """ Validate GRPC statuses https://github.com/grpc/grpc/blob/master/doc/statuscodes.md
-    """
+    """Validate GRPC statuses https://github.com/grpc/grpc/blob/master/doc/statuscodes.md"""
     # pylint: disable=unused-argument
     err_msg = "status has to be an valid grpc status name (got {})".format(value)
 

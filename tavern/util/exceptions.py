@@ -55,8 +55,7 @@ class RestRequestException(TavernException):
 
 
 class GRPCRequestException(TavernException):
-    """Error making requests in GRPCRequest()
-    """
+    """Error making requests in GRPCRequest()"""
 
 
 class MQTTRequestException(TavernException):

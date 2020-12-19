@@ -12,8 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_grpc_args(rspec, test_block_config):
-    """Format GRPC request args
-    """
+    """Format GRPC request args"""
 
     fspec = format_keys(rspec, test_block_config["variables"])
 
