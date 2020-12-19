@@ -16,18 +16,9 @@ from tavern.util.loader import (
 )
 
 from . import exceptions
+from .formatted_str import _FormattedString
 
 logger = logging.getLogger(__name__)
-
-
-class _FormattedString(str):
-    """Wrapper class for things that have already been formatted
-
-    This is only used below and should not be used outside this module
-    """
-
-    def __init(self, s):
-        super().__init__(s)
 
 
 def _check_and_format_values(to_format, box_vars):
@@ -417,10 +408,8 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                         expected_val.compiled, full_err()
                     )
                 else:
-                    msg = (
-                        "Type of returned data was different than expected ({})".format(
-                            full_err()
-                        )
+                    msg = "Type of returned data was different than expected ({})".format(
+                        full_err()
                     )
 
                 raise exceptions.KeyMismatchError(msg) from e

@@ -1,16 +1,21 @@
 from contextlib import ExitStack
 from copy import deepcopy
 from distutils.util import strtobool
+import functools
 import logging
 import os
+from textwrap import dedent
 
 import pytest
+
+import allure
 
 from tavern.schemas.files import wrapfile
 from tavern.util.strict_util import StrictLevel
 
 from .plugins import get_expected, get_extra_sessions, get_request_type, get_verifiers
 from .testutils.pytesthook import call_hook
+from .testutils.pytesthook.error import get_stage_lines, read_relevant_lines
 from .util import exceptions
 from .util.delay import delay
 from .util.dict_util import format_keys, get_tavern_box
@@ -163,7 +168,7 @@ def run_test(in_file, test_spec, global_cfg):
         has_only = any(getonly(stage) for stage in test_spec["stages"])
 
         # Run tests in a path in order
-        for stage in test_spec["stages"]:
+        for idx, stage in enumerate(test_spec["stages"]):
             if stage.get("skip"):
                 continue
             if has_only and not getonly(stage):
@@ -175,8 +180,15 @@ def run_test(in_file, test_spec, global_cfg):
             # Wrap run_stage with retry helper
             run_stage_with_retries = retry(stage, test_block_config)(run_stage)
 
+            allure_name = "Stage {}: {}".format(idx, stage["name"])
+            step = allure.step(allure_name)(
+                functools.partial(
+                    run_stage_with_retries, sessions, stage, test_block_config
+                )
+            )
+
             try:
-                run_stage_with_retries(sessions, stage, test_block_config)
+                step()
             except exceptions.TavernException as e:
                 e.stage = stage
                 e.test_block_config = test_block_config
@@ -230,6 +242,14 @@ def run_stage(sessions, stage, test_block_config):
         test_block_config (dict): available variables for test
     """
     name = stage["name"]
+
+    first_line, last_line, line_start = get_stage_lines(stage)
+
+    code_lines = list(read_relevant_lines(stage.start_mark.name, first_line, last_line))
+    joined = dedent("\n".join(code_lines))
+    allure.attach(
+        joined, name="stage_yaml", attachment_type=allure.attachment_type.YAML
+    )
 
     r = get_request_type(stage, test_block_config, sessions)
 

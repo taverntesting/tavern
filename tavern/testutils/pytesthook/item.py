@@ -5,6 +5,8 @@ from _pytest import fixtures
 import attr
 import pytest
 
+import allure
+
 from tavern.core import run_test
 from tavern.plugins import load_plugins
 from tavern.schemas.files import verify_tests
@@ -79,6 +81,10 @@ class YamlItem(pytest.Item):
 
         fakefun.__doc__ = self.name + ":\n" + "\n".join(stages)
         return fakefun
+
+    @property
+    def _obj(self):
+        return self.obj
 
     def add_markers(self, pytest_marks):
         for pm in pytest_marks:
@@ -193,19 +199,19 @@ class YamlItem(pytest.Item):
         except exceptions.BadSchemaError:
             if xfail == "verify":
                 logger.info("xfailing test while verifying schema")
-            else:
-                raise
+                self.add_marker(pytest.mark.xfail, True)
+            raise
         except exceptions.TavernException:
             if xfail == "run":
                 logger.info("xfailing test when running")
-            else:
-                raise
-        else:
-            if xfail:
-                logger.error("Expected test to fail")
-                raise exceptions.TestFailError(
-                    "Expected test to fail at {} stage".format(xfail)
-                )
+                self.add_marker(pytest.mark.xfail, True)
+            raise
+        # else:
+        #     if xfail:
+        #         logger.error("Expected test to fail")
+        #         raise exceptions.TestFailError(
+        #             "Expected test to fail at {} stage".format(xfail)
+        #         )
 
     def repr_failure(self, excinfo, style=None):
         """called when self.runtest() raises an exception.
@@ -225,7 +231,9 @@ class YamlItem(pytest.Item):
         if style is not None:
             logger.info("Ignoring style '%s", style)
 
-        return ReprdError(excinfo, self)
+        error = ReprdError(excinfo, self)
+        allure.attach(str(error), name="error_output")
+        return error
 
     def reportinfo(self):
         return self.fspath, 0, "{s.path}::{s.name:s}".format(s=self)

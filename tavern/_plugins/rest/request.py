@@ -5,6 +5,7 @@ import json
 import logging
 import mimetypes
 import os
+from textwrap import dedent
 from urllib.parse import quote_plus
 import warnings
 
@@ -12,11 +13,16 @@ from box import Box
 import requests
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
+import yaml
+
+import allure
 
 from tavern.request.base import BaseRequest
+from tavern.testutils.pytesthook.error import get_stage_lines, read_relevant_lines
 from tavern.util import exceptions
 from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
 from tavern.util.extfunctions import update_from_ext
+from tavern.util.formatted_str import _FormattedString
 
 logger = logging.getLogger(__name__)
 
@@ -405,9 +411,7 @@ class RestRequest(BaseRequest):
 
         request_args = get_request_args(rspec, test_block_config)
         update_from_ext(
-            request_args,
-            RestRequest.optional_in_file,
-            test_block_config,
+            request_args, RestRequest.optional_in_file, test_block_config,
         )
 
         # Used further down, but pop it asap to avoid unwanted side effects
@@ -462,6 +466,12 @@ class RestRequest(BaseRequest):
             requests.Response: response object
         """
 
+        allure.attach(
+            yaml.dump(prepare_yaml(self._request_args)),
+            name="rest_request",
+            attachment_type=allure.attachment_type.YAML,
+        )
+
         try:
             return self._prepared()
         except requests.exceptions.RequestException as e:
@@ -471,3 +481,21 @@ class RestRequest(BaseRequest):
     @property
     def request_vars(self):
         return Box(self._request_args)
+
+
+def prepare_yaml(val):
+    formatted = val
+
+    if isinstance(val, dict):
+        formatted = {}
+        # formatted = {key: format_keys(val[key], box_vars) for key in val}
+        for key in val:
+            formatted[key] = prepare_yaml(val[key])
+    elif isinstance(val, (list, tuple)):
+        formatted = [prepare_yaml(item) for item in val]
+    elif isinstance(formatted, _FormattedString):
+        return str(formatted)
+    else:
+        logger.debug("Not formatting something of type '%s'", type(formatted))
+
+    return formatted

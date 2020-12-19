@@ -181,18 +181,11 @@ class ReprdError(object):
             last_line = stages[-1].end_mark.line
             line_start = None
         else:
-            first_line = stage.start_mark.line - 1
-            last_line = stage.end_mark.line
-            line_start = first_line + 1
+            first_line, last_line, line_start = get_stage_lines(stage)
 
-        def read_relevant_lines(filename):
-            """Get lines between start and end mark"""
-            with io.open(filename, "r", encoding="utf8") as testfile:
-                for idx, line in enumerate(testfile.readlines()):
-                    if first_line < idx < last_line:
-                        yield line.split("#", 1)[0].rstrip()
-
-        code_lines = list(read_relevant_lines(self.item.spec.start_mark.name))
+        code_lines = list(
+            read_relevant_lines(self.item.spec.start_mark.name, first_line, last_line)
+        )
 
         missing_format_vars = self._print_format_variables(tw, code_lines)
         tw.line("")
@@ -221,3 +214,19 @@ class ReprdError(object):
 
     def __str__(self):
         return self.longreprtext
+
+
+def get_stage_lines(stage):
+    first_line = stage.start_mark.line - 1
+    last_line = stage.end_mark.line
+    line_start = first_line + 1
+
+    return first_line, last_line, line_start
+
+
+def read_relevant_lines(filename, first_line, last_line):
+    """Get lines between start and end mark"""
+    with io.open(filename, "r", encoding="utf8") as testfile:
+        for idx, line in enumerate(testfile.readlines()):
+            if first_line < idx < last_line:
+                yield line.split("#", 1)[0].rstrip()
