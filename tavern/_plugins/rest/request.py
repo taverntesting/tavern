@@ -14,9 +14,9 @@ from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
 
 from tavern.request.base import BaseRequest
-from tavern.schemas.extensions import get_wrapped_create_function
 from tavern.util import exceptions
 from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
+from tavern.util.extfunctions import update_from_ext
 
 logger = logging.getLogger(__name__)
 
@@ -39,26 +39,12 @@ def get_request_args(rspec, test_block_config):
         BadSchemaError: Tried to pass a body in a GET request
     """
 
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals,too-many-statements
 
     request_args = {}
 
     # Ones that are required and are enforced to be present by the schema
     required_in_file = ["method", "url"]
-
-    optional_in_file = [
-        "json",
-        "data",
-        "params",
-        "headers",
-        "files",
-        "timeout",
-        "cert",
-        # Ideally this would just be passed through but requests seems to error
-        # if we pass a list instead of a tuple, so we have to manually convert
-        # it further down
-        # "auth"
-    ]
 
     optional_with_default = {"verify": True, "stream": False}
 
@@ -94,6 +80,10 @@ def get_request_args(rspec, test_block_config):
 
     fspec = format_keys(rspec, test_block_config["variables"])
 
+    send_in_body = fspec.get("file_body")
+    if send_in_body:
+        request_args["file_body"] = send_in_body
+
     def add_request_args(keys, optional):
         for key in keys:
             try:
@@ -106,7 +96,7 @@ def get_request_args(rspec, test_block_config):
                 raise
 
     add_request_args(required_in_file, False)
-    add_request_args(optional_in_file, True)
+    add_request_args(RestRequest.optional_in_file, True)
 
     if "auth" in fspec:
         request_args["auth"] = tuple(fspec["auth"])
@@ -119,14 +109,6 @@ def get_request_args(rspec, test_block_config):
         # Needs to be a tuple, it being a list doesn't work
         if isinstance(fspec["timeout"], list):
             request_args["timeout"] = tuple(fspec["timeout"])
-
-    for key in optional_in_file:
-        try:
-            func = get_wrapped_create_function(request_args[key].pop("$ext"))
-        except (KeyError, TypeError, AttributeError):
-            pass
-        else:
-            request_args[key] = func()
 
     # If there's any nested json in parameters, urlencode it
     # if you pass nested json to 'params' then requests silently fails and just
@@ -312,11 +294,12 @@ def _read_filespec(filespec):
         )
 
 
-def _get_file_arguments(request_args, stack):
+def _get_file_arguments(request_args, stack, test_block_config):
     """Get corect arguments for anything that should be passed as a file to
     requests
 
     Args:
+        test_block_config (dict): config for test
         stack (ExitStack): context stack to add file objects to so they're
             closed correctly after use
 
@@ -331,6 +314,7 @@ def _get_file_arguments(request_args, stack):
             mimetypes.init()
 
         filepath, content_type, encoding = _read_filespec(filespec)
+        filepath = format_keys(filepath, test_block_config["variables"])
 
         filename = os.path.basename(filepath)
 
@@ -365,6 +349,20 @@ def _get_file_arguments(request_args, stack):
 
 
 class RestRequest(BaseRequest):
+    optional_in_file = [
+        "json",
+        "data",
+        "params",
+        "headers",
+        "files",
+        "timeout",
+        "cert",
+        # Ideally this would just be passed through but requests seems to error
+        # if we pass a list instead of a tuple, so we have to manually convert
+        # it further down
+        # "auth"
+    ]
+
     def __init__(self, session, rspec, test_block_config):
         """Prepare request
 
@@ -406,6 +404,14 @@ class RestRequest(BaseRequest):
         check_expected_keys(expected, rspec)
 
         request_args = get_request_args(rspec, test_block_config)
+        update_from_ext(
+            request_args,
+            RestRequest.optional_in_file,
+            test_block_config,
+        )
+
+        # Used further down, but pop it asap to avoid unwanted side effects
+        file_body = request_args.pop("file_body", None)
 
         # If there was a 'cookies' key, set it in the request
         expected_cookies = _read_expected_cookies(session, rspec, test_block_config)
@@ -434,18 +440,20 @@ class RestRequest(BaseRequest):
                 stack.enter_context(_set_cookies_for_request(session, request_args))
 
                 # These are mutually exclusive
-                if rspec.get("file_body"):
-                    file = stack.enter_context(open(rspec.get("file_body"), "rb"))
+                if file_body:
+                    file = stack.enter_context(open(file_body, "rb"))
                     request_args.update(data=file)
                 else:
-                    self._request_args.update(_get_file_arguments(request_args, stack))
+                    self._request_args.update(
+                        _get_file_arguments(request_args, stack, test_block_config)
+                    )
 
                 return session.request(**self._request_args)
 
         self._prepared = prepared_request
 
     def run(self):
-        """ Runs the prepared request and times it
+        """Runs the prepared request and times it
 
         Todo:
             time it

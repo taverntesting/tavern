@@ -37,7 +37,9 @@ class MQTTResponse(BaseResponse):
             json_payload = True
 
             if payload.pop("$ext", None):
-                raise exceptions.InvalidExtBlockException("json",)
+                raise exceptions.InvalidExtBlockException(
+                    "json",
+                )
         elif "payload" in self.expected:
             payload = self.expected["payload"]
             json_payload = False

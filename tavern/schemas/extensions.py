@@ -1,6 +1,3 @@
-import functools
-import importlib
-import logging
 import os
 import re
 
@@ -9,18 +6,9 @@ from grpc import StatusCode
 
 from tavern.util import exceptions
 from tavern.util.exceptions import BadSchemaError
+from tavern.util.extfunctions import get_pykwalify_logger, import_ext_function
 from tavern.util.loader import ApproxScalar, BoolToken, FloatToken, IntToken
 from tavern.util.strict_util import StrictLevel
-
-
-def _getlogger():
-    """Get logger for this module
-
-    Have to do it like this because the way that pykwalify load extension
-    modules means that getting the logger the normal way just result sin it
-    trying to get the root logger which won't log correctly
-    """
-    return logging.getLogger("tavern.schemas.extensions")
 
 
 # To extend pykwalify's type validation, extend its internal functions
@@ -55,95 +43,6 @@ def validator_like(validate, description):
 int_variable = validator_like(is_int_like, "int-like")
 float_variable = validator_like(is_float_like, "float-like")
 bool_variable = validator_like(is_bool_like, "bool-like")
-
-
-def import_ext_function(entrypoint):
-    """Given a function name in the form of a setuptools entry point, try to
-    dynamically load and return it
-
-    Args:
-        entrypoint (str): setuptools-style entrypoint in the form
-            module.submodule:function
-
-    Returns:
-        function: function loaded from entrypoint
-
-    Raises:
-        InvalidExtFunctionError: If the module or function did not exist
-    """
-    logger = _getlogger()
-
-    try:
-        module, funcname = entrypoint.split(":")
-    except ValueError as e:
-        msg = "Expected entrypoint in the form module.submodule:function"
-        logger.exception(msg)
-        raise exceptions.InvalidExtFunctionError(msg) from e
-
-    try:
-        module = importlib.import_module(module)
-    except ImportError as e:
-        msg = "Error importing module {}".format(module)
-        logger.exception(msg)
-        raise exceptions.InvalidExtFunctionError(msg) from e
-
-    try:
-        function = getattr(module, funcname)
-    except AttributeError as e:
-        msg = "No function named {} in {}".format(funcname, module)
-        logger.exception(msg)
-        raise exceptions.InvalidExtFunctionError(msg) from e
-
-    return function
-
-
-def get_wrapped_response_function(ext):
-    """Wraps a ext function with arguments given in the test file
-
-    This is similar to functools.wrap, but this makes sure that 'response' is
-    always the first argument passed to the function
-
-    Args:
-        ext (dict): $ext function dict with function, extra_args, and
-            extra_kwargs to pass
-
-    Returns:
-        function: Wrapped function
-    """
-    args = ext.get("extra_args") or ()
-    kwargs = ext.get("extra_kwargs") or {}
-    try:
-        func = import_ext_function(ext["function"])
-    except KeyError:
-        raise exceptions.BadSchemaError(
-            "No function specified in external function block"
-        )
-
-    @functools.wraps(func)
-    def inner(response):
-        return func(response, *args, **kwargs)
-
-    inner.func = func
-
-    return inner
-
-
-def get_wrapped_create_function(ext):
-    """Same as above, but don't require a response
-    """
-    args = ext.get("extra_args") or ()
-    kwargs = ext.get("extra_kwargs") or {}
-    func = import_ext_function(ext["function"])
-
-    @functools.wraps(func)
-    def inner():
-        result = func(*args, **kwargs)
-        _getlogger().info("Result of calling '%s': '%s'", func, result)
-        return result
-
-    inner.func = func
-
-    return inner
 
 
 def _validate_one_extension(input_value):
@@ -258,6 +157,21 @@ def check_usefixtures(value, rule_obj, path):
     return True
 
 
+def verify_oneof_id_name(value, rule_obj, path):
+    """Checks that if 'name' is not present, 'id' is"""
+    # pylint: disable=unused-argument
+
+    name = value.get("name")
+    if not name:
+        if name == "":
+            raise BadSchemaError("Name cannot be empty")
+
+        if not value.get("id"):
+            raise BadSchemaError("If 'name' is not specified, 'id' must be specified")
+
+    return True
+
+
 def check_parametrize_marks(value, rule_obj, path):
     # pylint: disable=unused-argument
 
@@ -276,9 +190,11 @@ def check_parametrize_marks(value, rule_obj, path):
         #         - rotten
         #         - fresh
         #         - unripe
-        err_msg = "If 'key' is a string, 'vals' must be a list of items"
+        err_msg = (
+            "If 'key' in parametrize is a string, 'vals' must be a list of scalar items"
+        )
         for v in vals:
-            if isinstance(v, list):
+            if isinstance(v, (list, dict)):
                 raise BadSchemaError(err_msg)
 
     elif isinstance(key_or_keys, list):
@@ -349,7 +265,7 @@ def validate_data_key(value, rule_obj, path):
 
 
 def validate_request_json(value, rule_obj, path):
-    """ Performs the above match, but also matches a dict or a list. This it
+    """Performs the above match, but also matches a dict or a list. This it
     just because it seems like you can't match a dict OR a list in pykwalify
     """
 
@@ -417,7 +333,7 @@ def validate_timeout_tuple_or_float(value, rule_obj, path):
     err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{}' (type {})".format(
         value, type(value)
     )
-    logger = _getlogger()
+    logger = get_pykwalify_logger("tavern.schemas.extensions")
 
     def check_is_timeout_val(v):
         if v is True or v is False or not (is_float_like(v) or is_int_like(v)):
@@ -500,9 +416,14 @@ def validate_file_spec(value, rule_obj, path):
             )
 
         if not os.path.exists(file_path):
-            raise BadSchemaError(
-                "Path to file to upload '{}' was not found".format(file_path)
-            )
+            if re.search(".*{.+}.*", file_path):
+                get_pykwalify_logger("tavern.schemas.extensions").debug(
+                    "Could not find file path, but it might be a format variable, so continuing"
+                )
+            else:
+                raise BadSchemaError(
+                    "Path to file to upload '{}' was not found".format(file_path)
+                )
 
     return True
 
@@ -513,3 +434,15 @@ def raise_body_error(value, rule_obj, path):
 
     msg = "The 'body' key has been replaced with 'json' in 1.0 to make it more in line with other blocks. see https://github.com/taverntesting/tavern/issues/495 for details."
     raise BadSchemaError(msg)
+
+
+def retry_variable(value, rule_obj, path):
+    """Check retry variables"""
+
+    int_variable(value, rule_obj, path)
+
+    if isinstance(value, int):
+        if value < 0:
+            raise BadSchemaError("max_retries must be greater than 0")
+
+    return True

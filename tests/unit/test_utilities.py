@@ -5,7 +5,7 @@ import os
 import tempfile
 from textwrap import dedent
 
-from mock import Mock, patch
+from unittest.mock import Mock, patch
 import pytest
 import yaml
 
@@ -63,8 +63,7 @@ class TestValidateFunctions:
         validate_extensions(spec, None, None)
 
     def test_get_invalid_module(self):
-        """Nonexistent module
-        """
+        """Nonexistent module"""
 
         spec = {"function": "bleuuerhug:add"}
 
@@ -72,8 +71,7 @@ class TestValidateFunctions:
             validate_extensions(spec, None, None)
 
     def test_get_nonexistent_function(self):
-        """No name in module
-        """
+        """No name in module"""
 
         spec = {"function": "os:aaueurhg"}
 
@@ -83,8 +81,7 @@ class TestValidateFunctions:
 
 class TestDictMerge:
     def test_single_level(self):
-        """ Merge two depth-one dicts with no conflicts
-        """
+        """Merge two depth-one dicts with no conflicts"""
         dict_1 = {"key_1": "original_value_1", "key_2": "original_value_2"}
         dict_2 = {"key_2": "new_value_2", "key_3": "new_value_3"}
 
@@ -99,8 +96,7 @@ class TestDictMerge:
         }
 
     def test_recursive_merge(self):
-        """ Merge two depth-one dicts with no conflicts
-        """
+        """Merge two depth-one dicts with no conflicts"""
         dict_1 = {
             "key": {"deep_key_1": "original_value_1", "deep_key_2": "original_value_2"}
         }
@@ -413,6 +409,20 @@ class TestLoadCfg:
             finally:
                 os.remove(wrapped_tmp.name)
 
+    @pytest.mark.parametrize("value", ("b", "三木"))
+    def test_load_utf8(self, value):
+        """if yaml has utf8 char , may load error"""
+        content = f"""a: {value}""" ""
+
+        with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as f:
+            f.write(content.encode("utf8"))
+
+        try:
+            load_single_document_yaml(f.name)
+
+        finally:
+            os.remove(f.name)
+
 
 class TestLoadFile:
     @staticmethod
@@ -443,3 +453,30 @@ class TestLoadFile:
             with patch("tavern.util.loader.os.path.join", return_value=tmpfile):
                 with pytest.raises(exceptions.BadSchemaError):
                     construct_include(Mock(), Mock())
+
+    def test_include_path(self):
+        example = {"a": "b"}
+
+        with TestLoadFile.magic_wrap(example, ".yaml") as tmpfile:
+            tmppath, tmpfilename = os.path.split(tmpfile)
+            with pytest.raises(exceptions.BadSchemaError):
+                construct_include(
+                    Mock(
+                        _root="/does-not-exist", construct_scalar=lambda x: tmpfilename
+                    ),
+                    Mock(),
+                )
+
+            with patch("tavern.util.loader.IncludeLoader.env_path_list", None):
+                assert example == construct_include(
+                    Mock(_root=tmppath, construct_scalar=lambda x: tmpfilename), Mock()
+                )
+
+            os.environ[IncludeLoader.env_var_name] = tmppath
+            with patch("tavern.util.loader.IncludeLoader.env_path_list", None):
+                assert example == construct_include(
+                    Mock(
+                        _root="/does-not-exist", construct_scalar=lambda x: tmpfilename
+                    ),
+                    Mock(),
+                )

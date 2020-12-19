@@ -105,3 +105,25 @@ stages:
         - function: tavern.testutils.helpers:validate_regex
           extra_kwargs:
             expression: 'bkllelkkkkkkkkkkfff'
+
+---
+
+test_name: Test merging in input (depends on option being enabled)
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: simple match
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value1: "hi"
+        $ext:
+          function: ext_functions:return_hello
+    response:
+      status_code: 200
+      json:
+        value1: "hi"
+        hello: "there"

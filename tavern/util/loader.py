@@ -1,6 +1,7 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
 from abc import abstractmethod
 from distutils.util import strtobool
+from itertools import chain
 import logging
 import os.path
 import re
@@ -27,8 +28,7 @@ def makeuuid(loader, node):
 
 
 class RememberComposer(Composer):
-    """A composer that doesn't forget anchors across documents
-    """
+    """A composer that doesn't forget anchors across documents"""
 
     def compose_document(self):
         # Drop the DOCUMENT-START event.
@@ -121,14 +121,46 @@ class IncludeLoader(
         Resolver.__init__(self)
         SourceMappingConstructor.__init__(self)
 
+    env_path_list = None
+    env_var_name = "TAVERN_INCLUDE"
+
+
+def _get_include_dirs(loader):
+    # pylint: disable=protected-access
+    loader_list = [loader._root]
+
+    if IncludeLoader.env_path_list is None:
+        if IncludeLoader.env_var_name in os.environ:
+            IncludeLoader.env_path_list = [
+                os.path.expandvars(path_part)
+                for path_part in os.environ[IncludeLoader.env_var_name].split(":")
+            ]
+        else:
+            IncludeLoader.env_path_list = []
+
+    return chain(loader_list, IncludeLoader.env_path_list)
+
+
+def find_include(loader, node):
+    """Locate an include file and return the abs path. """
+    for directory in _get_include_dirs(loader):
+        filename = os.path.abspath(
+            os.path.join(directory, loader.construct_scalar(node))
+        )
+        if os.access(filename, os.R_OK):
+            return filename
+
+    raise BadSchemaError(
+        "{} not found in include path: {}".format(
+            loader.construct_scalar(node), [str(d) for d in _get_include_dirs(loader)]
+        )
+    )
+
 
 def construct_include(loader, node):
     """Include file referenced at node."""
 
-    # pylint: disable=protected-access
-    filename = os.path.abspath(
-        os.path.join(loader._root, loader.construct_scalar(node))
-    )
+    filename = find_include(loader, node)
     extension = os.path.splitext(filename)[1].lstrip(".")
 
     if extension not in ("yaml", "yml", "json"):
@@ -404,7 +436,7 @@ def load_single_document_yaml(filename):
         UnexpectedDocumentsError: If more than one document was in the file
     """
 
-    with open(filename, "r") as fileobj:
+    with open(filename, "r", encoding="utf-8") as fileobj:
         try:
             contents = yaml.load(fileobj, Loader=IncludeLoader)
         except yaml.composer.ComposerError as e:

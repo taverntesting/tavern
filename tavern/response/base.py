@@ -4,9 +4,9 @@ import logging
 from textwrap import indent
 import traceback
 
-from tavern.schemas.extensions import get_wrapped_response_function
 from tavern.util import exceptions
 from tavern.util.dict_util import check_keys_match_recursive, recurse_access_key
+from tavern.util.extfunctions import get_wrapped_response_function
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +118,9 @@ class BaseResponse(object):
             if isinstance(block, dict):
                 check_ext_functions(block.get("$ext", None))
                 if nfuncs != len(self.validate_functions):
-                    raise exceptions.InvalidExtBlockException(name,)
+                    raise exceptions.InvalidExtBlockException(
+                        name,
+                    )
 
         # Could put in an isinstance check here
         check_deprecated_validate("json")

@@ -15,6 +15,7 @@ from tavern._plugins.rest.request import (
     get_request_args,
 )
 from tavern.util import exceptions
+from tavern.util.extfunctions import update_from_ext
 
 
 @pytest.fixture(name="req")
@@ -39,24 +40,21 @@ def fix_example_request():
 
 class TestRequests(object):
     def test_unknown_fields(self, req, includes):
-        """Unkown args should raise an error
-        """
+        """Unkown args should raise an error"""
         req["fodokfowe"] = "Hello"
 
         with pytest.raises(exceptions.UnexpectedKeysError):
             RestRequest(Mock(), req, includes)
 
     def test_missing_format(self, req, includes):
-        """All format variables should be present
-        """
+        """All format variables should be present"""
         del includes["variables"]["code"]
 
         with pytest.raises(exceptions.MissingFormatError):
             RestRequest(Mock(), req, includes)
 
     def test_bad_get_body(self, req, includes):
-        """Can't add a body with a GET request
-        """
+        """Can't add a body with a GET request"""
         req["method"] = "GET"
 
         with pytest.warns(RuntimeWarning):
@@ -67,8 +65,7 @@ class TestRequests(object):
 
 class TestHttpRedirects(object):
     def test_session_called_no_redirects(self, req, includes):
-        """Always disable redirects by defauly
-        """
+        """Always disable redirects by defauly"""
 
         assert _check_allow_redirects(req, includes) == False
 
@@ -306,7 +303,8 @@ class TestRequestArgs(object):
 
 
 class TestExtFunctions:
-    def test_get_from_function(self, req, includes):
+    @pytest.mark.parametrize("merge_values", (True, False, None))
+    def test_get_from_function(self, req, merge_values):
         """Make sure ext functions work in request
 
         This is a bit of a silly example because we're passing a dictionary
@@ -314,19 +312,25 @@ class TestExtFunctions:
         having to define another external function just for this test
         """
         to_copy = {"thing": "value"}
+        original_json = {"test": "test"}
 
-        req["data"] = {"$ext": {"function": "copy:copy", "extra_args": [to_copy]}}
+        req["json"] = {
+            "$ext": {"function": "copy:copy", "extra_args": [to_copy]},
+            **original_json,
+        }
 
-        args = get_request_args(req, includes)
+        update_from_ext(req, ["json"], {"merge_ext_values": merge_values})
 
-        assert args["data"] == to_copy
+        if merge_values:
+            assert req["json"] == dict(**to_copy, **original_json)
+        else:
+            assert req["json"] == to_copy
 
 
 class TestOptionalDefaults:
     @pytest.mark.parametrize("verify", (True, False))
     def test_passthrough_verify(self, req, includes, verify):
-        """Should be able to pass 'verify' through to requests.request
-        """
+        """Should be able to pass 'verify' through to requests.request"""
 
         req["verify"] = verify
 
@@ -335,38 +339,52 @@ class TestOptionalDefaults:
         assert args["verify"] == verify
 
 
+class TestFileBody:
+    def test_file_body(self, req, includes):
+        """Test getting file body"""
+
+        req.pop("data")
+        req["file_body"] = "{callback_url}"
+
+        includes["abcdef"] = "Hello"
+
+        args = get_request_args(req, includes)
+
+        assert args["file_body"] == includes["variables"]["callback_url"]
+
+
 class TestGetFiles(object):
     @pytest.fixture
     def mock_stack(self):
         return Mock(spec=ExitStack)
 
-    def test_get_no_files(self, mock_stack):
+    def test_get_no_files(self, mock_stack, includes):
         """No files in request -> no files"""
 
         request_args = {}
 
-        assert _get_file_arguments(request_args, mock_stack) == {}
+        assert _get_file_arguments(request_args, mock_stack, includes) == {}
 
-    def test_get_empty_files_list(self, mock_stack):
+    def test_get_empty_files_list(self, mock_stack, includes):
         """No specific files specified -> no files"""
 
         request_args = {"files": {}}
 
-        assert _get_file_arguments(request_args, mock_stack) == {}
+        assert _get_file_arguments(request_args, mock_stack, includes) == {}
 
-    def test_a_file(self, mock_stack):
+    def test_a_file(self, mock_stack, includes):
         """Json file should have the correct mimetype etc."""
 
         with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
             request_args = {"files": {"file1": tfile.name}}
 
-            file_spec = _get_file_arguments(request_args, mock_stack)
+            file_spec = _get_file_arguments(request_args, mock_stack, includes)
 
         file = file_spec["files"]["file1"]
         assert file[0] == os.path.basename(tfile.name)
         assert file[2] == "application/json"
 
-    def test_use_long_form_content_type(self, mock_stack):
+    def test_use_long_form_content_type(self, mock_stack, includes):
         """Use custom content type"""
 
         with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
@@ -380,9 +398,34 @@ class TestGetFiles(object):
                 }
             }
 
-            file_spec = _get_file_arguments(request_args, mock_stack)
+            file_spec = _get_file_arguments(request_args, mock_stack, includes)
 
         file = file_spec["files"]["file1"]
         assert file[0] == os.path.basename(tfile.name)
         assert file[2] == "abc123"
         assert file[3] == {"Content-Encoding": "def456"}
+
+    @pytest.mark.parametrize(
+        "file_args",
+        [
+            {
+                "file1": {
+                    "file_path": "{tmpname}",
+                    "content_type": "abc123",
+                    "content_encoding": "def456",
+                }
+            },
+            {"file1": "{tmpname}"},
+        ],
+    )
+    def test_format_filename(self, mock_stack, includes, file_args):
+        """Filenames should be formatted in short and long styles"""
+
+        with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
+            includes["variables"]["tmpname"] = tfile.name
+            request_args = {"files": {"file1": tfile.name}}
+
+            file_spec = _get_file_arguments(request_args, mock_stack, includes)
+
+        file = file_spec["files"]["file1"]
+        assert file[0] == os.path.basename(tfile.name)

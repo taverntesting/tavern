@@ -4,16 +4,16 @@ from distutils.util import strtobool
 import logging
 import os
 
-from box import Box
 import pytest
 
 from tavern.schemas.files import wrapfile
 from tavern.util.strict_util import StrictLevel
 
 from .plugins import get_expected, get_extra_sessions, get_request_type, get_verifiers
+from .testutils.pytesthook import call_hook
 from .util import exceptions
 from .util.delay import delay
-from .util.dict_util import format_keys
+from .util.dict_util import format_keys, get_tavern_box
 from .util.retry import retry
 
 logger = logging.getLogger(__name__)
@@ -52,7 +52,7 @@ def _get_included_stages(tavern_box, test_block_config, test_spec, available_sta
 
     Args:
         available_stages (list): List of stages which already exist
-        tavern_box (box.Box): Available parameters
+        tavern_box (box.Box): Available parameters for fomatting at this point
         test_block_config (dict): Current test config dictionary
         test_spec (dict): Specification for current test
 
@@ -78,9 +78,7 @@ def _get_included_stages(tavern_box, test_block_config, test_spec, available_sta
 
         for included in test_spec["includes"]:
             if "variables" in included:
-                formatted_include = format_keys(
-                    included["variables"], {"tavern": tavern_box}
-                )
+                formatted_include = format_keys(included["variables"], tavern_box)
                 test_block_config["variables"].update(formatted_include)
 
             for stage in included.get("stages", []):
@@ -121,11 +119,12 @@ def run_test(in_file, test_spec, global_cfg):
     # Initialise test config for this test with the global configuration before
     # starting
     test_block_config = dict(global_cfg)
+    default_global_stricness = global_cfg["strict"]
 
     if "variables" not in test_block_config:
         test_block_config["variables"] = {}
 
-    tavern_box = Box({"env_vars": dict(os.environ)})
+    tavern_box = get_tavern_box()
 
     if not test_spec:
         logger.warning("Empty test block in %s", in_file)
@@ -139,7 +138,7 @@ def run_test(in_file, test_spec, global_cfg):
     all_stages = {s["id"]: s for s in available_stages + included_stages}
     test_spec["stages"] = _resolve_test_stages(test_spec, all_stages)
 
-    test_block_config["variables"]["tavern"] = tavern_box
+    test_block_config["variables"]["tavern"] = tavern_box["tavern"]
 
     test_block_name = test_spec["test_name"]
 
@@ -170,13 +169,14 @@ def run_test(in_file, test_spec, global_cfg):
             if has_only and not getonly(stage):
                 continue
 
+            test_block_config["strict"] = default_global_stricness
             _calculate_stage_strictness(stage, test_block_config, test_spec)
 
             # Wrap run_stage with retry helper
             run_stage_with_retries = retry(stage, test_block_config)(run_stage)
 
             try:
-                run_stage_with_retries(sessions, stage, tavern_box, test_block_config)
+                run_stage_with_retries(sessions, stage, test_block_config)
             except exceptions.TavernException as e:
                 e.stage = stage
                 e.test_block_config = test_block_config
@@ -221,20 +221,19 @@ def _calculate_stage_strictness(stage, test_block_config, test_spec):
     )
 
 
-def run_stage(sessions, stage, tavern_box, test_block_config):
+def run_stage(sessions, stage, test_block_config):
     """Run one stage from the test
 
     Args:
         sessions (dict): Dictionary of relevant 'session' objects used for this test
         stage (dict): specification of stage to be run
-        tavern_box (box.Box): Box object containing format variables to be used
-            in test
         test_block_config (dict): available variables for test
     """
     name = stage["name"]
 
     r = get_request_type(stage, test_block_config, sessions)
 
+    tavern_box = test_block_config["variables"]["tavern"]
     tavern_box.update(request_vars=r.request_vars)
 
     expected = get_expected(stage, test_block_config, sessions)
@@ -242,6 +241,13 @@ def run_stage(sessions, stage, tavern_box, test_block_config):
     delay(stage, "before", test_block_config["variables"])
 
     logger.info("Running stage : %s", name)
+
+    call_hook(
+        test_block_config,
+        "pytest_tavern_beta_before_every_request",
+        request_args=r.request_vars,
+    )
+
     response = r.run()
 
     verifiers = get_verifiers(stage, test_block_config, sessions, expected)

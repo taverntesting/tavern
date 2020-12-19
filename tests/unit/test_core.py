@@ -51,8 +51,7 @@ def fix_mock_response_args(fulltest):
 
 class TestRunStages:
     def test_success(self, fulltest, mockargs, includes):
-        """Successful test
-        """
+        """Successful test"""
 
         mock_response = Mock(**mockargs)
 
@@ -65,8 +64,7 @@ class TestRunStages:
         assert pmock.called
 
     def test_invalid_code(self, fulltest, mockargs, includes):
-        """Wrong status code
-        """
+        """Wrong status code"""
 
         mockargs["status_code"] = 400
 
@@ -82,8 +80,7 @@ class TestRunStages:
         assert pmock.called
 
     def test_invalid_body(self, fulltest, mockargs, includes):
-        """Wrong body returned
-        """
+        """Wrong body returned"""
 
         mockargs["json"] = lambda: {"wrong": "thing"}
 
@@ -99,8 +96,7 @@ class TestRunStages:
         assert pmock.called
 
     def test_invalid_headers(self, fulltest, mockargs, includes):
-        """Wrong headers
-        """
+        """Wrong headers"""
 
         mockargs["headers"] = {"content-type": "application/x-www-url-formencoded"}
 
@@ -147,8 +143,7 @@ class TestIncludeStages:
         assert kwargs["url"] == "http://www.google.com"
 
     def test_included_stage(self, fulltest, mockargs, includes, fake_stages):
-        """ Load stage from includes
-        """
+        """Load stage from includes"""
         mock_response = Mock(**mockargs)
 
         stage_includes = [{"stages": fake_stages}]
@@ -166,8 +161,7 @@ class TestIncludeStages:
         self.check_mocks_called(pmock)
 
     def test_global_stage(self, fulltest, mockargs, includes, fake_stages):
-        """ Load stage from global config
-        """
+        """Load stage from global config"""
         mock_response = Mock(**mockargs)
 
         stage_includes = []
@@ -187,8 +181,7 @@ class TestIncludeStages:
         self.check_mocks_called(pmock)
 
     def test_both_stages(self, fulltest, mockargs, includes, fake_stages):
-        """ Load stage defined in both - raise a warning for now
-        """
+        """Load stage defined in both - raise a warning for now"""
         mock_response = Mock(**mockargs)
 
         stage_includes = [{"stages": fake_stages}]
@@ -209,8 +202,7 @@ class TestIncludeStages:
         assert not pmock.called
 
     def test_neither(self, fulltest, mockargs, includes, fake_stages):
-        """ Raises error if not defined
-        """
+        """Raises error if not defined"""
         mock_response = Mock(**mockargs)
 
         stage_includes = []
@@ -399,8 +391,7 @@ class TestFormatRequestVars:
 
 
 class TestFormatMQTTVarsJson:
-    """Test that formatting request vars from mqtt works as well, with json payload
-    """
+    """Test that formatting request vars from mqtt works as well, with json payload"""
 
     @pytest.fixture(name="fulltest")
     def fix_mqtt_publish_test(self):
@@ -452,8 +443,7 @@ class TestFormatMQTTVarsJson:
 
 
 class TestFormatMQTTVarsPlain:
-    """Test that formatting request vars from mqtt works as well, with normal payload
-    """
+    """Test that formatting request vars from mqtt works as well, with normal payload"""
 
     @pytest.fixture(name="fulltest")
     def fix_mqtt_publish_test(self):

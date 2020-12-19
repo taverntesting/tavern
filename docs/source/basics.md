@@ -403,6 +403,29 @@ This can be used as so:
     status_code: 200
 ```
 
+By default, using the `$ext` key will replace anything already present in that block.
+Input from external functions can be merged into a request instead by specifying the
+`tavern-merge-ext-function-values` option in your pytest.ini or on the command line:
+
+```python
+# ext_functions.py
+
+def return_hello():
+    return {"hello": "there"}
+```
+```yaml
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        goodbye: "now"
+        $ext:
+          function: ext_functions:return_hello
+```
+
+If `tavern-merge-ext-function-values` is set, this will send "hello" and "goodbye" in 
+the request. If not, it will just sent "hello". 
+
 #### Saving data from a response
 
 When using the `$ext` key in the `save` block there is special behaviour - each key in
@@ -593,7 +616,7 @@ section (`json`/`redirect_query_params`/`headers`) should be affected, and
 optionally whether it is on or off.
 
 - `json:off headers:on` - turn off for the body, but on for the headers.
-  `redirect_query_params` will stay default off. 
+  `redirect_query_params` will stay default off.
 - `json:off headers:off` - turn body and header strict checking off
 - `redirect_query_params:on json:on` redirect parameters is turned on and json
   is kept on (as it is on by default), header strict matching is kept off (as
@@ -995,9 +1018,15 @@ stages:
       status_code: 200
 ```
 
-As long as includes.yaml is in the same folder as the tests, the variables will
+As long as includes.yaml is in the same folder as the tests or found in the
+TAVERN_INCLUDE search path, the variables will
 automatically be loaded and available for formatting as before. Multiple include
 files can be specified.
+
+The environment variable TAVERN_INCLUDE can contain a : separated list of
+paths to search for include files.  Each path in TAVERN_INCLUDE has
+environment variables expanded before it is searched. 
+
 
 ### Including global configuration files
 
@@ -1583,6 +1612,15 @@ Having `delay_before` in the second stage of the test is semantically identical
 to having `delay_after` in the first stage of the test - feel free to use
 whichever seems most appropriate.
 
+A saved/config variable can be used by using a type token conversion, such as:
+
+```yaml
+stages:
+  - name: Trigger task
+    ...
+    delay_after: !float "{sleep_time}"
+```
+
 ## Retrying tests
 
 If you are not sure how long the server might take to process a request, you can
@@ -1851,7 +1889,7 @@ formatted differently for each time. This behaves like the built in Pytest
 `parametrize` mark, where the tests will show up in the log with some extra data
 appended to show what was being run, eg `Test Name[John]`, `Test Name[John-Smythe John]`, etc.
 
-The `parametrize` make should be a mapping with `key` being the value that will
+The `parametrize` mark should be a mapping with `key` being the value that will
 be formatted and `vals` being a list of values to be formatted. Note that
 formatting of these values happens after checking for a `skipif`, so a `skipif`
 mark cannot rely on a parametrized value.
@@ -2057,6 +2095,33 @@ There are some limitations on fixtures:
   will raise an error and 'class' scoped fixtures may not behave as you expect.
 - Parametrizing fixtures does not work - this is a limitation in Pytest.
 
+Fixtures which are specified as `autouse` can also be used without explicitly
+using `usefixtures` in a test. This is a good way to essentially precompute a
+format variable without also having to use an external function or specify a
+`usefixtures` block in every test where you need it. 
+
+To do this, just pass the `autouse=True` parameter to your fixtures along with
+the relevant scope. Using 'session' will evalute the fixture once at the beginning
+of your test run and reuse the return value everywhere else it is used:
+
+```python
+@pytest.fixture(scope="session", autouse=True)
+def a_thing():
+    return "abc"
+```
+
+```yaml
+---
+test_name: Test autouse fixture
+
+stages:
+  - name: do something with fixture value
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{a_thing}"
+```
 
 ## Hooks
 
@@ -2072,6 +2137,9 @@ will then be picked up at runtime and called appropriately.
 use but the names and arguments they take should be considered unstable and may
 change in a future release (and more may also be added).
 
+More documentation for these can be found in the docstrings for the hooks
+in the `tavern/testutils/pytesthook/newhooks.py` file.
+
 ### Before every test run
 
 This hook is called after fixtures, global configuration, and plugins have been
@@ -2079,10 +2147,6 @@ loaded, but _before_ formatting is done on the test and the schema of the test
 is checked. This can be used to 'inject' extra things into the test before it is
 run, such as configurations blocks for a plugin, or just for some kind of
 logging.
-
-Args:
-- test_dict (dict): Test to run
-- variables (dict): Available variables
 
 Example usage:
 
@@ -2101,17 +2165,25 @@ This hook is called after every _response_ for each _stage_ - this includes HTTP
 responses, but also MQTT responses if you are using MQTT. This means if you are
 using MQTT it might be called multiple times for each stage!
 
-Args:
-- response (object): Response object. Could be whatever kind of response object
-  is returned by whatever plugin is used - if using the default HTTP
-  implementation which uses Requests, this will be a `requests.Response` object.
-  If using MQTT, this will be a paho-mqtt `Message` object.
-- expected (dict): Formatted response block from the stage.
-
 Example usage:
 
 ```python
 def pytest_tavern_beta_after_every_response(expected, response):
     with open("logfile.txt", "a") as logfile:
         logfile.write("Got response: {}".format(response.json()))
+```
+
+### Before every request
+
+This hook is called just before each request with the arguments passed to the request
+"function". By default, this is Session.request (from requests) for HTTP and Client.publish 
+(from paho-mqtt) for MQTT. 
+
+Example usage:
+
+```python
+import logging
+
+def pytest_tavern_beta_before_every_request(request_args):
+    logging.info("Making request: %s", request_args)
 ```

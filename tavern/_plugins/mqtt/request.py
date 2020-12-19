@@ -7,6 +7,7 @@ from box import Box
 from tavern.request.base import BaseRequest
 from tavern.util import exceptions
 from tavern.util.dict_util import check_expected_keys, format_keys
+from tavern.util.extfunctions import update_from_ext
 
 logger = logging.getLogger(__name__)
 
@@ -43,6 +44,7 @@ class MQTTRequest(BaseRequest):
         check_expected_keys(expected, rspec)
 
         publish_args = get_publish_args(rspec, test_block_config)
+        update_from_ext(publish_args, ["json"], test_block_config)
 
         self._prepared = functools.partial(client.publish, **publish_args)
 
