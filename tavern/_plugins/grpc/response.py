@@ -1,4 +1,3 @@
-import json
 import logging
 
 from google.protobuf import json_format
@@ -6,12 +5,6 @@ from grpc import StatusCode
 
 from tavern.response.base import BaseResponse
 from tavern.util.exceptions import TestFailError
-
-try:
-    LoadException = json.decoder.JSONDecodeError
-except AttributeError:
-    # python 2 raises ValueError on json loads() error instead
-    LoadException = ValueError
 
 logger = logging.getLogger(__name__)
 

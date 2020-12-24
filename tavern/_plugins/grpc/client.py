@@ -24,7 +24,7 @@ with warnings.catch_warnings():
 
 # Find the Protocol Compiler.
 if "PROTOC" in os.environ and os.path.exists(os.environ["PROTOC"]):
-    protoc = os.environ["PROTOC"]
+    protoc = os.environ.get("PROTOC")
 else:
     protoc = find_executable("protoc")
 
