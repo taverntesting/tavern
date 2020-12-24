@@ -127,3 +127,7 @@ class InvalidExtBlockException(TavernException):
 
 class InvalidRetryException(TavernException):
     """Invalid spec for max_retries"""
+
+
+class ProtoGenError(TavernException):
+    """Error generating protobuf imports"""

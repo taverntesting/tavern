@@ -86,7 +86,7 @@ class StrictLevel:
             return getattr(self, section)
         except AttributeError as e:
             raise exceptions.InvalidConfigurationException(
-                "No setting for '{}'".format(section)
+                "No strictness setting for '{}'".format(section)
             ) from e
 
     @classmethod

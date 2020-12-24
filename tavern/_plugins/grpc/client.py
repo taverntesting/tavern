@@ -35,15 +35,13 @@ def _generate_proto_import(source, output):
     the input."""
 
     if protoc is None:
-        sys.stderr.write(
+        raise exceptions.ProtoGenError(
             "protoc is not installed nor found in ../src.  Please compile it "
             "or install the binary package.\n"
         )
-        sys.exit(-1)
 
     if not os.path.exists(source):
-        sys.stderr.write("Can't find required file: %s\n" % source)
-        sys.exit(-1)
+        raise exceptions.ProtoGenError("Can't find required file: %s\n" % source)
 
     if not os.path.exists(output):
         os.makedirs(output)
@@ -58,8 +56,11 @@ def _generate_proto_import(source, output):
     protoc_command = [protoc, "-I" + source, "--python_out=" + output]
     protoc_command.extend(protos)
 
-    if subprocess.call(protoc_command) != 0:
-        sys.exit(-1)
+    call = subprocess.run(protoc_command, capture_output=True)
+    try:
+        call.check_returncode()
+    except subprocess.CalledProcessError as e:
+        raise exceptions.ProtoGenError(call.stderr) from e
 
 
 def _import_grpc_module(output):
@@ -116,12 +117,13 @@ class GRPCClient(object):
         self.channels = {}
         self.sym_db = _symbol_database.Default()
 
-        proto_module = _proto_args.get("module", "proto")
-        if "source" in _proto_args:
-            proto_source = _proto_args["source"]
-            _generate_proto_import(proto_source, proto_module)
+        if _proto_args:
+            proto_module = _proto_args.get("module", "proto")
+            if "source" in _proto_args:
+                proto_source = _proto_args["source"]
+                _generate_proto_import(proto_source, proto_module)
 
-        _import_grpc_module(proto_module)
+            _import_grpc_module(proto_module)
 
     def _register_file_descriptor(self, service_proto):
         for i in range(len(service_proto.file_descriptor_proto)):

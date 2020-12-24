@@ -23,37 +23,6 @@ class GRPCResponse(BaseResponse):
         else:
             return "<Not run yet>"
 
-    def _validate_block(self, blockname, block):
-        """Validate a block of the response
-
-        Args:
-            blockname (str): which part of the response is being checked
-            block (dict): The actual part being checked
-        """
-        try:
-            expected_block = self.expected[blockname] or {}
-        except KeyError:
-            expected_block = {}
-
-        if isinstance(expected_block, dict):
-            if expected_block.pop("$ext", None):
-                logger.warning(
-                    "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
-                    blockname,
-                )
-
-        logger.debug("Validating response %s against %s", blockname, expected_block)
-
-        # 'strict' could be a list, in which case we only want to enable strict
-        # key checking for that specific bit of the response
-        test_strictness = self.test_block_config["strict"]
-        if isinstance(test_strictness, list):
-            block_strictness = blockname in test_strictness
-        else:
-            block_strictness = test_strictness
-
-        self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
-
     def verify(self, response):
         # Get any keys to save
         saved = {}

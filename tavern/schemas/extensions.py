@@ -1,9 +1,8 @@
 import os
 import re
 
-from pykwalify.types import is_bool, is_float, is_int
-
 from grpc import StatusCode
+from pykwalify.types import is_bool, is_float, is_int
 
 from tavern.util import exceptions
 from tavern.util.exceptions import BadSchemaError

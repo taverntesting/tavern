@@ -195,33 +195,3 @@ class RestResponse(BaseResponse):
             )
 
         return saved
-
-    def _validate_block(self, blockname, block):
-        """Validate a block of the response
-
-        Args:
-            blockname (str): which part of the response is being checked
-            block (dict): The actual part being checked
-        """
-        try:
-            expected_block = self.expected[blockname] or {}
-        except KeyError:
-            expected_block = {}
-
-        if isinstance(expected_block, dict):
-            if expected_block.pop("$ext", None):
-                raise exceptions.InvalidExtBlockException(
-                    blockname,
-                )
-
-        if blockname == "headers":
-            # Special case for headers. These need to be checked in a case
-            # insensitive manner
-            block = {i.lower(): j for i, j in block.items()}
-            expected_block = {i.lower(): j for i, j in expected_block.items()}
-
-        logger.debug("Validating response %s against %s", blockname, expected_block)
-
-        test_strictness = self.test_block_config["strict"]
-        block_strictness = test_strictness.setting_for(blockname).is_on()
-        self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
