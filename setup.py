@@ -6,13 +6,13 @@ TESTS_REQUIRE = [
     "pytest-cov",
     "colorlog",
     "faker",
-    "prospector[with_pyroma,with_mypy]>=1.3.0,<2",
+    "flake8",
     "pygments",
-    "pylint==2.5.2",
+    "pylint==2.6.0",
     "black",
     "mypy",
     "mypy-extensions",
-    "isort<5"
+    "isort==5.7.0"
 ]
 
 setup(

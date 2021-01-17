@@ -30,7 +30,7 @@ class YamlItem(pytest.Item):
     """
 
     def __init__(self, name, parent, spec, path):
-        super(YamlItem, self).__init__(name, parent)
+        super().__init__(name, parent)
         self.path = path
         self.spec = spec
 
@@ -59,7 +59,7 @@ class YamlItem(pytest.Item):
     _initrequest = initialise_fixture_attrs
 
     def setup(self):
-        super(YamlItem, self).setup()
+        super().setup()
         self._request._fillfixtures()  # pylint: disable=protected-access
 
     @property
@@ -220,7 +220,7 @@ class YamlItem(pytest.Item):
             or not issubclass(excinfo.type, exceptions.TavernException)
             or issubclass(excinfo.type, exceptions.BadSchemaError)
         ):
-            return super(YamlItem, self).repr_failure(excinfo)
+            return super().repr_failure(excinfo)
 
         if style is not None:
             logger.info("Ignoring style '%s", style)

@@ -81,10 +81,10 @@ def get_wrapped_response_function(ext):
     kwargs = ext.get("extra_kwargs") or {}
     try:
         func = import_ext_function(ext["function"])
-    except KeyError:
+    except KeyError as e:
         raise exceptions.BadSchemaError(
             "No function specified in external function block"
-        )
+        ) from e
 
     @functools.wraps(func)
     def inner(response):
