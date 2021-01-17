@@ -75,13 +75,13 @@ class SourceMappingConstructor(SafeConstructor):
     def construct_yaml_map(self, node):
         (obj,) = SafeConstructor.construct_yaml_map(self, node)
         return dict_node(
-            obj, tavern.util.stage_lines.start_mark, tavern.util.stage_lines.end_mark
+            obj, node.start_mark, node.end_mark
         )
 
     def construct_yaml_seq(self, node):
         (obj,) = SafeConstructor.construct_yaml_seq(self, node)
         return list_node(
-            obj, tavern.util.stage_lines.start_mark, tavern.util.stage_lines.end_mark
+            obj, node.start_mark, node.end_mark
         )
 
 
