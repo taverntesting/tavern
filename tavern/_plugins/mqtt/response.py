@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 class MQTTResponse(BaseResponse):
     def __init__(self, client, name, expected, test_block_config):
-        super(MQTTResponse, self).__init__(name, expected, test_block_config)
+        super().__init__(name, expected, test_block_config)
 
         self._client = client
 

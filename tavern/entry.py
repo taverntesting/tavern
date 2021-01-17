@@ -12,7 +12,7 @@ class TavernArgParser(ArgumentParser):
 
         Any extra arguments will be passed directly to Pytest. Run py.test --help for a list"""
 
-        super(TavernArgParser, self).__init__(
+        super().__init__(
             description=dedent(description),
             formatter_class=argparse.RawDescriptionHelpFormatter,
         )

@@ -27,7 +27,7 @@ class _FormattedString(str):
     """
 
     def __init(self, s):
-        super(_FormattedString, self).__init__(s)
+        super().__init__(s)
 
 
 def _check_and_format_values(to_format, box_vars):

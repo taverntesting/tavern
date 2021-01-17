@@ -18,7 +18,7 @@ class RestResponse(BaseResponse):
 
         defaults = {"status_code": 200}
 
-        super(RestResponse, self).__init__(
+        super().__init__(
             name, deep_dict_merge(defaults, expected), test_block_config
         )
 
