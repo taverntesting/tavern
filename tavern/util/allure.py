@@ -18,8 +18,10 @@ def _prepare_yaml(val):
         formatted = {}
         # formatted = {key: format_keys(val[key], box_vars) for key in val}
         for key in val:
+            if isinstance(key, FormattedString):
+                key = str(key)
             formatted[key] = _prepare_yaml(val[key])
-    elif isinstance(val, (list, tuple)):
+    elif isinstance(val, (list, tuple, set)):
         formatted = [_prepare_yaml(item) for item in val]
     elif isinstance(formatted, FormattedString):
         return str(formatted)
