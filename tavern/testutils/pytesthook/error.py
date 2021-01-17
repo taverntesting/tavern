@@ -144,7 +144,7 @@ class ReprdError(object):
         for line in formatted_lines:
             if not line:
                 continue
-            if not "{}" in line:
+            if "{}" not in line:
                 line = format_keys(line, keys)
             tw.line("  {}".format(line), white=True)
 
