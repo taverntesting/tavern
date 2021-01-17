@@ -2,10 +2,9 @@ import copy
 import logging
 
 from _pytest import fixtures
+import allure
 import attr
 import pytest
-
-import allure
 
 from tavern.core import run_test
 from tavern.plugins import load_plugins

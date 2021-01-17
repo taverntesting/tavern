@@ -2,10 +2,9 @@ import json
 import logging
 from urllib.parse import parse_qs, urlparse
 
+import allure
 from requests.status_codes import _codes  # type:ignore
 import yaml
-
-import allure
 
 from tavern.response.base import BaseResponse, indent_err_text
 from tavern.testutils.pytesthook.newhooks import call_hook

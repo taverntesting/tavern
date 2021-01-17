@@ -6,9 +6,8 @@ import logging
 import os
 from textwrap import dedent
 
-import pytest
-
 import allure
+import pytest
 
 from tavern.schemas.files import wrapfile
 from tavern.util.strict_util import StrictLevel

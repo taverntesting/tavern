@@ -9,13 +9,12 @@ from textwrap import dedent
 from urllib.parse import quote_plus
 import warnings
 
+import allure
 from box import Box
 import requests
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
 import yaml
-
-import allure
 
 from tavern.request.base import BaseRequest
 from tavern.testutils.pytesthook.error import get_stage_lines, read_relevant_lines
