@@ -2,9 +2,12 @@ import json
 import logging
 import time
 
+import yaml
+
 from tavern.response.base import BaseResponse
 from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
+from tavern.util.allure import allure_attach_yaml
 from tavern.util.dict_util import check_keys_match_recursive
 from tavern.util.loader import ANYTHING
 
@@ -37,7 +40,9 @@ class MQTTResponse(BaseResponse):
             json_payload = True
 
             if payload.pop("$ext", None):
-                raise exceptions.InvalidExtBlockException("json",)
+                raise exceptions.InvalidExtBlockException(
+                    "json",
+                )
         elif "payload" in self.expected:
             payload = self.expected["payload"]
             json_payload = False
@@ -89,6 +94,17 @@ class MQTTResponse(BaseResponse):
             )
 
             self.received_messages.append(msg)
+
+            allure_attach_yaml(
+                yaml.safe_dump(
+                    {
+                        "topic": msg.topic,
+                        "payload": msg.payload,
+                        "timestamp": msg.timestamp,
+                    }
+                ),
+                name="rest_response",
+            )
 
             msg.payload = msg.payload.decode("utf8")
 

@@ -2,13 +2,13 @@ import json
 import logging
 from urllib.parse import parse_qs, urlparse
 
-import allure
 from requests.status_codes import _codes  # type:ignore
 import yaml
 
 from tavern.response.base import BaseResponse, indent_err_text
 from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
+from tavern.util.allure import allure_attach_yaml
 from tavern.util.dict_util import deep_dict_merge
 
 logger = logging.getLogger(__name__)
@@ -166,7 +166,7 @@ class RestResponse(BaseResponse):
         self._validate_block("headers", response.headers)
         self._validate_block("redirect_query_params", redirect_query_params)
 
-        allure.attach(
+        allure_attach_yaml(
             yaml.safe_dump(
                 {
                     "status_code": response.status_code,
@@ -176,7 +176,6 @@ class RestResponse(BaseResponse):
                 }
             ),
             name="rest_response",
-            attachment_type=allure.attachment_type.YAML,
         )
 
         self._maybe_run_validate_functions(response)
@@ -223,7 +222,9 @@ class RestResponse(BaseResponse):
 
         if isinstance(expected_block, dict):
             if expected_block.pop("$ext", None):
-                raise exceptions.InvalidExtBlockException(blockname,)
+                raise exceptions.InvalidExtBlockException(
+                    blockname,
+                )
 
         if blockname == "headers":
             # Special case for headers. These need to be checked in a case

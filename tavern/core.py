@@ -6,7 +6,6 @@ import logging
 import os
 from textwrap import dedent
 
-import allure
 import pytest
 
 from tavern.schemas.files import wrapfile
@@ -16,6 +15,7 @@ from .plugins import get_expected, get_extra_sessions, get_request_type, get_ver
 from .testutils.pytesthook import call_hook
 from .testutils.pytesthook.error import get_stage_lines, read_relevant_lines
 from .util import exceptions
+from .util.allure import allure_attach_yaml, allure_wrap_step
 from .util.delay import delay
 from .util.dict_util import format_keys, get_tavern_box
 from .util.retry import retry
@@ -179,12 +179,12 @@ def run_test(in_file, test_spec, global_cfg):
             # Wrap run_stage with retry helper
             run_stage_with_retries = retry(stage, test_block_config)(run_stage)
 
-            allure_name = "Stage {}: {}".format(idx, stage["name"])
-            step = allure.step(allure_name)(
-                functools.partial(
-                    run_stage_with_retries, sessions, stage, test_block_config
-                )
+            partial = functools.partial(
+                run_stage_with_retries, sessions, stage, test_block_config
             )
+
+            allure_name = "Stage {}: {}".format(idx, stage["name"])
+            step = allure_wrap_step(allure_name, partial)
 
             try:
                 step()
@@ -246,9 +246,7 @@ def run_stage(sessions, stage, test_block_config):
 
     code_lines = list(read_relevant_lines(stage.start_mark.name, first_line, last_line))
     joined = dedent("\n".join(code_lines))
-    allure.attach(
-        joined, name="stage_yaml", attachment_type=allure.attachment_type.YAML
-    )
+    allure_attach_yaml(joined, name="stage_yaml")
 
     r = get_request_type(stage, test_block_config, sessions)
 

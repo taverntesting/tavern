@@ -16,7 +16,7 @@ from tavern.util.loader import (
 )
 
 from . import exceptions
-from .formatted_str import _FormattedString
+from .formatted_str import FormattedString
 
 logger = logging.getLogger(__name__)
 
@@ -111,13 +111,13 @@ def format_keys(val, variables, no_double_format=True):
             formatted[key] = format_keys(val[key], box_vars)
     elif isinstance(val, (list, tuple)):
         formatted = [format_keys(item, box_vars) for item in val]
-    elif isinstance(formatted, _FormattedString):
+    elif isinstance(formatted, FormattedString):
         logger.debug("Already formatted %s, not double-formatting", formatted)
     elif isinstance(val, str):
         formatted = _check_and_format_values(val, box_vars)
 
         if no_double_format:
-            formatted = _FormattedString(formatted)
+            formatted = FormattedString(formatted)
     elif isinstance(val, TypeConvertToken):
         logger.debug("Got type convert token '%s'", val)
         if isinstance(val, ForceIncludeToken):
@@ -408,8 +408,10 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                         expected_val.compiled, full_err()
                     )
                 else:
-                    msg = "Type of returned data was different than expected ({})".format(
-                        full_err()
+                    msg = (
+                        "Type of returned data was different than expected ({})".format(
+                            full_err()
+                        )
                     )
 
                 raise exceptions.KeyMismatchError(msg) from e
