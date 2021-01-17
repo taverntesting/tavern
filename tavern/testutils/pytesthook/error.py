@@ -1,4 +1,3 @@
-import io
 import json
 import logging
 import re
@@ -9,6 +8,12 @@ import yaml
 
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys
+from tavern.util.stage_lines import (
+    end_mark,
+    get_stage_lines,
+    read_relevant_lines,
+    start_mark,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -174,18 +179,16 @@ class ReprdError(object):
         except AttributeError:
             stage = None
             # Fallback, we don't know which stage it is
-            spec = self.item.spec
-            stages = spec["stages"]
+            stages = self.item.spec["stages"]
 
-            first_line = stages[0].start_mark.line - 1
-            last_line = stages[-1].end_mark.line
+            first_line = start_mark(stages[0]).line - 1
+            last_line = end_mark(stages[-1]).line
+
             line_start = None
         else:
             first_line, last_line, line_start = get_stage_lines(stage)
 
-        code_lines = list(
-            read_relevant_lines(self.item.spec.start_mark.name, first_line, last_line)
-        )
+        code_lines = list(read_relevant_lines(self.item.spec, first_line, last_line))
 
         missing_format_vars = self._print_format_variables(tw, code_lines)
         tw.line("")
@@ -214,19 +217,3 @@ class ReprdError(object):
 
     def __str__(self):
         return self.longreprtext
-
-
-def get_stage_lines(stage):
-    first_line = stage.start_mark.line - 1
-    last_line = stage.end_mark.line
-    line_start = first_line + 1
-
-    return first_line, last_line, line_start
-
-
-def read_relevant_lines(filename, first_line, last_line):
-    """Get lines between start and end mark"""
-    with io.open(filename, "r", encoding="utf8") as testfile:
-        for idx, line in enumerate(testfile.readlines()):
-            if first_line < idx < last_line:
-                yield line.split("#", 1)[0].rstrip()

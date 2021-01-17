@@ -12,7 +12,8 @@ TESTS_REQUIRE = [
     "black",
     "mypy",
     "mypy-extensions",
-    "isort==5.7.0"
+    "isort==5.7.0",
+    "allure-pytest",
 ]
 
 setup(

@@ -95,6 +95,8 @@ class MQTTResponse(BaseResponse):
 
             self.received_messages.append(msg)
 
+            msg.payload = msg.payload.decode("utf8")
+
             allure_attach_yaml(
                 yaml.safe_dump(
                     {
@@ -105,8 +107,6 @@ class MQTTResponse(BaseResponse):
                 ),
                 name="rest_response",
             )
-
-            msg.payload = msg.payload.decode("utf8")
 
             if expect_json_payload:
                 try:

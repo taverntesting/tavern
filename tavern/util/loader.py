@@ -18,6 +18,7 @@ from yaml.scanner import Scanner
 
 from tavern.util import exceptions
 from tavern.util.exceptions import BadSchemaError
+import tavern.util.stage_lines
 
 logger = logging.getLogger(__name__)
 
@@ -73,11 +74,15 @@ class SourceMappingConstructor(SafeConstructor):
     # copies.
     def construct_yaml_map(self, node):
         (obj,) = SafeConstructor.construct_yaml_map(self, node)
-        return dict_node(obj, node.start_mark, node.end_mark)
+        return dict_node(
+            obj, tavern.util.stage_lines.start_mark, tavern.util.stage_lines.end_mark
+        )
 
     def construct_yaml_seq(self, node):
         (obj,) = SafeConstructor.construct_yaml_seq(self, node)
-        return list_node(obj, node.start_mark, node.end_mark)
+        return list_node(
+            obj, tavern.util.stage_lines.start_mark, tavern.util.stage_lines.end_mark
+        )
 
 
 SourceMappingConstructor.add_constructor(

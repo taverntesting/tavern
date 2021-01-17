@@ -4,7 +4,6 @@ from distutils.util import strtobool
 import functools
 import logging
 import os
-from textwrap import dedent
 
 import pytest
 
@@ -13,9 +12,8 @@ from tavern.util.strict_util import StrictLevel
 
 from .plugins import get_expected, get_extra_sessions, get_request_type, get_verifiers
 from .testutils.pytesthook import call_hook
-from .testutils.pytesthook.error import get_stage_lines, read_relevant_lines
 from .util import exceptions
-from .util.allure import allure_attach_yaml, allure_wrap_step
+from .util.allure import allure_attach_stage_content, allure_wrap_step
 from .util.delay import delay
 from .util.dict_util import format_keys, get_tavern_box
 from .util.retry import retry
@@ -242,11 +240,7 @@ def run_stage(sessions, stage, test_block_config):
     """
     name = stage["name"]
 
-    first_line, last_line, line_start = get_stage_lines(stage)
-
-    code_lines = list(read_relevant_lines(stage.start_mark.name, first_line, last_line))
-    joined = dedent("\n".join(code_lines))
-    allure_attach_yaml(joined, name="stage_yaml")
+    allure_attach_stage_content(stage)
 
     r = get_request_type(stage, test_block_config, sessions)
 
