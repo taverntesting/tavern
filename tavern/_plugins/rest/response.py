@@ -3,7 +3,6 @@ import logging
 from urllib.parse import parse_qs, urlparse
 
 from requests.status_codes import _codes  # type:ignore
-import yaml
 
 from tavern.response.base import BaseResponse, indent_err_text
 from tavern.testutils.pytesthook.newhooks import call_hook
@@ -167,14 +166,12 @@ class RestResponse(BaseResponse):
         self._validate_block("redirect_query_params", redirect_query_params)
 
         allure_attach_yaml(
-            yaml.safe_dump(
-                {
-                    "status_code": response.status_code,
-                    "headers": dict(response.headers),
-                    "body": body,
-                    "redirect_query_params": redirect_query_params,
-                }
-            ),
+            {
+                "status_code": response.status_code,
+                "headers": dict(response.headers),
+                "body": body,
+                "redirect_query_params": redirect_query_params,
+            },
             name="rest_response",
         )
 

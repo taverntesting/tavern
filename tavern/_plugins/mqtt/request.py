@@ -3,11 +3,10 @@ import json
 import logging
 
 from box import Box
-import yaml
 
 from tavern.request.base import BaseRequest
 from tavern.util import exceptions
-from tavern.util.allure import allure_attach_yaml, prepare_yaml
+from tavern.util.allure import allure_attach_yaml
 from tavern.util.dict_util import check_expected_keys, format_keys
 from tavern.util.extfunctions import update_from_ext
 
@@ -63,7 +62,7 @@ class MQTTRequest(BaseRequest):
 
     def run(self):
         allure_attach_yaml(
-            yaml.dump(prepare_yaml(self._original_publish_args)),
+            self._original_publish_args,
             name="rest_request",
         )
 

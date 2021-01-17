@@ -2,8 +2,6 @@ import json
 import logging
 import time
 
-import yaml
-
 from tavern.response.base import BaseResponse
 from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
@@ -98,13 +96,11 @@ class MQTTResponse(BaseResponse):
             msg.payload = msg.payload.decode("utf8")
 
             allure_attach_yaml(
-                yaml.safe_dump(
-                    {
-                        "topic": msg.topic,
-                        "payload": msg.payload,
-                        "timestamp": msg.timestamp,
-                    }
-                ),
+                {
+                    "topic": msg.topic,
+                    "payload": msg.payload,
+                    "timestamp": msg.timestamp,
+                },
                 name="rest_response",
             )
 
