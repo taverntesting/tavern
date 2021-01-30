@@ -7,8 +7,8 @@ from requests.status_codes import _codes  # type:ignore
 from tavern.response.base import BaseResponse, indent_err_text
 from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
-from tavern.util.report import attach_yaml
 from tavern.util.dict_util import deep_dict_merge
+from tavern.util.report import attach_yaml
 
 logger = logging.getLogger(__name__)
 

@@ -4,21 +4,23 @@ from textwrap import dedent
 import yaml
 
 try:
-    from allure import attachment_type, attach, step
+    from allure import attach
+    from allure import attachment_type as at
+    from allure import step
 
-    yaml_type = attachment_type.YAML
+    yaml_type = at.YAML
 except ImportError:
     yaml_type = None
 
-
-    def attach(*args, **kwargs):
+    def attach(*args, **kwargs):  # pylint: disable=unused-argument
         logger.debug("Not attaching anything as allure is not installed")
 
-
-    def step(name):
+    def step(name):  # pylint: disable=unused-argument
         def call(step_func):
             return step_func
+
         return call
+
 
 from tavern.util.formatted_str import FormattedString
 from tavern.util.stage_lines import get_stage_lines, read_relevant_lines

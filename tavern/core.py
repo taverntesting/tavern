@@ -13,9 +13,9 @@ from tavern.util.strict_util import StrictLevel
 from .plugins import get_expected, get_extra_sessions, get_request_type, get_verifiers
 from .testutils.pytesthook import call_hook
 from .util import exceptions
-from .util.report import attach_stage_content, wrap_step
 from .util.delay import delay
 from .util.dict_util import format_keys, get_tavern_box
+from .util.report import attach_stage_content, wrap_step
 from .util.retry import retry
 
 logger = logging.getLogger(__name__)

@@ -5,9 +5,9 @@ import time
 from tavern.response.base import BaseResponse
 from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
-from tavern.util.report import attach_yaml
 from tavern.util.dict_util import check_keys_match_recursive
 from tavern.util.loader import ANYTHING
+from tavern.util.report import attach_yaml
 
 logger = logging.getLogger(__name__)
 
