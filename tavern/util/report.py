@@ -12,11 +12,13 @@ except ImportError:
 
 
     def attach(*args, **kwargs):
-        pass
+        logger.debug("Not attaching anything as allure is not installed")
 
 
-    def step(*args, **kwargs):
-        pass
+    def step(name):
+        def call(step_func):
+            return step_func
+        return call
 
 from tavern.util.formatted_str import FormattedString
 from tavern.util.stage_lines import get_stage_lines, read_relevant_lines
