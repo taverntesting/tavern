@@ -1,12 +1,14 @@
 import base64
 import itertools
-import math
+import json
 import mimetypes
 import os
 import time
+from urllib.parse import unquote_plus
 import uuid
 
 from flask import Flask, Response, jsonify, redirect, request
+import math
 
 app = Flask(__name__)
 
@@ -174,6 +176,21 @@ def status_code_return():
 def echo_values():
     body = request.get_json()
     response = body
+    return jsonify(response), 200
+
+
+@app.route("/echo_params", methods=["GET"])
+def echo_params():
+    params = request.args
+
+    response = {}
+    for k, v in params.items():
+        unquoted = unquote_plus(v)
+        try:
+            response[k] = json.loads(unquoted)
+        except json.decoder.JSONDecodeError:
+            response[k] = unquoted
+
     return jsonify(response), 200
 
 

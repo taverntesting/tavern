@@ -119,6 +119,11 @@ def get_request_args(rspec, test_block_config):
     # > ...represented in an OAuth 2.0 request as UTF-8 encoded JSON (which ends
     # > up being form-urlencoded when passed as an OAuth parameter)
     for key, value in request_args.get("params", {}).items():
+        if not isinstance(value, str):
+            if key == "$ext":
+                logger.debug("Skipping converting of ext function (%s)", value)
+                continue
+
         if isinstance(value, dict):
             request_args["params"][key] = quote_plus(json.dumps(value))
 
