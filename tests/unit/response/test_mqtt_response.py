@@ -28,6 +28,7 @@ class FakeMessage:
     def __init__(self, returned):
         self.topic = returned["topic"]
         self.payload = returned["payload"].encode("utf8")
+        self.timestamp = 0
 
 
 class TestResponse(object):

@@ -4,8 +4,8 @@ import copy
 import os
 import tempfile
 from textwrap import dedent
-
 from unittest.mock import Mock, patch
+
 import pytest
 import yaml
 

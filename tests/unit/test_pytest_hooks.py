@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from unittest.mock import Mock
 
-import py
-import pytest
 from faker import Faker
+import py
 from py._path.local import LocalPath
+import pytest
 
 from tavern.testutils.pytesthook.file import YamlFile, _get_parametrized_items
 

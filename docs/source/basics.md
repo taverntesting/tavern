@@ -148,6 +148,16 @@ It is also possible to save data using function calls, [explained below](#saving
 For a more formal definition of the schema that the tests are validated against,
 check [tests schema](https://github.com/taverntesting/tavern/blob/master/tavern/schemas/tests.schema.yaml) in the main Tavern repository.
 
+## Generating Test Reports
+
+Since 1.13 Tavern has support via the Pytest integration provided by
+[Allure](https://docs.qameta.io/allure/#_pytest). To generate a test report, add `allure-pytest`
+to your Pip dependencies and pass the `--alluredir=<dir>` flag when running Tavern. This will produce
+a test report with the stages that were run, the responses, any fixtures used, and any errors.
+
+See the [Allure documentation](https://docs.qameta.io/allure/#_installing_a_commandline) for more
+information on how to use it. 
+
 ## Variable formatting
 
 Variables can be used to prevent hardcoding data into each request, either from
