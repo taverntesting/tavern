@@ -13,7 +13,7 @@ from tavern.util.strict_util import StrictLevel
 from .plugins import get_expected, get_extra_sessions, get_request_type, get_verifiers
 from .testutils.pytesthook import call_hook
 from .util import exceptions
-from .util.allure import allure_attach_stage_content, allure_wrap_step
+from .util.report import attach_stage_content, wrap_step
 from .util.delay import delay
 from .util.dict_util import format_keys, get_tavern_box
 from .util.retry import retry
@@ -182,7 +182,7 @@ def run_test(in_file, test_spec, global_cfg):
             )
 
             allure_name = "Stage {}: {}".format(idx, stage["name"])
-            step = allure_wrap_step(allure_name, partial)
+            step = wrap_step(allure_name, partial)
 
             try:
                 step()
@@ -240,7 +240,7 @@ def run_stage(sessions, stage, test_block_config):
     """
     name = stage["name"]
 
-    allure_attach_stage_content(stage)
+    attach_stage_content(stage)
 
     r = get_request_type(stage, test_block_config, sessions)
 

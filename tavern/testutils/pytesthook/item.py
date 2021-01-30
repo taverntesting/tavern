@@ -10,7 +10,7 @@ from tavern.plugins import load_plugins
 from tavern.schemas.files import verify_tests
 from tavern.testutils.pytesthook import call_hook
 from tavern.util import exceptions
-from tavern.util.allure import allure_attach
+from tavern.util.report import attach_text
 
 from .error import ReprdError
 from .util import load_global_cfg
@@ -231,7 +231,7 @@ class YamlItem(pytest.Item):
             logger.info("Ignoring style '%s", style)
 
         error = ReprdError(excinfo, self)
-        allure_attach(str(error), name="error_output")
+        attach_text(str(error), name="error_output")
         return error
 
     def reportinfo(self):

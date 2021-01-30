@@ -3,7 +3,20 @@ from textwrap import dedent
 
 import yaml
 
-import allure
+try:
+    from allure import attachment_type, attach, step
+
+    yaml_type = attachment_type.YAML
+except ImportError:
+    yaml_type = None
+
+
+    def attach(*args, **kwargs):
+        pass
+
+
+    def step(*args, **kwargs):
+        pass
 
 from tavern.util.formatted_str import FormattedString
 from tavern.util.stage_lines import get_stage_lines, read_relevant_lines
@@ -30,23 +43,23 @@ def _prepare_yaml(val):
     return formatted
 
 
-def allure_attach_stage_content(stage):
+def attach_stage_content(stage):
     first_line, last_line, _ = get_stage_lines(stage)
 
     code_lines = list(read_relevant_lines(stage, first_line, last_line))
     joined = dedent("\n".join(code_lines))
-    allure_attach(joined, "stage_yaml", allure.attachment_type.YAML)
+    attach_text(joined, "stage_yaml", yaml_type)
 
 
-def allure_attach_yaml(payload, name):
+def attach_yaml(payload, name):
     prepared = _prepare_yaml(payload)
     dumped = yaml.safe_dump(prepared)
-    return allure_attach(dumped, name, allure.attachment_type.YAML)
+    return attach_text(dumped, name, yaml_type)
 
 
-def allure_attach(payload, name, attachment_type=None):
-    return allure.attach(payload, name=name, attachment_type=attachment_type)
+def attach_text(payload, name, attachment_type=None):
+    return attach(payload, name=name, attachment_type=attachment_type)
 
 
-def allure_wrap_step(allure_name, partial):
-    return allure.step(allure_name)(partial)
+def wrap_step(allure_name, partial):
+    return step(allure_name)(partial)

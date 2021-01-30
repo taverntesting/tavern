@@ -15,7 +15,7 @@ from requests.utils import dict_from_cookiejar
 
 from tavern.request.base import BaseRequest
 from tavern.util import exceptions
-from tavern.util.allure import allure_attach_yaml
+from tavern.util.report import attach_yaml
 from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
 from tavern.util.extfunctions import update_from_ext
 
@@ -463,7 +463,7 @@ class RestRequest(BaseRequest):
             requests.Response: response object
         """
 
-        allure_attach_yaml(
+        attach_yaml(
             self._request_args,
             name="rest_request",
         )

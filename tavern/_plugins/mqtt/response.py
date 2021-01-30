@@ -5,7 +5,7 @@ import time
 from tavern.response.base import BaseResponse
 from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
-from tavern.util.allure import allure_attach_yaml
+from tavern.util.report import attach_yaml
 from tavern.util.dict_util import check_keys_match_recursive
 from tavern.util.loader import ANYTHING
 
@@ -95,7 +95,7 @@ class MQTTResponse(BaseResponse):
 
             msg.payload = msg.payload.decode("utf8")
 
-            allure_attach_yaml(
+            attach_yaml(
                 {
                     "topic": msg.topic,
                     "payload": msg.payload,

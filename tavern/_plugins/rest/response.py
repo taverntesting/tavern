@@ -7,7 +7,7 @@ from requests.status_codes import _codes  # type:ignore
 from tavern.response.base import BaseResponse, indent_err_text
 from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
-from tavern.util.allure import allure_attach_yaml
+from tavern.util.report import attach_yaml
 from tavern.util.dict_util import deep_dict_merge
 
 logger = logging.getLogger(__name__)
@@ -165,7 +165,7 @@ class RestResponse(BaseResponse):
         self._validate_block("headers", response.headers)
         self._validate_block("redirect_query_params", redirect_query_params)
 
-        allure_attach_yaml(
+        attach_yaml(
             {
                 "status_code": response.status_code,
                 "headers": dict(response.headers),
