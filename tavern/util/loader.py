@@ -18,7 +18,6 @@ from yaml.scanner import Scanner
 
 from tavern.util import exceptions
 from tavern.util.exceptions import BadSchemaError
-from tavern.util.formatted_str import FormattedString
 
 logger = logging.getLogger(__name__)
 

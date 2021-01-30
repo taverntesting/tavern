@@ -1,8 +1,9 @@
 import logging
 from textwrap import dedent
 
-import allure
 import yaml
+
+import allure
 
 from tavern.util.formatted_str import FormattedString
 from tavern.util.stage_lines import get_stage_lines, read_relevant_lines
@@ -38,7 +39,8 @@ def allure_attach_stage_content(stage):
 
 
 def allure_attach_yaml(payload, name):
-    dumped = yaml.safe_dump(_prepare_yaml(payload))
+    prepared = _prepare_yaml(payload)
+    dumped = yaml.safe_dump(prepared)
     return allure_attach(dumped, name, allure.attachment_type.YAML)
 
 
