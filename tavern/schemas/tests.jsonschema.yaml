@@ -1,0 +1,211 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "https://raw.githubusercontent.com/taverntesting/tavern/master/tavern/schemas/tests.jsonschema.yaml"
+
+title: Tavern
+description: "Schema for Tavern test files"
+
+###
+
+definitions:
+  stage:
+    type: object
+    description: One stage in a test
+    additionalProperties: false
+    required:
+    - name
+
+    properties:
+      id:
+        type: string
+        description: ID of stage for use in stage references
+
+      max_retries:
+        type: integer
+        description: Number of times to retry this request
+        minimum: 1
+        default: 0
+
+      skip:
+        type: boolean
+        description: Whether to skip this stage
+        default: false
+
+      only:
+        type: boolean
+        description: Only run this stage
+        default: false
+
+      delay_before:
+        type: number
+        description: How long to delay before running stage
+
+      delay_after:
+        type: number
+        description: How long to delay after running stage
+
+      name:
+        type: string
+        description: Name of this stage
+
+      mqtt_publish:
+        type: object
+        description: Publish MQTT message
+        additionalProperties: false
+
+        properties:
+          topic:
+            type: string
+            description: Topic to publish on
+
+          payload:
+            type: string
+            description: Raw payload to post
+
+          json:
+            type: object
+            description: JSON payload to post
+
+          qos:
+            type: integer
+            description: QoS level to use for request
+            default: 0
+
+          retain:
+            type: boolean
+            description: Whether the message should be retained
+            default: false
+
+      mqtt_response:
+        type: object
+        description: Expected MQTT response
+
+        properties:
+          topic:
+            type: string
+            description: Topic message should be received on
+
+          payload:
+            type: string
+            description: Expected raw payload in response
+
+          json:
+            type: object
+            description: Expected JSON payload in response
+
+          timeout:
+            type: number
+            description: How long to wait for response to arrive
+
+          qos:
+            type: integer
+            description: QoS level that message should be received on
+
+      request:
+        type: object
+        additionalProperties: false
+        description: HTTP request to perform as part of stage
+
+        required:
+        - url
+
+        properties:
+          url:
+            type: string
+            description: URL to make request to
+
+          method:
+            type: string
+            description: HTTP method to use for request
+            default: GET
+            enum:
+            - GET
+            - PUT
+            - POST
+            - DELETE
+            - PATCH
+            - OPTIONS
+            - HEAD
+
+          follow_redirects:
+            type: boolean
+            description: Whether to follow redirects from 3xx responses
+            default: false
+
+          stream:
+            type: boolean
+            description: Whether to stream the download from the request
+            default: false
+
+          cookies:
+            type: array
+            description: Which cookies to use in the request
+
+            items:
+              type: string
+
+          json:
+            type: object
+            description: JSON body to send in request body
+
+          data:
+            type: object
+            description: Form data to send in request
+
+          timeout:
+            type: number
+            description: How long to wait for requests to time out
+
+
+      response:
+        type: object
+        additionalProperties: false
+        description: Expected HTTP response
+
+        properties:
+          strict:
+            type: string
+            description: Strictness setting for matching response
+
+          status_code:
+            description: Status code(s) to match
+            oneOf:
+            - type: integer
+            - type: array
+              minItems: 1
+              items:
+                type: integer
+
+          cookies:
+            type: array
+            description: Cookies expected to be returned
+            uniqueItems: true
+            minItems: 1
+
+            items:
+              type: string
+
+          json:
+            type: object
+            description: Expected JSON response
+
+###
+
+type: object
+additionalProperties: false
+required:
+- test_name
+- stages
+
+properties:
+  test_name:
+    type: string
+    description: Name of test
+
+  stages:
+    type: array
+    minItems: 1
+
+    description: Stages in test
+
+    items:
+      $ref: "#/definitions/stage"
