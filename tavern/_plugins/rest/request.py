@@ -17,6 +17,7 @@ from tavern.request.base import BaseRequest
 from tavern.util import exceptions
 from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
 from tavern.util.extfunctions import update_from_ext
+from tavern.util.report import attach_yaml
 
 logger = logging.getLogger(__name__)
 
@@ -118,6 +119,11 @@ def get_request_args(rspec, test_block_config):
     # > ...represented in an OAuth 2.0 request as UTF-8 encoded JSON (which ends
     # > up being form-urlencoded when passed as an OAuth parameter)
     for key, value in request_args.get("params", {}).items():
+        if not isinstance(value, str):
+            if key == "$ext":
+                logger.debug("Skipping converting of ext function (%s)", value)
+                continue
+
         if isinstance(value, dict):
             request_args["params"][key] = quote_plus(json.dumps(value))
 
@@ -461,6 +467,11 @@ class RestRequest(BaseRequest):
         Returns:
             requests.Response: response object
         """
+
+        attach_yaml(
+            self._request_args,
+            name="rest_request",
+        )
 
         try:
             return self._prepared()

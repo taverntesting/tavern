@@ -381,10 +381,10 @@ def validate_file_spec(value, rule_obj, path):
 
             try:
                 file_path = filespec["file_path"]
-            except KeyError:
+            except KeyError as e:
                 raise BadSchemaError(
                     "When using 'long form' file uplaod spec, the file_path must be present"
-                )
+                ) from e
         else:
             raise BadSchemaError(
                 "File specification must be a file path or a dictionary"

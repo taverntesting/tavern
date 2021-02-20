@@ -172,7 +172,7 @@ class YamlFile(pytest.File):
     """Custom `File` class that loads each test block as a different test"""
 
     def __init__(self, *args, **kwargs):
-        super(YamlFile, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # This (and the FakeObj below) are to make pytest-pspec not error out.
         # The 'doctstring' for this is the filename, the 'docstring' for each

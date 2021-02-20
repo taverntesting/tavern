@@ -8,6 +8,7 @@ from tavern.response.base import BaseResponse, indent_err_text
 from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
 from tavern.util.dict_util import deep_dict_merge
+from tavern.util.report import attach_yaml
 
 logger = logging.getLogger(__name__)
 
@@ -18,9 +19,7 @@ class RestResponse(BaseResponse):
 
         defaults = {"status_code": 200}
 
-        super(RestResponse, self).__init__(
-            name, deep_dict_merge(defaults, expected), test_block_config
-        )
+        super().__init__(name, deep_dict_merge(defaults, expected), test_block_config)
 
         self.status_code = None
 
@@ -165,6 +164,16 @@ class RestResponse(BaseResponse):
         self._validate_block("json", body)
         self._validate_block("headers", response.headers)
         self._validate_block("redirect_query_params", redirect_query_params)
+
+        attach_yaml(
+            {
+                "status_code": response.status_code,
+                "headers": dict(response.headers),
+                "body": body,
+                "redirect_query_params": redirect_query_params,
+            },
+            name="rest_response",
+        )
 
         self._maybe_run_validate_functions(response)
 

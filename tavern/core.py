@@ -1,6 +1,7 @@
 from contextlib import ExitStack
 from copy import deepcopy
 from distutils.util import strtobool
+import functools
 import logging
 import os
 
@@ -14,6 +15,7 @@ from .testutils.pytesthook import call_hook
 from .util import exceptions
 from .util.delay import delay
 from .util.dict_util import format_keys, get_tavern_box
+from .util.report import attach_stage_content, wrap_step
 from .util.retry import retry
 
 logger = logging.getLogger(__name__)
@@ -163,7 +165,7 @@ def run_test(in_file, test_spec, global_cfg):
         has_only = any(getonly(stage) for stage in test_spec["stages"])
 
         # Run tests in a path in order
-        for stage in test_spec["stages"]:
+        for idx, stage in enumerate(test_spec["stages"]):
             if stage.get("skip"):
                 continue
             if has_only and not getonly(stage):
@@ -175,8 +177,15 @@ def run_test(in_file, test_spec, global_cfg):
             # Wrap run_stage with retry helper
             run_stage_with_retries = retry(stage, test_block_config)(run_stage)
 
+            partial = functools.partial(
+                run_stage_with_retries, sessions, stage, test_block_config
+            )
+
+            allure_name = "Stage {}: {}".format(idx, stage["name"])
+            step = wrap_step(allure_name, partial)
+
             try:
-                run_stage_with_retries(sessions, stage, test_block_config)
+                step()
             except exceptions.TavernException as e:
                 e.stage = stage
                 e.test_block_config = test_block_config
@@ -230,6 +239,8 @@ def run_stage(sessions, stage, test_block_config):
         test_block_config (dict): available variables for test
     """
     name = stage["name"]
+
+    attach_stage_content(stage)
 
     r = get_request_type(stage, test_block_config, sessions)
 

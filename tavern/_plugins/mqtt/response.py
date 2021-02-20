@@ -7,13 +7,14 @@ from tavern.testutils.pytesthook.newhooks import call_hook
 from tavern.util import exceptions
 from tavern.util.dict_util import check_keys_match_recursive
 from tavern.util.loader import ANYTHING
+from tavern.util.report import attach_yaml
 
 logger = logging.getLogger(__name__)
 
 
 class MQTTResponse(BaseResponse):
     def __init__(self, client, name, expected, test_block_config):
-        super(MQTTResponse, self).__init__(name, expected, test_block_config)
+        super().__init__(name, expected, test_block_config)
 
         self._client = client
 
@@ -93,6 +94,15 @@ class MQTTResponse(BaseResponse):
             self.received_messages.append(msg)
 
             msg.payload = msg.payload.decode("utf8")
+
+            attach_yaml(
+                {
+                    "topic": msg.topic,
+                    "payload": msg.payload,
+                    "timestamp": msg.timestamp,
+                },
+                name="rest_response",
+            )
 
             if expect_json_payload:
                 try:

@@ -16,19 +16,10 @@ from tavern.util.loader import (
 )
 
 from . import exceptions
+from .formatted_str import FormattedString
 from .strict_util import StrictOption, StrictSetting, strict_setting_factory
 
 logger = logging.getLogger(__name__)
-
-
-class _FormattedString(str):
-    """Wrapper class for things that have already been formatted
-
-    This is only used below and should not be used outside this module
-    """
-
-    def __init(self, s):
-        super(_FormattedString, self).__init__(s)
 
 
 def _check_and_format_values(to_format, box_vars):
@@ -121,13 +112,13 @@ def format_keys(val, variables, no_double_format=True):
             formatted[key] = format_keys(val[key], box_vars)
     elif isinstance(val, (list, tuple)):
         formatted = [format_keys(item, box_vars) for item in val]
-    elif isinstance(formatted, _FormattedString):
+    elif isinstance(formatted, FormattedString):
         logger.debug("Already formatted %s, not double-formatting", formatted)
     elif isinstance(val, str):
         formatted = _check_and_format_values(val, box_vars)
 
         if no_double_format:
-            formatted = _FormattedString(formatted)
+            formatted = FormattedString(formatted)
     elif isinstance(val, TypeConvertToken):
         logger.debug("Got type convert token '%s'", val)
         if isinstance(val, ForceIncludeToken):

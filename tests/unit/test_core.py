@@ -427,6 +427,7 @@ class TestFormatMQTTVarsJson:
             "spec": paho.MQTTMessage,
             "payload": json.dumps({"echo": sent["message"]}).encode("utf8"),
             "topic": stage["mqtt_publish"]["topic"],
+            "timestamp": 0,
         }
         mock_response = Mock(**mockargs)
 
@@ -473,6 +474,7 @@ class TestFormatMQTTVarsPlain:
             "spec": paho.MQTTMessage,
             "payload": sent.encode("utf8"),
             "topic": stage["mqtt_publish"]["topic"],
+            "timestamp": 0,
         }
         mock_response = Mock(**mockargs)
 

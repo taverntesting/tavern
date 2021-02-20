@@ -127,3 +127,38 @@ stages:
       json:
         value1: "hi"
         hello: "there"
+
+---
+
+test_name: Test generating query params from ext functions
+
+stages:
+  - name: simple match
+    request:
+      params:
+        $ext:
+          function: ext_functions:return_hello
+      url: "{global_host}/echo_params"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        hello: "there"
+
+---
+
+test_name: Test can still pass json in a query param
+
+stages:
+  - name: simple match
+    request:
+      params:
+        top_level:
+          nested: value
+      url: "{global_host}/echo_params"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        top_level:
+          nested: value
