@@ -206,14 +206,40 @@ def _calculate_stage_strictness(stage, test_block_config, test_spec):
 
     if test_spec.get("strict", None) is not None:
         stage_options = test_spec["strict"]
+        logger.debug("Getting test level strict setting: %s", stage_options)
+
+    stage_strictness_set = None
+
+    def update_stage_options(new_option):
+        if stage_strictness_set:
+            raise exceptions.DuplicateStrictError
+        logger.debug("Setting stage level strict setting: %s", new_option)
+        return new_option
 
     if stage.get("response", {}).get("strict", None) is not None:
-        stage_options = stage["response"]["strict"]
-    elif stage.get("mqtt_response", {}).get("strict", None) is not None:
-        stage_options = stage["mqtt_response"]["strict"]
+        stage_strictness_set = stage_options = update_stage_options(
+            stage["response"]["strict"]
+        )
+
+    mqtt_response = stage.get("mqtt_response", None)
+    if mqtt_response is not None:
+        if isinstance(mqtt_response, dict):
+            if mqtt_response.get("strict", None) is not None:
+                stage_strictness_set = stage_options = update_stage_options(
+                    stage["mqtt_response"]["strict"]
+                )
+        elif isinstance(mqtt_response, list):
+            for response in mqtt_response:
+                if response.get("strict", None) is not None:
+                    stage_strictness_set = stage_options = update_stage_options(
+                        response["strict"]
+                    )
+        else:
+            raise exceptions.BadSchemaError(
+                "mqtt_response was invalid type {}".format(type(mqtt_response))
+            )
 
     if stage_options is not None:
-        logger.debug("Overriding global strictness")
         if stage_options is True:
             strict_level = StrictLevel.all_on()
         elif stage_options is False:
@@ -259,12 +285,15 @@ def run_stage(sessions, stage, test_block_config):
         request_args=r.request_vars,
     )
 
+    verifiers = get_verifiers(stage, test_block_config, sessions, expected)
+
     response = r.run()
 
-    verifiers = get_verifiers(stage, test_block_config, sessions, expected)
-    for v in verifiers:
-        saved = v.verify(response)
-        test_block_config["variables"].update(saved)
+    for response_type, response_verifiers in verifiers.items():
+        logger.debug("Running verifiers for %s", response_type)
+        for v in response_verifiers:
+            saved = v.verify(response)
+            test_block_config["variables"].update(saved)
 
     tavern_box.pop("request_vars")
     delay(stage, "after", test_block_config["variables"])
