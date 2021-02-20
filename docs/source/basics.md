@@ -1488,6 +1488,52 @@ which will pass if it matches _part_ of the thing being checked, or `!re_match`
 which will match _part_ of the thing being checked, as long as it is at the
 _beginning_ of the string. See the Python documentation for more details.
 
+Another way of doing this is to use the builtin `validate_regex` helper function.
+For example if we want to get a version that is returned in a 'meta' key in the
+format `v1.2.3-510c2665d771e1`:
+
+```yaml
+stages:
+- name: get a token by id
+  request:
+    url: "{host}/tokens/get"
+    method: GET
+    params:
+      id: 456
+  response:
+    status_code: 200
+    json:
+      code: abc123
+      id: 456
+      meta:
+        version: !anystr
+        hash: 456
+    save:
+      $ext:
+        function: tavern.testutils.helpers:validate_regex
+        extra_kwargs:
+          expression: "v(?P<version>[\d\.]+)-[\w\d]+"
+          in_jmespath: "meta.version"
+```
+
+This is a more flexible version of the helper which can also be used to save values
+as in the example. If a named matching group is used as shown above, the saved values
+ can then be accessed in subsequent stages by using the `regex.<group-name>` syntax, eg: 
+
+```yaml
+- name: Reuse thing specified in first request
+  request:
+    url: "{host}/get_version_info"
+    method: GET
+    params:
+      version: "{regex.version}"
+  response:
+    status_code: 200
+    json:
+      simple_version: "v{regex.version}"
+      made_on: "2020-02-21"
+```
+
 ## Type conversions
 
 [YAML](http://yaml.org/spec/1.1/current.html#id867381) has some magic variables

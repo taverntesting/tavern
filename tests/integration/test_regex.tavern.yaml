@@ -68,3 +68,36 @@ stages:
         extra_kwargs:
           expression: '(?<=Hello)[wW]orld\d+$'
           header: X-Integration-Value
+
+---
+
+test_name: Match something in part of the request
+
+stages:
+- name: simple match
+  request:
+    url: "{global_host}/echo"
+    method: POST
+    json:
+      fake: code=abc123&state=f
+      fake2: code=abc123&state=f
+      fake3: code=abc124&state=f
+  response:
+    status_code: 200
+    save:
+      $ext:
+        function: tavern.testutils.helpers:validate_regex
+        extra_kwargs:
+          expression: "code=(?P<code_token>.*)&state"
+          in_jmespath: "fake3"
+
+- name: Reuse thing specified in first request
+  request:
+    url: "{global_host}/echo"
+    method: POST
+    json:
+      fake: "{regex.code_token}"
+  response:
+    status_code: 200
+    json:
+      fake: abc124
