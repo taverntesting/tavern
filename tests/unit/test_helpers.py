@@ -1,3 +1,4 @@
+import json
 import sys
 import tempfile
 from textwrap import dedent
@@ -42,21 +43,40 @@ class TestRegex:
     def test_regex_no_match(self):
         response = FakeResponse("abchelloabc")
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(exceptions.RegexAccessError):
             validate_regex(response, "(?P<greeting>hola)")
 
     def test_regex_match_header(self):
         response = FakeResponse("abchelloabc")
 
-        matched = validate_regex(response, "(?P<greeting>hello)", "test_header")
+        matched = validate_regex(response, "(?P<greeting>hello)", header="test_header")
 
         assert "greeting" in matched["regex"]
 
     def test_regex_no_match_header(self):
         response = FakeResponse("abchelloabc")
 
-        with pytest.raises(AssertionError):
-            validate_regex(response, "(?P<greeting>hola)", "test_header")
+        with pytest.raises(exceptions.RegexAccessError):
+            validate_regex(response, "(?P<greeting>hola)", header="test_header")
+
+    @pytest.mark.parametrize(
+        "match",
+        (
+            (r"val(?P<num>\d)", "path1", "val1"),
+            (r"val(?P<num>\d)", "path2[0]", "val2"),
+            (r"val(?P<num>\d)", "path3.sub", "val3"),
+        ),
+    )
+    def test_in_jmespath(self, match):
+        response = FakeResponse(
+            json.dumps({"path1": "val1", "path2": ["val2"], "path3": {"sub": "val3"}})
+        )
+
+        expression, path, expected = match
+
+        result = validate_regex(response, expression, in_jmespath=path)
+
+        assert result["regex"]["num"] == expected[-1]
 
 
 class TestRunAlone:

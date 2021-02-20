@@ -123,3 +123,7 @@ class InvalidExtBlockException(TavernException):
 
 class InvalidRetryException(TavernException):
     """Invalid spec for max_retries"""
+
+
+class RegexAccessError(TavernException):
+    """Error accessing a key via regex"""
