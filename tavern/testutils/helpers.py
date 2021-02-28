@@ -10,7 +10,7 @@ import jwt
 from tavern.schemas.files import verify_generic
 from tavern.testutils.jmesutils import actual_validation, validate_comparison
 from tavern.util import exceptions
-from tavern.util.dict_util import check_keys_match_recursive
+from tavern.util.dict_util import check_keys_match_recursive, recurse_access_key
 
 logger = logging.getLogger(__name__)
 
@@ -97,24 +97,53 @@ def validate_pykwalify(response, schema):
         verify_generic(to_verify, schema)
 
 
-def validate_regex(response, expression, header=None):
+def validate_regex(response, expression, *, header=None, in_jmespath=None):
     """Make sure the response matches a regex expression
 
     Args:
-        response (Response): requests.Response object
+        response (requests.Response): requests.Response object
         expression (str): Regex expression to use
         header (str): Match against a particular header instead of the body
+        in_jmespath (str): if present, jmespath to access before trying to match
 
     Returns:
         dict: dictionary of regex: boxed name capture groups
     """
+
+    if header and in_jmespath:
+        raise exceptions.BadSchemaError("Can only specify one of header or jmespath")
+
     if header:
         content = response.headers[header]
     else:
         content = response.text
 
-    match = re.search(expression, content) or False
-    assert match
+    if in_jmespath:
+        if not response.headers.get("content-type", "").startswith("application/json"):
+            logger.warning(
+                "Trying to use jmespath match but content type is not application/json"
+            )
+
+        try:
+            decoded = json.loads(content)
+        except json.JSONDecodeError as e:
+            raise exceptions.RegexAccessError(
+                "unable to decode json for regex match"
+            ) from e
+
+        content = recurse_access_key(decoded, in_jmespath)
+        if not isinstance(content, str):
+            raise exceptions.RegexAccessError(
+                "Successfully accessed {} from response, but it was a {} and not a string".format(
+                    in_jmespath, type(content)
+                )
+            )
+
+    logger.debug("Matching %s with %s", content, expression)
+
+    match = re.search(expression, content)
+    if match is None:
+        raise exceptions.RegexAccessError("No match for regex")
 
     return {"regex": Box(match.groupdict())}
 
