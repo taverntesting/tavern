@@ -8,9 +8,9 @@ test against Python 3.4-3.7 and pypy3. Python 2 is now **unsupported**.
 
 ## Why Tavern
 
-Choosing an API testing framework can be tough. Tavern was started in 2017 to address some of our concerns with other tesing frameworks.
+Choosing an API testing framework can be tough. Tavern was started in 2017 to address some of our concerns with other testing frameworks.
 
-In short, we think the best things about Taven are:
+In short, we think the best things about Tavern are:
 
 ### It's Lightweight.
 Tavern is a small codebase which uses pytest under the hood.
