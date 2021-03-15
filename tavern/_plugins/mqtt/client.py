@@ -46,7 +46,7 @@ def _handle_tls_args(tls_args):
         return False, None
 
     if "enable" in tls_args:
-        if not tls_args.pop("enable"):
+        if tls_args.pop("enable") is False:
             # if enable=false, return immediately
             return False, None
 
@@ -143,7 +143,7 @@ class MQTTClient(object):
         # If there is any tls kwarg (including 'enable'), enable tls
         file_tls_args = kwargs.pop("tls", {})
         check_expected_keys(expected_blocks["tls"], file_tls_args)
-        self._enable_tls, self._tls_args = _handle_tls_args(file_tls_args)
+        _tls_enable, self._tls_args = _handle_tls_args(file_tls_args)
         logger.debug("TLS is %s", "enabled" if self._tls_args else "disabled")
 
         logger.debug("Paho client args: %s", self._client_args)
@@ -155,7 +155,7 @@ class MQTTClient(object):
 
         self._client.on_message = self._on_message
 
-        if self._enable_tls:
+        if _tls_enable:
             try:
                 self._client.tls_set(**self._tls_args)
             except ValueError as e:
