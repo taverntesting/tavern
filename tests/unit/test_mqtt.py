@@ -101,7 +101,7 @@ class TestTLS(object):
         """
         args = {"certfile": "/lcliueurhug/ropko3kork32", "enable": False}
 
-        _, parsed_args = _handle_tls_args(args)
+        parsed_args = _handle_tls_args(args)
         assert not parsed_args
 
     def test_invalid_tls_ver(self):
