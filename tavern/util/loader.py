@@ -48,7 +48,7 @@ class RememberComposer(Composer):
 
 
 def create_node_class(cls):
-    class node_class(cls):
+    class node_class(cls):  # noqa
         def __init__(self, x, start_mark, end_mark):
             cls.__init__(self, x)
             self.start_mark = start_mark

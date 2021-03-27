@@ -46,7 +46,7 @@ def _handle_tls_args(tls_args):
         return None
 
     if "enable" in tls_args:
-        if not tls_args.pop("enable"):
+        if not tls_args["enable"]:
             # if enable=false, return immediately
             return None
 
@@ -67,7 +67,6 @@ def _handle_tls_args(tls_args):
             pass
 
     # could be moved to schema validation stage
-    check_file_exists("cert_reqs")
     check_file_exists("certfile")
     check_file_exists("keyfile")
 

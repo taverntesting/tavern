@@ -14,7 +14,8 @@ still ONLY supports HTTP and MQTT requests at the time of writing).
 
 The best way to introduce the concepts for making a plugin is by using an
 example. For this we will be looking at a plugin used to run tests against a
-local flask server called [tavern_flask](https://github.com/taverntesting/tavern-flask).
+local flask server called [tavern_flask](https://github.com/taverntesting/tavern-flask)
+or another plugin used to run tests against FastAPI/Starlette `TestClient` called [tavern_fastapi](https://github.com/zaghaghi/tavern-fastapi).
 
 ## The entry point
 

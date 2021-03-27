@@ -10,7 +10,7 @@ class TestFailError(TavernException):
     """Test failed somehow"""
 
     def __init__(self, msg, failures=None):
-        super(TestFailError, self).__init__(msg)
+        super().__init__(msg)
         self.failures = failures or []
 
 
@@ -131,3 +131,7 @@ class InvalidRetryException(TavernException):
 
 class ProtoGenError(TavernException):
     """Error generating protobuf imports"""
+    
+    
+class RegexAccessError(TavernException):
+    """Error accessing a key via regex"""
