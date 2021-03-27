@@ -46,7 +46,7 @@ def _handle_tls_args(tls_args):
         return None
 
     if "enable" in tls_args:
-        if not tls_args.pop("enable"):
+        if not tls_args["enable"]:
             # if enable=false, return immediately
             return None
 
