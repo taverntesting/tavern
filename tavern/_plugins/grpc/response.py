@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class GRPCResponse(BaseResponse):
     def __init__(self, client, name, expected, test_block_config):
-        super(GRPCResponse, self).__init__(name, expected, test_block_config)
+        super().__init__(name, expected, test_block_config)
 
         self._client = client
 

@@ -131,7 +131,7 @@ class InvalidRetryException(TavernException):
 
 class ProtoGenError(TavernException):
     """Error generating protobuf imports"""
-    
-    
+
+
 class RegexAccessError(TavernException):
     """Error accessing a key via regex"""
