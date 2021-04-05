@@ -1,4 +1,4 @@
-FROM python:3.5-slim-jessie
+FROM python:3.9-slim-jessie
 
 RUN apt-get update  && apt-get install build-essential --yes --no-install-recommends && apt-get clean
 RUN pip install flask paho-mqtt fluent-logger pyyaml uwsgi gevent==1.2.2

@@ -1,4 +1,4 @@
-FROM python:3.5-alpine
+FROM python:3.9-alpine
 
 RUN pip install flask pyjwt
 
