@@ -142,7 +142,7 @@ def load_global_cfg(pytest_config):
             pytest_hook_caller=pytest_config.hook,
             backends=_load_global_backends(pytest_config),
         ),
-        stages=global_cfg_dict["stages"],
+        stages=global_cfg_dict.get("stages", []),
     )
 
     return global_cfg

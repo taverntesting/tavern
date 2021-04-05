@@ -2,7 +2,6 @@ import copy
 import functools
 import itertools
 import logging
-
 import pytest
 import yaml
 
@@ -10,7 +9,6 @@ from tavern.schemas.files import verify_tests
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys, get_tavern_box
 from tavern.util.loader import IncludeLoader
-
 from .item import YamlItem
 from .util import load_global_cfg
 
@@ -198,7 +196,7 @@ class YamlFile(pytest.File):
         fmt_vars = {}
 
         global_cfg = load_global_cfg(self.config)
-        fmt_vars.update(**global_cfg.get("variables", {}))
+        fmt_vars.update(**global_cfg.variables)
 
         included = test_spec.get("includes", [])
         for i in included:

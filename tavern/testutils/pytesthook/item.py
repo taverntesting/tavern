@@ -162,8 +162,7 @@ class YamlItem(pytest.Item):
         return values
 
     def runtest(self):
-        # Do a deep copy because this sometimes still retains things from previous tests(?)
-        self.global_cfg = copy.deepcopy(load_global_cfg(self.config))
+        self.global_cfg = load_global_cfg(self.config)
 
         load_plugins(self.global_cfg)
 
