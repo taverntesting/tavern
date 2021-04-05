@@ -20,36 +20,36 @@ jobs:
         include:
         # 'Basic' tests and checks
         # Pylint, formatting/sorting, and quickest unit/integration tests
-        - TOXENV: py38black
-          python: "3.8"
+        - TOXENV: py39black
+          python: "3.9"
           TOXCFG: tox.ini
-        - TOXENV: py38
-          python: "3.8"
+        - TOXENV: py39
+          python: "3.9"
           TOXCFG: tox.ini
-        - TOXENV: py38lint
-          python: "3.8"
+        - TOXENV: py39lint
+          python: "3.9"
           TOXCFG: tox.ini
-        - TOXENV: py38mypy
-          python: "3.8"
+        - TOXENV: py39mypy
+          python: "3.9"
           TOXCFG: tox.ini
-        - TOXENV: py38isort
-          python: "3.8"
+        - TOXENV: py39isort
+          python: "3.9"
           TOXCFG: tox.ini
 
-        - TOXENV: py38-generic
-          python: "3.8"
+        - TOXENV: py39-generic
+          python: "3.9"
           TOXCFG: tox-integration.ini
         - TOXENV: pypy3-noextra
           python: pypy3
           TOXCFG: tox-integration.ini
-        - TOXENV: py38-mqtt
-          python: "3.8"
+        - TOXENV: py39-mqtt
+          python: "3.9"
           TOXCFG: tox-integration.ini
-        - TOXENV: py38-hooks
-          python: "3.8"
+        - TOXENV: py39-hooks
+          python: "3.9"
           TOXCFG: tox-integration.ini
-        - TOXENV: py38-advanced
-          python: "3.8"
+        - TOXENV: py39-advanced
+          python: "3.9"
           TOXCFG: tox-integration.ini
 
     services:
@@ -79,6 +79,9 @@ jobs:
         key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'setup.cfg', 'setup.py') }}
         restore-keys: |
           ${{ runner.os }}-pip-
+
+    - uses: satackey/action-docker-layer-caching@v0.0.11
+      continue-on-error: true
 
     - name: Set up Python
       uses: actions/setup-python@v2
