@@ -1,9 +1,9 @@
 import copy
 import logging
 
-from _pytest import fixtures
 import attr
 import pytest
+from pytest import FixtureRequest
 
 from tavern.core import run_test
 from tavern.plugins import load_plugins
@@ -54,7 +54,7 @@ class YamlItem(pytest.Item):
         )
         self._fixtureinfo = fixtureinfo
         self.fixturenames = fixtureinfo.names_closure
-        self._request = fixtures.FixtureRequest(self)
+        self._request = FixtureRequest(self, _ispytest=True)
 
     #     Hack to stop issue with pytest-rerunfailures
     _initrequest = initialise_fixture_attrs
