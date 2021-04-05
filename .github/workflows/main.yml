@@ -20,35 +20,35 @@ jobs:
         include:
         # 'Basic' tests and checks
         # Pylint, formatting/sorting, and quickest unit/integration tests
-        - TOXENV: py38black
+        - TOXENV: py39black
           python: "3.9"
           TOXCFG: tox.ini
-        - TOXENV: py38
+        - TOXENV: py39
           python: "3.9"
           TOXCFG: tox.ini
-        - TOXENV: py38lint
+        - TOXENV: py39lint
           python: "3.9"
           TOXCFG: tox.ini
-        - TOXENV: py38mypy
+        - TOXENV: py39mypy
           python: "3.9"
           TOXCFG: tox.ini
-        - TOXENV: py38isort
+        - TOXENV: py39isort
           python: "3.9"
           TOXCFG: tox.ini
 
-        - TOXENV: py38-generic
+        - TOXENV: py39-generic
           python: "3.9"
           TOXCFG: tox-integration.ini
         - TOXENV: pypy3-noextra
           python: pypy3
           TOXCFG: tox-integration.ini
-        - TOXENV: py38-mqtt
+        - TOXENV: py39-mqtt
           python: "3.9"
           TOXCFG: tox-integration.ini
-        - TOXENV: py38-hooks
+        - TOXENV: py39-hooks
           python: "3.9"
           TOXCFG: tox-integration.ini
-        - TOXENV: py38-advanced
+        - TOXENV: py39-advanced
           python: "3.9"
           TOXCFG: tox-integration.ini
 
