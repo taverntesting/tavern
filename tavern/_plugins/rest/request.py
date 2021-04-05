@@ -413,7 +413,6 @@ class RestRequest(BaseRequest):
         update_from_ext(
             request_args,
             RestRequest.optional_in_file,
-            test_block_config,
         )
 
         # Used further down, but pop it asap to avoid unwanted side effects
