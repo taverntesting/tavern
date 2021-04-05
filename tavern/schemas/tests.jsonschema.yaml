@@ -1,0 +1,429 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+$id: "https://raw.githubusercontent.com/taverntesting/tavern/master/tavern/schemas/tests.jsonschema.yaml"
+
+title: Tavern
+description: "Schema for Tavern test files"
+
+###
+
+definitions:
+  strict_block:
+    oneOf:
+    - type: string
+    - type: boolean
+    - type: array
+      items:
+        type: string
+
+  verify_block:
+    type: object
+    additionalProperties: false
+
+    required:
+    - function
+    properties:
+      function:
+        type: string
+        description: Path to function in the form import.path:name
+
+      extra_args:
+        type: array
+
+      extra_kwargs:
+        type: object
+
+  any_json:
+    oneOf:
+    - type: array
+    - type: object
+    - type: number
+    - type: string
+    - type: boolean
+
+  included_file:
+    type: object
+    additionalProperties: false
+
+    required:
+    - name
+
+    properties:
+      name:
+        type: string
+        description: Name for this included file
+
+      description:
+        type: string
+        description: Extra description for included file
+
+      variables:
+        type: object
+        description: Variables to use in tests
+
+      stages:
+        type: array
+        description: Stages to reference from tests
+
+        items:
+          $ref: "#/definitions/stage"
+
+  http_request:
+    type: object
+    additionalProperties: false
+    description: HTTP request to perform as part of stage
+
+    required:
+    - url
+
+    properties:
+      url:
+        type: string
+        description: URL to make request to
+
+      cert:
+        description: Certificate to use - either a path to a certificate and key in one file, or a two item list containing the certificate and key separately
+        oneOf:
+        - type: string
+        - type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: string
+
+      auth:
+        description: Authorisation to use for request - a list containing username and password
+        type: array
+        minItems: 2
+        maxItems: 2
+        items:
+          type: string
+
+      verify:
+        description: Whether to verify the server's certificates
+        oneOf:
+        - type: boolean
+          default: false
+        - type: string
+
+      method:
+        type: string
+        description: HTTP method to use for request
+        default: GET
+        enum:
+        - GET
+        - PUT
+        - POST
+        - DELETE
+        - PATCH
+        - OPTIONS
+        - HEAD
+
+      follow_redirects:
+        type: boolean
+        description: Whether to follow redirects from 3xx responses
+        default: false
+
+      stream:
+        type: boolean
+        description: Whether to stream the download from the request
+        default: false
+
+      cookies:
+        type: array
+        description: Which cookies to use in the request
+
+        items:
+          oneOf:
+          - type: string
+          - type: object
+
+      json:
+        description: JSON body to send in request body
+        $ref: "#/definitions/any_json"
+
+      params:
+        description: Query parameters
+        type: object
+
+      headers:
+        description: Headers for request
+        type: object
+
+      data:
+        description: Form data to send in request
+        oneOf:
+        - type: object
+        - type: string
+
+      timeout:
+        description: How long to wait for requests to time out
+        oneOf:
+        - type: number
+        - type: array
+          minItems: 2
+          maxItems: 2
+          items:
+            type: number
+
+      file_body:
+        type: string
+        description: Path to a file to upload as the request body
+
+      files:
+        type: object
+        description: Files to send as part of the request
+
+      clear_session_cookies:
+        description: Whether to clear sesion cookies before running this request
+        type: boolean
+
+  mqtt_publish:
+    type: object
+    description: Publish MQTT message
+    additionalProperties: false
+
+    properties:
+      topic:
+        type: string
+        description: Topic to publish on
+
+      payload:
+        type: string
+        description: Raw payload to post
+
+      json:
+        description: JSON payload to post
+        $ref: "#/definitions/any_json"
+
+      qos:
+        type: integer
+        description: QoS level to use for request
+        default: 0
+
+      retain:
+        type: boolean
+        description: Whether the message should be retained
+        default: false
+
+  mqtt_response:
+    type: object
+    additionalProperties: false
+    description: Expected MQTT response
+
+    properties:
+      topic:
+        type: string
+        description: Topic message should be received on
+
+      payload:
+        description: Expected raw payload in response
+        oneOf:
+        - type: number
+        - type: integer
+        - type: string
+        - type: boolean
+
+      json:
+        description: Expected JSON payload in response
+        $ref: "#/definitions/any_json"
+
+      timeout:
+        type: number
+        description: How long to wait for response to arrive
+
+      qos:
+        type: integer
+        description: QoS level that message should be received on
+        minimum: 0
+        maximum: 2
+
+      verify_response_with:
+        oneOf:
+        - $ref: "#/definitions/verify_block"
+        - type: array
+          items:
+            $ref: "#/definitions/verify_block"
+
+  http_response:
+    type: object
+    additionalProperties: false
+    description: Expected HTTP response
+
+    properties:
+      strict:
+        $ref: "#/definitions/strict_block"
+
+      status_code:
+        description: Status code(s) to match
+        oneOf:
+        - type: integer
+        - type: array
+          minItems: 1
+          items:
+            type: integer
+
+      cookies:
+        type: array
+        description: Cookies expected to be returned
+        uniqueItems: true
+        minItems: 1
+
+        items:
+          type: string
+
+      json:
+        description: Expected JSON response
+        $ref: "#/definitions/any_json"
+
+      verify_response_with:
+        oneOf:
+        - $ref: "#/definitions/verify_block"
+        - type: array
+          items:
+            $ref: "#/definitions/verify_block"
+
+      headers:
+        description: Headers expected in response
+        type: object
+
+      save:
+        type: object
+        description: Which objects to save from the response
+
+  stage_ref:
+    type: object
+    description: Reference to another stage from an included config file
+    additionalProperties: false
+
+    required:
+    - type
+    - id
+
+    properties:
+      type:
+        type: string
+        pattern: ^ref$
+
+      id:
+        type: string
+
+  stage:
+    type: object
+    description: One stage in a test
+    additionalProperties: false
+    required:
+    - name
+
+    properties:
+      id:
+        type: string
+        description: ID of stage for use in stage references
+
+      max_retries:
+        type: integer
+        description: Number of times to retry this request
+        default: 0
+
+      skip:
+        type: boolean
+        description: Whether to skip this stage
+        default: false
+
+      only:
+        type: boolean
+        description: Only run this stage
+        default: false
+
+      delay_before:
+        type: number
+        description: How long to delay before running stage
+
+      delay_after:
+        type: number
+        description: How long to delay after running stage
+
+      name:
+        type: string
+        description: Name of this stage
+
+      mqtt_publish:
+        $ref: "#/definitions/mqtt_publish"
+
+      mqtt_response:
+        oneOf:
+        - $ref: "#/definitions/mqtt_response"
+        - type: array
+          items:
+            $ref: "#/definitions/mqtt_response"
+
+
+      request:
+        $ref: "#/definitions/http_request"
+
+      response:
+        $ref: "#/definitions/http_response"
+
+###
+
+type: object
+additionalProperties: false
+required:
+- test_name
+- stages
+
+properties:
+  test_name:
+    type: string
+    description: Name of test
+
+  _xfail:
+    type: string
+    enum:
+    - verify
+    - run
+
+  marks:
+    type: array
+    description: Pytest marks to use on test
+    items:
+      anyOf:
+      - type: string
+      - type: object
+        additionalProperties: false
+        properties:
+          filterwarnings:
+            type: string
+
+          skipif:
+            type: string
+
+          usefixtures:
+            type: array
+            items:
+              type: string
+
+          parametrize:
+            type: object
+            required:
+            - key
+            - vals
+
+
+  strict:
+    $ref: "#/definitions/strict_block"
+
+  includes:
+    type: array
+    minItems: 1
+    items:
+      $ref: "#/definitions/included_file"
+
+  stages:
+    type: array
+    description: Stages in test
+    minItems: 1
+
+    items:
+      oneOf:
+      - $ref: "#/definitions/stage"
+      - $ref: "#/definitions/stage_ref"
