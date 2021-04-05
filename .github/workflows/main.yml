@@ -69,7 +69,7 @@ jobs:
         cache-name: cache-${{ matrix.TOXENV }}
       with:
         path: .tox
-        key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('tox.ini', 'tox-integration.ini', 'setup.cfg', 'setup.py') }}
+        key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('tox.ini', 'tox-integration.ini', 'requirements.txt', 'setup.cfg', 'setup.py') }}
 
     - uses: actions/cache@v2
       with:
