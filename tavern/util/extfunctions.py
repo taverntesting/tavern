@@ -114,14 +114,17 @@ def get_wrapped_create_function(ext):
     return inner
 
 
-def update_from_ext(request_args, keys_to_check):
+def update_from_ext(request_args, keys_to_check, test_block_config):
     """
     Updates the request_args dict with any values from external functions
 
     Args:
         request_args (dict): dictionary of request args
         keys_to_check (list): list of keys in request to possibly update from
+        test_block_config (dict): whether to merge or replace values
     """
+
+    merge_ext_values = test_block_config.merge_ext_values
 
     new_args = {}
 

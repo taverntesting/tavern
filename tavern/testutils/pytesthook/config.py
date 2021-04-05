@@ -1,5 +1,6 @@
-import attr
 import copy
+
+import attr
 
 from tavern.util.strict_util import _StrictSetting
 
@@ -33,3 +34,6 @@ class TestConfig:
 
     def copy(self):
         return copy.copy(self)
+
+    def with_strictness(self, new_strict):
+        return attr.evolve(self, strict=new_strict)

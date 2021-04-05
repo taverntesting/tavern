@@ -168,7 +168,9 @@ def run_test(in_file, test_spec, global_cfg):
             if has_only and not getonly(stage):
                 continue
 
-            test_block_config.strict = default_global_stricness
+            test_block_config = test_block_config.with_strictness(
+                default_global_stricness
+            )
             _calculate_stage_strictness(stage, test_block_config, test_spec)
 
             # Wrap run_stage with retry helper
@@ -244,7 +246,7 @@ def _calculate_stage_strictness(stage, test_block_config, test_spec):
         else:
             strict_level = StrictLevel.from_options(stage_options)
 
-        test_block_config.strict = strict_level
+        test_block_config = test_block_config.with_strictness(strict_level)
     else:
         logger.debug("Global default strictness used for this stage")
 
