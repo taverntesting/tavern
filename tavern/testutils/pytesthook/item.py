@@ -1,7 +1,6 @@
 import copy
 import logging
 
-from _pytest import fixtures
 import attr
 import pytest
 
@@ -54,7 +53,7 @@ class YamlItem(pytest.Item):
         )
         self._fixtureinfo = fixtureinfo
         self.fixturenames = fixtureinfo.names_closure
-        self._request = fixtures.FixtureRequest(self)
+        self._request = pytest.FixtureRequest(self, _ispytest=True)
 
     #     Hack to stop issue with pytest-rerunfailures
     _initrequest = initialise_fixture_attrs
