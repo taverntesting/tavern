@@ -6,7 +6,6 @@ on:
     - ".*"
     branches:
     - master
-    - feature-2.0
   pull_request:
     branches:
     - master
