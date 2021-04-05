@@ -165,11 +165,7 @@ class YamlItem(pytest.Item):
         # Do a deep copy because this sometimes still retains things from previous tests(?)
         self.global_cfg = copy.deepcopy(load_global_cfg(self.config))
 
-        self.global_cfg.setdefault("variables", {})
-
         load_plugins(self.global_cfg)
-
-        self.global_cfg["tavern_internal"] = {"pytest_hook_caller": self.config.hook}
 
         # INTERNAL
         # NOTE - now that we can 'mark' tests, we could use pytest.mark.xfail
@@ -179,13 +175,13 @@ class YamlItem(pytest.Item):
 
         try:
             fixture_values = self._load_fixture_values()
-            self.global_cfg["variables"].update(fixture_values)
+            self.global_cfg.variables.update(fixture_values)
 
             call_hook(
                 self.global_cfg,
                 "pytest_tavern_beta_before_every_test_run",
                 test_dict=self.spec,
-                variables=self.global_cfg["variables"],
+                variables=self.global_cfg.variables,
             )
 
             verify_tests(self.spec)

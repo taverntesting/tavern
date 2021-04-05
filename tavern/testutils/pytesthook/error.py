@@ -34,7 +34,7 @@ class ReprdError(object):
         """
         try:
             # pylint: disable=protected-access
-            keys = self.exce._excinfo[1].test_block_config["variables"]
+            keys = self.exce._excinfo[1].test_block_config.variables
         except AttributeError:
             logger.warning("Unable to read stage variables - error output may be wrong")
             keys = self.item.global_cfg

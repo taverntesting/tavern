@@ -79,7 +79,7 @@ def get_request_args(rspec, test_block_config):
                 i: j for i, j in headers.items() if i.lower() != "content-type"
             }
 
-    fspec = format_keys(rspec, test_block_config["variables"])
+    fspec = format_keys(rspec, test_block_config.variables)
 
     send_in_body = fspec.get("file_body")
     if send_in_body:
@@ -220,7 +220,7 @@ def _read_expected_cookies(session, rspec, test_block_config):
     # it depends on the state of the session
     existing_cookies = session.cookies.get_dict()
     cookies_to_use = format_keys(
-        rspec.get("cookies", None), test_block_config["variables"]
+        rspec.get("cookies", None), test_block_config.variables
     )
 
     if cookies_to_use is None:
