@@ -171,7 +171,9 @@ def run_test(in_file, test_spec, global_cfg):
             test_block_config = test_block_config.with_strictness(
                 default_global_stricness
             )
-            _calculate_stage_strictness(stage, test_block_config, test_spec)
+            test_block_config = test_block_config.with_strictness(
+                _calculate_stage_strictness(stage, test_block_config, test_spec)
+            )
 
             # Wrap run_stage with retry helper
             run_stage_with_retries = retry(stage, test_block_config)(run_stage)
@@ -202,6 +204,7 @@ def _calculate_stage_strictness(stage, test_block_config, test_spec):
     Priority is global (see pytest util file) <= test <= stage
     """
     stage_options = None
+    new_strict = test_block_config.strict
 
     if test_spec.get("strict", None) is not None:
         stage_options = test_spec["strict"]
@@ -240,17 +243,17 @@ def _calculate_stage_strictness(stage, test_block_config, test_spec):
 
     if stage_options is not None:
         if stage_options is True:
-            strict_level = StrictLevel.all_on()
+            new_strict = StrictLevel.all_on()
         elif stage_options is False:
-            strict_level = StrictLevel.all_off()
+            new_strict = StrictLevel.all_off()
         else:
-            strict_level = StrictLevel.from_options(stage_options)
-
-        test_block_config = test_block_config.with_strictness(strict_level)
+            new_strict = StrictLevel.from_options(stage_options)
     else:
         logger.debug("Global default strictness used for this stage")
 
     logger.debug("Strict key checking for this stage is '%s'", test_block_config.strict)
+
+    return new_strict
 
 
 def run_stage(sessions, stage, test_block_config):
