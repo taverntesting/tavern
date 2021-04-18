@@ -127,3 +127,7 @@ class InvalidRetryException(TavernException):
 
 class RegexAccessError(TavernException):
     """Error accessing a key via regex"""
+
+
+class DuplicateStrictError(TavernException):
+    """Tried to set stage strictness for multiple responses"""

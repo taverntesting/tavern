@@ -91,7 +91,7 @@ def _handle_tls_args(tls_args):
     return tls_args
 
 
-class MQTTClient(object):
+class MQTTClient:
     # pylint: disable=too-many-instance-attributes
 
     def __init__(self, **kwargs):
