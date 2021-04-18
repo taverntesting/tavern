@@ -383,7 +383,7 @@ class RawStrToken(TypeConvertToken):
 class ForceIncludeToken(TypeConvertToken):
     """Magic tag that changes the way string formatting works"""
 
-    yaml_tag = "!force_format_include"
+    yaml_tag = "!force_original_structure"
 
     @staticmethod
     def constructor(_):
