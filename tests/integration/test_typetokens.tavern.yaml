@@ -582,10 +582,10 @@ stages:
     request:
       url: "{host}/echo"
       method: POST
-      json: !force_format_include "{whole_body}"
+      json: !force_original_structure "{whole_body}"
     response:
       status_code: 200
-      json: !force_format_include "{tavern.request_vars.json}"
+      json: !force_original_structure "{tavern.request_vars.json}"
 
 ---
 
@@ -609,7 +609,7 @@ stages:
     request:
       url: "{host}/echo"
       method: POST
-      json: !force_format_include "{whole_list_body}"
+      json: !force_original_structure "{whole_list_body}"
     response:
       status_code: 200
       json:
