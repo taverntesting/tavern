@@ -23,7 +23,7 @@ def create_bearer_token():
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
     }
 
-    token = jwt.encode(payload, SECRET, algorithm="HS256").decode("utf8")
+    token = jwt.encode(payload, SECRET, algorithm="HS256")
 
     return {
         "Authorization": "Bearer {}".format(token)
