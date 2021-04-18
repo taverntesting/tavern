@@ -5,6 +5,7 @@ significantly if/when a proper plugin system is implemented!
 """
 import logging
 
+import attr
 import stevedore
 
 from tavern.util.dict_util import format_keys
@@ -59,7 +60,7 @@ def is_valid_reqresp_plugin(ext):
     return all(hasattr(ext.plugin, i) for i in required)
 
 
-class _PluginCache(object):
+class _PluginCache:
     # pylint: disable=inconsistent-return-statements
 
     def __init__(self):
@@ -215,6 +216,48 @@ def get_request_type(stage, test_block_config, sessions):
     return request_maker
 
 
+class ResponseVerifier(dict):
+    plugin_name = attr.ib(type=str)
+
+
+def _foreach_response(stage, test_block_config, action):
+    """Do something for each response
+
+    Args:
+        stage (dict): Stage of test
+        test_block_config (dict): Config for test
+        action ((p: {plugin, name}, response_block: dict) -> Any): function that takes (plugin, response block)
+
+    Returns:
+        dict: mapping of plugin name: list of expected (normally length 1)
+    """
+
+    plugins = load_plugins(test_block_config)
+
+    retvals = {}
+
+    for p in plugins:
+        response_block = stage.get(p.plugin.response_block_name)
+        if response_block is not None:
+            plugin_values = []
+
+            if isinstance(response_block, dict):
+                response_block = [response_block]
+
+            for idx, r in enumerate(response_block):
+                value = action(p, r, idx)
+
+                if value is not None:
+                    if isinstance(value, list):
+                        plugin_values.extend(value)
+                    else:
+                        plugin_values.append(value)
+
+            retvals[p.name] = plugin_values
+
+    return retvals
+
+
 def get_expected(stage, test_block_config, sessions):
     """Get expected responses for each type of request
 
@@ -233,19 +276,18 @@ def get_expected(stage, test_block_config, sessions):
         dict: mapping of request type: expected response dict
     """
 
-    plugins = load_plugins(test_block_config)
+    def action(p, response_block, _):
+        plugin_expected = p.plugin.get_expected_from_request(
+            response_block, test_block_config, sessions[p.name]
+        )
+        if plugin_expected:
+            plugin_expected = ResponseVerifier(**plugin_expected)
+            plugin_expected.plugin_name = p.name
+            return plugin_expected
+        else:
+            return None
 
-    expected = {}
-
-    for p in plugins:
-        if p.plugin.response_block_name in stage:
-            logger.debug("Getting expected response for %s", p.name)
-            plugin_expected = p.plugin.get_expected_from_request(
-                stage, test_block_config, sessions[p.name]
-            )
-            expected[p.name] = plugin_expected
-
-    return expected
+    return _foreach_response(stage, test_block_config, action)
 
 
 def get_verifiers(stage, test_block_config, sessions, expected):
@@ -261,19 +303,21 @@ def get_verifiers(stage, test_block_config, sessions, expected):
         BaseResponse: response validator object with a verify(response) method
     """
 
-    plugins = load_plugins(test_block_config)
+    def action(p, response_block, idx):  # pylint: disable=unused-argument
+        session = sessions[p.name]
+        logger.debug(
+            "Initialising verifier for %s (%s)", p.name, p.plugin.verifier_type
+        )
+        verifiers = []
 
-    verifiers = []
+        plugin_expected = expected[p.name]
+        this_expected = plugin_expected[idx]
 
-    for p in plugins:
-        if p.plugin.response_block_name in stage:
-            session = sessions[p.name]
-            logger.debug(
-                "Initialising verifier for %s (%s)", p.name, p.plugin.verifier_type
-            )
-            verifier = p.plugin.verifier_type(
-                session, stage["name"], expected[p.name], test_block_config
-            )
-            verifiers.append(verifier)
+        verifier = p.plugin.verifier_type(
+            session, stage["name"], this_expected, test_block_config
+        )
+        verifiers.append(verifier)
 
-    return verifiers
+        return verifiers
+
+    return _foreach_response(stage, test_block_config, action)
