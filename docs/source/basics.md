@@ -415,6 +415,7 @@ This can be used as so:
   request:
     url: http://server.com/login
     headers:
+      x-my-header: abc123
       $ext:
         function: utils:generate_bearer_token
     json:
