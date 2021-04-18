@@ -365,7 +365,9 @@ def validate_file_spec(value, rule_obj, path):
 
     if not isinstance(value, dict):
         raise BadSchemaError(
-            "File specification must be a mapping of file names to file specs"
+            "File specification must be a mapping of file names to file specs, got {}".format(
+                value
+            )
         )
 
     for _, filespec in value.items():

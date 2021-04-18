@@ -357,7 +357,7 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
-  - name: Test checking for lights status with anyint
+  - name: Test checking for lights status with anything with json
     mqtt_publish:
       topic: /device/123/status
     mqtt_response:
@@ -377,7 +377,7 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
-  - name: Test checking for lights status with anyint
+  - name: Test checking for lights status with anything with payload
     mqtt_publish:
       topic: /device/123/status
     mqtt_response:
@@ -432,3 +432,26 @@ stages:
       topic: /device/123/pong
       timeout: 5
       qos: 1
+
+---
+
+test_name: Test get both statuses
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /devices/status
+    mqtt_response:
+      - topic: /device/123/status/response
+        payload: !anything
+        timeout: 3
+        qos: 1
+      - topic: /device/456/status/response
+        payload: !anything
+        timeout: 3
+        qos: 1

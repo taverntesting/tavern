@@ -3,7 +3,7 @@
 
 # tests
 tox
-flask
+flask~=1.1.2
 
 # Useful for development
 bump2version
@@ -11,3 +11,18 @@ pre-commit
 pygments
 twine
 wheel
+
+pytest~=6.2.2
+paho-mqtt~=1.5.1
+requests~=2.25.1
+PyYAML~=5.4.1
+py~=1.10.0
+Faker~=5.8.0
+jmespath~=0.10.0
+attrs~=20.3.0
+jsonschema~=3.2.0
+pykwalify~=1.7.0
+PyJWT~=1.7.1
+stevedore~=3.3.0
+itsdangerous~=1.1.0
+setuptools~=51.1.2
