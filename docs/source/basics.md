@@ -407,6 +407,7 @@ This can be used as so:
   request:
     url: http://server.com/login
     headers:
+      x-my-header: abc123
       $ext:
         function: utils:generate_bearer_token
     json:
@@ -416,28 +417,8 @@ This can be used as so:
     status_code: 200
 ```
 
-By default, using the `$ext` key will replace anything already present in that block.
-Input from external functions can be merged into a request instead by specifying the
-`tavern-merge-ext-function-values` option in your pytest.ini or on the command line:
-
-```python
-# ext_functions.py
-
-def return_hello():
-    return {"hello": "there"}
-```
-```yaml
-    request:
-      url: "{host}/echo"
-      method: POST
-      json:
-        goodbye: "now"
-        $ext:
-          function: ext_functions:return_hello
-```
-
-If `tavern-merge-ext-function-values` is set, this will send "hello" and "goodbye" in 
-the request. If not, it will just sent "hello". 
+Using the `$ext` key will merge the result of the function with anything already present in that block.
+In the above example, this means that the `x-my-header` header will still be sent. 
 
 #### Saving data from a response
 
