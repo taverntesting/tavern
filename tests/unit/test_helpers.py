@@ -240,6 +240,7 @@ class TestContent:
             validate_content(nested_response, comparisons)
 
 
+@pytest.mark.xfail
 class TestPykwalifyExtension:
     def test_validate_schema_correct(self, nested_response):
         correct_schema = dedent(
