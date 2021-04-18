@@ -56,12 +56,6 @@ def add_parser_options(parser_addoption, with_defaults=True):
         action="store",
         nargs=1,
     )
-    parser_addoption(
-        "--tavern-merge-ext-function-values",
-        help="Merge values from external functions in http requests",
-        default=False,
-        action="store_true",
-    )
 
 
 def add_ini_options(parser):
@@ -105,12 +99,6 @@ def add_ini_options(parser):
         default=r".+\.tavern\.ya?ml$",
         type="args",
     )
-    parser.addini(
-        "tavern-merge-ext-function-values",
-        help="Merge values from external functions in http requests",
-        default=False,
-        type="bool",
-    )
 
 
 @lru_cache()
@@ -148,7 +136,6 @@ def load_global_cfg(pytest_config):
     global_cfg["strict"] = _load_global_strictness(pytest_config)
     global_cfg["follow_redirects"] = _load_global_follow_redirects(pytest_config)
     global_cfg["backends"] = _load_global_backends(pytest_config)
-    global_cfg["merge_ext_values"] = _load_global_merge_ext(pytest_config)
 
     logger.debug("Global config: %s", global_cfg)
 
@@ -179,11 +166,6 @@ def _load_global_strictness(pytest_config):
 def _load_global_follow_redirects(pytest_config):
     """Load the global 'follow redirects' setting"""
     return get_option_generic(pytest_config, "tavern-always-follow-redirects", False)
-
-
-def _load_global_merge_ext(pytest_config):
-    """Load the global setting about whether external values should be merged or not"""
-    return get_option_generic(pytest_config, "tavern-merge-ext-function-values", True)
 
 
 def get_option_generic(pytest_config, flag, default):
