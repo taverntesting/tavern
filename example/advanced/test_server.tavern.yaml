@@ -23,6 +23,7 @@ stages:
         extra_kwargs:
           jwt_key: "token"
           key: CGQgaG7GYvTcpaQZqosLy4
+          algorithms: "HS256"
           options:
             verify_signature: true
             verify_aud: true
