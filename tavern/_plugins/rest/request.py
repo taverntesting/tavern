@@ -451,14 +451,8 @@ class RestRequest(BaseRequest):
                 spec. Only valid keyword args to requests can be passed
         """
 
-        if "meta" in rspec:
-            meta = rspec.pop("meta")
-            if meta and "clear_session_cookies" in meta:
-                warnings.warn(
-                    "The 'clear_session_cookies' key will move directly into the 'request' block in Tavern 2.0",
-                    FutureWarning,
-                )
-                session.cookies.clear_session_cookies()
+        if rspec.pop("clear_session_cookies", False):
+            session.cookies.clear_session_cookies()
 
         expected = {
             "method",
