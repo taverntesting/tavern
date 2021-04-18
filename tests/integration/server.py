@@ -1,16 +1,20 @@
 import base64
+from datetime import datetime, timedelta
+from hashlib import sha512
 import itertools
 import json
+import math
 import mimetypes
 import os
 import time
 from urllib.parse import unquote_plus
 import uuid
 
-from flask import Flask, Response, jsonify, redirect, request
-import math
+from flask import Flask, Response, jsonify, make_response, redirect, request, session
+from itsdangerous import URLSafeTimedSerializer
 
 app = Flask(__name__)
+app.config.update(SECRET_KEY="secret")
 
 
 @app.route("/token", methods=["GET"])
@@ -315,3 +319,55 @@ def return_with_dot():
 @app.route("/uuid/v4", methods=["GET"])
 def get_uuid_v4():
     return jsonify({"uuid": uuid.uuid4()}), 200
+
+
+users = {"mark": {"password": "password", "regular": "foo", "protected": "bar"}}
+
+serializer = URLSafeTimedSerializer(
+    secret_key="secret",
+    salt="cookie",
+    signer_kwargs=dict(key_derivation="hmac", digest_method=sha512),
+)
+
+
+@app.route("/withsession/login", methods=["POST"])
+def login():
+    r = request.get_json()
+    username = r["username"]
+    password = r["password"]
+
+    if password == users[username]["password"]:
+        session["user"] = username
+        response = make_response("", 200)
+        response.set_cookie(
+            "remember",
+            value=serializer.dumps(username),
+            expires=datetime.utcnow() + timedelta(days=30),
+            httponly=True,
+        )
+        return response
+
+    return "", 401
+
+
+@app.route("/withsession/regular", methods=["GET"])
+def regular():
+    username = session.get("user")
+
+    if not username:
+        remember = request.cookies.get("remember")
+        if remember:
+            username = serializer.loads(remember, max_age=3600)
+
+    if username:
+        return jsonify(regular=users[username]["regular"]), 200
+
+    return "", 401
+
+
+@app.route("/withsession/protected", methods=["GET"])
+def protected():
+    username = session.get("user")
+    if username:
+        return jsonify(protected=users[username]["protected"]), 200
+    return "", 401

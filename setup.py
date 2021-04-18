@@ -9,6 +9,7 @@ TESTS_REQUIRE = [
     "flake8",
     "pygments",
     "pylint==2.6.0",
+    "itsdangerous",
     "black",
     "mypy",
     "mypy-extensions",
