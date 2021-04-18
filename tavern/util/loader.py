@@ -81,11 +81,11 @@ class SourceMappingConstructor(SafeConstructor):
 
 
 SourceMappingConstructor.add_constructor(
-    u"tag:yaml.org,2002:map", SourceMappingConstructor.construct_yaml_map
+    "tag:yaml.org,2002:map", SourceMappingConstructor.construct_yaml_map
 )
 
 SourceMappingConstructor.add_constructor(
-    u"tag:yaml.org,2002:seq", SourceMappingConstructor.construct_yaml_seq
+    "tag:yaml.org,2002:seq", SourceMappingConstructor.construct_yaml_seq
 )
 
 yaml.add_representer(dict_node, yaml.representer.SafeRepresenter.represent_dict)
