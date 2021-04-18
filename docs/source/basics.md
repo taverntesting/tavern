@@ -1580,7 +1580,7 @@ request:
 
 Sometimes there are situations where you need to directly include a block of
 JSON, such as a list, rather than just one value. To do this, there is a
-`!force_format_include` tag which will include whatever variable is being
+`!force_original_structure` tag which will include whatever variable is being
 referenced in the format block rather than coercing it to a string.
 
 For example, if we have an API that will return a list of users on a GET and
@@ -1612,7 +1612,7 @@ could be done by
       url: "{host}/users"
       method: DELETE
       # 'all_users' list will be sent in the request as a list, not a string
-      json: !force_format_include "{all_users}"
+      json: !force_original_structure "{all_users}"
     response:
       status_code: 204
 
