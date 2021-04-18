@@ -1,6 +1,5 @@
 import contextlib
 import copy
-import functools
 import logging
 import os
 import tempfile
@@ -10,15 +9,16 @@ from pykwalify import core
 import yaml
 
 from tavern.plugins import load_plugins
+from tavern.schemas.jsonschema import verify_jsonschema
 from tavern.util.exceptions import BadSchemaError
-from tavern.util.loader import IncludeLoader, load_single_document_yaml
+from tavern.util.loader import load_single_document_yaml
 
-core.yml.safe_load = functools.partial(yaml.load, Loader=IncludeLoader)
+# core.yml.safe_load = functools.partial(yaml.load, Loader=IncludeLoader)
 
 logger = logging.getLogger(__name__)
 
 
-class SchemaCache(object):
+class SchemaCache:
     """Caches loaded schemas"""
 
     def __init__(self):
@@ -52,8 +52,8 @@ class SchemaCache(object):
                     # Don't require a schema
                     logger.debug("No schema defined for %s", p.name)
                 else:
-                    base_schema["mapping"].update(
-                        plugin_schema.get("initialisation", {})
+                    base_schema["properties"].update(
+                        plugin_schema.get("properties", {})
                     )
 
             self._loaded[mangled] = base_schema
@@ -81,13 +81,11 @@ class SchemaCache(object):
 load_schema_file = SchemaCache()
 
 
-def verify_generic(to_verify, schema):
-    """Verify a generic file against a given schema
-
+def verify_pykwalify(to_verify, schema):
+    """Verify a generic file against a given pykwalify schema
     Args:
         to_verify (dict): Filename of source tests to check
         schema (dict): Schema to verify against
-
     Raises:
         BadSchemaError: Schema did not match
     """
@@ -146,7 +144,7 @@ def verify_tests(test_spec, with_plugins=True):
     """
     here = os.path.dirname(os.path.abspath(__file__))
 
-    schema_filename = os.path.join(here, "tests.schema.yaml")
+    schema_filename = os.path.join(here, "tests.jsonschema.yaml")
     schema = load_schema_file(schema_filename, with_plugins)
 
-    verify_generic(test_spec, schema)
+    verify_jsonschema(test_spec, schema)
