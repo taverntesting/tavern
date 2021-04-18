@@ -303,8 +303,7 @@ class TestRequestArgs(object):
 
 
 class TestExtFunctions:
-    @pytest.mark.parametrize("merge_values", (True, False, None))
-    def test_get_from_function(self, req, merge_values):
+    def test_get_from_function(self, req):
         """Make sure ext functions work in request
 
         This is a bit of a silly example because we're passing a dictionary
@@ -319,12 +318,9 @@ class TestExtFunctions:
             **original_json,
         }
 
-        update_from_ext(req, ["json"], {"merge_ext_values": merge_values})
+        update_from_ext(req, ["json"])
 
-        if merge_values:
-            assert req["json"] == dict(**to_copy, **original_json)
-        else:
-            assert req["json"] == to_copy
+        assert req["json"] == dict(**to_copy, **original_json)
 
 
 class TestOptionalDefaults:
