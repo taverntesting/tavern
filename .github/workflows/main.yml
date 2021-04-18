@@ -71,8 +71,7 @@ jobs:
         path: .tox
         key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('tox.ini', 'tox-integration.ini', 'requirements.txt', 'setup.cfg', 'setup.py') }}
         restore-keys: |
-          ${{ runner.os }}-tox-${{ env.cache-name }}-
-          ${{ runner.os }}-tox-
+          ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('tox.ini', 'tox-integration.ini', 'requirements.txt', 'setup.cfg', 'setup.py') }}
 
     - uses: actions/cache@v2
       with:
