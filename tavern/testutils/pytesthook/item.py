@@ -55,6 +55,13 @@ class YamlItem(pytest.Item):
         self.fixturenames = fixtureinfo.names_closure
         self._request = pytest.FixtureRequest(self, _ispytest=True)
 
+    @property
+    def location(self):  # pylint: disable=invalid-overridden-method
+        """get location in file"""
+        location = super().location
+        location = (location[0], self.spec.start_mark.line, location[2])
+        return location
+
     #     Hack to stop issue with pytest-rerunfailures
     _initrequest = initialise_fixture_attrs
 
