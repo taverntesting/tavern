@@ -7,7 +7,7 @@ from box import Box
 import jmespath
 import jwt
 
-from tavern.schemas.files import verify_generic
+from tavern.schemas.files import verify_pykwalify
 from tavern.testutils.jmesutils import actual_validation, validate_comparison
 from tavern.util import exceptions
 from tavern.util.dict_util import check_keys_match_recursive, recurse_access_key
@@ -95,7 +95,7 @@ def validate_pykwalify(response, schema):
         ) from e
 
     else:
-        verify_generic(to_verify, schema)
+        verify_pykwalify(to_verify, schema)
 
 
 def validate_regex(response, expression, *, header=None, in_jmespath=None):

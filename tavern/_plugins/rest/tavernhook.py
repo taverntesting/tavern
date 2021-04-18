@@ -3,9 +3,9 @@ import logging
 import requests
 
 from tavern.plugins import PluginHelperBase
-from tavern.util import exceptions
 from tavern.util.dict_util import format_keys
 
+from ...util import exceptions
 from .request import RestRequest
 from .response import RestResponse
 
@@ -19,15 +19,15 @@ class TavernRestPlugin(PluginHelperBase):
     request_block_name = "request"
 
     @staticmethod
-    def get_expected_from_request(stage, test_block_config, session):
-        # pylint: disable=unused-argument
-        try:
-            r_expected = stage["response"]
-        except KeyError as e:
-            logger.error("Need a 'response' block if a 'request' is being sent")
-            raise exceptions.MissingSettingsError from e
+    def get_expected_from_request(
+        response_block, test_block_config, session
+    ):  # pylint: disable=unused-argument
+        if response_block is None:
+            raise exceptions.MissingSettingsError(
+                "no response block specified for HTTP test stage"
+            )
 
-        f_expected = format_keys(r_expected, test_block_config["variables"])
+        f_expected = format_keys(response_block, test_block_config["variables"])
         return f_expected
 
     verifier_type = RestResponse
