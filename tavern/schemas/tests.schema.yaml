@@ -205,12 +205,10 @@ schema;stage:
           func: validate_verify_bool_or_str
           required: false
 
-        meta:
-          type: seq
+        clear_session_cookies:
+          type: any
+          func: bool_variable
           required: false
-          sequence:
-            - type: str
-              unique: true
 
     response:
       type: map
