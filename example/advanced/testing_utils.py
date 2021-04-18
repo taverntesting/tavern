@@ -11,6 +11,7 @@ def assert_quick_response(response):
     """
     assert response.elapsed < datetime.timedelta(seconds=0.1)
 
+
 def create_bearer_token():
     # Authorization: "bearer {test_login_token:s}"
 
@@ -25,6 +26,4 @@ def create_bearer_token():
 
     token = jwt.encode(payload, SECRET, algorithm="HS256").decode("utf8")
 
-    return {
-        "Authorization": "Bearer {}".format(token)
-    }
+    return {"Authorization": "Bearer {}".format(token)}
