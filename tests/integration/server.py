@@ -1,17 +1,21 @@
 import base64
+from datetime import datetime, timedelta
 import gzip
+from hashlib import sha512
 import json
 import mimetypes
 import os
 from urllib.parse import unquote_plus
 import uuid
 
-from flask import Flask, Response, jsonify, redirect, request
+from flask import Flask, Response, jsonify, make_response, redirect, request, session
 import itertools
+from itsdangerous import URLSafeTimedSerializer
 import math
 import time
 
 app = Flask(__name__)
+app.config.update(SECRET_KEY="secret")
 
 
 @app.route("/token", methods=["GET"])
@@ -362,6 +366,58 @@ def get_uuid_v4():
 @app.route("/707-regression", methods=["GET"])
 def get_707():
     return jsonify({"a": 1, "b": {"first": 10, "second": 20}, "c": 2})
+
+
+users = {"mark": {"password": "password", "regular": "foo", "protected": "bar"}}
+
+serializer = URLSafeTimedSerializer(
+    secret_key="secret",
+    salt="cookie",
+    signer_kwargs=dict(key_derivation="hmac", digest_method=sha512),
+)
+
+
+@app.route("/withsession/login", methods=["POST"])
+def login():
+    r = request.get_json()
+    username = r["username"]
+    password = r["password"]
+
+    if password == users[username]["password"]:
+        session["user"] = username
+        response = make_response("", 200)
+        response.set_cookie(
+            "remember",
+            value=serializer.dumps(username),
+            expires=datetime.utcnow() + timedelta(days=30),
+            httponly=True,
+        )
+        return response
+
+    return "", 401
+
+
+@app.route("/withsession/regular", methods=["GET"])
+def regular():
+    username = session.get("user")
+
+    if not username:
+        remember = request.cookies.get("remember")
+        if remember:
+            username = serializer.loads(remember, max_age=3600)
+
+    if username:
+        return jsonify(regular=users[username]["regular"]), 200
+
+    return "", 401
+
+
+@app.route("/withsession/protected", methods=["GET"])
+def protected():
+    username = session.get("user")
+    if username:
+        return jsonify(protected=users[username]["protected"]), 200
+    return "", 401
 
 
 @app.route("/606-regression-list", methods=["GET"])
