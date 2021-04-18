@@ -4,7 +4,7 @@ test_name: test after browser close
 stages:
   - name: login
     request:
-      url: http://localhost:5000/login
+      url: "{global_host}/withsession/login"
       method: POST
       json:
         username: mark
@@ -17,10 +17,19 @@ stages:
 
   - name: get regular
     request:
-      url: http://localhost:5000/regular
+      url: "{global_host}/withsession/protected"
       method: GET
-      meta:
-        - clear_session_cookies # Simulate browser close before request.
+      clear_session_cookies: False
+    response:
+      json:
+        protected: bar
+      status_code: 200
+
+  - name: get regular
+    request:
+      url: "{global_host}/withsession/regular"
+      method: GET
+      clear_session_cookies: True  # This flows through to the next stage as well
     response:
       json:
         regular: foo
@@ -28,7 +37,7 @@ stages:
 
   - name: get protected stale
     request:
-      url: http://localhost:5000/protected
+      url: "{global_host}/withsession/protected"
       method: GET
     response:
       status_code: 401
@@ -39,7 +48,7 @@ test_name: test without browser close
 stages:
   - name: login again
     request:
-      url: http://localhost:5000/login
+      url: "{global_host}/withsession/login"
       method: POST
       json:
         username: mark
@@ -52,7 +61,7 @@ stages:
 
   - name: get protected fresh
     request:
-      url: http://localhost:5000/protected
+      url: "{global_host}/withsession/protected"
       method: GET
     response:
       json:
@@ -65,7 +74,7 @@ test_name: test without login
 stages:
   - name: get regular
     request:
-      url: http://localhost:5000/regular
+      url: "{global_host}/withsession/regular"
       method: GET
     response:
       status_code: 401
