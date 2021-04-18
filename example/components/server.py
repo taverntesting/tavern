@@ -1,12 +1,10 @@
-import sqlite3
 import datetime
 import functools
-from flask import Flask, jsonify, request, g
+
+from flask import Flask, jsonify, request
 import jwt
 
-
 app = Flask(__name__)
-
 
 SECRET = "CGQgaG7GYvTcpaQZqosLy5"
 DATABASE = "/tmp/test_db"

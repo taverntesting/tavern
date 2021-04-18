@@ -105,9 +105,9 @@ schema;stage:
           func: int_variable
           required: false
           enum:
-            - 0
-            - 1
-            - 2
+          - 0
+          - 1
+          - 2
         verify_response_with:
           func: validate_extensions
           type: any
@@ -148,17 +148,17 @@ schema;stage:
           type: seq
           required: false
           sequence:
-            - type: str
+          - type: str
 
         cookies:
           type: seq
           required: false
           sequence:
-            - type: str
-            - type: map
-              mapping:
-                re;(.*):
-                  type: str
+          - type: str
+          - type: map
+            mapping:
+              re;(.*):
+                type: str
 
         json:
           include: any_json_with_ext
@@ -182,13 +182,13 @@ schema;stage:
         method:
           type: str
           enum:
-            - GET
-            - PUT
-            - POST
-            - DELETE
-            - PATCH
-            - OPTIONS
-            - HEAD
+          - GET
+          - PUT
+          - POST
+          - DELETE
+          - PATCH
+          - OPTIONS
+          - HEAD
 
         timeout:
           type: any
@@ -226,8 +226,8 @@ schema;stage:
           type: seq
           required: false
           sequence:
-            - type: str
-              unique: true
+          - type: str
+            unique: true
 
         re;(headers|redirect_query_params):
           include: any_map
@@ -267,52 +267,52 @@ mapping:
     type: seq
     matching: "any"
     sequence:
-      - type: str
-        # bug? in pykwalify - this doesn't work
-        # unique: true
-      - type: map
-        mapping:
-          filterwarnings:
-            type: str
+    - type: str
+      # bug? in pykwalify - this doesn't work
+      # unique: true
+    - type: map
+      mapping:
+        filterwarnings:
+          type: str
 
-          skipif:
-            type: str
+        skipif:
+          type: str
 
-          usefixtures:
-            type: seq
-            # Depending on what is actually given for usefixtures this function
-            # may or may not be called. I think this is a bug in pykwalify.
-            # See pytesthook.py
-            func: check_usefixtures
-            sequence:
+        usefixtures:
+          type: seq
+          # Depending on what is actually given for usefixtures this function
+          # may or may not be called. I think this is a bug in pykwalify.
+          # See pytesthook.py
+          func: check_usefixtures
+          sequence:
+          - type: str
+            required: true
+
+        parametrize:
+          type: map
+          func: check_parametrize_marks
+          mapping:
+            key:
+              type: any
+              required: true
+            vals:
+              type: seq
+              required: true
+              sequence:
               - type: str
-                required: true
-
-          parametrize:
-            type: map
-            func: check_parametrize_marks
-            mapping:
-              key:
-                type: any
-                required: true
-              vals:
-                type: seq
-                required: true
+              - type: int
+              - type: float
+              - type: seq
                 sequence:
-                  - type: str
-                  - type: int
-                  - type: float
-                  - type: seq
-                    sequence:
-                      - type: str
-                      - type: int
-                      - type: float
+                - type: str
+                - type: int
+                - type: float
 
   _xfail:
     type: str
     enum:
-      - verify
-      - run
+    - verify
+    - run
 
   strict:
     func: check_strict_key
@@ -322,33 +322,33 @@ mapping:
     required: false
     type: seq
     sequence:
-      - type: map
-        required: false
-        mapping:
-          name:
-            required: true
-            type: str
+    - type: map
+      required: false
+      mapping:
+        name:
+          required: true
+          type: str
 
-          description:
-            required: true
-            type: str
+        description:
+          required: true
+          type: str
 
-          variables:
-            type: map
-            required: false
-            mapping:
-              re;(.*):
-                type: any
+        variables:
+          type: map
+          required: false
+          mapping:
+            re;(.*):
+              type: any
 
-          stages:
-            type: seq
-            required: false
-            sequence:
-              - include: stage
+        stages:
+          type: seq
+          required: false
+          sequence:
+          - include: stage
 
   stages:
     type: seq
     required: true
     sequence:
-      - include: stage
-      - include: stage_ref
+    - include: stage
+    - include: stage_ref

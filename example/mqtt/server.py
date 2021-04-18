@@ -1,18 +1,15 @@
-import sqlite3
 import contextlib
-import os
 import logging
 import logging.config
-import yaml
-from flask import Flask, jsonify, request, g
+import os
+import sqlite3
 
-
+from flask import Flask, g, jsonify, request
 import paho.mqtt.client as paho
-
+import yaml
 
 app = Flask(__name__)
 application = app
-
 
 DATABASE = os.environ.get("DB_NAME")
 
@@ -74,7 +71,7 @@ loggers:
         propagate: true
 """
 
-    as_dict = yaml.load(log_cfg)
+    as_dict = yaml.load(log_cfg, Loader=yaml.SafeLoader)
     logging.config.dictConfig(as_dict)
 
     logging.info("Logging set up")
@@ -139,9 +136,22 @@ def get_device():
 @app.route("/reset", methods=["POST"])
 def reset_db():
     db = get_cached_db()
+    return _reset_db(db)
 
+
+def _reset_db(db):
     with db:
-        db.execute("DELETE FROM devices_table")
-        db.execute("INSERT INTO devices_table VALUES ('123', 0)")
+        def attempt(query):
+            try:
+                db.execute(query)
+            except:
+                pass
+
+        attempt("DELETE FROM devices_table")
+        attempt(
+            "CREATE TABLE devices_table (device_id TEXT NOT NULL, lights_on INTEGER NOT NULL)"
+        )
+        attempt("INSERT INTO devices_table VALUES ('123', 0)")
+        attempt("INSERT INTO devices_table VALUES ('456', 0)")
 
     return "", 204

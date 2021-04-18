@@ -106,7 +106,7 @@ class TestTimeout:
 
 
 class TestCert:
-    @pytest.mark.parametrize("correct_value", ("a", ("a", "b"), ["a", "b"]))
+    @pytest.mark.parametrize("correct_value", ("a", ["a", "b"]))
     def test_cert_as_string_tuple_list(self, test_dict, correct_value):
         test_dict["stages"][0]["request"]["cert"] = correct_value
         verify_tests(test_dict)
