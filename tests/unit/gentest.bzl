@@ -12,6 +12,7 @@ def gentest(filename):
         data = ["//:pytest.ini"],
         deps = [
             "//tests:conftest",
+            ":conftest",
             "//:setup",
             "//tavern",
             "//tavern/_plugins",
