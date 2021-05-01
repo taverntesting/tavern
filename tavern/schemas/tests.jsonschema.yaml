@@ -173,6 +173,10 @@ definitions:
         type: object
         description: Files to send as part of the request
 
+      clear_session_cookies:
+        description: Whether to clear sesion cookies before running this request
+        type: boolean
+
   mqtt_publish:
     type: object
     description: Publish MQTT message
@@ -239,10 +243,6 @@ definitions:
         - type: array
           items:
             $ref: "#/definitions/verify_block"
-
-      clear_session_cookies:
-        description: Whether to clear sesion cookies before running this request
-        type: boolean
 
   http_response:
     type: object
