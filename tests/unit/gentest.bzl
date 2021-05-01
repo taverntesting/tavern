@@ -26,5 +26,6 @@ def gentest(filename):
             "//tavern/util",
             requirement("faker"),
             requirement("text_unidecode"),
+            requirement("colorlog"),
         ],
     )
