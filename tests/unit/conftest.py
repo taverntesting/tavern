@@ -21,3 +21,18 @@ def fix_example_includes():
     }
 
     return includes.copy()
+
+
+@pytest.fixture(autouse=True)
+def fix_hack_extensions(includes):
+    class FakeFinder:
+        @classmethod
+        def find_distributions(cls, *args, **kwargs):
+
+            class Wr:
+                entry_points=[]
+
+            return [Wr]
+
+    import sys
+    sys.meta_path.append(FakeFinder())
