@@ -94,4 +94,4 @@ jobs:
 
     - name: tox
       run: |
-        tox -c ${TOXCFG}
+        tox -r -c ${TOXCFG}
