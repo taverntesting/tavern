@@ -3,3 +3,55 @@ filegroup(
     srcs = glob(["**/*.bzl"]),
     visibility = ["//visibility:public"],
 )
+
+#load("@rules_foreign_cc//foreign_cc:configure.bzl", "configure_make")
+#
+#configure_make(
+#    name = "python_built",
+#    configure_options = [
+#        # Runs a load of extra tests that we don't care about
+#        # "--enable-optimizations",
+#        # Fixes bug (?) in CFLAGS definition
+#        "CFLAGS='-Dredacted=\"redacted\"'",
+#    ],
+#    install_prefix = "bazel_install",
+#    lib_source = "@python_src//:sources",
+#    make_commands = [
+#        "make -j 4",
+#        "make -j 4 altinstall",
+#    ],
+#    out_binaries = ["python3.8"],
+#)
+#
+#genrule(
+#    name = "python_interpreter",
+#    srcs = [":python_built"],
+#    outs = ["python3"],
+#    cmd = "cp `ls $(locations :python_built) | grep bin/python3.8$$` $(@)",
+#    executable = True,
+#)
+#
+#load("@rules_python//python:defs.bzl", "py_runtime_pair")
+#
+#py_runtime(
+#    name = "tavern_py3_runtime",
+#    files = ["@python_src//:files"],
+#    interpreter = ":python_interpreter",
+#    python_version = "PY3",
+#)
+#
+#py_runtime_pair(
+#    name = "tavern_py_runtime_pair",
+#    py2_runtime = None,
+#    py3_runtime = ":tavern_py3_runtime",
+#)
+#
+#toolchain(
+#    name = "py3_toolchain",
+#    target_compatible_with = [
+#        "@platforms//os:linux",
+#        "@platforms//cpu:x86_64",
+#    ],
+#    toolchain = ":tavern_py_runtime_pair",
+#    toolchain_type = "@rules_python//python:toolchain_type",
+#)

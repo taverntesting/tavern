@@ -38,3 +38,23 @@ http_archive(
     strip_prefix = "rules_pip-3.0.0",
     urls = ["https://github.com/ali5h/rules_pip/archive/3.0.0.tar.gz"],
 )
+
+http_archive(
+    name = "rules_foreign_cc",
+    sha256 = "e60cfd0a8426fa4f5fd2156e768493ca62b87d125cb35e94c44e79a3f0d8635f",
+    strip_prefix = "rules_foreign_cc-0.2.0",
+    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/0.2.0.zip",
+)
+
+load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
+
+rules_foreign_cc_dependencies()
+
+load("@tavern//support/rules:python_sdk.bzl", "python_download_sdk")
+
+python_download_sdk(
+    name = "python_src",
+    version = "3.8.3",
+)
+
+#register_toolchains("//support/rules:py3_toolchain")
