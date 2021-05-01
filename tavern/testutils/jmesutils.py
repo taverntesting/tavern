@@ -5,7 +5,7 @@ from tavern.util import exceptions
 
 
 def test_type(val, mytype):
-    """ Check value fits one of the types, if so return true, else false """
+    """Check value fits one of the types, if so return true, else false"""
     typelist = TYPES.get(str(mytype).lower())
     if typelist is None:
         raise TypeError(
@@ -53,7 +53,7 @@ def regex_compare(_input, regex):
 
 
 def safe_length(var):
-    """ Exception-safe length check, returns -1 if no length on type or error """
+    """Exception-safe length check, returns -1 if no length on type or error"""
     try:
         return len(var)
     except TypeError:

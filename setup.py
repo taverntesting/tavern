@@ -10,7 +10,7 @@ TESTS_REQUIRE = [
     "pygments",
     "pylint==2.6.0",
     "itsdangerous",
-    "black",
+    "black==21.4b2",
     "mypy",
     "mypy-extensions",
     "isort==5.7.0",
