@@ -1,14 +1,20 @@
-import contextlib
 import os
 import tempfile
-from textwrap import dedent
 
+import contextlib
 import pytest
+from textwrap import dedent
 import yaml
 
-from tavern.schemas.files import verify_tests
+from tavern.plugins import load_plugins
+from tavern.schemas.files import load_schema_file, verify_tests
 from tavern.util.exceptions import BadSchemaError
 from tavern.util.loader import load_single_document_yaml
+
+
+@pytest.fixture(autouse=True)
+def load_scema(includes):
+    load_plugins(includes)
 
 
 @pytest.fixture(name="test_dict")
