@@ -1,0 +1,12 @@
+load("@tavern_deps//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_binary")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(
+    name = "split_test_names",
+    srcs = ["split_test_names.py"],
+    deps = [
+        requirement("more_itertools"),
+    ],
+)

@@ -1,0 +1,32 @@
+workspace(name = "tavern")
+
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
+
+http_archive(
+    name = "rules_python",
+    sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
+    #    strip_prefix = "rules_python-0.2.0",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
+)
+
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+# Create a central repo that knows about the dependencies needed from
+# requirements_lock.txt.
+pip_parse(
+    name = "tavern_deps",
+    requirements_lock = "//:requirements_lock.txt",
+)
+
+# Load the starlark macro which will define your dependencies.
+load("@tavern_deps//:requirements.bzl", "install_deps")
+
+# Call it to define repos for your requirements.
+install_deps()
+
+http_archive(
+    name = "com_github_ali5h_rules_pip",
+    sha256 = "630a7cab43a87927353efca116d20201df88fb443962bf01c7383245c7f3a623",
+    strip_prefix = "rules_pip-3.0.0",
+    urls = ["https://github.com/ali5h/rules_pip/archive/3.0.0.tar.gz"],
+)

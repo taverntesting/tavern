@@ -1,0 +1,9 @@
+load("@tavern_deps//:requirements.bzl", "requirement")
+
+package(default_visibility = ["//visibility:public"])
+
+py_library(
+    name = "setup",
+    srcs = ["setup.py"],
+    deps = [requirement("setuptools")],
+)

@@ -1,0 +1,2 @@
+test --test_output=all
+test --action_env="GTEST_COLOR=1"
