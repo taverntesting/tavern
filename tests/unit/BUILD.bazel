@@ -1,26 +1,9 @@
-load("@tavern_deps//:requirements.bzl", "requirement")
-load("@com_github_ali5h_rules_pip//:defs.bzl", "py_pytest_test")
+load(":gentest.bzl", "gentest")
 
-py_pytest_test(
-    name = "unit_tests",
-    srcs = glob(["**/*.py"]),
-    args = ["-qqq"],
-    deps = [
-        "//:setup",
-        "//tavern",
-        "//tavern/_plugins",
-        "//tavern/_plugins/mqtt",
-        "//tavern/_plugins/rest",
-        "//tavern/request",
-        "//tavern/response",
-        "//tavern/schemas",
-        "//tavern/testutils",
-        "//tavern/testutils/pytesthook",
-        "//tavern/util",
-        requirement("faker"),
-        requirement("text_unidecode"),
-    ],
-)
+[
+    gentest(f)
+    for f in glob(["test_*.py"])
+]
 
 #load("//:rules/pytest_generate.bzl", "py_pytest_gentests")
 #

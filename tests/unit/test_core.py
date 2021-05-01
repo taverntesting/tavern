@@ -1,9 +1,10 @@
-from copy import deepcopy
 import json
 import os
-from unittest.mock import MagicMock, Mock, patch
+from unittest.mock import MagicMock
+from unittest.mock import Mock, patch
 import uuid
 
+from copy import deepcopy
 import paho.mqtt.client as paho
 import pytest
 import requests
@@ -115,7 +116,6 @@ class TestRunStages:
 class TestIncludeStages:
     @pytest.fixture
     def fake_stages(self):
-
         stages = [
             {
                 "id": "my_external_stage",

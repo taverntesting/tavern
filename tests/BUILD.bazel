@@ -2,9 +2,9 @@ load("@tavern_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_library")
 
 py_library(
-    name = "schemas",
-    srcs = glob(["*.py"]),
-    data = [":tests.schema.yaml"],
+    name = "conftest",
+    srcs = ["conftest.py"],
+    data = [":logging.yaml"],
     visibility = ["//visibility:public"],
     deps = [
         #        requirement("PyYAML"),
