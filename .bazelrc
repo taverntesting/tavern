@@ -1,2 +1,2 @@
-test --test_output=all
+test --test_output=errors
 test --action_env="GTEST_COLOR=1"

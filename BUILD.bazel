@@ -6,5 +6,52 @@ py_library(
     name = "setup",
     srcs = ["setup.py"],
     visibility = ["//visibility:public"],
-    deps = [requirement("setuptools")],
+    deps = [
+        "//tavern",
+        "//tavern/_plugins",
+        "//tavern/_plugins/mqtt",
+        "//tavern/_plugins/rest",
+        "//tavern/request",
+        "//tavern/response",
+        "//tavern/schemas",
+        "//tavern/testutils",
+        "//tavern/testutils/pytesthook",
+        "//tavern/util",
+    ],
+)
+
+load("@rules_python//experimental/python:wheel.bzl", "py_wheel")
+
+py_wheel(
+    name = "tavern_wheel",
+    author = "Michael Boulton",
+    classifiers = [
+        "Development Status :: 5 - Production/Stable",
+        "Intended Audience :: Developers",
+        "Framework :: Pytest",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Topic :: Utilities",
+        "Topic :: Software Development :: Testing",
+        "License :: OSI Approved :: MIT License",
+    ],
+    console_scripts = {"tavern-ci": "tavern.entry:main"},
+    description_file = "README.rst",
+    distribution = "tavern",
+    entry_points = {
+        "console_scripts": ["tavern-ci = tavern.entry:main"],
+        "pytest11": ["tavern = tavern.testutils.pytesthook"],
+        "tavern_http": ["requests = tavern._plugins.rest.tavernhook:TavernRestPlugin"],
+        "tavern_mqtt": ["paho-mqtt = tavern._plugins.mqtt.tavernhook"],
+    },
+    homepage = "https://taverntesting.github.io/",
+    license = "MIT",
+    python_tag = "py3",
+    version = "1.11.1",
+    visibility = ["//visibility:public"],
+    deps = [
+        ":setup",
+    ],
 )

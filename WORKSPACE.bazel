@@ -4,10 +4,18 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "rules_python",
-    sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
-    #    strip_prefix = "rules_python-0.2.0",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
+    sha256 = "a8a4d791385ae08e33978bd278f2ac1151db40c0fdce9af21b37016021f9a492",
+    strip_prefix = "rules_python-1b4f61b15079d447bb7f8d11894824835e792e6c",
+    urls = [
+        "https://github.com/bazelbuild/rules_python/archive/1b4f61b15079d447bb7f8d11894824835e792e6c.tar.gz",
+    ],
 )
+#http_archive(
+#    name = "rules_python",
+#    sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
+#    #    strip_prefix = "rules_python-0.2.0",
+#    url = "https://github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
+#)
 
 load("@rules_python//python:pip.bzl", "pip_parse")
 
