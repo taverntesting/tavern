@@ -1,11 +1,11 @@
+import attr
 from contextlib import ExitStack
 import os
-import tempfile
-from unittest.mock import Mock
-
 import pytest
 import requests
 from requests.cookies import RequestsCookieJar
+import tempfile
+from unittest.mock import Mock
 
 from tavern._plugins.rest.request import (
     RestRequest,
@@ -48,7 +48,7 @@ class TestRequests(object):
 
     def test_missing_format(self, req, includes):
         """All format variables should be present"""
-        del includes["variables"]["code"]
+        del includes.variables["code"]
 
         with pytest.raises(exceptions.MissingFormatError):
             RestRequest(Mock(), req, includes)
@@ -83,7 +83,7 @@ class TestHttpRedirects(object):
     ):
         """Globally enable following redirects in test"""
 
-        includes["follow_redirects"] = do_follow
+        includes = attr.evolve(includes, follow_redirects=do_follow)
 
         assert _check_allow_redirects(req, includes) == do_follow
 
@@ -147,7 +147,7 @@ class TestCookies(object):
         cookiejar.set("a", 2)
 
         req["cookies"] = ["{cookiename}"]
-        includes["variables"]["cookiename"] = "a"
+        includes.variables["cookiename"] = "a"
 
         mock_session = Mock(spec=requests.Session, cookies=cookiejar)
 
@@ -303,7 +303,7 @@ class TestRequestArgs(object):
 
 
 class TestExtFunctions:
-    def test_get_from_function(self, req):
+    def test_get_from_function(self, req, includes):
         """Make sure ext functions work in request
 
         This is a bit of a silly example because we're passing a dictionary
@@ -342,11 +342,9 @@ class TestFileBody:
         req.pop("data")
         req["file_body"] = "{callback_url}"
 
-        includes["abcdef"] = "Hello"
-
         args = get_request_args(req, includes)
 
-        assert args["file_body"] == includes["variables"]["callback_url"]
+        assert args["file_body"] == includes.variables["callback_url"]
 
 
 class TestGetFiles(object):
@@ -418,7 +416,7 @@ class TestGetFiles(object):
         """Filenames should be formatted in short and long styles"""
 
         with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
-            includes["variables"]["tmpname"] = tfile.name
+            includes.variables["tmpname"] = tfile.name
             request_args = {"files": {"file1": tfile.name}}
 
             file_spec = _get_file_arguments(request_args, mock_stack, includes)

@@ -198,7 +198,7 @@ class YamlFile(pytest.File):
         fmt_vars = {}
 
         global_cfg = load_global_cfg(self.config)
-        fmt_vars.update(**global_cfg.get("variables", {}))
+        fmt_vars.update(**global_cfg.variables)
 
         included = test_spec.get("includes", [])
         for i in included:

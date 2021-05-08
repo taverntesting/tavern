@@ -1,6 +1,5 @@
-from unittest.mock import Mock
-
 import pytest
+from unittest.mock import Mock
 
 from tavern._plugins.mqtt.client import MQTTClient
 from tavern._plugins.mqtt.response import MQTTResponse
@@ -8,14 +7,17 @@ from tavern.util import exceptions
 from tavern.util.strict_util import StrictLevel
 
 
-def test_nothing_returned_fails():
+def test_nothing_returned_fails(includes):
     """Raises an error if no message was received"""
     fake_client = Mock(spec=MQTTClient, message_received=Mock(return_value=None))
 
     expected = {"topic": "/a/b/c", "payload": "hello"}
 
     verifier = MQTTResponse(
-        fake_client, "Test stage", expected, {"strict": StrictLevel.all_on()}
+        fake_client,
+        "Test stage",
+        expected,
+        includes.with_strictness(StrictLevel.all_on()),
     )
 
     with pytest.raises(exceptions.TestFailError):

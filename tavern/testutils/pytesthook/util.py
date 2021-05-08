@@ -1,6 +1,7 @@
 from functools import lru_cache
 import logging
 
+from tavern.testutils.pytesthook.config import TavernInternalConfig, TestConfig
 from tavern.util.dict_util import format_keys, get_tavern_box
 from tavern.util.general import load_global_config
 from tavern.util.strict_util import StrictLevel
@@ -121,23 +122,27 @@ def load_global_cfg(pytest_config):
     cmdline_global_cfg_paths = pytest_config.getoption("tavern_global_cfg") or []
 
     all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
-    global_cfg = load_global_config(all_paths)
+    global_cfg_dict = load_global_config(all_paths)
 
     try:
-        loaded_variables = global_cfg["variables"]
+        loaded_variables = global_cfg_dict["variables"]
     except KeyError:
         logger.debug("Nothing to format in global config files")
+        variables = {}
     else:
         tavern_box = get_tavern_box()
+        variables = format_keys(loaded_variables, tavern_box)
 
-        global_cfg["variables"] = format_keys(loaded_variables, tavern_box)
-
-    # Can be overridden in tests
-    global_cfg["strict"] = _load_global_strictness(pytest_config)
-    global_cfg["follow_redirects"] = _load_global_follow_redirects(pytest_config)
-    global_cfg["backends"] = _load_global_backends(pytest_config)
-
-    logger.debug("Global config: %s", global_cfg)
+    global_cfg = TestConfig(
+        variables=variables,
+        strict=_load_global_strictness(pytest_config),
+        follow_redirects=_load_global_follow_redirects(pytest_config),
+        tavern_internal=TavernInternalConfig(
+            pytest_hook_caller=pytest_config.hook,
+            backends=_load_global_backends(pytest_config),
+        ),
+        stages=global_cfg_dict.get("stages", []),
+    )
 
     return global_cfg
 

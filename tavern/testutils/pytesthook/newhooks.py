@@ -49,9 +49,7 @@ def pytest_tavern_beta_before_every_request(request_args):
 def call_hook(test_block_config, hookname, **kwargs):
     """Utility to call the hooks"""
     try:
-        hook = getattr(
-            test_block_config["tavern_internal"]["pytest_hook_caller"], hookname
-        )
+        hook = getattr(test_block_config.tavern_internal.pytest_hook_caller, hookname)
     except AttributeError:
         logger.critical("Error getting tavern hook!")
         raise

@@ -81,7 +81,7 @@ def _get_included_stages(tavern_box, test_block_config, test_spec, available_sta
         for included in test_spec["includes"]:
             if "variables" in included:
                 formatted_include = format_keys(included["variables"], tavern_box)
-                test_block_config["variables"].update(formatted_include)
+                test_block_config.variables.update(formatted_include)
 
             for stage in included.get("stages", []):
                 if stage["id"] in stage_ids(included_stages):
@@ -110,7 +110,7 @@ def run_test(in_file, test_spec, global_cfg):
     Args:
         in_file (str): filename containing this test
         test_spec (dict): The specification for this test
-        global_cfg (dict): Any global configuration for this test
+        global_cfg (TestConfig): Any global configuration for this test
 
     No Longer Raises:
         TavernException: If any of the tests failed
@@ -120,11 +120,8 @@ def run_test(in_file, test_spec, global_cfg):
 
     # Initialise test config for this test with the global configuration before
     # starting
-    test_block_config = dict(global_cfg)
-    default_global_stricness = global_cfg["strict"]
-
-    if "variables" not in test_block_config:
-        test_block_config["variables"] = {}
+    test_block_config = global_cfg.copy()
+    default_global_stricness = global_cfg.strict
 
     tavern_box = get_tavern_box()
 
@@ -133,14 +130,14 @@ def run_test(in_file, test_spec, global_cfg):
         return
 
     # Get included stages and resolve any into the test spec dictionary
-    available_stages = test_block_config.get("stages", [])
+    available_stages = test_block_config.stages
     included_stages = _get_included_stages(
         tavern_box, test_block_config, test_spec, available_stages
     )
     all_stages = {s["id"]: s for s in available_stages + included_stages}
     test_spec["stages"] = _resolve_test_stages(test_spec, all_stages)
 
-    test_block_config["variables"]["tavern"] = tavern_box["tavern"]
+    test_block_config.variables["tavern"] = tavern_box["tavern"]
 
     test_block_name = test_spec["test_name"]
 
@@ -171,8 +168,12 @@ def run_test(in_file, test_spec, global_cfg):
             if has_only and not getonly(stage):
                 continue
 
-            test_block_config["strict"] = default_global_stricness
-            _calculate_stage_strictness(stage, test_block_config, test_spec)
+            test_block_config = test_block_config.with_strictness(
+                default_global_stricness
+            )
+            test_block_config = test_block_config.with_strictness(
+                _calculate_stage_strictness(stage, test_block_config, test_spec)
+            )
 
             # Wrap run_stage with retry helper
             run_stage_with_retries = retry(stage, test_block_config)(run_stage)
@@ -203,6 +204,7 @@ def _calculate_stage_strictness(stage, test_block_config, test_spec):
     Priority is global (see pytest util file) <= test <= stage
     """
     stage_options = None
+    new_strict = test_block_config.strict
 
     if test_spec.get("strict", None) is not None:
         stage_options = test_spec["strict"]
@@ -241,19 +243,17 @@ def _calculate_stage_strictness(stage, test_block_config, test_spec):
 
     if stage_options is not None:
         if stage_options is True:
-            strict_level = StrictLevel.all_on()
+            new_strict = StrictLevel.all_on()
         elif stage_options is False:
-            strict_level = StrictLevel.all_off()
+            new_strict = StrictLevel.all_off()
         else:
-            strict_level = StrictLevel.from_options(stage_options)
-
-        test_block_config["strict"] = strict_level
+            new_strict = StrictLevel.from_options(stage_options)
     else:
         logger.debug("Global default strictness used for this stage")
 
-    logger.debug(
-        "Strict key checking for this stage is '%s'", test_block_config["strict"]
-    )
+    logger.debug("Strict key checking for this stage is '%s'", test_block_config.strict)
+
+    return new_strict
 
 
 def run_stage(sessions, stage, test_block_config):
@@ -270,12 +270,12 @@ def run_stage(sessions, stage, test_block_config):
 
     r = get_request_type(stage, test_block_config, sessions)
 
-    tavern_box = test_block_config["variables"]["tavern"]
+    tavern_box = test_block_config.variables["tavern"]
     tavern_box.update(request_vars=r.request_vars)
 
     expected = get_expected(stage, test_block_config, sessions)
 
-    delay(stage, "before", test_block_config["variables"])
+    delay(stage, "before", test_block_config.variables)
 
     logger.info("Running stage : %s", name)
 
@@ -293,10 +293,10 @@ def run_stage(sessions, stage, test_block_config):
         logger.debug("Running verifiers for %s", response_type)
         for v in response_verifiers:
             saved = v.verify(response)
-            test_block_config["variables"].update(saved)
+            test_block_config.variables.update(saved)
 
     tavern_box.pop("request_vars")
-    delay(stage, "after", test_block_config["variables"])
+    delay(stage, "after", test_block_config.variables)
 
 
 def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
