@@ -137,7 +137,6 @@ def load_global_cfg(pytest_config):
         variables=variables,
         strict=_load_global_strictness(pytest_config),
         follow_redirects=_load_global_follow_redirects(pytest_config),
-        merge_ext_values=_load_global_merge_ext(pytest_config),
         tavern_internal=TavernInternalConfig(
             pytest_hook_caller=pytest_config.hook,
             backends=_load_global_backends(pytest_config),

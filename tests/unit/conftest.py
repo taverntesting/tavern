@@ -21,7 +21,6 @@ _includes = TestConfig(
         pytest_hook_caller=Mock(),
         backends={"mqtt": "paho-mqtt", "http": "requests"},
     ),
-    merge_ext_values=False,
     follow_redirects=False,
     stages=[],
 )
