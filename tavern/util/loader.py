@@ -142,7 +142,7 @@ def _get_include_dirs(loader):
 
 
 def find_include(loader, node):
-    """Locate an include file and return the abs path. """
+    """Locate an include file and return the abs path."""
     for directory in _get_include_dirs(loader):
         filename = os.path.abspath(
             os.path.join(directory, loader.construct_scalar(node))
