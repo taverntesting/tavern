@@ -20,7 +20,7 @@ def get_publish_args(rspec, test_block_config):
         Anything else to do here?
     """
 
-    fspec = format_keys(rspec, test_block_config["variables"])
+    fspec = format_keys(rspec, test_block_config.variables)
 
     if "json" in rspec:
         if "payload" in rspec:
@@ -52,7 +52,7 @@ class MQTTRequest(BaseRequest):
         # Need to do this here because get_publish_args will modify the original
         # input, which we might want to use to format. No error handling because
         # all the error handling is done in the previous call
-        self._original_publish_args = format_keys(rspec, test_block_config["variables"])
+        self._original_publish_args = format_keys(rspec, test_block_config.variables)
 
         # TODO
         # From paho:
