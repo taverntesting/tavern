@@ -27,7 +27,6 @@ _includes = TestConfig(
 )
 
 
-
 @pytest.fixture(scope="function", name="includes")
 def fix_example_includes():
     return copy.deepcopy(_includes)

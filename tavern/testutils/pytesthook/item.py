@@ -9,7 +9,6 @@ from tavern.schemas.files import verify_tests
 from tavern.testutils.pytesthook import call_hook
 from tavern.util import exceptions
 from tavern.util.report import attach_text
-
 from .error import ReprdError
 from .util import load_global_cfg
 
