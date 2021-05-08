@@ -68,7 +68,7 @@ class BaseResponse(object):
 
         # This should be done _before_ it gets to this point - typically in get_expected_from_request from plugin
         # expected_block = format_keys(
-        #     expected_block, self.test_block_config["variables"]
+        #     expected_block, self.test_block_config.variables
         # )
 
         if block is None:

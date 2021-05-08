@@ -88,7 +88,7 @@ class _PluginCache:
             - Different plugin names
 
         Args:
-            test_block_config (dict): available config for test
+            test_block_config (tavern.pytesthook.config.TestConfig): available config for test
 
         Raises:
             exceptions.MissingSettingsError: Description
@@ -105,7 +105,7 @@ class _PluginCache:
 
             def enabled(ext):
                 # pylint: disable=cell-var-from-loop
-                return ext.name == test_block_config["backends"][backend]
+                return ext.name == test_block_config.tavern_internal.backends[backend]
 
             manager = stevedore.EnabledExtensionManager(
                 namespace=namespace,
@@ -156,9 +156,7 @@ def get_extra_sessions(test_spec, test_block_config):
                 "Initialising session for %s (%s)", p.name, p.plugin.session_type
             )
             session_spec = test_spec.get(p.name, {})
-            formatted = format_keys(
-                session_spec, test_block_config.get("variables", {})
-            )
+            formatted = format_keys(session_spec, test_block_config.variables)
             sessions[p.name] = p.plugin.session_type(**formatted)
 
     return sessions

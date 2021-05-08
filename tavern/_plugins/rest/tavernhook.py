@@ -27,7 +27,7 @@ class TavernRestPlugin(PluginHelperBase):
                 "no response block specified for HTTP test stage"
             )
 
-        f_expected = format_keys(response_block, test_block_config["variables"])
+        f_expected = format_keys(response_block, test_block_config.variables)
         return f_expected
 
     verifier_type = RestResponse

@@ -343,7 +343,7 @@ class TestFull:
         r = RestResponse(
             Mock(),
             "Test 1",
-            format_keys(nested_schema, includes["variables"]),
+            format_keys(nested_schema, includes.variables),
             includes,
         )
 
