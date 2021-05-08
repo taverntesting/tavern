@@ -83,7 +83,7 @@ def get_request_args(rspec, test_block_config):
                 if i.lower() != "content-type"
             }
 
-    fspec = format_keys(rspec, test_block_config["variables"])
+    fspec = format_keys(rspec, test_block_config.variables)
 
     if fspec["method"] not in valid_http_methods:
         raise exceptions.BadSchemaError(
@@ -235,7 +235,7 @@ def _check_allow_redirects(rspec, test_block_config):
     allow_redirects = False
 
     # Then check to see if we should follow redirects based on settings
-    global_follow_redirects = test_block_config.get("follow_redirects")
+    global_follow_redirects = test_block_config.follow_redirects
     if global_follow_redirects is not None:
         allow_redirects = global_follow_redirects
 
@@ -271,7 +271,7 @@ def _read_expected_cookies(session, rspec, test_block_config):
     # it depends on the state of the session
     existing_cookies = session.cookies.get_dict()
     cookies_to_use = format_keys(
-        rspec.get("cookies", None), test_block_config["variables"]
+        rspec.get("cookies", None), test_block_config.variables
     )
 
     if cookies_to_use is None:
@@ -394,7 +394,7 @@ def guess_filespec(filespec, stack, test_block_config):
 
     filepath, content_type, encoding = _read_filespec(filespec)
 
-    filepath = format_keys(filepath, test_block_config["variables"])
+    filepath = format_keys(filepath, test_block_config.variables)
     filename = os.path.basename(filepath)
 
     # a 2-tuple ('filename', fileobj)

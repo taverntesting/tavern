@@ -129,7 +129,7 @@ class TestRequests:
 
     def test_missing_format(self, req, includes):
         """All format variables should be present"""
-        del includes["variables"]["request_topic"]
+        del includes.variables["request_topic"]
 
         with pytest.raises(exceptions.MissingFormatError):
             MQTTRequest(Mock(), req, includes)
