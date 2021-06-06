@@ -22,8 +22,8 @@ except ImportError:
         return call
 
 
-from tavern.util.formatted_str import FormattedString
-from tavern.util.stage_lines import get_stage_lines, read_relevant_lines
+from tavern._core.formatted_str import FormattedString
+from tavern._core.stage_lines import get_stage_lines, read_relevant_lines
 
 logger = logging.getLogger(__name__)
 

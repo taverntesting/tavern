@@ -140,7 +140,7 @@ tavern/core.py:111: in run_test
     saved = v.verify(response)
 tavern/response/rest.py:147: in verify
     raise TestFailError("Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()))
-E   tavern.util.exceptions.TestFailError: Test 'login' failed:
+E   tavern._core.exceptions.TestFailError: Test 'login' failed:
 E   - Key not present: a_key
 ---------------------------- Captured stderr call -----------------------------
 16:30:46 [INFO]: (tavern.core:70) Running test : Check trying to get a number that we didnt post before returns a 404
@@ -154,11 +154,11 @@ E   - Key not present: a_key
 Traceback (most recent call last):
   File "/home/michael/code/tavern/tavern/tavern/response/base.py", line 87, in recurse_check_key_match
     actual_val = recurse_access_key(block, list(split_key))
-  File "/home/michael/code/tavern/tavern/tavern/util/dict_util.py", line 77, in recurse_access_key
+  File "/home/michael/code/tavern/tavern/tavern/_core/dict_util.py", line 77, in recurse_access_key
     return recurse_access_key(current_val[current_key], keys)
 KeyError: 'a_key'
 16:30:46 [ERROR]: (tavern.printer:21) FAILED: login [200]
-16:30:46 [ERROR]: (tavern.printer:22) Expected: {'requests': {'save': {'$ext': {'extra_kwargs': {'jwt_key': 'token', 'key': 'CGQgaG7GYvTcpaQZqosLy4', 'options': {'verify_aud': True, 'verify_signature': True, 'verify_exp': True}, 'audience': 'testserver'}, 'function': 'tavern.testutils.helpers:validate_jwt'}, 'body': {'test_login_token': 'token'}}, 'status_code': 200, 'headers': {'content-type': 'application/json'}, 'body': {'a_key': 'missing', 'token': <tavern.util.loader.AnythingSentinel object at 0x7fce0b395c50>}}}
+16:30:46 [ERROR]: (tavern.printer:22) Expected: {'requests': {'save': {'$ext': {'extra_kwargs': {'jwt_key': 'token', 'key': 'CGQgaG7GYvTcpaQZqosLy4', 'options': {'verify_aud': True, 'verify_signature': True, 'verify_exp': True}, 'audience': 'testserver'}, 'function': 'tavern.testutils.helpers:validate_jwt'}, 'body': {'test_login_token': 'token'}}, 'status_code': 200, 'headers': {'content-type': 'application/json'}, 'body': {'a_key': 'missing', 'token': <tavern._core.loader.AnythingSentinel object at 0x7fce0b395c50>}}}
 ```
 
 When tavern tries to access `a_key` in the response it gets a `KeyError` (shown

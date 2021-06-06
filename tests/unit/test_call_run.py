@@ -2,8 +2,8 @@ from unittest.mock import patch
 
 import pytest
 
+from tavern._core import exceptions
 from tavern.core import run
-from tavern.util import exceptions
 
 
 @pytest.fixture(autouse=True)

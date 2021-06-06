@@ -1,7 +1,7 @@
 import operator
 import re
 
-from tavern.util import exceptions
+from tavern._core import exceptions
 
 
 def test_type(val, mytype):

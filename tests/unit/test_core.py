@@ -1,16 +1,17 @@
 from copy import deepcopy
 import json
 import os
+from unittest.mock import MagicMock, Mock, patch
+import uuid
+
 import attr
 import paho.mqtt.client as paho
 import pytest
 import requests
-from unittest.mock import MagicMock, Mock, patch
-import uuid
 
+from tavern._core import exceptions
+from tavern._core.run import run_test
 from tavern._plugins.mqtt.client import MQTTClient
-from tavern.core import run_test
-from tavern.util import exceptions
 
 
 @pytest.fixture(name="fulltest")
@@ -272,7 +273,7 @@ class TestDelay:
             "tavern._plugins.rest.request.requests.Session.request",
             return_value=mock_response,
         ) as pmock:
-            with patch("tavern.util.delay.time.sleep") as smock:
+            with patch("tavern._core.util.delay.time.sleep") as smock:
                 run_test("heif", fulltest, includes)
 
         assert pmock.called
@@ -289,7 +290,7 @@ class TestDelay:
             "tavern._plugins.rest.request.requests.Session.request",
             return_value=mock_response,
         ) as pmock:
-            with patch("tavern.util.delay.time.sleep") as smock:
+            with patch("tavern._core.util.delay.time.sleep") as smock:
                 run_test("heif", fulltest, includes)
 
         assert pmock.called

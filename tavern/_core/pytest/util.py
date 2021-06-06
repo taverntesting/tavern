@@ -1,10 +1,10 @@
 from functools import lru_cache
 import logging
 
-from tavern.testutils.pytesthook.config import TavernInternalConfig, TestConfig
-from tavern.util.dict_util import format_keys, get_tavern_box
-from tavern.util.general import load_global_config
-from tavern.util.strict_util import StrictLevel
+from tavern._core.dict_util import format_keys, get_tavern_box
+from tavern._core.general import load_global_config
+from tavern._core.pytest.config import TavernInternalConfig, TestConfig
+from tavern._core.strict_util import StrictLevel
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ def add_parser_options(parser_addoption, with_defaults=True):
 
     This is shared between the CLI and pytest (for now)
 
-    See also testutils.pytesthook.hooks.pytest_addoption
+    See also _core.pytesthook.hooks.pytest_addoption
     """
     parser_addoption(
         "--tavern-global-cfg",
@@ -62,7 +62,7 @@ def add_parser_options(parser_addoption, with_defaults=True):
 def add_ini_options(parser):
     """Add an option to pass in a global config file for tavern
 
-    See also testutils.pytesthook.util.add_parser_options
+    See also _core.pytesthook._core.util.add_parser_options
     """
     parser.addini(
         "tavern-global-cfg",

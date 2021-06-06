@@ -9,16 +9,14 @@ from unittest.mock import Mock, patch
 import pytest
 import yaml
 
-from tavern.schemas.extensions import validate_extensions
-from tavern.schemas.files import wrapfile
-from tavern.util import exceptions
-from tavern.util.dict_util import (
+from tavern._core import exceptions
+from tavern._core.dict_util import (
     check_keys_match_recursive,
     deep_dict_merge,
     format_keys,
     recurse_access_key,
 )
-from tavern.util.loader import (
+from tavern._core.loader import (
     ANYTHING,
     DictSentinel,
     FloatSentinel,
@@ -29,6 +27,8 @@ from tavern.util.loader import (
     construct_include,
     load_single_document_yaml,
 )
+from tavern._core.schema.extensions import validate_extensions
+from tavern._core.schema.files import wrapfile
 
 
 class TestValidateFunctions:
@@ -443,14 +443,14 @@ class TestLoadFile:
         example = {"a": "b"}
 
         with TestLoadFile.magic_wrap(example, suffix) as tmpfile:
-            with patch("tavern.util.loader.os.path.join", return_value=tmpfile):
+            with patch("tavern._core.util.loader.os.path.join", return_value=tmpfile):
                 assert example == construct_include(Mock(), Mock())
 
     def test_load_bad_extension(self):
         example = {"a": "b"}
 
         with TestLoadFile.magic_wrap(example, ".bllakjf") as tmpfile:
-            with patch("tavern.util.loader.os.path.join", return_value=tmpfile):
+            with patch("tavern._core.util.loader.os.path.join", return_value=tmpfile):
                 with pytest.raises(exceptions.BadSchemaError):
                     construct_include(Mock(), Mock())
 
@@ -467,13 +467,13 @@ class TestLoadFile:
                     Mock(),
                 )
 
-            with patch("tavern.util.loader.IncludeLoader.env_path_list", None):
+            with patch("tavern._core.util.loader.IncludeLoader.env_path_list", None):
                 assert example == construct_include(
                     Mock(_root=tmppath, construct_scalar=lambda x: tmpfilename), Mock()
                 )
 
             os.environ[IncludeLoader.env_var_name] = tmppath
-            with patch("tavern.util.loader.IncludeLoader.env_path_list", None):
+            with patch("tavern._core.util.loader.IncludeLoader.env_path_list", None):
                 assert example == construct_include(
                     Mock(
                         _root="/does-not-exist", construct_scalar=lambda x: tmpfilename

@@ -6,10 +6,10 @@ import logging
 import pytest
 import yaml
 
-from tavern.schemas.files import verify_tests
-from tavern.util import exceptions
-from tavern.util.dict_util import format_keys, get_tavern_box
-from tavern.util.loader import IncludeLoader
+from tavern._core import exceptions
+from tavern._core.dict_util import format_keys, get_tavern_box
+from tavern._core.loader import IncludeLoader
+from tavern._core.schema.files import verify_tests
 
 from .item import YamlItem
 from .util import load_global_cfg

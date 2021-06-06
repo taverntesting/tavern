@@ -6,9 +6,9 @@ from textwrap import dedent
 import pytest
 import yaml
 
-from tavern.schemas.files import verify_tests
-from tavern.util.exceptions import BadSchemaError
-from tavern.util.loader import load_single_document_yaml
+from tavern._core.exceptions import BadSchemaError
+from tavern._core.loader import load_single_document_yaml
+from tavern._core.schema.files import verify_tests
 
 
 @pytest.fixture(name="test_dict")

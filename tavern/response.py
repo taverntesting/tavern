@@ -4,9 +4,9 @@ import logging
 from textwrap import indent
 import traceback
 
-from tavern.util import exceptions
-from tavern.util.dict_util import check_keys_match_recursive, recurse_access_key
-from tavern.util.extfunctions import get_wrapped_response_function
+from tavern._core import exceptions
+from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
+from tavern._core.extfunctions import get_wrapped_response_function
 
 logger = logging.getLogger(__name__)
 
