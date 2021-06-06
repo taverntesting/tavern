@@ -273,7 +273,7 @@ class TestDelay:
             "tavern._plugins.rest.request.requests.Session.request",
             return_value=mock_response,
         ) as pmock:
-            with patch("tavern._core.util.delay.time.sleep") as smock:
+            with patch("tavern._core.testhelpers.time.sleep") as smock:
                 run_test("heif", fulltest, includes)
 
         assert pmock.called
@@ -290,7 +290,7 @@ class TestDelay:
             "tavern._plugins.rest.request.requests.Session.request",
             return_value=mock_response,
         ) as pmock:
-            with patch("tavern._core.util.delay.time.sleep") as smock:
+            with patch("tavern._core.testhelpers.time.sleep") as smock:
                 run_test("heif", fulltest, includes)
 
         assert pmock.called
@@ -397,7 +397,9 @@ class TestFormatMQTTVarsJson:
     def fix_mqtt_publish_test(self):
         spec = {
             "test_name": "An mqtt test with a single stage",
-            "mqtt": {"connect": "localhost"},
+            "paho-mqtt": {
+                "connect": {"host": "localhost"},
+            },
             "stages": [
                 {
                     "name": "step 1",
@@ -432,11 +434,13 @@ class TestFormatMQTTVarsJson:
         mock_response = Mock(**mockargs)
 
         fake_client = MagicMock(
-            spec=MQTTClient, message_received=Mock(return_value=mock_response)
+            spec=MQTTClient,
+            message_received=Mock(return_value=mock_response),
         )
 
-        with patch("tavern._plugins.mqtt.client.paho.Client", fake_client), patch(
-            "tavern.core.get_extra_sessions", return_value={"paho-mqtt": fake_client}
+        with patch(
+            "tavern._core.run.get_extra_sessions",
+            return_value={"paho-mqtt": fake_client},
         ) as pmock:
             run_test("heif", fulltest, includes)
 
@@ -450,7 +454,9 @@ class TestFormatMQTTVarsPlain:
     def fix_mqtt_publish_test(self):
         spec = {
             "test_name": "An mqtt test with a single stage",
-            "mqtt": {"connect": "localhost"},
+            "paho-mqtt": {
+                "connect": {"host": "localhost"},
+            },
             "stages": [
                 {
                     "name": "step 1",
@@ -482,8 +488,9 @@ class TestFormatMQTTVarsPlain:
             spec=MQTTClient, message_received=Mock(return_value=mock_response)
         )
 
-        with patch("tavern._plugins.mqtt.client.paho.Client", fake_client), patch(
-            "tavern.core.get_extra_sessions", return_value={"paho-mqtt": fake_client}
+        with patch(
+            "tavern._core.run.get_extra_sessions",
+            return_value={"paho-mqtt": fake_client},
         ) as pmock:
             run_test("heif", fulltest, includes)
 

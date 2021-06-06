@@ -22,7 +22,7 @@ def get_pykwalify_logger(module):
 
 
 def _getlogger():
-    return get_pykwalify_logger("tavern._core.util.extfunctions")
+    return get_pykwalify_logger("tavern._core.extfunctions")
 
 
 def import_ext_function(entrypoint):

@@ -331,7 +331,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
         >>> check_keys_match_recursive({"a": {"b": "c"}}, {"a": {"b": "d"}}, []) # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
           File "/home/michael/code/tavern/tavern/tavern/_core.util/dict_util.py", line 223, in check_keys_match_recursive
-        tavern._core.util.exceptions.KeyMismatchError: Key mismatch: (expected["a"]["b"] = 'c', actual["a"]["b"] = 'd')
+        tavern._core.exceptions.KeyMismatchError: Key mismatch: (expected["a"]["b"] = 'c', actual["a"]["b"] = 'd')
 
     Todo:
         This could be turned into a single-dispatch function for cleaner

@@ -287,7 +287,7 @@ def run_stage(sessions, stage, test_block_config):
 
     verifiers = get_verifiers(stage, test_block_config, sessions, expected)
 
-    response = core.run()
+    response = r.run()
 
     for response_type, response_verifiers in verifiers.items():
         logger.debug("Running verifiers for %s", response_type)

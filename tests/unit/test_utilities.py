@@ -443,14 +443,14 @@ class TestLoadFile:
         example = {"a": "b"}
 
         with TestLoadFile.magic_wrap(example, suffix) as tmpfile:
-            with patch("tavern._core.util.loader.os.path.join", return_value=tmpfile):
+            with patch("tavern._core.loader.os.path.join", return_value=tmpfile):
                 assert example == construct_include(Mock(), Mock())
 
     def test_load_bad_extension(self):
         example = {"a": "b"}
 
         with TestLoadFile.magic_wrap(example, ".bllakjf") as tmpfile:
-            with patch("tavern._core.util.loader.os.path.join", return_value=tmpfile):
+            with patch("tavern._core.loader.os.path.join", return_value=tmpfile):
                 with pytest.raises(exceptions.BadSchemaError):
                     construct_include(Mock(), Mock())
 
@@ -467,13 +467,13 @@ class TestLoadFile:
                     Mock(),
                 )
 
-            with patch("tavern._core.util.loader.IncludeLoader.env_path_list", None):
+            with patch("tavern._core.loader.IncludeLoader.env_path_list", None):
                 assert example == construct_include(
                     Mock(_root=tmppath, construct_scalar=lambda x: tmpfilename), Mock()
                 )
 
             os.environ[IncludeLoader.env_var_name] = tmppath
-            with patch("tavern._core.util.loader.IncludeLoader.env_path_list", None):
+            with patch("tavern._core.loader.IncludeLoader.env_path_list", None):
                 assert example == construct_include(
                     Mock(
                         _root="/does-not-exist", construct_scalar=lambda x: tmpfilename

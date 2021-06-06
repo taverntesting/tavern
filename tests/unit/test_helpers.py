@@ -151,7 +151,7 @@ class TestTavernRepr:
         """Does not call tavern repr for non tavern errors"""
         fake_info = self._make_fake_exc_info(RuntimeError)
 
-        with patch("tavern._core.pytesthook.item.ReprdError") as rmock:
+        with patch("tavern._core.pytest.item.ReprdError") as rmock:
             fake_item.repr_failure(fake_info)
 
         assert not rmock.called
@@ -162,7 +162,7 @@ class TestTavernRepr:
         fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
 
         with patch.object(fake_item.config, "getini", return_value=ini_flag):
-            with patch("tavern._core.pytesthook.item.ReprdError") as rmock:
+            with patch("tavern._core.pytest.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
         assert not rmock.called
@@ -172,7 +172,7 @@ class TestTavernRepr:
         fake_info = self._make_fake_exc_info(exceptions.InvalidSettingsError)
 
         with patch.object(fake_item.config, "getini", return_value=True):
-            with patch("tavern._core.pytesthook.item.ReprdError") as rmock:
+            with patch("tavern._core.pytest.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
         assert not rmock.called
@@ -182,7 +182,7 @@ class TestTavernRepr:
         fake_info = self._make_fake_exc_info(exceptions.InvalidSettingsError)
 
         with patch.object(fake_item.config, "getoption", return_value=True):
-            with patch("tavern._core.pytesthook.item.ReprdError") as rmock:
+            with patch("tavern._core.pytest.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
         assert not rmock.called
@@ -285,7 +285,7 @@ class TestCheckParseValues(object):
         "item", [[134], {"a": 2}, yaml, yaml.load, yaml.SafeLoader]
     )
     def test_warns_bad_type(self, item):
-        with patch("tavern._core.util.dict_util.logger.warning") as wmock:
+        with patch("tavern._core.dict_util.logger.warning") as wmock:
             _check_and_format_values("{fd}", {"fd": item})
 
         assert wmock.called_with(
@@ -296,7 +296,7 @@ class TestCheckParseValues(object):
 
     @pytest.mark.parametrize("item", [1, "a", 1.3, format_keys("{s}", dict(s=2))])
     def test_no_warn_good_type(self, item):
-        with patch("tavern._core.util.dict_util.logger.warning") as wmock:
+        with patch("tavern._core.dict_util.logger.warning") as wmock:
             _check_and_format_values("{fd}", {"fd": item})
 
         assert not wmock.called

@@ -15,6 +15,7 @@ TESTS_REQUIRE = [
     "mypy-extensions",
     "isort==5.7.0",
     "allure-pytest",
+    "Faker",
 ]
 
 setup(
