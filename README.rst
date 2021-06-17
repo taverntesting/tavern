@@ -60,6 +60,9 @@ Then, let's create a basic test, ``test_minimal.tavern.yaml``:
           status_code: 200
           json:
             id: 1
+            userId: 1
+            title: "sunt aut facere repellat provident occaecati excepturi optio reprehenderit"
+            body: "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
 
 This file can have any name, but if you intend to use Pytest with
 Tavern, it will only pick up files called ``test_*.tavern.yaml``.

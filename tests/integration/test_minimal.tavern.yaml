@@ -1,0 +1,21 @@
+---
+# Every test file has one or more tests...
+test_name: Get some fake data from the JSON placeholder API
+
+# ...and each test has one or more stages (e.g. an HTTP request)
+stages:
+  - name: Make sure we have the right ID
+
+    # Define the request to be made...
+    request:
+      url: https://jsonplaceholder.typicode.com/posts/1
+      method: GET
+
+    # ...and the expected response code and body
+    response:
+      status_code: 200
+      json:
+        id: 1
+        userId: 1
+        title: "sunt aut facere repellat provident occaecati excepturi optio reprehenderit"
+        body: "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
