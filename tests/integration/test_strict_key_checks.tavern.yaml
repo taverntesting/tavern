@@ -319,7 +319,7 @@ stages:
       url: "{host}/fake_list"
     response:
       status_code: 200
-#      Use new syntax
+      #      Use new syntax
       strict:
         - json:off
       json:
@@ -419,6 +419,95 @@ stages:
       strict: false
       json:
         - c
+
+---
+
+test_name: Test matching any order on json
+
+strict:
+  - json:list_any_order
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match some things in list, in any order
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      json:
+        - 2
+        - c
+        - a
+        - -3.0
+        - 1
+
+---
+
+test_name: Test matching any order on json
+
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match some things in list, in any order
+    request:
+      url: "{host}/fake_list"
+    response:
+      strict:
+        - json:list_any_order
+      status_code: 200
+      json:
+        - 2
+        - c
+        - a
+        - -3.0
+        - 1
+
+---
+
+test_name: Test matching any order on json nested
+
+strict:
+  - json:list_any_order
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match some things in list, in any order
+    request:
+      url: "{host}/nested_list"
+    response:
+      status_code: 200
+      json:
+        top:
+        - b
+        - key: val
+        - a
+
+---
+
+test_name: Test matching any order on json nested
+
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match some things in list, in any order
+    request:
+      url: "{host}/nested_list"
+    response:
+      strict:
+        - json:list_any_order
+      status_code: 200
+      json:
+        top:
+        - b
+        - key: val
 
 ---
 

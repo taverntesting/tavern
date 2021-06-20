@@ -1,52 +1,65 @@
 from distutils.util import strtobool
 import enum
+import logging
 import re
 
 import attr
 
 from tavern.util import exceptions
 
+logger = logging.getLogger(__name__)
 
-class _StrictSetting(enum.Enum):
+
+class StrictSetting(enum.Enum):
     ON = 1
     OFF = 2
     UNSET = 3
+    LIST_ANY_ORDER = 4
 
 
 valid_keys = ["json", "headers", "redirect_query_params"]
 
+valid_switches = ["on", "off", "list_any_order"]
 
-def setting_factory(str_setting):
+
+def strict_setting_factory(str_setting):
     """Converts from cmdline/setting file to an enum"""
     if str_setting is None:
-        return _StrictSetting.UNSET
+        return StrictSetting.UNSET
     else:
+        if str_setting == "list_any_order":
+            return StrictSetting.LIST_ANY_ORDER
+
         parsed = strtobool(str_setting)
 
         if parsed:
-            return _StrictSetting.ON
+            return StrictSetting.ON
         else:
-            return _StrictSetting.OFF
+            return StrictSetting.OFF
 
 
 @attr.s(frozen=True)
-class _StrictOption:
+class StrictOption:
     section = attr.ib(type=str)
-    setting = attr.ib(type=_StrictSetting)
+    setting = attr.ib(type=StrictSetting)
 
     def is_on(self):
         if self.section == "json":
             # Must be specifically disabled for response body
-            return self.setting != _StrictSetting.OFF
+            return self.setting not in [StrictSetting.OFF, StrictSetting.LIST_ANY_ORDER]
         else:
             # Off by default for everything else
-            return self.setting == _StrictSetting.ON
+            return self.setting in [StrictSetting.ON]
 
 
 def validate_and_parse_option(key):
-    regex = r"(?P<section>{})(:(?P<setting>on|off))?".format("|".join(valid_keys))
+    regex = re.compile(
+        "(?P<section>{sections})(:(?P<setting>{switches}))?".format(
+            sections="|".join(valid_keys), switches="|".join(valid_switches)
+        )
+    )
 
-    match = re.fullmatch(regex, key)
+    match = regex.fullmatch(key)
 
     if not match:
         raise exceptions.InvalidConfigurationException(
@@ -56,15 +69,21 @@ def validate_and_parse_option(key):
         )
 
     as_dict = match.groupdict()
-    return _StrictOption(as_dict["section"], setting_factory(as_dict["setting"]))
+
+    if as_dict["section"] != "json" and as_dict["setting"] == "list_any_order":
+        logger.warning(
+            "Using 'list_any_order' key outside of 'json' section has no meaning"
+        )
+
+    return StrictOption(as_dict["section"], strict_setting_factory(as_dict["setting"]))
 
 
 @attr.s(frozen=True)
 class StrictLevel:
-    json = attr.ib(default=_StrictOption("json", setting_factory(None)))
-    headers = attr.ib(default=_StrictOption("headers", setting_factory(None)))
+    json = attr.ib(default=StrictOption("json", strict_setting_factory(None)))
+    headers = attr.ib(default=StrictOption("headers", strict_setting_factory(None)))
     redirect_query_params = attr.ib(
-        default=_StrictOption("redirect_query_params", setting_factory(None))
+        default=StrictOption("redirect_query_params", strict_setting_factory(None))
     )
 
     @classmethod
@@ -96,3 +115,26 @@ class StrictLevel:
     @classmethod
     def all_off(cls):
         return cls.from_options([i + ":off" for i in valid_keys])
+
+
+def extract_strict_setting(strict):
+    """Takes either a bool, StrictOption, or a StrictSetting and return the bool representation and StrictSetting representation"""
+    if isinstance(strict, StrictSetting):
+        strict_setting = strict
+        strict = strict == StrictSetting.ON
+    elif isinstance(strict, StrictOption):
+        strict_setting = strict.setting
+        strict = strict.is_on()
+    elif isinstance(strict, bool):
+        strict_setting = strict_setting_factory(str(strict))
+    elif strict is None:
+        strict = False
+        strict_setting = strict_setting_factory("false")
+    else:
+        raise exceptions.InvalidConfigurationException(
+            "Unable to parse strict setting '{}' of type '{}'".format(
+                strict, type(strict)
+            )
+        )
+
+    return strict, strict_setting

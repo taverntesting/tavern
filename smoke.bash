@@ -2,7 +2,7 @@
 
 set -ex
 
-PYVER=38
+PYVER=39
 
 tox -c tox.ini        \
   -e py${PYVER}flakes \

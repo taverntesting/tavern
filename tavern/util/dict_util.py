@@ -17,6 +17,7 @@ from tavern.util.loader import (
 
 from . import exceptions
 from .formatted_str import FormattedString
+from .strict_util import StrictSetting, extract_strict_setting
 
 logger = logging.getLogger(__name__)
 
@@ -350,7 +351,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
         KeyMismatchError: expected_val and actual_val did not match
     """
 
-    # pylint: disable=too-many-locals,too-many-statements
+    # pylint: disable=too-many-locals,too-many-statements,too-many-nested-blocks
 
     def full_err():
         """Get error in the format:
@@ -394,6 +395,8 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
             # different
             issubclass(actual_type, type(expected_val))
         )
+
+    strict, strict_setting = extract_strict_setting(strict)
 
     try:
         assert actual_val == expected_val
@@ -455,7 +458,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
             for key in to_recurse:
                 try:
                     check_keys_match_recursive(
-                        expected_val[key], actual_val[key], keys + [key], strict
+                        expected_val[key], actual_val[key], keys + [key], strict_setting
                     )
                 except KeyError:
                     logger.debug(
@@ -489,7 +492,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                         # Found one - check if it matches
                         try:
                             check_keys_match_recursive(
-                                e_val, current_response_val, keys + [i], strict
+                                e_val, current_response_val, keys + [i], strict_setting
                             )
                         except exceptions.KeyMismatchError:
                             # Doesn't match what we're looking for
@@ -500,6 +503,8 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                             )
                         else:
                             logger.debug("'%s' present in response", e_val)
+                            if strict_setting == StrictSetting.LIST_ANY_ORDER:
+                                actual_iter = iter(actual_val)
                             break
 
                 if missing:
@@ -517,11 +522,13 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
 
                 for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
                     try:
-                        check_keys_match_recursive(e_val, a_val, keys + [i], strict)
+                        check_keys_match_recursive(
+                            e_val, a_val, keys + [i], strict_setting
+                        )
                     except exceptions.KeyMismatchError as sub_e:
-                        # This should _ALWAYS_ raise an error, but it will be more
-                        # obvious where the error came from (in python 3 at least)
-                        # and will take ANYTHING into account
+                        # This should _ALWAYS_ raise an error (unless the reason it didn't match was the
+                        # 'anything' sentinel), but it will be more obvious where the error came from
+                        # (in python 3 at least) and will take ANYTHING into account
                         raise sub_e from e
         elif expected_val is ANYTHING:
             logger.debug("Actual value = '%s' - matches !anything", actual_val)

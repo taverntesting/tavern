@@ -56,6 +56,7 @@ class BaseResponse(object):
             Optionally use a validation library too
 
         Args:
+            strict: strictness setting for this block
             expected_block (dict): expected data
             block (dict): actual data
             blockname (str): 'name' of this block (params, mqtt, etc) for error messages
