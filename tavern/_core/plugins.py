@@ -21,6 +21,7 @@ class PluginHelperBase(object):
 def plugin_load_error(mgr, entry_point, err):
     """Handle import errors"""
     # pylint: disable=unused-argument
+    logger.exception("f")
     msg = "Error loading plugin {} - {}".format(entry_point, err)
     raise exceptions.PluginLoadError(msg) from err
 

@@ -11,6 +11,7 @@ pre-commit
 pygments
 twine
 wheel
+-r docs/source/requirements.txt
 
 pytest~=6.2.2
 paho-mqtt~=1.5.1
@@ -21,8 +22,8 @@ Faker~=5.8.0
 jmespath~=0.10.0
 attrs~=20.3.0
 jsonschema~=3.2.0
-pykwalify~=1.7.0
-PyJWT~=1.7.1
+pykwalify~=1.8.0
+PyJWT~=2.0.0
 stevedore~=3.3.0
 itsdangerous~=1.1.0
 setuptools~=51.1.2
