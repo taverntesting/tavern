@@ -468,6 +468,49 @@ stages:
 
 ---
 
+test_name: Test matching any order on json nested
+
+strict:
+  - json:list_any_order
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match some things in list, in any order
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      json:
+        top:
+        - b
+        - key: val
+        - a
+
+---
+
+test_name: Test matching any order on json nested
+
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match some things in list, in any order
+    request:
+      url: "{host}/fake_list"
+    response:
+      strict:
+        - json:list_any_order
+      status_code: 200
+      json:
+        top:
+        - b
+        - key: val
+
+---
+
 test_name: Test non-strict key matching in one stage does not leak over to the next
 
 _xfail: run

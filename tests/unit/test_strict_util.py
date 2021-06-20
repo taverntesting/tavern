@@ -19,7 +19,7 @@ def test_extract_strict_setting_true(strict):
         StrictSetting.LIST_ANY_ORDER,
         StrictSetting.UNSET,
         StrictOption("json", StrictSetting.OFF),
-        None
+        None,
     ],
 )
 def test_extract_strict_setting_false(strict):
