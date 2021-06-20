@@ -2,7 +2,7 @@ import copy
 
 import attr
 
-from tavern.util.strict_util import _StrictSetting
+from tavern.util.strict_util import StrictSetting
 
 
 @attr.s(frozen=True)
@@ -24,7 +24,7 @@ class TestConfig:
     """
 
     variables = attr.ib(type=dict)
-    strict = attr.ib(type=_StrictSetting)
+    strict = attr.ib(type=StrictSetting)
     follow_redirects = attr.ib(type=bool)
     stages = attr.ib(type=list)
 
