@@ -17,7 +17,7 @@ from tavern.util.loader import (
 
 from . import exceptions
 from .formatted_str import FormattedString
-from .strict_util import StrictOption, StrictSetting, strict_setting_factory
+from .strict_util import StrictSetting, extract_strict_setting
 
 logger = logging.getLogger(__name__)
 
@@ -396,17 +396,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
             issubclass(actual_type, type(expected_val))
         )
 
-    if isinstance(strict, StrictSetting):
-        strict_option = strict
-        strict = strict == StrictSetting.ON
-    elif isinstance(strict, StrictOption):
-        strict_option = strict.setting
-        strict = strict.is_on()
-    elif isinstance(strict, bool):
-        strict_option = strict_setting_factory(str(strict))
-    elif strict is None:
-        strict = False
-        strict_option = strict_setting_factory("false")
+    strict, strict_setting = extract_strict_setting(strict)
 
     try:
         assert actual_val == expected_val
@@ -468,7 +458,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
             for key in to_recurse:
                 try:
                     check_keys_match_recursive(
-                        expected_val[key], actual_val[key], keys + [key], strict_option
+                        expected_val[key], actual_val[key], keys + [key], strict_setting
                     )
                 except KeyError:
                     logger.debug(
@@ -502,7 +492,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                         # Found one - check if it matches
                         try:
                             check_keys_match_recursive(
-                                e_val, current_response_val, keys + [i], strict_option
+                                e_val, current_response_val, keys + [i], strict_setting
                             )
                         except exceptions.KeyMismatchError:
                             # Doesn't match what we're looking for
@@ -513,7 +503,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                             )
                         else:
                             logger.debug("'%s' present in response", e_val)
-                            if strict_option == StrictSetting.LIST_ANY_ORDER:
+                            if strict_setting == StrictSetting.LIST_ANY_ORDER:
                                 actual_iter = iter(actual_val)
                             break
 
@@ -533,7 +523,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                 for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
                     try:
                         check_keys_match_recursive(
-                            e_val, a_val, keys + [i], strict_option
+                            e_val, a_val, keys + [i], strict_setting
                         )
                     except exceptions.KeyMismatchError as sub_e:
                         # This should _ALWAYS_ raise an error (unless the reason it didn't match was the

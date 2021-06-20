@@ -115,3 +115,26 @@ class StrictLevel:
     @classmethod
     def all_off(cls):
         return cls.from_options([i + ":off" for i in valid_keys])
+
+
+def extract_strict_setting(strict):
+    """Takes either a bool, StrictOption, or a StrictSetting and return the bool representation and StrictSetting representation"""
+    if isinstance(strict, StrictSetting):
+        strict_setting = strict
+        strict = strict == StrictSetting.ON
+    elif isinstance(strict, StrictOption):
+        strict_setting = strict.setting
+        strict = strict.is_on()
+    elif isinstance(strict, bool):
+        strict_setting = strict_setting_factory(str(strict))
+    elif strict is None:
+        strict = False
+        strict_setting = strict_setting_factory("false")
+    else:
+        raise exceptions.InvalidConfigurationException(
+            "Unable to parse strict setting '{}' of type '{}'".format(
+                strict, type(strict)
+            )
+        )
+
+    return strict, strict_setting
