@@ -13,7 +13,7 @@ from tavern.plugins import load_plugins
 from tavern.util.exceptions import BadSchemaError
 from tavern.util.loader import IncludeLoader, load_single_document_yaml
 
-core.yaml.safe_load = functools.partial(yaml.load, Loader=IncludeLoader)
+core.yml.safe_load = functools.partial(yaml.load, Loader=IncludeLoader)
 
 logger = logging.getLogger(__name__)
 

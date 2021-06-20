@@ -72,6 +72,7 @@ def validate_jwt(response, jwt_key, **kwargs):
         dict: dictionary of jwt: boxed jwt claims
     """
     token = response.json()[jwt_key]
+
     decoded = jwt.decode(token, **kwargs)
 
     logger.debug("Decoded jwt to %s", decoded)

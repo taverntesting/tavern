@@ -81,11 +81,11 @@ class SourceMappingConstructor(SafeConstructor):
 
 
 SourceMappingConstructor.add_constructor(
-    u"tag:yaml.org,2002:map", SourceMappingConstructor.construct_yaml_map
+    "tag:yaml.org,2002:map", SourceMappingConstructor.construct_yaml_map
 )
 
 SourceMappingConstructor.add_constructor(
-    u"tag:yaml.org,2002:seq", SourceMappingConstructor.construct_yaml_seq
+    "tag:yaml.org,2002:seq", SourceMappingConstructor.construct_yaml_seq
 )
 
 yaml.add_representer(dict_node, yaml.representer.SafeRepresenter.represent_dict)
@@ -142,7 +142,7 @@ def _get_include_dirs(loader):
 
 
 def find_include(loader, node):
-    """Locate an include file and return the abs path. """
+    """Locate an include file and return the abs path."""
     for directory in _get_include_dirs(loader):
         filename = os.path.abspath(
             os.path.join(directory, loader.construct_scalar(node))

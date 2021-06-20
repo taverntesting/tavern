@@ -360,7 +360,7 @@ def validate_cert_tuple_or_str(value, rule_obj, path):
 
 
 def validate_file_spec(value, rule_obj, path):
-    """Validate file upload arguments """
+    """Validate file upload arguments"""
     # pylint: disable=unused-argument
 
     if not isinstance(value, dict):
