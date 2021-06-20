@@ -4,7 +4,7 @@ set -ex
 
 PYVER=39
 
-tox -c tox.ini        \
+tox --parallel -c tox.ini        \
   -e py${PYVER}flakes \
   -e py${PYVER}       \
   -e py${PYVER}black  \
