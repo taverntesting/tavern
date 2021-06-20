@@ -3,8 +3,7 @@ load("@tavern_deps//:requirements.bzl", "requirement")
 exports_files(["pytest.ini"])
 
 py_library(
-    name = "setup",
-    srcs = ["setup.py"],
+    name = "tavern",
     visibility = ["//visibility:public"],
     deps = [
         "//tavern",
@@ -52,6 +51,6 @@ py_wheel(
     version = "1.11.1",
     visibility = ["//visibility:public"],
     deps = [
-        ":setup",
+        ":tavern",
     ],
 )

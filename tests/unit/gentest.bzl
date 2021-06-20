@@ -8,12 +8,14 @@ def gentest(filename):
         args = [
             "-c",
             "pytest.ini",
+            "--color",
+            "yes",
         ],
         data = ["//:pytest.ini"],
         deps = [
             ":conftest",
             "//tests:conftest",
-            "//:setup",
+            "//:tavern",
             requirement("faker"),
             requirement("text_unidecode"),
             requirement("colorlog"),

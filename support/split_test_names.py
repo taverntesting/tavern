@@ -1,7 +1,7 @@
 import re
+import sys
 
 import more_itertools
-import sys
 
 
 def strip_generated_names(name):
