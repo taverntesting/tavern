@@ -479,7 +479,7 @@ includes:
 stages:
   - name: match some things in list, in any order
     request:
-      url: "{host}/fake_list"
+      url: "{host}/nested_list"
     response:
       status_code: 200
       json:
@@ -499,7 +499,7 @@ includes:
 stages:
   - name: match some things in list, in any order
     request:
-      url: "{host}/fake_list"
+      url: "{host}/nested_list"
     response:
       strict:
         - json:list_any_order
