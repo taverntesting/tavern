@@ -1,5 +1,5 @@
 [GLOBAL]
-pants_version = "2.1.0"
+pants_version = "2.4.2"
 
 backend_packages.add = [
     "pants.backend.python",
@@ -49,3 +49,9 @@ config = ".pylintrc"
 
 [pytest]
 version = "pytest>=5.4.3,<7"
+
+[python-infer]
+inits = true
+
+#[setup-py-generation]
+#first_party_depenency_version_scheme = "compatible"
