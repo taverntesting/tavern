@@ -18,6 +18,7 @@ python_distribution(
         "//tavern",
         "//tavern/_plugins",
         "//tavern/_plugins/mqtt",
+        "//tavern/_plugins/mqtt:schema_yaml",
         "//tavern/_plugins/rest",
         "//tavern/request",
         "//tavern/response",
