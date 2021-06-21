@@ -57,4 +57,4 @@ python_download_sdk(
     version = "3.8.3",
 )
 
-#register_toolchains("//support/rules:py3_toolchain")
+register_toolchains("//support/rules:py3_toolchain")

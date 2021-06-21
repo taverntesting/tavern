@@ -9,7 +9,7 @@ def _sdk_build_file(ctx):
     ctx.file("ROOT")
     ctx.template(
         "BUILD.bazel",
-        Label("@tavern//support/private:BUILD.sdk.bazel"),
+        Label("@tavern//support/private:BUILD.sdk.bzl"),
         executable = False,
         substitutions = {
             "{arch}": "linux_amd64",

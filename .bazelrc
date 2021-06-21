@@ -1,2 +1,3 @@
 test --test_output=errors
 test --action_env="GTEST_COLOR=1"
+common --curses=no
