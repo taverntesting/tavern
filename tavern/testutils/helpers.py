@@ -2,6 +2,7 @@ import importlib
 import json
 import logging
 import re
+import warnings
 
 from box import Box
 import jmespath
@@ -72,6 +73,12 @@ def validate_jwt(response, jwt_key, **kwargs):
         dict: dictionary of jwt: boxed jwt claims
     """
     token = response.json()[jwt_key]
+
+    if "algorithm" not in kwargs:
+        warnings.warn(
+            "Not passing the 'algorithm' parameter will be an error in a future release of Tavern",
+            FutureWarning,
+        )
 
     decoded = jwt.decode(token, **kwargs)
 
