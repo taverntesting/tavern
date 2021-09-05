@@ -145,6 +145,7 @@ class TestTavernRepr:
     @pytest.fixture(autouse=True, scope="session")
     def add_opts(self, pytestconfig):
         from tavern.testutils.pytesthook.hooks import pytest_addoption
+
         try:
             pytest_addoption(pytestconfig._parser)
         except ValueError:
