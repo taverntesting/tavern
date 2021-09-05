@@ -119,6 +119,9 @@ class StrictLevel:
 
 def extract_strict_setting(strict):
     """Takes either a bool, StrictOption, or a StrictSetting and return the bool representation and StrictSetting representation"""
+
+    logger.debug("Parsing a '%s': %s", type(strict), strict)
+
     if isinstance(strict, StrictSetting):
         strict_setting = strict
         strict = strict == StrictSetting.ON

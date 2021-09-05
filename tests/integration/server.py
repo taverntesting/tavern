@@ -1,6 +1,7 @@
 import base64
 import itertools
 import json
+import math
 import mimetypes
 import os
 import time
@@ -8,7 +9,6 @@ from urllib.parse import unquote_plus
 import uuid
 
 from flask import Flask, Response, jsonify, redirect, request
-import math
 
 app = Flask(__name__)
 
@@ -315,3 +315,8 @@ def return_with_dot():
 @app.route("/uuid/v4", methods=["GET"])
 def get_uuid_v4():
     return jsonify({"uuid": uuid.uuid4()}), 200
+
+
+@app.route("/707-regression", methods=["GET"])
+def get_707():
+    return jsonify({"a": 1, "b": {"first": 10, "second": 20}, "c": 2})
