@@ -557,3 +557,23 @@ stages:
       strict: true
       json:
         - c
+
+---
+
+test_name: strict test
+
+_xfail: run
+
+stages:
+- name: Simple get
+  request:
+    url: "{global_host}/707-regression"
+    method: GET
+  response:
+    status_code: 200
+    json:
+      a: 1
+      b:
+        first: 10
+        # second: 20
+      c: 2

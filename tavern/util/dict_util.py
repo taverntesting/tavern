@@ -396,7 +396,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
             issubclass(actual_type, type(expected_val))
         )
 
-    strict, strict_setting = extract_strict_setting(strict)
+    strict_bool, strict_setting = extract_strict_setting(strict)
 
     try:
         assert actual_val == expected_val
@@ -441,12 +441,12 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
 
                 # If there are more keys in 'expected' compared to 'actual',
                 # this is still a hard error and we shouldn't continue
-                if extra_expected_keys or strict:
+                if extra_expected_keys or strict_bool:
                     raise exceptions.KeyMismatchError(full_msg) from e
                 else:
                     logger.debug(
                         "Mismatch in returned data, continuing due to strict=%s: %s",
-                        strict,
+                        strict_bool,
                         full_msg,
                         exc_info=True,
                     )
@@ -458,16 +458,16 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
             for key in to_recurse:
                 try:
                     check_keys_match_recursive(
-                        expected_val[key], actual_val[key], keys + [key], strict_setting
+                        expected_val[key], actual_val[key], keys + [key], strict
                     )
                 except KeyError:
                     logger.debug(
                         "Skipping comparing missing key '%s' due to strict=%s",
                         key,
-                        strict,
+                        strict_bool,
                     )
         elif isinstance(expected_val, list):
-            if not strict:
+            if not strict_bool:
                 missing = []
 
                 actual_iter = iter(actual_val)
@@ -492,7 +492,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
                         # Found one - check if it matches
                         try:
                             check_keys_match_recursive(
-                                e_val, current_response_val, keys + [i], strict_setting
+                                e_val, current_response_val, keys + [i], strict
                             )
                         except exceptions.KeyMismatchError:
                             # Doesn't match what we're looking for
@@ -522,9 +522,7 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
 
                 for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):
                     try:
-                        check_keys_match_recursive(
-                            e_val, a_val, keys + [i], strict_setting
-                        )
+                        check_keys_match_recursive(e_val, a_val, keys + [i], strict)
                     except exceptions.KeyMismatchError as sub_e:
                         # This should _ALWAYS_ raise an error (unless the reason it didn't match was the
                         # 'anything' sentinel), but it will be more obvious where the error came from

@@ -9,6 +9,10 @@ from tavern.util.strict_util import StrictOption, StrictSetting, extract_strict_
 def test_extract_strict_setting_true(strict):
     as_bool, as_setting = extract_strict_setting(strict)
     assert as_bool is True
+    if isinstance(strict, StrictSetting):
+        assert as_setting == strict
+    if isinstance(strict, StrictOption):
+        assert as_setting == strict.setting
 
 
 @pytest.mark.parametrize(
@@ -25,3 +29,7 @@ def test_extract_strict_setting_true(strict):
 def test_extract_strict_setting_false(strict):
     as_bool, as_setting = extract_strict_setting(strict)
     assert as_bool is False
+    if isinstance(strict, StrictSetting):
+        assert as_setting == strict
+    if isinstance(strict, StrictOption):
+        assert as_setting == strict.setting
