@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from collections.abc import Mapping
+from collections.abc import Mapping, Iterable
 import logging
 from textwrap import indent
 import traceback
@@ -82,6 +82,8 @@ class BaseResponse(object):
 
         if isinstance(block, Mapping):
             block = dict(block)
+        elif isinstance(block, Iterable):
+            block = dict(enumerate(block))
 
         logger.debug("expected = %s, actual = %s", expected_block, block)
 
