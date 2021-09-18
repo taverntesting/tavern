@@ -1,11 +1,11 @@
 ---
 
-test_name: Make sure server doubles number properly
+test_name: Hook example
 
 stages:
   - name: Make sure number is returned correctly
     request:
-      url: http://localhost:5000/double
+      url: http://localhost:5003/example/hooks/double
       json:
         number: 5
       method: POST
@@ -18,7 +18,7 @@ stages:
 
   - name: Make sure number is returned correctly again
     request:
-      url: http://localhost:5000/double
+      url: http://localhost:5003/example/hooks/double
       json:
         number: 10
       method: POST
