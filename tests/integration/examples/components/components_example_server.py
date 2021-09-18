@@ -1,17 +1,18 @@
 import datetime
 import functools
 
-from flask import Flask, jsonify, request
+from flask import Blueprint, jsonify, request
 import jwt
 
-app = Flask(__name__)
+
+blueprint = Blueprint("example_components", __name__)
 
 SECRET = "CGQgaG7GYvTcpaQZqosLy5"
 DATABASE = "/tmp/test_db"
 SERVERNAME = "testserver"
 
 
-@app.route("/login", methods=["POST"])
+@blueprint.route("/login", methods=["POST"])
 def login():
     r = request.get_json()
 
@@ -55,13 +56,13 @@ def requires_jwt(endpoint):
     return check_auth_call
 
 
-@app.route("/ping", methods=["GET"])
+@blueprint.route("/ping", methods=["GET"])
 @requires_jwt
 def ping():
     return jsonify({"data": "pong"}), 200
 
 
-@app.route("/hello/<name>", methods=["GET"])
+@blueprint.route("/hello/<name>", methods=["GET"])
 @requires_jwt
 def hello(name):
     return jsonify({"data": "Hello, {}".format(name)}), 200
