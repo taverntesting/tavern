@@ -8,9 +8,19 @@ import time
 from urllib.parse import unquote_plus
 import uuid
 
-from flask import Flask, Response, jsonify, redirect, request
+from flask import Flask, Response, g, jsonify, redirect, request
+
+from examples.advanced.advanced_example_server import blueprint
 
 app = Flask(__name__)
+app.register_blueprint(blueprint, url_prefix="/example/advanced")
+
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, "_database", None)
+    if db is not None:
+        db.close()
 
 
 @app.route("/token", methods=["GET"])

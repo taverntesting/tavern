@@ -9,7 +9,7 @@ stages:
   - &login_request
     name: login
     request:
-      url: "{service.proto:s}://{service.host:s}:{service.port:d}/login"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/example/advanced/login"
       json:
         user: test-user
         password: correct-password
@@ -47,7 +47,7 @@ stages:
   - &reset_request
     name: reset database for test
     request:
-      url: "{service.proto:s}://{service.host:s}:{service.port:d}/reset"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/example/advanced/reset"
       method: POST
     response:
       status_code: 204
@@ -56,7 +56,7 @@ stages:
 
   - name: post a number
     request:
-      url: "{service.proto:s}://{service.host:s}:{service.port:d}/numbers"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/example/advanced/numbers"
       json:
         name: smallnumber
         number: 123
@@ -71,7 +71,7 @@ stages:
 
   - name: Make sure its in the db
     request:
-      url: "{service.proto:s}://{service.host:s}:{service.port:d}/numbers"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/example/advanced/numbers"
       params:
         name: smallnumber
       method: GET
@@ -87,7 +87,7 @@ stages:
 
   - name: double it
     request:
-      url: "{service.proto:s}://{service.host:s}:{service.port:d}/double"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/example/advanced/double"
       json:
         name: smallnumber
       method: POST
@@ -105,7 +105,7 @@ stages:
 
   - name: Make sure db has been updated properly
     request:
-      url: "{service.proto:s}://{service.host:s}:{service.port:d}/numbers"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/example/advanced/numbers"
       params:
         name: smallnumber
       method: GET
@@ -132,7 +132,7 @@ stages:
 
   - name: double it
     request:
-      url: "{service.proto:s}://{service.host:s}:{service.port:d}/numbers"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/example/advanced/numbers"
       params:
         name: whatnumber
       method: GET
@@ -156,7 +156,7 @@ includes:
 stages:
   - name: post a number and crate our own authorization
     request:
-      url: "{service.proto:s}://{service.host:s}:{service.port:d}/numbers"
+      url: "{service.proto:s}://{service.host:s}:{service.port:d}/example/advanced/numbers"
       json:
         name: smallnumber
         number: 123

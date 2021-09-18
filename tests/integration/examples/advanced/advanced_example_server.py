@@ -1,12 +1,11 @@
-import sqlite3
 import datetime
 import functools
-from flask import Flask, jsonify, request, g
+import sqlite3
+
+from flask import Blueprint, g, jsonify, request
 import jwt
 
-
-app = Flask(__name__)
-
+blueprint = Blueprint("example_advanced", __name__)
 
 SECRET = "CGQgaG7GYvTcpaQZqosLy4"
 DATABASE = "/tmp/test_db"
@@ -29,14 +28,7 @@ def get_db():
     return db
 
 
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, "_database", None)
-    if db is not None:
-        db.close()
-
-
-@app.route("/login", methods=["POST"])
+@blueprint.route("/login", methods=["POST"])
 def login():
     r = request.get_json()
 
@@ -80,7 +72,7 @@ def requires_jwt(endpoint):
     return check_auth_call
 
 
-@app.route("/numbers", methods=["POST"])
+@blueprint.route("/numbers", methods=["POST"])
 @requires_jwt
 def add_number():
     r = request.get_json()
@@ -99,7 +91,7 @@ def add_number():
     return jsonify({}), 201
 
 
-@app.route("/numbers", methods=["GET"])
+@blueprint.route("/numbers", methods=["GET"])
 @requires_jwt
 def get_number():
     r = request.args
@@ -122,7 +114,7 @@ def get_number():
     return jsonify({"number": number})
 
 
-@app.route("/double", methods=["POST"])
+@blueprint.route("/double", methods=["POST"])
 @requires_jwt
 def double_number():
     r = request.get_json()
@@ -146,7 +138,7 @@ def double_number():
     return jsonify({"number": double})
 
 
-@app.route("/reset", methods=["POST"])
+@blueprint.route("/reset", methods=["POST"])
 def reset_db():
     db = get_db()
 
