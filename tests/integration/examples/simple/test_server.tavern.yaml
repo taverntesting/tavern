@@ -5,7 +5,7 @@ test_name: Make sure server doubles number properly
 stages:
   - name: Make sure number is returned correctly
     request:
-      url: http://localhost:5000/double
+      url: http://localhost:5003/example/simple/double
       json:
         number: 5
       method: POST
@@ -23,7 +23,7 @@ test_name: Check invalid inputs are handled
 stages:
   - name: Make sure invalid numbers don't cause an error
     request:
-      url: http://localhost:5000/double
+      url: http://localhost:5003/example/simple/double
       json:
         number: dkfsd
       method: POST
@@ -36,7 +36,7 @@ stages:
 
   - name: Make sure it raises an error if a number isn't passed
     request:
-      url: http://localhost:5000/double
+      url: http://localhost:5003/example/simple/double
       json:
         wrong_key: 5
       method: POST
@@ -54,7 +54,7 @@ test_name: Make sure server doubles number properly in series
 stages:
   - name: Double the initial number
     request:
-      url: http://localhost:5000/double
+      url: http://localhost:5003/example/simple/double
       json:
         number: 5
       method: POST
@@ -68,7 +68,7 @@ stages:
 
   - name: Double the number again and save the result
     request:
-      url: http://localhost:5000/double
+      url: http://localhost:5003/example/simple/double
       json:
         number: !int "{value:d}"
       method: POST
@@ -82,7 +82,7 @@ stages:
 
   - name: Make sure number is the same as before
     request:
-      url: http://localhost:5000/double
+      url: http://localhost:5003/example/simple/double
       json:
         number: !int "{value:d}"
       method: POST

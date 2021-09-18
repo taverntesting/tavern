@@ -13,16 +13,17 @@ from flask import Flask, Response, g, jsonify, redirect, request
 from examples.advanced.advanced_example_server import (
     blueprint as advanced_example_blueprint,
 )
-from examples.hooks.hooks_example_server import blueprint as hooks_example_blueprint
 from examples.components.components_example_server import blueprint as components_example_blueprint
 from examples.cookies.cookies_example_server import blueprint as cookies_example_blueprint
+from examples.hooks.hooks_example_server import blueprint as hooks_example_blueprint
+from examples.simple.simple_example_server import blueprint as simple_example_blueprint
 
 app = Flask(__name__)
 app.register_blueprint(advanced_example_blueprint, url_prefix="/example/advanced")
 app.register_blueprint(hooks_example_blueprint, url_prefix="/example/hooks")
 app.register_blueprint(components_example_blueprint, url_prefix="/example/components")
 app.register_blueprint(cookies_example_blueprint, url_prefix="/example/cookies")
-
+app.register_blueprint(simple_example_blueprint, url_prefix="/example/simple")
 
 app.secret_key = "t1uNraxw+9oxUyCuXHO2G0u38ig="
 

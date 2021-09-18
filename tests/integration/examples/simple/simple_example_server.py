@@ -1,10 +1,10 @@
-from flask import Flask, jsonify, request
+from flask import Blueprint, jsonify, request
 
 
-app = Flask(__name__)
+blueprint = Blueprint("example_simple", __name__)
 
 
-@app.route("/double", methods=["POST"])
+@blueprint.route("/double", methods=["POST"])
 def double_number():
     r = request.get_json()
 
