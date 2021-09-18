@@ -1,11 +1,10 @@
 import functools
 import sqlite3
 
-from flask import Flask, jsonify, request, g, session
+from flask import Blueprint, jsonify, request, g, session
 
-app = Flask(__name__)
-app.secret_key = "t1uNraxw+9oxUyCuXHO2G0u38ig="
 
+blueprint = Blueprint("example_cookies", __name__)
 
 DATABASE = "/tmp/test_db"
 SERVERNAME = "testserver"
@@ -27,14 +26,7 @@ def get_db():
     return db
 
 
-@app.teardown_appcontext
-def close_connection(exception):
-    db = getattr(g, "_database", None)
-    if db is not None:
-        db.close()
-
-
-@app.route("/login", methods=["POST"])
+@blueprint.route("/login", methods=["POST"])
 def login():
     r = request.get_json()
 
@@ -46,8 +38,8 @@ def login():
     return jsonify({"status": "logged in"}), 200
 
 
-def requires_jwt(endpoint):
-    """ Makes sure a jwt is in the request before accepting it """
+def requires_session_cookie(endpoint):
+    """ Makes sure a session is associated with the request before accepting it """
 
     @functools.wraps(endpoint)
     def check_auth_call(*args, **kwargs):
@@ -59,8 +51,8 @@ def requires_jwt(endpoint):
     return check_auth_call
 
 
-@app.route("/numbers", methods=["POST"])
-@requires_jwt
+@blueprint.route("/numbers", methods=["POST"])
+@requires_session_cookie
 def add_number():
     r = request.get_json()
 
@@ -78,8 +70,8 @@ def add_number():
     return jsonify({}), 201
 
 
-@app.route("/numbers", methods=["GET"])
-@requires_jwt
+@blueprint.route("/numbers", methods=["GET"])
+@requires_session_cookie
 def get_number():
     r = request.args
 
@@ -101,8 +93,8 @@ def get_number():
     return jsonify({"number": number})
 
 
-@app.route("/double", methods=["POST"])
-@requires_jwt
+@blueprint.route("/double", methods=["POST"])
+@requires_session_cookie
 def double_number():
     r = request.get_json()
 
@@ -125,7 +117,7 @@ def double_number():
     return jsonify({"number": double})
 
 
-@app.route("/reset", methods=["POST"])
+@blueprint.route("/reset", methods=["POST"])
 def reset_db():
     db = get_db()
 
