@@ -44,8 +44,8 @@ SHARED_LIBS = [
     "python3.8/lib-dynload/_queue.cpython-38-x86_64-linux-gnu.so",
     "python3.8/lib-dynload/_random.cpython-38-x86_64-linux-gnu.so",
     "python3.8/lib-dynload/_sha1.cpython-38-x86_64-linux-gnu.so",
-    "python3.8/lib-dynload/_sha256.cpython-38-x86_64-linux-gnu.so",
     "python3.8/lib-dynload/_sha3.cpython-38-x86_64-linux-gnu.so",
+    "python3.8/lib-dynload/_sha256.cpython-38-x86_64-linux-gnu.so",
     "python3.8/lib-dynload/_sha512.cpython-38-x86_64-linux-gnu.so",
     "python3.8/lib-dynload/_socket.cpython-38-x86_64-linux-gnu.so",
     "python3.8/lib-dynload/_sqlite3.cpython-38-x86_64-linux-gnu.so",
@@ -60,7 +60,6 @@ SHARED_LIBS = [
     "python3.8/lib-dynload/_uuid.cpython-38-x86_64-linux-gnu.so",
     "python3.8/lib-dynload/_xxsubinterpreters.cpython-38-x86_64-linux-gnu.so",
     "python3.8/lib-dynload/_xxtestfuzz.cpython-38-x86_64-linux-gnu.so",
-    "python3.8/lib-dynload/_zoneinfo.cpython-38-x86_64-linux-gnu.so",
     "python3.8/lib-dynload/array.cpython-38-x86_64-linux-gnu.so",
     "python3.8/lib-dynload/audioop.cpython-38-x86_64-linux-gnu.so",
     "python3.8/lib-dynload/binascii.cpython-38-x86_64-linux-gnu.so",
@@ -116,7 +115,10 @@ load("@rules_python//python:defs.bzl", "py_runtime_pair")
 
 py_runtime(
     name = "tavern_py3_runtime",
-    files = ["@python_src//:libs"] + SHARED_LIBS,
+    files = [
+        ":python_built",
+        "@python_src//:libs",
+    ],
     interpreter = ":python_interpreter",
     python_version = "PY3",
 )
