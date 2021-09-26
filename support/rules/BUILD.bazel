@@ -8,6 +8,11 @@ load("@rules_foreign_cc//foreign_cc:configure.bzl", "configure_make")
 
 configure_make(
     name = "python_built",
+    args = [
+        "-j",
+        "10",
+        "altinstall",
+    ],
     configure_options = [
         # Runs a load of extra tests that we don't care about
         # "--enable-optimizations",
@@ -16,11 +21,8 @@ configure_make(
     ],
     install_prefix = "bazel_install",
     lib_source = "@python_src//:sources",
-    make_commands = [
-        "make -j 4",
-        "make -j 4 altinstall",
-    ],
     out_binaries = ["python3.8"],
+    out_static_libs = ["libpython3.8.a"],
 )
 
 genrule(
@@ -54,4 +56,15 @@ toolchain(
     ],
     toolchain = ":tavern_py_runtime_pair",
     toolchain_type = "@rules_python//python:toolchain_type",
+)
+
+load(":python_sdk.bzl", "python_create_sdk")
+
+python_create_sdk(
+    name = "hello",
+    deps = [
+        #        ":python_built",
+        ":tavern_py3_runtime",
+        ":python_interpreter",
+    ],
 )

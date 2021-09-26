@@ -19,7 +19,7 @@ py_library(
     ],
 )
 
-load("@rules_python//experimental/python:wheel.bzl", "py_wheel")
+load("@rules_python//python:packaging.bzl", "py_wheel")
 
 py_wheel(
     name = "tavern_wheel",

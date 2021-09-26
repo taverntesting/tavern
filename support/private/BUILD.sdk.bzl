@@ -19,6 +19,9 @@ filegroup(
             "Lib/**",
         ],
         allow_empty = False,
+        exclude = [
+            "Lib/test/**",
+        ],
     ),
     visibility = ["//visibility:public"],
 )

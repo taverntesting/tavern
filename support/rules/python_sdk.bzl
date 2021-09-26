@@ -60,3 +60,44 @@ python_download_sdk = repository_rule(
         "url": attr.string(default = "https://www.python.org/ftp/python/{version}/Python-{version}.tar.xz"),
     },
 )
+
+def _python_create_sdk_impl(ctx):
+    runfiles = ctx.runfiles(
+        files = ctx.files.deps,
+    )
+
+    outfile = ctx.actions.declare_file("out.txt")
+
+    ctx.actions.run_shell(
+        command = """
+        ls
+        exit 1
+        """,
+        inputs = ctx.files.deps,
+        outputs = [outfile],
+    )
+
+    exec = ctx.actions.declare_file("exec.sh")
+
+    ctx.actions.write(
+        content =
+            """
+            fd
+            echo $PYTHONPATH
+            export PYTHONPATH=external/python_src/Lib/
+            ./support/rules/python3
+            exit 1
+            """,
+        is_executable = True,
+        output = exec,
+    )
+
+    return [DefaultInfo(runfiles = runfiles, executable = exec)]
+
+python_create_sdk = rule(
+    _python_create_sdk_impl,
+    executable = True,
+    attrs = {
+        "deps": attr.label_list(),
+    },
+)
