@@ -41,7 +41,7 @@ jobs:
           python: "3.9"
           TOXCFG: tox-integration.ini
         - TOXENV: pypy3-noextra
-          python: pypy3
+          python: pypy-3.7-v7.x
           TOXCFG: tox-integration.ini
         - TOXENV: py39-mqtt
           python: "3.9"
