@@ -26,7 +26,7 @@ pytest-cov
 colorlog
 faker
 prospector[with_pyroma,with_mypy]>=1.3.0,<2
-pylint==2.5.2
+pylint
 mypy
 mypy-extensions
-isort<5
+isort>=5,<6

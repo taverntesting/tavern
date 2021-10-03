@@ -1,13 +1,17 @@
 python3_multitests(
-  sources=["conftest.py", "unit/**"],
-  dependencies=[
-    "//:tavern_wheel",
-    "//:pyest_ini",
-    ":logging_config",
-   ]
+    dependencies = [
+        "//:tavern_wheel",
+        "//:pyest_ini",
+        ":logging_config",
+        "//:colorlog",
+    ],
+    sources = [
+        "conftest.py",
+        "unit/**",
+    ],
 )
 
 resources(
-    name="logging_config",
-    sources=["logging.yaml"],
+    name = "logging_config",
+    sources = ["logging.yaml"],
 )
