@@ -3,11 +3,11 @@ import re
 
 from pykwalify.types import is_bool, is_float, is_int
 
-from tavern.util import exceptions
-from tavern.util.exceptions import BadSchemaError
-from tavern.util.extfunctions import get_pykwalify_logger, import_ext_function
-from tavern.util.loader import ApproxScalar, BoolToken, FloatToken, IntToken
-from tavern.util.strict_util import StrictLevel
+from tavern._core import exceptions
+from tavern._core.exceptions import BadSchemaError
+from tavern._core.extfunctions import get_pykwalify_logger, import_ext_function
+from tavern._core.loader import ApproxScalar, BoolToken, FloatToken, IntToken
+from tavern._core.strict_util import StrictLevel
 
 
 # To extend pykwalify's type validation, extend its internal functions

@@ -167,6 +167,7 @@ def wait_for_messages():
 
 def _reset_db(db):
     with db:
+
         def attempt(query):
             try:
                 db.execute(query)

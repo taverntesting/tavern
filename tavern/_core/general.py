@@ -1,6 +1,6 @@
 import logging
 
-from tavern.util.loader import load_single_document_yaml
+from tavern._core.loader import load_single_document_yaml
 
 from .dict_util import deep_dict_merge
 

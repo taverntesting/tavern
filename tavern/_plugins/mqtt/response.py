@@ -2,12 +2,12 @@ import json
 import logging
 import time
 
-from tavern.response.base import BaseResponse
-from tavern.testutils.pytesthook.newhooks import call_hook
-from tavern.util import exceptions
-from tavern.util.dict_util import check_keys_match_recursive
-from tavern.util.loader import ANYTHING
-from tavern.util.report import attach_yaml
+from tavern._core import exceptions
+from tavern._core.dict_util import check_keys_match_recursive
+from tavern._core.loader import ANYTHING
+from tavern._core.pytest.newhooks import call_hook
+from tavern._core.report import attach_yaml
+from tavern.response import BaseResponse
 
 logger = logging.getLogger(__name__)
 

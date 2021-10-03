@@ -13,11 +13,11 @@ import requests
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
 
-from tavern.request.base import BaseRequest
-from tavern.util import exceptions
-from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
-from tavern.util.extfunctions import update_from_ext
-from tavern.util.report import attach_yaml
+from tavern._core import exceptions
+from tavern._core.dict_util import check_expected_keys, deep_dict_merge, format_keys
+from tavern._core.extfunctions import update_from_ext
+from tavern._core.report import attach_yaml
+from tavern.request import BaseRequest
 
 logger = logging.getLogger(__name__)
 

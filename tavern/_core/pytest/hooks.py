@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from tavern.util import exceptions
+from tavern._core import exceptions
 
 from .util import add_ini_options, add_parser_options, get_option_generic
 

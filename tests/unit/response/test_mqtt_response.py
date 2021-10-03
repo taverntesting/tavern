@@ -1,10 +1,11 @@
-import pytest
 from unittest.mock import Mock
 
+import pytest
+
+from tavern._core import exceptions
+from tavern._core.strict_util import StrictLevel
 from tavern._plugins.mqtt.client import MQTTClient
 from tavern._plugins.mqtt.response import MQTTResponse
-from tavern.util import exceptions
-from tavern.util.strict_util import StrictLevel
 
 
 def test_nothing_returned_fails(includes):

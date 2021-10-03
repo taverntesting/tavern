@@ -8,10 +8,10 @@ import pykwalify
 from pykwalify import core
 import yaml
 
-from tavern.plugins import load_plugins
-from tavern.schemas.jsonschema import verify_jsonschema
-from tavern.util.exceptions import BadSchemaError
-from tavern.util.loader import load_single_document_yaml
+from tavern._core.exceptions import BadSchemaError
+from tavern._core.loader import load_single_document_yaml
+from tavern._core.plugins import load_plugins
+from tavern._core.schema.jsonschema import verify_jsonschema
 
 # core.yml.safe_load = functools.partial(yaml.load, Loader=IncludeLoader)
 
