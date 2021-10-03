@@ -267,6 +267,19 @@ def redirect_to_other_endpoint():
     return redirect("/redirect/destination", 302)
 
 
+@app.route("/redirect/loop", methods=["GET"])
+def redirect_loop():
+    try:
+        if redirect_loop.tries > 50:
+            return redirect("/redirect/destination", 302)
+        else:
+            redirect_loop.tries += 1
+    except AttributeError:
+        redirect_loop.tries = 1
+
+    return redirect("/redirect/loop", 302)
+
+
 @app.route("/redirect/destination", methods=["GET"])
 def get_redirected_to_here():
     return jsonify({"status": "successful redirect"}), 200

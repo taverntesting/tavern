@@ -1,4 +1,5 @@
 from contextlib import ExitStack
+import copy
 from copy import deepcopy
 from distutils.util import strtobool
 import functools
@@ -238,6 +239,7 @@ def run_stage(sessions, stage, test_block_config):
         stage (dict): specification of stage to be run
         test_block_config (dict): available variables for test
     """
+    stage = copy.deepcopy(stage)
     name = stage["name"]
 
     attach_stage_content(stage)
