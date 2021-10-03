@@ -1,20 +1,33 @@
+lint_ver = "3.9"
+
+
+def test_lib(lower, upper, **kwargs):
+    kwargs["dependencies"] += [":conftests"]
+
+    skips = ["flake8", "pylint", "mypy"]
+    if lower != lint_ver:
+        skips += ["black", "docformatter", "isort"]
+    for s in skips:
+        kwargs[f"skip_{s}"] = True
+
+    python_tests(
+        name=f"test_{lower}",
+        sources=[
+            "unit/test_*.py",
+        ],
+        interpreter_constraints=[f"CPython>={lower},<{upper}"],
+        **kwargs
+    )
+
+
 def python3_multitests(**kwargs):
     kwargs.pop("interpreter_constraints", None)
 
-    python_tests(
-        name=f"tests_py3.7",
-        interpreter_constraints={"CPython": ">=3.7,<3.8"},
-        **kwargs,
+    python_library(
+        name="conftests",
+        sources=["conftest.py", "unit/conftest.py"],
     )
 
-    python_tests(
-        name=f"tests_py3.8",
-        interpreter_constraints={"CPython": ">=3.8,<3.9"},
-        **kwargs,
-    )
-
-    python_tests(
-        name=f"tests_py3.9",
-        interpreter_constraints={"CPython": ">=3.9,<3.10"},
-        **kwargs,
-    )
+    test_lib("3.7", "3.8", **kwargs)
+    test_lib("3.8", "3.9", **kwargs)
+    test_lib("3.9", "3.10", **kwargs)

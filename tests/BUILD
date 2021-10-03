@@ -4,10 +4,7 @@ python3_multitests(
         "//:pyest_ini",
         ":logging_config",
         "//:colorlog",
-    ],
-    sources = [
-        "conftest.py",
-        "unit/**",
+        "//:faker",
     ],
 )
 
