@@ -6,9 +6,9 @@ from _pytest._code.code import FormattedExcinfo
 import py
 import yaml
 
-from tavern.util import exceptions
-from tavern.util.dict_util import format_keys
-from tavern.util.stage_lines import (
+from tavern._core import exceptions
+from tavern._core.dict_util import format_keys
+from tavern._core.stage_lines import (
     end_mark,
     get_stage_lines,
     read_relevant_lines,

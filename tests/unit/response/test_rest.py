@@ -2,10 +2,10 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from tavern._core import exceptions
+from tavern._core.dict_util import format_keys
+from tavern._core.loader import ANYTHING
 from tavern._plugins.rest.response import RestResponse
-from tavern.util import exceptions
-from tavern.util.dict_util import format_keys
-from tavern.util.loader import ANYTHING
 
 
 @pytest.fixture(name="example_response")
