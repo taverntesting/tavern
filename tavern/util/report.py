@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 
 
 def _prepare_yaml(val):
-    """Sanitises the formatted string into a format safe for dumping"""
+    """Sanitises the formatted string into a format safe for dumping."""
     formatted = val
 
     if isinstance(val, dict):

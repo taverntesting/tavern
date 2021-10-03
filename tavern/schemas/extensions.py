@@ -133,7 +133,7 @@ def check_usefixtures(value, rule_obj, path):
 
 
 def verify_oneof_id_name(value, rule_obj, path):
-    """Checks that if 'name' is not present, 'id' is"""
+    """Checks that if 'name' is not present, 'id' is."""
     # pylint: disable=unused-argument
 
     name = value.get("name")
@@ -196,7 +196,7 @@ def check_parametrize_marks(value, rule_obj, path):
 
 
 def validate_data_key(value, rule_obj, path):
-    """Validate the 'data' key in a http request
+    """Validate the 'data' key in a http request.
 
     From requests docs:
 
@@ -240,8 +240,10 @@ def validate_data_key(value, rule_obj, path):
 
 
 def validate_request_json(value, rule_obj, path):
-    """Performs the above match, but also matches a dict or a list. This it
-    just because it seems like you can't match a dict OR a list in pykwalify
+    """Performs the above match, but also matches a dict or a list.
+
+    This it just because it seems like you can't match a dict OR a list
+    in pykwalify
     """
 
     # pylint: disable=unused-argument
@@ -270,7 +272,7 @@ def validate_request_json(value, rule_obj, path):
 
 
 def validate_json_with_ext(value, rule_obj, path):
-    """Validate json with extensions"""
+    """Validate json with extensions."""
     validate_request_json(value, rule_obj, path)
 
     if isinstance(value, dict):
@@ -284,7 +286,7 @@ def validate_json_with_ext(value, rule_obj, path):
 
 
 def check_strict_key(value, rule_obj, path):
-    """Make sure the 'strict' key is either a bool or a list"""
+    """Make sure the 'strict' key is either a bool or a list."""
     # pylint: disable=unused-argument
 
     if not isinstance(value, list) and not is_bool_like(value):
@@ -302,7 +304,7 @@ def check_strict_key(value, rule_obj, path):
 
 
 def validate_timeout_tuple_or_float(value, rule_obj, path):
-    """Make sure timeout is a float/int or a tuple of floats/ints"""
+    """Make sure timeout is a float/int or a tuple of floats/ints."""
     # pylint: disable=unused-argument
 
     err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{}' (type {})".format(
@@ -327,7 +329,7 @@ def validate_timeout_tuple_or_float(value, rule_obj, path):
 
 
 def validate_verify_bool_or_str(value, rule_obj, path):
-    """Make sure the 'verify' key is either a bool or a str"""
+    """Make sure the 'verify' key is either a bool or a str."""
     # pylint: disable=unused-argument
 
     if not isinstance(value, (bool, str)) and not is_bool_like(value):
@@ -339,7 +341,7 @@ def validate_verify_bool_or_str(value, rule_obj, path):
 
 
 def validate_cert_tuple_or_str(value, rule_obj, path):
-    """Make sure the 'cert' key is either a str or tuple"""
+    """Make sure the 'cert' key is either a str or tuple."""
     # pylint: disable=unused-argument
 
     err_msg = (
@@ -360,7 +362,7 @@ def validate_cert_tuple_or_str(value, rule_obj, path):
 
 
 def validate_file_spec(value, rule_obj, path):
-    """Validate file upload arguments"""
+    """Validate file upload arguments."""
     # pylint: disable=unused-argument
 
     if not isinstance(value, dict):
@@ -404,7 +406,7 @@ def validate_file_spec(value, rule_obj, path):
 
 
 def raise_body_error(value, rule_obj, path):
-    """Raise an error about the deprecated 'body' key"""
+    """Raise an error about the deprecated 'body' key."""
     # pylint: disable=unused-argument
 
     msg = "The 'body' key has been replaced with 'json' in 1.0 to make it more in line with other blocks. see https://github.com/taverntesting/tavern/issues/495 for details."
@@ -412,7 +414,7 @@ def raise_body_error(value, rule_obj, path):
 
 
 def retry_variable(value, rule_obj, path):
-    """Check retry variables"""
+    """Check retry variables."""
 
     int_variable(value, rule_obj, path)
 

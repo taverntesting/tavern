@@ -17,7 +17,7 @@ class MockArgs:
 
 
 def mock_args():
-    """Get a basic test config to initialise a YamlFile object with"""
+    """Get a basic test config to initialise a YamlFile object with."""
 
     fspath = py.path.local("abc")
 
@@ -33,12 +33,12 @@ def mock_args():
 
 
 def get_basic_parametrize_mark(faker):
-    """Get a random 'normal' parametrize mark"""
+    """Get a random 'normal' parametrize mark."""
     return {"parametrize": {"key": faker.name(), "vals": [faker.name(), 2, 3]}}
 
 
 def get_joined_parametrize_mark(faker):
-    """Get a random 'combined' parametrize mark"""
+    """Get a random 'combined' parametrize mark."""
     return {
         "parametrize": {
             "key": [faker.name(), faker.name()],

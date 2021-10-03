@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_publish_args(rspec, test_block_config):
-    """Format mqtt request args
+    """Format mqtt request args.
 
     Todo:
         Anything else to do here?
@@ -34,7 +34,7 @@ def get_publish_args(rspec, test_block_config):
 
 
 class MQTTRequest(BaseRequest):
-    """Wrapper for a single mqtt request on a client
+    """Wrapper for a single mqtt request on a client.
 
     Similar to RestRequest, publishes a single message.
     """

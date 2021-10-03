@@ -82,7 +82,7 @@ def retry(stage, test_block_config):
 
 
 def maybe_format_max_retries(max_retries, test_block_config):
-    """Possibly handle max_retries validation"""
+    """Possibly handle max_retries validation."""
 
     # Probably a format variable, or just invalid (in which case it will fail further down)
     max_retries = format_keys(max_retries, test_block_config["variables"])

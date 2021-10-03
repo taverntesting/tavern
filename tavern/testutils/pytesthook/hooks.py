@@ -13,9 +13,8 @@ def pytest_addoption(parser):
 
 
 def pytest_collect_file(parent, path):
-    """On collecting files, get any files that end in .tavern.yaml or .tavern.yml as tavern
-    test files
-    """
+    """On collecting files, get any files that end in .tavern.yaml or
+    .tavern.yml as tavern test files."""
 
     if int(pytest.__version__.split(".")[0]) < 5:
         raise exceptions.TavernException("Only pytest >=5 is supported")
@@ -47,7 +46,7 @@ def pytest_collect_file(parent, path):
 
 
 def pytest_addhooks(pluginmanager):
-    """Add our custom tavern hooks"""
+    """Add our custom tavern hooks."""
     from . import newhooks  # pylint: disable=import-outside-toplevel
 
     pluginmanager.add_hookspecs(newhooks)

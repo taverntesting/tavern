@@ -46,11 +46,10 @@ class BaseResponse(object):
     @abstractmethod
     def verify(self, response):
         """Verify response against expected values and returns any values that
-        we wanted to save for use in future requests
-        """
+        we wanted to save for use in future requests."""
 
     def recurse_check_key_match(self, expected_block, block, blockname, strict):
-        """Valid returned data against expected data
+        """Valid returned data against expected data.
 
         Todo:
             Optionally use a validation library too
@@ -91,8 +90,8 @@ class BaseResponse(object):
             self._adderr(e.args[0], e=e)
 
     def _check_for_validate_functions(self, response_block):
-        """
-        See if there were any functions specified in the response block and save them for later use
+        """See if there were any functions specified in the response block and
+        save them for later use.
 
         Args:
             response_block (dict): block of external functions to call
@@ -127,7 +126,7 @@ class BaseResponse(object):
         check_deprecated_validate("json")
 
     def _maybe_run_validate_functions(self, response):
-        """Run validation functions if available
+        """Run validation functions if available.
 
         Note:
              'response' will be different depending on where this is called from
@@ -151,7 +150,8 @@ class BaseResponse(object):
                 )
 
     def maybe_get_save_values_from_ext(self, response, expected):
-        """If there is an $ext function in the save block, call it and save the response
+        """If there is an $ext function in the save block, call it and save the
+        response.
 
         Args:
             expected (dict): the expected response (incl body/json/headers/mqtt topic/etc etc)
@@ -189,7 +189,7 @@ class BaseResponse(object):
         return {}
 
     def maybe_get_save_values_from_save_block(self, key, to_check):
-        """Save a value from a specific block in the response
+        """Save a value from a specific block in the response.
 
         This is different from maybe_get_save_values_from_ext - depends on the kind of response
 

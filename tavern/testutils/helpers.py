@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 def check_exception_raised(response, exception_location):
     """Make sure the result from the server is the same as the exception we
-    expect to raise
+    expect to raise.
 
     Args:
         response (requests.Response): response object
@@ -54,7 +54,7 @@ def check_exception_raised(response, exception_location):
 
 
 def validate_jwt(response, jwt_key, **kwargs):
-    """Make sure a jwt is valid
+    """Make sure a jwt is valid.
 
     This uses the pyjwt library to decode the jwt, so any keyword args needed
     should be passed as per that library. You will probably want to use
@@ -88,7 +88,7 @@ def validate_jwt(response, jwt_key, **kwargs):
 
 
 def validate_pykwalify(response, schema):
-    """Make sure the response matches a given schema
+    """Make sure the response matches a given schema.
 
     Args:
         response (Response): reqeusts.Response object
@@ -106,7 +106,7 @@ def validate_pykwalify(response, schema):
 
 
 def validate_regex(response, expression, *, header=None, in_jmespath=None):
-    """Make sure the response matches a regex expression
+    """Make sure the response matches a regex expression.
 
     Args:
         response (requests.Response): requests.Response object
@@ -157,7 +157,7 @@ def validate_regex(response, expression, *, header=None, in_jmespath=None):
 
 
 def validate_content(response, comparisons):
-    """Asserts expected value with actual value using JMES path expression
+    """Asserts expected value with actual value using JMES path expression.
 
     Args:
         response (Response): reqeusts.Response object.

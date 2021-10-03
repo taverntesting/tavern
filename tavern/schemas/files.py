@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class SchemaCache(object):
-    """Caches loaded schemas"""
+    """Caches loaded schemas."""
 
     def __init__(self):
         self._loaded = {}
@@ -60,7 +60,7 @@ class SchemaCache(object):
             return self._loaded[mangled]
 
     def __call__(self, schema_filename, with_plugins):
-        """Load the schema file and cache it for future use
+        """Load the schema file and cache it for future use.
 
         Args:
             schema_filename (str): filename of schema
@@ -82,7 +82,7 @@ load_schema_file = SchemaCache()
 
 
 def verify_generic(to_verify, schema):
-    """Verify a generic file against a given schema
+    """Verify a generic file against a given schema.
 
     Args:
         to_verify (dict): Filename of source tests to check
@@ -111,7 +111,7 @@ def verify_generic(to_verify, schema):
 
 @contextlib.contextmanager
 def wrapfile(to_wrap):
-    """Wrap a dictionary into a temporary yaml file
+    """Wrap a dictionary into a temporary yaml file.
 
     Args:
         to_wrap (dict): Dictionary to write to temporary file
@@ -133,7 +133,7 @@ def wrapfile(to_wrap):
 
 
 def verify_tests(test_spec, with_plugins=True):
-    """Verify that a specific test block is correct
+    """Verify that a specific test block is correct.
 
     Todo:
         Load schema file once. Requires some caching of the file

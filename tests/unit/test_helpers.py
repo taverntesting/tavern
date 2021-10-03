@@ -1,8 +1,8 @@
+import json
 import sys
 import tempfile
 from textwrap import dedent
 from unittest.mock import Mock, patch
-import json
 
 import _pytest
 import pytest
@@ -130,6 +130,7 @@ class TestTavernRepr:
     @pytest.fixture(autouse=True, scope="session")
     def add_opts(self, pytestconfig):
         from tavern.testutils.pytesthook.hooks import pytest_addoption
+
         try:
             pytest_addoption(pytestconfig._parser)
         except ValueError:
@@ -148,7 +149,7 @@ class TestTavernRepr:
         return excinfo
 
     def test_not_called_for_normal_exception(self, fake_item):
-        """Does not call tavern repr for non tavern errors"""
+        """Does not call tavern repr for non tavern errors."""
         fake_info = self._make_fake_exc_info(RuntimeError)
 
         with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
@@ -168,7 +169,7 @@ class TestTavernRepr:
         assert not rmock.called
 
     def test_not_called_ini(self, fake_item):
-        """Enable ini flag, should call old style"""
+        """Enable ini flag, should call old style."""
         fake_info = self._make_fake_exc_info(exceptions.InvalidSettingsError)
 
         with patch.object(fake_item.config, "getini", return_value=True):
@@ -178,7 +179,7 @@ class TestTavernRepr:
         assert not rmock.called
 
     def test_not_called_cli(self, fake_item):
-        """Enable cli flag, should call old style"""
+        """Enable cli flag, should call old style."""
         fake_info = self._make_fake_exc_info(exceptions.InvalidSettingsError)
 
         with patch.object(fake_item.config, "getoption", return_value=True):
@@ -306,23 +307,23 @@ class TestFormatWithJson(object):
         "item", [[134], {"a": 2}, yaml, yaml.load, yaml.SafeLoader]
     )
     def test_custom_format(self, item):
-        """Can format everything"""
+        """Can format everything."""
         val = format_keys(ForceIncludeToken("{fd}"), {"fd": item})
 
         assert val == item
 
     def test_bad_format_string_extra(self):
-        """Extra things in format string"""
+        """Extra things in format string."""
         with pytest.raises(exceptions.InvalidFormattedJsonError):
             format_keys(ForceIncludeToken("{fd}gg"), {"fd": "123"})
 
     def test_bad_format_string_conversion(self):
-        """No format string"""
+        """No format string."""
         with pytest.raises(exceptions.InvalidFormattedJsonError):
             format_keys(ForceIncludeToken(""), {"fd": "123"})
 
     def test_bad_format_string_multiple(self):
-        """Multple format spec in string is disallowed"""
+        """Multple format spec in string is disallowed."""
         with pytest.raises(exceptions.InvalidFormattedJsonError):
             format_keys(ForceIncludeToken("{a}{b}"), {"fd": "123"})
 

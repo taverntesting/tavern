@@ -13,7 +13,7 @@ def get_stage_lines(stage):
 
 
 def read_relevant_lines(yaml_block, first_line, last_line):
-    """Get lines between start and end mark"""
+    """Get lines between start and end mark."""
 
     filename = start_mark(yaml_block).name
 

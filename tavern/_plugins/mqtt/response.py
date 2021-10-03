@@ -51,7 +51,7 @@ class MQTTResponse(BaseResponse):
         return payload, json_payload
 
     def _await_response(self):
-        """Actually wait for response"""
+        """Actually wait for response."""
 
         # pylint: disable=too-many-statements
 
@@ -198,7 +198,7 @@ class MQTTResponse(BaseResponse):
         return saved
 
     def verify(self, response):
-        """Ensure mqtt message has arrived
+        """Ensure mqtt message has arrived.
 
         Args:
             response: not used

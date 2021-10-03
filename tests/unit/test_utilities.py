@@ -33,7 +33,7 @@ from tavern.util.loader import (
 
 class TestValidateFunctions:
     def test_get_extension(self):
-        """Loads a validation function correctly
+        """Loads a validation function correctly.
 
         This doesn't check the signature at the time of writing
         """
@@ -43,7 +43,7 @@ class TestValidateFunctions:
         validate_extensions(spec, None, None)
 
     def test_get_extension_list(self):
-        """Loads a validation function correctly
+        """Loads a validation function correctly.
 
         This doesn't check the signature at the time of writing
         """
@@ -53,7 +53,7 @@ class TestValidateFunctions:
         validate_extensions(spec, None, None)
 
     def test_get_extension_list_empty(self):
-        """Loads a validation function correctly
+        """Loads a validation function correctly.
 
         This doesn't check the signature at the time of writing
         """
@@ -63,7 +63,7 @@ class TestValidateFunctions:
         validate_extensions(spec, None, None)
 
     def test_get_invalid_module(self):
-        """Nonexistent module"""
+        """Nonexistent module."""
 
         spec = {"function": "bleuuerhug:add"}
 
@@ -71,7 +71,7 @@ class TestValidateFunctions:
             validate_extensions(spec, None, None)
 
     def test_get_nonexistent_function(self):
-        """No name in module"""
+        """No name in module."""
 
         spec = {"function": "os:aaueurhg"}
 
@@ -81,7 +81,7 @@ class TestValidateFunctions:
 
 class TestDictMerge:
     def test_single_level(self):
-        """Merge two depth-one dicts with no conflicts"""
+        """Merge two depth-one dicts with no conflicts."""
         dict_1 = {"key_1": "original_value_1", "key_2": "original_value_2"}
         dict_2 = {"key_2": "new_value_2", "key_3": "new_value_3"}
 
@@ -96,7 +96,7 @@ class TestDictMerge:
         }
 
     def test_recursive_merge(self):
-        """Merge two depth-one dicts with no conflicts"""
+        """Merge two depth-one dicts with no conflicts."""
         dict_1 = {
             "key": {"deep_key_1": "original_value_1", "deep_key_2": "original_value_2"}
         }
@@ -172,7 +172,7 @@ class TestMatchRecursive:
         check_keys_match_recursive(a, b, [])
 
     def test_match_ordered(self):
-        """Should be able to match an ordereddict"""
+        """Should be able to match an ordereddict."""
         first = dict(a=1, b=2)
 
         second = OrderedDict(b=2, a=1)
@@ -180,7 +180,7 @@ class TestMatchRecursive:
         check_keys_match_recursive(first, second, [])
 
     def test_key_case_matters(self):
-        """Make sure case of keys matters"""
+        """Make sure case of keys matters."""
         a = {"a": [{"b": "val"}]}
         b = copy.deepcopy(a)
         b["a"][0] = {"B": "val"}
@@ -189,7 +189,7 @@ class TestMatchRecursive:
             check_keys_match_recursive(a, b, [])
 
     def test_value_case_matters(self):
-        """Make sure case of values matters"""
+        """Make sure case of values matters."""
         a = {"a": [{"b": "val"}]}
         b = copy.deepcopy(a)
         b["a"][0]["b"] = "VAL"
@@ -208,7 +208,7 @@ class TestMatchRecursive:
         ],
     )
     def test_type_token_matches(self, token, response):
-        """Make sure type tokens match with generic types"""
+        """Make sure type tokens match with generic types."""
         check_keys_match_recursive(token, response, [])
 
     @pytest.mark.parametrize(
@@ -222,14 +222,15 @@ class TestMatchRecursive:
         ],
     )
     def test_type_token_no_match_errors(self, token, response):
-        """Make sure type tokens do not match if the type is wrong"""
+        """Make sure type tokens do not match if the type is wrong."""
         with pytest.raises(exceptions.KeyMismatchError):
             check_keys_match_recursive(token, response, [])
 
 
 class TestNonStrictListMatching:
     def test_match_list_items(self):
-        """Should match any 2 list items if strict is False, not if it's True"""
+        """Should match any 2 list items if strict is False, not if it's
+        True."""
         a = ["b"]
         b = ["a", "b", "c"]
 
@@ -240,7 +241,7 @@ class TestNonStrictListMatching:
 
     def test_match_multiple(self):
         """As long as they are in the right order, it can match multiple
-        items"""
+        items."""
         a = ["a", "c"]
         b = ["a", "b", "c"]
 
@@ -250,7 +251,7 @@ class TestNonStrictListMatching:
         check_keys_match_recursive(a, b, [], strict=False)
 
     def test_match_multiple_wrong_order(self):
-        """Raises an error if the expected items are in the wrong order"""
+        """Raises an error if the expected items are in the wrong order."""
         a = ["c", "a"]
         b = ["a", "b", "c"]
 
@@ -261,7 +262,7 @@ class TestNonStrictListMatching:
             check_keys_match_recursive(a, b, [], strict=False)
 
     def test_match_wrong_type(self):
-        """Can't match incorrect type"""
+        """Can't match incorrect type."""
         a = [1]
         b = ["1", "2", "3"]
 
@@ -272,7 +273,7 @@ class TestNonStrictListMatching:
             check_keys_match_recursive(a, b, [], strict=False)
 
     def test_match_list_items_more_as(self):
-        """One of them is present, the others aren't"""
+        """One of them is present, the others aren't."""
         a = ["a", "b", "c"]
         b = ["a"]
 
@@ -372,7 +373,7 @@ class TestRecurseAccess:
         (("a.0", "a[0]", "b"), ("a.1.c", "a[1].c", "d")),
     )
     def test_search_old_style(self, nested_data, old_query, new_query, expected_data):
-        """Make sure old style searches perform the same as jmes queries"""
+        """Make sure old style searches perform the same as jmes queries."""
 
         with pytest.raises(exceptions.JMESError):
             recurse_access_key(nested_data, old_query)
@@ -382,7 +383,8 @@ class TestRecurseAccess:
 
     @pytest.mark.parametrize("new_query", ("f", "a[3]", "a[1].x"))
     def test_missing_search(self, nested_data, new_query):
-        """Searching for data not in given data returns None, because of the way the jmespath library works..."""
+        """Searching for data not in given data returns None, because of the
+        way the jmespath library works..."""
 
         assert recurse_access_key(nested_data, new_query) is None
 
@@ -411,7 +413,7 @@ class TestLoadCfg:
 
     @pytest.mark.parametrize("value", ("b", "三木"))
     def test_load_utf8(self, value):
-        """if yaml has utf8 char , may load error"""
+        """if yaml has utf8 char , may load error."""
         content = f"""a: {value}""" ""
 
         with tempfile.NamedTemporaryFile(suffix=".yaml", delete=False) as f:

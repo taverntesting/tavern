@@ -8,8 +8,7 @@ class BaseRequest(object):
     @property
     @abstractmethod
     def request_vars(self):
-        """
-        Variables used in the request
+        """Variables used in the request.
 
         What is contained in the return value will change depending on the type of request
 
@@ -19,4 +18,4 @@ class BaseRequest(object):
 
     @abstractmethod
     def run(self):
-        """Run test"""
+        """Run test."""

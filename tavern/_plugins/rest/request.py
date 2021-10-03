@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_request_args(rspec, test_block_config):
-    """Format the test spec given values inthe global config
+    """Format the test spec given values inthe global config.
 
     Todo:
         Add similar functionality to validate/save $ext functions so input
@@ -149,8 +149,7 @@ def get_request_args(rspec, test_block_config):
 
 @contextlib.contextmanager
 def _set_cookies_for_request(session, request_args):
-    """
-    Possibly reset session cookies for a single request then set them back.
+    """Possibly reset session cookies for a single request then set them back.
     If no cookies were present in the request arguments, do nothing.
 
     This does not use try/finally because if it fails then we don't care about
@@ -170,8 +169,7 @@ def _set_cookies_for_request(session, request_args):
 
 
 def _check_allow_redirects(rspec, test_block_config):
-    """
-    Check for allow_redirects flag in settings/stage
+    """Check for allow_redirects flag in settings/stage.
 
     Args:
         rspec (dict): request dictionary
@@ -205,8 +203,7 @@ def _check_allow_redirects(rspec, test_block_config):
 
 
 def _read_expected_cookies(session, rspec, test_block_config):
-    """
-    Read cookies to inject into request, ignoring others which are present
+    """Read cookies to inject into request, ignoring others which are present.
 
     Args:
         session (Session): session object
@@ -231,7 +228,7 @@ def _read_expected_cookies(session, rspec, test_block_config):
         return {}
 
     def partition(pred, iterable):
-        """From itertools documentation"""
+        """From itertools documentation."""
         t1, t2 = tee(iterable)
         return list(filterfalse(pred, t1)), list(filter(pred, t2))
 
@@ -274,8 +271,7 @@ def _read_expected_cookies(session, rspec, test_block_config):
 
 
 def _read_filespec(filespec):
-    """
-    Get configuration for uploading file
+    """Get configuration for uploading file.
 
     Can either be just a path to a file or a 'long' format including content type/encoding
 
@@ -302,7 +298,7 @@ def _read_filespec(filespec):
 
 def _get_file_arguments(request_args, stack, test_block_config):
     """Get corect arguments for anything that should be passed as a file to
-    requests
+    requests.
 
     Args:
         test_block_config (dict): config for test
@@ -370,7 +366,7 @@ class RestRequest(BaseRequest):
     ]
 
     def __init__(self, session, rspec, test_block_config):
-        """Prepare request
+        """Prepare request.
 
         Args:
             session (requests.Session): existing session
@@ -459,7 +455,7 @@ class RestRequest(BaseRequest):
         self._prepared = prepared_request
 
     def run(self):
-        """Runs the prepared request and times it
+        """Runs the prepared request and times it.
 
         Todo:
             time it

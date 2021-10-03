@@ -90,7 +90,7 @@ def _attempt_find_include(to_format, box_vars):
 
 
 def format_keys(val, variables, no_double_format=True):
-    """recursively format a dictionary with the given values
+    """recursively format a dictionary with the given values.
 
     Args:
         val (object): Input dictionary to format
@@ -133,8 +133,7 @@ def format_keys(val, variables, no_double_format=True):
 
 
 def recurse_access_key(data, query):
-    """
-    Search for something in the given data using the given query.
+    """Search for something in the given data using the given query.
 
     Example:
 
@@ -173,7 +172,7 @@ def recurse_access_key(data, query):
 
 def _deprecated_recurse_access_key(current_val, keys):
     """Given a list of keys and a dictionary, recursively access the dicionary
-    using the keys until we find the key its looking for
+    using the keys until we find the key its looking for.
 
     If a key is an integer, it will convert it and use it as a list index
 
@@ -221,10 +220,10 @@ def _deprecated_recurse_access_key(current_val, keys):
 
 def deep_dict_merge(initial_dct, merge_dct):
     """Recursive dict merge. Instead of updating only top-level keys,
-    dict_merge recurses down into dicts nested to an arbitrary depth
-    and returns the merged dict. Keys values present in merge_dct take
-    precedence over values in initial_dct.
-    Modified from: https://gist.github.com/angstwad/bf22d1822c38a92ec0a9
+    dict_merge recurses down into dicts nested to an arbitrary depth and
+    returns the merged dict. Keys values present in merge_dct take precedence
+    over values in initial_dct. Modified from:
+    https://gist.github.com/angstwad/bf22d1822c38a92ec0a9.
 
     Params:
         initial_dct: dict onto which the merge is executed
@@ -249,7 +248,7 @@ def deep_dict_merge(initial_dct, merge_dct):
 
 
 def check_expected_keys(expected, actual):
-    """Check that a set of expected keys is a superset of the actual keys
+    """Check that a set of expected keys is a superset of the actual keys.
 
     Args:
         expected (list, set, dict): keys we expect
@@ -272,7 +271,7 @@ def check_expected_keys(expected, actual):
 
 
 def yield_keyvals(block):
-    """Return indexes, keys and expected values for matching recursive keys
+    """Return indexes, keys and expected values for matching recursive keys.
 
     Given a list or dict, return a 3-tuple of the 'split' key (key split on
     dots), the original key, and the expected value. If the input is a list, it
@@ -319,7 +318,7 @@ def yield_keyvals(block):
 
 
 def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
-    """Utility to recursively check response values
+    """Utility to recursively check response values.
 
     expected and actual both have to be of the same type or it will raise an
     error.
@@ -549,5 +548,5 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
 
 
 def get_tavern_box() -> box.Box:
-    """Get the 'tavern' box"""
+    """Get the 'tavern' box."""
     return Box({"tavern": {"env_vars": dict(os.environ)}})

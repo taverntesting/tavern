@@ -41,17 +41,17 @@ def fix_test_dict():
 
 class TestJSON:
     def test_simple_json_body(self, test_dict):
-        """Simple json dict in request and response"""
+        """Simple json dict in request and response."""
         verify_tests(test_dict)
 
     def test_json_list_request(self, test_dict):
-        """Request contains a list"""
+        """Request contains a list."""
         test_dict["stages"][0]["request"]["json"] = [1, "text", -1]
 
         verify_tests(test_dict)
 
     def test_json_list_response(self, test_dict):
-        """Response contains a list"""
+        """Response contains a list."""
         test_dict["stages"][0]["response"]["json"] = [1, "text", -1]
 
         verify_tests(test_dict)
@@ -59,14 +59,14 @@ class TestJSON:
 
 class TestHeaders:
     def test_header_request_list(self, test_dict):
-        """Headers must always be a dict"""
+        """Headers must always be a dict."""
         test_dict["stages"][0]["request"]["headers"] = [1, "text", -1]
 
         with pytest.raises(BadSchemaError):
             verify_tests(test_dict)
 
     def test_headers_response_list(self, test_dict):
-        """Headers must always be a dict"""
+        """Headers must always be a dict."""
         test_dict["stages"][0]["response"]["headers"] = [1, "text", -1]
 
         with pytest.raises(BadSchemaError):
@@ -75,7 +75,7 @@ class TestHeaders:
 
 class TestParameters:
     def test_header_request_list(self, test_dict):
-        """Parameters must always be a dict"""
+        """Parameters must always be a dict."""
         test_dict["stages"][0]["request"]["params"] = [1, "text", -1]
 
         with pytest.raises(BadSchemaError):
@@ -85,7 +85,7 @@ class TestParameters:
 class TestTimeout:
     @pytest.mark.parametrize("incorrect_value", ("abc", True, {"a": 2}, [1, 2, 3]))
     def test_timeout_single_fail(self, test_dict, incorrect_value):
-        """Timeout must be a list of floats or a float"""
+        """Timeout must be a list of floats or a float."""
         test_dict["stages"][0]["request"]["timeout"] = incorrect_value
 
         with pytest.raises(BadSchemaError):
@@ -93,7 +93,7 @@ class TestTimeout:
 
     @pytest.mark.parametrize("incorrect_value", ("abc", True, None, {"a": 2}))
     def test_timeout_tuple_fail(self, test_dict, incorrect_value):
-        """Timeout must be a list of floats or a float"""
+        """Timeout must be a list of floats or a float."""
         test_dict["stages"][0]["request"]["timeout"] = [1, incorrect_value]
 
         with pytest.raises(BadSchemaError):
@@ -152,7 +152,7 @@ class TestBadSchemaAtCollect:
                 os.remove(wrapped_tmp.name)
 
     def test_empty_dict_val(self):
-        """Defining an empty mapping value is not allowed"""
+        """Defining an empty mapping value is not allowed."""
 
         text = dedent(
             """
@@ -178,7 +178,7 @@ class TestBadSchemaAtCollect:
                 load_single_document_yaml(filename)
 
     def test_empty_list_val(self):
-        """Defining an empty list value is not allowed"""
+        """Defining an empty list value is not allowed."""
 
         text = dedent(
             """

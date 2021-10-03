@@ -40,7 +40,7 @@ class _Subscription(object):
 
 
 def _handle_tls_args(tls_args):
-    """Make sure TLS options are valid"""
+    """Make sure TLS options are valid."""
 
     if not tls_args:
         return None
@@ -185,7 +185,7 @@ class MQTTClient(object):
 
     @staticmethod
     def _on_message(client, userdata, message):
-        """Add any messages received to the queue
+        """Add any messages received to the queue.
 
         Todo:
             If the queue is faull trigger an error in main thread somehow
@@ -200,7 +200,7 @@ class MQTTClient(object):
             logger.exception("message queue full")
 
     def message_received(self, timeout=1):
-        """Check that a message is in the message queue
+        """Check that a message is in the message queue.
 
         Args:
             timeout (int): How long to wait before signalling that the message
@@ -222,7 +222,7 @@ class MQTTClient(object):
             return msg
 
     def publish(self, topic, payload=None, qos=None, retain=None):
-        """publish message using paho library"""
+        """publish message using paho library."""
         self._wait_for_subscriptions()
 
         logger.debug("Publishing on '%s'", topic)
@@ -244,11 +244,12 @@ class MQTTClient(object):
         return msg
 
     def _wait_for_subscriptions(self):
-        """Wait for all pending subscriptions to finish"""
+        """Wait for all pending subscriptions to finish."""
         logger.debug("Checking subscriptions")
 
         def not_finished_subscribing_to():
-            """Get topic names for topics which have not finished subcribing to"""
+            """Get topic names for topics which have not finished subcribing
+            to."""
             return [i.topic for i in self._subscribed.values() if not i.subscribed]
 
         to_wait_for = not_finished_subscribing_to()
@@ -282,7 +283,7 @@ class MQTTClient(object):
             logger.debug("Finished subscribing to all topics")
 
     def subscribe(self, topic, *args, **kwargs):
-        """Subscribe to topic
+        """Subscribe to topic.
 
         should be called for every expected message in mqtt_response
         """
@@ -297,7 +298,7 @@ class MQTTClient(object):
                 logger.error("Error subscribing to '%s'", topic)
 
     def unsubscribe_all(self):
-        """Unsubscribe from all topics"""
+        """Unsubscribe from all topics."""
         with self._subscribe_lock:
             for subscription in self._subscribed.values():
                 self._client.unsubscribe(subscription.topic)

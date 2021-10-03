@@ -11,7 +11,7 @@ from tavern.util import exceptions
 
 
 def test_host_required():
-    """Always needs a host, but it's the only required key"""
+    """Always needs a host, but it's the only required key."""
     with pytest.raises(exceptions.MissingKeysError):
         MQTTClient()
 
@@ -28,12 +28,12 @@ class TestClient(object):
         return MQTTClient(**args)
 
     def test_no_message(self, fake_client):
-        """No message in queue returns None"""
+        """No message in queue returns None."""
 
         assert fake_client.message_received(0) is None
 
     def test_message_queued(self, fake_client):
-        """Returns message in queue"""
+        """Returns message in queue."""
 
         message = "abc123"
 
@@ -41,7 +41,7 @@ class TestClient(object):
         assert fake_client.message_received(0) == message
 
     def test_context_connection_failure(self, fake_client):
-        """Unable to connect on __enter__ raises MQTTError"""
+        """Unable to connect on __enter__ raises MQTTError."""
 
         fake_client._connect_timeout = 0.3
 
@@ -51,7 +51,7 @@ class TestClient(object):
                     pass
 
     def test_context_connection_success(self, fake_client):
-        """returns self on success"""
+        """returns self on success."""
 
         with patch.object(fake_client._client, "loop_start"), patch.object(
             fake_client._client, "connect_async"
@@ -61,7 +61,7 @@ class TestClient(object):
                 assert fake_client == x
 
     def test_assert_message_published(self, fake_client):
-        """If it couldn't immediately publish the message, error out"""
+        """If it couldn't immediately publish the message, error out."""
 
         class FakeMessage:
             is_published = False
@@ -74,7 +74,7 @@ class TestClient(object):
                 fake_client.publish("abc", "123")
 
     def test_assert_message_published_unknown_err(self, fake_client):
-        """Same, but with an unknown error code"""
+        """Same, but with an unknown error code."""
 
         class FakeMessage:
             is_published = False
@@ -89,7 +89,7 @@ class TestClient(object):
 
 class TestTLS(object):
     def test_missing_cert_gives_error(self):
-        """Missing TLS cert gives an error"""
+        """Missing TLS cert gives an error."""
         args = {"certfile": "/lcliueurhug/ropko3kork32"}
 
         with pytest.raises(exceptions.MQTTTLSError):
@@ -97,15 +97,14 @@ class TestTLS(object):
 
     def test_disabled_tls(self):
         """Even if there are other invalid options, disable tls and early exit
-        without checking other args
-        """
+        without checking other args."""
         args = {"certfile": "/lcliueurhug/ropko3kork32", "enable": False}
 
         parsed_args = _handle_tls_args(args)
         assert not parsed_args
 
     def test_invalid_tls_ver(self):
-        """Bad tls versions raise exception"""
+        """Bad tls versions raise exception."""
         args = {"tls_version": "custom_tls"}
 
         with pytest.raises(exceptions.MQTTTLSError):
@@ -121,21 +120,21 @@ def fix_example_request():
 
 class TestRequests:
     def test_unknown_fields(self, req, includes):
-        """Unkown args should raise an error"""
+        """Unkown args should raise an error."""
         req["fodokfowe"] = "Hello"
 
         with pytest.raises(exceptions.UnexpectedKeysError):
             MQTTRequest(Mock(), req, includes)
 
     def test_missing_format(self, req, includes):
-        """All format variables should be present"""
+        """All format variables should be present."""
         del includes["variables"]["request_topic"]
 
         with pytest.raises(exceptions.MissingFormatError):
             MQTTRequest(Mock(), req, includes)
 
     def test_correct_format(self, req, includes):
-        """All format variables should be present"""
+        """All format variables should be present."""
         MQTTRequest(Mock(), req, includes)
 
 

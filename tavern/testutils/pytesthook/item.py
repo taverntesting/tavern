@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class YamlItem(pytest.Item):
     """Simple wrapper around new test type that can report errors more
-    accurately than the default pytest reporting stuff
+    accurately than the default pytest reporting stuff.
 
     At the time of writing this doesn't print the error very nicely, but it
     should be enough to track down what went wrong
@@ -214,8 +214,8 @@ class YamlItem(pytest.Item):
     def repr_failure(self, excinfo, style=None):
         """called when self.runtest() raises an exception.
 
-        By default, will raise a custom formatted traceback if it's a tavern error. if not, will use the default
-        python traceback
+        By default, will raise a custom formatted traceback if it's a
+        tavern error. if not, will use the default python traceback
         """
 
         if (

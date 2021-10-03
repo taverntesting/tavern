@@ -9,8 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 def check_jmespath_match(parsed_response, query, expected=None):
-    """
-    Check that the JMES path given in 'query' is present in the given response
+    """Check that the JMES path given in 'query' is present in the given
+    response.
 
     Args:
         parsed_response (dict, list): Response list or dict

@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 def delay(stage, when, variables):
-    """Look for delay_before/delay_after and sleep
+    """Look for delay_before/delay_after and sleep.
 
     Args:
         stage (dict): test stage

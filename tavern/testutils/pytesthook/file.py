@@ -21,7 +21,7 @@ _format_without_inner = functools.partial(format_keys, no_double_format=False)
 
 def _format_test_marks(original_marks, fmt_vars, test_name):
     """Given the 'raw' marks from the test and any available format variables,
-    generate new  marks for this test
+    generate new  marks for this test.
 
     Args:
         original_marks (list): Raw string from test - should correspond to either a
@@ -46,7 +46,6 @@ def _format_test_marks(original_marks, fmt_vars, test_name):
         # (['tavernmarker'], [])
         # >>> _format_test_marks([{'skipif': '{skiptest}'}], {'skiptest': true}, 'abc')
         # (['tavernmarker'], [])
-
     """
 
     pytest_marks = []
@@ -84,7 +83,7 @@ def _format_test_marks(original_marks, fmt_vars, test_name):
 
 
 def _generate_parametrized_test_items(keys, vals_combination):
-    """Generate test name from given key(s)/value(s) combination
+    """Generate test name from given key(s)/value(s) combination.
 
     Args:
         keys (list): list of keys to format name with
@@ -117,7 +116,7 @@ def _generate_parametrized_test_items(keys, vals_combination):
 
 
 def _get_parametrized_items(parent, test_spec, parametrize_marks, pytest_marks):
-    """Return new items with new format values available based on the mark
+    """Return new items with new format values available based on the mark.
 
     This will change the name from something like 'test a thing' to 'test a
     thing[param1]', 'test a thing[param2]', etc. This probably messes with
@@ -169,7 +168,7 @@ def _get_parametrized_items(parent, test_spec, parametrize_marks, pytest_marks):
 
 
 class YamlFile(pytest.File):
-    """Custom `File` class that loads each test block as a different test"""
+    """Custom `File` class that loads each test block as a different test."""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -183,7 +182,8 @@ class YamlFile(pytest.File):
         self.obj = FakeObj
 
     def _get_test_fmt_vars(self, test_spec):
-        """Get any format variables that can be inferred for the test at this point
+        """Get any format variables that can be inferred for the test at this
+        point.
 
         Args:
             test_spec (dict): Test specification, possibly with included config files
@@ -218,7 +218,7 @@ class YamlFile(pytest.File):
         return tavern_box
 
     def _generate_items(self, test_spec):
-        """Modify or generate tests based on test spec
+        """Modify or generate tests based on test spec.
 
         If there are any 'parametrize' marks, this will generate extra tests
         based on the values
@@ -261,7 +261,7 @@ class YamlFile(pytest.File):
         yield item
 
     def collect(self):
-        """Load each document in the given input file into a different test
+        """Load each document in the given input file into a different test.
 
         Yields:
             YamlItem: Essentially an individual pytest 'test object'

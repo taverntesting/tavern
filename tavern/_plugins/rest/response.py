@@ -77,7 +77,7 @@ class RestResponse(BaseResponse):
             log_dict_block(redirect_query_params, "Redirect URL query parameters")
 
     def _get_redirect_query_params(self, response):
-        """If there was a redirect header, get any query parameters from it"""
+        """If there was a redirect header, get any query parameters from it."""
 
         try:
             redirect_url = response.headers["location"]
@@ -124,7 +124,7 @@ class RestResponse(BaseResponse):
 
     def verify(self, response):
         """Verify response against expected values and returns any values that
-        we wanted to save for use in future requests
+        we wanted to save for use in future requests.
 
         There are various ways to 'validate' a block - a specific function, just
         matching values, validating a schema, etc...
@@ -206,7 +206,7 @@ class RestResponse(BaseResponse):
         return saved
 
     def _validate_block(self, blockname, block):
-        """Validate a block of the response
+        """Validate a block of the response.
 
         Args:
             blockname (str): which part of the response is being checked

@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 def add_parser_options(parser_addoption, with_defaults=True):
-    """Add argparse options
+    """Add argparse options.
 
     This is shared between the CLI and pytest (for now)
 
@@ -65,7 +65,7 @@ def add_parser_options(parser_addoption, with_defaults=True):
 
 
 def add_ini_options(parser):
-    """Add an option to pass in a global config file for tavern
+    """Add an option to pass in a global config file for tavern.
 
     See also testutils.pytesthook.util.add_parser_options
     """
@@ -115,7 +115,7 @@ def add_ini_options(parser):
 
 @lru_cache()
 def load_global_cfg(pytest_config):
-    """Load globally included config files from cmdline/cfg file arguments
+    """Load globally included config files from cmdline/cfg file arguments.
 
     Args:
         pytest_config (pytest.Config): Pytest config object
@@ -156,7 +156,7 @@ def load_global_cfg(pytest_config):
 
 
 def _load_global_backends(pytest_config):
-    """Load which backend should be used"""
+    """Load which backend should be used."""
     backend_settings = {}
 
     backends = ["http", "mqtt"]
@@ -169,7 +169,7 @@ def _load_global_backends(pytest_config):
 
 
 def _load_global_strictness(pytest_config):
-    """Load the global 'strictness' setting"""
+    """Load the global 'strictness' setting."""
 
     options = get_option_generic(pytest_config, "tavern-strict", [])
 
@@ -177,19 +177,21 @@ def _load_global_strictness(pytest_config):
 
 
 def _load_global_follow_redirects(pytest_config):
-    """Load the global 'follow redirects' setting"""
+    """Load the global 'follow redirects' setting."""
     return get_option_generic(pytest_config, "tavern-always-follow-redirects", False)
 
 
 def _load_global_merge_ext(pytest_config):
-    """Load the global setting about whether external values should be merged or not"""
+    """Load the global setting about whether external values should be merged
+    or not."""
     return get_option_generic(pytest_config, "tavern-merge-ext-function-values", True)
 
 
 def get_option_generic(pytest_config, flag, default):
-    """Get a configuration option or return the default
+    """Get a configuration option or return the default.
 
-    Priority order is cmdline, then ini, then default"""
+    Priority order is cmdline, then ini, then default
+    """
     cli_flag = flag.replace("-", "_")
     ini_flag = flag
 

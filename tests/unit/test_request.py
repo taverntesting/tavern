@@ -40,21 +40,21 @@ def fix_example_request():
 
 class TestRequests(object):
     def test_unknown_fields(self, req, includes):
-        """Unkown args should raise an error"""
+        """Unkown args should raise an error."""
         req["fodokfowe"] = "Hello"
 
         with pytest.raises(exceptions.UnexpectedKeysError):
             RestRequest(Mock(), req, includes)
 
     def test_missing_format(self, req, includes):
-        """All format variables should be present"""
+        """All format variables should be present."""
         del includes["variables"]["code"]
 
         with pytest.raises(exceptions.MissingFormatError):
             RestRequest(Mock(), req, includes)
 
     def test_bad_get_body(self, req, includes):
-        """Can't add a body with a GET request"""
+        """Can't add a body with a GET request."""
         req["method"] = "GET"
 
         with pytest.warns(RuntimeWarning):
@@ -65,13 +65,13 @@ class TestRequests(object):
 
 class TestHttpRedirects(object):
     def test_session_called_no_redirects(self, req, includes):
-        """Always disable redirects by defauly"""
+        """Always disable redirects by defauly."""
 
         assert _check_allow_redirects(req, includes) == False
 
     @pytest.mark.parametrize("do_follow", [True, False])
     def test_session_do_follow_redirects_based_on_test(self, req, includes, do_follow):
-        """Locally enable following redirects in test"""
+        """Locally enable following redirects in test."""
 
         req["follow_redirects"] = do_follow
 
@@ -81,7 +81,7 @@ class TestHttpRedirects(object):
     def test_session_do_follow_redirects_based_on_global_flag(
         self, req, includes, do_follow
     ):
-        """Globally enable following redirects in test"""
+        """Globally enable following redirects in test."""
 
         includes["follow_redirects"] = do_follow
 
@@ -101,7 +101,7 @@ class TestCookies(object):
         assert _read_expected_cookies(mock_session, req, includes) == {}
 
     def test_available_not_waited(self, req, includes):
-        """some available but not set"""
+        """some available but not set."""
 
         cookiejar = RequestsCookieJar()
         cookiejar.set("a", 2)
@@ -110,7 +110,7 @@ class TestCookies(object):
         assert _read_expected_cookies(mock_session, req, includes) == None
 
     def test_ask_for_nothing(self, req, includes):
-        """explicitly ask fo rno cookies"""
+        """explicitly ask fo rno cookies."""
 
         cookiejar = RequestsCookieJar()
         cookiejar.set("a", 2)
@@ -121,7 +121,7 @@ class TestCookies(object):
         assert _read_expected_cookies(mock_session, req, includes) == {}
 
     def test_not_available_but_wanted(self, mock_session, req, includes):
-        """Some wanted but not available"""
+        """Some wanted but not available."""
 
         req["cookies"] = ["a"]
 
@@ -129,7 +129,7 @@ class TestCookies(object):
             _read_expected_cookies(mock_session, req, includes)
 
     def test_available_and_waited(self, req, includes):
-        """some available and wanted"""
+        """some available and wanted."""
 
         cookiejar = RequestsCookieJar()
         cookiejar.set("a", 2)
@@ -141,7 +141,7 @@ class TestCookies(object):
         assert _read_expected_cookies(mock_session, req, includes) == {"a": 2}
 
     def test_format_cookies(self, req, includes):
-        """cookies in request should be formatted"""
+        """cookies in request should be formatted."""
 
         cookiejar = RequestsCookieJar()
         cookiejar.set("a", 2)
@@ -154,7 +154,7 @@ class TestCookies(object):
         assert _read_expected_cookies(mock_session, req, includes) == {"a": 2}
 
     def test_no_overwrite_cookie(self, req, includes):
-        """cant redefine a cookie from previous request"""
+        """cant redefine a cookie from previous request."""
 
         cookiejar = RequestsCookieJar()
         cookiejar.set("a", 2)
@@ -167,7 +167,7 @@ class TestCookies(object):
             _read_expected_cookies(mock_session, req, includes)
 
     def test_no_duplicate_cookie(self, req, includes):
-        """Can't override a cookiev alue twice"""
+        """Can't override a cookiev alue twice."""
 
         cookiejar = RequestsCookieJar()
 
@@ -262,7 +262,7 @@ class TestRequestArgs(object):
         assert args["data"]["array"] == ["def456", "def456"]
 
     def test_file_and_json_fails(self, req, includes):
-        """Can't send json and files at once"""
+        """Can't send json and files at once."""
         req["files"] = ["abc"]
         req["json"] = {"key": "value"}
 
@@ -270,14 +270,14 @@ class TestRequestArgs(object):
             get_request_args(req, includes)
 
     def test_file_and_data_succeeds(self, req, includes):
-        """Can send form data and files at once"""
+        """Can send form data and files at once."""
         req["files"] = ["abc"]
 
         get_request_args(req, includes)
 
     @pytest.mark.parametrize("extra_headers", ({}, {"x-cool-header": "plark"}))
     def test_headers_no_content_type_change(self, req, includes, extra_headers):
-        """Sending a file doesn't set the content type as json"""
+        """Sending a file doesn't set the content type as json."""
         del req["data"]
         req["files"] = ["abc"]
 
@@ -305,11 +305,12 @@ class TestRequestArgs(object):
 class TestExtFunctions:
     @pytest.mark.parametrize("merge_values", (True, False, None))
     def test_get_from_function(self, req, merge_values):
-        """Make sure ext functions work in request
+        """Make sure ext functions work in request.
 
-        This is a bit of a silly example because we're passing a dictionary
-        instead of a string like it would be from the test, but it saves us
-        having to define another external function just for this test
+        This is a bit of a silly example because we're passing a
+        dictionary instead of a string like it would be from the test,
+        but it saves us having to define another external function just
+        for this test
         """
         to_copy = {"thing": "value"}
         original_json = {"test": "test"}
@@ -330,7 +331,7 @@ class TestExtFunctions:
 class TestOptionalDefaults:
     @pytest.mark.parametrize("verify", (True, False))
     def test_passthrough_verify(self, req, includes, verify):
-        """Should be able to pass 'verify' through to requests.request"""
+        """Should be able to pass 'verify' through to requests.request."""
 
         req["verify"] = verify
 
@@ -341,7 +342,7 @@ class TestOptionalDefaults:
 
 class TestFileBody:
     def test_file_body(self, req, includes):
-        """Test getting file body"""
+        """Test getting file body."""
 
         req.pop("data")
         req["file_body"] = "{callback_url}"
@@ -359,14 +360,14 @@ class TestGetFiles(object):
         return Mock(spec=ExitStack)
 
     def test_get_no_files(self, mock_stack, includes):
-        """No files in request -> no files"""
+        """No files in request -> no files."""
 
         request_args = {}
 
         assert _get_file_arguments(request_args, mock_stack, includes) == {}
 
     def test_get_empty_files_list(self, mock_stack, includes):
-        """No specific files specified -> no files"""
+        """No specific files specified -> no files."""
 
         request_args = {"files": {}}
 
@@ -385,7 +386,7 @@ class TestGetFiles(object):
         assert file[2] == "application/json"
 
     def test_use_long_form_content_type(self, mock_stack, includes):
-        """Use custom content type"""
+        """Use custom content type."""
 
         with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
             request_args = {
@@ -419,7 +420,7 @@ class TestGetFiles(object):
         ],
     )
     def test_format_filename(self, mock_stack, includes, file_args):
-        """Filenames should be formatted in short and long styles"""
+        """Filenames should be formatted in short and long styles."""
 
         with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
             includes["variables"]["tmpname"] = tfile.name

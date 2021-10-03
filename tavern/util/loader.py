@@ -28,7 +28,7 @@ def makeuuid(loader, node):
 
 
 class RememberComposer(Composer):
-    """A composer that doesn't forget anchors across documents"""
+    """A composer that doesn't forget anchors across documents."""
 
     def compose_document(self):
         # Drop the DOCUMENT-START event.
@@ -103,7 +103,7 @@ class IncludeLoader(
     SafeConstructor,
 ):
     """YAML Loader with `!include` constructor and which can remember anchors
-    between documents"""
+    between documents."""
 
     def __init__(self, stream):
         """Initialise Loader."""
@@ -178,7 +178,8 @@ IncludeLoader.add_constructor("!uuid", makeuuid)
 
 
 class TypeSentinel(yaml.YAMLObject):
-    """This is a sentinel for expecting a type in a response. Any value
+    """This is a sentinel for expecting a type in a response. Any value.
+
     associated with these is going to be ignored - these are only used as a
     'hint' to the validator that it should expect a specific type in the
     response.
@@ -234,9 +235,10 @@ class DictSentinel(TypeSentinel):
 
 
 class RegexSentinel(TypeSentinel):
-    """Sentinel that matches a regex in a part of the response
+    """Sentinel that matches a regex in a part of the response.
 
-    This shouldn't be used directly and instead one of the below match/fullmatch/search tokens will be used
+    This shouldn't be used directly and instead one of the below
+    match/fullmatch/search tokens will be used
     """
 
     constructor = str
@@ -290,11 +292,11 @@ class AnythingSentinel(TypeSentinel):
         return ANYTHING
 
     def __deepcopy__(self, memo):
-        """Return ANYTHING when doing a deep copy
+        """Return ANYTHING when doing a deep copy.
 
-        This is required because the checks in various parts of the code assume
-        that ANYTHING is a singleton, but doing a deep copy creates a new object
-        by default
+        This is required because the checks in various parts of the code
+        assume that ANYTHING is a singleton, but doing a deep copy
+        creates a new object by default
         """
         return ANYTHING
 
@@ -357,7 +359,8 @@ class FloatToken(TypeConvertToken):
 
 
 class StrToBoolConstructor(object):
-    """Using `bool` as a constructor directly will evaluate all strings to `True`."""
+    """Using `bool` as a constructor directly will evaluate all strings to
+    `True`."""
 
     def __new__(cls, s):
         return bool(strtobool(s))
@@ -369,7 +372,7 @@ class BoolToken(TypeConvertToken):
 
 
 class StrToRawConstructor(object):
-    """Used when we want to ignore brace formatting syntax"""
+    """Used when we want to ignore brace formatting syntax."""
 
     def __new__(cls, s):
         return str(s.replace("{", "{{").replace("}", "}}"))
@@ -381,7 +384,7 @@ class RawStrToken(TypeConvertToken):
 
 
 class ForceIncludeToken(TypeConvertToken):
-    """Magic tag that changes the way string formatting works"""
+    """Magic tag that changes the way string formatting works."""
 
     yaml_tag = "!force_format_include"
 
@@ -423,8 +426,7 @@ yaml.dumper.Dumper.add_representer(ApproxScalar, ApproxSentinel.to_yaml)
 
 
 def load_single_document_yaml(filename):
-    """
-    Load a yaml file and expect only one document
+    """Load a yaml file and expect only one document.
 
     Args:
         filename (str): path to document

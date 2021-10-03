@@ -7,7 +7,7 @@ from .dict_util import deep_dict_merge
 
 
 def get_pykwalify_logger(module):
-    """Get logger for this module
+    """Get logger for this module.
 
     Have to do it like this because the way that pykwalify load extension
     modules means that getting the logger the normal way just result sin it
@@ -15,7 +15,6 @@ def get_pykwalify_logger(module):
 
     Args:
         module (string): name of module to get logger for
-
     """
     return logging.getLogger(module)
 
@@ -26,7 +25,7 @@ def _getlogger():
 
 def import_ext_function(entrypoint):
     """Given a function name in the form of a setuptools entry point, try to
-    dynamically load and return it
+    dynamically load and return it.
 
     Args:
         entrypoint (str): setuptools-style entrypoint in the form
@@ -65,7 +64,7 @@ def import_ext_function(entrypoint):
 
 
 def get_wrapped_response_function(ext):
-    """Wraps a ext function with arguments given in the test file
+    """Wraps a ext function with arguments given in the test file.
 
     This is similar to functools.wrap, but this makes sure that 'response' is
     always the first argument passed to the function
@@ -98,7 +97,7 @@ def get_wrapped_response_function(ext):
 
 
 def get_wrapped_create_function(ext):
-    """Same as get_wrapped_response_function, but don't require a response"""
+    """Same as get_wrapped_response_function, but don't require a response."""
     args = ext.get("extra_args") or ()
     kwargs = ext.get("extra_kwargs") or {}
     func = import_ext_function(ext["function"])
@@ -115,8 +114,7 @@ def get_wrapped_create_function(ext):
 
 
 def update_from_ext(request_args, keys_to_check, test_block_config):
-    """
-    Updates the request_args dict with any values from external functions
+    """Updates the request_args dict with any values from external functions.
 
     Args:
         request_args (dict): dictionary of request args

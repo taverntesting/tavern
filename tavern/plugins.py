@@ -1,7 +1,7 @@
-"""VERY simple skeleton for plugin stuff
+"""VERY simple skeleton for plugin stuff.
 
-This is here mainly to make MQTT easier, this will almost defintiely change
-significantly if/when a proper plugin system is implemented!
+This is here mainly to make MQTT easier, this will almost defintiely
+change significantly if/when a proper plugin system is implemented!
 """
 import logging
 
@@ -16,18 +16,18 @@ logger = logging.getLogger(__name__)
 
 
 class PluginHelperBase(object):
-    """Base for plugins"""
+    """Base for plugins."""
 
 
 def plugin_load_error(mgr, entry_point, err):
-    """Handle import errors"""
+    """Handle import errors."""
     # pylint: disable=unused-argument
     msg = "Error loading plugin {} - {}".format(entry_point, err)
     raise exceptions.PluginLoadError(msg) from err
 
 
 def is_valid_reqresp_plugin(ext):
-    """Whether this is a valid 'reqresp' plugin
+    """Whether this is a valid 'reqresp' plugin.
 
     Requires certain functions/variables to be present
 
@@ -77,7 +77,7 @@ class _PluginCache(object):
             return self.plugins
 
     def _load_plugins(self, test_block_config):
-        """Load plugins from the 'tavern' entrypoint namespace
+        """Load plugins from the 'tavern' entrypoint namespace.
 
         This can be a module or a class as long as it defines the right things
 
@@ -132,7 +132,7 @@ load_plugins = _PluginCache()
 
 
 def get_extra_sessions(test_spec, test_block_config):
-    """Get extra 'sessions' for any extra test types
+    """Get extra 'sessions' for any extra test types.
 
     Args:
         test_spec (dict): Spec for the test block
@@ -164,7 +164,7 @@ def get_extra_sessions(test_spec, test_block_config):
 
 
 def get_request_type(stage, test_block_config, sessions):
-    """Get the request object for this stage
+    """Get the request object for this stage.
 
     there can only be one
 
@@ -216,7 +216,7 @@ def get_request_type(stage, test_block_config, sessions):
 
 
 def get_expected(stage, test_block_config, sessions):
-    """Get expected responses for each type of request
+    """Get expected responses for each type of request.
 
     Though only 1 request can be made, it can cause multiple responses.
 
@@ -249,7 +249,7 @@ def get_expected(stage, test_block_config, sessions):
 
 
 def get_verifiers(stage, test_block_config, sessions, expected):
-    """Get one or more response validators for this stage
+    """Get one or more response validators for this stage.
 
     Args:
         stage (dict): spec for this stage

@@ -23,7 +23,7 @@ valid_switches = ["on", "off", "list_any_order"]
 
 
 def strict_setting_factory(str_setting):
-    """Converts from cmdline/setting file to an enum"""
+    """Converts from cmdline/setting file to an enum."""
     if str_setting is None:
         return StrictSetting.UNSET
     else:
@@ -100,7 +100,8 @@ class StrictLevel:
         return cls(**{i.section: i for i in parsed})
 
     def setting_for(self, section):
-        """Provides a string-based way of getting strict settings for a section"""
+        """Provides a string-based way of getting strict settings for a
+        section."""
         try:
             return getattr(self, section)
         except AttributeError as e:
@@ -118,10 +119,10 @@ class StrictLevel:
 
 
 def extract_strict_setting(strict):
-    """Takes either a bool, StrictOption, or a StrictSetting and return the bool representation and StrictSetting representation"""
+    """Takes either a bool, StrictOption, or a StrictSetting and return the
+    bool representation and StrictSetting representation."""
 
     logger.debug("Parsing a '%s': %s", type(strict), strict)
-
     if isinstance(strict, StrictSetting):
         strict_setting = strict
         strict = strict == StrictSetting.ON

@@ -51,7 +51,7 @@ def fix_mock_response_args(fulltest):
 
 class TestRunStages:
     def test_success(self, fulltest, mockargs, includes):
-        """Successful test"""
+        """Successful test."""
 
         mock_response = Mock(**mockargs)
 
@@ -64,7 +64,7 @@ class TestRunStages:
         assert pmock.called
 
     def test_invalid_code(self, fulltest, mockargs, includes):
-        """Wrong status code"""
+        """Wrong status code."""
 
         mockargs["status_code"] = 400
 
@@ -80,7 +80,7 @@ class TestRunStages:
         assert pmock.called
 
     def test_invalid_body(self, fulltest, mockargs, includes):
-        """Wrong body returned"""
+        """Wrong body returned."""
 
         mockargs["json"] = lambda: {"wrong": "thing"}
 
@@ -96,7 +96,7 @@ class TestRunStages:
         assert pmock.called
 
     def test_invalid_headers(self, fulltest, mockargs, includes):
-        """Wrong headers"""
+        """Wrong headers."""
 
         mockargs["headers"] = {"content-type": "application/x-www-url-formencoded"}
 
@@ -143,7 +143,7 @@ class TestIncludeStages:
         assert kwargs["url"] == "http://www.google.com"
 
     def test_included_stage(self, fulltest, mockargs, includes, fake_stages):
-        """Load stage from includes"""
+        """Load stage from includes."""
         mock_response = Mock(**mockargs)
 
         stage_includes = [{"stages": fake_stages}]
@@ -161,7 +161,7 @@ class TestIncludeStages:
         self.check_mocks_called(pmock)
 
     def test_global_stage(self, fulltest, mockargs, includes, fake_stages):
-        """Load stage from global config"""
+        """Load stage from global config."""
         mock_response = Mock(**mockargs)
 
         stage_includes = []
@@ -202,7 +202,7 @@ class TestIncludeStages:
         assert not pmock.called
 
     def test_neither(self, fulltest, mockargs, includes, fake_stages):
-        """Raises error if not defined"""
+        """Raises error if not defined."""
         mock_response = Mock(**mockargs)
 
         stage_includes = []
@@ -263,7 +263,7 @@ class TestRetry:
 
 class TestDelay:
     def test_sleep_before(self, fulltest, mockargs, includes):
-        """Should sleep with delay_before in stage spec"""
+        """Should sleep with delay_before in stage spec."""
 
         fulltest["stages"][0]["delay_before"] = 2
 
@@ -280,7 +280,7 @@ class TestDelay:
         smock.assert_called_with(2)
 
     def test_sleep_after(self, fulltest, mockargs, includes):
-        """Should sleep with delay_after in stage spec"""
+        """Should sleep with delay_after in stage spec."""
 
         fulltest["stages"][0]["delay_after"] = 2
 
@@ -300,7 +300,7 @@ class TestDelay:
 class TestTavernMetaFormat:
     def test_format_env_keys(self, fulltest, mockargs, includes):
         """Should be able to get variables from the environment and use them in
-        test responses"""
+        test responses."""
 
         env_key = "SPECIAL_CI_MAGIC_COMMIT_TAG"
 
@@ -320,7 +320,7 @@ class TestTavernMetaFormat:
         assert pmock.called
 
     def test_format_env_keys_missing_failure(self, fulltest, mockargs, includes):
-        """Fails if key is not present"""
+        """Fails if key is not present."""
 
         env_key = "SPECIAL_CI_MAGIC_COMMIT_TAG"
 
@@ -335,7 +335,7 @@ class TestTavernMetaFormat:
 class TestFormatRequestVars:
     @pytest.mark.parametrize("request_key", ("params", "json", "headers"))
     def test_format_request_var_dict(self, fulltest, mockargs, includes, request_key):
-        """Variables from request should be available to format in response"""
+        """Variables from request should be available to format in response."""
 
         sent_value = str(uuid.uuid4())
 
@@ -365,7 +365,7 @@ class TestFormatRequestVars:
 
     @pytest.mark.parametrize("request_key", ("url", "method"))
     def test_format_request_var_value(self, fulltest, mockargs, includes, request_key):
-        """Variables from request should be available to format in response"""
+        """Variables from request should be available to format in response."""
 
         sent_value = str(uuid.uuid4())
 
@@ -391,7 +391,8 @@ class TestFormatRequestVars:
 
 
 class TestFormatMQTTVarsJson:
-    """Test that formatting request vars from mqtt works as well, with json payload"""
+    """Test that formatting request vars from mqtt works as well, with json
+    payload."""
 
     @pytest.fixture(name="fulltest")
     def fix_mqtt_publish_test(self):
@@ -418,7 +419,7 @@ class TestFormatMQTTVarsJson:
     def test_format_request_var_dict(self, fulltest, includes):
         """Variables from request should be available to format in response -
         this is the original keys in the input file, NOT the formatted ones
-        where 'json' is converted to 'payload' in the actual MQTT publish"""
+        where 'json' is converted to 'payload' in the actual MQTT publish."""
 
         stage = fulltest["stages"][0]
         sent = stage["mqtt_publish"]["json"]
@@ -444,7 +445,8 @@ class TestFormatMQTTVarsJson:
 
 
 class TestFormatMQTTVarsPlain:
-    """Test that formatting request vars from mqtt works as well, with normal payload"""
+    """Test that formatting request vars from mqtt works as well, with normal
+    payload."""
 
     @pytest.fixture(name="fulltest")
     def fix_mqtt_publish_test(self):
@@ -466,7 +468,7 @@ class TestFormatMQTTVarsPlain:
         return spec
 
     def test_format_request_var_value(self, fulltest, includes):
-        """Same as above but with plain keys"""
+        """Same as above but with plain keys."""
         stage = fulltest["stages"][0]
         sent = stage["mqtt_publish"]["payload"]
 

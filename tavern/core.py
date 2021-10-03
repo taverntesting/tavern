@@ -49,9 +49,8 @@ def _resolve_test_stages(test_spec, available_stages):
 
 
 def _get_included_stages(tavern_box, test_block_config, test_spec, available_stages):
-    """
-    Get any stages which were included via config files which will be available
-    for use in this test
+    """Get any stages which were included via config files which will be
+    available for use in this test.
 
     Args:
         available_stages (list): List of stages which already exist
@@ -99,7 +98,7 @@ def _get_included_stages(tavern_box, test_block_config, test_spec, available_sta
 
 
 def run_test(in_file, test_spec, global_cfg):
-    """Run a single tavern test
+    """Run a single tavern test.
 
     Note that each tavern test can consist of multiple requests (log in,
     create, update, delete, etc).
@@ -197,7 +196,7 @@ def run_test(in_file, test_spec, global_cfg):
 
 
 def _calculate_stage_strictness(stage, test_block_config, test_spec):
-    """Figure out the strictness for this stage
+    """Figure out the strictness for this stage.
 
     Can be overridden per stage, or per test
 
@@ -232,7 +231,7 @@ def _calculate_stage_strictness(stage, test_block_config, test_spec):
 
 
 def run_stage(sessions, stage, test_block_config):
-    """Run one stage from the test
+    """Run one stage from the test.
 
     Args:
         sessions (dict): Dictionary of relevant 'session' objects used for this test
@@ -273,8 +272,7 @@ def run_stage(sessions, stage, test_block_config):
 
 
 def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
-    """
-    Try to parse global configuration from given argument.
+    """Try to parse global configuration from given argument.
 
     Args:
         stack (ExitStack): context stack for wrapping file if a dictionary is given

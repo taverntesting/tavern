@@ -24,7 +24,7 @@ class ReprdError(object):
         self.item = item
 
     def _get_available_format_keys(self):
-        """Try to get the format variables for the stage
+        """Try to get the format variables for the stage.
 
         If we can't get the variable for this specific stage, just return the
         global config which will at least have some format variables
@@ -42,7 +42,7 @@ class ReprdError(object):
         return keys
 
     def _print_format_variables(self, tw, code_lines):
-        """Print a list of the format variables and their value at this stage
+        """Print a list of the format variables and their value at this stage.
 
         If the format variable is not defined, print it in red as '???'
 
@@ -55,7 +55,7 @@ class ReprdError(object):
         """
 
         def read_formatted_vars(lines):
-            """Go over all lines and try to find format variables"""
+            """Go over all lines and try to find format variables."""
             for line in lines:
                 for match in re.finditer(
                     r"(.*?:\s+!raw)?(?(1).*|.*?(?P<format_var>(?<!{){[^{]*?}))", line
@@ -104,7 +104,7 @@ class ReprdError(object):
     def _print_test_stage(
         self, tw, code_lines, missing_format_vars, line_start
     ):  # pylint: disable=no-self-use
-        """Print the direct source lines from this test stage
+        """Print the direct source lines from this test stage.
 
         If we couldn't get the stage for some reason, print the entire test out.
 
@@ -132,8 +132,8 @@ class ReprdError(object):
                 tw.line(line, white=True)
 
     def _print_formatted_stage(self, tw, stage):
-        """Print the 'formatted' stage that Tavern will actually use to send the
-        request/process the response
+        """Print the 'formatted' stage that Tavern will actually use to send
+        the request/process the response.
 
         Args:
             tw (TerminalWriter): Pytest TW instance
@@ -154,7 +154,7 @@ class ReprdError(object):
             tw.line("  {}".format(line), white=True)
 
     def _print_errors(self, tw):
-        """Print any errors in the 'normal' Pytest style
+        """Print any errors in the 'normal' Pytest style.
 
         Args:
             tw (TerminalWriter): Pytest TW instance
@@ -169,7 +169,7 @@ class ReprdError(object):
             tw.line(line, red=True, bold=True)
 
     def toterminal(self, tw):
-        """Print out a custom error message to the terminal"""
+        """Print out a custom error message to the terminal."""
 
         # Try to get the stage so we can print it out. I'm not sure if the stage
         # will ever NOT be present, but better to check just in case
