@@ -1,6 +1,6 @@
 import pytest
 
-from tavern.util.strict_util import StrictOption, StrictSetting, extract_strict_setting
+from tavern._core.strict_util import StrictSetting, StrictOption, extract_strict_setting
 
 
 @pytest.mark.parametrize(

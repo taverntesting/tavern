@@ -8,9 +8,8 @@ import logging
 import attr
 import stevedore
 
-from tavern.util.dict_util import format_keys
-
-from .util import exceptions
+from tavern._core import exceptions
+from tavern._core.dict_util import format_keys
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +21,7 @@ class PluginHelperBase(object):
 def plugin_load_error(mgr, entry_point, err):
     """Handle import errors"""
     # pylint: disable=unused-argument
+    logger.exception("f")
     msg = "Error loading plugin {} - {}".format(entry_point, err)
     raise exceptions.PluginLoadError(msg) from err
 
