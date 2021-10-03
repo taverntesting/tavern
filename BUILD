@@ -12,6 +12,11 @@ resources(
     sources = ["pytest.ini"],
 )
 
+resources(
+    name = "license",
+    sources = ["LICENSE"],
+)
+
 python_distribution(
     name = "tavern_wheel",
     dependencies = [
@@ -27,6 +32,7 @@ python_distribution(
         "//tavern/testutils",
         "//tavern/testutils/pytesthook",
         "//tavern/util",
+        "//:license",
     ],
     provides = python_artifact(
         name = "tavern",
@@ -56,7 +62,6 @@ python_distribution(
             "pytest",
         ],
         license = "MIT",
-        license_file = "LICENSE",
         long_description_file = "README.rst",
         project_urls = {
             "Documentation": "https://taverntesting.github.io/",
