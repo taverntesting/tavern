@@ -28,7 +28,7 @@ python_distribution(
         "//tavern/testutils/pytesthook",
         "//tavern/util",
     ],
-    provides = setup_py(
+    provides = python_artifact(
         name = "tavern",
         author = "Michael Boulton",
         classifiers = [
@@ -36,9 +36,9 @@ python_distribution(
             "Intended Audience :: Developers",
             "Framework :: Pytest",
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
             "Topic :: Utilities",
             "Topic :: Software Development :: Testing",
             "License :: OSI Approved :: MIT License",
@@ -57,7 +57,7 @@ python_distribution(
         ],
         license = "MIT",
         license_file = "LICENSE",
-        long_description = "file: README.rst",
+        long_description_file = "README.rst",
         project_urls = {
             "Documentation": "https://taverntesting.github.io/",
             "Source": "https://github.com/taverntesting/tavern",

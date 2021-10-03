@@ -10,6 +10,7 @@ backend_packages.add = [
     "pants.backend.python.lint.pylint",
     "pants.backend.python.typecheck.mypy",
     "pants.backend.python.mixed_interpreter_constraints",
+    "long_description",
 ]
 
 pants_ignore_use_gitignore = true
@@ -18,13 +19,17 @@ pants_ignore = ["bazel-*"]
 build_file_prelude_globs = [
     "pants-support/plugins/macros.py",
 ]
+pythonpath = ["pants-support/plugins"]
 
 [anonymous-telemetry]
 enabled = false
 
 [source]
 # The Python source root is the repo root. See https://www.pantsbuild.org/docs/source-roots.
-root_patterns = ["/"]
+root_patterns = [
+    "/",
+    "pants-support/plugins",
+]
 
 [python-setup]
 # The default interpreter compatibility for code in this repo. Individual targets can override
