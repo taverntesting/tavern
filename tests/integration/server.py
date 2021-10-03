@@ -10,7 +10,6 @@ import time
 from urllib.parse import unquote_plus
 import uuid
 
-from flask import Flask, Response, jsonify, redirect, request
 from flask import Flask, Response, jsonify, make_response, redirect, request, session
 from itsdangerous import URLSafeTimedSerializer
 

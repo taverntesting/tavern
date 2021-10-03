@@ -2,10 +2,10 @@ import logging
 
 import requests
 
-from tavern.plugins import PluginHelperBase
-from tavern.util.dict_util import format_keys
+from tavern._core import exceptions
+from tavern._core.dict_util import format_keys
+from tavern._core.plugins import PluginHelperBase
 
-from ...util import exceptions
 from .request import RestRequest
 from .response import RestResponse
 

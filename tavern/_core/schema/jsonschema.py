@@ -4,17 +4,9 @@ import jsonschema
 from jsonschema import Draft7Validator, ValidationError
 from jsonschema.validators import extend
 
-from tavern.schemas.extensions import (
-    check_parametrize_marks,
-    check_strict_key,
-    retry_variable,
-    validate_file_spec,
-    validate_json_with_ext,
-    validate_request_json,
-)
-from tavern.util.dict_util import recurse_access_key
-from tavern.util.exceptions import BadSchemaError
-from tavern.util.loader import (
+from tavern._core.dict_util import recurse_access_key
+from tavern._core.exceptions import BadSchemaError
+from tavern._core.loader import (
     AnythingSentinel,
     BoolToken,
     FloatToken,
@@ -22,6 +14,14 @@ from tavern.util.loader import (
     RawStrToken,
     TypeConvertToken,
     TypeSentinel,
+)
+from tavern._core.schema.extensions import (
+    check_parametrize_marks,
+    check_strict_key,
+    retry_variable,
+    validate_file_spec,
+    validate_json_with_ext,
+    validate_request_json,
 )
 
 logger = logging.getLogger(__name__)

@@ -16,8 +16,8 @@ from yaml.reader import Reader
 from yaml.resolver import Resolver
 from yaml.scanner import Scanner
 
-from tavern.util import exceptions
-from tavern.util.exceptions import BadSchemaError
+from tavern._core import exceptions
+from tavern._core.exceptions import BadSchemaError
 
 logger = logging.getLogger(__name__)
 

@@ -141,6 +141,7 @@ def reset_db():
 
 def _reset_db(db):
     with db:
+
         def attempt(query):
             try:
                 db.execute(query)

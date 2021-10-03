@@ -6,7 +6,7 @@ import py
 from py._path.local import LocalPath
 import pytest
 
-from tavern.testutils.pytesthook.file import YamlFile, _get_parametrized_items
+from tavern._core.pytest.file import YamlFile, _get_parametrized_items
 
 
 @dataclass
