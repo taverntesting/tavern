@@ -45,9 +45,10 @@ python_distribution(
         ],
         description = "Simple testing of RESTful APIs",
         entry_points = {
-            "pytest11": "tavern = tavern.testutils.pytesthook",
-            "tavern_http": "requests = tavern._plugins.rest.tavernhook:TavernRestPlugin",
-            "tavern_mqtt": "paho-mqtt = tavern._plugins.mqtt.tavernhook",
+            "pytest11": {"tavern": "tavern.testutils.pytesthook"},
+            "tavern_http": {"requests": "tavern._plugins.rest.tavernhook:TavernRestPlugin"},
+            "tavern_mqtt": {"paho-mqtt": "tavern._plugins.mqtt.tavernhook"},
+            "console_scripts": {"tavern-ci": "//tavern:tavern-ci"},
         },
         include_package_data = True,
         keywords = [
@@ -64,8 +65,6 @@ python_distribution(
         python_requires = ">=3.7",
         url = "https://taverntesting.github.io/",
         version = "1.11.1",
-    ).with_binaries({
-        "tavern-ci": "//tavern:tavern-ci",
-    }),
+    ),
     setup_py_commands = ["bdist_wheel"],
 )

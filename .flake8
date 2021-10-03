@@ -2,3 +2,4 @@
 ignore = E501,W503,C901,W504
 exclude = .git,__pycache__,docs/source/conf.py,build,dist
 max-complexity = 10
+python = ">=3.7,<4"

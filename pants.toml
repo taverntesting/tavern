@@ -1,5 +1,5 @@
 [GLOBAL]
-pants_version = "2.4.2"
+pants_version = "2.7.0"
 
 backend_packages.add = [
     "pants.backend.python",
@@ -9,14 +9,18 @@ backend_packages.add = [
     "pants.backend.python.lint.isort",
     "pants.backend.python.lint.pylint",
     "pants.backend.python.typecheck.mypy",
+    "pants.backend.python.mixed_interpreter_constraints",
 ]
 
 pants_ignore_use_gitignore = true
 pants_ignore = ["bazel-*"]
 
 build_file_prelude_globs = [
-    "pants-plugins/macros.py",
+    "pants-support/plugins/macros.py",
 ]
+
+[anonymous-telemetry]
+enabled = false
 
 [source]
 # The Python source root is the repo root. See https://www.pantsbuild.org/docs/source-roots.
@@ -26,32 +30,49 @@ root_patterns = ["/"]
 # The default interpreter compatibility for code in this repo. Individual targets can override
 #  this with the `interpreter_constraints` field. See
 #  https://www.pantsbuild.org/docs/python-interpreter-compatibility.
-interpreter_constraints = [">=3.7"]
+interpreter_constraints = [
+    "CPython>=3.7,<4",
+    # "PyPy3>=3.7"
+]
 # Use a constraints file. See https://www.pantsbuild.org/docs/python-third-party-dependencies.
 requirement_constraints = "constraints.txt"
 # We search for interpreters on both on the $PATH and in the `$(pyenv root)/versions` folder.
 #  If you're using macOS, you may want to leave off the <PATH> entry to avoid using the
 #  problematic system Pythons. See
 #  https://www.pantsbuild.org/docs/python-interpreter-compatibility#changing-the-interpreter-search-path.
-interpreter_search_paths = [ "<PYENV>"]
-
-[flake8]
-#config = "build-support/.flake8"
-
-[isort]
-config = [".isort.cfg"]
-
-[mypy]
-config = "mypy.ini"
-
-[pylint]
-config = ".pylintrc"
-
-[pytest]
-version = "pytest>=5.4.3,<7"
+interpreter_search_paths = ["<PYENV>"]
 
 [python-infer]
 inits = true
 
 #[setup-py-generation]
 #first_party_depenency_version_scheme = "compatible"
+
+[flake8]
+config = ".flake8"
+lockfile = "pants-support/lockfiles/flake8.lock"
+
+[setuptools]
+lockfile = "pants-support/lockfiles/setuptools.lock"
+
+[black]
+lockfile = "pants-support/lockfiles/black.lock"
+
+[coverage-py]
+lockfile = "pants-support/lockfiles/coverage-py.lock"
+
+[isort]
+config = [".isort.cfg"]
+lockfile = "pants-support/lockfiles/isort.lock"
+
+[mypy]
+config = "mypy.ini"
+lockfile = "pants-support/lockfiles/mypy.lock"
+
+[pylint]
+config = ".pylintrc"
+lockfile = "pants-support/lockfiles/pylint.lock"
+
+[pytest]
+version = "pytest>=5.4.3,<7"
+lockfile = "pants-support/lockfiles/pytest.lock"
