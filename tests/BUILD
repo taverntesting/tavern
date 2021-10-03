@@ -22,10 +22,26 @@ python3_multitests(
     ],
 )
 
+#resources(
+#    name = "tavern_test_files",
+#    sources = [
+#        "integration/*.yaml",
+#        "integration/*.txt",
+#    ],
+#)
+#
 #python_tests(
 #    name = "integration_test",
+#    dependencies = [
+#        "//:tavern_wheel",
+#        "//:pyest_ini",
+#        "//:colorlog",
+#        "//:faker",
+#        ":conftests",
+#        ":tavern_test_files",
+#    ],
 #    sources = [
 #        "conftest.py",
-#        "integration/*",
+#        "integration/*.py",
 #    ],
 #)
