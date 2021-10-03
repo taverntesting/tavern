@@ -2,7 +2,8 @@ import functools
 import importlib
 import logging
 
-from . import exceptions
+from tavern._core import exceptions
+
 from .dict_util import deep_dict_merge
 
 
@@ -34,7 +35,7 @@ def get_pykwalify_logger(module):
 
 
 def _getlogger():
-    return get_pykwalify_logger("tavern.util.extfunctions")
+    return get_pykwalify_logger("tavern._core.extfunctions")
 
 
 def import_ext_function(entrypoint):

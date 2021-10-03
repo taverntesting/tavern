@@ -263,7 +263,7 @@ stages:
       status_code: 200
       json:
         $ext: &verify_token
-          function: tavern.testutils.helpers:validate_jwt
+          function: tavern.helpers:validate_jwt
           extra_kwargs:
             jwt_key: "token"
             key: CGQgaG7GYvTcpaQZqosLy4

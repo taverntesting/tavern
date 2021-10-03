@@ -5,7 +5,7 @@ import re
 
 import attr
 
-from tavern.util import exceptions
+from tavern._core import exceptions
 
 logger = logging.getLogger(__name__)
 

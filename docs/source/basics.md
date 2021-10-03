@@ -337,7 +337,7 @@ changed to use a different library to avoid this issue.**
 # valid jwt which is signed by the given key.
 response:
   verify_response_with:
-    function: tavern.testutils.helpers:validate_jwt
+    function: tavern.helpers:validate_jwt
     extra_kwargs:
       jwt_key: "token"
       key: CGQgaG7GYvTcpaQZqosLy4
@@ -355,7 +355,7 @@ body of the response against it.
 # which has to contain a user name and may contain a user number.
 response:
   verify_response_with:
-    function: tavern.testutils.helpers:validate_pykwalify
+    function: tavern.helpers:validate_pykwalify
     extra_kwargs:
       schema:
         type: seq
@@ -518,7 +518,7 @@ For example, if our server saves the user ID in the 'sub' field of the JWT:
     status_code: 200
     verify_response_with:
       # Make sure a token exists
-      function: tavern.testutils.helpers:validate_jwt
+      function: tavern.helpers:validate_jwt
       extra_kwargs:
         jwt_key: "token"
         options:
@@ -528,7 +528,7 @@ For example, if our server saves the user ID in the 'sub' field of the JWT:
       # in the test configuration for use in future tests
       # Note the use of $ext again
       $ext:
-        function: tavern.testutils.helpers:validate_jwt
+        function: tavern.helpers:validate_jwt
         extra_kwargs:
           jwt_key: "token"
           options:
@@ -946,7 +946,7 @@ stages:
         json:
           test_user_login_token: token
       verify_response_with:
-        function: tavern.testutils.helpers:validate_jwt
+        function: tavern.helpers:validate_jwt
         extra_kwargs:
           jwt_key: "token"
           options:
@@ -1529,7 +1529,7 @@ stages:
         hash: 456
     save:
       $ext:
-        function: tavern.testutils.helpers:validate_regex
+        function: tavern.helpers:validate_regex
         extra_kwargs:
           expression: "v(?P<version>[\d\.]+)-[\w\d]+"
           in_jmespath: "meta.version"

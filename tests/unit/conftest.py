@@ -2,11 +2,10 @@ import copy
 from unittest.mock import Mock
 
 import pytest
-from unittest.mock import Mock
 
-from tavern.plugins import load_plugins
-from tavern.testutils.pytesthook.config import TavernInternalConfig, TestConfig
-from tavern.util.strict_util import StrictLevel
+from tavern._core.plugins import load_plugins
+from tavern._core.pytest.config import TavernInternalConfig, TestConfig
+from tavern._core.strict_util import StrictLevel
 
 _includes = TestConfig(
     variables={

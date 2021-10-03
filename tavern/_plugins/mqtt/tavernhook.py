@@ -3,7 +3,7 @@ from os.path import abspath, dirname, join
 
 import yaml
 
-from tavern.util.dict_util import format_keys
+from tavern._core.dict_util import format_keys
 
 from .client import MQTTClient
 from .request import MQTTRequest

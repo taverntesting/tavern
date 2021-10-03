@@ -6,8 +6,8 @@ import time
 
 import paho.mqtt.client as paho
 
-from tavern.util import exceptions
-from tavern.util.dict_util import check_expected_keys
+from tavern._core import exceptions
+from tavern._core.dict_util import check_expected_keys
 
 # MQTT error values
 _err_vals = {
@@ -325,7 +325,7 @@ class MQTTClient:
 
         while elapsed < self._connect_timeout:
             # pylint: disable=protected-access
-            if self._client._state == paho.mqtt_cs_connected:
+            if self._client.is_connected():
                 logger.debug("Connected to broker at %s", self._connect_args["host"])
                 return self
             else:

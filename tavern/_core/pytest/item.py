@@ -3,12 +3,12 @@ import logging
 import attr
 import pytest
 
-from tavern.core import run_test
-from tavern.plugins import load_plugins
-from tavern.schemas.files import verify_tests
-from tavern.testutils.pytesthook import call_hook
-from tavern.util import exceptions
-from tavern.util.report import attach_text
+from tavern._core import exceptions
+from tavern._core.plugins import load_plugins
+from tavern._core.pytest import call_hook
+from tavern._core.report import attach_text
+from tavern._core.run import run_test
+from tavern._core.schema.files import verify_tests
 
 from .error import ReprdError
 from .util import load_global_cfg
