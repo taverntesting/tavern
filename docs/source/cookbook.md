@@ -66,7 +66,7 @@ services:
   tavern:
     build:
       context: .
-      image: tavern.Dockerfile
+      dockerfile: tavern.Dockerfile
     env_file:
       # Any extra environment variables for testing
       # This will probably contain things like names of docker containers to run tests against
@@ -93,7 +93,7 @@ services:
   application:
     build:
       context: .
-      image: application.Dockerfile
+      dockerfile: application.Dockerfile
     command:
       ...
 ```
