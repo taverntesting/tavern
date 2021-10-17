@@ -14,7 +14,6 @@ from tavern.util.loader import (
     TypeConvertToken,
     TypeSentinel,
 )
-
 from . import exceptions
 from .formatted_str import FormattedString
 from .strict_util import StrictSetting, extract_strict_setting
@@ -103,7 +102,11 @@ def format_keys(val, variables, no_double_format=True):
         str,int,list,dict: recursively formatted values
     """
     formatted = val
-    box_vars = Box(variables)
+
+    if not isinstance(variables, Box):
+        box_vars = Box(variables)
+    else:
+        box_vars = variables
 
     if isinstance(val, dict):
         formatted = {}
