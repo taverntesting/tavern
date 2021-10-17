@@ -3,6 +3,7 @@ import functools
 import itertools
 import logging
 
+from box import Box
 import pytest
 import yaml
 
@@ -204,8 +205,11 @@ class YamlFile(pytest.File):
         for i in included:
             fmt_vars.update(**i.get("variables", {}))
 
-        # Needed if something in a config file uses tavern.env_vars
-        tavern_box = get_tavern_box()
+        if self.session.config.option.collectonly:
+            tavern_box = Box(default_box=True)
+        else:
+            # Needed if something in a config file uses tavern.env_vars
+            tavern_box = get_tavern_box()
 
         try:
             fmt_vars = _format_without_inner(fmt_vars, tavern_box)

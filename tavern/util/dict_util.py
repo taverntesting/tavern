@@ -103,7 +103,11 @@ def format_keys(val, variables, no_double_format=True):
         str,int,list,dict: recursively formatted values
     """
     formatted = val
-    box_vars = Box(variables)
+
+    if not isinstance(variables, Box):
+        box_vars = Box(variables)
+    else:
+        box_vars = variables
 
     if isinstance(val, dict):
         formatted = {}
