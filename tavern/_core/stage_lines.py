@@ -15,7 +15,7 @@ def get_stage_lines(stage):
 def read_relevant_lines(yaml_block, first_line, last_line):
     """Get lines between start and end mark"""
 
-    filename = start_mark(yaml_block).name
+    filename = get_stage_filename(yaml_block)
 
     if filename is None:
         logger.warning("unable to read yaml block")
@@ -25,6 +25,10 @@ def read_relevant_lines(yaml_block, first_line, last_line):
         for idx, line in enumerate(testfile.readlines()):
             if first_line < idx < last_line:
                 yield line.split("#", 1)[0].rstrip()
+
+
+def get_stage_filename(yaml_block):
+    return start_mark(yaml_block).name
 
 
 class EmptyBlock:

@@ -625,6 +625,42 @@ stages:
 
 ---
 
+test_name: Test old tag still works
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: get dictionary
+    request:
+      url: "{host}/fake_list"
+    response:
+      status_code: 200
+      json: !anylist
+      save:
+        json:
+          whole_list_body: "@"
+
+  - name: reuse dictionary
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: !force_format_include "{whole_list_body}"
+    response:
+      status_code: 200
+      json:
+        - a
+        - b
+        - c
+        - 1
+        - 2
+        - 3
+        - -1.0
+        - -2.0
+        - -3.0
+
+---
+
 test_name: Match a regex at top level
 
 includes:

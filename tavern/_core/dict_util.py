@@ -4,7 +4,8 @@ import os
 import re
 import string
 
-from box import Box, box
+import box
+from box import Box
 import jmespath
 
 from tavern._core import exceptions

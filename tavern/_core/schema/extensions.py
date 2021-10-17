@@ -6,7 +6,7 @@ from pykwalify.types import is_bool, is_float, is_int
 from tavern._core import exceptions
 from tavern._core.exceptions import BadSchemaError
 from tavern._core.extfunctions import get_pykwalify_logger, import_ext_function
-from tavern.util.general import valid_http_methods
+from tavern._core.general import valid_http_methods
 from tavern._core.loader import ApproxScalar, BoolToken, FloatToken, IntToken
 from tavern._core.strict_util import StrictLevel
 

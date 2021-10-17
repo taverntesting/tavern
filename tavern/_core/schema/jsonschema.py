@@ -1,4 +1,5 @@
 import logging
+import re
 
 import jsonschema
 from jsonschema import Draft7Validator, ValidationError
@@ -20,8 +21,14 @@ from tavern._core.schema.extensions import (
     check_strict_key,
     retry_variable,
     validate_file_spec,
+    validate_http_method,
     validate_json_with_ext,
     validate_request_json,
+)
+from tavern._core.stage_lines import (
+    get_stage_filename,
+    get_stage_lines,
+    read_relevant_lines,
 )
 
 logger = logging.getLogger(__name__)
@@ -59,8 +66,8 @@ def is_object_or_sentinel(checker, instance):  # pylint: disable=unused-argument
     )
 
 
-def oneOf(
-    validator, oneOf, instance, schema
+def oneOf(  # noqa
+    validator, oneOf, instance, schema  # noqa
 ):  # pylint: disable=redefined-outer-name,unused-argument
     """Patched version of 'oneof' that does not complain if something is matched by multiple branches"""
     subschemas = enumerate(oneOf)
@@ -108,35 +115,60 @@ def verify_jsonschema(to_verify, schema):
         BadSchemaError: Schema did not match
     """
 
+    # pylint: disable=too-many-locals
+
     validator = CustomValidator(schema)
 
     try:
         validator.validate(to_verify)
     except jsonschema.ValidationError as e:
-        logger.error("e.message: %s", e.message)
-        logger.error("e.context: %s", e.context)
-        logger.error("e.cause: %s", e.cause)
-        logger.error("e.instance: %s", e.instance)
-        logger.error("e.path: %s", e.path)
-        logger.error("e.schema: %s", e.schema)
-        logger.error("e.schema_path: %s", e.schema_path)
-        logger.error("e.validator: %s", e.validator)
-        logger.error("e.validator_value: %s", e.validator_value)
-        logger.exception("Error validating %s", to_verify)
-
         real_context = []
-        ignore_strings = [
-            "'type' is a required property",
-            "'id' is a required property",
-        ]
 
         # ignore these strings because they're red herrings
         for c in e.context:
-            if not any(i in str(c) for i in ignore_strings):
-                real_context.append(c)
+            description = c.schema.get("description", "<no description>")
+            if description == "Reference to another stage from an included config file":
+                continue
 
-        msg = "err:\n---\n" + """"\n---\n""".join([str(i) for i in real_context])
-        raise BadSchemaError(msg) from e
+            instance = c.instance
+            filename = get_stage_filename(instance)
+            if filename is None:
+                # Depending on what block raised the error, it mightbe difficult to tell what it was, so check the parent too
+                instance = e.instance
+                filename = get_stage_filename(instance)
+
+            if filename:
+                with open(filename, "r") as infile:
+                    n_lines = len(infile.readlines())
+
+                first_line, last_line, _ = get_stage_lines(instance)
+                first_line = max(first_line - 2, 0)
+                last_line = min(last_line + 2, n_lines)
+
+                reg = re.compile(r"^\s*$")
+
+                lines = read_relevant_lines(instance, first_line, last_line)
+                lines = [line for line in lines if not reg.match(line.strip())]
+                content = "\n".join(list(lines))
+                real_context.append(
+                    f"""
+{c.message}
+{filename}: line {first_line}-{last_line}:
+
+{content}
+"""
+                )
+            else:
+                real_context.append(
+                    f"""
+{c.message}
+
+<error: unable to find input file for context>
+"""
+                )
+
+        msg = "\n---\n" + "\n---\n".join([str(i) for i in real_context])
+        raise BadSchemaError(msg) from None
 
     extra_checks = {
         "stages[*].mqtt_publish.json[]": validate_request_json,
@@ -145,6 +177,7 @@ def verify_jsonschema(to_verify, schema):
         "stages[*].request.data[]": validate_request_json,
         "stages[*].request.params[]": validate_request_json,
         "stages[*].request.headers[]": validate_request_json,
+        "stages[*].request.method[]": validate_http_method,
         "stages[*].request.save[]": validate_json_with_ext,
         "stages[*].request.files[]": validate_file_spec,
         "marks[*].parametrize[]": check_parametrize_marks,
