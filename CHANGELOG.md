@@ -314,3 +314,32 @@ See https://github.com/taverntesting/tavern/issues/495 for details
 ## 1.10.0 - Fix formatting filenames
 
 ## 1.11.0 - Add hook that is called before requests
+
+## 1.12.0 Allow ext functions in mqtt blocks
+
+### 1.12.1 Fix pytest deprecation warning
+
+### 1.12.2 lock pykwalify version to 1.7 because of breaking API change in 1.8
+
+## 1.13.0 Add support for generating Allure test reports
+
+### 1.13.1 Fix using ext functions in query params
+
+### 1.13.2 Fix checking for cert_reqs file
+
+## 1.14.0 Add extra argument to regex helper to allow matching from a jmespath
+
+### 1.14.1 Fix mqtt tls options validation
+
+### 1.14.2 Stop pytest warning about a private import
+
+## 1.15.0 Update pytest and pykwalify
+
+## 1.16.0 Allow specifying a new strict option which will allow list items in any order
+
+### 1.16.1 Fix regression in nested strict key checking
+
+### 1.16.2 Fix some settings being lost after retrying a stage
+
+### 1.16.3 Fix --collect-only flag
+
