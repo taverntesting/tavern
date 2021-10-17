@@ -14,6 +14,7 @@ from tavern.util.loader import (
     TypeConvertToken,
     TypeSentinel,
 )
+
 from . import exceptions
 from .formatted_str import FormattedString
 from .strict_util import StrictSetting, extract_strict_setting

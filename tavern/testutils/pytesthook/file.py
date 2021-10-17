@@ -11,6 +11,7 @@ from tavern.schemas.files import verify_tests
 from tavern.util import exceptions
 from tavern.util.dict_util import format_keys, get_tavern_box
 from tavern.util.loader import IncludeLoader
+
 from .item import YamlItem
 from .util import load_global_cfg
 
