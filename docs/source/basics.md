@@ -131,16 +131,24 @@ This can be saved into the value `first_val` with this response block:
 response:
   save:
     json:
-      first_val: thing.nested[0]
+      first_val: "thing.nested[0]"
 ```
 
 The query should be defined as a JMES query (see [JMESPath](http://jmespath.org/)
 for more information). In the above example, this essentially performs
 the operation `json["thing"]["nested"][0]`. This can be used to perform
-powerful queries on response data, but note that only 'simple' values
-like integers, strings, or float values can be saved. Trying to save a
-'block' of data such as a JSON list or object is currently unsupported
-and will cause the test to fail.
+powerful queries on response data.
+
+This can be used to save blocks of data as well, for example:
+
+```yaml
+response:
+  save:
+    json:
+      nested_thing: "thing"
+```
+
+This will save `{"nested": [1, 2, 3, 4]}` into the `nested_thing` variable. See the documentation for the `force_format_include` tag for how this can be used.
 
 **NOTE**: The behaviour of these queries used to be different and indexing into
 an array was done like `thing.nested.0`. This will be deprecated in the
