@@ -89,7 +89,11 @@ def get_wrapped_response_function(ext):
     @functools.wraps(func)
     def inner(response):
         result = func(response, *args, **kwargs)
-        _getlogger().info("Result of calling '%s': '%s'", func, result)
+        suppress_logs = getattr(func, 'suppress_extfunction_result_log', False)
+        if suppress_logs:
+            _getlogger().info("Called '%s'", func)
+        else:
+            _getlogger().info("Result of calling '%s': '%s'", func, result)
         return result
 
     inner.func = func
@@ -106,12 +110,29 @@ def get_wrapped_create_function(ext):
     @functools.wraps(func)
     def inner():
         result = func(*args, **kwargs)
-        _getlogger().info("Result of calling '%s': '%s'", func, result)
+        suppress_logs = getattr(func, 'suppress_extfunction_result_log', False)
+        if suppress_logs:
+            _getlogger().info("Called '%s'", func)
+        else:
+            _getlogger().info("Result of calling '%s': '%s'", func, result)
         return result
 
     inner.func = func
 
     return inner
+
+
+def suppress_external_function_result_log(func):
+    """
+    A decorator to use with external functions to suppress result log
+    """
+
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+
+    wrapper.suppress_extfunction_result_log = True
+    return wrapper
 
 
 def update_from_ext(request_args, keys_to_check, test_block_config):
