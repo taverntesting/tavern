@@ -392,6 +392,7 @@ class ForceIncludeToken(TypeConvertToken):
 
 class DeprecatedForceIncludeToken(ForceIncludeToken):
     """Old name for the above"""
+
     yaml_tag = "!force_format_include"
 
     @staticmethod
