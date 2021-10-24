@@ -1,5 +1,6 @@
 import logging
 
+from box import Box
 import jsonschema
 from jsonschema import Draft7Validator, ValidationError
 from jsonschema.validators import extend
@@ -23,6 +24,7 @@ from tavern._core.schema.extensions import (
     validate_json_with_ext,
     validate_request_json,
 )
+from tavern._core.stage_lines import get_stage_lines, read_relevant_lines
 
 logger = logging.getLogger(__name__)
 
@@ -113,29 +115,22 @@ def verify_jsonschema(to_verify, schema):
     try:
         validator.validate(to_verify)
     except jsonschema.ValidationError as e:
-        logger.error("e.message: %s", e.message)
-        logger.error("e.context: %s", e.context)
-        logger.error("e.cause: %s", e.cause)
-        logger.error("e.instance: %s", e.instance)
-        logger.error("e.path: %s", e.path)
-        logger.error("e.schema: %s", e.schema)
-        logger.error("e.schema_path: %s", e.schema_path)
-        logger.error("e.validator: %s", e.validator)
-        logger.error("e.validator_value: %s", e.validator_value)
-        logger.exception("Error validating %s", to_verify)
-
         real_context = []
-        ignore_strings = [
-            "'type' is a required property",
-            "'id' is a required property",
-        ]
 
         # ignore these strings because they're red herrings
         for c in e.context:
-            if not any(i in str(c) for i in ignore_strings):
-                real_context.append(c)
+            description = Box(c.schema).description
+            if (
+                not description
+                == "Reference to another stage from an included config file"
+            ):
+                first_line, last_line, line_start = get_stage_lines(c.instance)
+                content = "\n".join(
+                    list(read_relevant_lines(c.instance, first_line, last_line))
+                )
+                real_context.append(f"\n{c.message}\n\n{content}")
 
-        msg = "err:\n---\n" + """"\n---\n""".join([str(i) for i in real_context])
+        msg = "\n---\n" + """"\n---\n""".join([str(i) for i in real_context])
         raise BadSchemaError(msg) from e
 
     extra_checks = {
