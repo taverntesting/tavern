@@ -1,4 +1,5 @@
 import logging
+import re
 
 from box import Box
 import jsonschema
@@ -24,7 +25,11 @@ from tavern._core.schema.extensions import (
     validate_json_with_ext,
     validate_request_json,
 )
-from tavern._core.stage_lines import get_stage_lines, read_relevant_lines
+from tavern._core.stage_lines import (
+    get_stage_filename,
+    get_stage_lines,
+    read_relevant_lines,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -124,13 +129,29 @@ def verify_jsonschema(to_verify, schema):
                 not description
                 == "Reference to another stage from an included config file"
             ):
-                first_line, last_line, line_start = get_stage_lines(c.instance)
-                content = "\n".join(
-                    list(read_relevant_lines(c.instance, first_line, last_line))
-                )
-                real_context.append(f"\n{c.message}\n\n{content}")
+                filename = get_stage_filename(c.instance)
+                with open(filename, "r") as infile:
+                    n_lines = len(infile.readlines())
 
-        msg = "\n---\n" + """"\n---\n""".join([str(i) for i in real_context])
+                first_line, last_line, line_start = get_stage_lines(c.instance)
+                first_line = max(first_line - 2, 0)
+                last_line = min(last_line + 2, n_lines)
+
+                reg = re.compile(r"^\s*$")
+
+                lines = read_relevant_lines(c.instance, first_line, last_line)
+                lines = [l for l in lines if not reg.match(l.strip())]
+                content = "\n".join(list(lines))
+                real_context.append(
+                    f"""
+{c.message}
+{filename}: line {first_line}-{last_line}:
+
+{content}
+"""
+                )
+
+        msg = "\n---\n" + "\n---\n".join([str(i) for i in real_context])
         raise BadSchemaError(msg) from e
 
     extra_checks = {
