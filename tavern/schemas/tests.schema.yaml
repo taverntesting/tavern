@@ -181,14 +181,7 @@ schema;stage:
 
         method:
           type: str
-          enum:
-            - GET
-            - PUT
-            - POST
-            - DELETE
-            - PATCH
-            - OPTIONS
-            - HEAD
+          func: validate_http_method
 
         timeout:
           type: any

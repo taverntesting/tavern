@@ -384,7 +384,9 @@ class TestFormatRequestVars:
         with patch(
             "tavern._plugins.rest.request.requests.Session.request",
             return_value=mock_response,
-        ) as pmock:
+        ) as pmock, patch(
+            "tavern._plugins.rest.request.valid_http_methods", ["POST", sent_value]
+        ):
             run_test("heif", fulltest, includes)
 
         assert pmock.called
