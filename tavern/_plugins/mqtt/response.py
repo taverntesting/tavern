@@ -142,10 +142,10 @@ class MQTTResponse(BaseResponse):
                         pass
                     else:
                         logger.info(
-                            "Got expected message in '%s' with payload '%s'",
+                            "Got expected message in '%s' with expected payload",
                             msg.topic,
-                            msg.payload,
                         )
+                        logger.debug("Matched payload was '%s", msg.payload)
                         break
 
                 addwarning(
@@ -162,10 +162,10 @@ class MQTTResponse(BaseResponse):
                 )
             else:
                 logger.info(
-                    "Got expected message in '%s' with payload '%s'",
+                    "Got expected message in '%s' with expected payload",
                     msg.topic,
-                    msg.payload,
                 )
+                logger.debug("Matched payload was '%s", msg.payload)
                 break
 
             msg = None

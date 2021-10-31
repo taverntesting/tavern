@@ -1,7 +1,5 @@
 # Debugging a test
 
-**This section assumes you're using pytest to run tests**.
-
 When making a test it's not always going to work first time, and at the time of
 writing the error reporting is a bit messy because it shows the whole stack
 trace from pytest is printed out (which can be a few hundred lines, most of
@@ -16,7 +14,8 @@ the logs in case something goes wrong. The easiest way to do this is with
 [dictConfig](https://docs.python.org/3/library/logging.config.html#logging.config.dictConfig)
 from the Python logging library. It can also be useful to use
 [colorlog](https://pypi.org/project/colorlog/) to colourize the output so it's
-easier to see the different log levels. An example logging configuration
+easier to see the different log levels. An example logging configuration (note that this requires
+the `colorlog` package to be installed):
 
 ```yaml
 # log_spec.yaml
@@ -66,6 +65,11 @@ By default, recent versions of pytest will print out log messages in the
 "Captured stderr call" section of the output - if you have set up your own
 logging, you probably want to disable this by also passing `-p no:logging` to
 the invocation of pytest.
+
+**WARNING**: Tavern will try not to log any response data or request data at the `INFO` level or
+above (unless it is in an error trace). Logging at the `DEBUG` level will log things like response
+headers, return values from any external functions etc. If this contains sensitive data, either
+log at the `INFO` level, or make sure that any data logged is obfuscated, or the logs are not public.
 
 ### Setting pytest options
 
