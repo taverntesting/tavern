@@ -62,7 +62,7 @@ class BaseResponse(object):
             blockname (str): 'name' of this block (params, mqtt, etc) for error messages
         """
 
-        if not expected_block:
+        if expected_block is None:
             logger.debug("No expected %s to check against", blockname)
             return
 
@@ -72,6 +72,14 @@ class BaseResponse(object):
         # )
 
         if block is None:
+            if not expected_block:
+                logger.debug(
+                    "No %s in response to check, but not erroring because expected was %s",
+                    blockname,
+                    expected_block,
+                )
+                return
+
             self._adderr(
                 "expected %s in the %s, but there was no response %s",
                 expected_block,

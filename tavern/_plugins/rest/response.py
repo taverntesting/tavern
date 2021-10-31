@@ -213,9 +213,9 @@ class RestResponse(BaseResponse):
             block (dict): The actual part being checked
         """
         try:
-            expected_block = self.expected[blockname] or {}
+            expected_block = self.expected[blockname]
         except KeyError:
-            expected_block = {}
+            expected_block = None
 
         if isinstance(expected_block, dict):
             if expected_block.pop("$ext", None):
@@ -223,7 +223,7 @@ class RestResponse(BaseResponse):
                     blockname,
                 )
 
-        if blockname == "headers":
+        if blockname == "headers" and expected_block is not None:
             # Special case for headers. These need to be checked in a case
             # insensitive manner
             block = {i.lower(): j for i, j in block.items()}

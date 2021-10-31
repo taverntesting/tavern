@@ -333,3 +333,13 @@ def get_uuid_v4():
 @app.route("/707-regression", methods=["GET"])
 def get_707():
     return jsonify({"a": 1, "b": {"first": 10, "second": 20}, "c": 2})
+
+
+@app.route("/606-regression-list", methods=["GET"])
+def get_606_list():
+    return jsonify([])
+
+
+@app.route("/606-regression-dict", methods=["GET"])
+def get_606_dict():
+    return jsonify({})

@@ -204,6 +204,9 @@ class YamlItem(pytest.Item):
                 logger.info("xfailing test when running")
                 self.add_marker(pytest.mark.xfail, True)
             raise
+        else:
+            if xfail:
+                raise Exception("internal: xfail test did not fail '{}'".format(xfail))
         # else:
         #     if xfail:
         #         logger.error("Expected test to fail")
