@@ -13,6 +13,7 @@ required:
 properties:
   paho-mqtt:
     type: object
+    description: Connection options for paho-mqtt
     additionalProperties: false
     required:
     - connect

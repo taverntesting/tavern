@@ -124,7 +124,7 @@ def verify_jsonschema(to_verify, schema):
 
         # ignore these strings because they're red herrings
         for c in e.context:
-            description = Box(c.schema).description
+            description = c.schema.get("description", "<no description>")
             if (
                 not description
                 == "Reference to another stage from an included config file"
