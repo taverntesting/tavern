@@ -17,6 +17,7 @@ from tavern.request.base import BaseRequest
 from tavern.util import exceptions
 from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
 from tavern.util.extfunctions import update_from_ext
+from tavern.util.general import valid_http_methods
 from tavern.util.report import attach_yaml
 
 logger = logging.getLogger(__name__)
@@ -52,6 +53,11 @@ def get_request_args(rspec, test_block_config):
     if "method" not in rspec:
         logger.debug("Using default GET method")
         rspec["method"] = "GET"
+
+    if rspec["method"] not in valid_http_methods:
+        raise exceptions.BadSchemaError(
+            "Unknown HTTP method {}".format(rspec["method"])
+        )
 
     content_keys = ["data", "json", "files", "file_body"]
 

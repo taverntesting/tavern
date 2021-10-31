@@ -28,3 +28,14 @@ def load_global_config(global_cfg_paths):
             global_cfg = deep_dict_merge(global_cfg, contents)
 
     return global_cfg
+
+
+valid_http_methods = [
+    "GET",
+    "PUT",
+    "POST",
+    "DELETE",
+    "PATCH",
+    "OPTIONS",
+    "HEAD",
+]

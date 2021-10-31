@@ -6,6 +6,7 @@ from pykwalify.types import is_bool, is_float, is_int
 from tavern.util import exceptions
 from tavern.util.exceptions import BadSchemaError
 from tavern.util.extfunctions import get_pykwalify_logger, import_ext_function
+from tavern.util.general import valid_http_methods
 from tavern.util.loader import ApproxScalar, BoolToken, FloatToken, IntToken
 from tavern.util.strict_util import StrictLevel
 
@@ -419,5 +420,22 @@ def retry_variable(value, rule_obj, path):
     if isinstance(value, int):
         if value < 0:
             raise BadSchemaError("max_retries must be greater than 0")
+
+    return True
+
+
+def validate_http_method(value, rule_obj, path):
+    """Check http method"""
+
+    if not isinstance(value, str):
+        raise BadSchemaError("HTTP method should be a string")
+
+    if value not in valid_http_methods:
+        logger = get_pykwalify_logger("tavern.schemas.extensions")
+        logger.debug(
+            "Givern HTTP method '%s' was not one of %s - assuming it will be templated",
+            value,
+            valid_http_methods,
+        )
 
     return True
