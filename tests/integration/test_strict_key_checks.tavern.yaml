@@ -577,3 +577,103 @@ stages:
         first: 10
         # second: 20
       c: 2
+
+---
+
+test_name: test empty list matches with strict json on
+
+strict:
+  - json:on
+
+stages:
+- name: Simple get
+  request:
+    url: "{global_host}/606-regression-list"
+    method: GET
+  response:
+    status_code: 200
+    json: []
+
+---
+
+test_name: test full list does not match with strict json on
+
+_xfail: run
+
+strict:
+  - json:on
+
+stages:
+- name: Simple get
+  request:
+    url: "{global_host}/fake_list"
+    method: GET
+  response:
+    status_code: 200
+    json: []
+
+---
+
+test_name: test full list matches with strict json off
+
+strict:
+  - json:off
+
+stages:
+- name: Simple get
+  request:
+    url: "{global_host}/fake_list"
+    method: GET
+  response:
+    status_code: 200
+    json: []
+
+---
+
+test_name: test empty dict matches with strict json on
+
+strict:
+  - json:on
+
+stages:
+- name: Simple get
+  request:
+    url: "{global_host}/606-regression-dict"
+    method: GET
+  response:
+    status_code: 200
+    json: {}
+
+---
+
+test_name: test full dict does not match with strict json on
+
+_xfail: run
+
+strict:
+  - json:on
+
+stages:
+- name: Simple get
+  request:
+    url: "{global_host}/fake_dictionary"
+    method: GET
+  response:
+    status_code: 200
+    json: {}
+
+---
+
+test_name: test full dict matches with strict json off
+
+strict:
+  - json:off
+
+stages:
+- name: Simple get
+  request:
+    url: "{global_host}/fake_dictionary"
+    method: GET
+  response:
+    status_code: 200
+    json: {}
