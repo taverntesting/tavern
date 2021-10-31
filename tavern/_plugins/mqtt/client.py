@@ -135,7 +135,6 @@ class MQTTClient(object):
 
         if "host" not in self._connect_args:
             msg = "Need 'host' in 'connect' block for mqtt"
-            logger.error(msg)
             raise exceptions.MissingKeysError(msg)
 
         self._connect_timeout = self._connect_args.pop("timeout", 3)

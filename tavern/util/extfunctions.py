@@ -89,7 +89,7 @@ def get_wrapped_response_function(ext):
     @functools.wraps(func)
     def inner(response):
         result = func(response, *args, **kwargs)
-        _getlogger().info("Result of calling '%s': '%s'", func, result)
+        _getlogger().debug("Result of calling '%s': '%s'", func, result)
         return result
 
     inner.func = func
@@ -106,7 +106,7 @@ def get_wrapped_create_function(ext):
     @functools.wraps(func)
     def inner():
         result = func(*args, **kwargs)
-        _getlogger().info("Result of calling '%s': '%s'", func, result)
+        _getlogger().debug("Result of calling '%s': '%s'", func, result)
         return result
 
     inner.func = func
