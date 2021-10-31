@@ -343,3 +343,8 @@ def get_606_list():
 @app.route("/606-regression-dict", methods=["GET"])
 def get_606_dict():
     return jsonify({})
+
+
+@app.route("/magic-multi-method", methods=["GET", "POST", "DELETE"])
+def get_any_method():
+    return jsonify({"method": request.method})

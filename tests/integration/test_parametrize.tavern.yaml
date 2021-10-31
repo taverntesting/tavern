@@ -527,3 +527,47 @@ stages:
       status_code: 200
       json:
         value: "{line}-{text}"
+
+---
+
+test_name: Test parametrizing http method
+
+marks:
+- parametrize:
+    key: method
+    vals:
+    - POST
+    - GET
+    - DELETE
+
+stages:
+- name: Make a request to the magic endpoint and expect method back
+  request:
+    url: "{global_host}/magic-multi-method"
+    method: "{method}"
+  response:
+    status_code: 200
+    json:
+      method: "{method}"
+
+---
+
+test_name: Test parametrizing http method badly
+
+marks:
+- parametrize:
+    key: method
+    vals:
+    - Brean
+
+_xfail: verify
+
+stages:
+- name: Make a request to the magic endpoint and expect method back
+  request:
+    url: "{global_host}/magic-multi-method"
+    method: "{method}"
+  response:
+    status_code: 200
+    json:
+      method: "{method}"

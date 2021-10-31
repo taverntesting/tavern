@@ -54,11 +54,6 @@ def get_request_args(rspec, test_block_config):
         logger.debug("Using default GET method")
         rspec["method"] = "GET"
 
-    if rspec["method"] not in valid_http_methods:
-        raise exceptions.BadSchemaError(
-            "Unknown HTTP method {}".format(rspec["method"])
-        )
-
     content_keys = ["data", "json", "files", "file_body"]
 
     in_request = [c for c in content_keys if c in rspec]
@@ -86,6 +81,11 @@ def get_request_args(rspec, test_block_config):
             }
 
     fspec = format_keys(rspec, test_block_config["variables"])
+
+    if fspec["method"] not in valid_http_methods:
+        raise exceptions.BadSchemaError(
+            "Unknown HTTP method {}".format(fspec["method"])
+        )
 
     send_in_body = fspec.get("file_body")
     if send_in_body:
