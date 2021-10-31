@@ -426,6 +426,7 @@ def retry_variable(value, rule_obj, path):
 
 def validate_http_method(value, rule_obj, path):
     """Check http method"""
+    # pylint: disable=unused-argument
 
     if not isinstance(value, str):
         raise BadSchemaError("HTTP method should be a string")
