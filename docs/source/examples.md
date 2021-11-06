@@ -161,10 +161,11 @@ The Python library allows you to include Tavern tests in deploy scripts written 
 
 ```python
 from tavern.core import run
+from pytest import ExitCode
 
-success = run("test_server.tavern.yaml")
+exit_code = run("test_server.tavern.yaml")
 
-if not success:
+if exit_code != ExitCode.OK:
     print("Error running tests")
 ```
 
