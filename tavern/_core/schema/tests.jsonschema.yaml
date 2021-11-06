@@ -106,17 +106,9 @@ definitions:
         - type: string
 
       method:
-        type: string
         description: HTTP method to use for request
         default: GET
-        enum:
-        - GET
-        - PUT
-        - POST
-        - DELETE
-        - PATCH
-        - OPTIONS
-        - HEAD
+        type: string
 
       follow_redirects:
         type: boolean
