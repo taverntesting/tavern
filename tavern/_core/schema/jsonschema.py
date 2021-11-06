@@ -22,6 +22,7 @@ from tavern._core.schema.extensions import (
     check_strict_key,
     retry_variable,
     validate_file_spec,
+    validate_http_method,
     validate_json_with_ext,
     validate_request_json,
 )
@@ -125,26 +126,27 @@ def verify_jsonschema(to_verify, schema):
         # ignore these strings because they're red herrings
         for c in e.context:
             description = c.schema.get("description", "<no description>")
-            if (
-                 description
-                == "Reference to another stage from an included config file"
-            ):
+            if description == "Reference to another stage from an included config file":
                 continue
 
-            logger.critical(e)
-            logger.critical(c)
-            filename = get_stage_filename(c.instance)
+            instance = c.instance
+            filename = get_stage_filename(instance)
+            if filename is None:
+                # Depending on what block raised the error, it mightbe difficult to tell what it was, so check the parent too
+                instance = e.instance
+                filename = get_stage_filename(instance)
+
             if filename:
                 with open(filename, "r") as infile:
                     n_lines = len(infile.readlines())
 
-                first_line, last_line, line_start = get_stage_lines(c.instance)
+                first_line, last_line, line_start = get_stage_lines(instance)
                 first_line = max(first_line - 2, 0)
                 last_line = min(last_line + 2, n_lines)
 
                 reg = re.compile(r"^\s*$")
 
-                lines = read_relevant_lines(c.instance, first_line, last_line)
+                lines = read_relevant_lines(instance, first_line, last_line)
                 lines = [l for l in lines if not reg.match(l.strip())]
                 content = "\n".join(list(lines))
                 real_context.append(
@@ -161,8 +163,8 @@ def verify_jsonschema(to_verify, schema):
 {c.message}
 
 <error: unable to find input file for context>
-""")
-
+"""
+                )
 
         msg = "\n---\n" + "\n---\n".join([str(i) for i in real_context])
         raise BadSchemaError(msg) from None
@@ -174,6 +176,7 @@ def verify_jsonschema(to_verify, schema):
         "stages[*].request.data[]": validate_request_json,
         "stages[*].request.params[]": validate_request_json,
         "stages[*].request.headers[]": validate_request_json,
+        "stages[*].request.method[]": validate_http_method,
         "stages[*].request.save[]": validate_json_with_ext,
         "stages[*].request.files[]": validate_file_spec,
         "marks[*].parametrize[]": check_parametrize_marks,

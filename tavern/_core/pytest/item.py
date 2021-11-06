@@ -166,9 +166,6 @@ class YamlItem(pytest.Item):
         load_plugins(self.global_cfg)
 
         # INTERNAL
-        # NOTE - now that we can 'mark' tests, we could use pytest.mark.xfail
-        # instead. This doesn't differentiate between an error in verification
-        # and an error when running the test though.
         xfail = self.spec.get("_xfail", False)
 
         try:
