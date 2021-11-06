@@ -1,7 +1,6 @@
 import logging
 import re
 
-from box import Box
 import jsonschema
 from jsonschema import Draft7Validator, ValidationError
 from jsonschema.validators import extend
@@ -67,8 +66,8 @@ def is_object_or_sentinel(checker, instance):  # pylint: disable=unused-argument
     )
 
 
-def oneOf(
-    validator, oneOf, instance, schema
+def oneOf(  # noqa
+    validator, oneOf, instance, schema  # noqa
 ):  # pylint: disable=redefined-outer-name,unused-argument
     """Patched version of 'oneof' that does not complain if something is matched by multiple branches"""
     subschemas = enumerate(oneOf)
@@ -116,6 +115,8 @@ def verify_jsonschema(to_verify, schema):
         BadSchemaError: Schema did not match
     """
 
+    # pylint: disable=too-many-locals
+
     validator = CustomValidator(schema)
 
     try:
@@ -140,14 +141,14 @@ def verify_jsonschema(to_verify, schema):
                 with open(filename, "r") as infile:
                     n_lines = len(infile.readlines())
 
-                first_line, last_line, line_start = get_stage_lines(instance)
+                first_line, last_line, _ = get_stage_lines(instance)
                 first_line = max(first_line - 2, 0)
                 last_line = min(last_line + 2, n_lines)
 
                 reg = re.compile(r"^\s*$")
 
                 lines = read_relevant_lines(instance, first_line, last_line)
-                lines = [l for l in lines if not reg.match(l.strip())]
+                lines = [line for line in lines if not reg.match(line.strip())]
                 content = "\n".join(list(lines))
                 real_context.append(
                     f"""
