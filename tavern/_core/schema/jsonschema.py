@@ -126,42 +126,46 @@ def verify_jsonschema(to_verify, schema):
         for c in e.context:
             description = c.schema.get("description", "<no description>")
             if (
-                not description
+                 description
                 == "Reference to another stage from an included config file"
             ):
-                filename = get_stage_filename(c.instance)
-                if filename:
-                    with open(filename, "r") as infile:
-                        n_lines = len(infile.readlines())
+                continue
 
-                    first_line, last_line, line_start = get_stage_lines(c.instance)
-                    first_line = max(first_line - 2, 0)
-                    last_line = min(last_line + 2, n_lines)
+            logger.critical(e)
+            logger.critical(c)
+            filename = get_stage_filename(c.instance)
+            if filename:
+                with open(filename, "r") as infile:
+                    n_lines = len(infile.readlines())
 
-                    reg = re.compile(r"^\s*$")
+                first_line, last_line, line_start = get_stage_lines(c.instance)
+                first_line = max(first_line - 2, 0)
+                last_line = min(last_line + 2, n_lines)
 
-                    lines = read_relevant_lines(c.instance, first_line, last_line)
-                    lines = [l for l in lines if not reg.match(l.strip())]
-                    content = "\n".join(list(lines))
-                    real_context.append(
-                        f"""
-    {c.message}
-    {filename}: line {first_line}-{last_line}:
-    
-    {content}
-    """
-                    )
-                else:
-                    real_context.append(
-                        f"""
-    {c.message}
-    
-    <error: unable to find input file for context>
-    """)
+                reg = re.compile(r"^\s*$")
+
+                lines = read_relevant_lines(c.instance, first_line, last_line)
+                lines = [l for l in lines if not reg.match(l.strip())]
+                content = "\n".join(list(lines))
+                real_context.append(
+                    f"""
+{c.message}
+{filename}: line {first_line}-{last_line}:
+
+{content}
+"""
+                )
+            else:
+                real_context.append(
+                    f"""
+{c.message}
+
+<error: unable to find input file for context>
+""")
 
 
         msg = "\n---\n" + "\n---\n".join([str(i) for i in real_context])
-        raise BadSchemaError(msg) from e
+        raise BadSchemaError(msg) from None
 
     extra_checks = {
         "stages[*].mqtt_publish.json[]": validate_request_json,
