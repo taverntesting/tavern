@@ -344,7 +344,7 @@ class TestFileBody:
 
         with tempfile.NamedTemporaryFile(encoding="utf8", mode="w") as tmpin:
             tmpin.write("OK")
-            includes["variables"]["tmpfile_loc"] = tmpin.name
+            includes.variables["tmpfile_loc"] = tmpin.name
 
             req["file_body"] = "{tmpfile_loc}"
 
