@@ -9,7 +9,7 @@ import yaml
 
 from tavern._core import exceptions
 from tavern._core.dict_util import deep_dict_merge, format_keys, get_tavern_box
-from tavern.util.extfunctions import get_wrapped_create_function, is_ext_function
+from tavern._core.extfunctions import get_wrapped_create_function, is_ext_function
 from tavern._core.loader import IncludeLoader
 from tavern._core.schema.files import verify_tests
 
