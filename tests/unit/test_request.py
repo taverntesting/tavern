@@ -344,13 +344,16 @@ class TestFileBody:
         """Test getting file body"""
 
         req.pop("data")
-        req["file_body"] = "{callback_url}"
 
-        includes["abcdef"] = "Hello"
+        with tempfile.NamedTemporaryFile(encoding="utf8", mode="w") as tmpin:
+            tmpin.write("OK")
+            includes["variables"]["tmpfile_loc"] = tmpin.name
 
-        args = get_request_args(req, includes)
+            req["file_body"] = "{tmpfile_loc}"
 
-        assert args["file_body"] == includes["variables"]["callback_url"]
+            args = get_request_args(req, includes)
+
+        assert args["file_body"] == tmpin.name
 
 
 class TestGetFiles(object):
