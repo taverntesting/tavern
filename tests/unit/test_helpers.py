@@ -6,14 +6,6 @@ from unittest.mock import Mock, patch
 import _pytest
 import pytest
 import sys
-from tavern.testutils.pytesthook.item import YamlItem
-from tavern.util.dict_util import _check_and_format_values, format_keys
-from tavern.util.loader import ForceIncludeToken
-from tavern.util.strict_util import (
-    StrictLevel,
-    StrictSetting,
-    validate_and_parse_option,
-)
 import yaml
 
 from tavern._core import exceptions
@@ -32,7 +24,6 @@ from tavern.helpers import (
     validate_pykwalify,
     validate_regex,
 )
-from tavern.util import exceptions
 
 
 class FakeResponse:
