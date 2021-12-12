@@ -515,8 +515,6 @@ class RestRequest(BaseRequest):
 
                 # These are mutually exclusive
                 if file_body:
-                    with open(file_body, "rb") as infile:
-                        logger.critical(infile.readlines())
                     # Any headers will have been set in the above function
                     file = stack.enter_context(open(file_body, "rb"))
                     request_args.update(data=file)
