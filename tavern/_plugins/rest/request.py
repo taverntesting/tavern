@@ -43,16 +43,12 @@ def get_request_args(rspec, test_block_config):
 
     # pylint: disable=too-many-locals,too-many-statements
 
-    request_args = {}
-
-    # Ones that are required and are enforced to be present by the schema
-    required_in_file = ["method", "url"]
-
-    optional_with_default = {"verify": True, "stream": False}
-
     if "method" not in rspec:
         logger.debug("Using default GET method")
         rspec["method"] = "GET"
+
+    if "headers" not in rspec:
+        rspec["headers"] = {}
 
     content_keys = ["data", "json", "files", "file_body"]
 
@@ -68,16 +64,23 @@ def get_request_args(rspec, test_block_config):
                 "send {})".format(" and ".join(in_request))
             )
 
-    headers = rspec.get("headers", {})
-    has_content_header = "content-type" in [h.lower() for h in headers.keys()]
+    normalised_headers = {k.lower(): v for k, v in rspec["headers"].items()}
+
+    def get_header(name):
+        return normalised_headers.get(name, None)
+
+    content_header = get_header("content-type")
+    encoding_header = get_header("content-encoding")
 
     if "files" in rspec:
-        if has_content_header:
+        if content_header:
             logger.warning(
-                "Tried to specify a content-type header while sending a file - this will be ignored"
+                "Tried to specify a content-type header while sending multipart files - this will be ignored"
             )
             rspec["headers"] = {
-                i: j for i, j in headers.items() if i.lower() != "content-type"
+                i: j
+                for i, j in normalised_headers.items()
+                if i.lower() != "content-type"
             }
 
     fspec = format_keys(rspec, test_block_config["variables"])
@@ -87,9 +90,45 @@ def get_request_args(rspec, test_block_config):
             "Unknown HTTP method {}".format(fspec["method"])
         )
 
-    send_in_body = fspec.get("file_body")
-    if send_in_body:
-        request_args["file_body"] = send_in_body
+    # If the user is using the file_body key, try to guess what type of file/encoding it is.
+    filename = fspec.get("file_body")
+    if filename:
+        with ExitStack() as stack:
+            file_spec = guess_filespec(filename, stack, test_block_config)
+            fspec["file_body"] = filename
+            if len(file_spec) == 2:
+                logger.debug(
+                    "No content type or encoding inferred from file_body for %s",
+                    filename,
+                )
+
+            if len(file_spec) >= 3:
+                inferred_content_type = file_spec[2]
+                if content_header:
+                    logger.info(
+                        "inferred content type '%s' from %s, but using user specified content type '%s'",
+                        inferred_content_type,
+                        filename,
+                        content_header,
+                    )
+                else:
+                    fspec["headers"]["content-type"] = inferred_content_type
+
+            if len(file_spec) == 4:
+                inferred_content_encoding = file_spec[3]
+                if encoding_header:
+                    logger.info(
+                        "inferred content encoding '%s' from %s, but using user specified encoding '%s",
+                        inferred_content_encoding,
+                        filename,
+                        encoding_header,
+                    )
+                else:
+                    fspec["headers"].update(**inferred_content_encoding)
+
+    #########################################
+
+    request_args = {}
 
     def add_request_args(keys, optional):
         for key in keys:
@@ -102,6 +141,12 @@ def get_request_args(rspec, test_block_config):
                 # This should never happen
                 raise
 
+    # Ones that are required and are enforced to be present by the schema
+    required_in_file = ["method", "url"]
+
+    optional_with_default = {"verify": True, "stream": False}
+
+    add_request_args(["file_body"], True)
     add_request_args(required_in_file, False)
     add_request_args(RestRequest.optional_in_file, True)
 
@@ -322,35 +367,7 @@ def _get_file_arguments(request_args, stack, test_block_config):
     files_to_send = {}
 
     for key, filespec in request_args.get("files", {}).items():
-        if not mimetypes.inited:
-            mimetypes.init()
-
-        filepath, content_type, encoding = _read_filespec(filespec)
-        filepath = format_keys(filepath, test_block_config["variables"])
-
-        filename = os.path.basename(filepath)
-
-        # a 2-tuple ('filename', fileobj)
-        file_spec = [filename, stack.enter_context(open(filepath, "rb"))]
-
-        # Try to guess as well, but don't override what the user specified
-        guessed_content_type, guessed_encoding = mimetypes.guess_type(filepath)
-        content_type = content_type or guessed_content_type
-        encoding = encoding or guessed_encoding
-
-        # If it doesn't have a mimetype, or can't guess it, don't
-        # send the content type for the file
-        if content_type:
-            # a 3-tuple ('filename', fileobj, 'content_type')
-            logger.debug("content_type for '%s' = '%s'", filename, content_type)
-            file_spec.append(content_type)
-            if encoding:
-                # or a 4-tuple ('filename', fileobj, 'content_type', custom_headers)
-                logger.debug("encoding for '%s' = '%s'", filename, encoding)
-                # encoding is None for no encoding or the name of the
-                # program used to encode (e.g. compress or gzip). The
-                # encoding is suitable for use as a Content-Encoding header.
-                file_spec.append({"Content-Encoding": encoding})
+        file_spec = guess_filespec(filespec, stack, test_block_config)
 
         files_to_send[key] = tuple(file_spec)
 
@@ -358,6 +375,51 @@ def _get_file_arguments(request_args, stack, test_block_config):
         return {"files": files_to_send}
     else:
         return {}
+
+
+def guess_filespec(filespec, stack, test_block_config):
+    """tries to guess the content type and encoding from a file.
+
+    Args:
+        filespec: a string path to a file or a dictionary of the file path, content type, and encoding.
+
+    Returns:
+        tuple: A tuple of either length 2 (filename and file object), 3 (as before, with ceontent type), or 4 (as before, with with content encoding)
+
+    Notes:
+        If a 4-tuple is returned, the last element is a dictionary of headers to send to requests, _not_ the raw encoding value.
+    """
+    if not mimetypes.inited:
+        mimetypes.init()
+
+    filepath, content_type, encoding = _read_filespec(filespec)
+
+    filepath = format_keys(filepath, test_block_config["variables"])
+    filename = os.path.basename(filepath)
+
+    # a 2-tuple ('filename', fileobj)
+    file_spec = [filename, stack.enter_context(open(filepath, "rb"))]
+
+    # Try to guess as well, but don't override what the user specified
+    guessed_content_type, guessed_encoding = mimetypes.guess_type(filepath)
+    content_type = content_type or guessed_content_type
+    encoding = encoding or guessed_encoding
+
+    # If it doesn't have a mimetype, or can't guess it, don't
+    # send the content type for the file
+    if content_type:
+        # a 3-tuple ('filename', fileobj, 'content_type')
+        logger.debug("content_type for '%s' = '%s'", filename, content_type)
+        file_spec.append(content_type)
+        if encoding:
+            # or a 4-tuple ('filename', fileobj, 'content_type', custom_headers)
+            logger.debug("encoding for '%s' = '%s'", filename, encoding)
+            # encoding is None for no encoding or the name of the
+            # program used to encode (e.g. compress or gzip). The
+            # encoding is suitable for use as a Content-Encoding header.
+            file_spec.append({"Content-Encoding": encoding})
+
+    return file_spec
 
 
 class RestRequest(BaseRequest):
@@ -453,6 +515,7 @@ class RestRequest(BaseRequest):
 
                 # These are mutually exclusive
                 if file_body:
+                    # Any headers will have been set in the above function
                     file = stack.enter_context(open(file_body, "rb"))
                     request_args.update(data=file)
                 else:

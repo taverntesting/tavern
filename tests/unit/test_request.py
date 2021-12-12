@@ -340,17 +340,59 @@ class TestOptionalDefaults:
 
 
 class TestFileBody:
-    def test_file_body(self, req, includes):
+    def test_file_body_format(self, req, includes):
         """Test getting file body"""
 
         req.pop("data")
-        req["file_body"] = "{callback_url}"
 
-        includes["abcdef"] = "Hello"
+        with tempfile.NamedTemporaryFile(encoding="utf8", mode="w") as tmpin:
+            tmpin.write("OK")
+            includes["variables"]["tmpfile_loc"] = tmpin.name
 
-        args = get_request_args(req, includes)
+            req["file_body"] = "{tmpfile_loc}"
 
-        assert args["file_body"] == includes["variables"]["callback_url"]
+            args = get_request_args(req, includes)
+
+        assert args["file_body"] == tmpin.name
+
+    def test_file_body_content_type(self, req, includes):
+        """Test inferring content type etc. works"""
+
+        req.pop("data")
+        req.pop("headers")
+
+        with tempfile.NamedTemporaryFile(
+            encoding="utf8", mode="w", suffix=".json"
+        ) as tmpin:
+            tmpin.write("OK")
+
+            req["file_body"] = tmpin.name
+
+            args = get_request_args(req, includes)
+            print(args)
+
+        assert args["file_body"] == tmpin.name
+        assert args["headers"]["content-type"] == "application/json"
+
+    def test_file_body_content_encoding(self, req, includes):
+        """Test inferring content type etc. works"""
+
+        req.pop("data")
+        req.pop("headers")
+
+        with tempfile.NamedTemporaryFile(
+            encoding="utf8", mode="w", suffix=".tar.gz"
+        ) as tmpin:
+            tmpin.write("OK")
+
+            req["file_body"] = tmpin.name
+
+            args = get_request_args(req, includes)
+            print(args)
+
+        assert args["file_body"] == tmpin.name
+        assert args["headers"]["content-type"] == "application/x-tar"
+        assert args["headers"]["Content-Encoding"] == "gzip"
 
 
 class TestGetFiles(object):
