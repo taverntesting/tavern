@@ -159,6 +159,7 @@ def check_parametrize_marks(value, rule_obj, path):
         raise BadSchemaError("'vals' should be a list")
 
     if isinstance(key_or_keys, str):
+        return True
         # example:
         # - parametrize:
         #     key: edible
@@ -174,6 +175,7 @@ def check_parametrize_marks(value, rule_obj, path):
                 raise BadSchemaError(err_msg)
 
     elif isinstance(key_or_keys, list):
+        return True
         # example:
         # - parametrize:
         #     key:
