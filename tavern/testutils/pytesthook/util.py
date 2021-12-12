@@ -35,7 +35,6 @@ def add_parser_options(parser_addoption, with_defaults=True):
         help="Default response matching strictness",
         default=None,
         nargs="+",
-        choices=["json", "headers", "redirect_query_params"],
     )
     parser_addoption(
         "--tavern-use-default-traceback",
