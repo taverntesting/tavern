@@ -269,10 +269,8 @@ def run_stage(sessions, stage, test_block_config):
     )
 
     response = r.run()
-    logger.debug("Stage done")
 
     provider.end_tinctures(response)
-    logger.debug("tinctures done")
 
     for v in verifiers:
         saved = v.verify(response)
