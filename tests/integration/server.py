@@ -199,9 +199,6 @@ def echo_params():
 @app.route("/expect_raw_data", methods=["POST"])
 def expect_raw_data():
     raw_data = request.stream.read().decode("utf8").strip()
-    print(raw_data)
-    print(raw_data)
-    print(raw_data)
     sys.stdout.flush()
     if raw_data == "OK":
         response = {"status": "ok"}

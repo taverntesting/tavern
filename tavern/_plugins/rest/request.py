@@ -124,7 +124,7 @@ def get_request_args(rspec, test_block_config):
                         encoding_header,
                     )
                 else:
-                    fspec["headers"]["content-encoding"] = inferred_content_encoding
+                    fspec["headers"].update(**inferred_content_encoding)
 
     #########################################
 
@@ -385,6 +385,9 @@ def guess_filespec(filespec, stack, test_block_config):
 
     Returns:
         tuple: A tuple of either length 2 (filename and file object), 3 (as before, with ceontent type), or 4 (as before, with with content encoding)
+
+    Notes:
+        If a 4-tuple is returned, the last element is a dictionary of headers to send to requests, _not_ the raw encoding value.
     """
     if not mimetypes.inited:
         mimetypes.init()
