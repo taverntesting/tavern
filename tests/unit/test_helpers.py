@@ -1,11 +1,11 @@
 import json
-import sys
 import tempfile
 from textwrap import dedent
 from unittest.mock import Mock, patch
 
 import _pytest
 import pytest
+import sys
 import yaml
 
 from tavern.core import run
@@ -16,6 +16,7 @@ from tavern.testutils.helpers import (
     validate_regex,
 )
 from tavern.testutils.pytesthook.item import YamlItem
+from tavern.testutils.pytesthook.util import _load_global_strictness
 from tavern.util import exceptions
 from tavern.util.dict_util import _check_and_format_values, format_keys
 from tavern.util.loader import ForceIncludeToken
@@ -117,6 +118,20 @@ class TestRunAlone:
                 )
 
         assert not pmock.called
+
+
+class TestOptionParsing:
+    valid = [
+        "{0:s}:{1:s}".format(section, setting)
+        for section in ("json", "headers", "redirect_params")
+        for setting in ("on", "off")
+    ]
+
+    @pytest.mark.parametrize("optval", valid)
+    def test_strictness_parsing_good(self, pytestconfig, optval):
+        args = pytestconfig._parser.parse_known_args(
+            ["--tavern-strict={}".format(optval)]
+        )
 
 
 class TestTavernRepr:
