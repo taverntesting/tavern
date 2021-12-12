@@ -196,4 +196,4 @@ def time_request(_):
 def print_response(_, extra_print="affa"):
     logger.warning("STARTING:")
     r = yield
-    logger.warning("Request is %s (%s)", r, extra_print)
+    logger.warning("Response is %s (%s)", r, extra_print)
