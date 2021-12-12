@@ -352,10 +352,7 @@ stages:
 
 ---
 
-# NOTE: This might pass in future, if we allow parametrizing/storing JSON blocks rather than just single variables.
-test_name: Test failing when vals is a list and key isn't
-
-_xfail: verify
+test_name: Test sending a list of keys
 
 includes:
   - !include common.yaml
@@ -364,20 +361,83 @@ marks:
   - parametrize:
       key: edible
       vals:
-        - [spear, mint]
-        - [jack, fruit]
+        - [not, edible, at, all]
 
 stages:
-  - name: Echo back a unicode value and make sure it matches
+  - name: make sure list is sent and returned
     request:
       url: "{host}/echo"
       method: POST
       json:
-        value: "{fruit}-{edible}"
+        value: !force_format_include "{edible}"
     response:
       status_code: 200
       json:
-        value: "{fruit}-{edible}-nope"
+        value:
+        - not
+        - edible
+        - at
+        - all
+
+---
+
+test_name: Test sending a list of list of keys
+
+includes:
+  - !include common.yaml
+
+marks:
+  - parametrize:
+      key:
+      - edible
+      - fruit
+      vals:
+        - [rotten, apple ]
+        - [poisonous, pear ]
+
+stages:
+  - name: make sure list is sent and returned
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        edibility: "{edible}"
+        fruit: "{fruit}"
+    response:
+      status_code: 200
+      json:
+        edibility: "{edible}"
+        fruit: "{fruit}"
+
+---
+
+test_name: Test sending a list of list of keys where one is not a string
+
+includes:
+  - !include common.yaml
+
+marks:
+  - parametrize:
+      key:
+      - fruit
+      - colours
+      vals:
+        - [apple, [red, green, pink] ]
+        - [pear, [yellow, green] ]
+
+stages:
+  - name: make sure list and sublist is sent and returned
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        fruit: "{fruit}"
+        colours: !force_format_include "{colours}"
+    response:
+      status_code: 200
+      json:
+        fruit: "{fruit}"
+        colours: !force_format_include "{tavern.request_vars.json.colours}"
 
 ---
 

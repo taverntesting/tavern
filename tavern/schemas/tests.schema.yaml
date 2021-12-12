@@ -300,10 +300,7 @@ mapping:
                   - type: float
                   - type: seq
                     sequence:
-                      - type: str
-                      - type: bool                      
-                      - type: int
-                      - type: float
+                      - type: any
 
   _xfail:
     type: str

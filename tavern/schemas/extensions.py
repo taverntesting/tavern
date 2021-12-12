@@ -159,7 +159,6 @@ def check_parametrize_marks(value, rule_obj, path):
         raise BadSchemaError("'vals' should be a list")
 
     if isinstance(key_or_keys, str):
-        return True
         # example:
         # - parametrize:
         #     key: edible
@@ -171,11 +170,26 @@ def check_parametrize_marks(value, rule_obj, path):
             "If 'key' in parametrize is a string, 'vals' must be a list of scalar items"
         )
         for v in vals:
-            if isinstance(v, (list, dict)):
+            if isinstance(v, dict):
                 raise BadSchemaError(err_msg)
 
     elif isinstance(key_or_keys, list):
-        return True
+        err_msg = "If 'key' is a list, 'vals' must be a list of lists where each list is the same length as 'key'"
+
+        # This catches the case like
+        #
+        #   - parametrize:
+        #       key:
+        #         - edible
+        #         - fruit
+        #       vals:
+        #         - fresh
+        #         - orange
+        #
+        # This will parametrize 'edible' as [f, r, e, s, h] which is almost certainly not desired
+        if not isinstance(vals, list):
+            raise BadSchemaError(err_msg)
+
         # example:
         # - parametrize:
         #     key:
@@ -185,11 +199,10 @@ def check_parametrize_marks(value, rule_obj, path):
         #         - [rotten, apple]
         #         - [fresh, orange]
         #         - [unripe, pear]
-        err_msg = "If 'key' is a list, 'vals' must be a list of lists where each list is the same length as 'key'"
         for v in vals:
             if not isinstance(v, list):
                 raise BadSchemaError(err_msg)
-            elif len(v) != len(key_or_keys):
+            if len(v) != len(key_or_keys):
                 raise BadSchemaError(err_msg)
 
     else:
