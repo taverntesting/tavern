@@ -295,11 +295,13 @@ mapping:
                 required: true
                 sequence:
                   - type: str
+                  - type: bool
                   - type: int
                   - type: float
                   - type: seq
                     sequence:
                       - type: str
+                      - type: bool                      
                       - type: int
                       - type: float
 
