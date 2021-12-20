@@ -1,3 +1,5 @@
+# pylint: disable=undefined-variable
+
 lint_ver = "3.9"
 
 
@@ -14,7 +16,7 @@ def test_lib(lower, upper, **kwargs):
             "unit/test_*.py",
         ],
         interpreter_constraints=[f"CPython>={lower},<{upper}"],
-        **kwargs
+        **kwargs,
     )
 
 

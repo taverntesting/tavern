@@ -1,5 +1,5 @@
-python_library(
-  dependencies=[":schema_yaml"],
+python_sources(
+    dependencies=[":schema_yaml"],
 )
 
 resources(

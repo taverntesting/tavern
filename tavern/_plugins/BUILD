@@ -1,1 +1,1 @@
-python_library()
+python_sources()
