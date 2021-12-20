@@ -6,6 +6,8 @@ import stevedore
 import yaml
 
 import tavern
+import tavern._plugins.mqtt.tavernhook as mqtt_plugin
+from tavern._plugins.rest.tavernhook import TavernRestPlugin as rest_plugin
 
 
 @pytest.fixture(scope="function", autouse=True)
@@ -24,10 +26,10 @@ def set_plugins():
     tavern.plugins.load_plugins.plugins = [
         extension(
             "requests",
-            tavern._plugins.rest.tavernhook.TavernRestPlugin,
+            rest_plugin,
         ),
         extension(
             "paho-mqtt",
-            tavern._plugins.mqtt.tavernhook,
+            mqtt_plugin,
         ),
     ]
