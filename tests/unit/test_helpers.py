@@ -142,6 +142,15 @@ class TestTavernRepr:
         )
         return item
 
+    @pytest.fixture(autouse=True, scope="session")
+    def add_opts(self, pytestconfig):
+        from tavern.testutils.pytesthook.hooks import pytest_addoption
+
+        try:
+            pytest_addoption(pytestconfig._parser)
+        except ValueError:
+            pass
+
     def _make_fake_exc_info(self, exc_type):
         # Copied from pytest tests
         class FakeExcinfo(_pytest._code.ExceptionInfo):

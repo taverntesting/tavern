@@ -63,7 +63,7 @@ class _PluginCache(object):
     # pylint: disable=inconsistent-return-statements
 
     def __init__(self):
-        self.plugins = {}
+        self.plugins = []
 
     def __call__(self, config=None):
         if not config and not self.plugins:
