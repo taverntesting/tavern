@@ -1,0 +1,23 @@
+directories:
+  # Add the directories you want added as source here
+  # By default, we've added your entire workspace ('.')
+  .
+  -bazel-bin
+  -bazel-out
+  -bazel-tavern
+  -bazel-testlogs
+  -.pants.d
+  -.pids
+  -.idea
+  -build
+  -dist
+  -.ijwb
+
+# Automatically includes all relevant targets under the 'directories' above
+derive_targets_from_directories: true
+
+targets:
+  # If source code isn't resolving, add additional targets that compile it here
+
+additional_languages:
+  python
