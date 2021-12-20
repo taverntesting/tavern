@@ -5,11 +5,9 @@ significantly if/when a proper plugin system is implemented!
 """
 import logging
 
-import attr
 import stevedore
 
 from tavern.util.dict_util import format_keys
-
 from .util import exceptions
 
 logger = logging.getLogger(__name__)
@@ -63,7 +61,8 @@ def is_valid_reqresp_plugin(ext):
 class _PluginCache(object):
     # pylint: disable=inconsistent-return-statements
 
-    plugins = attr.ib(type=list)
+    def __init__(self):
+        self.plugins = []
 
     def __call__(self, config=None):
         if not config and not self.plugins:
