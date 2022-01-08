@@ -2084,8 +2084,44 @@ This will result in 6 tests:
 - cheap fresh orange
 - cheap unripe pear
 
+Since 1.19.0 you can now also parametrize generic blocks of data instead of only strings. This can
+also be mixed and matched with items which _are_ strings. If you do this, remember to use the
+[force_format_include](#Including raw JSON data) tag so it doesn't come out as a string:
+
+```yaml
+test_name: Test sending a list of list of keys where one is not a string
+
+marks:
+  - parametrize:
+      key:
+      - fruit
+      - colours
+      vals:
+        - [ apple, [red, green, pink] ]
+        - [ pear, [yellow, green] ]
+
+stages:
+  - name: Send fruit and colours
+    request:
+      url: "{host}/newfruit"
+      method: POST
+      json:
+        fruit: "{fruit}"
+        colours: !force_format_include "{colours}"
+
+        # This sends:
+        # {
+        #   "fruit": "apple",
+        #   "colours": [
+        #     "red",
+        #     "green",
+        #     "pink"
+        #   ]
+        # }
+```
+
 **NOTE**: Due to implementation reasons it is currently impossible to
-parametrize either the HTTP method or the MQTT QoS parameter.
+parametrize either the MQTT QoS parameter.
 
 #### usefixtures
 
