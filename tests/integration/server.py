@@ -1,14 +1,15 @@
 import base64
-import itertools
+import gzip
 import json
-import math
 import mimetypes
 import os
-import time
 from urllib.parse import unquote_plus
 import uuid
 
 from flask import Flask, Response, jsonify, redirect, request
+import itertools
+import math
+import time
 
 app = Flask(__name__)
 
@@ -203,6 +204,34 @@ def expect_raw_data():
     elif raw_data == "DENIED":
         response = {"status": "denied"}
         code = 401
+    else:
+        response = {"status": "err: '{}'".format(raw_data)}
+        code = 400
+
+    return jsonify(response), code
+
+
+@app.route("/expect_compressed_data", methods=["POST"])
+def expect_compressed_data():
+    content_type_header = request.headers.get("content-type")
+    if content_type_header != "application/json":
+        return jsonify("invalid content type " + content_type_header), 400
+
+    content_encoding_header = request.headers.get("content-encoding")
+    if content_encoding_header != "gzip":
+        return jsonify("invalid content encoding " + content_encoding_header), 400
+
+    compressed_data = request.stream.read()
+
+    decompressed = gzip.decompress(compressed_data)
+
+    raw_data = decompressed.decode("utf8").strip()
+
+    loaded = json.loads(raw_data)
+
+    if loaded == "OK":
+        response = {"status": "ok"}
+        code = 200
     else:
         response = {"status": "err: '{}'".format(raw_data)}
         code = 400
