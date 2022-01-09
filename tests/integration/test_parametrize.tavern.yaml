@@ -352,95 +352,6 @@ stages:
 
 ---
 
-test_name: Test sending a list of keys
-
-includes:
-  - !include common.yaml
-
-marks:
-  - parametrize:
-      key: edible
-      vals:
-        - [not, edible, at, all]
-
-stages:
-  - name: make sure list is sent and returned
-    request:
-      url: "{host}/echo"
-      method: POST
-      json:
-        value: !force_format_include "{edible}"
-    response:
-      status_code: 200
-      json:
-        value:
-        - not
-        - edible
-        - at
-        - all
-
----
-
-test_name: Test sending a list of list of keys
-
-includes:
-  - !include common.yaml
-
-marks:
-  - parametrize:
-      key:
-      - edible
-      - fruit
-      vals:
-        - [rotten, apple ]
-        - [poisonous, pear ]
-
-stages:
-  - name: make sure list is sent and returned
-    request:
-      url: "{host}/echo"
-      method: POST
-      json:
-        edibility: "{edible}"
-        fruit: "{fruit}"
-    response:
-      status_code: 200
-      json:
-        edibility: "{edible}"
-        fruit: "{fruit}"
-
----
-
-test_name: Test sending a list of list of keys where one is not a string
-
-includes:
-  - !include common.yaml
-
-marks:
-  - parametrize:
-      key:
-      - fruit
-      - colours
-      vals:
-        - [apple, [red, green, pink] ]
-        - [pear, [yellow, green] ]
-
-stages:
-  - name: make sure list and sublist is sent and returned
-    request:
-      url: "{host}/echo"
-      method: POST
-      json:
-        fruit: "{fruit}"
-        colours: !force_format_include "{colours}"
-    response:
-      status_code: 200
-      json:
-        fruit: "{fruit}"
-        colours: !force_format_include "{tavern.request_vars.json.colours}"
-
----
-
 test_name: Test failing when key is a list and vals isn't
 
 _xfail: verify
@@ -631,6 +542,95 @@ stages:
     status_code: 200
     json:
       method: "{method}"
+
+---
+
+test_name: Test sending a list of keys
+
+includes:
+- !include common.yaml
+
+marks:
+- parametrize:
+    key: edible
+    vals:
+    - [not, edible, at, all]
+
+stages:
+- name: make sure list is sent and returned
+  request:
+    url: "{host}/echo"
+    method: POST
+    json:
+      value: !force_format_include "{edible}"
+  response:
+    status_code: 200
+    json:
+      value:
+      - not
+      - edible
+      - at
+      - all
+
+---
+
+test_name: Test sending a list of list of keys
+
+includes:
+- !include common.yaml
+
+marks:
+- parametrize:
+    key:
+    - edible
+    - fruit
+    vals:
+    - [rotten, apple ]
+    - [poisonous, pear ]
+
+stages:
+- name: make sure list is sent and returned
+  request:
+    url: "{host}/echo"
+    method: POST
+    json:
+      edibility: "{edible}"
+      fruit: "{fruit}"
+  response:
+    status_code: 200
+    json:
+      edibility: "{edible}"
+      fruit: "{fruit}"
+
+---
+
+test_name: Test sending a list of list of keys where one is not a string
+
+includes:
+- !include common.yaml
+
+marks:
+- parametrize:
+    key:
+    - fruit
+    - colours
+    vals:
+    - [apple, [red, green, pink] ]
+    - [pear, [yellow, green] ]
+
+stages:
+- name: make sure list and sublist is sent and returned
+  request:
+    url: "{host}/echo"
+    method: POST
+    json:
+      fruit: "{fruit}"
+      colours: !force_format_include "{colours}"
+  response:
+    status_code: 200
+    json:
+      fruit: "{fruit}"
+      colours: !force_format_include "{tavern.request_vars.json.colours}"
 
 ---
 
