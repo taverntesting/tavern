@@ -2084,8 +2084,89 @@ This will result in 6 tests:
 - cheap fresh orange
 - cheap unripe pear
 
+Since 1.19.0 you can now also parametrize generic blocks of data instead of only strings. This can
+also be mixed and matched with items which _are_ strings. If you do this, remember to use the
+[force_format_include](#Including raw JSON data) tag so it doesn't come out as a string:
+
+```yaml
+test_name: Test sending a list of list of keys where one is not a string
+
+marks:
+  - parametrize:
+      key:
+      - fruit
+      - colours
+      vals:
+        - [ apple, [red, green, pink] ]
+        - [ pear, [yellow, green] ]
+
+stages:
+  - name: Send fruit and colours
+    request:
+      url: "{host}/newfruit"
+      method: POST
+      json:
+        fruit: "{fruit}"
+        colours: !force_format_include "{colours}"
+
+        # This sends:
+        # {
+        #   "fruit": "apple",
+        #   "colours": [
+        #     "red",
+        #     "green",
+        #     "pink"
+        #   ]
+        # }
+```
+
+The type of the 'val' does not need to be the same for each version of the test, and even external
+functions can be used to read values. For example this block will create 6 tests which sets the
+`value_to_send` key to a string, a list, or a dictionary:
+
+```yaml
+---
+
+test_name: Test parametrizing random different data types in the same test
+
+marks:
+- parametrize:
+    key: value_to_send
+    vals:
+    - a
+    - [b, c]
+    - more: stuff
+    - yet: [more, stuff]
+    - $ext:
+        function: ext_functions:return_string
+    - and: this
+      $ext:
+        function: ext_functions:return_dict
+        
+      # If 'return_dict' returns {"keys: ["a","b","c"]} this results in:
+      # {
+      #   "and": "this",
+      #   "keys": [
+      #     "a",
+      #     "b",
+      #     "c"
+      #   ]
+      # }
+```
+
+As see in the last example, if the `$ext` function returns a dictionary then it will also be merged
+with any existing data in the 'val'. In this case, the return value of the function _must_ be a
+dictionary or an error will be raised.
+
+```yaml
+    # This would raise an error
+    #- and: this
+    #  $ext:
+    #    function: ext_functions:return_string
+```
+
 **NOTE**: Due to implementation reasons it is currently impossible to
-parametrize either the HTTP method or the MQTT QoS parameter.
+parametrize the MQTT QoS parameter.
 
 #### usefixtures
 

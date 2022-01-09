@@ -6,6 +6,19 @@ from . import exceptions
 from .dict_util import deep_dict_merge
 
 
+def is_ext_function(block):
+    """
+    Whether the given object is an ext function block
+
+    Args:
+        block (object): Any object
+
+    Returns:
+        bool: If it is an ext function style dict
+    """
+    return isinstance(block, dict) and block.get("$ext", None) is not None
+
+
 def get_pykwalify_logger(module):
     """Get logger for this module
 
@@ -77,14 +90,8 @@ def get_wrapped_response_function(ext):
     Returns:
         function: Wrapped function
     """
-    args = ext.get("extra_args") or ()
-    kwargs = ext.get("extra_kwargs") or {}
-    try:
-        func = import_ext_function(ext["function"])
-    except KeyError as e:
-        raise exceptions.BadSchemaError(
-            "No function specified in external function block"
-        ) from e
+
+    func, args, kwargs = _get_ext_values(ext)
 
     @functools.wraps(func)
     def inner(response):
@@ -99,9 +106,8 @@ def get_wrapped_response_function(ext):
 
 def get_wrapped_create_function(ext):
     """Same as get_wrapped_response_function, but don't require a response"""
-    args = ext.get("extra_args") or ()
-    kwargs = ext.get("extra_kwargs") or {}
-    func = import_ext_function(ext["function"])
+
+    func, args, kwargs = _get_ext_values(ext)
 
     @functools.wraps(func)
     def inner():
@@ -112,6 +118,19 @@ def get_wrapped_create_function(ext):
     inner.func = func
 
     return inner
+
+
+def _get_ext_values(ext):
+    args = ext.get("extra_args") or ()
+    kwargs = ext.get("extra_kwargs") or {}
+    try:
+        func = import_ext_function(ext["function"])
+    except KeyError as e:
+        raise exceptions.BadSchemaError(
+            "No function specified in external function block"
+        ) from e
+
+    return func, args, kwargs
 
 
 def update_from_ext(request_args, keys_to_check, test_block_config):

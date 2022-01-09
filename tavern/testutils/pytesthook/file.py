@@ -9,7 +9,8 @@ import yaml
 
 from tavern.schemas.files import verify_tests
 from tavern.util import exceptions
-from tavern.util.dict_util import format_keys, get_tavern_box
+from tavern.util.dict_util import deep_dict_merge, format_keys, get_tavern_box
+from tavern.util.extfunctions import get_wrapped_create_function, is_ext_function
 from tavern.util.loader import IncludeLoader
 
 from .item import YamlItem
@@ -106,6 +107,40 @@ def _generate_parametrized_test_items(keys, vals_combination):
             for subkey, subvalue in zip(key, value):
                 variables[subkey] = subvalue
                 flattened_values += [subvalue]
+
+    def maybe_load_ext(v):
+        key, value = v
+
+        if is_ext_function(value):
+            # If it is an ext function, load the new (or supplemental) value[s]
+            ext = value.pop("$ext")
+            f = get_wrapped_create_function(ext)
+            new_value = f()
+
+            if len(value) == 0:
+                # Use only this new value
+                return key, new_value
+            elif isinstance(new_value, dict):
+                # Merge with some existing data. At this point 'value' is known to be a dict.
+                return key, deep_dict_merge(value, f())
+            else:
+                # For example, if it's defined like
+                #
+                # - testkey: testval
+                #   $ext:
+                #     function: mod:func
+                #
+                # and 'mod:func' returns a string, it's impossible to 'merge' with the existing data.
+                logger.error("Values still in 'val': %s", value)
+                raise exceptions.BadSchemaError(
+                    "There were extra key/value pairs in the 'val' for this parametrize mark, but the ext function {} returned '{}' (of type {}) that was not a dictionary. It is impossible to merge these values.".format(
+                        ext, new_value, type(new_value)
+                    )
+                )
+
+        return key, value
+
+    variables = dict(map(maybe_load_ext, variables.items()))
 
     logger.debug("Variables for this combination: %s", variables)
     logger.debug("Values for this combination: %s", flattened_values)

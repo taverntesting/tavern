@@ -300,10 +300,8 @@ mapping:
                   - type: float
                   - type: seq
                     sequence:
-                      - type: str
-                      - type: bool                      
-                      - type: int
-                      - type: float
+                      - type: any
+                  - include: any_map
 
   _xfail:
     type: str
