@@ -159,50 +159,46 @@ def check_parametrize_marks(value, rule_obj, path):
         raise BadSchemaError("'vals' should be a list")
 
     if isinstance(key_or_keys, str):
-        # example:
-        # - parametrize:
-        #     key: edible
-        #     vals:
-        #         - rotten
-        #         - fresh
-        #         - unripe
-        err_msg = (
-            "If 'key' in parametrize is a string, 'vals' must be a list of scalar items"
-        )
-        for v in vals:
-            if isinstance(v, dict):
-                raise BadSchemaError(err_msg)
-
+        # Vals can be anything
+        return True
     elif isinstance(key_or_keys, list):
         err_msg = "If 'key' is a list, 'vals' must be a list of lists where each list is the same length as 'key'"
 
-        # This catches the case like
-        #
-        #   - parametrize:
-        #       key:
-        #         - edible
-        #         - fruit
-        #       vals:
-        #         - fresh
-        #         - orange
-        #
-        # This will parametrize 'edible' as [f, r, e, s, h] which is almost certainly not desired
+        # broken example:
+        # - parametrize:
+        #     key:
+        #       - edible
+        #       - fruit
+        #     vals:
+        #       a: b
         if not isinstance(vals, list):
             raise BadSchemaError(err_msg)
 
         # example:
         # - parametrize:
         #     key:
-        #         - edible
-        #         - fruit
+        #       - edible
+        #       - fruit
         #     vals:
-        #         - [rotten, apple]
-        #         - [fresh, orange]
-        #         - [unripe, pear]
+        #       - [rotten, apple]
+        #       - [fresh, orange]
+        #       - [unripe, pear]
         for v in vals:
             if not isinstance(v, list):
+                # This catches the case like
+                #
+                # - parametrize:
+                #     key:
+                #       - edible
+                #       - fruit
+                #     vals:
+                #       - fresh
+                #       - orange
+                #
+                # This will parametrize 'edible' as [f, r, e, s, h] which is almost certainly not desired
                 raise BadSchemaError(err_msg)
             if len(v) != len(key_or_keys):
+                # If the 'vals' list has more or less keys
                 raise BadSchemaError(err_msg)
 
     else:

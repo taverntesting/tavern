@@ -631,3 +631,130 @@ stages:
     status_code: 200
     json:
       method: "{method}"
+
+---
+
+test_name: Test parametrizing with an ext function
+
+marks:
+- parametrize:
+    key: value_to_get
+    vals:
+    - goodbye
+    - $ext:
+        function: ext_functions:return_goodbye_string
+
+stages:
+- name: Echo back parametrized value
+  request:
+    url: "{global_host}/echo"
+    method: POST
+    json:
+      value: "{value_to_get}"
+  response:
+    status_code: 200
+    json:
+      value: "goodbye"
+
+---
+
+test_name: Test parametrizing with an ext function that returns a dict
+
+marks:
+- parametrize:
+    key: value_to_get
+    vals:
+    - hello: there
+    - $ext:
+        function: ext_functions:return_hello
+
+stages:
+- name: Echo back parametrized value
+  request:
+    url: "{global_host}/echo"
+    method: POST
+    json: !force_format_include "{value_to_get}"
+  response:
+    status_code: 200
+    json:
+      hello: "there"
+
+---
+
+test_name: Test parametrizing with an ext function that returns a dict with supplemental data
+
+marks:
+- parametrize:
+    key: value_to_get
+    vals:
+    - and: this
+      hello: there
+    - and: this
+      $ext:
+        function: ext_functions:return_hello
+
+stages:
+- name: Echo back parametrized value
+  request:
+    url: "{global_host}/echo"
+    method: POST
+    json: !force_format_include "{value_to_get}"
+  response:
+    status_code: 200
+    json:
+      hello: "there"
+      and: this
+
+#---
+#
+# NOTE: This fails immediately because it's impossible to resolve at the test level
+#
+#test_name: Test parametrizing with an ext function that returns a dict with supplemental data, but wrong function type
+#
+#_xfail: verify
+#
+#marks:
+#- parametrize:
+#    key: value_to_get
+#    vals:
+#    - and: this
+#      $ext:
+#        function: ext_functions:return_goodbye_string
+#
+#stages:
+#- name: Echo back parametrized value
+#  request:
+#    url: "{global_host}/echo"
+#    method: POST
+#    json: !force_format_include "{value_to_get}"
+#  response:
+#    status_code: 200
+#    json: {}
+#
+---
+
+test_name: Test parametrizing random different data types in the same test
+
+marks:
+- parametrize:
+    key: value_to_send
+    vals:
+    - a
+    - [b, c]
+    - more: stuff
+    - yet: [more, stuff]
+    - $ext:
+        function: ext_functions:return_goodbye_string
+    - and: this
+      $ext:
+        function: ext_functions:return_hello
+
+stages:
+- name: Echo back parametrized value
+  request:
+    url: "{global_host}/echo"
+    method: POST
+    json: !force_format_include "{value_to_send}"
+  response:
+    status_code: 200
+    json: !force_format_include "{tavern.request_vars.json}"

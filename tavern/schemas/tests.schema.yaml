@@ -301,6 +301,7 @@ mapping:
                   - type: seq
                     sequence:
                       - type: any
+                  - include: any_map
 
   _xfail:
     type: str
