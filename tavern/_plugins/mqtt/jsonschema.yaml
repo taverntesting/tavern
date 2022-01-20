@@ -68,7 +68,7 @@ properties:
             description: How long to wait for connection before giving up
 
       tls:
-        description: Custom options to control secure connection
+        description: Basic custom options to control secure connection
 
         type: object
         additionalProperties: false
@@ -106,6 +106,51 @@ properties:
           ciphers:
             type: string
             description: Allowed ciphers to use with connection
+
+      ssl_context:
+        description: Advanced custom options to control secure connection using SSLContext
+
+        type: object
+        additionalProperties: false
+
+        properties:
+          ca_certs:
+            type: string
+            description: Path to CA cert bundle
+
+          certfile:
+            type: string
+            description: Path to certificate for server
+
+          keyfile:
+            type: string
+            description: Path to private key for client
+
+          password:
+            type: string
+            description: Password for keyfile
+
+          cert_reqs:
+            type: string
+            description: Controls connection with cert
+            enum:
+            - CERT_NONE
+            - CERT_OPTIONAL
+            - CERT_REQUIRED
+
+          tls_version:
+            type: string
+            description: TLS version to use
+
+          ciphers:
+            type: string
+            description: Allowed ciphers to use with connection
+          
+          alpn_protocols:
+            type: array
+            description: |
+              Which protocols the socket should advertise during the SSL/TLS handshake.
+              See https://docs.python.org/3/library/ssl.html#ssl.SSLContext.set_alpn_protocols
 
       auth:
         description: Username and password for basic authorisation
