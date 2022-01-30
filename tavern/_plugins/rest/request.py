@@ -454,6 +454,10 @@ class RestRequest(BaseRequest):
         if "meta" in rspec:
             meta = rspec.pop("meta")
             if meta and "clear_session_cookies" in meta:
+                warnings.warn(
+                    "The 'clear_session_cookies' key will move directly into the 'request' block in Tavern 2.0",
+                    FutureWarning,
+                )
                 session.cookies.clear_session_cookies()
 
         expected = {
