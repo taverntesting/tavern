@@ -21,6 +21,17 @@ def pytest_tavern_beta_before_every_test_run(test_dict, variables):
     """
 
 
+def pytest_tavern_beta_after_every_test_run(test_dict, variables):
+    """Called:
+
+    - After test run
+
+    Args:
+        test_dict (dict): Test to run
+        variables (dict): Available variables
+    """
+
+
 def pytest_tavern_beta_after_every_response(expected, response):
     """Called after every _response_ - including MQTT/HTTP/etc
 

@@ -194,6 +194,16 @@ class YamlItem(pytest.Item):
                     stage["name"] = stage["id"]
 
             run_test(self.path, self.spec, self.global_cfg)
+
+            # TODO: Will this also run after test failure?
+            # TODO: Add flag to indicate wether test failed?
+            call_hook(
+                self.global_cfg,
+                "pytest_tavern_beta_after_every_test_run",
+                test_dict=self.spec,
+                variables=self.global_cfg["variables"],
+            )
+
         except exceptions.BadSchemaError:
             if xfail == "verify":
                 logger.info("xfailing test while verifying schema")
@@ -207,6 +217,8 @@ class YamlItem(pytest.Item):
         else:
             if xfail:
                 raise Exception("internal: xfail test did not fail '{}'".format(xfail))
+
+
         # else:
         #     if xfail:
         #         logger.error("Expected test to fail")
