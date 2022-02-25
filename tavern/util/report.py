@@ -3,6 +3,9 @@ from textwrap import dedent
 
 import yaml
 
+from tavern.util.formatted_str import FormattedString
+from tavern.util.stage_lines import get_stage_lines, read_relevant_lines
+
 try:
     from allure import attach
     from allure import attachment_type as at
@@ -21,9 +24,6 @@ except ImportError:
 
         return call
 
-
-from tavern.util.formatted_str import FormattedString
-from tavern.util.stage_lines import get_stage_lines, read_relevant_lines
 
 logger = logging.getLogger(__name__)
 

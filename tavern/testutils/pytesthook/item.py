@@ -216,7 +216,6 @@ class YamlItem(pytest.Item):
                 variables=self.global_cfg["variables"],
             )
 
-
         # else:
         #     if xfail:
         #         logger.error("Expected test to fail")
