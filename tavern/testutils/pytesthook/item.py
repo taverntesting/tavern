@@ -194,6 +194,7 @@ class YamlItem(pytest.Item):
                     stage["name"] = stage["id"]
 
             run_test(self.path, self.spec, self.global_cfg)
+
         except exceptions.BadSchemaError:
             if xfail == "verify":
                 logger.info("xfailing test while verifying schema")
@@ -213,6 +214,13 @@ class YamlItem(pytest.Item):
         #         raise exceptions.TestFailError(
         #             "Expected test to fail at {} stage".format(xfail)
         #         )
+        finally:
+            call_hook(
+                self.global_cfg,
+                "pytest_tavern_beta_after_every_test_run",
+                test_dict=self.spec,
+                variables=self.global_cfg["variables"],
+            )
 
     def repr_failure(self, excinfo, style=None):
         """called when self.runtest() raises an exception.
