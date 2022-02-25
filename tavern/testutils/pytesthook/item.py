@@ -208,6 +208,12 @@ class YamlItem(pytest.Item):
         else:
             if xfail:
                 raise Exception("internal: xfail test did not fail '{}'".format(xfail))
+        # else:
+        #     if xfail:
+        #         logger.error("Expected test to fail")
+        #         raise exceptions.TestFailError(
+        #             "Expected test to fail at {} stage".format(xfail)
+        #         )
         finally:
             call_hook(
                 self.global_cfg,
@@ -215,13 +221,6 @@ class YamlItem(pytest.Item):
                 test_dict=self.spec,
                 variables=self.global_cfg["variables"],
             )
-
-        # else:
-        #     if xfail:
-        #         logger.error("Expected test to fail")
-        #         raise exceptions.TestFailError(
-        #             "Expected test to fail at {} stage".format(xfail)
-        #         )
 
     def repr_failure(self, excinfo, style=None):
         """called when self.runtest() raises an exception.
