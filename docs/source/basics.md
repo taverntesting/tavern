@@ -2307,6 +2307,20 @@ def pytest_tavern_beta_before_every_test_run(test_dict, variables):
     variables["extra_var"] = "abc123"
 ```
 
+### After every test run
+
+This hook is called _after_ execution of each test, regardless of the test 
+result. The hook can, for example, be used to perform cleanup after the test is run.
+
+Example usage:
+
+```python
+import logging
+
+def pytest_tavern_beta_after_every_test_run(test_dict, variables):
+    logging.info("Ending test %s", test_dict["test_name"])
+```
+
 ### After every response
 
 This hook is called after every _response_ for each _stage_ - this includes HTTP
