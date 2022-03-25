@@ -447,6 +447,13 @@ def return_hello():
 If `tavern-merge-ext-function-values` is set, this will send "hello" and "goodbye" in 
 the request. If not, it will just sent "hello". 
 
+Example `pytest.ini` setting `tavern-merge-ext-function-values` as an argument.
+```python
+# pytest.ini
+[pytest]
+addopts = --tavern-merge-ext-function-values 
+```
+
 #### Saving data from a response
 
 When using the `$ext` key in the `save` block there is special behaviour - each key in
