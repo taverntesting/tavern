@@ -445,7 +445,7 @@ def return_hello():
 ```
 
 If `tavern-merge-ext-function-values` is set, this will send "hello" and "goodbye" in 
-the request. If not, it will just sent "hello". 
+the request. If not, it will just send "hello". 
 
 Example `pytest.ini` setting `tavern-merge-ext-function-values` as an argument.
 ```python
