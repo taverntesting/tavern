@@ -4,26 +4,21 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 http_archive(
     name = "rules_python",
-    sha256 = "954aa89b491be4a083304a2cb838019c8b8c3720a7abb9c4cb81ac7a24230cea",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_python/releases/download/0.4.0/rules_python-0.4.0.tar.gz",
-        "https://github.com/bazelbuild/rules_python/releases/download/0.4.0/rules_python-0.4.0.tar.gz",
-    ],
+    sha256 = "9fcf91dbcc31fde6d1edb15f117246d912c33c36f44cf681976bd886538deba6",
+    strip_prefix = "rules_python-0.8.0",
+    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.8.0.tar.gz",
 )
-#http_archive(
-#    name = "rules_python",
-#    sha256 = "a8a4d791385ae08e33978bd278f2ac1151db40c0fdce9af21b37016021f9a492",
-#    strip_prefix = "rules_python-1b4f61b15079d447bb7f8d11894824835e792e6c",
-#    urls = [
-#        "https://github.com/bazelbuild/rules_python/archive/1b4f61b15079d447bb7f8d11894824835e792e6c.tar.gz",
-#    ],
-#)
-#http_archive(
-#    name = "rules_python",
-#    sha256 = "778197e26c5fbeb07ac2a2c5ae405b30f6cb7ad1f5510ea6fdac03bded96cc6f",
-#    #    strip_prefix = "rules_python-0.2.0",
-#    url = "https://github.com/bazelbuild/rules_python/releases/download/0.2.0/rules_python-0.2.0.tar.gz",
-#)
+load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+
+python_register_toolchains(
+    name = "python3_9",
+    # Available versions are listed in @rules_python//python:versions.bzl.
+    # We recommend using the same version your team is already standardized on.
+    python_version = "3.9",
+)
+
+load("@python3_9//:defs.bzl", "interpreter")
+
 
 load("@rules_python//python:pip.bzl", "pip_parse")
 
@@ -32,6 +27,7 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 pip_parse(
     name = "tavern_deps",
     requirements_lock = "//:requirements_lock.txt",
+        python_interpreter_target = interpreter,
 )
 
 # Load the starlark macro which will define your dependencies.
@@ -46,23 +42,3 @@ http_archive(
     strip_prefix = "rules_pip-3.0.0",
     urls = ["https://github.com/ali5h/rules_pip/archive/3.0.0.tar.gz"],
 )
-
-http_archive(
-    name = "rules_foreign_cc",
-    sha256 = "69023642d5781c68911beda769f91fcbc8ca48711db935a75da7f6536b65047f",
-    strip_prefix = "rules_foreign_cc-0.6.0",
-    url = "https://github.com/bazelbuild/rules_foreign_cc/archive/0.6.0.tar.gz",
-)
-
-load("@rules_foreign_cc//foreign_cc:repositories.bzl", "rules_foreign_cc_dependencies")
-
-rules_foreign_cc_dependencies()
-
-load("@tavern//support/rules:python_sdk.bzl", "python_download_sdk")
-
-python_download_sdk(
-    name = "python_src",
-    version = "3.8.3",
-)
-
-register_toolchains("//support/rules:py3_toolchain")

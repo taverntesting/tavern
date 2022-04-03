@@ -1,5 +1,0 @@
-filegroup(
-    name = "all_rules",
-    srcs = ["BUILD.sdk.bzl"],
-    visibility = ["//visibility:private"],
-)
