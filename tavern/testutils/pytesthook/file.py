@@ -207,11 +207,13 @@ def _get_parametrized_items(parent, test_spec, parametrize_marks, pytest_marks):
 class YamlFile(pytest.File):
     """Custom `File` class that loads each test block as a different test"""
 
+    # pylint:disable=no-member
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # This (and the FakeObj below) are to make pytest-pspec not error out.
-        # The 'doctstring' for this is the filename, the 'docstring' for each
+        # The 'docstring' for this is the filename, the 'docstring' for each
         # individual test is the actual test name.
         class FakeObj(object):
             __doc__ = self.fspath
