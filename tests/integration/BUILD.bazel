@@ -1,0 +1,24 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+py_library(
+    name = "conftest",
+    srcs = [
+        "conftest.py",
+        "ext_functions.py",
+        "server.py",
+        "test_dummy.py",
+    ],
+    imports = ["../.."],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@tavern_pip_flask//:pkg",
+        "@tavern_pip_pytest//:pkg",
+    ],
+)
+
+load(":gentest.bzl", "gentest")
+
+[
+    gentest(f)
+    for f in glob(["test_*.tavern.yaml"])
+]

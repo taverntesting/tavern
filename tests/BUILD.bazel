@@ -3,13 +3,7 @@ load("@rules_python//python:defs.bzl", "py_library")
 
 py_library(
     name = "conftest",
-    srcs = [
-        "conftest.py",
-        "integration/conftest.py",
-        "integration/ext_functions.py",
-        "integration/server.py",
-        "integration/test_dummy.py",
-    ],
+    srcs = ["conftest.py"],
     data = [":logging.yaml"],
     imports = [".."],
     visibility = ["//visibility:public"],
@@ -17,7 +11,6 @@ py_library(
         "//tavern",
         "//tavern/_plugins/mqtt",
         "//tavern/_plugins/rest",
-        "@tavern_pip_flask//:pkg",
         "@tavern_pip_pytest//:pkg",
         "@tavern_pip_pyyaml//:pkg",
         "@tavern_pip_stevedore//:pkg",
