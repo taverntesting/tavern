@@ -1,15 +1,15 @@
 import base64
-import gzip
+import itertools
 import json
+import math
 import mimetypes
 import os
+import time
 from urllib.parse import unquote_plus
 import uuid
 
 from flask import Flask, Response, jsonify, redirect, request
-import itertools
-import math
-import time
+import gzip
 
 app = Flask(__name__)
 
@@ -377,3 +377,7 @@ def get_606_dict():
 @app.route("/magic-multi-method", methods=["GET", "POST", "DELETE"])
 def get_any_method():
     return jsonify({"method": request.method})
+
+
+if __name__ == '__main__':
+    app.run(os.getenv("0.0.0.0"))

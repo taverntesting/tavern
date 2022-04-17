@@ -25,3 +25,26 @@ load(":gentest.bzl", "gentest")
     gentest(f)
     for f in glob(["test_*.tavern.yaml"])
 ]
+
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+
+container_image(
+    name = "py3_base_image",
+    base = "@py3_debug_image_base//image",
+    env = {
+        "PYTHONUNBUFFERED": "0",
+        "FLASK_DEBUG": "1",
+    },
+)
+
+load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
+
+py3_image(
+    name = "server",
+    srcs = ["server.py"],
+    base = ":py3_base_image",
+    main = "server.py",
+    deps = [
+        "@tavern_pip_flask//:pkg",
+    ],
+)
