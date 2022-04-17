@@ -24,9 +24,6 @@ jobs:
         - TOXENV: py39black
           python: "3.9"
           TOXCFG: tox.ini
-        - TOXENV: py39
-          python: "3.9"
-          TOXCFG: tox.ini
         - TOXENV: py39lint
           python: "3.9"
           TOXCFG: tox.ini
@@ -34,6 +31,13 @@ jobs:
           python: "3.9"
           TOXCFG: tox.ini
         - TOXENV: py39isort
+          python: "3.9"
+          TOXCFG: tox.ini
+
+        - TOXENV: py39
+          python: "3.9"
+          TOXCFG: tox.ini
+        - TOXENV: py39-pytest6
           python: "3.9"
           TOXCFG: tox.ini
 
