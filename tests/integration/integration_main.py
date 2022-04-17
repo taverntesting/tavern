@@ -1,6 +1,8 @@
 import sys
 
 import pytest
+
+# gazelle:ignore rules_python.python.runfiles
 from rules_python.python.runfiles import runfiles
 
 from tavern.testutils import pytesthook

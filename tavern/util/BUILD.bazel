@@ -4,6 +4,7 @@ py_library(
     name = "util",
     srcs = [
         "__init__.py",
+        "bazel.py",
         "delay.py",
         "dict_util.py",
         "exceptions.py",

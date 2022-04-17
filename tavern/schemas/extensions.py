@@ -402,11 +402,7 @@ def validate_file_spec(value, rule_obj, path):
                 "File specification must be a file path or a dictionary"
             )
 
-        try:
-            from rules_python.python.runfiles import runfiles
-        except ImportError:
-            pass
-        else:
+        if hasattr(value, "start_mark"):
             test_filename = value.start_mark.name
             test_dir = os.path.dirname(test_filename)
             file_path = os.path.join(test_dir, file_path)

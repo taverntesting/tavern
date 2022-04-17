@@ -15,6 +15,7 @@ from requests.utils import dict_from_cookiejar
 
 from tavern.request.base import BaseRequest
 from tavern.util import exceptions
+from tavern.util.bazel import bazel_path
 from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
 from tavern.util.extfunctions import update_from_ext
 from tavern.util.general import valid_http_methods
@@ -398,7 +399,7 @@ def guess_filespec(filespec, stack, test_block_config):
     filename = os.path.basename(filepath)
 
     # a 2-tuple ('filename', fileobj)
-    file_spec = [filename, stack.enter_context(open(filepath, "rb"))]
+    file_spec = [filename, stack.enter_context(open(bazel_path(filepath), "rb"))]
 
     # Try to guess as well, but don't override what the user specified
     guessed_content_type, guessed_encoding = mimetypes.guess_type(filepath)
@@ -520,7 +521,7 @@ class RestRequest(BaseRequest):
                 # These are mutually exclusive
                 if file_body:
                     # Any headers will have been set in the above function
-                    file = stack.enter_context(open(file_body, "rb"))
+                    file = stack.enter_context(open(bazel_path(file_body), "rb"))
                     request_args.update(data=file)
                 else:
                     self._request_args.update(

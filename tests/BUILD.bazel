@@ -13,6 +13,7 @@ py_library(
         "//tavern/_plugins/rest",
         "@tavern_pip_pytest//:pkg",
         "@tavern_pip_pyyaml//:pkg",
+        "@tavern_pip_setuptools//:pkg",
         "@tavern_pip_stevedore//:pkg",
     ],
 )

@@ -23,6 +23,7 @@ def gentest(filename):
             ":global_cfg.yaml",
             ":OK.txt",
             ":OK.json.gz",
+            ":parametrize_includes.yaml",
             ":testfile.txt",
         ],
         main = ":integration_main.py",

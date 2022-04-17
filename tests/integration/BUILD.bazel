@@ -5,12 +5,14 @@ py_library(
     srcs = [
         "conftest.py",
         "ext_functions.py",
+        "integration_main.py",
         "server.py",
         "test_dummy.py",
     ],
     imports = ["../.."],
     visibility = ["//:__subpackages__"],
     deps = [
+        "//tavern/testutils",
         "//tests:conftest",  # keep
         "@tavern_pip_flask//:pkg",
         "@tavern_pip_pytest//:pkg",
