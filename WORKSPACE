@@ -77,3 +77,27 @@ gazelle_dependencies()
 load("@rules_python//gazelle:deps.bzl", _py_gazelle_deps = "gazelle_deps")
 
 _py_gazelle_deps()
+
+####################### BUILD TOOLS
+
+http_archive(
+    name = "com_google_protobuf",
+    sha256 = "b07772d38ab07e55eca4d50f4b53da2d998bb221575c60a4f81100242d4b4889",
+    strip_prefix = "protobuf-3.20.0",
+    urls = [
+        "https://github.com/protocolbuffers/protobuf/archive/refs/tags/v3.20.0.tar.gz",
+    ],
+)
+
+load("@com_google_protobuf//:protobuf_deps.bzl", "protobuf_deps")
+
+protobuf_deps()
+
+http_archive(
+    name = "bazel_buildtools",
+    sha256 = "e3bb0dc8b0274ea1aca75f1f8c0c835adbe589708ea89bf698069d0790701ea3",
+    strip_prefix = "buildtools-5.1.0",
+    urls = [
+        "https://github.com/bazelbuild/buildtools/archive/refs/tags/5.1.0.tar.gz",
+    ],
+)
