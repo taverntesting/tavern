@@ -16,8 +16,8 @@ def gentest(filename):
             ":conftest",
             "//tests:conftest",
             "//:tavern",
-            requirement("faker"),
-            requirement("text_unidecode"),
-            requirement("colorlog"),
+            "@tavern_pip_faker//:pkg",
+            "@tavern_pip_text_unidecode//:pkg",
+            "@tavern_pip_colorlog//:pkg",
         ],
     )
