@@ -7,6 +7,5 @@ py_library(
     name = "split_test_names",
     srcs = ["split_test_names.py"],
     deps = [
-        requirement("more_itertools"),
     ],
 )

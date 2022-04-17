@@ -17,7 +17,6 @@ py_library(
         requirement("py"),
         requirement("six"),
         requirement("iniconfig"),
-        requirement("more_itertools"),
         requirement("pluggy"),
         requirement("stevedore"),
     ],

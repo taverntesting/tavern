@@ -11,9 +11,3 @@ load(":gentest.bzl", "gentest")
     gentest(f)
     for f in glob(["test_*.py"])
 ]
-
-#load("//:rules/pytest_generate.bzl", "py_pytest_gentests")
-#
-#py_pytest_gentests(
-#    name = "k",
-#)

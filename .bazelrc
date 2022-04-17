@@ -2,5 +2,6 @@ test --test_output=errors
 test --action_env="GTEST_COLOR=1"
 common --curses=no
 
-test --action_env="PYTHONPATH=external/python_src/Lib/"
+test --flaky_test_attempts=1
 
+test --action_env="PYTHONPATH=external/python_src/Lib/"

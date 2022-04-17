@@ -8,26 +8,25 @@ http_archive(
     strip_prefix = "rules_python-0.8.0",
     url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.8.0.tar.gz",
 )
+
+load("@rules_python//python:pip.bzl", "pip_parse")
 load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 
 python_register_toolchains(
-    name = "python3_9",
+    name = "python3_8",
     # Available versions are listed in @rules_python//python:versions.bzl.
     # We recommend using the same version your team is already standardized on.
-    python_version = "3.9",
+    python_version = "3.8",
 )
 
-load("@python3_9//:defs.bzl", "interpreter")
-
-
-load("@rules_python//python:pip.bzl", "pip_parse")
+load("@python3_8//:defs.bzl", "interpreter")
 
 # Create a central repo that knows about the dependencies needed from
 # requirements_lock.txt.
 pip_parse(
     name = "tavern_deps",
+    python_interpreter_target = interpreter,
     requirements_lock = "//:requirements_lock.txt",
-        python_interpreter_target = interpreter,
 )
 
 # Load the starlark macro which will define your dependencies.
@@ -42,3 +41,16 @@ http_archive(
     strip_prefix = "rules_pip-3.0.0",
     urls = ["https://github.com/ali5h/rules_pip/archive/3.0.0.tar.gz"],
 )
+
+http_archive(
+    name = "bazel_skylib",
+    sha256 = "f7be3474d42aae265405a592bb7da8e171919d74c16f082a5457840f06054728",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
+        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.2.1/bazel-skylib-1.2.1.tar.gz",
+    ],
+)
+
+load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
+
+bazel_skylib_workspace()
