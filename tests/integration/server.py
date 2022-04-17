@@ -175,7 +175,7 @@ def status_code_return():
 
 @app.route("/echo", methods=["POST"])
 def echo_values():
-    body = request.get_json()
+    body = request.get_json(silent=True)
     response = body
     return jsonify(response), 200
 
@@ -268,7 +268,7 @@ def poll():
 
 
 def _maybe_get_cookie_name():
-    return (request.get_json() or {}).get("cookie_name", "tavern-cookie")
+    return (request.get_json(silent=True) or {}).get("cookie_name", "tavern-cookie")
 
 
 @app.route("/get_cookie", methods=["POST"])
