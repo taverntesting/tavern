@@ -402,6 +402,15 @@ def validate_file_spec(value, rule_obj, path):
                 "File specification must be a file path or a dictionary"
             )
 
+        try:
+            from rules_python.python.runfiles import runfiles
+        except ImportError:
+            pass
+        else:
+            test_filename = value.start_mark.name
+            test_dir = os.path.dirname(test_filename)
+            file_path = os.path.join(test_dir, file_path)
+
         if not os.path.exists(file_path):
             if re.search(".*{.+}.*", file_path):
                 get_pykwalify_logger("tavern.schemas.extensions").debug(

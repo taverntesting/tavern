@@ -1,28 +1,39 @@
-load("@com_github_ali5h_rules_pip//:defs.bzl", "py_pytest_test")
 load("@tavern_pip//:requirements.bzl", "requirement")
+load("@rules_python//python:defs.bzl", "py_test")
 
 def gentest(filename):
-    py_pytest_test(
+    py_test(
         name = "integration_test_{}".format(filename),
-        srcs = ["ext_functions.py"],
+        srcs = [":integration_main.py"],
         args = [
+            filename,
             "-c",
             "pytest.ini",
+            "-x",
             "--color",
             "yes",
-            "--help",
+            "--tavern-merge-ext-function-values",
+            "--tavern-global-cfg",
+            "tests/integration/global_cfg.yaml",
         ],
         data = [
             "//:pytest.ini",
             filename,
+            ":common.yaml",
+            ":global_cfg.yaml",
+            ":OK.txt",
+            ":OK.json.gz",
+            ":testfile.txt",
         ],
+        main = ":integration_main.py",
         deps = [
             ":conftest",
             "//tavern",
+            "//tavern/_plugins/mqtt",
+            "//tavern/_plugins/rest",
+            "@rules_python//python/runfiles",
             "//tavern/testutils",
             "//tavern/testutils/pytesthook",
-            "@tavern_pip_faker//:pkg",
-            "@tavern_pip_text_unidecode//:pkg",
             "@tavern_pip_colorlog//:pkg",
         ],
     )

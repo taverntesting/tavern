@@ -7,3 +7,12 @@ test --flaky_test_attempts=1
 test --action_env="PYTHONPATH=external/python_src/Lib/"
 
 try-import %workspace%/.bazelrc.user
+
+
+test --test_env=DOCKER_TLS_VERIFY
+test --test_env=DOCKER_HOST
+test --test_env=DOCKER_CERT_PATH
+test --test_env=DOCKER_BUILDKIT
+
+test --test_env=TEST_HOST=http://localhost:5003
+test --test_env=SECOND_URL_PART=again

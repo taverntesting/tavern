@@ -23,6 +23,9 @@ def set_plugins():
     def extension(name, point):
         return stevedore.extension.Extension(name, point, point, point)
 
+    import pkg_resources
+    print([i for i in pkg_resources.working_set.iter_entry_points("pytest11")])
+
     tavern.plugins.load_plugins.plugins = [
         extension(
             "requests",

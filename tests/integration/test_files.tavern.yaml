@@ -11,7 +11,7 @@ stages:
       url: "{host}/fake_upload_file"
       method: POST
       files:
-        test_files: "test_files.tavern.yaml"
+        test_files: OK.txt
         common: "common.yaml"
     response:
       status_code: 200
@@ -47,7 +47,7 @@ stages:
       url: "{host}/fake_upload_file_data"
       method: POST
       files:
-        test_files: "test_files.tavern.yaml"
+        test_files: OK.txt
       data:
         key: value
     response:
@@ -68,7 +68,7 @@ stages:
       headers:
         x-test-header: chorp
       files:
-        test_files: "test_files.tavern.yaml"
+        test_files: OK.txt
         common: "common.yaml"
     response:
       status_code: 200
@@ -195,7 +195,7 @@ stages:
       method: POST
       file_body: testfile.txt
       files:
-        test_files: "test_files.tavern.yaml"
+        test_files: OK.txt
     response:
       status_code: 200
 
@@ -234,6 +234,6 @@ stages:
       method: POST
       file_body: testfile.txt
       json:
-        test_files: "test_files.tavern.yaml"
+        test_files: OK.txt
     response:
       status_code: 200

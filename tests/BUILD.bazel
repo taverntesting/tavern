@@ -16,3 +16,18 @@ py_library(
         "@tavern_pip_stevedore//:pkg",
     ],
 )
+
+load("@com_github_ali5h_rules_pip//:defs.bzl", "py_pytest_test")
+
+py_pytest_test(
+    name = "test_doctest",
+    args = [
+        "-c",
+        "pytest.ini",
+        "--color",
+        "yes",
+        "--doctest-modules",
+    ],
+    data = ["//:pytest.ini"],
+    deps = [":conftest"],
+)

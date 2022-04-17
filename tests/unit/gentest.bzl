@@ -3,7 +3,7 @@ load("@tavern_pip//:requirements.bzl", "requirement")
 
 def gentest(filename):
     py_pytest_test(
-        name = "unit_test_{}".format(filename),
+        name = "unit_test_{}".format(filename.replace("/", "_")),
         srcs = [filename],
         args = [
             "-c",

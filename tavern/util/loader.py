@@ -138,7 +138,19 @@ def _get_include_dirs(loader):
         else:
             IncludeLoader.env_path_list = []
 
-    return chain(loader_list, IncludeLoader.env_path_list)
+    try:
+        from rules_python.python.runfiles import runfiles
+    except ImportError:
+        bazel = []
+    else:
+        r = runfiles.Create()._strategy
+
+        if hasattr(r, "_runfiles_root"):
+            bazel = [r._runfiles_root]
+        else:
+            bazel = [r._GetRunfilesDir()]
+
+    return chain(loader_list, IncludeLoader.env_path_list, bazel)
 
 
 def find_include(loader, node):

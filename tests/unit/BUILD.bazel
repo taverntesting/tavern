@@ -4,17 +4,6 @@ py_library(
     name = "conftest",
     srcs = [
         "conftest.py",
-        "response/test_mqtt_response.py",
-        "response/test_rest.py",
-        "test_call_run.py",
-        "test_core.py",
-        "test_helpers.py",
-        "test_mqtt.py",
-        "test_pytest_hooks.py",
-        "test_request.py",
-        "test_schema.py",
-        "test_strict_util.py",
-        "test_utilities.py",
     ],
     imports = ["../.."],
     visibility = ["//:__subpackages__"],
@@ -26,13 +15,13 @@ py_library(
         "//tavern/testutils",
         "//tavern/testutils/pytesthook",
         "//tavern/util",
+        "//tests:conftest",  # keep
         "@tavern_pip_faker//:pkg",
         "@tavern_pip_paho_mqtt//:pkg",
         "@tavern_pip_py//:pkg",
         "@tavern_pip_pytest//:pkg",
         "@tavern_pip_pyyaml//:pkg",
         "@tavern_pip_requests//:pkg",
-        "@tavern_pip_stevedore//:pkg",
     ],
 )
 
@@ -40,5 +29,5 @@ load(":gentest.bzl", "gentest")
 
 [
     gentest(f)
-    for f in glob(["test_*.py"])
+    for f in glob(["**/test_*.py"])
 ]

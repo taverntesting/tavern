@@ -1,6 +1,5 @@
 import pytest
 
-
 @pytest.fixture
 def str_fixture():
     return "abc-fixture-value"

@@ -11,6 +11,7 @@ py_library(
     imports = ["../.."],
     visibility = ["//:__subpackages__"],
     deps = [
+        "//tests:conftest",  # keep
         "@tavern_pip_flask//:pkg",
         "@tavern_pip_pytest//:pkg",
     ],
