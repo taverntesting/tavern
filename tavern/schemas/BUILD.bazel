@@ -1,5 +1,8 @@
 load("@rules_python//python:defs.bzl", "py_library")
 
+# Ignore this file as Gazelle keeps adding a import on //tavern which then breaks tests due to circular dependency
+# gazelle:ignore
+
 py_library(
     name = "schemas",
     srcs = [
