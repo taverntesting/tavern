@@ -30,3 +30,4 @@ jmespath<1
 pytest>=6.2,<8
 python-box>4,<6
 stevedore
+
