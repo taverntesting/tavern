@@ -14,8 +14,6 @@ def gentest(filename):
         data = ["//:pytest.ini"],
         deps = [
             ":conftest",
-            "//tests:conftest",
-            "//:tavern",
             "@tavern_pip_faker//:pkg",
             "@tavern_pip_text_unidecode//:pkg",
             "@tavern_pip_colorlog//:pkg",
