@@ -16,7 +16,7 @@ py_library(
         "//tavern/response",
         "//tavern/testutils/pytesthook",
         "//tavern/util",
-        "@tavern_pip//pypi__python_box",
-        "@tavern_pip//pypi__requests",
+        "@tavern_pip_python_box//:pkg",
+        "@tavern_pip_requests//:pkg",
     ],
 )

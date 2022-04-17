@@ -7,11 +7,12 @@ py_library(
         "extensions.py",
         "files.py",
     ],
+    data = [":tests.schema.yaml"],
     imports = ["../.."],
     visibility = ["//:__subpackages__"],
     deps = [
         "//tavern/util",
-        "@tavern_pip//pypi__pykwalify",
-        "@tavern_pip//pypi__pyyaml",
+        "@tavern_pip_pykwalify//:pkg",
+        "@tavern_pip_pyyaml//:pkg",
     ],
 )

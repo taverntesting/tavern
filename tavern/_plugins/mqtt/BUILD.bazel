@@ -9,6 +9,7 @@ py_library(
         "response.py",
         "tavernhook.py",
     ],
+    data = [":schema.yaml"],
     imports = ["../../.."],
     visibility = ["//:__subpackages__"],
     deps = [
@@ -16,8 +17,8 @@ py_library(
         "//tavern/response",
         "//tavern/testutils/pytesthook",
         "//tavern/util",
-        "@tavern_pip//pypi__paho_mqtt",
-        "@tavern_pip//pypi__python_box",
-        "@tavern_pip//pypi__pyyaml",
+        "@tavern_pip_paho_mqtt//:pkg",
+        "@tavern_pip_python_box//:pkg",
+        "@tavern_pip_pyyaml//:pkg",
     ],
 )

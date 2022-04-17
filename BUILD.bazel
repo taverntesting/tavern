@@ -8,8 +8,8 @@ py_library(
     srcs = ["docs/source/conf.py"],
     visibility = ["//visibility:public"],
     deps = [
-        "@tavern_pip//pypi__recommonmark",
-        "@tavern_pip//pypi__sphinx_rtd_theme",
+        "@tavern_pip_recommonmark//:pkg",
+        "@tavern_pip_sphinx_rtd_theme//:pkg",
     ],
 )
 
@@ -103,3 +103,6 @@ gazelle(
     data = GAZELLE_PYTHON_RUNTIME_DEPS,
     gazelle = "@rules_python//gazelle:gazelle_python_binary",
 )
+
+# bazel run --run_under "cd $PWD && " @bazel_buildtools//buildozer \
+#  'substitute deps @tavern_pip//pypi__([^/]+) @tavern_pip_${1}//:pkg' //...:*
