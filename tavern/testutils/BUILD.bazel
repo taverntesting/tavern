@@ -1,11 +1,19 @@
-load("@tavern_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_library")
 
 py_library(
     name = "testutils",
-    srcs = glob(["*.py"]),
-    visibility = ["//visibility:public"],
+    srcs = [
+        "__init__.py",
+        "helpers.py",
+        "jmesutils.py",
+    ],
+    imports = ["../.."],
+    visibility = ["//:__subpackages__"],
     deps = [
-
+        "//tavern/schemas",
+        "//tavern/util",
+        "@tavern_pip//pypi__jmespath",
+        "@tavern_pip//pypi__pyjwt",
+        "@tavern_pip//pypi__python_box",
     ],
 )

@@ -132,3 +132,4 @@ bazel-testlogs
 
 
 .run
+.bazelrc.user

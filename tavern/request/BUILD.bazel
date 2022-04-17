@@ -1,12 +1,11 @@
 load("@rules_python//python:defs.bzl", "py_library")
 
 py_library(
-    name = "response",
+    name = "request",
     srcs = [
         "__init__.py",
         "base.py",
     ],
     imports = ["../.."],
     visibility = ["//:__subpackages__"],
-    deps = ["//tavern/util"],
 )

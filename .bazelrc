@@ -5,3 +5,5 @@ common --curses=no
 test --flaky_test_attempts=1
 
 test --action_env="PYTHONPATH=external/python_src/Lib/"
+
+try-import %workspace%/.bazelrc.user

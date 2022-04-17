@@ -1,9 +1,25 @@
-load("@tavern_deps//:requirements.bzl", "requirement")
+load("@tavern_pip//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_library")
 
 py_library(
     name = "conftest",
-    srcs = ["conftest.py"],
+    srcs = [
+        "conftest.py",
+        "integration/conftest.py",
+        "integration/ext_functions.py",
+        "integration/server.py",
+        "integration/test_dummy.py",
+    ],
     data = [":logging.yaml"],
+    imports = [".."],
     visibility = ["//visibility:public"],
+    deps = [
+        "//tavern",
+        "//tavern/_plugins/mqtt",
+        "//tavern/_plugins/rest",
+        "@tavern_pip//pypi__flask",
+        "@tavern_pip//pypi__pytest",
+        "@tavern_pip//pypi__pyyaml",
+        "@tavern_pip//pypi__stevedore",
+    ],
 )

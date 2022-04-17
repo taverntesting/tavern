@@ -1,25 +1,17 @@
-load("@tavern_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_library")
 
 py_library(
     name = "schemas",
-    srcs = glob(["*.py"]),
-    data = [":tests.schema.yaml"],
-    visibility = ["//visibility:public"],
+    srcs = [
+        "__init__.py",
+        "extensions.py",
+        "files.py",
+    ],
+    imports = ["../.."],
+    visibility = ["//:__subpackages__"],
     deps = [
-        #        requirement("PyYAML"),
-        #        requirement("pykwalify"),
-        #        requirement("requests"),
-        #        requirement("pyjwt"),
-        #        requirement("paho-mqtt"),
-        #        requirement("jmespath"),
-        #        requirement("pytest"),
-        #        requirement("python-box"),
-        #        requirement("py"),
-        #        requirement("six"),
-        #        requirement("iniconfig"),
-        #        requirement("more_itertools"),
-        #        requirement("pluggy"),
-        #        requirement("stevedore"),
+        "//tavern/util",
+        "@tavern_pip//pypi__pykwalify",
+        "@tavern_pip//pypi__pyyaml",
     ],
 )

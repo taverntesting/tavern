@@ -1,25 +1,23 @@
-load("@tavern_deps//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_library")
 
 py_library(
     name = "mqtt",
-    srcs = glob(["*.py"]),
-    data = [":schema.yaml"],
-    visibility = ["//visibility:public"],
+    srcs = [
+        "__init__.py",
+        "client.py",
+        "request.py",
+        "response.py",
+        "tavernhook.py",
+    ],
+    imports = ["../../.."],
+    visibility = ["//:__subpackages__"],
     deps = [
-        #        requirement("PyYAML"),
-        #        requirement("pykwalify"),
-        #        requirement("requests"),
-        #        requirement("pyjwt"),
-        #        requirement("paho-mqtt"),
-        #        requirement("jmespath"),
-        #        requirement("pytest"),
-        #        requirement("python-box"),
-        #        requirement("py"),
-        #        requirement("six"),
-        #        requirement("iniconfig"),
-        #        requirement("more_itertools"),
-        #        requirement("pluggy"),
-        #        requirement("stevedore"),
+        "//tavern/request",
+        "//tavern/response",
+        "//tavern/testutils/pytesthook",
+        "//tavern/util",
+        "@tavern_pip//pypi__paho_mqtt",
+        "@tavern_pip//pypi__python_box",
+        "@tavern_pip//pypi__pyyaml",
     ],
 )

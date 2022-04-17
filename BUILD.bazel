@@ -5,18 +5,11 @@ exports_files(["pytest.ini"])
 
 py_library(
     name = "tavern",
+    srcs = ["docs/source/conf.py"],
     visibility = ["//visibility:public"],
     deps = [
-        "//tavern",
-        "//tavern/_plugins",
-        "//tavern/_plugins/mqtt",
-        "//tavern/_plugins/rest",
-        "//tavern/request",
-        "//tavern/response",
-        "//tavern/schemas",
-        "//tavern/testutils",
-        "//tavern/testutils/pytesthook",
-        "//tavern/util",
+        "@tavern_pip//pypi__recommonmark",
+        "@tavern_pip//pypi__sphinx_rtd_theme",
     ],
 )
 
@@ -30,9 +23,9 @@ py_wheel(
         "Intended Audience :: Developers",
         "Framework :: Pytest",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.6",
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3.9",
         "Topic :: Utilities",
         "Topic :: Software Development :: Testing",
         "License :: OSI Approved :: MIT License",
@@ -56,7 +49,20 @@ py_wheel(
     ],
 )
 
-# gazelle:lang python
+# gazelle:lang py
+# gazelle:exclude bazel-*
+# gazelle:exclude build
+# gazelle:exclude dist
+# gazelle:exclude example
+# gazelle:exclude .git
+# gazelle:exclude .github
+# gazelle:exclude .idea
+# gazelle:exclude .ijwb
+# gazelle:exclude .pytest_cache
+# gazelle:exclude .run
+# gazelle:exclude scripts
+# gazelle:exclude tavern.egg-info
+# gazelle:exclude .tox
 
 load("@tavern_pip//:requirements.bzl", "all_whl_requirements")
 load("@rules_python//gazelle/manifest:defs.bzl", "gazelle_python_manifest")
