@@ -1,5 +1,5 @@
 load("@com_github_ali5h_rules_pip//:defs.bzl", "py_pytest_test")
-load("@tavern_deps//:requirements.bzl", "requirement")
+load("@tavern_pip//:requirements.bzl", "requirement")
 
 def gentest(filename):
     py_pytest_test(

@@ -80,6 +80,7 @@ rich==12.0.1
 ruamel.yaml==0.17.20
 ruamel.yaml.clib==0.2.6
 SecretStorage==3.3.1
+setuptools==62.1.0
 six==1.16.0
 snowballstemmer==2.2.0
 Sphinx==1.8.3
