@@ -755,6 +755,27 @@ manifest:
     docutils.writers.s5_html.__init__: docutils
     docutils.writers.xetex: docutils
     docutils.writers.xetex.__init__: docutils
+    execnet: execnet
+    execnet.__init__: execnet
+    execnet._version: execnet
+    execnet.deprecated: execnet
+    execnet.gateway: execnet
+    execnet.gateway_base: execnet
+    execnet.gateway_bootstrap: execnet
+    execnet.gateway_io: execnet
+    execnet.gateway_socket: execnet
+    execnet.multi: execnet
+    execnet.rsync: execnet
+    execnet.rsync_remote: execnet
+    execnet.script: execnet
+    execnet.script.__init__: execnet
+    execnet.script.loop_socketserver: execnet
+    execnet.script.quitserver: execnet
+    execnet.script.shell: execnet
+    execnet.script.socketserver: execnet
+    execnet.script.socketserverservice: execnet
+    execnet.script.xx: execnet
+    execnet.xspec: execnet
     faker: Faker
     faker.__init__: Faker
     faker.__main__: Faker
@@ -3446,6 +3467,8 @@ manifest:
     pytest_cov.embed: pytest_cov
     pytest_cov.engine: pytest_cov
     pytest_cov.plugin: pytest_cov
+    pytest_forked: pytest_forked
+    pytest_forked.__init__: pytest_forked
     pytz: pytz
     pytz.__init__: pytz
     pytz.exceptions: pytz
@@ -4527,6 +4550,23 @@ manifest:
     wrapt.decorators: wrapt
     wrapt.importer: wrapt
     wrapt.wrappers: wrapt
+    xdist: pytest_xdist
+    xdist.__init__: pytest_xdist
+    xdist._version: pytest_xdist
+    xdist.dsession: pytest_xdist
+    xdist.looponfail: pytest_xdist
+    xdist.newhooks: pytest_xdist
+    xdist.plugin: pytest_xdist
+    xdist.remote: pytest_xdist
+    xdist.report: pytest_xdist
+    xdist.scheduler: pytest_xdist
+    xdist.scheduler.__init__: pytest_xdist
+    xdist.scheduler.each: pytest_xdist
+    xdist.scheduler.load: pytest_xdist
+    xdist.scheduler.loadfile: pytest_xdist
+    xdist.scheduler.loadgroup: pytest_xdist
+    xdist.scheduler.loadscope: pytest_xdist
+    xdist.workermanage: pytest_xdist
     yaml: PyYAML
     yaml.__init__: PyYAML
     yaml._yaml: PyYAML
@@ -4550,4 +4590,4 @@ manifest:
   pip_repository:
     name: tavern_pip
     incremental: false
-integrity: 51aa8591eca69e34f152b830d1ff70dfa9baab306cbfcde1ad13a0beaad53125
+integrity: 620fd92b8084be9b56afa269fec2ab7be63574c50d1c5f58d996917b11b4b2d8

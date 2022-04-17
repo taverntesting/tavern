@@ -107,3 +107,7 @@ webencodings==0.5.1
 Werkzeug==2.1.1
 wrapt==1.12.1
 zipp==3.7.0
+
+execnet==1.9.0
+pytest-forked==1.4.0
+pytest-xdist==2.5.0
