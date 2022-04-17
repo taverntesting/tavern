@@ -2402,6 +2402,10 @@ manifest:
     markupsafe._native: MarkupSafe
     markupsafe._speedups: MarkupSafe
     mccabe: mccabe
+    more_itertools: more_itertools
+    more_itertools.__init__: more_itertools
+    more_itertools.more: more_itertools
+    more_itertools.recipes: more_itertools
     mypy: mypy
     mypy.__init__: mypy
     mypy.__main__: mypy
@@ -4546,4 +4550,4 @@ manifest:
   pip_repository:
     name: tavern_pip
     incremental: false
-integrity: e98a91994fdef291295769a0996d7bdf1ddfa06a3b3021828cf880e53c96a04d
+integrity: 51aa8591eca69e34f152b830d1ff70dfa9baab306cbfcde1ad13a0beaad53125
