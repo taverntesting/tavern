@@ -29,8 +29,8 @@ class YamlItem(pytest.Item):
         spec (dict): The whole dictionary of the test
     """
 
-    def __init__(self, name, parent, spec, path):
-        super().__init__(name, parent)
+    def __init__(self, *, name, parent, spec, path, **kwargs):
+        super().__init__(name, parent, **kwargs)
         self.path = path
         self.spec = spec
 
@@ -245,4 +245,9 @@ class YamlItem(pytest.Item):
         return error
 
     def reportinfo(self):
-        return self.fspath, 0, "{s.path}::{s.name:s}".format(s=self)
+        # pylint:disable=no-member
+        return (
+            self.fspath,
+            0,
+            "{s.path}::{s.name:s}".format(s=self),
+        )
