@@ -70,3 +70,8 @@ alias(
     name = "gazelle",
     actual = "//bazelutil:gazelle",
 )
+
+alias(
+    name = "skaffold",
+    actual = "@skaffold//:skaffold",
+)

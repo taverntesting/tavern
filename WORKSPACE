@@ -124,3 +124,9 @@ load(
 )
 
 _py_image_repos()
+
+load("//bazelutil:skaffold.bzl", "get_skaffold")
+
+get_skaffold(
+    name = "skaffold",
+)
