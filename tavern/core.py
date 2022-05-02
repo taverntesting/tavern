@@ -10,7 +10,6 @@ import pytest
 
 from tavern.schemas.files import wrapfile
 from tavern.util.strict_util import StrictLevel
-
 from .plugins import get_expected, get_extra_sessions, get_request_type, get_verifiers
 from .testutils.pytesthook import call_hook
 from .util import exceptions
@@ -182,7 +181,9 @@ def run_test(in_file, test_spec, global_cfg):
                 run_stage_with_retries, sessions, stage, test_block_config
             )
 
-            allure_name = "Stage {}: {}".format(idx, stage["name"])
+            allure_name = "Stage {}: {}".format(
+                idx, format_keys(stage["name"], test_block_config["variables"])
+            )
             step = wrap_step(allure_name, partial)
 
             try:
