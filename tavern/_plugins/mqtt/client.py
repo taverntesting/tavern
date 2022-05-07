@@ -198,10 +198,47 @@ class MQTTClient:
         except Full:
             logger.exception("message queue full")
 
+
+    @staticmethod
+    def _on_connect(client, userdata, flags, rc):
+        # pylint: disable=unused-argument,protected-access
+        logger.debug(
+            "Client '%s' successfully connected to the broker with result code '%s'",
+            client._client_id.decode(),
+            paho.connack_string(rc),
+        )
+
+    @staticmethod
+    def _on_disconnect(client, userdata, rc):
+        # pylint: disable=unused-argument,protected-access
+        if rc == paho.CONNACK_ACCEPTED:
+            logger.debug(
+                "Client '%s' successfully disconnected from the broker with result code '%s'",
+                client._client_id.decode(),
+                paho.connack_string(rc),
+            )
+        else:
+            logger.warning(
+                "Client %s failed to disconnect cleanly due to %s, possibly from a network error",
+                client._client_id.decode(),
+                paho.connack_string(rc),
+            )
+
+    @staticmethod
+    def _on_connect_fail(client, userdata):
+        # pylint: disable=unused-argument,protected-access
+        logger.error(
+            "Failed to connect client '%s' to the broker", client._client_id.decode()
+        )
+
+    @staticmethod
+    def _on_socket_open(client, userdata, socket):
+        # pylint: disable=unused-argument
+        logger.debug("MQTT socket opened")
+
     def message_ignore(self, message):
         """
         Ignore the given message (put it back in the queue of messages received)
-
         Args:
             message (paho.MQTTMessage): the message to ignore
         """
