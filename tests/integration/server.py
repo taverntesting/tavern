@@ -380,4 +380,5 @@ def get_any_method():
 
 
 if __name__ == '__main__':
-    app.run(os.getenv("0.0.0.0"))
+    host = os.getenv("FLASK_HOST", "0.0.0.0")
+    app.run(host)

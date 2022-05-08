@@ -1,11 +1,11 @@
-DEFAULT_VERSION = "1.37.2"
+DEFAULT_VERSION = "1.38.0"
 
 SDK_VERSIONS = {
-    "1.37.2": {
-        "darwin-amd64": "ba098e11b42b236c34aba112015b5661f3f70b44466f3fb27d83f93266193e4e",
-        "darwin-arm64": "ff273fe06f132b253d74ef37c091c2b9eeb005b8634630226cf72949e5a03eb8",
-        "linux-amd64": "5028755d1e8e5bd87b4185785b9c490002862bf62d75f76f45c91ff6fea0a0ab",
-        "linux-arm64": "e86c1e0d053bcfea10d1853eb31f39a796cade685dd74bf75a8803be8c044189",
+    "1.38.0": {
+        "darwin-amd64": "872897d78a17812913cd6e930c5d1c94f7c862381db820815c4bffc637c28b88",
+        "darwin-arm64": "e47329560a557f0f01d7902eae01ab8d40210b40644758f957f071ab8df2ac44",
+        "linux-amd64": "3c347c9478880f22ebf95807c13371844769c625cf3ea9c987cd85859067503c",
+        "linux-arm64": "41c6385443787f864eaa448b985479115aa917b045245efb38d15d4b2dc5fed3",
     },
 }
 

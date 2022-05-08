@@ -40,10 +40,10 @@ container_image(
 load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
 
 py3_image(
-    name = "server",
-    srcs = ["server.py"],
+    name = "server_image",
+    srcs = [":server.py"],
     base = ":py3_base_image",
-    main = "server.py",
+    main = ":server.py",
     deps = [
         "@tavern_pip_flask//:pkg",
     ],
