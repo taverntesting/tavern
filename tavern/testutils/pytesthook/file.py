@@ -216,7 +216,7 @@ class YamlFile(pytest.File):
         # The 'docstring' for this is the filename, the 'docstring' for each
         # individual test is the actual test name.
         class FakeObj(object):
-            __doc__ = self.fspath
+            __doc__ = self.fspath.strpath
 
         self.obj = FakeObj
 
