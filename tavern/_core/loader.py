@@ -80,11 +80,11 @@ class SourceMappingConstructor(SafeConstructor):
         return list_node(obj, node.start_mark, node.end_mark)
 
 
-SourceMappingConstructor.add_constructor(
+SourceMappingConstructor.add_constructor(  # type: ignore
     "tag:yaml.org,2002:map", SourceMappingConstructor.construct_yaml_map
 )
 
-SourceMappingConstructor.add_constructor(
+SourceMappingConstructor.add_constructor(  # type: ignore
     "tag:yaml.org,2002:seq", SourceMappingConstructor.construct_yaml_seq
 )
 
