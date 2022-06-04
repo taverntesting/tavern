@@ -3,6 +3,7 @@ import logging
 import logging.config
 import os
 import sqlite3
+import time
 
 import paho.mqtt.client as paho
 import yaml
@@ -113,6 +114,7 @@ def handle_full_status_topic(client, message):
 
     for device_id in device_ids:
         publish_device_status(client, device_id[0])
+        time.sleep(0.5)
 
 
 def handle_ping_topic(client, message):

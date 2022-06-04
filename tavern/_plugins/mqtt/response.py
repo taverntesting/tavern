@@ -2,6 +2,8 @@ import json
 import logging
 import time
 
+from paho.mqtt.client import Client
+
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive
 from tavern._core.loader import ANYTHING
@@ -13,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class MQTTResponse(BaseResponse):
-    def __init__(self, client, name, expected, test_block_config):
+    def __init__(self, client: Client, name, expected, test_block_config):
         super().__init__(name, expected, test_block_config)
 
         self._client = client
@@ -196,6 +198,9 @@ class MQTTResponse(BaseResponse):
         saved.update(self.maybe_get_save_values_from_ext(msg, self.expected))
 
         return saved
+
+    async def verify_async(self, response):
+        return self.verify(response)
 
     def verify(self, response):
         """Ensure mqtt message has arrived
