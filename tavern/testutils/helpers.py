@@ -2,7 +2,6 @@ import importlib
 import json
 import logging
 import re
-import warnings
 
 from box import Box
 import jmespath
@@ -75,9 +74,8 @@ def validate_jwt(response, jwt_key, **kwargs):
     token = response.json()[jwt_key]
 
     if "algorithm" not in kwargs:
-        warnings.warn(
-            "Not passing the 'algorithm' parameter will be an error in a future release of Tavern",
-            FutureWarning,
+        logger.error(
+            "No algorithm passed, this is now an error. See https://github.com/taverntesting/tavern/issues/779#issuecomment-1146653459"
         )
 
     decoded = jwt.decode(token, **kwargs)
