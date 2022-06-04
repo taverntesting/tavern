@@ -3,19 +3,20 @@
 from setuptools import setup
 
 TESTS_REQUIRE = [
-    "pytest-cov",
-    "colorlog",
+    "Faker~=5.8.0",
+    "allure-pytest",
+    "black==22.3.0",
+    "colorlog~=6.6.0",
     "faker",
     "flake8",
-    "pygments",
-    "pylint==2.6.0",
-    "itsdangerous",
-    "black==21.4b2",
+    "flask~=2.0.0",
+    "isort~=5.10.1",
+    "itsdangerous~=2.0.0",
     "mypy",
     "mypy-extensions",
-    "isort==5.7.0",
-    "allure-pytest",
-    "Faker",
+    "pygments",
+    "pylint==2.6.0",
+    "pytest-cov",
 ]
 
 setup(
