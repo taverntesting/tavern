@@ -14,21 +14,3 @@ build:
   tagPolicy:
     customTemplate:
       template: latest
-
-deploy:
-  docker:
-    images:
-    - tavern-integration-server
-    - tavern-example-advanced-server
-
-portForward:
-- #address: 127.0.0.1
-  localPort: 6000
-  port: 5004
-  resourceName: tavern-integration-server
-  resourceType: container
-- #address: 127.0.0.1
-  localPort: 5006
-  port: 5001
-  resourceName: tavern-example-advanced-server
-  resourceType: container
