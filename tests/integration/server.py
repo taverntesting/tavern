@@ -394,7 +394,7 @@ def login():
     payload = {
         "sub": "test-user",
         "aud": audience,
-        "exp": datetime.utcnow() + timedelta(hours=1),
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
     }
 
     token = jwt.encode(payload, secret, algorithm="HS256")
