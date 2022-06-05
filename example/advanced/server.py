@@ -154,3 +154,10 @@ def reset_db():
         db.execute("DELETE FROM numbers_table")
 
     return "", 204
+
+
+
+if __name__ == '__main__':
+    import os
+    host = os.getenv("FLASK_HOST", "0.0.0.0")
+    app.run(host)

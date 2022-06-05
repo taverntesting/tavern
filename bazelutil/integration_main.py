@@ -4,28 +4,12 @@ import sys
 import pytest
 # gazelle:ignore rules_python.python.runfiles
 from rules_python.python.runfiles import runfiles
-import stevedore
 
-import tavern
-import tavern._plugins.mqtt.tavernhook as mqtt_plugin
-from tavern._plugins.rest.tavernhook import TavernRestPlugin as rest_plugin
 from tavern.testutils import pytesthook
+from tavern.util.bazel import enable_default_tavern_extensions
 
 if __name__ == '__main__':
-    def extension(name, point):
-        return stevedore.extension.Extension(name, point, point, point)
-
-
-    tavern.plugins.load_plugins.plugins = [
-        extension(
-            "requests",
-            rest_plugin,
-        ),
-        extension(
-            "paho-mqtt",
-            mqtt_plugin,
-        ),
-    ]
+    enable_default_tavern_extensions()
 
     r = runfiles.Create()
 

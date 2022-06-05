@@ -2,6 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from tavern.util.bazel import enable_default_tavern_extensions
 from tavern.util.strict_util import StrictLevel
 
 
@@ -21,3 +22,8 @@ def fix_example_includes():
     }
 
     return includes.copy()
+
+
+@pytest.fixture(scope="session", autouse=True)
+def init_unit_tests():
+    enable_default_tavern_extensions()

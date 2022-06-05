@@ -10,4 +10,6 @@ container_image(
     visibility = ["//:__subpackages__"],
 )
 
-exports_files(["integration_main.py"])
+exports_files([
+    "integration_main.py",
+])
