@@ -2,7 +2,6 @@ import importlib
 import json
 import logging
 import re
-import warnings
 
 from box import Box
 import jmespath

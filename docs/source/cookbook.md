@@ -23,7 +23,7 @@ any Pytest plugins as mentioned above):
 
 ```dockerfile
 # tavern.Dockerfile
-FROM python:3.9-alpine
+FROM python:3.10-slim
 
 RUN pip3 install tavern
 ```
@@ -38,7 +38,7 @@ Or if you need a specific version (hopefully you shouldn't):
 
 ```dockerfile
 # tavern.Dockerfile
-FROM python:3.9-alpine
+FROM python:3.10-slim
 
 ARG TAVERNVER
 RUN pip3 install tavern==$TAVERNVER

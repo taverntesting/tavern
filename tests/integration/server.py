@@ -1,18 +1,20 @@
 import base64
+import datetime
 from datetime import datetime, timedelta
 import gzip
 from hashlib import sha512
+import itertools
 import json
 import mimetypes
 import os
+import time
 from urllib.parse import unquote_plus
 import uuid
 
 from flask import Flask, Response, jsonify, make_response, redirect, request, session
-import itertools
 from itsdangerous import URLSafeTimedSerializer
+import jwt
 import math
-import time
 
 app = Flask(__name__)
 app.config.update(SECRET_KEY="secret")
@@ -433,3 +435,24 @@ def get_606_dict():
 @app.route("/magic-multi-method", methods=["GET", "POST", "DELETE"])
 def get_any_method():
     return jsonify({"method": request.method})
+
+
+@app.route("/get_jwt", methods=["POST"])
+def get_jwt():
+    secret = "240c8c9c-39b9-426b-9503-3126f96c2eaf"
+    audience = "testserver"
+
+    r = request.get_json()
+
+    if r["user"] != "test-user" or r["password"] != "correct-password":
+        return jsonify({"error": "Incorrect username/password"}), 401
+
+    payload = {
+        "sub": "test-user",
+        "aud": audience,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+    }
+
+    token = jwt.encode(payload, secret, algorithm="HS256")
+
+    return jsonify({"jwt": token})
