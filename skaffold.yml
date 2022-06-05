@@ -12,7 +12,7 @@ build:
 deploy:
   docker:
     images:
-    - integration-server
+    - tavern-integration-server
 
 portForward:
 - address: 127.0.0.1

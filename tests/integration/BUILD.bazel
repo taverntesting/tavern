@@ -5,15 +5,12 @@ py_library(
     srcs = [
         "conftest.py",
         "ext_functions.py",
-        "integration_main.py",
         "server.py",
         "test_dummy.py",
     ],
-    imports = ["../.."],
     visibility = ["//:__subpackages__"],
     deps = [
         "//tavern/testutils",
-        "//tests:conftest",  # keep
         "@tavern_pip_flask//:pkg",
         "@tavern_pip_pytest//:pkg",
     ],
@@ -26,23 +23,12 @@ load(":gentest.bzl", "gentest")
     for f in glob(["test_*.tavern.yaml"])
 ]
 
-load("@io_bazel_rules_docker//container:image.bzl", "container_image")
-
-container_image(
-    name = "py3_base_image",
-    base = "@py3_debug_image_base//image",
-    env = {
-        "PYTHONUNBUFFERED": "0",
-        "FLASK_DEBUG": "1",
-    },
-)
-
 load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
 
 py3_image(
     name = "server_image",
     srcs = [":server.py"],
-    base = ":py3_base_image",
+    base = "//bazelutil:py3_base_image",
     main = ":server.py",
     deps = [
         "@tavern_pip_flask//:pkg",

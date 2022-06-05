@@ -1,0 +1,13 @@
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+
+container_image(
+    name = "py3_base_image",
+    base = "@py3_debug_image_base//image",
+    env = {
+        "PYTHONUNBUFFERED": "0",
+        "FLASK_DEBUG": "1",
+    },
+    visibility = ["//:__subpackages__"],
+)
+
+exports_files(["integration_main.py"])
