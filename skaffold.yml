@@ -3,7 +3,7 @@ kind: Config
 
 build:
   artifacts:
-  - image: integration-server
+  - image: tavern-integration-server
     bazel:
       target: //tests/integration:server_image.tar
   local:
@@ -18,5 +18,5 @@ portForward:
 - address: 127.0.0.1
   localPort: 5003
   port: 5000
-  resourceName: integration-server
+  resourceName: tavern-integration-server
   resourceType: container
