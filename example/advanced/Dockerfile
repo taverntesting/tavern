@@ -2,6 +2,11 @@ FROM python:3.10-alpine
 
 RUN pip3 install pyjwt~=2.4.0 flask~=2.0.3
 
+ENV FLASK_DEBUG=1
+ENV PYTHONUNBUFFERED=0
+
+ENV FLASK_DEBUG=1
+
 COPY server.py /
 
 ENV FLASK_APP=/server.py
