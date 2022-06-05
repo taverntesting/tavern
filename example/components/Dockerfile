@@ -2,7 +2,7 @@ FROM python:3.9-alpine
 
 RUN pip install flask
 
-RUN pip install pyjwt==1.7.1
+RUN pip install pyjwt>=2.4.0,<3
 
 COPY server.py /
 

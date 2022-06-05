@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import os
 from unittest.mock import Mock
 
 from faker import Faker
@@ -23,11 +24,19 @@ def mock_args():
 
     cargs = {"rootdir": "abc", "fspath": fspath}
 
-    config = Mock(**cargs)
+    config = Mock(**cargs, rootpath="abc")
 
     session = Mock(_initialpaths=[], config=config)
 
-    parent = Mock(config=config, parent=None, nodeid="sdlfs", **cargs, session=session)
+    parent = Mock(
+        spec=os.PathLike,
+        path=fspath,
+        config=config,
+        parent=None,
+        nodeid="sdlfs",
+        **cargs,
+        session=session,
+    )
 
     return MockArgs(session, parent, fspath)
 
@@ -146,3 +155,10 @@ class TestMakeFile(object):
         # [w, x, y, z, 1, 2]
         # etc.
         assert len(tests) == 36
+
+
+def test_doc_string():
+    args = mock_args()
+    y = YamlFile.from_parent(args.parent, fspath=args.fspath)
+
+    assert isinstance(y.obj.__doc__, str)

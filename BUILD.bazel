@@ -8,8 +8,8 @@ py_library(
     srcs = ["docs/source/conf.py"],
     visibility = ["//visibility:public"],
     deps = [
-        "@tavern_pip_recommonmark//:pkg",
-        "@tavern_pip_sphinx_rtd_theme//:pkg",
+        "@tavern_pip//pypi__recommonmark",
+        "@tavern_pip//pypi__sphinx_rtd_theme",
     ],
 )
 

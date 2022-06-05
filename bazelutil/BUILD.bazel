@@ -1,3 +1,4 @@
+load("@rules_python//python:defs.bzl", "py_library")
 load("@io_bazel_rules_docker//container:image.bzl", "container_image")
 
 container_image(
@@ -13,3 +14,18 @@ container_image(
 exports_files([
     "integration_main.py",
 ])
+
+py_library(
+    name = "bazelutil",
+    srcs = [
+        "__init__.py",
+        "integration_main.py",
+    ],
+    imports = [".."],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//tavern/testutils",
+        "//tavern/util",
+        "@tavern_pip//pypi__pytest",
+    ],
+)

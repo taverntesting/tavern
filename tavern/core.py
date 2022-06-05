@@ -182,7 +182,9 @@ def run_test(in_file, test_spec, global_cfg):
                 run_stage_with_retries, sessions, stage, test_block_config
             )
 
-            allure_name = "Stage {}: {}".format(idx, stage["name"])
+            allure_name = "Stage {}: {}".format(
+                idx, format_keys(stage["name"], test_block_config["variables"])
+            )
             step = wrap_step(allure_name, partial)
 
             try:

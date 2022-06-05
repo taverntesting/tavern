@@ -12,8 +12,8 @@ py_library(
     deps = [
         "//tavern/schemas",
         "//tavern/util",
-        "@tavern_pip_jmespath//:pkg",
-        "@tavern_pip_pyjwt//:pkg",
-        "@tavern_pip_python_box//:pkg",
+        "@tavern_pip//pypi__jmespath",
+        "@tavern_pip//pypi__pyjwt",
+        "@tavern_pip//pypi__python_box",
     ],
 )

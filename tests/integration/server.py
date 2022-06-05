@@ -1,4 +1,5 @@
 import base64
+import datetime
 import itertools
 import json
 import math
@@ -10,6 +11,7 @@ import uuid
 
 from flask import Flask, Response, jsonify, redirect, request
 import gzip
+import jwt
 
 app = Flask(__name__)
 
@@ -175,7 +177,7 @@ def status_code_return():
 
 @app.route("/echo", methods=["POST"])
 def echo_values():
-    body = request.get_json()
+    body = request.get_json(silent=True)
     response = body
     return jsonify(response), 200
 
@@ -268,7 +270,7 @@ def poll():
 
 
 def _maybe_get_cookie_name():
-    return (request.get_json() or {}).get("cookie_name", "tavern-cookie")
+    return (request.get_json(silent=True) or {}).get("cookie_name", "tavern-cookie")
 
 
 @app.route("/get_cookie", methods=["POST"])
@@ -377,6 +379,27 @@ def get_606_dict():
 @app.route("/magic-multi-method", methods=["GET", "POST", "DELETE"])
 def get_any_method():
     return jsonify({"method": request.method})
+
+
+@app.route("/get_jwt", methods=["POST"])
+def login():
+    secret = "240c8c9c-39b9-426b-9503-3126f96c2eaf"
+    audience = "testserver"
+
+    r = request.get_json()
+
+    if r["user"] != "test-user" or r["password"] != "correct-password":
+        return jsonify({"error": "Incorrect username/password"}), 401
+
+    payload = {
+        "sub": "test-user",
+        "aud": audience,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+    }
+
+    token = jwt.encode(payload, secret, algorithm="HS256")
+
+    return jsonify({"jwt": token})
 
 
 if __name__ == '__main__':
