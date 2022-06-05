@@ -34,5 +34,6 @@ py3_image(
     main = ":server.py",
     deps = [
         "@tavern_pip_flask//:pkg",
+        "@tavern_pip_pyjwt//:pkg",
     ],
 )
