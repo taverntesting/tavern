@@ -4,7 +4,6 @@ from os.path import abspath, dirname, join
 import yaml
 
 from tavern._core.dict_util import format_keys
-
 from .client import MQTTClient
 from .request import MQTTRequest
 from .response import MQTTResponse
@@ -28,14 +27,20 @@ def _get_subscriptions(expected):
 
 
 def get_expected_from_request(response_block, test_block_config, session):
-    expected = None
+    expected = {
+        "mqtt_responses": []
+    }
     # mqtt response is not required
     if response_block:
-        # format so we can subscribe to the right topic
-        f_expected = format_keys(response_block, test_block_config.variables)
-        mqtt_client = session
-        mqtt_client.subscribe(response_block["topic"], response_block.get("qos", 1))
-        expected = f_expected
+        if isinstance(response_block, dict):
+            response_block = [response_block]
+
+        for idx, response in enumerate(response_block):
+            # format so we can subscribe to the right topic
+            f_expected = format_keys(response, test_block_config.variables)
+            mqtt_client = session
+            mqtt_client.subscribe(response["topic"], response.get("qos", 1))
+            expected["mqtt_responses"].append(f_expected)
 
     return expected
 

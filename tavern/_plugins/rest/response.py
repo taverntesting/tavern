@@ -122,9 +122,6 @@ class RestResponse(BaseResponse):
                     "Status code was %s, expected %s", status_code, expected_code
                 )
 
-    async def verify_async(self, response):
-        return self.verify(response)
-
     def verify(self, response):
         """Verify response against expected values and returns any values that
         we wanted to save for use in future requests

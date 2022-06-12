@@ -1,4 +1,3 @@
-import concurrent.futures
 from contextlib import ExitStack
 import copy
 from copy import deepcopy
@@ -14,6 +13,7 @@ from tavern._core.plugins import (
     get_verifiers,
 )
 from tavern._core.strict_util import StrictLevel
+
 from .dict_util import format_keys, get_tavern_box
 from .pytest import call_hook
 from .report import attach_stage_content, wrap_step
@@ -265,7 +265,7 @@ def run_stage(sessions, stage, test_block_config):
     Args:
         sessions (dict): Dictionary of relevant 'session' objects used for this test
         stage (dict): specification of stage to be run
-        test_block_config (dict): available variables for test
+        test_block_config (TestConfig): available variables for test
     """
     stage = copy.deepcopy(stage)
     name = stage["name"]
@@ -293,39 +293,11 @@ def run_stage(sessions, stage, test_block_config):
 
     response = r.run()
 
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        futures = []
-
-        for response_type, response_verifiers in verifiers.items():
-            logger.debug("Running verifiers for %s", response_type)
-            # for v in response_verifiers:
-            #     saved = v.verify(response)
-            #     test_block_config.variables.update(saved)
-
-            # gatherer = asyncio.gather(
-            #     *[v.verify_async(response) for v in response_verifiers]
-            # )
-            # try:
-            #     gatherer.get_loop().run_until_complete(gatherer)
-            #     saved = gatherer.result()
-            # except Exception:
-            #     gatherer.cancel("a response verifier failed")
-            #     raise
-            # else:
-            #     for s in saved:
-            #         test_block_config.variables.update(s)
-
-            for v in response_verifiers:
-                futures.append(executor.submit(v.verify, response))
-
-        for future in concurrent.futures.as_completed(futures):
-        # for future in futures:
-            try:
-                saved = future.result()
-            except Exception:
-                raise
-            else:
-                test_block_config.variables.update(saved)
+    for response_type, response_verifiers in verifiers.items():
+        logger.debug("Running verifiers for %s", response_type)
+        for v in response_verifiers:
+            saved = v.verify(response)
+            test_block_config.variables.update(saved)
 
     tavern_box.pop("request_vars")
     delay(stage, "after", test_block_config.variables)
