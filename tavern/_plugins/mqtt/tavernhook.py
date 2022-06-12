@@ -28,7 +28,7 @@ def _get_subscriptions(expected):
 
 
 def get_expected_from_request(response_block, test_block_config, session):
-    expected=None
+    expected = None
 
     # mqtt response is not required
     if response_block:
