@@ -4,25 +4,24 @@ import json
 import logging
 import time
 
-from paho.mqtt.client import Client
-
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive
 from tavern._core.loader import ANYTHING
 from tavern._core.pytest.newhooks import call_hook
 from tavern._core.report import attach_yaml
 from tavern.response import BaseResponse
+from .client import MQTTClient
 
 logger = logging.getLogger(__name__)
 
 
 class MQTTResponse(BaseResponse):
-    def __init__(self, client: Client, name, expected, test_block_config):
+    def __init__(self, client: MQTTClient, name, expected, test_block_config):
         super().__init__(name, expected, test_block_config)
 
         self._client = client
 
-        self.received_messages = []
+        self.received_messages = []  # type: ignore
 
     def __str__(self):
         if self.response:
@@ -90,8 +89,10 @@ class MQTTResponse(BaseResponse):
                 # for future in futures:
                 try:
                     msg, warnings = future.result()
-                except Exception:
-                    raise
+                except Exception as e:
+                    raise exceptions.ConcurrentError(
+                        "unexpected error getting result from future"
+                    ) from e
                 else:
                     warnings.extend(warnings)
                     correct_messages.append(msg)
@@ -108,7 +109,9 @@ class MQTTResponse(BaseResponse):
         saved = {}
 
         for idx, msg in enumerate(correct_messages):
-            saved.update(self.maybe_get_save_values_from_save_block("json", msg.payload))
+            saved.update(
+                self.maybe_get_save_values_from_save_block("json", msg.payload)
+            )
             saved.update(self.maybe_get_save_values_from_ext(msg, expected[idx]))
 
         return saved
@@ -151,6 +154,15 @@ class MQTTResponse(BaseResponse):
             if not msg:
                 # timed out
                 break
+
+            if msg.topic != topic:
+                # If the message wasn't on the topic expected by this thread, put it back in the queue. This ensures
+                # that it will be eventually process by something else. TODO: This might cause high CPU usage if it's
+                # spinning waiting for a specific message to arrive but there's some other message that was
+                # published that the client is also listening to. In reality, that other thread should pick up the
+                # message from the queue and dtermine whether it's right or not. Needs more testing?
+                self._client.message_ignore(msg)
+                continue
 
             call_hook(
                 self.test_block_config,
