@@ -520,6 +520,10 @@ class RestRequest(BaseRequest):
                         _get_file_arguments(request_args, stack, test_block_config)
                     )
 
+                headers = self._request_args.get("headers", {})
+                for k, v in headers.items():
+                    headers[str(k)] = str(v)
+
                 return session.request(**self._request_args)
 
         self._prepared = prepared_request
