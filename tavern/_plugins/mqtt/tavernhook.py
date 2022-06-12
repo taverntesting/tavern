@@ -28,9 +28,11 @@ def _get_subscriptions(expected):
 
 
 def get_expected_from_request(response_block, test_block_config, session):
-    expected = {"mqtt_responses": []}
+    expected=None
+
     # mqtt response is not required
     if response_block:
+        expected = {"mqtt_responses": []}
         if isinstance(response_block, dict):
             response_block = [response_block]
 
