@@ -12,7 +12,7 @@ tox --parallel -c tox.ini        \
   -e py${PYVER}lint   \
   -e py${PYVER}mypy
 
-tox --parallel -c tox-integration.ini  \
+tox -c tox-integration.ini  \
   -e py${PYVER}-generic     \
   -e py${PYVER}-advanced     \
   -e py${PYVER}-cookies     \
