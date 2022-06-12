@@ -265,7 +265,7 @@ def run_stage(sessions, stage, test_block_config):
     Args:
         sessions (dict): Dictionary of relevant 'session' objects used for this test
         stage (dict): specification of stage to be run
-        test_block_config (dict): available variables for test
+        test_block_config (TestConfig): available variables for test
     """
     stage = copy.deepcopy(stage)
     name = stage["name"]

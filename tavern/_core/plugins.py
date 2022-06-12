@@ -237,21 +237,7 @@ def _foreach_response(stage, test_block_config, action):
     for p in plugins:
         response_block = stage.get(p.plugin.response_block_name)
         if response_block is not None:
-            plugin_values = []
-
-            if isinstance(response_block, dict):
-                response_block = [response_block]
-
-            for idx, r in enumerate(response_block):
-                value = action(p, r, idx)
-
-                if value is not None:
-                    if isinstance(value, list):
-                        plugin_values.extend(value)
-                    else:
-                        plugin_values.append(value)
-
-            retvals[p.name] = plugin_values
+            retvals[p.name] = action(p, response_block)
 
     return retvals
 
@@ -274,7 +260,7 @@ def get_expected(stage, test_block_config, sessions):
         dict: mapping of request type: expected response dict
     """
 
-    def action(p, response_block, _):
+    def action(p, response_block):
         plugin_expected = p.plugin.get_expected_from_request(
             response_block, test_block_config, sessions[p.name]
         )
@@ -301,7 +287,7 @@ def get_verifiers(stage, test_block_config, sessions, expected):
         BaseResponse: response validator object with a verify(response) method
     """
 
-    def action(p, response_block, idx):  # pylint: disable=unused-argument
+    def action(p, _):  # pylint: disable=unused-argument
         session = sessions[p.name]
         logger.debug(
             "Initialising verifier for %s (%s)", p.name, p.plugin.verifier_type
@@ -309,10 +295,9 @@ def get_verifiers(stage, test_block_config, sessions, expected):
         verifiers = []
 
         plugin_expected = expected[p.name]
-        this_expected = plugin_expected[idx]
 
         verifier = p.plugin.verifier_type(
-            session, stage["name"], this_expected, test_block_config
+            session, stage["name"], plugin_expected, test_block_config
         )
         verifiers.append(verifier)
 

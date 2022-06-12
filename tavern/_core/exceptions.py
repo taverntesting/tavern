@@ -131,3 +131,7 @@ class RegexAccessError(TavernException):
 
 class DuplicateStrictError(TavernException):
     """Tried to set stage strictness for multiple responses"""
+
+
+class ConcurrentError(TavernException):
+    """Error while processing concurrent future"""

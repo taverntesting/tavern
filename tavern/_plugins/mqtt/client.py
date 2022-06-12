@@ -169,7 +169,7 @@ class MQTTClient:
         # Arbitrary number, could just be 1 and only accept 1 message per stages
         # but we might want to raise an error if more than 1 message is received
         # during a test stage.
-        self._message_queue = Queue(maxsize=10)
+        self._message_queue = Queue(maxsize=30)
         self._userdata = {"queue": self._message_queue}
         self._client.user_data_set(self._userdata)
 
@@ -198,6 +198,18 @@ class MQTTClient:
         except Full:
             logger.exception("message queue full")
 
+    def message_ignore(self, message):
+        """
+        Ignore the given message (put it back in the queue of messages received)
+
+        Args:
+            message (paho.MQTTMessage): the message to ignore
+        """
+        try:
+            self._message_queue.put_nowait(message)
+        except Full:
+            logger.exception("message queue full")
+
     def message_received(self, timeout=1):
         """Check that a message is in the message queue
 
@@ -206,7 +218,7 @@ class MQTTClient:
                 was not received.
 
         Returns:
-            bool: whether the message was received within the timeout
+            paho.MQTTMessage: whether the message was received within the timeout
 
         Todo:
             Allow regexes for topic names? Better validation for mqtt payloads

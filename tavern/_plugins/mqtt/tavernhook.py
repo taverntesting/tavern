@@ -29,13 +29,19 @@ def _get_subscriptions(expected):
 
 def get_expected_from_request(response_block, test_block_config, session):
     expected = None
+
     # mqtt response is not required
     if response_block:
-        # format so we can subscribe to the right topic
-        f_expected = format_keys(response_block, test_block_config.variables)
-        mqtt_client = session
-        mqtt_client.subscribe(response_block["topic"], response_block.get("qos", 1))
-        expected = f_expected
+        expected = {"mqtt_responses": []}
+        if isinstance(response_block, dict):
+            response_block = [response_block]
+
+        for response in response_block:
+            # format so we can subscribe to the right topic
+            f_expected = format_keys(response, test_block_config.variables)
+            mqtt_client = session
+            mqtt_client.subscribe(response["topic"], response.get("qos", 1))
+            expected["mqtt_responses"].append(f_expected)
 
     return expected
 

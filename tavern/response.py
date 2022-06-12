@@ -47,6 +47,9 @@ class BaseResponse(object):
     def verify(self, response):
         """Verify response against expected values and returns any values that
         we wanted to save for use in future requests
+
+        It is expected that anything subclassing this can throw an exception indicating that the response
+        verification failed.
         """
 
     def recurse_check_key_match(self, expected_block, block, blockname, strict):
