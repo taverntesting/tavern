@@ -10,6 +10,7 @@ from tavern._core.loader import ANYTHING
 from tavern._core.pytest.newhooks import call_hook
 from tavern._core.report import attach_yaml
 from tavern.response import BaseResponse
+
 from .client import MQTTClient
 
 logger = logging.getLogger(__name__)
