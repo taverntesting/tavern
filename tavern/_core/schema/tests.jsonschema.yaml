@@ -203,6 +203,10 @@ definitions:
     description: Expected MQTT response
 
     properties:
+      unexpected:
+        type: boolean
+        description: Receiving this message fails the test
+
       topic:
         type: string
         description: Topic message should be received on
