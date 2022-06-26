@@ -14,4 +14,6 @@ tox -c tox.ini        \
 
 tox -c tox-integration.ini  \
   -e py${PYVER}-generic     \
+  -e py${PYVER}-advanced     \
+  -e py${PYVER}-components     \
   -e py${PYVER}-mqtt
