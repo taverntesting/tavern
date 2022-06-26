@@ -1,6 +1,6 @@
 load("@tavern_pip//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_test")
-load("//bazelutil:tavern_test.bzl", "tavern_test")
+load("//tavern/bazelutil:tavern_test.bzl", "tavern_test")
 
 def gentest(filename):
     tavern_test(

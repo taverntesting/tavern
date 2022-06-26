@@ -8,8 +8,8 @@ py_library(
     srcs = ["docs/source/conf.py"],
     visibility = ["//visibility:public"],
     deps = [
-        "@tavern_pip//pypi__recommonmark",
-        "@tavern_pip//pypi__sphinx_rtd_theme",
+        "@tavern_pip_recommonmark//:pkg",
+        "@tavern_pip_sphinx_rtd_theme//:pkg",
     ],
 )
 
@@ -59,6 +59,7 @@ py_wheel(
 # gazelle:exclude .idea
 # gazelle:exclude .ijwb
 # gazelle:exclude .pytest_cache
+# gazelle:exclude **/__pycache__
 # gazelle:exclude .run
 # gazelle:exclude scripts
 # gazelle:exclude tavern.egg-info

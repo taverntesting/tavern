@@ -13,8 +13,8 @@ py_library(
     deps = [
         "//tavern/schemas",
         "//tavern/util",
-        "@tavern_pip//pypi__attrs",
-        "@tavern_pip//pypi__pytest",
-        "@tavern_pip//pypi__stevedore",
+        "@tavern_pip_attrs//:pkg",
+        "@tavern_pip_pytest//:pkg",
+        "@tavern_pip_stevedore//:pkg",
     ],
 )

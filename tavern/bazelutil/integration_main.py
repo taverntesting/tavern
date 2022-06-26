@@ -6,7 +6,7 @@ import pytest
 from rules_python.python.runfiles import runfiles
 
 from tavern.testutils import pytesthook
-from tavern.util.bazel import enable_default_tavern_extensions
+from tavern.bazelutil.bazel import enable_default_tavern_extensions
 
 if __name__ == '__main__':
     enable_default_tavern_extensions()

@@ -8,8 +8,8 @@ py_library(
     imports = [".."],
     visibility = ["//visibility:public"],
     deps = [
-        "@tavern_pip//pypi__pytest",
-        "@tavern_pip//pypi__pyyaml",
+        "@tavern_pip_pytest//:pkg",
+        "@tavern_pip_pyyaml//:pkg",
     ],
 )
 
@@ -26,4 +26,14 @@ py_pytest_test(
     ],
     data = ["//:pytest.ini"],
     deps = [":conftest"],
+)
+
+load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
+
+container_bundle(
+    name = "test_image_bundle",
+    images = {
+        "taverntesting.github.io/example/advanced": "//example/advanced:server_image",
+        "taverntesting.github.io/tests/integration": "//tests/integration:server_image",
+    },
 )

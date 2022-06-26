@@ -1,5 +1,5 @@
 test --test_output=errors
-common --curses=no
+common --curses=yes
 
 test --flaky_test_attempts=1
 
@@ -13,3 +13,5 @@ test --test_env=DOCKER_BUILDKIT
 
 test --test_env=TEST_HOST=http://localhost:5003
 test --test_env=SECOND_URL_PART=again
+
+common --disk_cache=~/.cache/bazel/disk_cache

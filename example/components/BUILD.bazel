@@ -1,29 +1,21 @@
 load("@rules_python//python:defs.bzl", "py_library")
-
-py_library(
-    name = "testing_utils",
-    srcs = [
-        ":testing_utils.py",
-    ],
-    deps = [
-        "@tavern_pip_flask//:pkg",
-        "@tavern_pip_pyjwt//:pkg",
-    ],
-)
-
 load("//tavern/bazelutil:tavern_test.bzl", "tavern_test")
 
-tavern_test(
-    "test_server.tavern.yaml",
-    extra_data = [
-        ":common.yaml",
-        # Minor hack to make it so the tests are rerun when the server changes
-        ":server_image.tar",
-    ],
-    extra_deps = [
-        ":testing_utils",
-    ],
-)
+[
+    tavern_test(
+        filename,
+        extra_data = [
+            ":common.yaml",
+            # Minor hack to make it so the tests are rerun when the server changes
+            ":server_image.tar",
+            "//example/components/components:auth_stage.yaml",
+        ],
+    )
+    for filename in [
+        "test_ping.tavern.yaml",
+        "test_hello.tavern.yaml",
+    ]
+]
 
 load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
 

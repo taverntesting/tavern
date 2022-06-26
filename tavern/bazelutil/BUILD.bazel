@@ -19,13 +19,12 @@ py_library(
     name = "bazelutil",
     srcs = [
         "__init__.py",
-        "integration_main.py",
+        "bazel.py",
     ],
     imports = [".."],
     visibility = ["//:__subpackages__"],
-    deps = [
-        "//tavern/testutils",
-        "//tavern/util",
-        "@tavern_pip//pypi__pytest",
-    ],
+    deps = ["@tavern_pip_stevedore//:pkg"],
 )
+
+# gazelle:python_ignore_files integration_main.py
+# gazelle:python_ignore_dependencies tavern._plugins.rest.tavernhook, tavern._plugins.mqtt, tavern

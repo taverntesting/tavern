@@ -29,10 +29,10 @@ def tavern_test(filename, extra_data = [], extra_deps = [], extra_args = []):
 
     py_test(
         name = "integration_test_{}".format(filename),
-        srcs = ["//bazelutil:integration_main.py"],
+        srcs = ["//tavern/bazelutil:integration_main.py"],
         args = base_args + extra_args,
         data = base_data + extra_data,
-        main = "//bazelutil:integration_main.py",
+        main = "//tavern/bazelutil:integration_main.py",
         deps = base_deps + extra_deps,
         env = {
             "TAVERN_TEST_FILE_LOCATION": "$(location " + filename + ")",

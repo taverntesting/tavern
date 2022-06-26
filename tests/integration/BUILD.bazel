@@ -11,9 +11,9 @@ py_library(
     imports = ["../.."],
     visibility = ["//:__subpackages__"],
     deps = [
-        "@tavern_pip//pypi__flask",
-        "@tavern_pip//pypi__pyjwt",
-        "@tavern_pip//pypi__pytest",
+        "@tavern_pip_flask//:pkg",
+        "@tavern_pip_pyjwt//:pkg",
+        "@tavern_pip_pytest//:pkg",
     ],
 )
 
@@ -29,8 +29,9 @@ load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
 py3_image(
     name = "server_image",
     srcs = [":server.py"],
-    base = "//bazelutil:py3_base_image",
+    base = "//tavern/bazelutil:py3_base_image",
     main = ":server.py",
+    visibility = ["//:__subpackages__"],
     deps = [
         "@tavern_pip_flask//:pkg",
     ],

@@ -2,7 +2,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from tavern.util.bazel import enable_default_tavern_extensions
+from tavern.bazelutil.bazel import enable_default_tavern_extensions
 from tavern.util.strict_util import StrictLevel
 
 

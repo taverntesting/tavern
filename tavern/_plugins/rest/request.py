@@ -15,7 +15,7 @@ from requests.utils import dict_from_cookiejar
 
 from tavern.request.base import BaseRequest
 from tavern.util import exceptions
-from tavern.util.bazel import bazel_path
+from tavern.bazelutil.bazel import bazel_path
 from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
 from tavern.util.extfunctions import update_from_ext
 from tavern.util.general import valid_http_methods
