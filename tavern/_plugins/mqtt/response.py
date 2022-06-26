@@ -91,6 +91,7 @@ class MQTTResponse(BaseResponse):
                 try:
                     msg, warnings = future.result()
                 except Exception as e:
+                    logger.exception("unexpected error getting result from future")
                     raise exceptions.ConcurrentError(
                         "unexpected error getting result from future"
                     ) from e
@@ -253,6 +254,12 @@ class MQTTResponse(BaseResponse):
             time_spent += time.time() - t0
 
         if msg:
+            if expected.get("unexpected"):
+                self._adderr(
+                    "Got '%s' on topic '%s' marked as unexpected",
+                    expected_payload,
+                    topic,
+                )
             self._maybe_run_validate_functions(msg)
         else:
             self._adderr(
