@@ -3,12 +3,15 @@ kind: Config
 
 build:
   artifacts:
-  - image: tavern-integration-server
+  - image: taverntesting.github.io/tests/integration
     bazel:
       target: //tests/integration:server_image.tar
-  - image: tavern-example-advanced-server
+  - image: taverntesting.github.io/example/advanced
     bazel:
       target: //example/advanced:server_image.tar
+  - image: taverntesting.github.io/example/components
+    bazel:
+      target: //example/components:server_image.tar
   local:
     push: false
   tagPolicy:
