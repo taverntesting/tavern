@@ -3,11 +3,10 @@
 from setuptools import setup
 
 TESTS_REQUIRE = [
-    "Faker~=5.8.0",
+    "Faker~=7.0.1",
     "allure-pytest",
     "black==22.3.0",
     "colorlog~=6.6.0",
-    "faker",
     "flake8",
     "flask~=2.0.0",
     "isort~=5.10.1",
