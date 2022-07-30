@@ -245,7 +245,6 @@ def run_stage(sessions, stage, test_block_config):
         test_block_config (dict): available variables for test
     """
     stage = copy.deepcopy(stage)
-    name = stage["name"]
 
     attach_stage_content(stage)
 

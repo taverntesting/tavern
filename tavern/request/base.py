@@ -1,15 +1,15 @@
 from abc import abstractmethod
 import logging
 
-logger = logging.getLogger(__name__)
-
 from box import Box
+
+logger = logging.getLogger(__name__)
 
 
 class BaseRequest(object):
     @property
     @abstractmethod
-    def request_vars(self):
+    def request_vars(self) -> Box:
         """
         Variables used in the request
 
@@ -22,8 +22,3 @@ class BaseRequest(object):
     @abstractmethod
     def run(self):
         """Run test"""
-
-    @property
-    @abstractmethod
-    def request_vars(self) -> Box:
-        """Get any extra variables used for this request"""
