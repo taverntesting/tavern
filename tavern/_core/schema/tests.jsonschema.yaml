@@ -312,8 +312,10 @@ definitions:
 
     properties:
       tinctures:
-        type: object
+        type: array
         description: Tinctures for stage
+        items:
+          $ref: "#/definitions/verify_block"
 
       id:
         type: string

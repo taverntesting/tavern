@@ -6,7 +6,7 @@ PYVER=39
 
 fd pycache -u | xargs rm -rf
 
-tox --parallel -c tox.ini        \
+tox -c tox.ini        \
   -e py${PYVER}flakes
 
 tox --parallel -c tox.ini        \
@@ -17,7 +17,9 @@ tox --parallel -c tox.ini        \
   -e py${PYVER}mypy
 
 tox -c tox-integration.ini  \
-  -e py${PYVER}-generic     \
+  -e py${PYVER}-generic
+
+tox --parallel -c tox-integration.ini  \
   -e py${PYVER}-advanced     \
   -e py${PYVER}-cookies     \
   -e py${PYVER}-components     \

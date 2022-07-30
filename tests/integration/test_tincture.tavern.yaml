@@ -14,8 +14,8 @@ marks:
 stages:
 - name: do something
   tinctures:
-  - function: tavern.testutils.helpers:time_request
-  - function: tavern.testutils.helpers:print_response
+  - function: tavern.helpers:time_request
+  - function: tavern.helpers:print_response
     extra_kwargs:
       extra_print: "blooble"
   request:
