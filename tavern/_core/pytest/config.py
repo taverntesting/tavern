@@ -15,12 +15,13 @@ class TavernInternalConfig:
 
 @attr.s(frozen=True)
 class TestConfig:
-    """Tavern configuration - there is aglobal config, then test-specific config, and finally stage-specific config, but they all use this structure
+    """Tavern configuration - there is a global config, then test-specific config, and finally stage-specific config, but they all use this structure
 
     Attributes:
         follow_redirects (bool): whether the test should follow redirects
         variables (dict): variables available for use in the stage
-        strict: Strictness for test/stage
+        strict (StrictSetting): Strictness for test/stage
+        tinctures (list): List of tinctures to use for anything using this config
     """
 
     variables = attr.ib(type=dict)
@@ -29,6 +30,8 @@ class TestConfig:
     stages = attr.ib(type=list)
 
     tavern_internal = attr.ib(type=TavernInternalConfig)
+
+    tinctures = attr.ib(type=list, default=[])
 
     def copy(self):
         return copy.copy(self)

@@ -1,31 +1,16 @@
 import inspect
+import logging
 
 from tavern._core import exceptions
 from tavern._core.extfunctions import get_wrapped_response_function
 
+logger = logging.getLogger(__name__)
+
 
 class TinctureProvider:
-    def __init__(self, stage):
-        self._tinctures = TinctureProvider._accumulate_tincture_funcs(stage)
+    def __init__(self, tinctures):
+        self._tinctures = tinctures
         self._needs_response = None
-
-    @staticmethod
-    def _accumulate_tincture_funcs(stage):
-        """
-        Get tinctures from stage
-
-        Args:
-            stage (dict): Test stage
-        """
-        tinctures = stage.get("tinctures", None)
-
-        if isinstance(tinctures, list):
-            for vf in tinctures:
-                yield get_wrapped_response_function(vf)
-        elif isinstance(tinctures, dict):
-            yield get_wrapped_response_function(tinctures)
-        elif tinctures is not None:
-            raise exceptions.BadSchemaError("Badly formatted 'tinctures' block")
 
     def start_tinctures(self, stage):
         results = [t(stage) for t in self._tinctures]
@@ -56,3 +41,39 @@ class TinctureProvider:
                 pass
             else:
                 raise RuntimeError("Tincture had more than one yield")
+
+
+def get_stage_tinctures(stage, test_block_config, test_spec):
+    """Get tinctures for stage
+
+    Args:
+        stage (dict): Stage
+        test_block_config (TestConfig): test block config
+        test_spec (dict): Whole test spec
+    """
+    stage_tinctures = []
+
+    def add_tinctures_from_block(maybe_tinctures, blockname):
+        logger.debug("Trying to add tinctures from %s", blockname)
+
+        def inner_yield():
+            if maybe_tinctures is not None:
+                if isinstance(maybe_tinctures, list):
+                    for vf in maybe_tinctures:
+                        yield get_wrapped_response_function(vf)
+                elif isinstance(maybe_tinctures, dict):
+                    yield get_wrapped_response_function(maybe_tinctures)
+                elif maybe_tinctures is not None:
+                    raise exceptions.BadSchemaError(
+                        "Badly formatted 'tinctures' block in {}".format(blockname)
+                    )
+
+        stage_tinctures.extend(inner_yield())
+
+    add_tinctures_from_block(test_block_config.tinctures, "test block config")
+    add_tinctures_from_block(test_spec.get("tinctures"), "test")
+    add_tinctures_from_block(stage.get("tinctures"), "stage")
+
+    logger.debug("%d tinctures for stage %s", len(stage_tinctures), stage["name"])
+
+    return TinctureProvider(stage_tinctures)

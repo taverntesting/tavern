@@ -5,8 +5,6 @@ from distutils.util import strtobool
 import functools
 import logging
 
-from tavern._core.tincture import TinctureProvider
-
 from tavern._core import exceptions
 from tavern._core.plugins import (
     get_expected,
@@ -15,6 +13,7 @@ from tavern._core.plugins import (
     get_verifiers,
 )
 from tavern._core.strict_util import StrictLevel
+from tavern._core.tincture import get_stage_tinctures
 
 from .dict_util import format_keys, get_tavern_box
 from .pytest import call_hook
@@ -177,12 +176,13 @@ def run_test(in_file, test_spec, global_cfg):
             test_block_config = test_block_config.with_strictness(
                 _calculate_stage_strictness(stage, test_block_config, test_spec)
             )
+            tinctures = get_stage_tinctures(stage, test_block_config, test_spec)
 
             # Wrap run_stage with retry helper
             run_stage_with_retries = retry(stage, test_block_config)(run_stage)
 
             partial = functools.partial(
-                run_stage_with_retries, sessions, stage, test_block_config
+                run_stage_with_retries, sessions, stage, test_block_config, tinctures
             )
 
             allure_name = "Stage {}: {}".format(
@@ -261,7 +261,7 @@ def _calculate_stage_strictness(stage, test_block_config, test_spec):
     return new_strict
 
 
-def run_stage(sessions, stage, test_block_config):
+def run_stage(sessions, stage, test_block_config, tinctures):
     """Run one stage from the test
 
     Args:
@@ -293,12 +293,11 @@ def run_stage(sessions, stage, test_block_config):
 
     verifiers = get_verifiers(stage, test_block_config, sessions, expected)
 
-    provider = TinctureProvider(stage)
-    provider.start_tinctures(stage)
+    tinctures.start_tinctures(stage)
 
     response = r.run()
 
-    provider.end_tinctures(response)
+    tinctures.end_tinctures(response)
 
     for response_type, response_verifiers in verifiers.items():
         logger.debug("Running verifiers for %s", response_type)

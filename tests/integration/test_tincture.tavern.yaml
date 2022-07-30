@@ -5,6 +5,12 @@ test_name: Test tincture
 includes:
 - !include common.yaml
 
+tinctures:
+- function: tavern.helpers:time_request
+- function: tavern.helpers:print_response
+  extra_kwargs:
+    extra_print: "blooble"
+
 marks:
 - usefixtures:
   - yielder
