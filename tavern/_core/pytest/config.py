@@ -31,8 +31,6 @@ class TestConfig:
 
     tavern_internal = attr.ib(type=TavernInternalConfig)
 
-    tinctures = attr.ib(type=list, default=[])
-
     def copy(self):
         return copy.copy(self)
 

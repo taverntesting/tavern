@@ -43,12 +43,11 @@ class TinctureProvider:
                 raise RuntimeError("Tincture had more than one yield")
 
 
-def get_stage_tinctures(stage, test_block_config, test_spec):
+def get_stage_tinctures(stage, test_spec):
     """Get tinctures for stage
 
     Args:
         stage (dict): Stage
-        test_block_config (TestConfig): test block config
         test_spec (dict): Whole test spec
     """
     stage_tinctures = []
@@ -70,7 +69,6 @@ def get_stage_tinctures(stage, test_block_config, test_spec):
 
         stage_tinctures.extend(inner_yield())
 
-    add_tinctures_from_block(test_block_config.tinctures, "test block config")
     add_tinctures_from_block(test_spec.get("tinctures"), "test")
     add_tinctures_from_block(stage.get("tinctures"), "stage")
 

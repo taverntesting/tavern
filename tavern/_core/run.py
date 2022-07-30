@@ -176,7 +176,7 @@ def run_test(in_file, test_spec, global_cfg):
             test_block_config = test_block_config.with_strictness(
                 _calculate_stage_strictness(stage, test_block_config, test_spec)
             )
-            tinctures = get_stage_tinctures(stage, test_block_config, test_spec)
+            tinctures = get_stage_tinctures(stage, test_spec)
 
             # Wrap run_stage with retry helper
             run_stage_with_retries = retry(stage, test_block_config)(run_stage)
