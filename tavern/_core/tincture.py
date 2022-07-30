@@ -7,7 +7,7 @@ from tavern._core.extfunctions import get_wrapped_response_function
 class TinctureProvider:
     def __init__(self, stage):
         self._tinctures = TinctureProvider._accumulate_tincture_funcs(stage)
-        self._needs_response = []
+        self._needs_response = None
 
     @staticmethod
     def _accumulate_tincture_funcs(stage):
@@ -29,6 +29,7 @@ class TinctureProvider:
 
     def start_tinctures(self, stage):
         results = [t(stage) for t in self._tinctures]
+        self._needs_response = []
 
         for r in results:
             if inspect.isgenerator(r):
