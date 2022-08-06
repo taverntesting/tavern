@@ -66,7 +66,7 @@ tests = [
     "mypy",
     "mypy-extensions",
     "pygments",
-    "pylint==2.6.0",
+    "pylint",
     "pytest-cov",
 ]
 
@@ -77,13 +77,6 @@ dev = [
     "twine",
     "wheel",
     "py~=1.10.0",
-    "sphinx==1.8.3",
-    "sphinx_rtd_theme",
-    "recommonmark==0.5.0",
-    "commonmark==0.8.1",
-    "docutils==0.14",
-    "pygments==2.7.4",
-    "sphinx-markdown-tables==0.0.9",
 ]
 
 [project.scripts]
