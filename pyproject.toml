@@ -1,5 +1,6 @@
 [build-system]
-requires = ["setuptools>=50", "wheel"]
+requires = ["flit-core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
 
 [project]
 
@@ -21,7 +22,6 @@ keywords = ["testing", "pytest"]
 name = "tavern"
 description = "Simple testing of RESTful APIs"
 version = "2.0.0alpha11"
-
 
 dependencies = [
     "PyYAML>=5.3.1,<7",
@@ -47,9 +47,10 @@ file = "LICENSE"
 
 [project.readme]
 file = "README.rst"
-content-type = "rst"
+content-type = "text/x-rst"
 
 [project.urls]
+Home = "https://taverntesting.github.io/"
 Documentation = "https://tavern.readthedocs.io/en/latest/"
 Source = "https://github.com/taverntesting/tavern"
 
@@ -77,6 +78,8 @@ dev = [
     "twine",
     "wheel",
     "py~=1.10.0",
+    "tox",
+    "pip-tools",
 ]
 
 [project.scripts]
