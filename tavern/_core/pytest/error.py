@@ -101,9 +101,7 @@ class ReprdError(object):
 
         return missing
 
-    def _print_test_stage(
-        self, tw, code_lines, missing_format_vars, line_start
-    ):  # pylint: disable=no-self-use
+    def _print_test_stage(self, tw, code_lines, missing_format_vars, line_start):
         """Print the direct source lines from this test stage
 
         If we couldn't get the stage for some reason, print the entire test out.

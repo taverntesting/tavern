@@ -55,31 +55,31 @@ Documentation = "https://tavern.readthedocs.io/en/latest/"
 Source = "https://github.com/taverntesting/tavern"
 
 [project.optional-dependencies]
-tests = [
+dev = [
     "Faker~=7.0.1",
     "allure-pytest",
     "black==22.3.0",
+    "bump2version",
     "colorlog~=6.6.0",
+    "docker-compose",
     "flake8",
     "flask~=2.0.0",
+    "fluent-logger",
     "isort~=5.10.1",
     "itsdangerous~=2.0.0",
     "mypy",
     "mypy-extensions",
+    "pip-tools",
+    "pre-commit",
+    "pygments",
     "pygments",
     "pylint",
     "pytest-cov",
-]
-
-dev = [
-    "bump2version",
-    "pre-commit",
-    "pygments",
-    "twine",
-    "wheel",
+    "pytest-xdist",
     "py~=1.10.0",
     "tox",
-    "pip-tools",
+    "twine",
+    "wheel",
 ]
 
 [project.scripts]

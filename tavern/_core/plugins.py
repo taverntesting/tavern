@@ -96,7 +96,6 @@ class _PluginCache:
         Returns:
             list: Loaded plugins, can be a class or a module
         """
-        # pylint: disable=no-self-use
 
         plugins = []
 

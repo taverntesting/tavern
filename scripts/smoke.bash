@@ -2,6 +2,9 @@
 
 set -ex
 
+black tavern tests
+isort --profile black tavern tests/
+
 PYVER=39
 
 tox --parallel -c tox.ini        \
