@@ -26,7 +26,7 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 pip_parse(
     name = "tavern_pip",
     python_interpreter_target = interpreter,
-    requirements_lock = "//:requirements_lock.txt",
+    requirements_lock = "//:requirements.txt",
 )
 
 # Load the starlark macro which will define your dependencies.

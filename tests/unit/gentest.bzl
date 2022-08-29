@@ -15,7 +15,6 @@ def gentest(filename):
         deps = [
             ":conftest",
             "@tavern_pip_faker//:pkg",
-            "@tavern_pip_text_unidecode//:pkg",
             "@tavern_pip_colorlog//:pkg",
         ],
     )
