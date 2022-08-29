@@ -25,7 +25,10 @@ py_pytest_test(
         "--doctest-modules",
     ],
     data = ["//:pytest.ini"],
-    deps = [":conftest"],
+    deps = [
+        "//tavern",
+        "//tests/unit:conftest",
+    ],
 )
 
 load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
