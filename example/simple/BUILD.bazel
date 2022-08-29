@@ -1,0 +1,22 @@
+load("//tavern/bazelutil:tavern_test.bzl", "tavern_test")
+
+tavern_test(
+    "test_server.tavern.yaml",
+    extra_data = [
+        # Minor hack to make it so the tests are rerun when the server changes
+        ":server_image.tar",
+    ],
+)
+
+load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
+
+py3_image(
+    name = "server_image",
+    srcs = [":server.py"],
+    base = "//tavern/bazelutil:py3_base_image",
+    main = ":server.py",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@tavern_pip_flask//:pkg",
+    ],
+)

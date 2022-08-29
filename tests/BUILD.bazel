@@ -38,6 +38,10 @@ container_bundle(
     images = {
         "taverntesting.github.io/integration-test-containers:example-advanced": "//example/advanced:server_image",
         "taverntesting.github.io/integration-test-containers:example-components": "//example/components:server_image",
+        "taverntesting.github.io/integration-test-containers:example-cookies": "//example/cookies:server_image",
+        "taverntesting.github.io/integration-test-containers:example-hooks": "//example/hooks:server_image",
+        "taverntesting.github.io/integration-test-containers:example-simple": "//example/simple:server_image",
+        "taverntesting.github.io/integration-test-containers:example-remember": "//example/remember:server_image",
         "taverntesting.github.io/integration-test-containers:integration": "//tests/integration:server_image",
     },
 )
