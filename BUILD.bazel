@@ -112,3 +112,13 @@ alias(
     name = "skaffold",
     actual = "@skaffold//:skaffold",
 )
+
+alias(
+    name = "isort",
+    actual = "@tavern_pip_isort//:rules_python_wheel_entry_point_isort",
+)
+
+alias(
+    name = "pylint",
+    actual = "@tavern_pip_pylint//:rules_python_wheel_entry_point_pylint",
+)
