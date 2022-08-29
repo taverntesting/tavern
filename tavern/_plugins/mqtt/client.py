@@ -203,7 +203,6 @@ class MQTTClient:
         except Full:
             logger.exception("message queue full")
 
-
     @staticmethod
     def _on_connect(client, userdata, flags, rc):
         # pylint: disable=unused-argument,protected-access
