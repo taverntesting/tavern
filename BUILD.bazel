@@ -3,16 +3,6 @@ load("@tavern_pip//:requirements.bzl", "requirement")
 
 exports_files(["pytest.ini"])
 
-py_library(
-    name = "tavern",
-    srcs = ["docs/source/conf.py"],
-    visibility = ["//visibility:public"],
-    deps = [
-        "@tavern_pip_recommonmark//:pkg",
-        "@tavern_pip_sphinx_rtd_theme//:pkg",
-    ],
-)
-
 load("@rules_python//python:packaging.bzl", "py_wheel")
 
 py_wheel(
@@ -46,7 +36,17 @@ py_wheel(
     version = "1.11.1",
     visibility = ["//visibility:public"],
     deps = [
-        ":tavern",
+        "//tavern",
+        "//tavern/_plugins",
+        "//tavern/_plugins/mqtt",
+        "//tavern/_plugins/rest",
+        "//tavern/bazelutil",
+        "//tavern/request",
+        "//tavern/response",
+        "//tavern/schemas",
+        "//tavern/testutils",
+        "//tavern/testutils/pytesthook",
+        "//tavern/util",
     ],
 )
 

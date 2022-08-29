@@ -24,7 +24,6 @@ build --experimental_remote_merkle_tree_cache
 build --incompatible_remote_results_ignore_disk
 build --incompatible_default_to_explicit_init_py
 build --noexperimental_check_output_files
-test --test_verbose_timeout_warnings
 build --incompatible_remote_build_event_upload_respect_no_cache
 build --bes_upload_mode=fully_async
 build --experimental_reuse_sandbox_directories
