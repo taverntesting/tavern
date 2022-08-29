@@ -131,7 +131,7 @@ def _handle_ssl_context_args(ssl_context_args):
 
 
 class MQTTClient:
-    # pylint: disable=too-many-instance-attributes
+    # pylint: disable=too-many-instance-attributes,too-many-locals,too-many-statements
 
     def __init__(self, **kwargs):
         expected_blocks = {
