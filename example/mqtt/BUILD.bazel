@@ -50,7 +50,7 @@ py3_image(
     visibility = ["//:__subpackages__"],
     deps = [
         "@tavern_pip_flask//:pkg",
-        "@tavern_pip_fluent_logger//pkg",
+        "@tavern_pip_fluent_logger//:pkg",
         "@tavern_pip_paho_mqtt//:pkg",
     ],
 )
@@ -62,7 +62,7 @@ py3_image(
     main = ":listener.py",
     visibility = ["//:__subpackages__"],
     deps = [
-        "@tavern_pip_fluent_logger//pkg",
+        "@tavern_pip_fluent_logger//:pkg",
         "@tavern_pip_paho_mqtt//:pkg",
         "@tavern_pip_pyyaml//:pkg",
     ],

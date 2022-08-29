@@ -96,7 +96,7 @@ gazelle_python_manifest(
     # pip_repository_incremental = True,
     # This should point to wherever we declare our python dependencies
     # (the same as what we passed to the modules_mapping rule in WORKSPACE)
-    requirements = "//:requirements_lock.txt",
+    requirements = "//:requirements.txt",
 )
 
 load("@bazel_gazelle//:def.bzl", "gazelle")
