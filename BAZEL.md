@@ -15,7 +15,20 @@ Run `bazel test //tests/unit/...`
 
 ## Adding/changing a dependency
 
-1. Add it into requirements.in
-2. Run `bazel test //:requirements_test`
-3. Run `bazel run //:requirements.update`
+1. Add any dependencies into requirements.in
+2. Check dependencies can be resolved
+ 
+        bazel test //:requirements_test
+ 
+3. Update requirements.txt
+
+        bazel run //:requirements.update
+
 4. Run tests as before
+
+## Running after changing any imports etc.
+
+1.  Run gazelle and fix up dependencies
+
+        bazel run //:gazelle
+        bazel run --run_under "cd $PWD && " @bazel_buildtools//buildozer 'substitute deps @tavern_pip//pypi__([^/]+) @tavern_pip_${1}//:pkg' //...:*
