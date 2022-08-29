@@ -6,13 +6,10 @@ import logging.config
 import yaml
 from flask import Flask, jsonify, request, g
 
-
 import paho.mqtt.client as paho
-
 
 app = Flask(__name__)
 application = app
-
 
 DATABASE = os.environ.get("DB_NAME")
 
@@ -122,7 +119,8 @@ def get_device():
     db = get_cached_db()
 
     with db:
-        row = db.execute("SELECT * FROM devices_table WHERE device_id IS :device_id", r)
+        row = db.execute(
+            "SELECT * FROM devices_table WHERE device_id IS :device_id", r)
 
     try:
         status = next(row)[1]
@@ -145,3 +143,9 @@ def reset_db():
         db.execute("INSERT INTO devices_table VALUES ('123', 0)")
 
     return "", 204
+
+
+if __name__ == '__main__':
+    import os
+    host = os.getenv("FLASK_HOST", "0.0.0.0")
+    app.run(host)

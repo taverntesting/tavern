@@ -1,6 +1,5 @@
 from flask import Flask, jsonify, request
 
-
 app = Flask(__name__)
 
 
@@ -19,3 +18,10 @@ def double_number():
         return jsonify({"error": "a number was not passed"}), 400
 
     return jsonify({"double": double}), 200
+
+
+if __name__ == '__main__':
+    import os
+
+    host = os.getenv("FLASK_HOST", "0.0.0.0")
+    app.run(host)

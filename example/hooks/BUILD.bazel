@@ -30,5 +30,6 @@ py3_image(
     visibility = ["//:__subpackages__"],
     deps = [
         "@tavern_pip_flask//:pkg",
+        "@tavern_pip_pyjwt//:pkg",
     ],
 )

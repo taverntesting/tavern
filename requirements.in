@@ -36,3 +36,5 @@ execnet
 pytest-forked
 pytest-xdist
 
+fluent-logger
+gevent

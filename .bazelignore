@@ -13,6 +13,8 @@ scripts
 tavern.egg-info
 .tox
 
+docs/
+
 tavern/__pycache__/
 tavern/_core/__pycache__/
 tavern/_core/pytest/__pycache__/

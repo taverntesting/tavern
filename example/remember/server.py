@@ -56,3 +56,10 @@ def protected():
     if username:
         return jsonify(protected=users[username]["protected"]), 200
     return "", 401
+
+
+
+if __name__ == '__main__':
+    import os
+    host = os.getenv("FLASK_HOST", "0.0.0.0")
+    app.run(host)

@@ -1,0 +1,69 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+py_library(
+    name = "conftest",
+    srcs = [
+        ":conftest.py",
+    ],
+)
+
+py_library(
+    name = "testing_utils",
+    srcs = [
+        ":testing_utils.py",
+    ],
+)
+
+load("//tavern/bazelutil:tavern_test.bzl", "tavern_test")
+
+tavern_test(
+    "test_mqtt.tavern.yaml",
+    extra_data = [
+        # Minor hack to make it so the tests are rerun when the server changes
+        ":server_image.tar",
+    ],
+    extra_deps = [
+        ":conftest",
+        ":testing_utils",
+    ],
+)
+
+tavern_test(
+    "test_mqtt_failures.tavern.yaml",
+    extra_data = [
+        # Minor hack to make it so the tests are rerun when the server changes
+        ":server_image.tar",
+    ],
+    extra_deps = [
+        ":conftest",
+        ":testing_utils",
+    ],
+)
+
+load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
+
+py3_image(
+    name = "server_image",
+    srcs = [":server.py"],
+    base = "//tavern/bazelutil:py3_base_image",
+    main = ":server.py",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@tavern_pip_flask//:pkg",
+        "@tavern_pip_fluent_logger//pkg",
+        "@tavern_pip_paho_mqtt//:pkg",
+    ],
+)
+
+py3_image(
+    name = "listener_image",
+    srcs = [":listener.py"],
+    base = "//tavern/bazelutil:py3_base_image",
+    main = ":listener.py",
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@tavern_pip_fluent_logger//pkg",
+        "@tavern_pip_paho_mqtt//:pkg",
+        "@tavern_pip_pyyaml//:pkg",
+    ],
+)
