@@ -3,9 +3,6 @@ common --curses=yes
 
 test --flaky_test_attempts=1
 
-try-import %workspace%/.bazelrc.user
-
-
 test --test_env=DOCKER_TLS_VERIFY
 test --test_env=DOCKER_HOST
 test --test_env=DOCKER_CERT_PATH
@@ -14,4 +11,24 @@ test --test_env=DOCKER_BUILDKIT
 test --test_env=TEST_HOST=http://localhost:5003
 test --test_env=SECOND_URL_PART=again
 
-common --disk_cache=~/.cache/bazel/disk_cache
+run --run_under="cd $PWD && "
+
+build --sandbox_default_allow_network=false
+build --incompatible_allow_tags_propagation
+test --incompatible_exclusive_test_sandboxed
+build --incompatible_strict_action_env
+build --modify_execution_info=PackageTar=+no-remote
+build --nolegacy_external_runfiles
+startup --host_jvm_args=-DBAZEL_TRACK_SOURCE_DIRECTORIES=1
+build --experimental_remote_merkle_tree_cache
+build --incompatible_remote_results_ignore_disk
+build --incompatible_default_to_explicit_init_py
+build --noexperimental_check_output_files
+test --test_verbose_timeout_warnings
+build --incompatible_remote_build_event_upload_respect_no_cache
+build --bes_upload_mode=fully_async
+build --experimental_reuse_sandbox_directories
+test --build_tests_only
+
+
+try-import %workspace%/.bazelrc.user

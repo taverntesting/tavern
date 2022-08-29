@@ -36,8 +36,8 @@ load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
 container_bundle(
     name = "test_image_bundle",
     images = {
-        "taverntesting.github.io/example/advanced": "//example/advanced:server_image",
-        "taverntesting.github.io/example/components": "//example/components:server_image",
-        "taverntesting.github.io/tests/integration": "//tests/integration:server_image",
+        "taverntesting.github.io/integration-test-containers:example-advanced": "//example/advanced:server_image",
+        "taverntesting.github.io/integration-test-containers:example-components": "//example/components:server_image",
+        "taverntesting.github.io/integration-test-containers:integration": "//tests/integration:server_image",
     },
 )
