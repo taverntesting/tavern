@@ -32,3 +32,9 @@ Run `bazel test //tests/unit/...`
 
         bazel run //:gazelle
         bazel run --run_under "cd $PWD && " @bazel_buildtools//buildozer 'substitute deps @tavern_pip//pypi__([^/]+) @tavern_pip_${1}//:pkg' //...:*
+
+## Notes
+
+Checking manifests are up-to-date
+
+    bazel test //:gazelle_python_manifest.test
