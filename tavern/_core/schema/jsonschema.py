@@ -122,6 +122,7 @@ def verify_jsonschema(to_verify, schema):
     try:
         validator.validate(to_verify)
     except jsonschema.ValidationError as e:
+        print(e)
         real_context = []
 
         # ignore these strings because they're red herrings
