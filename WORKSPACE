@@ -25,6 +25,7 @@ load("@rules_python//python:pip.bzl", "pip_parse")
 # requirements_lock.txt.
 pip_parse(
     name = "tavern_pip",
+    isolated = True,
     python_interpreter_target = interpreter,
     requirements_lock = "//:requirements.txt",
 )
