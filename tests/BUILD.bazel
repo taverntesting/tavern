@@ -41,6 +41,10 @@ container_bundle(
         "taverntesting.github.io/integration-test-containers:example-hooks": "//example/hooks:server_image",
         "taverntesting.github.io/integration-test-containers:example-simple": "//example/simple:server_image",
         "taverntesting.github.io/integration-test-containers:example-remember": "//example/remember:server_image",
+        "taverntesting.github.io/integration-test-containers:example-mqtt-server": "//example/mqtt:server_image",
+        "taverntesting.github.io/integration-test-containers:example-mqtt-listener": "//example/mqtt:listener_image",
+        "taverntesting.github.io/integration-test-containers:example-mqtt-fluentd": "//example/mqtt:fluentd",
+        "taverntesting.github.io/integration-test-containers:example-mqtt-mosquitto": "//example/mqtt:mosquitto",
         "taverntesting.github.io/integration-test-containers:integration": "//tests/integration:server_image",
     },
 )

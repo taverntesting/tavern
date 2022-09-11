@@ -15,9 +15,39 @@ services:
     image: taverntesting.github.io/integration-test-containers:example-components
     ports:
       - 5009:5000
-#  example-simple:
-#    image: taverntesting.github.io/integration-test-containers:example-simple
-#  example-remember:
-#    image: taverntesting.github.io/integration-test-containers:example-remember
-#  example-hooks:
-#    image: taverntesting.github.io/integration-test-containers:example-hooks
+  #  example-simple:
+  #    image: taverntesting.github.io/integration-test-containers:example-simple
+  #  example-remember:
+  #    image: taverntesting.github.io/integration-test-containers:example-remember
+  #  example-hooks:
+  #    image: taverntesting.github.io/integration-test-containers:example-hooks
+
+  example-mqtt-server:
+    image: taverntesting.github.io/integration-test-containers:example-mqtt-server
+    environment:
+      DB_NAME: /data/db
+    volumes:
+      - db-volume:/data/
+    ports:
+      - 5002:5000
+  example-mqtt-listener:
+    image: taverntesting.github.io/integration-test-containers:example-mqtt-listener
+    environment:
+      DB_NAME: /data/db
+    volumes:
+      - db-volume:/data/
+    depends_on:
+      - broker
+      - fluent
+  broker:
+    image: taverntesting.github.io/integration-test-containers:example-mqtt-mosquitto
+    ports:
+      - 9001:9001
+      - 1883:1883
+  fluent:
+    image: taverntesting.github.io/integration-test-containers:example-mqtt-fluentd
+    ports:
+      - 24224:24224
+
+volumes:
+  db-volume:

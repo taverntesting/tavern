@@ -127,3 +127,19 @@ load("//tavern/bazelutil:skaffold.bzl", "get_skaffold")
 get_skaffold(
     name = "skaffold",
 )
+
+load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
+
+container_pull(
+    name = "mosquitto",
+    registry = "docker.io",
+    repository = "library/eclipse-mosquitto",
+    tag = "1.4.12",
+)
+
+container_pull(
+    name = "fluentd",
+    registry = "docker.io",
+    repository = "fluent/fluentd",
+    tag = "v1.15-1",
+)

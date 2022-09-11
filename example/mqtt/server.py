@@ -71,7 +71,7 @@ loggers:
         propagate: true
 """
 
-    as_dict = yaml.load(log_cfg)
+    as_dict = yaml.load(log_cfg, Loader=yaml.SafeLoader)
     logging.config.dictConfig(as_dict)
 
     logging.info("Logging set up")

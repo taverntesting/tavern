@@ -5,6 +5,9 @@ py_library(
     srcs = [
         ":conftest.py",
     ],
+    deps = [
+        "@tavern_pip_fluent_logger//:pkg",
+    ],
 )
 
 py_library(
@@ -19,6 +22,7 @@ load("//tavern/bazelutil:tavern_test.bzl", "tavern_test")
 tavern_test(
     "test_mqtt.tavern.yaml",
     extra_data = [
+        ":common.yaml",
         # Minor hack to make it so the tests are rerun when the server changes
         ":server_image.tar",
     ],
@@ -31,6 +35,7 @@ tavern_test(
 tavern_test(
     "test_mqtt_failures.tavern.yaml",
     extra_data = [
+        ":common.yaml",
         # Minor hack to make it so the tests are rerun when the server changes
         ":server_image.tar",
     ],
@@ -52,6 +57,7 @@ py3_image(
         "@tavern_pip_flask//:pkg",
         "@tavern_pip_fluent_logger//:pkg",
         "@tavern_pip_paho_mqtt//:pkg",
+        "@tavern_pip_pyyaml//:pkg",
     ],
 )
 
@@ -66,4 +72,22 @@ py3_image(
         "@tavern_pip_paho_mqtt//:pkg",
         "@tavern_pip_pyyaml//:pkg",
     ],
+)
+
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+
+container_image(
+    name = "mosquitto",
+    base = "@mosquitto//image",
+    directory = "/mosquitto/config",
+    files = [":mosquitto.conf"],
+    visibility = ["//:__subpackages__"],
+)
+
+container_image(
+    name = "fluentd",
+    base = "@fluentd//image",
+    directory = "/fluentd/etc",
+    files = [":fluent.conf"],
+    visibility = ["//:__subpackages__"],
 )
