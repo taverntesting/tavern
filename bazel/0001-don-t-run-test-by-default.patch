@@ -1,0 +1,21 @@
+Don't run gazelle manifest test when you run `bazel test //...` or it thrashes the analysis cache.
+
+---
+ gazelle/manifest/defs.bzl | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/gazelle/manifest/defs.bzl b/gazelle/manifest/defs.bzl
+index bbcda72..1efd950 100644
+--- a/gazelle/manifest/defs.bzl
++++ b/gazelle/manifest/defs.bzl
+@@ -82,6 +82,7 @@ def gazelle_python_manifest(
+             manifest,
+             requirements,
+         ],
++        tags = ["manual"],
+         env = {
+             "_TEST_BINARY": "$(rootpath :{})".format(test_binary),
+             "_TEST_MANIFEST": "$(rootpath {})".format(manifest),
+--
+2.37.2
+
