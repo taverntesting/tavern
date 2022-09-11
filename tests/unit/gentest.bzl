@@ -1,9 +1,9 @@
-load("@com_github_ali5h_rules_pip//:defs.bzl", "py_pytest_test")
+load("//tavern/bazelutil:tavern_test.bzl", "pytest_test")
 load("@tavern_pip//:requirements.bzl", "requirement")
 
 def gentest(filename):
-    py_pytest_test(
-        name = "unit_test_{}".format(filename.replace("/", "_")),
+    pytest_test(
+        name = "unit_test_{}".format(filename.replace("/", "_").replace(".py", "")),
         srcs = [filename],
         args = [
             "-c",

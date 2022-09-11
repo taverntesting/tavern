@@ -38,3 +38,21 @@ def tavern_test(filename, extra_data = [], extra_deps = [], extra_args = []):
             "TAVERN_TEST_FILE_LOCATION": "$(location " + filename + ")",
         },
     )
+
+def pytest_test(name, args = [], data = [], srcs = [], **kwargs):
+    if "//:pytest.ini" not in data:
+        data = data + ["//:pytest.ini"]
+
+    args = args + [
+        "--ignore=external",
+        ".",
+    ]
+
+    py_test(
+        name = name,
+        srcs = srcs + ["//tavern/bazelutil:pytest_main.py"],
+        main = "//tavern/bazelutil:pytest_main.py",
+        data = data,
+        args = args,
+        **kwargs
+    )

@@ -13,9 +13,9 @@ py_library(
     ],
 )
 
-load("@com_github_ali5h_rules_pip//:defs.bzl", "py_pytest_test")
+load("//tavern/bazelutil:tavern_test.bzl", "pytest_test")
 
-py_pytest_test(
+pytest_test(
     name = "test_doctest",
     args = [
         "-c",

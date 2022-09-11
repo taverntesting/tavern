@@ -13,6 +13,7 @@ container_image(
 
 exports_files([
     "integration_main.py",
+    "pytest_main.py",
 ])
 
 py_library(

@@ -35,30 +35,23 @@ load("@tavern_pip//:requirements.bzl", "install_deps")
 # Call it to define repos for your requirements.
 install_deps()
 
-http_archive(
-    name = "com_github_ali5h_rules_pip",
-    sha256 = "630a7cab43a87927353efca116d20201df88fb443962bf01c7383245c7f3a623",
-    strip_prefix = "rules_pip-3.0.0",
-    urls = ["https://github.com/ali5h/rules_pip/archive/3.0.0.tar.gz"],
-)
-
 ####################### GAZELLE
 
 http_archive(
     name = "io_bazel_rules_go",
-    sha256 = "f2dcd210c7095febe54b804bb1cd3a58fe8435a909db2ec04e31542631cf715c",
+    sha256 = "16e9fca53ed6bd4ff4ad76facc9b7b651a89db1689a2877d6fd7b82aa824e366",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.31.0/rules_go-v0.31.0.zip",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.31.0/rules_go-v0.31.0.zip",
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.34.0/rules_go-v0.34.0.zip",
+        "https://github.com/bazelbuild/rules_go/releases/download/v0.34.0/rules_go-v0.34.0.zip",
     ],
 )
 
 http_archive(
     name = "bazel_gazelle",
-    sha256 = "de69a09dc70417580aabf20a28619bb3ef60d038470c7cf8442fafcf627c21cb",
+    sha256 = "501deb3d5695ab658e82f6f6f549ba681ea3ca2a5fb7911154b5aa45596183fa",
     urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.24.0/bazel-gazelle-v0.24.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.24.0/bazel-gazelle-v0.24.0.tar.gz",
+        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.26.0/bazel-gazelle-v0.26.0.tar.gz",
+        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.26.0/bazel-gazelle-v0.26.0.tar.gz",
     ],
 )
 
@@ -72,8 +65,6 @@ load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 gazelle_dependencies()
 
-# To compile the rules_python gazelle extension from source,
-# we must fetch some third-party go dependencies that it uses.
 load("@rules_python//gazelle:deps.bzl", _py_gazelle_deps = "gazelle_deps")
 
 _py_gazelle_deps()
