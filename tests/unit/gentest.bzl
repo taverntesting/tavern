@@ -1,5 +1,4 @@
 load("//tavern/bazelutil:tavern_test.bzl", "pytest_test")
-load("@tavern_pip//:requirements.bzl", "requirement")
 
 def gentest(filename):
     pytest_test(

@@ -1,5 +1,3 @@
-load("@tavern_pip//:requirements.bzl", "requirement")
-
 exports_files(["pytest.ini"])
 
 load("@rules_python//python:packaging.bzl", "py_wheel")
