@@ -21,4 +21,5 @@ def gentest(filename):
         extra_deps = [
             ":conftest",
         ],
+        tags = ["requires-network"],
     )

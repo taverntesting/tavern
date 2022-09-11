@@ -1,6 +1,6 @@
 load("@rules_python//python:defs.bzl", "py_test")
 
-def tavern_test(filename, extra_data = [], extra_deps = [], extra_args = []):
+def tavern_test(filename, extra_data = [], extra_deps = [], extra_args = [], **kwargs):
     base_data = [
         "//:pytest.ini",
         filename,
@@ -36,6 +36,7 @@ def tavern_test(filename, extra_data = [], extra_deps = [], extra_args = []):
         env = {
             "TAVERN_TEST_FILE_LOCATION": "$(location " + filename + ")",
         },
+        **kwargs
     )
 
 def pytest_test(name, args = [], data = [], srcs = [], **kwargs):
