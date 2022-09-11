@@ -36,6 +36,7 @@ def tavern_test(filename, extra_data = [], extra_deps = [], extra_args = [], **k
         env = {
             "TAVERN_TEST_FILE_LOCATION": "$(location " + filename + ")",
         },
+        tags = ["requires-network"],
         **kwargs
     )
 

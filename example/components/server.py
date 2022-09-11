@@ -67,3 +67,8 @@ def ping():
 @requires_jwt
 def hello(name):
     return jsonify({"data": "Hello, {}".format(name)}), 200
+
+if __name__ == '__main__':
+    import os
+    host = os.getenv("FLASK_HOST", "0.0.0.0")
+    app.run(host)
