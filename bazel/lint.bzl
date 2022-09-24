@@ -19,15 +19,14 @@ def _file_count_aspect_impl(target, ctx):
             ctx.actions.run_shell(
                 outputs = [report_out],
                 inputs = srcs,
-                command = "echo K > $(location report_out)",
+                command = "exit 1",
             )
 
-            #            for dep in ctx.rule.attr.deps:
-            #                lint_out = lint_out + dep[FileCountInfo].lint_out
+            report_out = depset([report_out], transitive = [dep[FileCountInfo].lint_out for dep in ctx.rule.attr.deps])
 
             return [
                 OutputGroupInfo(
-                    report = depset([report_out]),
+                    report = report_out,
                 ),
                 FileCountInfo(
                     lint_out = report_out,
@@ -35,7 +34,7 @@ def _file_count_aspect_impl(target, ctx):
             ]
 
     return [FileCountInfo(
-        lint_out = "",
+        lint_out = depset([], transitive = [dep[FileCountInfo].lint_out for dep in ctx.rule.attr.deps]),
     )]
 
 file_count_aspect = aspect(
@@ -48,9 +47,19 @@ file_count_aspect = aspect(
 
 def _file_count_rule_impl(ctx):
     for dep in ctx.attr.deps:
-        print(dep[FileCountInfo].lint_out)
+        print(dep[FileCountInfo].lint_out.to_list())
+
+        run_script = ctx.actions.declare_file(ctx.label.name)
+        ctx.actions.write(
+            content = "echo " + str(dep[FileCountInfo].lint_out.to_list()),
+            output = run_script,
+            is_executable = True,
+        )
+
+        return [DefaultInfo(executable = run_script)]
 
 file_count_rule = rule(
+    executable = True,
     implementation = _file_count_rule_impl,
     attrs = {
         "deps": attr.label_list(aspects = [file_count_aspect]),
