@@ -15,10 +15,10 @@ def gentest(filename):
             ":OK.json.gz",
             ":parametrize_includes.yaml",
             ":testfile.txt",
-            # Minor hack to make it so the tests are rerun when the server changes
-            ":server_image.tar",
         ],
         extra_deps = [
             ":conftest",
         ],
+        image = ":server_image.tar",
+        port = 5003,
     )

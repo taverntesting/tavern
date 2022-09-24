@@ -6,10 +6,10 @@ load("//tavern/bazelutil:tavern_test.bzl", "tavern_test")
         filename,
         extra_data = [
             ":common.yaml",
-            # Minor hack to make it so the tests are rerun when the server changes
-            ":server_image.tar",
             "//example/components/components:auth_stage.yaml",
         ],
+        image = ":server_image.tar",
+        port = 5009,
     )
     for filename in [
         "test_ping.tavern.yaml",

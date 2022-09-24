@@ -23,26 +23,26 @@ tavern_test(
     "test_mqtt.tavern.yaml",
     extra_data = [
         ":common.yaml",
-        # Minor hack to make it so the tests are rerun when the server changes
-        ":server_image.tar",
     ],
     extra_deps = [
         ":conftest",
         ":testing_utils",
     ],
+    image = ":server_image.tar",
+    port = 5002,
 )
 
 tavern_test(
     "test_mqtt_failures.tavern.yaml",
     extra_data = [
         ":common.yaml",
-        # Minor hack to make it so the tests are rerun when the server changes
-        ":server_image.tar",
     ],
     extra_deps = [
         ":conftest",
         ":testing_utils",
     ],
+    image = ":server_image.tar",
+    port = 5002,
 )
 
 load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")

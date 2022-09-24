@@ -213,6 +213,10 @@ distlib==0.3.6 \
     --hash=sha256:14bad2d9b04d3a36127ac97f30b12a19268f211063d8f8ee4f47108896e11b46 \
     --hash=sha256:f35c4b692542ca110de7ef0bea44d73981caeb34ca0b9b6b2e6d7790dda8f80e
     # via virtualenv
+docker==6.0.0 \
+    --hash=sha256:19e330470af40167d293b0352578c1fa22d74b34d3edf5d4ff90ebc203bbb2f1 \
+    --hash=sha256:6e06ee8eca46cd88733df09b6b80c24a1a556bc5cb1e1ae54b2c239886d245cf
+    # via -r ./requirements.in
 docopt==0.6.2 \
     --hash=sha256:49b3a825280bd66b3aa83585ef59c4a8c82f2c8a522dbe754a8bc8d08c85c491
     # via pykwalify
@@ -573,6 +577,7 @@ packaging==21.3 \
     --hash=sha256:dd47c42927d89ab911e606518907cc2d3a1f38bbd026385970643f9c5b8ecfeb \
     --hash=sha256:ef103e05f519cdc783ae24ea4e2e0f508a9c99b2d4969652eed6a2e1ea5bd522
     # via
+    #   docker
     #   pytest
     #   tox
 paho-mqtt==1.6.1 \
@@ -804,6 +809,7 @@ requests==2.28.1 \
     --hash=sha256:8fefa2a1a1365bf5520aac41836fbee479da67864514bdb821f31ce07ce65349
     # via
     #   -r ./requirements.in
+    #   docker
     #   requests-toolbelt
     #   twine
 requests-toolbelt==0.9.1 \
@@ -936,6 +942,7 @@ urllib3==1.26.12 \
     --hash=sha256:3fa96cf423e6987997fc326ae8df396db2a8b7c667747d47ddd8ecba91f4a74e \
     --hash=sha256:b930dd878d5a8afb066a637fbb35144fe7901e3b209d1cd4f524bd0e9deee997
     # via
+    #   docker
     #   requests
     #   twine
 virtualenv==20.16.3 \
@@ -948,6 +955,10 @@ webencodings==0.5.1 \
     --hash=sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78 \
     --hash=sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923
     # via bleach
+websocket-client==1.4.1 \
+    --hash=sha256:398909eb7e261f44b8f4bd474785b6ec5f5b499d4953342fe9755e01ef624090 \
+    --hash=sha256:f9611eb65c8241a67fb373bef040b3cf8ad377a9f6546a12b620b6511e8ea9ef
+    # via docker
 werkzeug==2.2.2 \
     --hash=sha256:7ea2d48322cc7c0f8b3a215ed73eabd7b5d75d0b50e31ab006286ccff9e00b8f \
     --hash=sha256:f979ab81f58d7318e064e99c4506445d60135ac5cd2e177a2de0089bfd4c9bd5

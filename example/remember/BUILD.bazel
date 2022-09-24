@@ -1,12 +1,12 @@
 load("//tavern/bazelutil:tavern_test.bzl", "tavern_test")
 
-tavern_test(
-    "test_server.tavern.yaml",
-    extra_data = [
-        # Minor hack to make it so the tests are rerun when the server changes
-        ":server_image.tar",
-    ],
-)
+#tavern_test(
+#    "test_server.tavern.yaml",
+#    extra_data = [
+#        # Minor hack to make it so the tests are rerun when the server changes
+#        ":server_image.tar",
+#    ],
+#)
 
 load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
 

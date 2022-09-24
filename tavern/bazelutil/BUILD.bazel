@@ -29,3 +29,12 @@ py_library(
 
 # gazelle:python_ignore_files integration_main.py
 # gazelle:python_ignore_dependencies tavern._plugins.rest.tavernhook, tavern._plugins.mqtt, tavern
+
+py_binary(
+    name = "load_image",
+    srcs = [":load_image.py"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@tavern_pip_docker//:pkg",
+    ],
+)

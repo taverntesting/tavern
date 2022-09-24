@@ -38,3 +38,5 @@ pytest-xdist
 
 fluent-logger
 gevent
+
+docker
