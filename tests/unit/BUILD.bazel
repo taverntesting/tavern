@@ -13,6 +13,7 @@ py_library(
         "//tavern",
         "//tavern/_plugins/mqtt",
         "//tavern/_plugins/rest",
+        "//tavern/internal",
         "//tavern/schemas",
         "//tavern/testutils",
         "//tavern/testutils/pytesthook",

@@ -1,4 +1,4 @@
-load("//tavern/bazelutil:tavern_test.bzl", "pytest_test")
+load("//bazel:tavern_test.bzl", "pytest_test")
 
 def gentest(filename):
     pytest_test(

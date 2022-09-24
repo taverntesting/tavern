@@ -12,7 +12,7 @@ py_library(
     ],
 )
 
-load("//tavern/bazelutil:tavern_test.bzl", "pytest_test")
+load("//bazel:tavern_test.bzl", "pytest_test")
 
 pytest_test(
     name = "test_doctest",

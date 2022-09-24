@@ -17,7 +17,7 @@ py_library(
     ],
 )
 
-load("//tavern/bazelutil:tavern_test.bzl", "tavern_test")
+load("//bazel:tavern_test.bzl", "tavern_test")
 
 tavern_test(
     "test_mqtt.tavern.yaml",
@@ -51,6 +51,8 @@ tavern_test(
         "broker": ":mosquitto.tar",
         "fluent": ":fluentd.tar",
     },
+    # Make sure it's not run at the same time as the above
+    tags = ["exclusive"],
 )
 
 load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
@@ -58,7 +60,7 @@ load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
 py3_image(
     name = "server_image",
     srcs = [":server.py"],
-    base = "//tavern/bazelutil:py3_base_image",
+    base = "//bazel:py3_base_image",
     main = ":server.py",
     visibility = ["//:__subpackages__"],
     deps = [
@@ -72,7 +74,7 @@ py3_image(
 py3_image(
     name = "listener_image",
     srcs = [":listener.py"],
-    base = "//tavern/bazelutil:py3_base_image",
+    base = "//bazel:py3_base_image",
     main = ":listener.py",
     visibility = ["//:__subpackages__"],
     deps = [

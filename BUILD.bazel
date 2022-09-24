@@ -33,11 +33,11 @@ py_wheel(
     version = "1.11.1",
     visibility = ["//visibility:public"],
     deps = [
+        "//bazel",
         "//tavern",
         "//tavern/_plugins",
         "//tavern/_plugins/mqtt",
         "//tavern/_plugins/rest",
-        "//tavern/bazelutil",
         "//tavern/request",
         "//tavern/response",
         "//tavern/schemas",

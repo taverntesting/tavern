@@ -7,7 +7,7 @@ import sys
 # gazelle:ignore rules_python.python.runfiles
 from rules_python.python.runfiles import runfiles
 
-from tavern.bazelutil.bazel import enable_default_tavern_extensions
+from tavern.internal.testutil import enable_default_tavern_extensions
 from tavern.testutils import pytesthook
 
 if __name__ == "__main__":

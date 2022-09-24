@@ -1,0 +1,45 @@
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+
+container_image(
+    name = "py3_base_image",
+    base = "@py3_debug_image_base//image",
+    env = {
+        "PYTHONUNBUFFERED": "0",
+        "FLASK_DEBUG": "1",
+    },
+    visibility = ["//:__subpackages__"],
+)
+
+exports_files([
+    "integration_main.py",
+    "pytest_main.py",
+    "docker-compose.yaml",
+])
+
+py_library(
+    name = "bazel",
+    srcs = [
+        "__init__.py",
+        "load_image.py",
+        "pytest_main.py",
+    ],
+    imports = [".."],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@tavern_pip_docker//:pkg",
+        "@tavern_pip_pytest//:pkg",
+    ],
+)
+
+# gazelle:python_ignore_files integration_main.py
+# gazelle:python_ignore_dependencies tavern._plugins.rest.tavernhook, tavern._plugins.mqtt, tavern
+
+py_binary(
+    name = "load_image",
+    srcs = [":load_image.py"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@tavern_pip_docker//:pkg",
+    ],
+)

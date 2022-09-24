@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 bazel run //:gazelle_python_manifest.update
 bazel run //:gazelle

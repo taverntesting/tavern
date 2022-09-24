@@ -135,7 +135,7 @@ load(
 
 _py_image_repos()
 
-load("//tavern/bazelutil:skaffold.bzl", "get_skaffold")
+load("//bazel:skaffold.bzl", "get_skaffold")
 
 get_skaffold(
     name = "skaffold",
