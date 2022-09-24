@@ -104,3 +104,18 @@ class TestResponse(object):
         assert len(verifier.received_messages) == 2
         assert verifier.received_messages[0].topic == fake_message_bad.topic
         assert verifier.received_messages[1].topic == fake_message_good.topic
+
+    def test_unexpected_fail(self, includes):
+        """Messages marked unexpected fail test"""
+
+        expected = {"topic": "/a/b/c", "payload": "hello", "unexpected": True}
+
+        fake_message = FakeMessage(expected)
+
+        verifier = self._get_fake_verifier(expected, [fake_message], includes)
+
+        with pytest.raises(exceptions.TestFailError):
+            verifier.verify(expected)
+
+        assert len(verifier.received_messages) == 1
+        assert verifier.received_messages[0].topic == fake_message.topic

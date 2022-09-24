@@ -88,6 +88,9 @@ schema;stage:
       type: map
       required: false
       mapping:
+        unexpected:
+          type: bool
+          required: false
         topic:
           type: str
           required: true

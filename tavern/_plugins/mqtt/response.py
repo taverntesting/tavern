@@ -172,6 +172,13 @@ class MQTTResponse(BaseResponse):
             time_spent += time.time() - t0
 
         if msg:
+            if self.expected.get("unexpected"):
+                self._adderr(
+                    "Got '%s' on topic '%s' marked as unexpected",
+                    expected_payload,
+                    topic,
+                )
+
             self._maybe_run_validate_functions(msg)
         else:
             self._adderr(
