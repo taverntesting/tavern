@@ -63,6 +63,14 @@ py_wheel(
 # gazelle:exclude .tox
 # gazelle:exclude docs/
 
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+
+compile_pip_requirements(
+    name = "requirements",
+    extra_args = ["--allow-unsafe"],
+    tags = ["requires-network"],
+)
+
 load("@tavern_pip//:requirements.bzl", "all_whl_requirements")
 load("@rules_python//gazelle/manifest:defs.bzl", "gazelle_python_manifest")
 load("@rules_python//gazelle/modules_mapping:def.bzl", "modules_mapping")
@@ -102,13 +110,4 @@ alias(
 alias(
     name = "black",
     actual = "@tavern_pip_black//:rules_python_wheel_entry_point_black",
-)
-
-load("@rules_python//python:pip.bzl", "compile_pip_requirements")
-
-# This rule adds a convenient way to update the requirements file.
-compile_pip_requirements(
-    name = "requirements",
-    extra_args = ["--allow-unsafe"],
-    tags = ["requires-network"],
 )

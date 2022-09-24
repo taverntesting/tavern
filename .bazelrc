@@ -1,12 +1,10 @@
 test --test_output=errors
-common --curses=yes
 
 test --flaky_test_attempts=1
 
 test --test_env=TEST_HOST=http://localhost:5003
 test --test_env=SECOND_URL_PART=again
 
-run --run_under="cd $PWD && "
 
 build --sandbox_default_allow_network=false
 common --incompatible_allow_tags_propagation

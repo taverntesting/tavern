@@ -31,16 +31,12 @@ load("@rules_python//python:repositories.bzl", "python_register_toolchains")
 
 python_register_toolchains(
     name = "python3_9",
-    # Available versions are listed in @rules_python//python:versions.bzl.
-    # We recommend using the same version your team is already standardized on.
     python_version = "3.9",
 )
 
 load("@python3_9//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
-# Create a central repo that knows about the dependencies needed from
-# requirements_lock.txt.
 pip_parse(
     name = "tavern_pip",
     isolated = True,
@@ -48,10 +44,8 @@ pip_parse(
     requirements_lock = "//:requirements.txt",
 )
 
-# Load the starlark macro which will define your dependencies.
 load("@tavern_pip//:requirements.bzl", "install_deps")
 
-# Call it to define repos for your requirements.
 install_deps()
 
 ####################### GAZELLE
