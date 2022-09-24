@@ -25,7 +25,11 @@ py_library(
         "pytest_main.py",
     ],
     imports = [".."],
-    visibility = ["//:__subpackages__"],
+    visibility = [
+        "//bazel:__pkg__",
+        "//example:__subpackages__",
+        "//tests:__subpackages__",
+    ],
     deps = [
         "@tavern_pip_docker//:pkg",
         "@tavern_pip_pytest//:pkg",
