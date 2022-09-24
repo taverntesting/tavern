@@ -5,8 +5,7 @@ tavern_test(
     extra_data = [
         ":common.yaml",
     ],
-    image = ":server_image.tar",
-    port = 5001,
+    images = {"example-cookies": ":server_image.tar"},
 )
 
 load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")

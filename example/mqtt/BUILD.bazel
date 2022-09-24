@@ -28,8 +28,12 @@ tavern_test(
         ":conftest",
         ":testing_utils",
     ],
-    image = ":server_image.tar",
-    port = 5002,
+    images = {
+        "example-mqtt-server": ":server_image.tar",
+        "example-mqtt-listener": ":listener_image.tar",
+        "broker": ":mosquitto.tar",
+        "fluent": ":fluentd.tar",
+    },
 )
 
 tavern_test(
@@ -41,8 +45,12 @@ tavern_test(
         ":conftest",
         ":testing_utils",
     ],
-    image = ":server_image.tar",
-    port = 5002,
+    images = {
+        "example-mqtt-server": ":server_image.tar",
+        "example-mqtt-listener": ":listener_image.tar",
+        "broker": ":mosquitto.tar",
+        "fluent": ":fluentd.tar",
+    },
 )
 
 load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")

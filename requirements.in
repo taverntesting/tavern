@@ -3,7 +3,7 @@ tox
 flask
 
 # Useful for development
-black
+black==22.8.0
 bump2version
 pre-commit
 pygments
@@ -40,3 +40,4 @@ fluent-logger
 gevent
 
 docker
+docker-compose

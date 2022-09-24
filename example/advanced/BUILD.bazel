@@ -21,8 +21,7 @@ tavern_test(
     extra_deps = [
         ":testing_utils",
     ],
-    image = ":server_image.tar",
-    port = 5000,
+    images = {"example-advanced": ":server_image.tar"},
 )
 
 load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")

@@ -14,6 +14,7 @@ container_image(
 exports_files([
     "integration_main.py",
     "pytest_main.py",
+    "docker-compose.yaml",
 ])
 
 py_library(

@@ -19,6 +19,5 @@ def gentest(filename):
         extra_deps = [
             ":conftest",
         ],
-        image = ":server_image.tar",
-        port = 5003,
+        images = {"integration": ":server_image.tar"},
     )

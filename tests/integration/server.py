@@ -402,6 +402,6 @@ def login():
     return jsonify({"jwt": token})
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     host = os.getenv("FLASK_HOST", "0.0.0.0")
     app.run(host)
