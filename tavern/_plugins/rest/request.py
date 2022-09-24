@@ -13,13 +13,10 @@ import requests
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
 
+from tavern.bazelutil import bazel_path
 from tavern.request.base import BaseRequest
 from tavern.util import exceptions
-
-from tavern.bazelutil import bazel_path
-
-from tavern.util.dict_util import check_expected_keys, deep_dict_merge, \
-    format_keys
+from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
 from tavern.util.extfunctions import update_from_ext
 from tavern.util.general import valid_http_methods
 from tavern.util.report import attach_yaml
@@ -402,8 +399,7 @@ def guess_filespec(filespec, stack, test_block_config):
     filename = os.path.basename(filepath)
 
     # a 2-tuple ('filename', fileobj)
-    file_spec = [filename,
-                 stack.enter_context(open(bazel_path(filepath), "rb"))]
+    file_spec = [filename, stack.enter_context(open(bazel_path(filepath), "rb"))]
 
     # Try to guess as well, but don't override what the user specified
     guessed_content_type, guessed_encoding = mimetypes.guess_type(filepath)
@@ -497,11 +493,9 @@ class RestRequest(BaseRequest):
         file_body = request_args.pop("file_body", None)
 
         # If there was a 'cookies' key, set it in the request
-        expected_cookies = _read_expected_cookies(session, rspec,
-                                                  test_block_config)
+        expected_cookies = _read_expected_cookies(session, rspec, test_block_config)
         if expected_cookies is not None:
-            logger.debug("Sending cookies %s in request",
-                         expected_cookies.keys())
+            logger.debug("Sending cookies %s in request", expected_cookies.keys())
             request_args.update(cookies=expected_cookies)
 
         # Check for redirects
@@ -522,19 +516,16 @@ class RestRequest(BaseRequest):
             # If there are open files, create a context manager around each so
             # they will be closed at the end of the request.
             with ExitStack() as stack:
-                stack.enter_context(
-                    _set_cookies_for_request(session, request_args))
+                stack.enter_context(_set_cookies_for_request(session, request_args))
 
                 # These are mutually exclusive
                 if file_body:
                     # Any headers will have been set in the above function
-                    file = stack.enter_context(
-                        open(bazel_path(file_body), "rb"))
+                    file = stack.enter_context(open(bazel_path(file_body), "rb"))
                     request_args.update(data=file)
                 else:
                     self._request_args.update(
-                        _get_file_arguments(request_args, stack,
-                                            test_block_config)
+                        _get_file_arguments(request_args, stack, test_block_config)
                     )
 
                 headers = self._request_args.get("headers", {})

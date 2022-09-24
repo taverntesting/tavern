@@ -135,12 +135,6 @@ load(
 
 _py_image_repos()
 
-load("//bazel:skaffold.bzl", "get_skaffold")
-
-get_skaffold(
-    name = "skaffold",
-)
-
 load("@io_bazel_rules_docker//container:container.bzl", "container_pull")
 
 container_pull(
