@@ -111,3 +111,10 @@ alias(
     name = "black",
     actual = "@tavern_pip_black//:rules_python_wheel_entry_point_black",
 )
+
+load("//bazel:lint.bzl", "file_count_rule")
+
+file_count_rule(
+    name = "hi",
+    deps = [":tavern_wheel"],
+)
