@@ -1,0 +1,78 @@
+test_name: Dataset Testing
+
+strict:
+  - headers:on
+  - json:off
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Create Dataset
+    request:
+      url: "{domain}/flow/2/{accountID}/dataset"
+      method: POST
+      headers:
+        Content-Type: application/json
+        X-Access-Key-Id: "{X-Access-Key-Id}"
+        X-Access-Key-Secret: "{X-Access-Key-Secret}"
+      json:
+        Name: "Example_dataset"
+        Description: "hello"
+    response:
+      status_code: 200
+      json:
+        Type: Dataset
+        Name: "Example_dataset"
+        Status: Live
+      save:
+        json:
+          id: _id
+
+
+
+  - name: Update Dataset
+    request:
+      json:
+        Name: "105"
+      method: PUT
+      headers:
+        Content-Type: application/json
+        X-Access-Key-Id: "{X-Access-Key-Id}"
+        X-Access-Key-Secret: "{X-Access-Key-Secret}"
+      url: "{domain}/flow/2/{accountID}/dataset/{id}"
+
+    response:
+      status_code: 200
+
+
+
+
+  - name: Read Dataset
+    request:
+      url: "{domain}/flow/2/{accountID}/dataset/{id}"
+      method: GET
+      headers:
+        Content-Type: application/json
+        X-Access-Key-Id: "{X-Access-Key-Id}"
+        X-Access-Key-Secret: "{X-Access-Key-Secret}"
+
+    response:
+      status_code: 200
+
+
+
+
+  - name: Delete Dataset
+    request:
+      url: "{domain}/flow/2/{accountID}/dataset/{id}"
+      method: DELETE
+      headers:
+        Content-Type: application/json
+        X-Access-Key-Id: "{X-Access-Key-Id}"
+        X-Access-Key-Secret: "{X-Access-Key-Secret}"
+    response:
+      status_code: 200
+
+
+
