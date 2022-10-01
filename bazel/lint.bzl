@@ -25,9 +25,22 @@ def _file_count_aspect_impl(target, ctx):
             ctx.actions.run(
                 outputs = [flake8_out],
                 inputs = srcs + [ctx.file._flake8_config],
-                executable = ctx.files._linter[1],
+                executable = ctx.files._flake8[1],
                 arguments = ["--tee", "--config", ctx.file._flake8_config.path, "--output-file", flake8_out.path] + src_paths,
                 mnemonic = "Flake8",
+            )
+
+            location = ctx.expand_location("$(locations @tavern_pip_black//:rules_python_wheel_entry_point_black)", [ctx.attr._black])
+            location = location.split(" ")[0]
+
+            black_out = ctx.actions.declare_file(ctx.rule.attr.name + ".black")
+            ctx.actions.run_shell(
+                outputs = [black_out],
+                inputs = srcs,
+                tools = ctx.files._black,
+                command = """
+                {0} --check {1} | tee {2}
+                """.format(location, " ".join(src_paths), black_out.path),
             )
 
             return [
@@ -46,9 +59,13 @@ file_count_aspect = aspect(
     implementation = _file_count_aspect_impl,
     attr_aspects = ["deps"],
     attrs = {
-        "_linter": attr.label(
+        "_flake8": attr.label(
             allow_files = True,
             default = "@tavern_pip_flake8//:rules_python_wheel_entry_point_flake8",
+        ),
+        "_black": attr.label(
+            allow_files = True,
+            default = "@tavern_pip_black//:rules_python_wheel_entry_point_black",
         ),
         "_flake8_config": attr.label(
             allow_single_file = True,
