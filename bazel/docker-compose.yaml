@@ -1,29 +1,29 @@
 services:
   example-advanced:
-    image: taverntesting.github.io/integration-test-containers:example-advanced
+    image: bazel/example/advanced:server_image
     ports:
       - 5000:5000
   example-cookies:
-    image: taverntesting.github.io/integration-test-containers:example-cookies
+    image: bazel/example/cookies:server_image
     ports:
       - 5001:5000
   integration:
-    image: taverntesting.github.io/integration-test-containers:integration
+    image: bazel/tests/integration:server_image
     ports:
       - 5003:5000
   example-components:
-    image: taverntesting.github.io/integration-test-containers:example-components
+    image: bazel/example/components:server_image
     ports:
       - 5009:5000
   #  example-simple:
-  #    image: taverntesting.github.io/integration-test-containers:example-simple
+  #    image: bazel/example/simple:server_image
   #  example-remember:
-  #    image: taverntesting.github.io/integration-test-containers:example-remember
+  #    image: bazel/example/remember:server_image
   #  example-hooks:
-  #    image: taverntesting.github.io/integration-test-containers:example-hooks
+  #    image: bazel/example/hooks:server_image
 
   example-mqtt-server:
-    image: taverntesting.github.io/integration-test-containers:example-mqtt-server
+    image: bazel/example/mqtt:server_image
     environment:
       DB_NAME: /data/db
     volumes:
@@ -31,7 +31,7 @@ services:
     ports:
       - 5002:5000
   example-mqtt-listener:
-    image: taverntesting.github.io/integration-test-containers:example-mqtt-listener
+    image: bazel/example/mqtt:listener_image
     environment:
       DB_NAME: /data/db
     volumes:
@@ -40,12 +40,12 @@ services:
       - broker
       - fluent
   broker:
-    image: taverntesting.github.io/integration-test-containers:example-mqtt-mosquitto
+    image: bazel/example/mqtt:mosquitto
     ports:
       - 9001:9001
       - 1883:1883
   fluent:
-    image: taverntesting.github.io/integration-test-containers:example-mqtt-fluentd
+    image: bazel/example/mqtt:fluentd
     ports:
       - 24224:24224
 
