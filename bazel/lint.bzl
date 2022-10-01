@@ -13,7 +13,6 @@ def _file_count_aspect_impl(target, ctx):
     if str(target.label).startswith("//") and ctx.rule.kind.startswith("py_"):
         # Make sure the rule has a srcs attribute.
         if hasattr(ctx.rule.attr, "srcs"):
-            report_out = ctx.actions.declare_file("lint_output_" + ctx.rule.attr.name)
             srcs = ctx.rule.attr.srcs
             srcs = [s.files for s in srcs]
 
@@ -22,32 +21,26 @@ def _file_count_aspect_impl(target, ctx):
 
             src_paths = [i.path for i in srcs]
 
-            location = ctx.expand_location("$(locations @tavern_pip_flake8//:rules_python_wheel_entry_point_flake8)", [ctx.attr._linter])
-            location = location.split(" ")[0]
-
-            ctx.actions.run_shell(
-                outputs = [report_out],
+            flake8_out = ctx.actions.declare_file(ctx.rule.attr.name + ".flake8")
+            ctx.actions.run(
+                outputs = [flake8_out],
                 inputs = srcs + [ctx.file._flake8_config],
-                tools = ctx.files._linter,
-                command = """
-                {0} {1} --config {2} --exit-zero | tee {3}
-                """.format(location, " ".join(src_paths), ctx.file._flake8_config.path, report_out.path),
+                executable = ctx.files._linter[1],
+                arguments = ["--tee", "--config", ctx.file._flake8_config.path, "--output-file", flake8_out.path] + src_paths,
+                mnemonic = "Flake8",
             )
 
-            report_out = depset([report_out], transitive = transitive)
-
             return [
-                OutputGroupInfo(
-                    report = report_out,
-                ),
                 FileCountInfo(
-                    lint_out = report_out,
+                    lint_out = depset([flake8_out], transitive = transitive),
                 ),
             ]
 
-    return [FileCountInfo(
-        lint_out = depset([], transitive = transitive),
-    )]
+    return [
+        FileCountInfo(
+            lint_out = depset([], transitive = transitive),
+        ),
+    ]
 
 file_count_aspect = aspect(
     implementation = _file_count_aspect_impl,
@@ -81,9 +74,6 @@ def _file_count_rule_impl(ctx):
     )
 
     return [
-        DefaultInfo(
-            files = depset([report_total]),
-        ),
         OutputGroupInfo(
             report = depset([report_total]),
         ),
