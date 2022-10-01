@@ -5,7 +5,6 @@ significantly if/when a proper plugin system is implemented!
 """
 import logging
 
-import attr
 import stevedore
 
 from tavern.util.dict_util import format_keys

@@ -1,4 +1,7 @@
-exports_files(["pytest.ini"])
+exports_files([
+    "pytest.ini",
+    ".flake8",
+])
 
 load("@rules_python//python:packaging.bzl", "py_wheel")
 
@@ -115,6 +118,6 @@ alias(
 load("//bazel:lint.bzl", "file_count_rule")
 
 file_count_rule(
-    name = "hi",
+    name = "file_count",
     deps = [":tavern_wheel"],
 )
