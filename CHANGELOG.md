@@ -393,3 +393,5 @@ Also log the result from 'response' ext functions
 
 ##  2.0.0alpha13    Support ssl_context attributes which expose alpn (2022-08-29)
 
+##  2.0.0alpha14    Allow specifying an ext function to return all parametrized vals, not just sub-vals (2022-10-01)
+
