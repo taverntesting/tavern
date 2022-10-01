@@ -1,6 +1,7 @@
 import logging
 import logging.config
 
+import pytest
 import yaml
 
 from tavern.testutils.pytesthook.item import YamlItem
@@ -82,3 +83,14 @@ def pytest_runtest_setup(item):
         setup_logging()
 
     return False
+
+
+
+@pytest.fixture
+def get_publish_topic():
+    return "/device/123/echo"
+
+
+@pytest.fixture
+def     get_response_topic_suffix():
+    return "response"

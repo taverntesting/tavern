@@ -51,6 +51,33 @@ stages:
 
 ---
 
+test_name: Test mqtt message echo json formatted topic name
+
+marks:
+  - usefixtures:
+    - get_publish_topic
+    - get_response_topic_suffix
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - name: Echo json
+    mqtt_publish:
+      topic: '{get_publish_topic}'
+      json:
+        message: hello world
+    mqtt_response:
+      topic: '/device/123/echo/{get_response_topic_suffix}'
+      json:
+        message: hello world
+      timeout: 5
+      qos: 1
+
+---
+
 test_name: Test mqtt message echo json with non strict checking
 
 includes:
