@@ -1,4 +1,4 @@
-FileCountInfo = provider(
+LintOutputInfo = provider(
     fields = {
         "lint_out": "lint output",
     },
@@ -6,7 +6,7 @@ FileCountInfo = provider(
 
 def _file_count_aspect_impl(target, ctx):
     if hasattr(ctx.rule.attr, "deps"):
-        transitive = [dep[FileCountInfo].lint_out for dep in ctx.rule.attr.deps]
+        transitive = [dep[LintOutputInfo].lint_out for dep in ctx.rule.attr.deps]
     else:
         transitive = []
 
@@ -26,7 +26,7 @@ def _file_count_aspect_impl(target, ctx):
                 outputs = [flake8_out],
                 inputs = srcs + [ctx.file._flake8_config],
                 executable = ctx.files._flake8[1],
-                arguments = ["--tee", "--config", ctx.file._flake8_config.path, "--output-file", flake8_out.path] + src_paths,
+                arguments = ["--tee", "--exit-zero", "--config", ctx.file._flake8_config.path, "--output-file", flake8_out.path] + src_paths,
                 mnemonic = "Flake8",
             )
 
@@ -39,18 +39,18 @@ def _file_count_aspect_impl(target, ctx):
                 inputs = srcs,
                 tools = ctx.files._black,
                 command = """
-                {0} --check {1} | tee {2}
+                {0} --quiet --diff --check {1} | tee {2}
                 """.format(location, " ".join(src_paths), black_out.path),
             )
 
             return [
-                FileCountInfo(
-                    lint_out = depset([flake8_out], transitive = transitive),
+                LintOutputInfo(
+                    lint_out = depset([flake8_out, black_out], transitive = transitive),
                 ),
             ]
 
     return [
-        FileCountInfo(
+        LintOutputInfo(
             lint_out = depset([], transitive = transitive),
         ),
     ]
@@ -77,14 +77,18 @@ file_count_aspect = aspect(
 def _file_count_rule_impl(ctx):
     all_lint_out = []
     for dep in ctx.attr.deps:
-        all_lint_out += dep[FileCountInfo].lint_out.to_list()
+        all_lint_out += dep[LintOutputInfo].lint_out.to_list()
 
     report_total = ctx.actions.declare_file(ctx.attr.name + ".report_total")
 
     ctx.actions.run_shell(
         outputs = [report_total],
         inputs = all_lint_out,
-        command = "cat {0} | tee {1}".format(
+        command = """
+        echo '{0}'
+
+        cat {0} | tee {1}
+        """.format(
             " ".join([i.path for i in all_lint_out]),
             report_total.path,
         ),
