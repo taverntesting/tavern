@@ -7,6 +7,7 @@ py_library(
     imports = [".."],
     visibility = ["//visibility:public"],
     deps = [
+        "//tavern/_core/internal",
         "@tavern_pip_pytest//:pkg",
         "@tavern_pip_pyyaml//:pkg",
     ],
@@ -40,7 +41,6 @@ container_bundle(
         "bazel/example/cookies:server_image": "//example/cookies:server_image",
         "bazel/example/hooks:server_image": "//example/hooks:server_image",
         "bazel/example/simple:server_image": "//example/simple:server_image",
-        "bazel/example/remember:server_image": "//example/remember:server_image",
         "bazel/example/mqtt:server_image": "//example/mqtt:server_image",
         "bazel/example/mqtt:listener_image": "//example/mqtt:listener_image",
         "bazel/example/mqtt:fluentd": "//example/mqtt:fluentd",

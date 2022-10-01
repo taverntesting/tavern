@@ -5,13 +5,14 @@ from unittest.mock import Mock, patch
 import uuid
 
 from copy import deepcopy
+import attr
 import paho.mqtt.client as paho
 import pytest
 import requests
 
+from tavern._core import exceptions
+from tavern._core.run import run_test
 from tavern._plugins.mqtt.client import MQTTClient
-from tavern.core import run_test
-from tavern.util import exceptions
 
 
 @pytest.fixture(name="fulltest")
@@ -170,7 +171,7 @@ class TestIncludeStages:
         newtest["includes"] = stage_includes
         newtest["stages"].insert(0, {"type": "ref", "id": "my_external_stage"})
 
-        includes["stages"] = fake_stages
+        includes = attr.evolve(includes, stages=fake_stages)
 
         with patch(
             "tavern._plugins.rest.request.requests.Session.request",
@@ -190,7 +191,7 @@ class TestIncludeStages:
         newtest["includes"] = stage_includes
         newtest["stages"].insert(0, {"type": "ref", "id": "my_external_stage"})
 
-        includes["stages"] = fake_stages
+        includes = attr.evolve(includes, stages=fake_stages)
 
         with pytest.raises(exceptions.DuplicateStageDefinitionError):
             with patch(
@@ -273,7 +274,7 @@ class TestDelay:
             "tavern._plugins.rest.request.requests.Session.request",
             return_value=mock_response,
         ) as pmock:
-            with patch("tavern.util.delay.time.sleep") as smock:
+            with patch("tavern._core.testhelpers.time.sleep") as smock:
                 run_test("heif", fulltest, includes)
 
         assert pmock.called
@@ -290,7 +291,7 @@ class TestDelay:
             "tavern._plugins.rest.request.requests.Session.request",
             return_value=mock_response,
         ) as pmock:
-            with patch("tavern.util.delay.time.sleep") as smock:
+            with patch("tavern._core.testhelpers.time.sleep") as smock:
                 run_test("heif", fulltest, includes)
 
         assert pmock.called
@@ -399,7 +400,9 @@ class TestFormatMQTTVarsJson:
     def fix_mqtt_publish_test(self):
         spec = {
             "test_name": "An mqtt test with a single stage",
-            "mqtt": {"connect": "localhost"},
+            "paho-mqtt": {
+                "connect": {"host": "localhost"},
+            },
             "stages": [
                 {
                     "name": "step 1",
@@ -434,11 +437,13 @@ class TestFormatMQTTVarsJson:
         mock_response = Mock(**mockargs)
 
         fake_client = MagicMock(
-            spec=MQTTClient, message_received=Mock(return_value=mock_response)
+            spec=MQTTClient,
+            message_received=Mock(return_value=mock_response),
         )
 
-        with patch("tavern._plugins.mqtt.client.paho.Client", fake_client), patch(
-            "tavern.core.get_extra_sessions", return_value={"paho-mqtt": fake_client}
+        with patch(
+            "tavern._core.run.get_extra_sessions",
+            return_value={"paho-mqtt": fake_client},
         ) as pmock:
             run_test("heif", fulltest, includes)
 
@@ -452,7 +457,9 @@ class TestFormatMQTTVarsPlain:
     def fix_mqtt_publish_test(self):
         spec = {
             "test_name": "An mqtt test with a single stage",
-            "mqtt": {"connect": "localhost"},
+            "paho-mqtt": {
+                "connect": {"host": "localhost"},
+            },
             "stages": [
                 {
                     "name": "step 1",
@@ -484,8 +491,9 @@ class TestFormatMQTTVarsPlain:
             spec=MQTTClient, message_received=Mock(return_value=mock_response)
         )
 
-        with patch("tavern._plugins.mqtt.client.paho.Client", fake_client), patch(
-            "tavern.core.get_extra_sessions", return_value={"paho-mqtt": fake_client}
+        with patch(
+            "tavern._core.run.get_extra_sessions",
+            return_value={"paho-mqtt": fake_client},
         ) as pmock:
             run_test("heif", fulltest, includes)
 

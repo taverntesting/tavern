@@ -1,0 +1,350 @@
+---
+name: Test schema
+desc: Matches test blocks
+
+# http://www.kuwata-lab.com/kwalify/ruby/users-guide.01.html
+# https://pykwalify.readthedocs.io/en/unstable/validation-rules.html
+
+schema;any_request_json:
+  func: validate_request_json
+  type: any
+  required: false
+
+schema;any_json_with_ext:
+  func: validate_json_with_ext
+  type: any
+  required: false
+
+schema;any_map:
+  func: validate_request_json
+  type: map
+  required: false
+  mapping:
+    re;(.*):
+      type: any
+
+schema;stage:
+  type: map
+  required: true
+  func: verify_oneof_id_name
+  mapping:
+    id:
+      type: str
+      required: false
+      unique: true
+    name:
+      type: str
+      required: true
+      unique: true
+
+    max_retries:
+      type: any
+      func: retry_variable
+      required: false
+      unique: true
+
+    skip:
+      type: any
+      func: bool_variable
+      required: false
+
+    only:
+      type: any
+      func: bool_variable
+      required: false
+
+    delay_before:
+      type: any
+      func: float_variable
+      required: false
+    delay_after:
+      type: any
+      func: float_variable
+      required: false
+
+    mqtt_publish:
+      type: map
+      required: false
+      mapping:
+        topic:
+          type: str
+          required: true
+        payload:
+          # Only a string
+          type: str
+          required: false
+        json:
+          include: any_json_with_ext
+        qos:
+          type: any
+          func: int_variable
+          required: false
+        retain:
+          type: any
+          func: bool_variable
+          required: false
+
+    mqtt_response:
+      type: map
+      required: false
+      mapping:
+        unexpected:
+          type: bool
+          required: false
+        topic:
+          type: str
+          required: true
+        payload:
+          type: any
+          required: false
+        json:
+          include: any_json_with_ext
+        timeout:
+          type: any
+          func: float_variable
+          required: false
+        qos:
+          type: any
+          func: int_variable
+          required: false
+          enum:
+            - 0
+            - 1
+            - 2
+        verify_response_with:
+          func: validate_extensions
+          type: any
+
+        save:
+          include: any_json_with_ext
+          mapping:
+            json:
+              type: any
+
+    request:
+      type: map
+      required: false
+      mapping:
+        url:
+          type: str
+          required: true
+
+        follow_redirects:
+          type: bool
+          required: false
+
+        re;(params|headers):
+          include: any_map
+
+        data:
+          type: any
+          func: validate_data_key
+          required: false
+
+        stream:
+          type: any
+          func: bool_variable
+          required: false
+
+        auth:
+          func: validate_json_with_ext
+          type: seq
+          required: false
+          sequence:
+            - type: str
+
+        cookies:
+          type: seq
+          required: false
+          sequence:
+            - type: str
+            - type: map
+              mapping:
+                re;(.*):
+                  type: str
+
+        json:
+          include: any_json_with_ext
+
+        body:
+          type: any
+          func: raise_body_error
+
+        files:
+          required: false
+          type: map
+          mapping:
+            re;(.*):
+              type: any
+          func: validate_file_spec
+
+        file_body:
+          type: str
+          required: false
+
+        method:
+          type: str
+          func: validate_http_method
+
+        timeout:
+          type: any
+          required: false
+          func: validate_timeout_tuple_or_float
+
+        cert:
+          func: validate_cert_tuple_or_str
+          type: any
+          required: false
+
+        verify:
+          type: any
+          func: validate_verify_bool_or_str
+          required: false
+
+        clear_session_cookies:
+          type: any
+          func: bool_variable
+          required: false
+
+    response:
+      type: map
+      required: false
+      mapping:
+        strict:
+          func: check_strict_key
+          type: any
+
+        status_code:
+          type: any
+          func: validate_status_code_is_int_or_list_of_ints
+
+        cookies:
+          type: seq
+          required: false
+          sequence:
+            - type: str
+              unique: true
+
+        re;(headers|redirect_query_params):
+          include: any_map
+
+        json:
+          include: any_json_with_ext
+
+        save:
+          include: any_json_with_ext
+          mapping:
+            re;(\$ext|json|headers|redirect_query_params):
+              type: any
+
+        verify_response_with:
+          func: validate_extensions
+          type: any
+
+schema;stage_ref:
+  type: map
+  required: true
+  mapping:
+    type:
+      required: true
+      type: str
+      pattern: ^ref$
+    id:
+      required: true
+      type: str
+
+type: map
+mapping:
+  test_name:
+    required: true
+    type: str
+
+  marks:
+    type: seq
+    matching: "any"
+    sequence:
+      - type: str
+        # bug? in pykwalify - this doesn't work
+        # unique: true
+      - type: map
+        mapping:
+          filterwarnings:
+            type: str
+
+          skipif:
+            type: str
+
+          usefixtures:
+            type: seq
+            # Depending on what is actually given for usefixtures this function
+            # may or may not be called. I think this is a bug in pykwalify.
+            # See pytesthook.py
+            func: check_usefixtures
+            sequence:
+              - type: str
+                required: true
+
+          parametrize:
+            type: map
+            func: check_parametrize_marks
+            mapping:
+              key:
+                type: any
+                required: true
+              vals:
+                type: seq
+                required: true
+                sequence:
+                  - type: str
+                  - type: bool
+                  - type: int
+                  - type: float
+                  - type: seq
+                    sequence:
+                      - type: any
+                  - include: any_map
+
+  _xfail:
+    type: str
+    enum:
+      - verify
+      - run
+
+  strict:
+    func: check_strict_key
+    type: any
+
+  includes:
+    required: false
+    type: seq
+    sequence:
+      - type: map
+        required: false
+        mapping:
+          name:
+            required: true
+            type: str
+
+          description:
+            required: true
+            type: str
+
+          variables:
+            type: map
+            required: false
+            mapping:
+              re;(.*):
+                type: any
+
+          stages:
+            type: seq
+            required: false
+            sequence:
+              - include: stage
+
+  stages:
+    type: seq
+    required: true
+    sequence:
+      - include: stage
+      - include: stage_ref

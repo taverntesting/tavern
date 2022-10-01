@@ -12,11 +12,9 @@ py_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//tavern",
+        "//tavern/_core",
+        "//tavern/_core/pytest",
         "//tavern/bazelutil",
-        "//tavern/request",
-        "//tavern/response",
-        "//tavern/testutils/pytesthook",
-        "//tavern/util",
         "@tavern_pip_python_box//:pkg",
         "@tavern_pip_requests//:pkg",
     ],

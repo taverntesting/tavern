@@ -3,10 +3,13 @@ import os
 import tempfile
 from unittest.mock import Mock
 
+import attr
 import pytest
 import requests
 from requests.cookies import RequestsCookieJar
 
+from tavern._core import exceptions
+from tavern._core.extfunctions import update_from_ext
 from tavern._plugins.rest.request import (
     RestRequest,
     _check_allow_redirects,
@@ -14,8 +17,6 @@ from tavern._plugins.rest.request import (
     _read_expected_cookies,
     get_request_args,
 )
-from tavern.util import exceptions
-from tavern.util.extfunctions import update_from_ext
 
 
 @pytest.fixture(name="req")
@@ -48,7 +49,7 @@ class TestRequests(object):
 
     def test_missing_format(self, req, includes):
         """All format variables should be present"""
-        del includes["variables"]["code"]
+        del includes.variables["code"]
 
         with pytest.raises(exceptions.MissingFormatError):
             RestRequest(Mock(), req, includes)
@@ -83,7 +84,7 @@ class TestHttpRedirects(object):
     ):
         """Globally enable following redirects in test"""
 
-        includes["follow_redirects"] = do_follow
+        includes = attr.evolve(includes, follow_redirects=do_follow)
 
         assert _check_allow_redirects(req, includes) == do_follow
 
@@ -147,7 +148,7 @@ class TestCookies(object):
         cookiejar.set("a", 2)
 
         req["cookies"] = ["{cookiename}"]
-        includes["variables"]["cookiename"] = "a"
+        includes.variables["cookiename"] = "a"
 
         mock_session = Mock(spec=requests.Session, cookies=cookiejar)
 
@@ -303,8 +304,7 @@ class TestRequestArgs(object):
 
 
 class TestExtFunctions:
-    @pytest.mark.parametrize("merge_values", (True, False, None))
-    def test_get_from_function(self, req, merge_values):
+    def test_get_from_function(self, req, includes):
         """Make sure ext functions work in request
 
         This is a bit of a silly example because we're passing a dictionary
@@ -319,12 +319,9 @@ class TestExtFunctions:
             **original_json,
         }
 
-        update_from_ext(req, ["json"], {"merge_ext_values": merge_values})
+        update_from_ext(req, ["json"])
 
-        if merge_values:
-            assert req["json"] == dict(**to_copy, **original_json)
-        else:
-            assert req["json"] == to_copy
+        assert req["json"] == dict(**to_copy, **original_json)
 
 
 class TestOptionalDefaults:
@@ -347,7 +344,7 @@ class TestFileBody:
 
         with tempfile.NamedTemporaryFile(encoding="utf8", mode="w") as tmpin:
             tmpin.write("OK")
-            includes["variables"]["tmpfile_loc"] = tmpin.name
+            includes.variables["tmpfile_loc"] = tmpin.name
 
             req["file_body"] = "{tmpfile_loc}"
 
@@ -388,7 +385,6 @@ class TestFileBody:
             req["file_body"] = tmpin.name
 
             args = get_request_args(req, includes)
-            print(args)
 
         assert args["file_body"] == tmpin.name
         assert args["headers"]["content-type"] == "application/x-tar"
@@ -464,7 +460,7 @@ class TestGetFiles(object):
         """Filenames should be formatted in short and long styles"""
 
         with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
-            includes["variables"]["tmpname"] = tfile.name
+            includes.variables["tmpname"] = tfile.name
             request_args = {"files": {"file1": tfile.name}}
 
             file_spec = _get_file_arguments(request_args, mock_stack, includes)

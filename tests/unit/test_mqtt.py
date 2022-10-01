@@ -1,13 +1,11 @@
-import contextlib
-import threading
 from unittest.mock import MagicMock, Mock, patch
 
 import paho.mqtt.client as paho
 import pytest
 
-from tavern._plugins.mqtt.client import MQTTClient, _handle_tls_args, _Subscription
+from tavern._core import exceptions
+from tavern._plugins.mqtt.client import MQTTClient, _handle_tls_args
 from tavern._plugins.mqtt.request import MQTTRequest
-from tavern.util import exceptions
 
 
 def test_host_required():
@@ -129,7 +127,7 @@ class TestRequests:
 
     def test_missing_format(self, req, includes):
         """All format variables should be present"""
-        del includes["variables"]["request_topic"]
+        del includes.variables["request_topic"]
 
         with pytest.raises(exceptions.MissingFormatError):
             MQTTRequest(Mock(), req, includes)

@@ -7,8 +7,8 @@ import sys
 # gazelle:ignore rules_python.python.runfiles
 from rules_python.python.runfiles import runfiles
 
-from tavern.internal.testutil import enable_default_tavern_extensions
-from tavern.testutils import pytesthook
+from tavern._core.internal.testutil import enable_default_tavern_extensions
+from tavern._core.pytest import hooks as pytesthook
 
 if __name__ == "__main__":
     enable_default_tavern_extensions()

@@ -37,15 +37,11 @@ py_wheel(
     visibility = ["//visibility:public"],
     deps = [
         "//tavern",
+        "//tavern/_core/pytest",
+        "//tavern/_core/schema",
         "//tavern/_plugins",
         "//tavern/_plugins/mqtt",
         "//tavern/_plugins/rest",
-        "//tavern/request",
-        "//tavern/response",
-        "//tavern/schemas",
-        "//tavern/testutils",
-        "//tavern/testutils/pytesthook",
-        "//tavern/util",
     ],
 )
 

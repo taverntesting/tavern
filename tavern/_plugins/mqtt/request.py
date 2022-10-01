@@ -4,11 +4,11 @@ import logging
 
 from box import Box
 
-from tavern.request.base import BaseRequest
-from tavern.util import exceptions
-from tavern.util.dict_util import check_expected_keys, format_keys
-from tavern.util.extfunctions import update_from_ext
-from tavern.util.report import attach_yaml
+from tavern._core import exceptions
+from tavern._core.dict_util import check_expected_keys, format_keys
+from tavern._core.extfunctions import update_from_ext
+from tavern._core.report import attach_yaml
+from tavern.request import BaseRequest
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ def get_publish_args(rspec, test_block_config):
         Anything else to do here?
     """
 
-    fspec = format_keys(rspec, test_block_config["variables"])
+    fspec = format_keys(rspec, test_block_config.variables)
 
     if "json" in rspec:
         if "payload" in rspec:
@@ -45,14 +45,14 @@ class MQTTRequest(BaseRequest):
         check_expected_keys(expected, rspec)
 
         publish_args = get_publish_args(rspec, test_block_config)
-        update_from_ext(publish_args, ["json"], test_block_config)
+        update_from_ext(publish_args, ["json"])
 
         self._prepared = functools.partial(client.publish, **publish_args)
 
         # Need to do this here because get_publish_args will modify the original
         # input, which we might want to use to format. No error handling because
         # all the error handling is done in the previous call
-        self._original_publish_args = format_keys(rspec, test_block_config["variables"])
+        self._original_publish_args = format_keys(rspec, test_block_config.variables)
 
         # TODO
         # From paho:

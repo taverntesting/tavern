@@ -371,3 +371,27 @@ Also log the result from 'response' ext functions
 
 ##  1.23.3          Allow specifying 'unexpected' messages in MQTT to fail a test (2022-06-26)
 
+##  2.0.0alpha3     Bump version: 2.0.0alpha2 → 2.0.0alpha3 (2021-10-17)
+
+##  2.0.0alpha4     Bump version: 2.0.0alpha3 → 2.0.0alpha4 (2021-11-06)
+
+##  2.0.0alpha5     Bump version: 2.0.0alpha4 → 2.0.0alpha5 (2021-12-12)
+
+##  2.0.0alpha6     Bump version: 2.0.0alpha5 → 2.0.0alpha6 (2021-12-12)
+
+##  2.0.0alpha7     Bump version: 2.0.0alpha6 → 2.0.0alpha7 (2021-12-12)
+
+##  2.0.0alpha8     Bump version: 2.0.0alpha7 → 2.0.0alpha8 (2022-01-09)
+
+##  2.0.0alpha9     Allow MQTT responses to come in out of order (2022-06-12)
+
+#  2.0.0alpha10    Allow 'unexpected' mqtt messages (2022-06-26)
+
+##  2.0.0alpha11    Update 'faker' (2022-07-30)
+
+##  2.0.0alpha12    Bind all MQTT Client callbacks (2022-08-29)
+
+##  2.0.0alpha13    Support ssl_context attributes which expose alpn (2022-08-29)
+
+##  2.0.0alpha14    Allow specifying an ext function to return all parametrized vals, not just sub-vals (2022-10-01)
+

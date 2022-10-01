@@ -15,11 +15,10 @@ def tavern_test(filename, images, extra_data = [], extra_deps = [], extra_args =
     base_deps = [
         "//tavern",
         "//tavern/_plugins/mqtt",
-        "//tavern/internal",
+        "//tavern/_core/internal",
         "//tavern/_plugins/rest",
         "@rules_python//python/runfiles",
-        "//tavern/testutils",
-        "//tavern/testutils/pytesthook",
+        "//tavern/_core/pytest",
         "@tavern_pip_colorlog//:pkg",
         "@tavern_pip_docker//:pkg",
         "@tavern_pip_docker_compose//:rules_python_wheel_entry_point_docker-compose",
@@ -32,7 +31,6 @@ def tavern_test(filename, images, extra_data = [], extra_deps = [], extra_args =
         "-x",
         "--color",
         "yes",
-        "--tavern-merge-ext-function-values",
     ]
 
     image_names = "image_names_for_" + filename + ".json"

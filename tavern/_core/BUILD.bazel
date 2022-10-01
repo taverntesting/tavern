@@ -1,0 +1,32 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+py_library(
+    name = "_core",
+    srcs = [
+        "__init__.py",
+        "dict_util.py",
+        "exceptions.py",
+        "extfunctions.py",
+        "formatted_str.py",
+        "general.py",
+        "jmesutils.py",
+        "loader.py",
+        "plugins.py",
+        "report.py",
+        "run.py",
+        "stage_lines.py",
+        "strict_util.py",
+        "testhelpers.py",
+    ],
+    imports = ["../.."],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@tavern_pip_allure_python_commons//:pkg",
+        "@tavern_pip_attrs//:pkg",
+        "@tavern_pip_jmespath//:pkg",
+        "@tavern_pip_pytest//:pkg",
+        "@tavern_pip_python_box//:pkg",
+        "@tavern_pip_pyyaml//:pkg",
+        "@tavern_pip_stevedore//:pkg",
+    ],
+)

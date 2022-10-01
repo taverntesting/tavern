@@ -1,0 +1,26 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+py_library(
+    name = "pytest",
+    srcs = [
+        "__init__.py",
+        "config.py",
+        "error.py",
+        "file.py",
+        "hooks.py",
+        "item.py",
+        "newhooks.py",
+        "util.py",
+    ],
+    imports = ["../../.."],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//tavern/_core",
+        "//tavern/_core/schema",
+        "@tavern_pip_attrs//:pkg",
+        "@tavern_pip_py//:pkg",
+        "@tavern_pip_pytest//:pkg",
+        "@tavern_pip_python_box//:pkg",
+        "@tavern_pip_pyyaml//:pkg",
+    ],
+)

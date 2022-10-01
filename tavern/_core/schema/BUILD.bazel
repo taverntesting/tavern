@@ -1,0 +1,23 @@
+load("@rules_python//python:defs.bzl", "py_library")
+
+py_library(
+    name = "schema",
+    srcs = [
+        "__init__.py",
+        "extensions.py",
+        "files.py",
+        "jsonschema.py",
+    ],
+    data = [
+        ":tests.jsonschema.yaml",
+        ":tests.schema.yaml",
+    ],
+    imports = ["../.."],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "//tavern/_core",
+        "@tavern_pip_jsonschema//:pkg",
+        "@tavern_pip_pykwalify//:pkg",
+        "@tavern_pip_pyyaml//:pkg",
+    ],
+)

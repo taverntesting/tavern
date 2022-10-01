@@ -1,15 +1,15 @@
+import contextlib
 import os
 import tempfile
-
-import contextlib
-import pytest
 from textwrap import dedent
+
+import pytest
 import yaml
 
-from tavern.plugins import load_plugins
-from tavern.schemas.files import load_schema_file, verify_tests
-from tavern.util.exceptions import BadSchemaError
-from tavern.util.loader import load_single_document_yaml
+from tavern._core.exceptions import BadSchemaError
+from tavern._core.loader import load_single_document_yaml
+from tavern._core.plugins import load_plugins
+from tavern._core.schema.files import verify_tests
 
 
 @pytest.fixture(autouse=True)
@@ -112,7 +112,7 @@ class TestTimeout:
 
 
 class TestCert:
-    @pytest.mark.parametrize("correct_value", ("a", ("a", "b"), ["a", "b"]))
+    @pytest.mark.parametrize("correct_value", ("a", ["a", "b"]))
     def test_cert_as_string_tuple_list(self, test_dict, correct_value):
         test_dict["stages"][0]["request"]["cert"] = correct_value
         verify_tests(test_dict)

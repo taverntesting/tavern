@@ -13,13 +13,13 @@ import requests
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
 
+from tavern._core import exceptions
+from tavern._core.dict_util import check_expected_keys, deep_dict_merge, format_keys
+from tavern._core.extfunctions import update_from_ext
+from tavern._core.general import valid_http_methods
+from tavern._core.report import attach_yaml
 from tavern.bazelutil import bazel_path
-from tavern.request.base import BaseRequest
-from tavern.util import exceptions
-from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
-from tavern.util.extfunctions import update_from_ext
-from tavern.util.general import valid_http_methods
-from tavern.util.report import attach_yaml
+from tavern.request import BaseRequest
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +84,7 @@ def get_request_args(rspec, test_block_config):
                 if i.lower() != "content-type"
             }
 
-    fspec = format_keys(rspec, test_block_config["variables"])
+    fspec = format_keys(rspec, test_block_config.variables)
 
     if fspec["method"] not in valid_http_methods:
         raise exceptions.BadSchemaError(
@@ -236,7 +236,7 @@ def _check_allow_redirects(rspec, test_block_config):
     allow_redirects = False
 
     # Then check to see if we should follow redirects based on settings
-    global_follow_redirects = test_block_config.get("follow_redirects")
+    global_follow_redirects = test_block_config.follow_redirects
     if global_follow_redirects is not None:
         allow_redirects = global_follow_redirects
 
@@ -272,7 +272,7 @@ def _read_expected_cookies(session, rspec, test_block_config):
     # it depends on the state of the session
     existing_cookies = session.cookies.get_dict()
     cookies_to_use = format_keys(
-        rspec.get("cookies", None), test_block_config["variables"]
+        rspec.get("cookies", None), test_block_config.variables
     )
 
     if cookies_to_use is None:
@@ -395,7 +395,7 @@ def guess_filespec(filespec, stack, test_block_config):
 
     filepath, content_type, encoding = _read_filespec(filespec)
 
-    filepath = format_keys(filepath, test_block_config["variables"])
+    filepath = format_keys(filepath, test_block_config.variables)
     filename = os.path.basename(filepath)
 
     # a 2-tuple ('filename', fileobj)
@@ -452,14 +452,8 @@ class RestRequest(BaseRequest):
                 spec. Only valid keyword args to requests can be passed
         """
 
-        if "meta" in rspec:
-            meta = rspec.pop("meta")
-            if meta and "clear_session_cookies" in meta:
-                warnings.warn(
-                    "The 'clear_session_cookies' key will move directly into the 'request' block in Tavern 2.0",
-                    FutureWarning,
-                )
-                session.cookies.clear_session_cookies()
+        if rspec.pop("clear_session_cookies", False):
+            session.cookies.clear_session_cookies()
 
         expected = {
             "method",
@@ -486,7 +480,6 @@ class RestRequest(BaseRequest):
         update_from_ext(
             request_args,
             RestRequest.optional_in_file,
-            test_block_config,
         )
 
         # Used further down, but pop it asap to avoid unwanted side effects

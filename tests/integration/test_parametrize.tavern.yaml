@@ -1,5 +1,48 @@
 ---
 
+test_name: Test parametrizing using 'vals' directly and not in the list
+
+marks:
+  - parametrize:
+      key: mycoolvalue
+      vals:
+        $ext:
+          function: ext_functions:return_list_vals
+
+stages:
+  - name: Echo back parametrized value
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json: !force_format_include "{mycoolvalue}"
+    response:
+      status_code: 200
+      json: !force_format_include "{tavern.request_vars.json}"
+
+---
+
+test_name: Test parametrizing using 'vals' directly and not in the list, list key
+
+marks:
+  - parametrize:
+      key:
+        - mycoolvalue
+      vals:
+        $ext:
+          function: ext_functions:return_list_vals
+
+stages:
+  - name: Echo back parametrized value
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json: !force_format_include "{mycoolvalue}"
+    response:
+      status_code: 200
+      json: !force_format_include "{tavern.request_vars.json}"
+
+---
+
 test_name: Test echo parametrized
 
 includes:
@@ -350,64 +393,66 @@ stages:
       json:
         value: "{fruit}-{edible}_{first_half}-{second_half}"
 
----
+# Now fails at collection time
+#---
+#
+#test_name: Test failing when key is a list and vals isn't
+#
+#_xfail: verify
+#
+#includes:
+#  - !include common.yaml
+#
+#marks:
+#  - parametrize:
+#      key:
+#        - edible
+#        - fruit
+#      vals:
+#        - fresh
+#        - orange
+#
+#stages:
+#  - name: Echo back a unicode value and make sure it matches
+#    request:
+#      url: "{host}/echo"
+#      method: POST
+#      json:
+#        value: "{fruit}-{edible}"
+#    response:
+#      status_code: 200
+#      json:
+#        value: "{fruit}-{edible}-nope"
 
-test_name: Test failing when key is a list and vals isn't
-
-_xfail: verify
-
-includes:
-  - !include common.yaml
-
-marks:
-  - parametrize:
-      key:
-        - edible
-        - fruit
-      vals:
-        - fresh
-        - orange
-
-stages:
-  - name: Echo back a unicode value and make sure it matches
-    request:
-      url: "{host}/echo"
-      method: POST
-      json:
-        value: "{fruit}-{edible}"
-    response:
-      status_code: 200
-      json:
-        value: "{fruit}-{edible}-nope"
-
----
-
-test_name: Test failing when keys and values list lengths do not match
-
-_xfail: verify
-
-includes:
-  - !include common.yaml
-
-marks:
-  - parametrize:
-      key:
-        - edible
-        - fruit
-      vals:
-        - [fresh]
-
-stages:
-  - name: Echo back a unicode value and make sure it matches
-    request:
-      url: "{host}/echo"
-      method: POST
-      json:
-        value: "{fruit}-{edible}"
-    response:
-      status_code: 200
-      json:
-        value: "{fruit}-{edible}-nope"
+# Now fails at collection time
+#---
+#
+#test_name: Test failing when keys and values list lengths do not match
+#
+#_xfail: verify
+#
+#includes:
+#  - !include common.yaml
+#
+#marks:
+#  - parametrize:
+#      key:
+#        - edible
+#        - fruit
+#      vals:
+#        - [fresh]
+#
+#stages:
+#  - name: Echo back a unicode value and make sure it matches
+#    request:
+#      url: "{host}/echo"
+#      method: POST
+#      json:
+#        value: "{fruit}-{edible}"
+#    response:
+#      status_code: 200
+#      json:
+#        value: "{fruit}-{edible}-nope"
 
 ---
 

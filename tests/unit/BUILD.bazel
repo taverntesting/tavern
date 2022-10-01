@@ -11,13 +11,11 @@ py_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//tavern",
+        "//tavern/_core/internal",
+        "//tavern/_core/pytest",
+        "//tavern/_core/schema",
         "//tavern/_plugins/mqtt",
         "//tavern/_plugins/rest",
-        "//tavern/internal",
-        "//tavern/schemas",
-        "//tavern/testutils",
-        "//tavern/testutils/pytesthook",
-        "//tavern/util",
         "//tests:conftest",  # keep
         "@tavern_pip_faker//:pkg",
         "@tavern_pip_paho_mqtt//:pkg",

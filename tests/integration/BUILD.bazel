@@ -12,6 +12,7 @@ py_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "@tavern_pip_flask//:pkg",
+        "@tavern_pip_itsdangerous//:pkg",
         "@tavern_pip_pyjwt//:pkg",
         "@tavern_pip_pytest//:pkg",
     ],
