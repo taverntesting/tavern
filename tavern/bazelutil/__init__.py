@@ -4,7 +4,7 @@ import os
 def bazel_path(inpath):
     try:
         # gazelle:ignore rules_python.python.runfiles
-        from rules_python.python.runfiles import runfiles
+        from rules_python.python.runfiles import runfiles  # noqa
     except ImportError:
         return inpath
     else:
