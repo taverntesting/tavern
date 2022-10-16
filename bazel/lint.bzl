@@ -6,7 +6,7 @@ LintOutputInfo = provider(
 
 def _file_count_aspect_impl(target, ctx):
     if hasattr(ctx.rule.attr, "deps"):
-        transitive = [dep[LintOutputInfo].lint_out for dep in ctx.rule.attr.deps]
+        transitive = [dep[LintOutputInfo].lint_out for dep in ctx.rule.attr.deps if dep[LintOutputInfo] != None]
     else:
         transitive = []
 
