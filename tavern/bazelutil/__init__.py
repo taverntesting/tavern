@@ -1,4 +1,4 @@
-import os
+import os.path
 
 
 def bazel_path(inpath):
@@ -8,6 +8,8 @@ def bazel_path(inpath):
     except ImportError:
         return inpath
     else:
+        r = runfiles.Create()
+
+        # TEST_BINARY is exported by bazel and actually points to the tavern YAML file
         yaml_path = os.path.dirname(os.getenv("TEST_BINARY"))
-        b = os.path.join(yaml_path, inpath)
-        return b
+        return r.Rlocation(os.path.join("tavern", yaml_path, inpath))
