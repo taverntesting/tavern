@@ -5,7 +5,11 @@ from pykwalify.types import is_bool, is_float, is_int
 
 from tavern._core import exceptions
 from tavern._core.exceptions import BadSchemaError
-from tavern._core.extfunctions import get_pykwalify_logger, import_ext_function
+from tavern._core.extfunctions import (
+    get_pykwalify_logger,
+    import_ext_function,
+    is_ext_function,
+)
 from tavern._core.general import valid_http_methods
 from tavern._core.loader import ApproxScalar, BoolToken, FloatToken, IntToken
 from tavern._core.strict_util import StrictLevel
@@ -155,7 +159,7 @@ def check_parametrize_marks(value, rule_obj, path):
     vals = value["vals"]
 
     # At this point we can assume vals is a list - check anyway
-    if not isinstance(vals, list):
+    if not (isinstance(vals, list) or is_ext_function(vals)):
         raise BadSchemaError("'vals' should be a list")
 
     if isinstance(key_or_keys, str):
@@ -164,42 +168,46 @@ def check_parametrize_marks(value, rule_obj, path):
     elif isinstance(key_or_keys, list):
         err_msg = "If 'key' is a list, 'vals' must be a list of lists where each list is the same length as 'key'"
 
-        # broken example:
-        # - parametrize:
-        #     key:
-        #       - edible
-        #       - fruit
-        #     vals:
-        #       a: b
-        if not isinstance(vals, list):
-            raise BadSchemaError(err_msg)
+        # Checking for whether the ext function actually returns the correct
+        # values has to be deferred until the point where the function is
+        # actually called
+        if not is_ext_function(vals):
+            # broken example:
+            # - parametrize:
+            #     key:
+            #       - edible
+            #       - fruit
+            #     vals:
+            #       a: b
+            if not isinstance(vals, list):
+                raise BadSchemaError(err_msg)
 
-        # example:
-        # - parametrize:
-        #     key:
-        #       - edible
-        #       - fruit
-        #     vals:
-        #       - [rotten, apple]
-        #       - [fresh, orange]
-        #       - [unripe, pear]
-        for v in vals:
-            if not isinstance(v, list):
-                # This catches the case like
-                #
-                # - parametrize:
-                #     key:
-                #       - edible
-                #       - fruit
-                #     vals:
-                #       - fresh
-                #       - orange
-                #
-                # This will parametrize 'edible' as [f, r, e, s, h] which is almost certainly not desired
-                raise BadSchemaError(err_msg)
-            if len(v) != len(key_or_keys):
-                # If the 'vals' list has more or less keys
-                raise BadSchemaError(err_msg)
+            # example:
+            # - parametrize:
+            #     key:
+            #       - edible
+            #       - fruit
+            #     vals:
+            #       - [rotten, apple]
+            #       - [fresh, orange]
+            #       - [unripe, pear]
+            for v in vals:
+                if not isinstance(v, list):
+                    # This catches the case like
+                    #
+                    # - parametrize:
+                    #     key:
+                    #       - edible
+                    #       - fruit
+                    #     vals:
+                    #       - fresh
+                    #       - orange
+                    #
+                    # This will parametrize 'edible' as [f, r, e, s, h] which is almost certainly not desired
+                    raise BadSchemaError(err_msg)
+                if len(v) != len(key_or_keys):
+                    # If the 'vals' list has more or less keys
+                    raise BadSchemaError(err_msg)
 
     else:
         raise BadSchemaError("'key' must be a string or a list")

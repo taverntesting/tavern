@@ -97,6 +97,8 @@ def _generate_parametrized_test_items(keys, vals_combination):
 
     # combination of keys and the values they correspond to
     for pair in zip(keys, vals_combination):
+        logger.debug("Pair: %s", pair)
+
         key, value = pair
         # NOTE: If test is invalid, test names generated here will be
         # very weird looking
@@ -104,6 +106,16 @@ def _generate_parametrized_test_items(keys, vals_combination):
             variables[key] = value
             flattened_values += [value]
         else:
+            if not isinstance(value, (list, tuple)):
+                value = [value]
+
+            if len(value) != len(key):
+                raise exceptions.BadSchemaError(
+                    "Invalid match between numbers of keys and number of values in parametrize mark ({} keys, {} values)".format(
+                        (key), (value)
+                    )
+                )
+
             for subkey, subvalue in zip(key, value):
                 variables[subkey] = subvalue
                 flattened_values += [subvalue]
@@ -164,8 +176,23 @@ def _get_parametrized_items(parent, test_spec, parametrize_marks, pytest_marks):
         doesn't appear to do anything. This could be removed?
     """
 
+    logger.debug("parametrize marks: %s", parametrize_marks)
+
     # These should be in the same order as specified in the input file
     vals = [i["parametrize"]["vals"] for i in parametrize_marks]
+
+    logger.debug("(possibly wrapped) values: %s", vals)
+
+    def unwrap_map(value):
+        if is_ext_function(value):
+            ext = value.pop("$ext")
+            f = get_wrapped_create_function(ext)
+            new_value = f()
+            return new_value
+
+        return value
+
+    vals = list(map(unwrap_map, vals))
 
     try:
         combined = itertools.product(*vals)
@@ -176,7 +203,16 @@ def _get_parametrized_items(parent, test_spec, parametrize_marks, pytest_marks):
 
     keys = [i["parametrize"]["key"] for i in parametrize_marks]
 
+    logger.debug("keys: %s", keys)
+
     for vals_combination in combined:
+        logger.debug("Generating test for %s/%s", keys, vals_combination)
+
+        if len(vals_combination) != len(keys):
+            raise exceptions.BadSchemaError(
+                "Invalid match between numbers of keys and number of values in parametrize mark"
+            )
+
         variables, inner_formatted = _generate_parametrized_test_items(
             keys, vals_combination
         )
