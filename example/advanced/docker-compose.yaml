@@ -1,8 +1,0 @@
----
-version: '2'
-
-services:
-  server:
-    image: tavern-example-advanced-server:${INTEGRATION_SERVER_TAG:-latest}
-    ports:
-      - "5000:5000"
