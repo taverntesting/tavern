@@ -401,3 +401,5 @@ Also log the result from 'response' ext functions
 
 ##  2.0.0alpha15    Bump version: 2.0.0alpha14 → 2.0.0alpha15 (2022-10-23)
 
+##  2.0.0alpha16    Bump version: 2.0.0alpha15 → 2.0.0alpha16 (2022-10-23)
+
