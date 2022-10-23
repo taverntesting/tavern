@@ -899,9 +899,9 @@ six==1.16.0 \
     #   python-dateutil
     #   tox
     #   websocket-client
-stevedore==4.0.0 \
-    --hash=sha256:87e4d27fe96d0d7e4fc24f0cbe3463baae4ec51e81d95fbe60d2474636e0c7d8 \
-    --hash=sha256:f82cc99a1ff552310d19c379827c2c64dd9f85a38bcd5559db2470161867b786
+stevedore==3.5.2 \
+    --hash=sha256:cf99f41fc0d5a4f185ca4d3d42b03be9011b0a1ec1a4ea1a282be1b4b306dcc2 \
+    --hash=sha256:fa2630e3d0ad3e22d4914aff2501445815b9a4467a6edc49387c667a38faf5bf
     # via -r ./requirements.in
 texttable==1.6.4 \
     --hash=sha256:42ee7b9e15f7b225747c3fa08f43c5d6c83bc899f80ff9bae9319334824076e9 \

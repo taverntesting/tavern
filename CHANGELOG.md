@@ -371,6 +371,8 @@ Also log the result from 'response' ext functions
 
 ##  1.23.3          Allow specifying 'unexpected' messages in MQTT to fail a test (2022-06-26)
 
+##  1.23.4          Update stevedore version (2022-10-23)
+
 ##  2.0.0alpha3     Bump version: 2.0.0alpha2 → 2.0.0alpha3 (2021-10-17)
 
 ##  2.0.0alpha4     Bump version: 2.0.0alpha3 → 2.0.0alpha4 (2021-11-06)
@@ -394,4 +396,8 @@ Also log the result from 'response' ext functions
 ##  2.0.0alpha13    Support ssl_context attributes which expose alpn (2022-08-29)
 
 ##  2.0.0alpha14    Allow specifying an ext function to return all parametrized vals, not just sub-vals (2022-10-01)
+
+##  2.0.0beta1      Bump version: 2.0.0alpha14 → 2.0.0beta1 (2022-10-23)
+
+##  2.0.0alpha15    Bump version: 2.0.0alpha14 → 2.0.0alpha15 (2022-10-23)
 
