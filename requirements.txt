@@ -636,8 +636,8 @@ packaging==21.3 \
     #   docker
     #   pytest
     #   tox
-paho-mqtt==1.6.1 \
-    --hash=sha256:2a8291c81623aec00372b5a85558a372c747cbca8e9934dfe218638b8eefc26f
+paho-mqtt==1.5.1 \
+    --hash=sha256:9feb068e822be7b3a116324e01fb6028eb1d66412bf98595ae72698965cb1cae
     # via -r ./requirements.in
 paramiko==2.11.0 \
     --hash=sha256:003e6bee7c034c21fbb051bf83dc0a9ee4106204dd3c53054c71452cc4ec3938 \

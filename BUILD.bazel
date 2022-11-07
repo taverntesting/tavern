@@ -33,6 +33,17 @@ py_wheel(
     homepage = "https://taverntesting.github.io/",
     license = "MIT",
     python_tag = "py3",
+    requires = [
+        "PyYAML>=5.3.1,<7",
+        "pykwalify>=1.8.0,<2",
+        "requests>=2.22.0,<3",
+        "pyjwt>=2.4.0,<3",
+        "paho-mqtt>=1.3.1,<=1.5.1",
+        "jmespath<1",
+        "pytest>=6.2,<8",
+        "python-box>4,<6",
+        "stevedore>=3.5.2,<4",
+    ],
     version = "1.11.1",
     visibility = ["//visibility:public"],
     deps = [
