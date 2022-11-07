@@ -24,6 +24,7 @@ Install [Bazelisk](https://github.com/bazelbuild/bazelisk), _NOT_ Bazel
        bazel run //:requirements.update
 
 4. Run tests as before
+5. Add dependency to the 'requires' block in the top level BUILD.bazel file
 
 ## Running after changing any imports etc.
 
