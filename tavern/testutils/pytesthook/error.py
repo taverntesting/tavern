@@ -144,13 +144,13 @@ class ReprdError(object):
         tw.line("Formatted stage:", white=True, bold=True)
 
         keys = self._get_available_format_keys()
-        
+
         # Format stage variables recursively
         formatted_stage = format_keys(stage, keys)
-        
+
         # Replace formatted strings with strings for dumping
         formatted_stage = prepare_yaml(formatted_stage)
-        
+
         # Dump formatted stage to YAML format
         formatted_lines = yaml.dump(formatted_stage, default_flow_style=False).split("\n")
 
