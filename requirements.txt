@@ -28,7 +28,6 @@ pyjwt>=2.4.0,<3
 paho-mqtt>=1.3.1,<=1.6.1
 jmespath<1
 pytest>=6.2,<8
-py
 python-box>4,<6
 stevedore
 
