@@ -371,3 +371,12 @@ Also log the result from 'response' ext functions
 
 ##  1.23.3          Allow specifying 'unexpected' messages in MQTT to fail a test (2022-06-26)
 
+##  1.23.4          Update stevedore version (2022-10-23)
+
+##  1.23.5          Fix missing dependency in newer pytest versions (2022-11-07)
+
+#  1.24.0          Fix using 'py' library (2022-11-08)
+
+
+This locks pytest to <=7.2 to avoid having to fix imports every time a new version comes out.
+
