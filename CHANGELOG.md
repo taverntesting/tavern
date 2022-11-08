@@ -410,3 +410,5 @@ This locks pytest to <=7.2 to avoid having to fix imports every time a new versi
 
 ##  2.0.0alpha16    Bump version: 2.0.0alpha15 → 2.0.0alpha16 (2022-10-23)
 
+##  2.0.0alpha17    Fix out of order MQTT messages and ext functions in mqtt responses (2022-11-08)
+
