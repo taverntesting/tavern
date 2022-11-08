@@ -125,9 +125,24 @@ class TestResponse(object):
 
         verifier.verify(expected)
 
-        assert len(verifier.received_messages) == 2
-        assert verifier.received_messages[0].topic == fake_message_bad.topic
-        assert verifier.received_messages[1].topic == fake_message_good.topic
+        assert len(verifier.received_messages) >= 1
+        received_topics = [m.topic for m in verifier.received_messages]
+        assert fake_message_good.topic in received_topics
+
+    def test_unexpected_fail(self, includes):
+        """Messages marked unexpected fail test"""
+
+        expected = {"topic": "/a/b/c", "payload": "hello", "unexpected": True}
+
+        fake_message = FakeMessage(expected)
+
+        verifier = self._get_fake_verifier(expected, [fake_message], includes)
+
+        with pytest.raises(exceptions.TestFailError):
+            verifier.verify(expected)
+
+        assert len(verifier.received_messages) == 1
+        assert verifier.received_messages[0].topic == fake_message.topic
 
     @pytest.mark.parametrize("r", range(10))
     def test_multiple_messages(self, includes, r):
@@ -142,9 +157,12 @@ class TestResponse(object):
         fake_message_good_2 = FakeMessage(expected[1])
         fake_message_bad = FakeMessage({"topic": "/a/b/c", "payload": "goodbye"})
 
+        messages = [fake_message_bad, fake_message_good_1, fake_message_good_2]
+        random.shuffle(messages)
+
         verifier = self._get_fake_verifier(
             expected,
-            [fake_message_bad, fake_message_good_1, fake_message_good_2],
+            messages,
             includes,
         )
 
@@ -167,9 +185,10 @@ class TestResponse(object):
         fake_message_good_1 = FakeMessage(expected[0])
         fake_message_good_2 = FakeMessage(expected[1])
 
-        verifier = self._get_fake_verifier(
-            expected, [fake_message_good_2, fake_message_good_1], includes
-        )
+        messages = [fake_message_good_2, fake_message_good_1]
+        random.shuffle(messages)
+
+        verifier = self._get_fake_verifier(expected, messages, includes)
 
         verifier.verify(expected)
 
@@ -178,17 +197,26 @@ class TestResponse(object):
         assert fake_message_good_1.topic in received_topics
         assert fake_message_good_2.topic in received_topics
 
-    def test_unexpected_fail(self, includes):
-        """Messages marked unexpected fail test"""
+    @pytest.mark.parametrize("r", range(10))
+    def test_same_topic(self, includes, r):
+        """Messages coming in a different order"""
 
-        expected = {"topic": "/a/b/c", "payload": "hello", "unexpected": True}
+        expected = [
+            {"topic": "/a/b/c", "payload": "hello"},
+            {"topic": "/a/b/c", "payload": "goodbye"},
+        ]
 
-        fake_message = FakeMessage(expected)
+        fake_message_good_1 = FakeMessage(expected[0])
+        fake_message_good_2 = FakeMessage(expected[1])
 
-        verifier = self._get_fake_verifier(expected, [fake_message], includes)
+        messages = [fake_message_good_2, fake_message_good_1]
+        random.shuffle(messages)
 
-        with pytest.raises(exceptions.TestFailError):
-            verifier.verify(expected)
+        verifier = self._get_fake_verifier(expected, messages, includes)
 
-        assert len(verifier.received_messages) == 1
-        assert verifier.received_messages[0].topic == fake_message.topic
+        verifier.verify(expected)
+
+        assert len(verifier.received_messages) >= 2
+        received_topics = [m.topic for m in verifier.received_messages]
+        assert fake_message_good_1.topic in received_topics
+        assert fake_message_good_2.topic in received_topics
