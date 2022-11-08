@@ -152,7 +152,9 @@ class ReprdError(object):
         formatted_stage = prepare_yaml(formatted_stage)
 
         # Dump formatted stage to YAML format
-        formatted_lines = yaml.dump(formatted_stage, default_flow_style=False).split("\n")
+        formatted_lines = yaml.dump(formatted_stage, default_flow_style=False).split(
+            "\n"
+        )
 
         for line in formatted_lines:
             if not line:
