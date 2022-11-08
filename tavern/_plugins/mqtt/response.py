@@ -107,7 +107,7 @@ class MQTTResponse(BaseResponse):
         for msg in correct_messages:
             saved.update(
                 self.maybe_get_save_values_from_save_block(
-                    "json", msg.expected["payload"]
+                    "json", msg.expected.get("payload")
                 )
             )
             saved.update(self.maybe_get_save_values_from_ext(msg.msg, msg.expected))
@@ -137,7 +137,7 @@ class MQTTResponse(BaseResponse):
         warnings = []
 
         time_spent = 0
-        while time_spent < timeout:
+        while (time_spent < timeout) and verifiers:
             t0 = time.time()
 
             msg = self._client.message_received(timeout - time_spent)
@@ -146,8 +146,6 @@ class MQTTResponse(BaseResponse):
                 # timed out
                 break
 
-            time_spent += time.time() - t0
-
             if msg.topic != topic:
                 # If the message wasn't on the topic expected by this thread, put it back in the queue. This ensures
                 # that it will be eventually process by something else. TODO: This might cause high CPU usage if it's
@@ -155,8 +153,10 @@ class MQTTResponse(BaseResponse):
                 # published that the client is also listening to. In reality, that other thread should pick up the
                 # message from the queue and dtermine whether it's right or not. Needs more testing?
                 self._client.message_ignore(msg)
+
                 # debounce
                 time.sleep(0.05)
+                time_spent += time.time() - t0
                 continue
 
             call_hook(
@@ -168,7 +168,10 @@ class MQTTResponse(BaseResponse):
 
             self.received_messages.append(msg)
 
-            msg.payload = msg.payload.decode("utf8")
+            try:
+                msg.payload = msg.payload.decode("utf8")
+            except AttributeError:
+                pass
 
             attach_yaml(
                 {
@@ -190,6 +193,8 @@ class MQTTResponse(BaseResponse):
                     found.append(i)
                 warnings.extend(v.popwarnings())
             verifiers = [v for (i, v) in enumerate(verifiers) if i not in found]
+
+            time_spent += time.time() - t0
 
         if verifiers:
             for v in verifiers:
