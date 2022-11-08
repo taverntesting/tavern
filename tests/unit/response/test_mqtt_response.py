@@ -1,3 +1,5 @@
+import random
+import threading
 from unittest.mock import Mock
 
 import pytest
@@ -52,12 +54,18 @@ class TestResponse(object):
         def replace_message(msg):
             msg_copy.append(msg)
 
+        msg_lock = threading.RLock()
+
         def yield_all_messages():
             def inner(timeout):
                 try:
-                    return msg_copy.pop(0)
-                except IndexError:
-                    return None
+                    msg_lock.acquire()
+                    if len(msg_copy) == 0:
+                        return None
+
+                    return msg_copy.pop(random.randint(0, len(msg_copy) - 1))
+                finally:
+                    msg_lock.release()
 
             return inner
 
@@ -121,7 +129,8 @@ class TestResponse(object):
         assert verifier.received_messages[0].topic == fake_message_bad.topic
         assert verifier.received_messages[1].topic == fake_message_good.topic
 
-    def test_multiple_messages(self, includes):
+    @pytest.mark.parametrize("r", range(10))
+    def test_multiple_messages(self, includes, r):
         """One wrong message, two correct ones"""
 
         expected = [
@@ -141,12 +150,13 @@ class TestResponse(object):
 
         verifier.verify(expected)
 
-        assert len(verifier.received_messages) == 3
-        assert verifier.received_messages[0].topic == fake_message_bad.topic
-        assert verifier.received_messages[1].topic == fake_message_good_1.topic
-        assert verifier.received_messages[2].topic == fake_message_good_2.topic
+        assert len(verifier.received_messages) >= 2
+        received_topics = [m.topic for m in verifier.received_messages]
+        assert fake_message_good_1.topic in received_topics
+        assert fake_message_good_2.topic in received_topics
 
-    def test_different_order(self, includes):
+    @pytest.mark.parametrize("r", range(10))
+    def test_different_order(self, includes, r):
         """Messages coming in a different order"""
 
         expected = [
@@ -163,9 +173,10 @@ class TestResponse(object):
 
         verifier.verify(expected)
 
-        assert len(verifier.received_messages) == 2
-        assert verifier.received_messages[1].topic == fake_message_good_2.topic
-        assert verifier.received_messages[0].topic == fake_message_good_1.topic
+        assert len(verifier.received_messages) >= 2
+        received_topics = [m.topic for m in verifier.received_messages]
+        assert fake_message_good_1.topic in received_topics
+        assert fake_message_good_2.topic in received_topics
 
     def test_unexpected_fail(self, includes):
         """Messages marked unexpected fail test"""
