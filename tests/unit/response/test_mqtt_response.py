@@ -5,6 +5,7 @@ from unittest.mock import Mock
 import pytest
 
 from tavern._core import exceptions
+from tavern._core.loader import ANYTHING
 from tavern._core.strict_util import StrictLevel
 from tavern._plugins.mqtt.client import MQTTClient
 from tavern._plugins.mqtt.response import MQTTResponse
@@ -12,7 +13,8 @@ from tavern._plugins.mqtt.response import MQTTResponse
 
 def test_nothing_returned_fails(includes):
     """Raises an error if no message was received"""
-    fake_client = Mock(spec=MQTTClient, message_received=Mock(return_value=None))
+    fake_client = Mock(spec=MQTTClient,
+                       message_received=Mock(return_value=None))
 
     expected = {"mqtt_responses": [{"topic": "/a/b/c", "payload": "hello"}]}
 
@@ -117,7 +119,8 @@ class TestResponse(object):
         expected = {"topic": "/a/b/c", "payload": "hello"}
 
         fake_message_good = FakeMessage(expected)
-        fake_message_bad = FakeMessage({"topic": "/a/b/c", "payload": "goodbye"})
+        fake_message_bad = FakeMessage(
+            {"topic": "/a/b/c", "payload": "goodbye"})
 
         verifier = self._get_fake_verifier(
             expected, [fake_message_bad, fake_message_good], includes
@@ -155,7 +158,8 @@ class TestResponse(object):
 
         fake_message_good_1 = FakeMessage(expected[0])
         fake_message_good_2 = FakeMessage(expected[1])
-        fake_message_bad = FakeMessage({"topic": "/a/b/c", "payload": "goodbye"})
+        fake_message_bad = FakeMessage(
+            {"topic": "/a/b/c", "payload": "goodbye"})
 
         messages = [fake_message_bad, fake_message_good_1, fake_message_good_2]
         random.shuffle(messages)
@@ -192,18 +196,23 @@ class TestResponse(object):
 
         verifier.verify(expected)
 
-        assert len(verifier.received_messages) >= 2
+        assert len(verifier.received_messages) == 2
         received_topics = [m.topic for m in verifier.received_messages]
         assert fake_message_good_1.topic in received_topics
         assert fake_message_good_2.topic in received_topics
 
+    @pytest.mark.parametrize("payload", (
+        ("!anything", ANYTHING,),
+        ("null", None,),
+        ("goog", "goog",),
+    ))
     @pytest.mark.parametrize("r", range(10))
-    def test_same_topic(self, includes, r):
+    def test_same_topic(self, includes, r, payload):
         """Messages coming in a different order"""
 
         expected = [
             {"topic": "/a/b/c", "payload": "hello"},
-            {"topic": "/a/b/c", "payload": "goodbye"},
+            {"topic": "/a/b/c", "payload": payload[0]},
         ]
 
         fake_message_good_1 = FakeMessage(expected[0])
@@ -214,9 +223,15 @@ class TestResponse(object):
 
         verifier = self._get_fake_verifier(expected, messages, includes)
 
-        verifier.verify(expected)
+        loaded = [
+            {"topic": "/a/b/c", "payload": "hello"},
+            {"topic": "/a/b/c", "payload": payload[1]},
+        ]
+        verifier.verify(loaded)
 
-        assert len(verifier.received_messages) >= 2
+        assert len(verifier.received_messages) == 2
         received_topics = [m.topic for m in verifier.received_messages]
         assert fake_message_good_1.topic in received_topics
         assert fake_message_good_2.topic in received_topics
+
+    # FIXME: Add tests for 'ext' functions are called in the right order
