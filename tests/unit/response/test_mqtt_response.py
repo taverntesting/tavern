@@ -1,6 +1,6 @@
 import random
 import threading
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -112,6 +112,28 @@ class TestResponse(object):
         assert len(verifier.received_messages) == 1
         assert verifier.received_messages[0].topic == fake_message.topic
 
+    def test_ext_function_called(self, includes):
+        expected = {
+            "topic": "/a/b/c",
+            "payload": "hello",
+            "save": {
+                "$ext": {"function": "abcdef"},
+            },
+        }
+
+        fake_message = FakeMessage(expected)
+
+        verifier = self._get_fake_verifier(expected, [fake_message], includes)
+
+        with patch("tavern.response.get_wrapped_response_function") as mock_get_wrapped:
+            verifier.verify(expected)
+
+        assert mock_get_wrapped.call_count == 1
+        assert mock_get_wrapped.call_args[0][0] == {"function": "abcdef"}
+
+        assert len(verifier.received_messages) == 1
+        assert verifier.received_messages[0].topic == fake_message.topic
+
     def test_correct_message_eventually(self, includes):
         """One wrong messge, then the correct one"""
 
@@ -198,6 +220,8 @@ class TestResponse(object):
         assert fake_message_good_1.topic in received_topics
         assert fake_message_good_2.topic in received_topics
 
+    # FIXME: Add tests for 'ext' functions are called in the right order
+
     @pytest.mark.parametrize(
         "payload",
         (
@@ -242,5 +266,3 @@ class TestResponse(object):
         received_topics = [m.topic for m in verifier.received_messages]
         assert fake_message_good_1.topic in received_topics
         assert fake_message_good_2.topic in received_topics
-
-    # FIXME: Add tests for 'ext' functions are called in the right order

@@ -147,11 +147,14 @@ class MQTTResponse(BaseResponse):
                 break
 
             if msg.topic != topic:
-                # If the message wasn't on the topic expected by this thread, put it back in the queue. This ensures
-                # that it will be eventually process by something else. TODO: This might cause high CPU usage if it's
-                # spinning waiting for a specific message to arrive but there's some other message that was
-                # published that the client is also listening to. In reality, that other thread should pick up the
-                # message from the queue and dtermine whether it's right or not. Needs more testing?
+                # If the message wasn't on the topic expected by this thread, put it
+                # back in the queue. This ensures that it will be eventually process
+                # by something else. TODO: This might cause high CPU usage if it's
+                # spinning waiting for a specific message to arrive but there's some
+                # other message that was published that the client is also listening
+                # to. In reality, that other thread should pick up the message from
+                # the queue and dtermine whether it's right or not. Needs more
+                # testing?
                 self._client.message_ignore(msg)
 
                 # debounce
