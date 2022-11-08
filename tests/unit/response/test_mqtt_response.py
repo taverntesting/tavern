@@ -13,8 +13,7 @@ from tavern._plugins.mqtt.response import MQTTResponse
 
 def test_nothing_returned_fails(includes):
     """Raises an error if no message was received"""
-    fake_client = Mock(spec=MQTTClient,
-                       message_received=Mock(return_value=None))
+    fake_client = Mock(spec=MQTTClient, message_received=Mock(return_value=None))
 
     expected = {"mqtt_responses": [{"topic": "/a/b/c", "payload": "hello"}]}
 
@@ -119,8 +118,7 @@ class TestResponse(object):
         expected = {"topic": "/a/b/c", "payload": "hello"}
 
         fake_message_good = FakeMessage(expected)
-        fake_message_bad = FakeMessage(
-            {"topic": "/a/b/c", "payload": "goodbye"})
+        fake_message_bad = FakeMessage({"topic": "/a/b/c", "payload": "goodbye"})
 
         verifier = self._get_fake_verifier(
             expected, [fake_message_bad, fake_message_good], includes
@@ -153,13 +151,12 @@ class TestResponse(object):
 
         expected = [
             {"topic": "/a/b/c", "payload": "hello"},
-            {"topic": "/d/e/f", "payload": "hello"},
+            {"topic": "/d/e/f", "payload": "hellog"},
         ]
 
         fake_message_good_1 = FakeMessage(expected[0])
         fake_message_good_2 = FakeMessage(expected[1])
-        fake_message_bad = FakeMessage(
-            {"topic": "/a/b/c", "payload": "goodbye"})
+        fake_message_bad = FakeMessage({"topic": "/a/b/c", "payload": "goodbye"})
 
         messages = [fake_message_bad, fake_message_good_1, fake_message_good_2]
         random.shuffle(messages)
@@ -183,7 +180,7 @@ class TestResponse(object):
 
         expected = [
             {"topic": "/a/b/c", "payload": "hello"},
-            {"topic": "/d/e/f", "payload": "hello"},
+            {"topic": "/d/e/f", "payload": "hellog"},
         ]
 
         fake_message_good_1 = FakeMessage(expected[0])
@@ -201,11 +198,23 @@ class TestResponse(object):
         assert fake_message_good_1.topic in received_topics
         assert fake_message_good_2.topic in received_topics
 
-    @pytest.mark.parametrize("payload", (
-        ("!anything", ANYTHING,),
-        ("null", None,),
-        ("goog", "goog",),
-    ))
+    @pytest.mark.parametrize(
+        "payload",
+        (
+            (
+                "!anything",
+                ANYTHING,
+            ),
+            (
+                "null",
+                None,
+            ),
+            (
+                "goog",
+                "goog",
+            ),
+        ),
+    )
     @pytest.mark.parametrize("r", range(10))
     def test_same_topic(self, includes, r, payload):
         """Messages coming in a different order"""
