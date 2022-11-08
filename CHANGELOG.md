@@ -373,6 +373,13 @@ Also log the result from 'response' ext functions
 
 ##  1.23.4          Update stevedore version (2022-10-23)
 
+##  1.23.5          Fix missing dependency in newer pytest versions (2022-11-07)
+
+#  1.24.0          Fix using 'py' library (2022-11-08)
+
+
+This locks pytest to <=7.2 to avoid having to fix imports every time a new version comes out.
+
 ##  2.0.0alpha3     Bump version: 2.0.0alpha2 → 2.0.0alpha3 (2021-10-17)
 
 ##  2.0.0alpha4     Bump version: 2.0.0alpha3 → 2.0.0alpha4 (2021-11-06)

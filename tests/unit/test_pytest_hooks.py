@@ -2,13 +2,17 @@ import os
 from dataclasses import dataclass
 from unittest.mock import Mock, patch
 
-import py
-import pytest
 from faker import Faker
-from py._path.local import LocalPath
 
 from tavern._core import exceptions
 from tavern._core.pytest.file import YamlFile, _get_parametrized_items
+
+try:
+    from py.path import LocalPath
+except ImportError:
+    from py._path.local import LocalPath
+
+import pytest
 
 
 @dataclass
@@ -21,7 +25,7 @@ class MockArgs:
 def mock_args():
     """Get a basic test config to initialise a YamlFile object with"""
 
-    fspath = py.path.local("abc")
+    fspath = LocalPath("abc")
 
     cargs = {"rootdir": "abc", "fspath": fspath}
 
