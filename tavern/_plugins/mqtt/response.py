@@ -77,7 +77,7 @@ class MQTTResponse(BaseResponse):
                 logger.debug("Starting thread for messages on topic '%s'", topic)
                 futures.append(
                     executor.submit(
-                        self._await_specific_message, topic, expected_for_topic
+                        self._await_messages_on_topic, topic, expected_for_topic
                     )
                 )
 
@@ -114,7 +114,7 @@ class MQTTResponse(BaseResponse):
 
         return saved
 
-    def _await_specific_message(self, topic, expected):
+    def _await_messages_on_topic(self, topic, expected):
         """
         Waits for the specific message
 
