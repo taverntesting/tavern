@@ -181,11 +181,12 @@ class MQTTResponse(BaseResponse):
 
             self._maybe_run_validate_functions(msg)
         else:
-            self._adderr(
-                "Expected '%s' on topic '%s' but no such message received",
-                expected_payload,
-                topic,
-            )
+            if not self.expected.get("unexpected"):
+                self._adderr(
+                    "Expected '%s' on topic '%s' but no such message received",
+                    expected_payload,
+                    topic,
+                )
 
         if self.errors:
             if warnings:
@@ -197,6 +198,9 @@ class MQTTResponse(BaseResponse):
             )
 
         saved = {}
+
+        if not msg:
+            return saved
 
         saved.update(self.maybe_get_save_values_from_save_block("json", msg.payload))
 
