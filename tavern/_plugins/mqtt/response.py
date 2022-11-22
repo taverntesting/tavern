@@ -129,8 +129,6 @@ class MQTTResponse(BaseResponse):
         # A list of verifiers that can be used to validate messages for this topic
         verifiers = [_MessageVerifier(self.test_block_config, v) for v in expected]
 
-        logger.error("%s: %s", topic, expected)
-
         correct_messages = []
         warnings = []
 
