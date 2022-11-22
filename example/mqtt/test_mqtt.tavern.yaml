@@ -499,9 +499,9 @@ stages:
     mqtt_response:
       - topic: /device/456/status/response
         payload: !anything
-        timeout: 2
+        timeout: 3
         qos: 1
       - topic: /device/123/status/response
         payload: !anything
-        timeout: 2
+        timeout: 3
         qos: 1
