@@ -71,8 +71,6 @@ class MQTTResponse(BaseResponse):
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = []
 
-            logger.error(by_topic)
-
             for topic, expected_for_topic in by_topic.items():
                 logger.debug("Starting thread for messages on topic '%s'", topic)
                 futures.append(
