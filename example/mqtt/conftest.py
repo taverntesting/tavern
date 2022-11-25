@@ -4,6 +4,7 @@ import logging.config
 import random
 
 import pytest
+import requests
 import yaml
 
 from tavern._core.pytest.item import YamlItem
@@ -85,6 +86,11 @@ def pytest_runtest_setup(item):
         setup_logging()
 
     return False
+
+
+@pytest.fixture(scope="session", autouse=True)
+def reset_devices():
+    requests.post("http://localhost:5002/reset")
 
 
 @pytest.fixture

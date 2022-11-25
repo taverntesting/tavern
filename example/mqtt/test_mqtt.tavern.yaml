@@ -468,7 +468,7 @@ includes:
 paho-mqtt:
   client:
     transport: websockets
-    client_id: tavern-tester
+    client_id: tavern-tester-{random_device_id}
   connect:
     host: "{mqtt_host}"
     port: !int "{mqtt_port:d}"
