@@ -625,8 +625,12 @@ With strict being turned off for the body, any of these in the test will pass:
 
 But not:
 
-- `[3, 1]`, `[2, 1]` - items present, but out of order
 - `[2, 4]` - '4' not present in response from the server
+- `[3, 1]`, `[2, 1]` - items present, but out of order
+
+To match the last case you can use the special setting `list_any_order`. This setting
+can only be used in the 'json' key of a request, but will match list items in any order as
+long as they are present in the response.
 
 ### Changing the setting
 
