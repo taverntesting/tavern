@@ -149,7 +149,7 @@ class MQTTResponse(BaseResponse):
                 # spinning waiting for a specific message to arrive but there's some
                 # other message that was published that the client is also listening
                 # to. In reality, that other thread should pick up the message from
-                # the queue and dtermine whether it's right or not. Needs more
+                # the queue and determine whether it's right or not. Needs more
                 # testing?
                 self._client.message_ignore(msg)
 
@@ -157,6 +157,8 @@ class MQTTResponse(BaseResponse):
                 time.sleep(0.05)
                 time_spent += time.time() - t0
                 continue
+
+            logger.debug("Seeing if message '%s' matched expected", msg)
 
             call_hook(
                 self.test_block_config,

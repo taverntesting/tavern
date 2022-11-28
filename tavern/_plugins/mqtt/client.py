@@ -1,8 +1,9 @@
+import dataclasses
 import logging
-from queue import Empty, Full, Queue
 import ssl
 import threading
 import time
+from queue import Empty, Full, Queue
 
 import paho.mqtt.client as paho
 
@@ -33,10 +34,19 @@ _err_vals = {
 logger = logging.getLogger(__name__)
 
 
+def root_topic(topic):
+    return topic.split("+")[0].split("#")[0]
+
+
+@dataclasses.dataclass
 class _Subscription(object):
-    def __init__(self, topic, subscribed=False):
-        self.topic = topic
-        self.subscribed = subscribed
+    topic: str
+    subscribed: bool = False
+
+    # Arbitrary number, could just be 1 and only accept 1 message per stages
+    # but we might want to raise an error if more than 1 message is received
+    # during a test stage.
+    queue: Queue = dataclasses.field(default_factory=lambda: Queue(maxsize=30))
 
 
 def check_file_exists(key, filename):
@@ -282,13 +292,6 @@ class MQTTClient:
                 # But with ssl.CERT_NONE, we can not check_hostname
                 self._client.tls_insecure_set(True)
 
-        # Arbitrary number, could just be 1 and only accept 1 message per stages
-        # but we might want to raise an error if more than 1 message is received
-        # during a test stage.
-        self._message_queue = Queue(maxsize=30)
-        self._userdata = {"queue": self._message_queue}
-        self._client.user_data_set(self._userdata)
-
         # Topics to subscribe to - mapping of subscription message id to a tuple
         # of (topic, sub_status) where sub_status is true or false based on
         # whether it has finished subscribing or not
@@ -297,6 +300,10 @@ class MQTTClient:
         self._subscribe_lock = threading.RLock()
         # callback
         self._client.on_subscribe = self._on_subscribe
+
+        self._message_queues = {}
+        self._userdata = {"queues": self._message_queues}
+        self._client.user_data_set(self._userdata)
 
     @staticmethod
     def _on_message(client, userdata, message):
@@ -309,8 +316,10 @@ class MQTTClient:
 
         logger.info("Received mqtt message on %s", message.topic)
 
+        sanitised = root_topic(message.topic)
+
         try:
-            userdata["queue"].put(message)
+            userdata["subscriptions"][sanitised].queue.put(message)
         except Full:
             logger.exception("message queue full")
 
@@ -449,20 +458,23 @@ class MQTTClient:
         if not to_wait_for:
             logger.debug("Finished subscribing to all topics")
 
-    def subscribe(self, topic, *args, **kwargs):
+    def subscribe(self, topic: str, *args, **kwargs):
         """Subscribe to topic
 
         should be called for every expected message in mqtt_response
         """
         logger.debug("Subscribing to topic '%s'", topic)
 
+        sanitised = root_topic(topic)
+        self._message_queues[sanitised] = uj
+
         with self._subscribe_lock:
             (status, mid) = self._client.subscribe(topic, *args, **kwargs)
 
             if status == 0:
-                self._subscribed[mid] = _Subscription(topic, False)
+                self._subscribed[mid] = _Subscription(topic)
             else:
-                logger.error("Error subscribing to '%s'", topic)
+                raise exceptions.MQTTError("Error subscribing to '{}'".format(topic))
 
     def unsubscribe_all(self):
         """Unsubscribe from all topics"""
