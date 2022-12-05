@@ -136,27 +136,20 @@ class MQTTResponse(BaseResponse):
         while (time_spent < timeout) and verifiers:
             t0 = time.time()
 
-            msg = self._client.message_received(timeout - time_spent)
+            msg = self._client.message_received(topic, timeout - time_spent)
 
             if not msg:
                 # timed out
                 break
 
-            if msg.topic != topic:
-                # If the message wasn't on the topic expected by this thread, put it
-                # back in the queue. This ensures that it will be eventually process
-                # by something else. TODO: This might cause high CPU usage if it's
-                # spinning waiting for a specific message to arrive but there's some
-                # other message that was published that the client is also listening
-                # to. In reality, that other thread should pick up the message from
-                # the queue and determine whether it's right or not. Needs more
-                # testing?
-                self._client.message_ignore(msg)
-
-                # debounce
-                time.sleep(0.05)
-                time_spent += time.time() - t0
-                continue
+            # if msg.topic != topic:
+            #    logger.debug("Client returned message from %s but expected messages on %s", msg.topic, topic)
+            #    logger.error("internal error - message sent to wrong susbcription")
+            #
+            #    # debounce
+            #    time.sleep(0.05)
+            #    time_spent += time.time() - t0
+            #    continue
 
             logger.debug("Seeing if message '%s' matched expected", msg)
 

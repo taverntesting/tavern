@@ -124,7 +124,12 @@ def get_device():
     try:
         status = next(row)[1]
     except StopIteration:
-        return jsonify({"error": "could not find device with id {}".format(r["device_id"])}), 400
+        return (
+            jsonify(
+                {"error": "could not find device with id {}".format(r["device_id"])}
+            ),
+            400,
+        )
 
     onoff = "on" if status else "off"
 
@@ -145,7 +150,9 @@ def create_device():
 
     db = get_cached_db()
     with db:
-        row = db.execute("SELECT device_id from devices_table where device_id is :device_id", r)
+        row = db.execute(
+            "SELECT device_id from devices_table where device_id is :device_id", r
+        )
 
     try:
         next(row)
@@ -159,7 +166,10 @@ def create_device():
     logging.info("Creating new device: %s", new_device)
 
     with db:
-        db.execute("INSERT INTO devices_table (device_id, lights_on) VALUES (:device_id, :lights_on)", new_device)
+        db.execute(
+            "INSERT INTO devices_table (device_id, lights_on) VALUES (:device_id, :lights_on)",
+            new_device,
+        )
 
     return jsonify({"status": "created device {device_id}".format(**r)}), 201
 

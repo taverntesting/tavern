@@ -292,17 +292,19 @@ class MQTTClient:
                 # But with ssl.CERT_NONE, we can not check_hostname
                 self._client.tls_insecure_set(True)
 
-        # Topics to subscribe to - mapping of subscription message id to a tuple
-        # of (topic, sub_status) where sub_status is true or false based on
-        # whether it has finished subscribing or not
-        self._subscribed = {}
+        # Topics to subscribe to - mapping of subscription message id to subscription object
+        self._subscribed: dict[int, _Subscription] = {}
         # Lock to ensure there is no race condition when subscribing
         self._subscribe_lock = threading.RLock()
         # callback
         self._client.on_subscribe = self._on_subscribe
 
-        self._message_queues = {}
-        self._userdata = {"queues": self._message_queues}
+        # Mapping of topic -> subscription id, for indexing into self._subscribed
+        self._subscription_mappings: dict[str, int] = {}
+        self._userdata = {
+            "_subscription_mappings": self._subscription_mappings,
+            "_subscribed": self._subscribed,
+        }
         self._client.user_data_set(self._userdata)
 
     @staticmethod
@@ -319,7 +321,13 @@ class MQTTClient:
         sanitised = root_topic(message.topic)
 
         try:
-            userdata["subscriptions"][sanitised].queue.put(message)
+            userdata["_subscribed"][
+                userdata["_subscription_mappings"][sanitised]
+            ].queue.put(message)
+        except KeyError as e:
+            raise exceptions.MQTTTopicException(
+                "Message received on unregistered topic: {}".format(message.topic)
+            ) from e
         except Full:
             logger.exception("message queue full")
 
@@ -360,26 +368,16 @@ class MQTTClient:
         # pylint: disable=unused-argument
         logger.debug("MQTT socket opened")
 
-    def message_ignore(self, message):
-        """
-        Ignore the given message (put it back in the queue of messages received)
-        Args:
-            message (paho.MQTTMessage): the message to ignore
-        """
-        try:
-            self._message_queue.put_nowait(message)
-        except Full:
-            logger.exception("message queue full")
-
     @staticmethod
     def _on_socket_close(client, userdata, socket):
         # pylint: disable=unused-argument
         logger.debug("MQTT socket closed")
 
-    def message_received(self, timeout=1):
+    def message_received(self, topic: str, timeout: int = 1):
         """Check that a message is in the message queue
 
         Args:
+            topic (str): topic to fetch message for
             timeout (int): How long to wait before signalling that the message
                 was not received.
 
@@ -390,8 +388,16 @@ class MQTTClient:
             Allow regexes for topic names? Better validation for mqtt payloads
         """
 
+        sanitised = root_topic(topic)
+
         try:
-            msg = self._message_queue.get(block=True, timeout=timeout)
+            msg = self._subscribed[self._subscription_mappings[sanitised]].queue.get(
+                block=True, timeout=timeout
+            )
+        except KeyError as e:
+            raise exceptions.MQTTTopicException(
+                "Unregistered topic: {}".format(topic)
+            ) from e
         except Empty:
             logger.error("Message not received after %d seconds", timeout)
             return None
@@ -465,16 +471,17 @@ class MQTTClient:
         """
         logger.debug("Subscribing to topic '%s'", topic)
 
-        sanitised = root_topic(topic)
-        self._message_queues[sanitised] = uj
-
         with self._subscribe_lock:
             (status, mid) = self._client.subscribe(topic, *args, **kwargs)
 
             if status == 0:
+                sanitised = root_topic(topic)
+                self._subscription_mappings[sanitised] = mid
                 self._subscribed[mid] = _Subscription(topic)
             else:
-                raise exceptions.MQTTError("Error subscribing to '{}'".format(topic))
+                raise exceptions.MQTTError(
+                    "Error subscribing to '{}' (err code {})".format(topic, status)
+                )
 
     def unsubscribe_all(self):
         """Unsubscribe from all topics"""
@@ -491,6 +498,7 @@ class MQTTClient:
                     "Successfully subscribed to '%s'", self._subscribed[mid].topic
                 )
             else:
+                logger.debug("Only tracking: %s", self._subscribed.keys())
                 logger.warning(
                     "Got SUBACK message with mid '%s', but did not recognise that mid - will try later",
                     mid,

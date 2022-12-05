@@ -58,6 +58,10 @@ class MQTTRequestException(TavernException):
     """Error making requests in MQTTRequest()"""
 
 
+class MQTTTopicException(TavernException):
+    """Internal (?) error with subscriptions"""
+
+
 class MQTTTLSError(TavernException):
     """Error with TLS arguments to MQTT client"""
 

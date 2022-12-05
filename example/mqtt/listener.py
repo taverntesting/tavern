@@ -62,7 +62,9 @@ loggers:
 def assert_device_exists(device_id):
     db = get_db()
     with db:
-        row = db.execute("SELECT device_id from devices_table where device_id IS (?)", (device_id,))
+        row = db.execute(
+            "SELECT device_id from devices_table where device_id IS (?)", (device_id,)
+        )
 
     try:
         next(row)

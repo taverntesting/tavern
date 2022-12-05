@@ -20,11 +20,7 @@ TESTS_REQUIRE = [
 
 setup(
     name="tavern",
-
     tests_require=TESTS_REQUIRE,
-    extras_require={
-        "tests": TESTS_REQUIRE
-    },
-
-    zip_safe=True
+    extras_require={"tests": TESTS_REQUIRE},
+    zip_safe=True,
 )

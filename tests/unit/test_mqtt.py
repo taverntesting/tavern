@@ -4,7 +4,7 @@ import paho.mqtt.client as paho
 import pytest
 
 from tavern._core import exceptions
-from tavern._plugins.mqtt.client import MQTTClient, _handle_tls_args
+from tavern._plugins.mqtt.client import MQTTClient, _handle_tls_args, _Subscription
 from tavern._plugins.mqtt.request import MQTTRequest
 
 
@@ -23,20 +23,31 @@ class TestClient(object):
     def fix_fake_client(self):
         args = {"connect": {"host": "localhost"}}
 
-        return MQTTClient(**args)
+        mqtt_client = MQTTClient(**args)
+
+        mqtt_client._subscribed[2] = _Subscription("abc")
+        mqtt_client._subscription_mappings["abc"] = 2
+
+        return mqtt_client
+
+    def test_no_queue(self, fake_client):
+        """Trying to fetch from a nonexistent queue raised exception"""
+
+        with pytest.raises(exceptions.MQTTTopicException):
+            fake_client.message_received("", 0)
 
     def test_no_message(self, fake_client):
         """No message in queue returns None"""
 
-        assert fake_client.message_received(0) is None
+        assert fake_client.message_received("abc", 0) is None
 
     def test_message_queued(self, fake_client):
         """Returns message in queue"""
 
         message = "abc123"
 
-        fake_client._userdata["queue"].put(message)
-        assert fake_client.message_received(0) == message
+        fake_client._userdata["_subscribed"][2].queue.put(message)
+        assert fake_client.message_received("abc", 0) == message
 
     def test_context_connection_failure(self, fake_client):
         """Unable to connect on __enter__ raises MQTTError"""
@@ -145,6 +156,7 @@ class TestSubscription(object):
             spec=MQTTClient,
             _client=mock_paho,
             _subscribed={},
+            _subscription_mappings={},
             _subscribe_lock=MagicMock(),
         )
         return mock_client
@@ -166,7 +178,8 @@ class TestSubscription(object):
 
         mock_client = TestSubscription.get_mock_client_with(subscribe_err)
 
-        MQTTClient.subscribe(mock_client, "abc")
+        with pytest.raises(exceptions.MQTTError):
+            MQTTClient.subscribe(mock_client, "abc")
 
         assert mock_client._subscribed == {}
 
