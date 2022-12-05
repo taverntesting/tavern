@@ -142,15 +142,6 @@ class MQTTResponse(BaseResponse):
                 # timed out
                 break
 
-            # if msg.topic != topic:
-            #    logger.debug("Client returned message from %s but expected messages on %s", msg.topic, topic)
-            #    logger.error("internal error - message sent to wrong susbcription")
-            #
-            #    # debounce
-            #    time.sleep(0.05)
-            #    time_spent += time.time() - t0
-            #    continue
-
             logger.debug("Seeing if message '%s' matched expected", msg)
 
             call_hook(

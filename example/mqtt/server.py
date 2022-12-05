@@ -182,7 +182,6 @@ def reset_db():
 
 def _reset_db(db):
     with db:
-
         def attempt(query):
             try:
                 db.execute(query)
@@ -193,8 +192,6 @@ def _reset_db(db):
         attempt(
             "CREATE TABLE devices_table (device_id TEXT NOT NULL, lights_on INTEGER NOT NULL)"
         )
-        # attempt("INSERT INTO devices_table VALUES ('123', 0)")
-        # attempt("INSERT INTO devices_table VALUES ('456', 0)")
 
     return "", 204
 
