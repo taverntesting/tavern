@@ -1,9 +1,9 @@
 import dataclasses
 import logging
+from queue import Empty, Full, Queue
 import ssl
 import threading
 import time
-from queue import Empty, Full, Queue
 
 import paho.mqtt.client as paho
 
