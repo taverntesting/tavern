@@ -1,7 +1,10 @@
+import datetime
 import logging
 import logging.config
+import random
 
 import pytest
+import requests
 import yaml
 
 from tavern._core.pytest.item import YamlItem
@@ -85,12 +88,21 @@ def pytest_runtest_setup(item):
     return False
 
 
+@pytest.fixture(scope="session", autouse=True)
+def reset_devices():
+    requests.post("http://localhost:5002/reset")
+
 
 @pytest.fixture
-def get_publish_topic():
-    return "/device/123/echo"
+def get_publish_topic(random_device_id):
+    return "/device/{}/echo".format(random_device_id)
 
 
 @pytest.fixture
-def     get_response_topic_suffix():
+def get_response_topic_suffix():
     return "response"
+
+
+@pytest.fixture(scope="function", autouse=True)
+def random_device_id():
+    return str(random.randint(100, 10000))

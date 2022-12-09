@@ -50,21 +50,24 @@ class TestResponse(object):
         if not isinstance(fake_messages, list):
             pytest.fail("Need to pass a list of messages")
 
-        msg_copy = fake_messages[:]
-
-        def replace_message(msg):
-            msg_copy.append(msg)
-
         msg_lock = threading.RLock()
 
+        responses: dict[str, list[FakeMessage]] = {
+            message.topic: [] for message in fake_messages
+        }
+        for message in fake_messages:
+            responses[message.topic].append(message)
+
         def yield_all_messages():
-            def inner(timeout):
+            def inner(topic, timeout):
                 try:
                     msg_lock.acquire()
-                    if len(msg_copy) == 0:
+
+                    r = responses[topic]
+                    if len(r) == 0:
                         return None
 
-                    return msg_copy.pop(random.randint(0, len(msg_copy) - 1))
+                    return r.pop(random.randint(0, len(r) - 1))
                 finally:
                     msg_lock.release()
 
@@ -73,7 +76,6 @@ class TestResponse(object):
         fake_client = Mock(
             spec=MQTTClient,
             message_received=yield_all_messages(),
-            message_ignore=replace_message,
         )
 
         if not isinstance(expected, list):
