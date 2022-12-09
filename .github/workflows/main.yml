@@ -89,7 +89,7 @@ jobs:
 
     - name: install deps
       run: |
-        pip install tox-travis --c constraints.txt
+        pip install tox-travis -c constraints.txt
 
     - name: tox
       run: |
