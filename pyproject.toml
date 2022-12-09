@@ -84,20 +84,6 @@ dev = [
     "wheel",
 ]
 
-# directly required to run the tests
-tests = [
-    "Faker",
-    "allure-pytest",
-    "colorlog",
-    "flask",
-    "fluent-logger",
-    "itsdangerous",
-    "pylint",
-    "pytest-cov",
-    "pytest-xdist",
-    "wheel",
-]
-
 
 [project.scripts]
 
