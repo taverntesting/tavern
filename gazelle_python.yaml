@@ -2669,8 +2669,10 @@ manifest:
     jwt.api_jwt: PyJWT
     jwt.exceptions: PyJWT
     jwt.help: PyJWT
+    jwt.jwk_set_cache: PyJWT
     jwt.jwks_client: PyJWT
     jwt.utils: PyJWT
+    jwt.warnings: PyJWT
     keyring: keyring
     keyring.__init__: keyring
     keyring.__main__: keyring
@@ -4861,4 +4863,4 @@ manifest:
   pip_repository:
     name: tavern_pip
     incremental: true
-integrity: b5f7f695d2a7fc1d582e75e91b2ebb31ae4dcebc4aca1e57a689d92ee4db591c
+integrity: 01e50f6453efaf0bf9d2d00f85dc152230c9af0ef93d358be129cf6926a9d912

@@ -21,8 +21,8 @@ mypy-extensions
 isort~=5.7.0
 allure-pytest
 
-more-itertools==8.12.0
-setuptools==62.1.0
+more-itertools
+setuptools
 execnet
 pytest-forked
 pytest-xdist
