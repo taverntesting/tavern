@@ -21,36 +21,36 @@ jobs:
         include:
         # 'Basic' tests and checks
         # Pylint, formatting/sorting, and quickest unit/integration tests
-        - TOXENV: py310black
+        - TOXENV: py3black
           python: "3.10"
           TOXCFG: tox.ini
-        - TOXENV: py310lint
+        - TOXENV: py3lint
           python: "3.10"
           TOXCFG: tox.ini
-        - TOXENV: py310mypy
+        - TOXENV: py3mypy
           python: "3.10"
           TOXCFG: tox.ini
-        - TOXENV: py310isort
-          python: "3.10"
-          TOXCFG: tox.ini
-
-        - TOXENV: py310
+        - TOXENV: py3isort
           python: "3.10"
           TOXCFG: tox.ini
 
-        - TOXENV: py310-generic
+        - TOXENV: py3
+          python: "3.10"
+          TOXCFG: tox.ini
+
+        - TOXENV: py3-generic
           python: "3.10"
           TOXCFG: tox-integration.ini
         - TOXENV: pypy3-noextra
           python: pypy-3.7-v7.x
           TOXCFG: tox-integration.ini
-        - TOXENV: py310-mqtt
+        - TOXENV: py3-mqtt
           python: "3.10"
           TOXCFG: tox-integration.ini
-        - TOXENV: py310-hooks
+        - TOXENV: py3-hooks
           python: "3.10"
           TOXCFG: tox-integration.ini
-        - TOXENV: py310-advanced
+        - TOXENV: py3-advanced
           python: "3.10"
           TOXCFG: tox-integration.ini
 
