@@ -37,9 +37,6 @@ jobs:
         - TOXENV: py39
           python: "3.9"
           TOXCFG: tox.ini
-        - TOXENV: py39-pytest6
-          python: "3.9"
-          TOXCFG: tox.ini
 
         - TOXENV: py39-generic
           python: "3.9"
