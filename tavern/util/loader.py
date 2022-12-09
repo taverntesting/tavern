@@ -1,6 +1,6 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
 from abc import abstractmethod
-from distutils.util import strtobool
+from distutils.util import strtobool  # pylint: disable=deprecated-module
 from itertools import chain
 import logging
 import os.path
