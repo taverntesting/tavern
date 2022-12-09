@@ -70,7 +70,7 @@ jobs:
         cache-name: cache-${{ matrix.TOXENV }}
       with:
         path: .tox
-        key: ${{ runner.os }}-tox-2-${{ env.cache-name }}-${{ hashFiles('tox.ini', 'tox-integration.ini', 'setup.cfg', 'setup.py') }}
+        key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('tox.ini', 'tox-integration.ini', 'setup.cfg', 'setup.py') }}
 
     - uses: actions/cache@v3
       with:
@@ -89,7 +89,7 @@ jobs:
 
     - name: install deps
       run: |
-        pip install tox-travis
+        pip install tox-travis --c constraints.txt
 
     - name: tox
       run: |
