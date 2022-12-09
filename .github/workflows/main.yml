@@ -22,36 +22,27 @@ jobs:
         # 'Basic' tests and checks
         # Pylint, formatting/sorting, and quickest unit/integration tests
         - TOXENV: py3black
-          python: "3.10"
           TOXCFG: tox.ini
         - TOXENV: py3lint
-          python: "3.10"
           TOXCFG: tox.ini
         - TOXENV: py3mypy
-          python: "3.10"
           TOXCFG: tox.ini
         - TOXENV: py3isort
-          python: "3.10"
           TOXCFG: tox.ini
 
         - TOXENV: py3
-          python: "3.10"
           TOXCFG: tox.ini
 
         - TOXENV: py3-generic
-          python: "3.10"
           TOXCFG: tox-integration.ini
         - TOXENV: pypy3-noextra
           python: pypy-3.7-v7.x
           TOXCFG: tox-integration.ini
         - TOXENV: py3-mqtt
-          python: "3.10"
           TOXCFG: tox-integration.ini
         - TOXENV: py3-hooks
-          python: "3.10"
           TOXCFG: tox-integration.ini
         - TOXENV: py3-advanced
-          python: "3.10"
           TOXCFG: tox-integration.ini
 
     services:
@@ -85,7 +76,7 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python }}
+        python-version: 3.10
 
     - name: install deps
       run: |
