@@ -8,11 +8,11 @@ TESTS_REQUIRE = [
     "faker",
     "flake8",
     "pygments",
-    "pylint==2.6.0",
+    "pylint",
     "black",
     "mypy",
     "mypy-extensions",
-    "isort==5.7.0",
+    "isort",
     "allure-pytest",
 ]
 
