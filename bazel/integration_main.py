@@ -26,6 +26,7 @@ if __name__ == "__main__":
             "-d",
         ]
         + images__split_,
+        check=True,
         timeout=3,
     )
 
