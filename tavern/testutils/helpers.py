@@ -10,7 +10,7 @@ import jwt
 from tavern.schemas.files import verify_generic
 from tavern.testutils.jmesutils import actual_validation, validate_comparison
 from tavern.util import exceptions
-from tavern.util.dict_util import check_keys_match_recursive, recurse_access_key
+from tavern.util.dict_util import recurse_access_key
 
 logger = logging.getLogger(__name__)
 
@@ -174,12 +174,7 @@ def validate_content(response, comparisons):
         expession = " ".join([str(path), str(_operator), str(expected)])
         parsed_expession = " ".join([str(actual), str(_operator), str(expected)])
 
-        if _operator == "eq" and 0:
-            check_keys_match_recursive(expected, actual, [])
-        else:
-            try:
-                actual_validation(
-                    _operator, actual, expected, parsed_expession, expession
-                )
-            except AssertionError as e:
-                raise exceptions.JMESError("Error validating JMES") from e
+        try:
+            actual_validation(_operator, actual, expected, parsed_expession, expession)
+        except AssertionError as e:
+            raise exceptions.JMESError("Error validating JMES") from e

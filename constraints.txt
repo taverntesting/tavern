@@ -18,7 +18,7 @@ attrs==21.4.0
     #   tavern (pyproject.toml)
 bcrypt==4.0.1
     # via paramiko
-black==22.10.0
+black==22.12.0
     # via tavern (pyproject.toml)
 bleach==5.0.1
     # via readme-renderer
@@ -281,6 +281,8 @@ tox==3.27.1
 tox-travis==0.12
     # via tavern (pyproject.toml)
 twine==4.0.2
+    # via tavern (pyproject.toml)
+types-pyyaml==6.0.12.2
     # via tavern (pyproject.toml)
 typing-extensions==4.4.0
     # via mypy

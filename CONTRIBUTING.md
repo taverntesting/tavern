@@ -12,3 +12,8 @@
 1. Run tests
 
        ./scripts/smoke.bash
+
+## Fixing formatting issue
+
+    black tavern/ tests/
+    isort --profile black tavern/ tests/
