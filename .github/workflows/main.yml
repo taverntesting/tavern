@@ -15,85 +15,25 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-        # 'Basic' tests and checks
-        # Pylint, formatting/sorting, and quickest unit/integration tests
-        - TOXENV: py39black
-          python: "3.9"
-          TOXCFG: tox.ini
-        - TOXENV: py39lint
-          python: "3.9"
-          TOXCFG: tox.ini
-        - TOXENV: py39mypy
-          python: "3.9"
-          TOXCFG: tox.ini
-        - TOXENV: py39isort
-          python: "3.9"
-          TOXCFG: tox.ini
-
-        - TOXENV: py39
-          python: "3.9"
-          TOXCFG: tox.ini
-        - TOXENV: py39-pytest6
-          python: "3.9"
-          TOXCFG: tox.ini
-
-        - TOXENV: py39-generic
-          python: "3.9"
-          TOXCFG: tox-integration.ini
-        - TOXENV: pypy3-noextra
-          python: pypy-3.7-v7.x
-          TOXCFG: tox-integration.ini
-        - TOXENV: py39-mqtt
-          python: "3.9"
-          TOXCFG: tox-integration.ini
-        - TOXENV: py39-hooks
-          python: "3.9"
-          TOXCFG: tox-integration.ini
-        - TOXENV: py39-advanced
-          python: "3.9"
-          TOXCFG: tox-integration.ini
-
     services:
       docker:
         image: docker
 
-    env:
-      TOXENV: ${{ matrix.TOXENV }}
-      TOXCFG: ${{ matrix.TOXCFG }}
+      cache:
+        image: buchgr/bazel-remote-cache:v2.3.9
+        env:
+          BAZEL_REMOTE_MAX_SIZE: 5
+          BAZEL_REMOTE_DIR: ~/.cache/bazel/disk
 
     steps:
     - uses: actions/checkout@v3
 
-    - uses: actions/cache@v3
-      env:
-        cache-name: cache-${{ matrix.TOXENV }}
+    - uses: bazelbuild/setup-bazelisk@v2
+
+    - name: load bazel cache
+      uses: actions/cache@v3
       with:
-        path: .tox
-        key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('tox.ini', 'tox-integration.ini', 'requirements.txt', 'setup.cfg', 'setup.py') }}
+        path: "~/.cache/bazel"
+        key: bazel
 
-    - uses: actions/cache@v3
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'setup.cfg', 'setup.py') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
-
-    - uses: satackey/action-docker-layer-caching@v0.0.11
-      continue-on-error: true
-
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: ${{ matrix.python }}
-
-    - name: install deps
-      run: |
-        pip install tox-travis
-
-    - name: tox
-      run: |
-        tox -c ${TOXCFG}
+    - run: bazel test --config=ci //tests/unit/...

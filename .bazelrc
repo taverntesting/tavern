@@ -22,4 +22,15 @@ build --bes_upload_mode=fully_async
 build --experimental_reuse_sandbox_directories
 
 
+# Only used in CI
+build:ci --repository_cache=~/.cache/bazel/repository
+build:ci --experimental_remote_cache_async
+build:ci --experimental_remote_cache_compression
+build:ci --remote_cache=grpc://localhost:9092
+build:ci --remote_download_minimal
+build:ci --experimental_remote_merkle_tree_cache
+run:ci --remote_download_toplevel
+
+
+
 try-import %workspace%/.bazelrc.user
