@@ -1,13 +1,15 @@
+from io import StringIO
 import json
 import logging
 import re
 
 from _pytest._code.code import FormattedExcinfo
-import py
+from _pytest._io import TerminalWriter
 import yaml
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
+from tavern._core.report import prepare_yaml
 from tavern._core.stage_lines import (
     end_mark,
     get_stage_lines,
@@ -141,16 +143,22 @@ class ReprdError(object):
         """
         tw.line("Formatted stage:", white=True, bold=True)
 
-        # This will definitely exist
-        formatted_lines = yaml.dump(stage, default_flow_style=False).split("\n")
-
         keys = self._get_available_format_keys()
+
+        # Format stage variables recursively
+        formatted_stage = format_keys(stage, keys)
+
+        # Replace formatted strings with strings for dumping
+        formatted_stage = prepare_yaml(formatted_stage)
+
+        # Dump formatted stage to YAML format
+        formatted_lines = yaml.dump(formatted_stage, default_flow_style=False).split(
+            "\n"
+        )
 
         for line in formatted_lines:
             if not line:
                 continue
-            if "{}" not in line:
-                line = format_keys(line, keys)
             tw.line("  {}".format(line), white=True)
 
     def _print_errors(self, tw):
@@ -209,11 +217,11 @@ class ReprdError(object):
 
     @property
     def longreprtext(self):
-        tw = py.io.TerminalWriter(stringio=True)  # pylint: disable=no-member
-        tw.hasmarkup = False
+        # information.
+        io = StringIO()
+        tw = TerminalWriter(file=io)
         self.toterminal(tw)
-        exc = tw.stringio.getvalue()
-        return exc.strip()
+        return io.getvalue().strip()
 
     def __str__(self):
         return self.longreprtext

@@ -373,6 +373,15 @@ Also log the result from 'response' ext functions
 
 ##  1.23.4          Update stevedore version (2022-10-23)
 
+##  1.23.5          Fix missing dependency in newer pytest versions (2022-11-07)
+
+#  1.24.0          Fix using 'py' library (2022-11-08)
+
+
+This locks pytest to <=7.2 to avoid having to fix imports every time a new version comes out.
+
+##  1.24.1          Format variables in test error log before dumping as a YAML string (2022-11-22)
+
 ##  2.0.0alpha3     Bump version: 2.0.0alpha2 → 2.0.0alpha3 (2021-10-17)
 
 ##  2.0.0alpha4     Bump version: 2.0.0alpha3 → 2.0.0alpha4 (2021-11-06)
@@ -402,4 +411,8 @@ Also log the result from 'response' ext functions
 ##  2.0.0alpha15    Bump version: 2.0.0alpha14 → 2.0.0alpha15 (2022-10-23)
 
 ##  2.0.0alpha16    Bump version: 2.0.0alpha15 → 2.0.0alpha16 (2022-10-23)
+
+##  2.0.0alpha17    Fix out of order MQTT messages and ext functions in mqtt responses (2022-11-08)
+
+##  2.0.0alpha18    Spin up separate message queue for each topic to avoid spinlocking (2022-12-09)
 

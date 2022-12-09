@@ -55,7 +55,7 @@ def login():
 
 
 def requires_jwt(endpoint):
-    """ Makes sure a jwt is in the request before accepting it """
+    """Makes sure a jwt is in the request before accepting it"""
 
     @functools.wraps(endpoint)
     def check_auth_call(*args, **kwargs):

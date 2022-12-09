@@ -5,6 +5,7 @@
 
 manifest:
   modules_mapping:
+    2e032532bd2e64ed7a60__mypyc: black
     _black_version: black
     _cffi_backend: cffi
     _distutils_hack: setuptools
@@ -85,7 +86,6 @@ manifest:
     _ruamel_yaml: ruamel.yaml.clib
     _yaml: PyYAML
     _yaml.__init__: PyYAML
-    2e032532bd2e64ed7a60__mypyc: black
     allure: allure_python_commons
     allure_commons: allure_python_commons
     allure_commons.__init__: allure_python_commons
@@ -524,17 +524,17 @@ manifest:
     cryptography.hazmat.backends.openssl.dh: cryptography
     cryptography.hazmat.backends.openssl.dsa: cryptography
     cryptography.hazmat.backends.openssl.ec: cryptography
-    cryptography.hazmat.backends.openssl.ed448: cryptography
     cryptography.hazmat.backends.openssl.ed25519: cryptography
+    cryptography.hazmat.backends.openssl.ed448: cryptography
     cryptography.hazmat.backends.openssl.encode_asn1: cryptography
     cryptography.hazmat.backends.openssl.hashes: cryptography
     cryptography.hazmat.backends.openssl.hmac: cryptography
     cryptography.hazmat.backends.openssl.poly1305: cryptography
     cryptography.hazmat.backends.openssl.rsa: cryptography
     cryptography.hazmat.backends.openssl.utils: cryptography
+    cryptography.hazmat.backends.openssl.x25519: cryptography
     cryptography.hazmat.backends.openssl.x448: cryptography
     cryptography.hazmat.backends.openssl.x509: cryptography
-    cryptography.hazmat.backends.openssl.x25519: cryptography
     cryptography.hazmat.bindings: cryptography
     cryptography.hazmat.bindings.__init__: cryptography
     cryptography.hazmat.bindings._openssl: cryptography
@@ -553,14 +553,14 @@ manifest:
     cryptography.hazmat.primitives.asymmetric.dh: cryptography
     cryptography.hazmat.primitives.asymmetric.dsa: cryptography
     cryptography.hazmat.primitives.asymmetric.ec: cryptography
-    cryptography.hazmat.primitives.asymmetric.ed448: cryptography
     cryptography.hazmat.primitives.asymmetric.ed25519: cryptography
+    cryptography.hazmat.primitives.asymmetric.ed448: cryptography
     cryptography.hazmat.primitives.asymmetric.padding: cryptography
     cryptography.hazmat.primitives.asymmetric.rsa: cryptography
     cryptography.hazmat.primitives.asymmetric.types: cryptography
     cryptography.hazmat.primitives.asymmetric.utils: cryptography
-    cryptography.hazmat.primitives.asymmetric.x448: cryptography
     cryptography.hazmat.primitives.asymmetric.x25519: cryptography
+    cryptography.hazmat.primitives.asymmetric.x448: cryptography
     cryptography.hazmat.primitives.ciphers: cryptography
     cryptography.hazmat.primitives.ciphers.__init__: cryptography
     cryptography.hazmat.primitives.ciphers.aead: cryptography
@@ -585,8 +585,8 @@ manifest:
     cryptography.hazmat.primitives.serialization: cryptography
     cryptography.hazmat.primitives.serialization.__init__: cryptography
     cryptography.hazmat.primitives.serialization.base: cryptography
-    cryptography.hazmat.primitives.serialization.pkcs7: cryptography
     cryptography.hazmat.primitives.serialization.pkcs12: cryptography
+    cryptography.hazmat.primitives.serialization.pkcs7: cryptography
     cryptography.hazmat.primitives.serialization.ssh: cryptography
     cryptography.hazmat.primitives.twofactor: cryptography
     cryptography.hazmat.primitives.twofactor.__init__: cryptography
@@ -2314,17 +2314,17 @@ manifest:
     gevent.tests.monkey_package: gevent
     gevent.tests.monkey_package.__init__: gevent
     gevent.tests.monkey_package.__main__: gevent
-    gevent.tests.monkey_package.issue302monkey: gevent
     gevent.tests.monkey_package.issue1526_no_monkey: gevent
     gevent.tests.monkey_package.issue1526_with_monkey: gevent
+    gevent.tests.monkey_package.issue302monkey: gevent
     gevent.tests.monkey_package.script: gevent
     gevent.tests.monkey_package.threadpool_monkey_patches: gevent
     gevent.tests.monkey_package.threadpool_no_monkey: gevent
+    gevent.tests.test__GreenletExit: gevent
     gevent.tests.test___config: gevent
     gevent.tests.test___ident: gevent
     gevent.tests.test___monitor: gevent
     gevent.tests.test___monkey_patching: gevent
-    gevent.tests.test__GreenletExit: gevent
     gevent.tests.test__all__: gevent
     gevent.tests.test__api: gevent
     gevent.tests.test__api_timeout: gevent
@@ -2369,16 +2369,16 @@ manifest:
     gevent.tests.test__hub_join_timeout: gevent
     gevent.tests.test__import_blocking_in_greenlet: gevent
     gevent.tests.test__import_wait: gevent
-    gevent.tests.test__issue_728: gevent
-    gevent.tests.test__issue6: gevent
     gevent.tests.test__issue112: gevent
+    gevent.tests.test__issue1686: gevent
     gevent.tests.test__issue230: gevent
     gevent.tests.test__issue330: gevent
     gevent.tests.test__issue467: gevent
+    gevent.tests.test__issue6: gevent
     gevent.tests.test__issue600: gevent
     gevent.tests.test__issue607: gevent
     gevent.tests.test__issue639: gevent
-    gevent.tests.test__issue1686: gevent
+    gevent.tests.test__issue_728: gevent
     gevent.tests.test__issues461_471: gevent
     gevent.tests.test__iwait: gevent
     gevent.tests.test__joinall: gevent
@@ -2546,8 +2546,8 @@ manifest:
     isort.stdlibs.__init__: isort
     isort.stdlibs.all: isort
     isort.stdlibs.py2: isort
-    isort.stdlibs.py3: isort
     isort.stdlibs.py27: isort
+    isort.stdlibs.py3: isort
     isort.stdlibs.py35: isort
     isort.stdlibs.py36: isort
     isort.stdlibs.py37: isort
@@ -2676,10 +2676,10 @@ manifest:
     keyring.__main__: keyring
     keyring.backend: keyring
     keyring.backends: keyring
-    keyring.backends.__init__: keyring
     keyring.backends.OS_X: keyring
     keyring.backends.SecretService: keyring
     keyring.backends.Windows: keyring
+    keyring.backends.__init__: keyring
     keyring.backends.chainer: keyring
     keyring.backends.fail: keyring
     keyring.backends.kwallet: keyring
@@ -4861,4 +4861,4 @@ manifest:
   pip_repository:
     name: tavern_pip
     incremental: true
-integrity: 539521219cb92ac8e8c6fb9f5b5934753be7c2c4631f7339f8d686e617eda16a
+integrity: b5f7f695d2a7fc1d582e75e91b2ebb31ae4dcebc4aca1e57a689d92ee4db591c

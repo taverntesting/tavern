@@ -1,8 +1,11 @@
-from unittest.mock import Mock
+import random
+import threading
+from unittest.mock import Mock, patch
 
 import pytest
 
 from tavern._core import exceptions
+from tavern._core.loader import ANYTHING
 from tavern._core.strict_util import StrictLevel
 from tavern._plugins.mqtt.client import MQTTClient
 from tavern._plugins.mqtt.response import MQTTResponse
@@ -47,24 +50,32 @@ class TestResponse(object):
         if not isinstance(fake_messages, list):
             pytest.fail("Need to pass a list of messages")
 
-        msg_copy = fake_messages[:]
+        msg_lock = threading.RLock()
 
-        def replace_message(msg):
-            msg_copy.append(msg)
+        responses: dict[str, list[FakeMessage]] = {
+            message.topic: [] for message in fake_messages
+        }
+        for message in fake_messages:
+            responses[message.topic].append(message)
 
         def yield_all_messages():
-            def inner(timeout):
+            def inner(topic, timeout):
                 try:
-                    return msg_copy.pop(0)
-                except IndexError:
-                    return None
+                    msg_lock.acquire()
+
+                    r = responses[topic]
+                    if len(r) == 0:
+                        return None
+
+                    return r.pop(random.randint(0, len(r) - 1))
+                finally:
+                    msg_lock.release()
 
             return inner
 
         fake_client = Mock(
             spec=MQTTClient,
             message_received=yield_all_messages(),
-            message_ignore=replace_message,
         )
 
         if not isinstance(expected, list):
@@ -103,6 +114,28 @@ class TestResponse(object):
         assert len(verifier.received_messages) == 1
         assert verifier.received_messages[0].topic == fake_message.topic
 
+    def test_ext_function_called(self, includes):
+        expected = {
+            "topic": "/a/b/c",
+            "payload": "hello",
+            "save": {
+                "$ext": {"function": "abcdef"},
+            },
+        }
+
+        fake_message = FakeMessage(expected)
+
+        verifier = self._get_fake_verifier(expected, [fake_message], includes)
+
+        with patch("tavern.response.get_wrapped_response_function") as mock_get_wrapped:
+            verifier.verify(expected)
+
+        assert mock_get_wrapped.call_count == 1
+        assert mock_get_wrapped.call_args[0][0] == {"function": "abcdef"}
+
+        assert len(verifier.received_messages) == 1
+        assert verifier.received_messages[0].topic == fake_message.topic
+
     def test_correct_message_eventually(self, includes):
         """One wrong messge, then the correct one"""
 
@@ -117,55 +150,9 @@ class TestResponse(object):
 
         verifier.verify(expected)
 
-        assert len(verifier.received_messages) == 2
-        assert verifier.received_messages[0].topic == fake_message_bad.topic
-        assert verifier.received_messages[1].topic == fake_message_good.topic
-
-    def test_multiple_messages(self, includes):
-        """One wrong message, two correct ones"""
-
-        expected = [
-            {"topic": "/a/b/c", "payload": "hello"},
-            {"topic": "/d/e/f", "payload": "hello"},
-        ]
-
-        fake_message_good_1 = FakeMessage(expected[0])
-        fake_message_good_2 = FakeMessage(expected[1])
-        fake_message_bad = FakeMessage({"topic": "/a/b/c", "payload": "goodbye"})
-
-        verifier = self._get_fake_verifier(
-            expected,
-            [fake_message_bad, fake_message_good_1, fake_message_good_2],
-            includes,
-        )
-
-        verifier.verify(expected)
-
-        assert len(verifier.received_messages) == 3
-        assert verifier.received_messages[0].topic == fake_message_bad.topic
-        assert verifier.received_messages[1].topic == fake_message_good_1.topic
-        assert verifier.received_messages[2].topic == fake_message_good_2.topic
-
-    def test_different_order(self, includes):
-        """Messages coming in a different order"""
-
-        expected = [
-            {"topic": "/a/b/c", "payload": "hello"},
-            {"topic": "/d/e/f", "payload": "hello"},
-        ]
-
-        fake_message_good_1 = FakeMessage(expected[0])
-        fake_message_good_2 = FakeMessage(expected[1])
-
-        verifier = self._get_fake_verifier(
-            expected, [fake_message_good_2, fake_message_good_1], includes
-        )
-
-        verifier.verify(expected)
-
-        assert len(verifier.received_messages) == 2
-        assert verifier.received_messages[1].topic == fake_message_good_2.topic
-        assert verifier.received_messages[0].topic == fake_message_good_1.topic
+        assert len(verifier.received_messages) >= 1
+        received_topics = [m.topic for m in verifier.received_messages]
+        assert fake_message_good.topic in received_topics
 
     def test_unexpected_fail(self, includes):
         """Messages marked unexpected fail test"""
@@ -181,3 +168,103 @@ class TestResponse(object):
 
         assert len(verifier.received_messages) == 1
         assert verifier.received_messages[0].topic == fake_message.topic
+
+    @pytest.mark.parametrize("r", range(10))
+    def test_multiple_messages(self, includes, r):
+        """One wrong message, two correct ones"""
+
+        expected = [
+            {"topic": "/a/b/c", "payload": "hello"},
+            {"topic": "/d/e/f", "payload": "hellog"},
+        ]
+
+        fake_message_good_1 = FakeMessage(expected[0])
+        fake_message_good_2 = FakeMessage(expected[1])
+        fake_message_bad = FakeMessage({"topic": "/a/b/c", "payload": "goodbye"})
+
+        messages = [fake_message_bad, fake_message_good_1, fake_message_good_2]
+        random.shuffle(messages)
+
+        verifier = self._get_fake_verifier(
+            expected,
+            messages,
+            includes,
+        )
+
+        verifier.verify(expected)
+
+        assert len(verifier.received_messages) >= 2
+        received_topics = [m.topic for m in verifier.received_messages]
+        assert fake_message_good_1.topic in received_topics
+        assert fake_message_good_2.topic in received_topics
+
+    @pytest.mark.parametrize("r", range(10))
+    def test_different_order(self, includes, r):
+        """Messages coming in a different order"""
+
+        expected = [
+            {"topic": "/a/b/c", "payload": "hello"},
+            {"topic": "/d/e/f", "payload": "hellog"},
+        ]
+
+        fake_message_good_1 = FakeMessage(expected[0])
+        fake_message_good_2 = FakeMessage(expected[1])
+
+        messages = [fake_message_good_2, fake_message_good_1]
+        random.shuffle(messages)
+
+        verifier = self._get_fake_verifier(expected, messages, includes)
+
+        verifier.verify(expected)
+
+        assert len(verifier.received_messages) == 2
+        received_topics = [m.topic for m in verifier.received_messages]
+        assert fake_message_good_1.topic in received_topics
+        assert fake_message_good_2.topic in received_topics
+
+    # FIXME: Add tests for 'ext' functions are called in the right order
+
+    @pytest.mark.parametrize(
+        "payload",
+        (
+            (
+                "!anything",
+                ANYTHING,
+            ),
+            (
+                "null",
+                None,
+            ),
+            (
+                "goog",
+                "goog",
+            ),
+        ),
+    )
+    @pytest.mark.parametrize("r", range(10))
+    def test_same_topic(self, includes, r, payload):
+        """Messages coming in a different order"""
+
+        expected = [
+            {"topic": "/a/b/c", "payload": "hello"},
+            {"topic": "/a/b/c", "payload": payload[0]},
+        ]
+
+        fake_message_good_1 = FakeMessage(expected[0])
+        fake_message_good_2 = FakeMessage(expected[1])
+
+        messages = [fake_message_good_2, fake_message_good_1]
+        random.shuffle(messages)
+
+        verifier = self._get_fake_verifier(expected, messages, includes)
+
+        loaded = [
+            {"topic": "/a/b/c", "payload": "hello"},
+            {"topic": "/a/b/c", "payload": payload[1]},
+        ]
+        verifier.verify(loaded)
+
+        assert len(verifier.received_messages) == 2
+        received_topics = [m.topic for m in verifier.received_messages]
+        assert fake_message_good_1.topic in received_topics
+        assert fake_message_good_2.topic in received_topics
