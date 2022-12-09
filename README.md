@@ -165,7 +165,7 @@ If you want to add a feature to get merged back into mainline Tavern:
       plugin system implemented.
 - Open a [pull request](https://github.com/taverntesting/tavern/pulls).
 
-See (CONTRIBUTING.md)\[/CONTRIBUTING.md\]
+See [CONTRIBUTING.md](/CONTRIBUTING.md) for more details.
 
 ## Acknowledgements
 
