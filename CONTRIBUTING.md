@@ -1,5 +1,11 @@
 # Contributing
 
+## Running tests locally
+
+To run a subset of the required tests, run the [smoke test script](/scripts/smoke.bash)
+
+    ./scripts/smoke.bash
+
 ## Updating/adding a dependency
 
 1. Add or update the dependency in [pyproject.toml](/pyproject.toml)
