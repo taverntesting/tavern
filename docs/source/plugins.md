@@ -28,8 +28,8 @@ plugin.
 The entry point needs to point to either a class or a module which defines a
 preset number of variables.
 
-Something like this should be in your `setup.py` or `setup.cfg` to make sure
-Tavern can pick it up at run time:
+Something like this should be in your `setup.py`, `setup.cfg`, `poetry.toml`,
+`pyproject.toml`, etc. to make sure Tavern can pick it up at run time:
 
 ```
 # setup.cfg

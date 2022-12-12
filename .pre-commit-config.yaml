@@ -16,4 +16,4 @@ repos:
         args:
           - --settings-path=.isort.cfg
 
-exclude: (docs/|example/|tests/|setup.py)
+exclude: (docs/|example/|tests/)
