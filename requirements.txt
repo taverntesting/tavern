@@ -281,7 +281,9 @@ docopt==0.6.2 \
 docutils==0.19 \
     --hash=sha256:33995a6753c30b7f577febfc2c50411fec6aac7f7ffeb7c4cfe5991072dcf9e6 \
     --hash=sha256:5e1de4d849fee02c63b040a4a3fd567f4ab104defd8a5511fbbc24a8a017efbc
-    # via readme-renderer
+    # via
+    #   flit
+    #   readme-renderer
 exceptiongroup==1.0.4 \
     --hash=sha256:542adf9dea4055530d6e1279602fa5cb11dab2395fa650b8674eaec35fc4a828 \
     --hash=sha256:bd14967b79cd9bdb54d97323216f8fdf533e278df937aa2a90089e7d6e06e5ec
@@ -308,6 +310,14 @@ flask==2.2.2 \
     --hash=sha256:642c450d19c4ad482f96729bd2a8f6d32554aa1e231f4f6b4e7e5264b16cca2b \
     --hash=sha256:b9c46cc36662a7949f34b52d8ec7bb59c0d74ba08ba6cb9ce9adc1d8676d9526
     # via tavern (pyproject.toml)
+flit==3.8.0 \
+    --hash=sha256:5ee0f88fd1cfa4160d1a8fa01237e96d06d677ae0403a0bbabbb277cb37c5e9c \
+    --hash=sha256:d0f2a8f4bd45dc794befbf5839ecc0fd3830d65a57bd52b5997542fac5d5e937
+    # via tavern (pyproject.toml)
+flit-core==3.8.0 \
+    --hash=sha256:64a29ec845164a6abe1136bf4bc5ae012bdfe758ed42fc7571a9059a7c80bd83 \
+    --hash=sha256:b305b30c99526df5e63d6022dd2310a0a941a187bd3884f4c8ef0418df6c39f3
+    # via flit
 fluent-logger==0.10.0 \
     --hash=sha256:543637e5e62ec3fc3c92b44e5a4e148a3cea88a0f8ca4fae26c7e60fda7564c1 \
     --hash=sha256:678bda90c513ff0393964b64544ce41ef25669d2089ce6c3b63d9a18554b9bfa
@@ -557,9 +567,9 @@ paramiko==2.12.0 \
     --hash=sha256:376885c05c5d6aa6e1f4608aac2a6b5b0548b1add40274477324605903d9cd49 \
     --hash=sha256:b2df1a6325f6996ef55a8789d0462f5b502ea83b3c990cbb5bbe57345c6812c4
     # via docker
-pathspec==0.10.2 \
-    --hash=sha256:88c2606f2c1e818b978540f73ecc908e13999c6c3a383daf3705652ae79807a5 \
-    --hash=sha256:8f6bf73e5758fd365ef5d58ce09ac7c27d2833a8d7da51712eac6e27e35141b0
+pathspec==0.10.3 \
+    --hash=sha256:3c95343af8b756205e2aba76e843ba9520a24dd84f68c22b9f93251507509dd6 \
+    --hash=sha256:56200de4077d9d0791465aa9095a01d421861e405b5096955051deefd697d6f6
     # via black
 pbr==5.11.0 \
     --hash=sha256:b97bc6695b2aff02144133c2e7399d5885223d42b7912ffaec2ca3898e673bfe \
@@ -742,6 +752,7 @@ requests==2.28.1 \
     # via
     #   docker
     #   docker-compose
+    #   flit
     #   requests-toolbelt
     #   tavern (pyproject.toml)
     #   twine
@@ -797,23 +808,23 @@ ruamel-yaml-clib==0.2.7 \
     --hash=sha256:f01da5790e95815eb5a8a138508c01c758e5f5bc0ce4286c4f7028b8dd7ac3d0 \
     --hash=sha256:f34019dced51047d6f70cb9383b2ae2853b7fc4dce65129a5acd49f4f9256646
     # via ruamel-yaml
-ruff==0.0.171 \
-    --hash=sha256:07f906ebf1e883d6160b7f1cacfcafe0e3b268ea49214a7481bf39eb2b8d50a3 \
-    --hash=sha256:09b9d1e6e4ac108991880c738dab6e77e3903cb889ccf502fcf4a92b0a2b2ba1 \
-    --hash=sha256:1ec5e135e287f26b4bc4428f886e5f4d90223869024745d8d77d22104d3659c3 \
-    --hash=sha256:27cb7d6857e9ec108b932b19508ad782720f25703018d19c537911d67c69486b \
-    --hash=sha256:36211c353182fb33d528ca748d21cf1aa99dd9d85619feb9a303196391da5641 \
-    --hash=sha256:5db2b1d00630e29a4203bb53d860ecaa60e7e7110b6235e7a22542b64114a9d4 \
-    --hash=sha256:7153e00617f94a5124a528fba04fde51b08ebff835f3674117174f6f2a5e0246 \
-    --hash=sha256:745bac32c8503217d5f72aaaeee96103e4cb59caf711e3347cd9e29f7674c82f \
-    --hash=sha256:7f3139f0d2d52e485ff133fb6f7ddea8dfc151ec61f32423efaab69efcb7a0a9 \
-    --hash=sha256:7f9b3f4d68ed03f666c41ba7897cef85a0f0ea10be160ae74e0e7f17828c69de \
-    --hash=sha256:80501b1ada6a56010f0d316d64c37cf65a60edea2d43e1ebd9fc0c400678dfa2 \
-    --hash=sha256:a1af62c97359f712be472297ab03a3b039a25ed4553ffbd516ea02d846d3b0f9 \
-    --hash=sha256:a630a1d980f8c399e61aae7bc21f0034b871c0c48dd14e933d3ea0f0bd9623ac \
-    --hash=sha256:bdbafd7d996b84b23bca61a3b4f9d259a47f0f68b3f4938c813106fd91bb5d45 \
-    --hash=sha256:e6dc77da063636b2098da9a7b1f0e703f1177f4f6e87886eba4e8abad0241c4e \
-    --hash=sha256:feb9ab6b4d1ae24f314c76f8218574b8d83079b1cf1929497a3504bf0ad14141
+ruff==0.0.177 \
+    --hash=sha256:1a6c0eebbeb065f779516c64b08c4fcdddd9ca48c8259bb5e6bab005707578d3 \
+    --hash=sha256:235edc670a7a01154a1b1c89a229b5de2b99b9afb01d6d9457565d7f7cd04c68 \
+    --hash=sha256:27462f8ec0d98934ce5e1eef97114efe6e97783d452fb8054d0a2077643838e2 \
+    --hash=sha256:2e0252edbab8bd9e1a573d6174b8893f5ac7fc6685342079bc583737dcbb923b \
+    --hash=sha256:4280b6692adac77f56118615310ed3f1d634008b9dfec091c36e326555d02e0b \
+    --hash=sha256:4996a980a6ba81c5edde0ad3d65c186114a7429defe3c6b018067cc81570a78e \
+    --hash=sha256:4b11a0bcad6be56c2b39b37d7c2486d86f47e4dbe63e53a4592cca44df8172ee \
+    --hash=sha256:6bb30a5799f98b04259ef7d3b9bdb2d2c4934c28ca0b8f7f185e3e6075585474 \
+    --hash=sha256:736ce4156182613fac2af8cfb913896d73875ba2e17da26f6a7b9a9809c7c8bd \
+    --hash=sha256:88b5ba142c1db12c58c79c54efa02db7cd906f8126ad3d2d0c5aa465aea23a78 \
+    --hash=sha256:96c7f6b61c957aab18e9941a925f559c1af340fe6ff92a89b5667d355d57f5af \
+    --hash=sha256:a4eae7c3703278ae2d4c1851148d3f0d5b40a0ee506eea2a934ef1ad290a1a23 \
+    --hash=sha256:bf061e86c7066eef7a9abb16852f8ff2440942211dface6f0c8ddc71d594697e \
+    --hash=sha256:c4d88556d9e0f9a578da7cefd6424ff717abe9432f0a832902a404bc9fd8d4cf \
+    --hash=sha256:ce4ff408a23f1d68db850ead408287aab014ae72de26f603ecf96b552e226343 \
+    --hash=sha256:d7a850a627e24e2a8da74744f9049da3b29ddc94dceec10db5032f80524447ca
     # via tavern (pyproject.toml)
 secretstorage==3.3.3 \
     --hash=sha256:2403533ef369eca6d2ba81718576c5e0f564d5cca1b58f73a8b23e7d4eeebd77 \
@@ -856,6 +867,10 @@ tomli==2.0.1 \
     #   pylint
     #   pytest
     #   tox
+tomli-w==1.0.0 \
+    --hash=sha256:9f2a07e8be30a0729e533ec968016807069991ae2fd921a78d42f429ae5f4463 \
+    --hash=sha256:f463434305e0336248cac9c2dc8076b707d8a12d019dd349f5c1e382dd1ae1b9
+    # via flit
 tomlkit==0.11.6 \
     --hash=sha256:07de26b0d8cfc18f871aec595fda24d95b08fef89d147caa861939f37230bf4b \
     --hash=sha256:71b952e5721688937fb02cf9d354dbcf0785066149d2855e44531ebdd2b65d73

@@ -3,5 +3,5 @@
 rm -rf build/ dist/ ./*.egg-info
 fd pycache -u | xargs rm -rf
 
-python setup.py bdist_wheel
-twine upload -r pypi dist/*.whl
+flit build   --format wheel --no-setup-py
+flit publish --format wheel --no-setup-py --repository pypi

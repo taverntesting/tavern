@@ -68,7 +68,9 @@ docopt==0.6.2
     #   docker-compose
     #   pykwalify
 docutils==0.19
-    # via readme-renderer
+    # via
+    #   flit
+    #   readme-renderer
 exceptiongroup==1.0.4
     # via pytest
 execnet==1.9.0
@@ -83,6 +85,10 @@ flake8==6.0.0
     # via tavern (pyproject.toml)
 flask==2.2.2
     # via tavern (pyproject.toml)
+flit==3.8.0
+    # via tavern (pyproject.toml)
+flit-core==3.8.0
+    # via flit
 fluent-logger==0.10.0
     # via tavern (pyproject.toml)
 identify==2.5.9
@@ -152,7 +158,7 @@ paho-mqtt==1.5.1
     # via tavern (pyproject.toml)
 paramiko==2.12.0
     # via docker
-pathspec==0.10.2
+pathspec==0.10.3
     # via black
 pbr==5.11.0
     # via stevedore
@@ -228,6 +234,7 @@ requests==2.28.1
     # via
     #   docker
     #   docker-compose
+    #   flit
     #   requests-toolbelt
     #   tavern (pyproject.toml)
     #   twine
@@ -241,7 +248,7 @@ ruamel-yaml==0.17.21
     # via pykwalify
 ruamel-yaml-clib==0.2.7
     # via ruamel-yaml
-ruff==0.0.171
+ruff==0.0.177
     # via tavern (pyproject.toml)
 secretstorage==3.3.3
     # via keyring
@@ -272,6 +279,8 @@ tomli==2.0.1
     #   pylint
     #   pytest
     #   tox
+tomli-w==1.0.0
+    # via flit
 tomlkit==0.11.6
     # via pylint
 tox==3.27.1
