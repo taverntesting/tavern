@@ -84,6 +84,10 @@ filelock==3.8.2
     #   tox
     #   virtualenv
 flake8==6.0.0
+    # via
+    #   flake8-pyproject
+    #   tavern (pyproject.toml)
+flake8-pyproject==1.2.2
     # via tavern (pyproject.toml)
 flask==2.2.2
     # via tavern (pyproject.toml)
@@ -276,6 +280,7 @@ tomli==2.0.1
     #   black
     #   build
     #   coverage
+    #   flake8-pyproject
     #   mypy
     #   pep517
     #   pylint

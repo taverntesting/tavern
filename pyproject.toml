@@ -61,6 +61,7 @@ dev = [
     "allure-pytest",
     "black",
     "bump2version",
+    "Flake8-pyproject",
     "colorlog",
     "docker-compose",
     "flake8",
@@ -160,12 +161,18 @@ disable = "missing-docstring,fixme,invalid-name,line-too-long,too-few-public-met
 ignore = "tests"
 
 [tool.pylint.REPORTS]
-reports = "no"
+reports = false
 
 [tool.pylint.SIMILARITIES]
 min-similarity-lines = 6
-ignore-imports = "yes"
+ignore-imports = true
 
 [tool.pylint.TYPECHECK]
 ignored-classes = "RememberComposer"
 ignored-modules = "distutils"
+
+[tool.flake8]
+ignore = ["E501", "W503", "C901", "W504"]
+exclude = [".git", "__pycache__", "docs/source/conf.py", "build", "dist"]
+max-complexity = 10
+

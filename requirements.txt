@@ -307,6 +307,11 @@ filelock==3.8.2 \
 flake8==6.0.0 \
     --hash=sha256:3833794e27ff64ea4e9cf5d410082a8b97ff1a06c16aa3d2027339cd0f1195c7 \
     --hash=sha256:c61007e76655af75e6785a931f452915b371dc48f56efd765247c8fe68f2b181
+    # via
+    #   flake8-pyproject
+    #   tavern (pyproject.toml)
+flake8-pyproject==1.2.2 \
+    --hash=sha256:52d412219e7db6227faa654675b1435947b11d49b453f3eced760f19bdd6f06a
     # via tavern (pyproject.toml)
 flask==2.2.2 \
     --hash=sha256:642c450d19c4ad482f96729bd2a8f6d32554aa1e231f4f6b4e7e5264b16cca2b \
@@ -864,6 +869,7 @@ tomli==2.0.1 \
     #   black
     #   build
     #   coverage
+    #   flake8-pyproject
     #   mypy
     #   pep517
     #   pylint
