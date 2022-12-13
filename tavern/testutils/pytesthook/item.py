@@ -3,12 +3,14 @@ import logging
 
 import attr
 import pytest
+import yaml
 
 from tavern.core import run_test
 from tavern.plugins import load_plugins
 from tavern.schemas.files import verify_tests
 from tavern.testutils.pytesthook import call_hook
 from tavern.util import exceptions
+from tavern.util.loader import error_on_empty_scalar
 from tavern.util.report import attach_text
 
 from .error import ReprdError
@@ -29,12 +31,20 @@ class YamlItem(pytest.Item):
         spec (dict): The whole dictionary of the test
     """
 
+    # See https://github.com/taverntesting/tavern/issues/825
+    _patched_yaml = False
+
     def __init__(self, *, name, parent, spec, path, **kwargs):
         super().__init__(name, parent, **kwargs)
         self.path = path
         self.spec = spec
 
         self.global_cfg = {}
+
+        if not YamlItem._patched_yaml:
+            yaml.parser.Parser.process_empty_scalar = (
+                error_on_empty_scalar
+            )  # type:ignore
 
     @classmethod
     def yamlitem_from_parent(cls, name, parent, spec, path):

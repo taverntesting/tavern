@@ -453,6 +453,3 @@ def error_on_empty_scalar(self, mark):  # pylint: disable=unused-argument
     )
 
     raise exceptions.BadSchemaError(error)
-
-
-yaml.parser.Parser.process_empty_scalar = error_on_empty_scalar  # type:ignore
