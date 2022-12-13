@@ -875,9 +875,8 @@ tabulate==0.8.10 \
     --hash=sha256:0ba055423dbaa164b9e456abe7920c5e8ed33fcc16f6d1b2f2d152c8e1e8b4fc \
     --hash=sha256:6c57f3f3dd7ac2782770155f3adb2db0b1a269637e42f27599925e64b114f519
     # via cli-ui
-tbump==6.9.0 \
-    --hash=sha256:683eab2e5a4d4861b6928c422d9e51e1d3aeccbbd69d0281fab2c374345e1d9f \
-    --hash=sha256:cf711835b155eaefcf2023ca8963200d893cb40998c9393684df020e6ab1c0b3
+tbump @ https://github.com/michaelboulton/tbump/archive/a27134750ceda5f820186118d2ee0e99013637d8.zip \
+    --hash=sha256:7be6d2ba417ad45567dfb4cfcfc1402304712dd5891fbdd1d7fcf09a8d5103da
     # via tavern (pyproject.toml)
 texttable==1.6.7 \
     --hash=sha256:290348fb67f7746931bcdfd55ac7584ecd4e5b0846ab164333f0794b121760f2 \

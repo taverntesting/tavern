@@ -282,7 +282,7 @@ stevedore==3.3.3
     # via tavern (pyproject.toml)
 tabulate==0.8.10
     # via cli-ui
-tbump==6.9.0
+tbump @ https://github.com/michaelboulton/tbump/archive/a27134750ceda5f820186118d2ee0e99013637d8.zip
     # via tavern (pyproject.toml)
 texttable==1.6.7
     # via docker-compose
