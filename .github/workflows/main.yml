@@ -70,7 +70,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
 
-    - uses: satackey/action-docker-layer-caching@v0.0.11
+    - uses: jpribyl/action-docker-layer-caching@v0.1.1
       continue-on-error: true
 
     - name: Set up Python
