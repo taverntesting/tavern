@@ -101,7 +101,6 @@ example
 .gitignore
 LICENSE
 # MANIFEST.in
-.pylintrc
 README.md
 README.md
 requirements.txt
@@ -113,7 +112,6 @@ tests
 .tox
 tox.ini
 tox-integration.ini
-.travis.yml
 
 venv
 .idea

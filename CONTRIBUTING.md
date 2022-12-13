@@ -1,5 +1,7 @@
 # Contributing
 
+All configuration for the project should be put into `pyproject.toml`.
+
 ## Working locally
 
 1. Create a virtualenv using whatever method you like (eg, [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/))

@@ -46,7 +46,9 @@ colorlog==6.7.0
 commonmark==0.9.1
     # via rich
 coverage==6.5.0
-    # via pytest-cov
+    # via
+    #   pytest-cov
+    #   tavern (pyproject.toml)
 cryptography==38.0.4
     # via
     #   paramiko
@@ -101,7 +103,7 @@ importlib-metadata==5.1.0
     #   twine
 iniconfig==1.1.1
     # via pytest
-isort==5.10.1
+isort==5.11.1
     # via
     #   pylint
     #   tavern (pyproject.toml)
@@ -248,7 +250,7 @@ ruamel-yaml==0.17.21
     # via pykwalify
 ruamel-yaml-clib==0.2.7
     # via ruamel-yaml
-ruff==0.0.177
+ruff==0.0.178
     # via tavern (pyproject.toml)
 secretstorage==3.3.3
     # via keyring

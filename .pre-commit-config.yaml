@@ -14,6 +14,6 @@ repos:
     hooks:
       - id: isort
         args:
-          - --settings-path=.isort.cfg
+          - --settings-path=pyproject.toml
 
 exclude: (docs/|example/|tests/)
