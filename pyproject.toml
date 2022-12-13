@@ -84,7 +84,7 @@ dev = [
     "py",
     "tox>=3,<4",
     "tox-travis",
-    "https://github.com/michaelboulton/tbump/archive/a27134750ceda5f820186118d2ee0e99013637d8.zip",
+    "tbump@https://github.com/michaelboulton/tbump/archive/a27134750ceda5f820186118d2ee0e99013637d8.zip",
     "twine",
     "wheel",
 ]
