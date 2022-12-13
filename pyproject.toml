@@ -186,6 +186,7 @@ regex = '''
   (?P<minor>\d+)
   \.
   (?P<patch>\d+)
+  ((?P<release>[a-zA-Z]+)(?P<build>\d+))?
   '''
 
 [tool.tbump.git]
@@ -206,8 +207,7 @@ src = "docs/source/conf.py"
 name = "Update changelog"
 cmd = "./scripts/update-changelog.bash"
 
-# Or run some commands after the git tag and the branch
-# have been pushed:
-#  [[tool.tbump.after_push]]
-#  name = "publish"
-#  cmd = "./publish.sh"
+# TODO: enable
+# [[tool.tbump.after_push]]
+# name = "publish"
+# cmd = "./scripts/release.sh"
