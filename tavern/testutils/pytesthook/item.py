@@ -46,6 +46,8 @@ class YamlItem(pytest.Item):
                 error_on_empty_scalar
             )  # type:ignore
 
+            YamlItem._patched_yaml = True
+
     @classmethod
     def yamlitem_from_parent(cls, name, parent, spec, path):
         return cls.from_parent(parent, name=name, spec=spec, path=path)
