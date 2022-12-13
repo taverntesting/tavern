@@ -84,6 +84,7 @@ dev = [
     "py",
     "tox>=3,<4",
     "tox-travis",
+    "tbump >=6,<7",
     "twine",
     "wheel",
 ]
@@ -176,3 +177,37 @@ ignore = ["E501", "W503", "C901", "W504"]
 exclude = [".git", "__pycache__", "docs/source/conf.py", "build", "dist"]
 max-complexity = 10
 
+[tool.tbump.version]
+current = "1.24.1"
+
+regex = '''
+  (?P<major>\d+)
+  \.
+  (?P<minor>\d+)
+  \.
+  (?P<patch>\d+)
+  '''
+
+[tool.tbump.git]
+message_template = "Bump to {new_version}"
+tag_template = "{new_version}"
+
+[[tool.tbump.file]]
+src = "tavern/__init__.py"
+
+[[tool.tbump.file]]
+src = "pyproject.toml"
+
+[[tool.tbump.file]]
+src = "docs/source/conf.py"
+
+
+[[tool.tbump.before_commit]]
+name = "Update changelog"
+cmd = "./scripts/update-changelog.bash"
+
+# Or run some commands after the git tag and the branch
+# have been pushed:
+#  [[tool.tbump.after_push]]
+#  name = "publish"
+#  cmd = "./publish.sh"
