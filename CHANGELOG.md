@@ -379,11 +379,3 @@ Also log the result from 'response' ext functions
 
 
 This locks pytest to <=7.2 to avoid having to fix imports every time a new version comes out.
-
-#  1.25.0          Update requirements and packaging (2022-12-12)
-
-
-- Test using python 3.10
-- Use pyproject.toml instead of setup.py/setup.cfg
-- Add locked requirements and constraints files
-- Drop support for pytest 6 as it's not had a release for over a year
