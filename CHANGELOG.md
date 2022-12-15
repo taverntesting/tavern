@@ -424,3 +424,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  2.0.0alpha17    Fix out of order MQTT messages and ext functions in mqtt responses (2022-11-08)
 
 ##  2.0.0alpha18    Spin up separate message queue for each topic to avoid spinlocking (2022-12-09)
+
+##  2.0.0a19        2.0.0a19 (2022-12-15)
