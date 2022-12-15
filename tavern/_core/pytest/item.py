@@ -5,12 +5,12 @@ import pytest
 import yaml
 
 from tavern._core import exceptions
+from tavern._core.loader import error_on_empty_scalar
 from tavern._core.plugins import load_plugins
 from tavern._core.pytest import call_hook
 from tavern._core.report import attach_text
 from tavern._core.run import run_test
 from tavern._core.schema.files import verify_tests
-from tavern._core.loader import error_on_empty_scalar
 
 from .error import ReprdError
 from .util import load_global_cfg
