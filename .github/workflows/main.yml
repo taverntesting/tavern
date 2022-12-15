@@ -35,9 +35,6 @@ jobs:
 
         - TOXENV: py3-generic
           TOXCFG: tox-integration.ini
-        - TOXENV: pypy3-noextra
-          python: pypy-3.7-v7.x
-          TOXCFG: tox-integration.ini
         - TOXENV: py3-mqtt
           TOXCFG: tox-integration.ini
         - TOXENV: py3-hooks
