@@ -380,3 +380,11 @@ Also log the result from 'response' ext functions
 
 This locks pytest to <=7.2 to avoid having to fix imports every time a new version comes out.
 
+##  1.24.1          Format variables in test error log before dumping as a YAML string (2022-11-22)
+
+#  1.25.0          More changes to packaging (2022-12-13)
+
+
+This is technically not a operational change but I'm adding a new tag so it can br reverted in future
+
+##  1.25.1          Remove tbump from dependencies so it can actually be uploaded to pypi (2022-12-13)

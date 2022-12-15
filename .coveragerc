@@ -1,8 +1,0 @@
-[run]
-branch = False
-
-[paths]
-tavern =
-    tavern/
-    .tox/py39-generic/lib/python3.9/site-packages/tavern/
-    .tox/py39-mqtt/lib/python3.9/site-packages/tavern
