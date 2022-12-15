@@ -1,4 +1,4 @@
-from distutils.util import strtobool
+from distutils.util import strtobool  # pylint: disable=deprecated-module
 import enum
 import logging
 import re

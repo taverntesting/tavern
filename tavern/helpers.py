@@ -169,15 +169,10 @@ def validate_content(response, comparisons):
         expession = " ".join([str(path), str(_operator), str(expected)])
         parsed_expession = " ".join([str(actual), str(_operator), str(expected)])
 
-        if _operator == "eq" and 0:
-            check_keys_match_recursive(expected, actual, [])
-        else:
-            try:
-                actual_validation(
-                    _operator, actual, expected, parsed_expession, expession
-                )
-            except AssertionError as e:
-                raise exceptions.JMESError("Error validating JMES") from e
+        try:
+            actual_validation(_operator, actual, expected, parsed_expession, expession)
+        except AssertionError as e:
+            raise exceptions.JMESError("Error validating JMES") from e
 
 
 def check_jmespath_match(parsed_response, query, expected=None):

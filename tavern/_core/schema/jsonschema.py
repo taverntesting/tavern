@@ -139,7 +139,7 @@ def verify_jsonschema(to_verify, schema):
                 filename = get_stage_filename(instance)
 
             if filename:
-                with open(filename, "r") as infile:
+                with open(filename, "r", encoding="utf-8") as infile:
                     n_lines = len(infile.readlines())
 
                 first_line, last_line, _ = get_stage_lines(instance)

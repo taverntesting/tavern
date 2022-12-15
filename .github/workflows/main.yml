@@ -21,40 +21,28 @@ jobs:
         include:
         # 'Basic' tests and checks
         # Pylint, formatting/sorting, and quickest unit/integration tests
-        - TOXENV: py39black
-          python: "3.9"
+        - TOXENV: py3black
           TOXCFG: tox.ini
-        - TOXENV: py39lint
-          python: "3.9"
+        - TOXENV: py3lint
           TOXCFG: tox.ini
-        - TOXENV: py39mypy
-          python: "3.9"
+        - TOXENV: py3mypy
           TOXCFG: tox.ini
-        - TOXENV: py39isort
-          python: "3.9"
+        - TOXENV: py3isort
           TOXCFG: tox.ini
 
-        - TOXENV: py39
-          python: "3.9"
-          TOXCFG: tox.ini
-        - TOXENV: py39-pytest6
-          python: "3.9"
+        - TOXENV: py3
           TOXCFG: tox.ini
 
-        - TOXENV: py39-generic
-          python: "3.9"
+        - TOXENV: py3-generic
           TOXCFG: tox-integration.ini
         - TOXENV: pypy3-noextra
           python: pypy-3.7-v7.x
           TOXCFG: tox-integration.ini
-        - TOXENV: py39-mqtt
-          python: "3.9"
+        - TOXENV: py3-mqtt
           TOXCFG: tox-integration.ini
-        - TOXENV: py39-hooks
-          python: "3.9"
+        - TOXENV: py3-hooks
           TOXCFG: tox-integration.ini
-        - TOXENV: py39-advanced
-          python: "3.9"
+        - TOXENV: py3-advanced
           TOXCFG: tox-integration.ini
 
     services:
@@ -73,26 +61,26 @@ jobs:
         cache-name: cache-${{ matrix.TOXENV }}
       with:
         path: .tox
-        key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('tox.ini', 'tox-integration.ini', 'requirements.txt', 'setup.cfg', 'setup.py') }}
+        key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('tox.ini', 'tox-integration.ini', 'pyproject.toml', 'requirements.in') }}
 
     - uses: actions/cache@v3
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'setup.cfg', 'setup.py') }}
+        key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'requirements.in') }}
         restore-keys: |
           ${{ runner.os }}-pip-
 
-    - uses: satackey/action-docker-layer-caching@v0.0.11
+    - uses: jpribyl/action-docker-layer-caching@v0.1.1
       continue-on-error: true
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: ${{ matrix.python }}
+        python-version: "3.10"
 
     - name: install deps
       run: |
-        pip install tox-travis
+        pip install tox-travis -c constraints.txt
 
     - name: tox
       run: |
