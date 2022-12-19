@@ -97,8 +97,6 @@ def _generate_parametrized_test_items(keys, vals_combination):
 
     # combination of keys and the values they correspond to
     for pair in zip(keys, vals_combination):
-        logger.debug("Pair: %s", pair)
-
         key, value = pair
         # NOTE: If test is invalid, test names generated here will be
         # very weird looking
@@ -202,8 +200,6 @@ def _get_parametrized_items(parent, test_spec, parametrize_marks, pytest_marks):
         ) from e
 
     keys = [i["parametrize"]["key"] for i in parametrize_marks]
-
-    logger.debug("keys: %s", keys)
 
     for vals_combination in combined:
         logger.debug("Generating test for %s/%s", keys, vals_combination)
