@@ -1,9 +1,9 @@
 from contextlib import ExitStack
+import dataclasses
 import os
 import tempfile
 from unittest.mock import Mock
 
-import attr
 import pytest
 import requests
 from requests.cookies import RequestsCookieJar
@@ -84,7 +84,7 @@ class TestHttpRedirects(object):
     ):
         """Globally enable following redirects in test"""
 
-        includes = attr.evolve(includes, follow_redirects=do_follow)
+        includes = dataclasses.replace(includes, follow_redirects=do_follow)
 
         assert _check_allow_redirects(req, includes) == do_follow
 

@@ -1,11 +1,11 @@
 import json
+import sys
 import tempfile
 from textwrap import dedent
 from unittest.mock import Mock, patch
 
 import _pytest
 import pytest
-import sys
 import yaml
 
 from tavern._core import exceptions
@@ -19,11 +19,7 @@ from tavern._core.strict_util import (
     validate_and_parse_option,
 )
 from tavern.core import run
-from tavern.helpers import (
-    validate_content,
-    validate_pykwalify,
-    validate_regex,
-)
+from tavern.helpers import validate_content, validate_pykwalify, validate_regex
 
 
 class FakeResponse:

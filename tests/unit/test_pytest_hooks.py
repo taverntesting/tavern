@@ -1,5 +1,5 @@
-import os
 from dataclasses import dataclass
+import os
 from unittest.mock import Mock, patch
 
 from faker import Faker

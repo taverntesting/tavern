@@ -1,10 +1,10 @@
 from copy import deepcopy
+import dataclasses
 import json
 import os
 from unittest.mock import MagicMock, Mock, patch
 import uuid
 
-import attr
 import paho.mqtt.client as paho
 import pytest
 import requests
@@ -170,7 +170,7 @@ class TestIncludeStages:
         newtest["includes"] = stage_includes
         newtest["stages"].insert(0, {"type": "ref", "id": "my_external_stage"})
 
-        includes = attr.evolve(includes, stages=fake_stages)
+        includes = dataclasses.replace(includes, stages=fake_stages)
 
         with patch(
             "tavern._plugins.rest.request.requests.Session.request",
@@ -190,7 +190,7 @@ class TestIncludeStages:
         newtest["includes"] = stage_includes
         newtest["stages"].insert(0, {"type": "ref", "id": "my_external_stage"})
 
-        includes = attr.evolve(includes, stages=fake_stages)
+        includes = dataclasses.replace(includes, stages=fake_stages)
 
         with pytest.raises(exceptions.DuplicateStageDefinitionError):
             with patch(

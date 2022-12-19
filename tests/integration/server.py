@@ -5,6 +5,7 @@ import gzip
 from hashlib import sha512
 import itertools
 import json
+import math
 import mimetypes
 import os
 import time
@@ -14,7 +15,6 @@ import uuid
 from flask import Flask, Response, jsonify, make_response, redirect, request, session
 from itsdangerous import URLSafeTimedSerializer
 import jwt
-import math
 
 app = Flask(__name__)
 app.config.update(SECRET_KEY="secret")
