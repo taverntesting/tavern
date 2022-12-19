@@ -1,6 +1,6 @@
 import logging
-import attr
 
+import attr
 import pytest
 import yaml
 
@@ -11,6 +11,7 @@ from tavern._core.pytest import call_hook
 from tavern._core.report import attach_text
 from tavern._core.run import run_test
 from tavern._core.schema.files import verify_tests
+
 from .error import ReprdError
 from .util import load_global_cfg
 
