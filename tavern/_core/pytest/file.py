@@ -361,6 +361,10 @@ class YamlFile(pytest.File):
                 for i in self._generate_items(test_spec):
                     i.initialise_fixture_attrs()
                     yield i
-            except (TypeError, KeyError):
-                verify_tests(test_spec, with_plugins=False)
-                raise
+            except (TypeError, KeyError) as e:
+                try:
+                    verify_tests(test_spec, with_plugins=False)
+                except Exception as e2:
+                    raise e2 from e
+                else:
+                    raise

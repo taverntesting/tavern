@@ -1,5 +1,5 @@
-import dataclasses
 import logging
+import attr
 
 import pytest
 import yaml
@@ -117,8 +117,8 @@ class YamlItem(pytest.Item):
                 # usefixtures, which pytest then wraps in a tuple. we need to
                 # extract this tuple so pytest can use both fixtures.
                 if isinstance(pm.mark.args[0], (list, tuple)):
-                    new_mark = dataclasses.replace(pm.mark, args=pm.mark.args[0])
-                    pm = dataclasses.replace(pm, mark=new_mark)
+                    new_mark = attr.evolve(pm.mark, args=pm.mark.args[0])
+                    pm = attr.evolve(pm, mark=new_mark)
                 elif isinstance(pm.mark.args[0], (dict)):
                     # We could raise a TypeError here instead, but then it's a
                     # failure at collection time (which is a bit annoying to
