@@ -22,8 +22,8 @@ If on Windows, you should be able to just run the 'tox' commands in that file.
 
 1. Update requirements files (BOTH of them)
 
-       pip-compile --output-file - --all-extras --resolver=backtracking pyproject.toml --reuse-hashes --generate-hashes > requirements.txt
-       pip-compile --output-file - --all-extras --resolver=backtracking pyproject.toml --strip-extras > constraints.txt
+       pip-compile --all-extras --resolver=backtracking pyproject.toml --output-file requirements.txt --reuse-hashes --generate-hashes
+       pip-compile --all-extras --resolver=backtracking pyproject.toml --output-file constraints.txt --strip-extras
 
 1. Run tests as above
 
