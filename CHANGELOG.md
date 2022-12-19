@@ -428,3 +428,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  2.0.0a19        2.0.0a19 (2022-12-15)
 
 #  2.0.0a20        Drop pypy3 tests (2022-12-15)
+
+##  2.0.0a21        2.0.0a21 (2022-12-19)
