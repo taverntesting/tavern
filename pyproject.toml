@@ -9,7 +9,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "Framework :: Pytest",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -38,7 +37,7 @@ dependencies = [
     "stevedore~=3.3.0",
 ]
 
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 
 [[project.authors]]
 name = "Michael Boulton"
@@ -108,7 +107,7 @@ paho-mqtt = "tavern._plugins.mqtt.tavernhook"
 target-version = ['py37']
 
 [tool.mypy]
-python_version = 3.7
+python_version = 3.8
 ignore_missing_imports = true
 
 [tool.coverage.run]
