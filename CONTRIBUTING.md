@@ -31,3 +31,13 @@ If on Windows, you should be able to just run the 'tox' commands in that file.
 
     black tavern/ tests/
     isort --profile black tavern/ tests/
+
+## Creating a new release
+
+1. Setup `~/.pypirc`
+
+1. Install the correct version of tbump `pip install tbump@https://github.com/michaelboulton/tbump/archive/714ba8957a3c84b625608ceca39811ebe56229dc.zip`
+
+1. Tag and push to git with `tbump <new-tag> --tag-message "<tag-message>"`
+
+1. Upload to pypi with `flit publish`
