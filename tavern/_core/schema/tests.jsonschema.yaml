@@ -423,3 +423,10 @@ properties:
       oneOf:
       - $ref: "#/definitions/stage"
       - $ref: "#/definitions/stage_ref"
+
+  finally:
+    type: array
+    description: Stages to run after test finishes
+
+    items:
+      $ref: "#/definitions/stage"

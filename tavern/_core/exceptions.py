@@ -1,5 +1,14 @@
+from typing import TYPE_CHECKING, Dict, Optional
+
+if TYPE_CHECKING:
+    from tavern._core.pytest.config import TestConfig
+
+
 class TavernException(Exception):
     """Base exception"""
+
+    stage: Optional[Dict]
+    test_block_config: Optional["TestConfig"]
 
 
 class BadSchemaError(TavernException):

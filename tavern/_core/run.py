@@ -1,21 +1,25 @@
 from contextlib import ExitStack
 import copy
 from copy import deepcopy
+import dataclasses
 from distutils.util import strtobool  # pylint: disable=deprecated-module
 import functools
 import logging
+from typing import Dict
 
 from tavern._core import exceptions
 from tavern._core.plugins import (
+    PluginHelperBase,
     get_expected,
     get_extra_sessions,
     get_request_type,
     get_verifiers,
 )
-from tavern._core.strict_util import StrictLevel
+from tavern._core.strict_util import StrictLevel, StrictSetting
 
 from .dict_util import format_keys, get_tavern_box
 from .pytest import call_hook
+from .pytest.config import TestConfig
 from .report import attach_stage_content, wrap_step
 from .testhelpers import delay, retry
 
@@ -122,7 +126,7 @@ def run_test(in_file, test_spec, global_cfg):
     # Initialise test config for this test with the global configuration before
     # starting
     test_block_config = global_cfg.copy()
-    default_global_stricness = global_cfg.strict
+    default_global_strictness = global_cfg.strict
 
     tavern_box = get_tavern_box()
 
@@ -162,41 +166,25 @@ def run_test(in_file, test_spec, global_cfg):
 
         has_only = any(getonly(stage) for stage in test_spec["stages"])
 
-        # Run tests in a path in order
-        for idx, stage in enumerate(test_spec["stages"]):
-            if stage.get("skip"):
-                continue
-            if has_only and not getonly(stage):
-                continue
+        runner = _TestRunner(
+            default_global_strictness, sessions, test_block_config, test_spec
+        )
 
-            test_block_config = test_block_config.with_strictness(
-                default_global_stricness
-            )
-            test_block_config = test_block_config.with_strictness(
-                _calculate_stage_strictness(stage, test_block_config, test_spec)
-            )
+        try:
+            # Run tests in a path in order
+            for idx, stage in enumerate(test_spec["stages"]):
+                if stage.get("skip"):
+                    continue
+                if has_only and not getonly(stage):
+                    continue
 
-            # Wrap run_stage with retry helper
-            run_stage_with_retries = retry(stage, test_block_config)(run_stage)
+                runner.wrap_run_stage(idx, stage)
 
-            partial = functools.partial(
-                run_stage_with_retries, sessions, stage, test_block_config
-            )
-
-            allure_name = "Stage {}: {}".format(
-                idx, format_keys(stage["name"], test_block_config.variables)
-            )
-            step = wrap_step(allure_name, partial)
-
-            try:
-                step()
-            except exceptions.TavernException as e:
-                e.stage = stage
-                e.test_block_config = test_block_config
-                raise
-
-            if getonly(stage):
-                break
+                if getonly(stage):
+                    break
+        finally:
+            for idx, stage in enumerate(test_spec.get("finally", [])):
+                runner.wrap_run_stage(idx, stage)
 
 
 def _calculate_stage_strictness(stage, test_block_config, test_spec):
@@ -259,45 +247,73 @@ def _calculate_stage_strictness(stage, test_block_config, test_spec):
     return new_strict
 
 
-def run_stage(sessions, stage, test_block_config):
-    """Run one stage from the test
+@dataclasses.dataclass(frozen=True)
+class _TestRunner:
+    default_global_strictness: StrictSetting
+    sessions: Dict[str, PluginHelperBase]
+    test_block_config: TestConfig
+    test_spec: Dict
 
-    Args:
-        sessions (dict): Dictionary of relevant 'session' objects used for this test
-        stage (dict): specification of stage to be run
-        test_block_config (TestConfig): available variables for test
-    """
-    stage = copy.deepcopy(stage)
-    name = stage["name"]
+    def wrap_run_stage(self, idx: int, stage):
+        stage_config = self.test_block_config.with_strictness(
+            self.default_global_strictness
+        )
+        stage_config = stage_config.with_strictness(
+            _calculate_stage_strictness(stage, stage_config, self.test_spec)
+        )
+        # Wrap run_stage with retry helper
+        run_stage_with_retries = retry(stage, stage_config)(self.run_stage)
+        partial = functools.partial(run_stage_with_retries, stage, stage_config)
+        allure_name = "Stage {}: {}".format(
+            idx, format_keys(stage["name"], stage_config.variables)
+        )
+        step = wrap_step(allure_name, partial)
 
-    attach_stage_content(stage)
+        try:
+            step()
+        except exceptions.TavernException as e:
+            e.stage = stage
+            e.test_block_config = stage_config
+            raise
 
-    r = get_request_type(stage, test_block_config, sessions)
+    def run_stage(self, stage: dict, stage_config: TestConfig):
+        """Run one stage from the test
 
-    tavern_box = test_block_config.variables["tavern"]
-    tavern_box.update(request_vars=r.request_vars)
+        Args:
+            stage: specification of stage to be run
+            stage_config: available variables for test
+        """
+        stage = copy.deepcopy(stage)
+        name = stage["name"]
 
-    expected = get_expected(stage, test_block_config, sessions)
+        attach_stage_content(stage)
 
-    delay(stage, "before", test_block_config.variables)
+        r = get_request_type(stage, stage_config, self.sessions)
 
-    logger.info("Running stage : %s", name)
+        tavern_box = stage_config.variables["tavern"]
+        tavern_box.update(request_vars=r.request_vars)
 
-    call_hook(
-        test_block_config,
-        "pytest_tavern_beta_before_every_request",
-        request_args=r.request_vars,
-    )
+        expected = get_expected(stage, stage_config, self.sessions)
 
-    verifiers = get_verifiers(stage, test_block_config, sessions, expected)
+        delay(stage, "before", stage_config.variables)
 
-    response = r.run()
+        logger.info("Running stage : %s", name)
 
-    for response_type, response_verifiers in verifiers.items():
-        logger.debug("Running verifiers for %s", response_type)
-        for v in response_verifiers:
-            saved = v.verify(response)
-            test_block_config.variables.update(saved)
+        call_hook(
+            stage_config,
+            "pytest_tavern_beta_before_every_request",
+            request_args=r.request_vars,
+        )
 
-    tavern_box.pop("request_vars")
-    delay(stage, "after", test_block_config.variables)
+        verifiers = get_verifiers(stage, stage_config, self.sessions, expected)
+
+        response = r.run()
+
+        for response_type, response_verifiers in verifiers.items():
+            logger.debug("Running verifiers for %s", response_type)
+            for v in response_verifiers:
+                saved = v.verify(response)
+                stage_config.variables.update(saved)
+
+        tavern_box.pop("request_vars")
+        delay(stage, "after", stage_config.variables)

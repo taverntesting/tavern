@@ -4,11 +4,14 @@ This is here mainly to make MQTT easier, this will almost defintiely change
 significantly if/when a proper plugin system is implemented!
 """
 import logging
+from typing import Any, Dict
 
 import stevedore
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
+from tavern._core.pytest.config import TestConfig
+from tavern.request import BaseRequest
 
 logger = logging.getLogger(__name__)
 
@@ -161,15 +164,17 @@ def get_extra_sessions(test_spec, test_block_config):
     return sessions
 
 
-def get_request_type(stage, test_block_config, sessions):
+def get_request_type(
+    stage: dict, test_block_config: TestConfig, sessions: Dict[str, PluginHelperBase]
+) -> BaseRequest:
     """Get the request object for this stage
 
     there can only be one
 
     Args:
-        stage (dict): spec for this stage
-        test_block_config (dict): variables for this test run
-        sessions (dict): all available sessions
+        stage: spec for this stage
+        test_block_config: variables for this test run
+        sessions: all available sessions
 
     Returns:
         BaseRequest: request object with a run() method
@@ -217,12 +222,12 @@ class ResponseVerifier(dict):
     plugin_name: str
 
 
-def _foreach_response(stage, test_block_config, action):
+def _foreach_response(stage: dict, test_block_config: TestConfig, action):
     """Do something for each response
 
     Args:
-        stage (dict): Stage of test
-        test_block_config (dict): Config for test
+        stage : Stage of test
+        test_block_config : Config for test
         action ((p: {plugin, name}, response_block: dict) -> Any): function that takes (plugin, response block)
 
     Returns:
@@ -241,7 +246,9 @@ def _foreach_response(stage, test_block_config, action):
     return retvals
 
 
-def get_expected(stage, test_block_config, sessions):
+def get_expected(
+    stage: dict, test_block_config: TestConfig, sessions: Dict[str, PluginHelperBase]
+):
     """Get expected responses for each type of request
 
     Though only 1 request can be made, it can cause multiple responses.
@@ -251,9 +258,9 @@ def get_expected(stage, test_block_config, sessions):
     BEFORE running the request.
 
     Args:
-        stage (dict): test stage
-        test_block_config (dict): available configuration for this test
-        sessions (dict): all available sessions
+        stage: test stage
+        test_block_config: available configuration for this test
+        sessions : all available sessions
 
     Returns:
         dict: mapping of request type: expected response dict
@@ -273,13 +280,18 @@ def get_expected(stage, test_block_config, sessions):
     return _foreach_response(stage, test_block_config, action)
 
 
-def get_verifiers(stage, test_block_config, sessions, expected):
+def get_verifiers(
+    stage: dict,
+    test_block_config: TestConfig,
+    sessions: Dict[str, PluginHelperBase],
+    expected: Dict[str, Any],
+):
     """Get one or more response validators for this stage
 
     Args:
-        stage (dict): spec for this stage
-        test_block_config (dict): variables for this test run
-        sessions (dict): all available sessions
+        stage: spec for this stage
+        test_block_config: variables for this test run
+        sessions: all available sessions
         expected (dict): expected responses for this stage
 
     Returns:
