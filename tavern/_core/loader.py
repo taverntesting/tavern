@@ -356,7 +356,7 @@ class FloatToken(TypeConvertToken):
     constructor = float
 
 
-class StrToBoolConstructor(object):
+class StrToBoolConstructor:
     """Using `bool` as a constructor directly will evaluate all strings to `True`."""
 
     def __new__(cls, s):
@@ -368,7 +368,7 @@ class BoolToken(TypeConvertToken):
     constructor = StrToBoolConstructor
 
 
-class StrToRawConstructor(object):
+class StrToRawConstructor:
     """Used when we want to ignore brace formatting syntax"""
 
     def __new__(cls, s):

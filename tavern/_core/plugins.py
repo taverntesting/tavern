@@ -13,7 +13,7 @@ from tavern._core.dict_util import format_keys
 logger = logging.getLogger(__name__)
 
 
-class PluginHelperBase(object):
+class PluginHelperBase:
     """Base for plugins"""
 
 

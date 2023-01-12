@@ -247,7 +247,7 @@ class YamlFile(pytest.File):
         # This (and the FakeObj below) are to make pytest-pspec not error out.
         # The 'docstring' for this is the filename, the 'docstring' for each
         # individual test is the actual test name.
-        class FakeObj(object):
+        class FakeObj:
             __doc__ = self.fspath.strpath
 
         self.obj = FakeObj

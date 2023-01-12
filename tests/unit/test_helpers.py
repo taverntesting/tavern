@@ -201,7 +201,7 @@ class TestTavernRepr:
 
 @pytest.fixture(name="nested_response")
 def fix_nested_response():
-    class response_content(object):
+    class response_content:
         content = {
             "top": {
                 "Thing": "value",
@@ -291,7 +291,7 @@ class TestPykwalifyExtension:
             )
 
 
-class TestCheckParseValues(object):
+class TestCheckParseValues:
     @pytest.mark.parametrize(
         "item", [[134], {"a": 2}, yaml, yaml.load, yaml.SafeLoader]
     )
@@ -313,7 +313,7 @@ class TestCheckParseValues(object):
         assert not wmock.called
 
 
-class TestFormatWithJson(object):
+class TestFormatWithJson:
     @pytest.mark.parametrize(
         "item", [[134], {"a": 2}, yaml, yaml.load, yaml.SafeLoader]
     )
@@ -339,7 +339,7 @@ class TestFormatWithJson(object):
             format_keys(ForceIncludeToken("{a}{b}"), {"fd": "123"})
 
 
-class TestCheckFileSpec(object):
+class TestCheckFileSpec:
     def _wrap_test_block(self, dowith):
         validate_file_spec({"files": dowith}, Mock(), Mock())
 
