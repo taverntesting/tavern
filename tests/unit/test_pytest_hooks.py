@@ -1,8 +1,11 @@
 from dataclasses import dataclass
 import os
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from faker import Faker
+
+from tavern._core import exceptions
+from tavern._core.pytest.file import YamlFile, _get_parametrized_items
 
 try:
     from py.path import LocalPath
@@ -10,8 +13,6 @@ except ImportError:
     from py._path.local import LocalPath
 
 import pytest
-
-from tavern.testutils.pytesthook.file import YamlFile, _get_parametrized_items
 
 
 @dataclass
@@ -82,7 +83,7 @@ def test_none():
 
 
 @pytest.mark.parametrize("faker", [Faker(), Faker("zh_CN")])
-class TestMakeFile(object):
+class TestMakeFile:
     def test_only_single(self, faker):
         marks = [get_basic_parametrize_mark(faker)]
 
@@ -159,6 +160,62 @@ class TestMakeFile(object):
         # [w, x, y, z, 1, 2]
         # etc.
         assert len(tests) == 36
+
+    @pytest.mark.parametrize(
+        ("keys", "values"),
+        (
+            ("a", ["b", "c", "d"]),
+            (["a"], ["b", "c", "d"]),
+            ("a", {"k": "v"}),
+            (["a"], {"k": "v"}),
+            (["a", "b"], [["b", "c"]]),
+            (["a", "b"], [["b", "c"], [{"a": "b"}, {"a": "b"}]]),
+            (["a", "b"], [["b", "c"], ["b", "c"], ["d", "e"]]),
+        ),
+    )
+    def test_ext_function_top_level(self, faker, keys, values):
+        with patch(
+            "tavern._core.pytest.file.get_wrapped_create_function",
+            lambda _: lambda: values,
+        ):
+            marks = [
+                {"parametrize": {"key": keys, "vals": {"$ext": {"function": "a:v"}}}}
+            ]
+
+            tests = get_parametrised_tests(marks)
+
+            assert len(tests) == len(values)
+
+    @pytest.mark.parametrize(
+        ("keys", "values"),
+        (
+            # must return a list of lists
+            (["a", "b"], {"a": "b"}),
+            # must return a list of lists
+            (["a", "b"], [{"a": "b"}]),
+            # must return a list of lists
+            (["a", "b"], [{"a": "b"}, {"a": "b"}]),
+            # must return a list of lists
+            (["a", "b"], "b"),
+            # must return a list of lists
+            (["a", "b"], ["b", "c"]),
+            # must return a list of lists, where each element is also 3 long
+            (["a", "b"], [["b", "c", "e"]]),
+            # must return a list of lists, where each element is also 3 long
+            (["a", "b"], [["b"]]),
+        ),
+    )
+    def test_ext_function_top_level_invalid(self, faker, keys, values):
+        with patch(
+            "tavern._core.pytest.file.get_wrapped_create_function",
+            lambda _: lambda: values,
+        ):
+            marks = [
+                {"parametrize": {"key": keys, "vals": {"$ext": {"function": "a:v"}}}}
+            ]
+
+            with pytest.raises(exceptions.BadSchemaError):
+                get_parametrised_tests(marks)
 
 
 def test_doc_string():

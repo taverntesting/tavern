@@ -14,15 +14,25 @@ paho-mqtt: &mqtt_spec
     timeout: 3
   client:
     transport: websockets
-    client_id: tavern-tester
+    client_id: tavern-tester-{random_device_id}
 
 stages:
+  - &setup_device_for_test
+    name: create device
+    request:
+      url: "{host}/create_device"
+      method: PUT
+      json:
+        device_id: "{random_device_id}"
+    response:
+      status_code: 201
+
   - name: Echo text
     mqtt_publish:
-      topic: /device/123/echo
+      topic: /device/{random_device_id}/echo
       payload: hello world
     mqtt_response:
-      topic: /device/123/echo/response
+      topic: /device/{random_device_id}/echo/response
       payload: hello world
       timeout: 5
       qos: 1
@@ -34,16 +44,19 @@ test_name: Test mqtt message echo json
 includes:
   - !include common.yaml
 
+
 paho-mqtt: *mqtt_spec
 
 stages:
+  - *setup_device_for_test
+
   - name: Echo json
     mqtt_publish:
-      topic: /device/123/echo
+      topic: /device/{random_device_id}/echo
       json:
         message: hello world
     mqtt_response:
-      topic: /device/123/echo/response
+      topic: /device/{random_device_id}/echo/response
       json:
         message: hello world
       timeout: 5
@@ -64,13 +77,15 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
+  - *setup_device_for_test
+
   - name: Echo json
     mqtt_publish:
       topic: '{get_publish_topic}'
       json:
         message: hello world
     mqtt_response:
-      topic: '/device/123/echo/{get_response_topic_suffix}'
+      topic: '/device/{random_device_id}/echo/{get_response_topic_suffix}'
       json:
         message: hello world
       timeout: 5
@@ -89,14 +104,16 @@ strict:
   - json:off
 
 stages:
+  - *setup_device_for_test
+
   - name: Check that at least part of response is echoed
     mqtt_publish:
-      topic: /device/123/echo
+      topic: /device/{random_device_id}/echo
       json:
         key_1: message1
         key_2: message2
     mqtt_response:
-      topic: /device/123/echo/response
+      topic: /device/{random_device_id}/echo/response
       json:
         key_1: message1
       timeout: 5
@@ -117,14 +134,16 @@ strict:
 _xfail: run
 
 stages:
+  - *setup_device_for_test
+
   - name: Check that at least part of response is echoed
     mqtt_publish:
-      topic: /device/123/echo
+      topic: /device/{random_device_id}/echo
       json:
         key_1: message1
         key_2: message2
     mqtt_response:
-      topic: /device/123/echo/response
+      topic: /device/{random_device_id}/echo/response
       json:
         key_1: message1
       timeout: 5
@@ -140,13 +159,15 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
+  - *setup_device_for_test
+
   - name: Echo json
     mqtt_publish:
-      topic: /device/123/echo
+      topic: /device/{random_device_id}/echo
       json:
         message: hello world
     mqtt_response:
-      topic: /device/123/echo/response
+      topic: /device/{random_device_id}/echo/response
       json:
         message: hello world
       timeout: 5
@@ -164,9 +185,11 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
+  - *setup_device_for_test
+
   - name: Echo text with retain force on
     mqtt_publish:
-      topic: /device/123/echo
+      topic: /device/{random_device_id}/echo
       payload: hello world
       retain: true
       qos: 1
@@ -195,11 +218,13 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
+  - *setup_device_for_test
+
   - name: step 1 - ping/pong
     mqtt_publish:
-      topic: /device/123/ping
+      topic: /device/{random_device_id}/ping
     mqtt_response:
-      topic: /device/123/pong
+      topic: /device/{random_device_id}/pong
       timeout: 5
       qos: 1
 
@@ -213,12 +238,14 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
+  - *setup_device_for_test
+
   - name: step 1 - ping/pong
     mqtt_publish:
-      topic: /device/123/ping
+      topic: /device/{random_device_id}/ping
       payload: blaeruhg
     mqtt_response:
-      topic: /device/123/pong
+      topic: /device/{random_device_id}/pong
       timeout: 5
       qos: 1
 
@@ -232,11 +259,13 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
+  - *setup_device_for_test
+
   - name: step 1 - post message trigger
     request:
       url: "{host}/send_mqtt_message"
       json:
-        device_id: 123
+        device_id: "{random_device_id}"
         payload: "hello"
       method: POST
       headers:
@@ -244,11 +273,11 @@ stages:
     response:
       status_code: 200
       json:
-        topic: "/device/123"
+        topic: "/device/{random_device_id}"
       headers:
         content-type: application/json
     mqtt_response:
-      topic: /device/123
+      topic: /device/{random_device_id}
       payload: "hello"
       timeout: 5
 
@@ -262,20 +291,13 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
-  - name: step 0 - reset devices
-    request:
-      url: "{host}/reset"
-      method: POST
-      headers:
-        content-type: application/json
-    response:
-      status_code: 204
+  - *setup_device_for_test
 
   - name: step 1 - get device state with lights off
     request:
       url: "{host}/get_device_state"
       params:
-        device_id: 123
+        device_id: "{random_device_id}"
       method: GET
       headers:
         content-type: application/json
@@ -288,7 +310,7 @@ stages:
 
   - name: step 2 - publish an mqtt message saying that the lights are now on
     mqtt_publish:
-      topic: /device/123/lights
+      topic: /device/{random_device_id}/lights
       qos: 1
       payload: "on"
     delay_after: 2
@@ -297,7 +319,7 @@ stages:
     request:
       url: "{host}/get_device_state"
       params:
-        device_id: 123
+        device_id: "{random_device_id}"
       method: GET
       headers:
         content-type: application/json
@@ -318,20 +340,13 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
-  - name: step 0 - reset devices
-    request:
-      url: "{host}/reset"
-      method: POST
-      headers:
-        content-type: application/json
-    response:
-      status_code: 204
+  - *setup_device_for_test
 
   - name: Check lights status is off
     mqtt_publish:
-      topic: /device/123/status
+      topic: /device/{random_device_id}/status
     mqtt_response:
-      topic: /device/123/status/response
+      topic: /device/{random_device_id}/status/response
       json:
         lights: 0
       timeout: 3
@@ -339,16 +354,16 @@ stages:
 
   - name: Turn lights on
     mqtt_publish:
-      topic: /device/123/lights
+      topic: /device/{random_device_id}/lights
       qos: 1
       payload: "on"
     delay_after: 2
 
   - name: Check lights status is on
     mqtt_publish:
-      topic: /device/123/status
+      topic: /device/{random_device_id}/status
     mqtt_response:
-      topic: /device/123/status/response
+      topic: /device/{random_device_id}/status/response
       json:
         lights: 1
       timeout: 3
@@ -364,11 +379,13 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
+  - *setup_device_for_test
+
   - name: Test checking for lights status with anyint
     mqtt_publish:
-      topic: /device/123/status
+      topic: /device/{random_device_id}/status
     mqtt_response:
-      topic: /device/123/status/response
+      topic: /device/{random_device_id}/status/response
       json:
         lights: !anyint
       timeout: 3
@@ -384,11 +401,13 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
-  - name: Test checking for lights status with anyint
+  - *setup_device_for_test
+
+  - name: Test checking for lights status with anything with json
     mqtt_publish:
-      topic: /device/123/status
+      topic: /device/{random_device_id}/status
     mqtt_response:
-      topic: /device/123/status/response
+      topic: /device/{random_device_id}/status/response
       json:
         lights: !anything
       timeout: 3
@@ -404,11 +423,13 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
-  - name: Test checking for lights status with anyint
+  - *setup_device_for_test
+
+  - name: Test checking for lights status with anything with payload
     mqtt_publish:
-      topic: /device/123/status
+      topic: /device/{random_device_id}/status
     mqtt_response:
-      topic: /device/123/status/response
+      topic: /device/{random_device_id}/status/response
       payload: !anything
       timeout: 3
       qos: 1
@@ -423,13 +444,15 @@ includes:
 paho-mqtt: *mqtt_spec
 
 stages:
+  - *setup_device_for_test
+
   - name: Echo json
     mqtt_publish:
-      topic: /device/123/echo
+      topic: /device/{random_device_id}/echo
       json:
         message: !raw "Hello {world}"
     mqtt_response:
-      topic: /device/123/echo/response
+      topic: /device/{random_device_id}/echo/response
       json:
         message: !raw "Hello {world}"
       timeout: 5
@@ -445,17 +468,83 @@ includes:
 paho-mqtt:
   client:
     transport: websockets
-    client_id: tavern-tester
+    client_id: tavern-tester-{random_device_id}
   connect:
     host: "{mqtt_host}"
     port: !int "{mqtt_port:d}"
     timeout: 3
 
 stages:
+  - *setup_device_for_test
+
   - name: step 1 - ping/pong
     mqtt_publish:
-      topic: /device/123/ping
+      topic: /device/{random_device_id}/ping
     mqtt_response:
-      topic: /device/123/pong
+      topic: /device/{random_device_id}/pong
       timeout: 5
       qos: 1
+
+---
+
+test_name: Test get both statuses
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - *setup_device_for_test
+
+  - name: create device 2
+    request:
+      url: "{host}/create_device"
+      method: PUT
+      json:
+        device_id: "3487589234754"
+
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /devices/status
+    mqtt_response:
+      - topic: /device/{random_device_id}/status/response
+        payload: !anything
+        timeout: 3
+        qos: 1
+      - topic: /device/3487589234754/status/response
+        payload: !anything
+        timeout: 3
+        qos: 1
+
+---
+
+test_name: Test out of order responses
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - *setup_device_for_test
+
+  - name: create device 2
+    request:
+      url: "{host}/create_device"
+      method: PUT
+      json:
+        device_id: "43676974864576"
+
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /devices/status
+    mqtt_response:
+      - topic: /device/43676974864576/status/response
+        payload: !anything
+        timeout: 3
+        qos: 1
+      - topic: /device/{random_device_id}/status/response
+        payload: !anything
+        timeout: 3
+        qos: 1

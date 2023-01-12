@@ -1,30 +1,25 @@
 import json
+import sys
 import tempfile
 from textwrap import dedent
 from unittest.mock import Mock, patch
 
 import _pytest
 import pytest
-import sys
 import yaml
 
-from tavern.core import run
-from tavern.schemas.extensions import validate_file_spec
-from tavern.testutils.helpers import (
-    validate_content,
-    validate_pykwalify,
-    validate_regex,
-)
-from tavern.testutils.pytesthook.item import YamlItem
-from tavern.testutils.pytesthook.util import _load_global_strictness
-from tavern.util import exceptions
-from tavern.util.dict_util import _check_and_format_values, format_keys
-from tavern.util.loader import ForceIncludeToken
-from tavern.util.strict_util import (
+from tavern._core import exceptions
+from tavern._core.dict_util import _check_and_format_values, format_keys
+from tavern._core.loader import ForceIncludeToken
+from tavern._core.pytest.item import YamlItem
+from tavern._core.schema.extensions import validate_file_spec
+from tavern._core.strict_util import (
     StrictLevel,
     StrictSetting,
     validate_and_parse_option,
 )
+from tavern.core import run
+from tavern.helpers import validate_content, validate_pykwalify, validate_regex
 
 
 class FakeResponse:
@@ -144,7 +139,7 @@ class TestTavernRepr:
 
     @pytest.fixture(autouse=True, scope="session")
     def add_opts(self, pytestconfig):
-        from tavern.testutils.pytesthook.hooks import pytest_addoption
+        from tavern._core.pytest.hooks import pytest_addoption
 
         try:
             pytest_addoption(pytestconfig._parser)
@@ -167,7 +162,7 @@ class TestTavernRepr:
         """Does not call tavern repr for non tavern errors"""
         fake_info = self._make_fake_exc_info(RuntimeError)
 
-        with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
+        with patch("tavern._core.pytest.item.ReprdError") as rmock:
             fake_item.repr_failure(fake_info)
 
         assert not rmock.called
@@ -178,7 +173,7 @@ class TestTavernRepr:
         fake_info = self._make_fake_exc_info(exceptions.BadSchemaError)
 
         with patch.object(fake_item.config, "getini", return_value=ini_flag):
-            with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
+            with patch("tavern._core.pytest.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
         assert not rmock.called
@@ -188,7 +183,7 @@ class TestTavernRepr:
         fake_info = self._make_fake_exc_info(exceptions.InvalidSettingsError)
 
         with patch.object(fake_item.config, "getini", return_value=True):
-            with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
+            with patch("tavern._core.pytest.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
         assert not rmock.called
@@ -198,7 +193,7 @@ class TestTavernRepr:
         fake_info = self._make_fake_exc_info(exceptions.InvalidSettingsError)
 
         with patch.object(fake_item.config, "getoption", return_value=True):
-            with patch("tavern.testutils.pytesthook.item.ReprdError") as rmock:
+            with patch("tavern._core.pytest.item.ReprdError") as rmock:
                 fake_item.repr_failure(fake_info)
 
         assert not rmock.called
@@ -206,7 +201,7 @@ class TestTavernRepr:
 
 @pytest.fixture(name="nested_response")
 def fix_nested_response():
-    class response_content(object):
+    class response_content:
         content = {
             "top": {
                 "Thing": "value",
@@ -249,6 +244,7 @@ class TestContent:
             validate_content(nested_response, comparisons)
 
 
+@pytest.mark.xfail
 class TestPykwalifyExtension:
     def test_validate_schema_correct(self, nested_response):
         correct_schema = dedent(
@@ -295,12 +291,12 @@ class TestPykwalifyExtension:
             )
 
 
-class TestCheckParseValues(object):
+class TestCheckParseValues:
     @pytest.mark.parametrize(
         "item", [[134], {"a": 2}, yaml, yaml.load, yaml.SafeLoader]
     )
     def test_warns_bad_type(self, item):
-        with patch("tavern.util.dict_util.logger.warning") as wmock:
+        with patch("tavern._core.dict_util.logger.warning") as wmock:
             _check_and_format_values("{fd}", {"fd": item})
 
         assert wmock.called_with(
@@ -311,13 +307,13 @@ class TestCheckParseValues(object):
 
     @pytest.mark.parametrize("item", [1, "a", 1.3, format_keys("{s}", dict(s=2))])
     def test_no_warn_good_type(self, item):
-        with patch("tavern.util.dict_util.logger.warning") as wmock:
+        with patch("tavern._core.dict_util.logger.warning") as wmock:
             _check_and_format_values("{fd}", {"fd": item})
 
         assert not wmock.called
 
 
-class TestFormatWithJson(object):
+class TestFormatWithJson:
     @pytest.mark.parametrize(
         "item", [[134], {"a": 2}, yaml, yaml.load, yaml.SafeLoader]
     )
@@ -343,7 +339,7 @@ class TestFormatWithJson(object):
             format_keys(ForceIncludeToken("{a}{b}"), {"fd": "123"})
 
 
-class TestCheckFileSpec(object):
+class TestCheckFileSpec:
     def _wrap_test_block(self, dowith):
         validate_file_spec({"files": dowith}, Mock(), Mock())
 

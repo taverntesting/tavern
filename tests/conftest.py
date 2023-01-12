@@ -23,7 +23,7 @@ def set_plugins():
     def extension(name, point):
         return stevedore.extension.Extension(name, point, point, point)
 
-    tavern.plugins.load_plugins.plugins = [
+    tavern._core.plugins.load_plugins.plugins = [
         extension(
             "requests",
             rest_plugin,

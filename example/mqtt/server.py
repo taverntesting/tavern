@@ -1,18 +1,15 @@
-import sqlite3
 import contextlib
-import os
 import logging
 import logging.config
-import yaml
-from flask import Flask, jsonify, request, g
-
+import os
+import sqlite3
 
 import paho.mqtt.client as paho
-
+import yaml
+from flask import Flask, g, jsonify, request
 
 app = Flask(__name__)
 application = app
-
 
 DATABASE = os.environ.get("DB_NAME")
 
@@ -74,7 +71,7 @@ loggers:
         propagate: true
 """
 
-    as_dict = yaml.load(log_cfg)
+    as_dict = yaml.load(log_cfg, Loader=yaml.SafeLoader)
     logging.config.dictConfig(as_dict)
 
     logging.info("Logging set up")
@@ -127,7 +124,12 @@ def get_device():
     try:
         status = next(row)[1]
     except StopIteration:
-        return jsonify({"error": "bad device id"}), 400
+        return (
+            jsonify(
+                {"error": "could not find device with id {}".format(r["device_id"])}
+            ),
+            400,
+        )
 
     onoff = "on" if status else "off"
 
@@ -136,12 +138,65 @@ def get_device():
     return jsonify({"lights": onoff})
 
 
+@app.route("/create_device", methods=["PUT"])
+def create_device():
+    r = request.get_json(force=True)
+    logging.error(r)
+
+    try:
+        r["device_id"]
+    except (KeyError, TypeError):
+        return jsonify({"error": "missing key device_id"}), 400
+
+    db = get_cached_db()
+    with db:
+        row = db.execute(
+            "SELECT device_id from devices_table where device_id is :device_id", r
+        )
+
+    try:
+        next(row)
+    except StopIteration:
+        pass
+    else:
+        return jsonify({"error": "device already exists"}), 400
+
+    new_device = dict(lights_on=False, **r)
+
+    logging.info("Creating new device: %s", new_device)
+
+    with db:
+        db.execute(
+            "INSERT INTO devices_table (device_id, lights_on) VALUES (:device_id, :lights_on)",
+            new_device,
+        )
+
+    return jsonify({"status": "created device {device_id}".format(**r)}), 201
+
+
 @app.route("/reset", methods=["POST"])
 def reset_db():
     db = get_cached_db()
+    return _reset_db(db)
 
+
+def _reset_db(db):
     with db:
-        db.execute("DELETE FROM devices_table")
-        db.execute("INSERT INTO devices_table VALUES ('123', 0)")
+
+        def attempt(query):
+            try:
+                db.execute(query)
+            except:
+                pass
+
+        attempt("DELETE FROM devices_table")
+        attempt(
+            "CREATE TABLE devices_table (device_id TEXT NOT NULL, lights_on INTEGER NOT NULL)"
+        )
 
     return "", 204
+
+
+if __name__ == "__main__":
+    db = get_db()
+    _reset_db(db)

@@ -102,7 +102,7 @@ If you don't need any functionality provided by this, you can define empty
 `__enter__` and `__exit__` methods on your class like so:
 
 ```python
-class MySession(object):
+class MySession:
 
     def __enter__(self):
         pass

@@ -337,7 +337,7 @@ changed to use a different library to avoid this issue.**
 # valid jwt which is signed by the given key.
 response:
   verify_response_with:
-    function: tavern.testutils.helpers:validate_jwt
+    function: tavern.helpers:validate_jwt
     extra_kwargs:
       jwt_key: "token"
       key: CGQgaG7GYvTcpaQZqosLy4
@@ -355,7 +355,7 @@ body of the response against it.
 # which has to contain a user name and may contain a user number.
 response:
   verify_response_with:
-    function: tavern.testutils.helpers:validate_pykwalify
+    function: tavern.helpers:validate_pykwalify
     extra_kwargs:
       schema:
         type: seq
@@ -415,6 +415,7 @@ This can be used as so:
   request:
     url: http://server.com/login
     headers:
+      x-my-header: abc123
       $ext:
         function: utils:generate_bearer_token
     json:
@@ -517,7 +518,7 @@ For example, if our server saves the user ID in the 'sub' field of the JWT:
     status_code: 200
     verify_response_with:
       # Make sure a token exists
-      function: tavern.testutils.helpers:validate_jwt
+      function: tavern.helpers:validate_jwt
       extra_kwargs:
         jwt_key: "token"
         options:
@@ -527,7 +528,7 @@ For example, if our server saves the user ID in the 'sub' field of the JWT:
       # in the test configuration for use in future tests
       # Note the use of $ext again
       $ext:
-        function: tavern.testutils.helpers:validate_jwt
+        function: tavern.helpers:validate_jwt
         extra_kwargs:
           jwt_key: "token"
           options:
@@ -949,7 +950,7 @@ stages:
         json:
           test_user_login_token: token
       verify_response_with:
-        function: tavern.testutils.helpers:validate_jwt
+        function: tavern.helpers:validate_jwt
         extra_kwargs:
           jwt_key: "token"
           options:
@@ -1503,7 +1504,7 @@ third block must start with 4 and the third block must start with 8, 9, "A", or
 ```
 
 This is using the `!re_fullmatch` variant of the tag - this calls
-[`re.fullmatch`](https://docs.python.org/3.7/library/re.html#re.fullmatch) under
+[`re.fullmatch`](https://docs.python.org/3.8/library/re.html#re.fullmatch) under
 the hood, which means that the regex given needs to match the _entire_ part of
 the response that is being checked for it to pass. There is also `!re_search`
 which will pass if it matches _part_ of the thing being checked, or `!re_match`
@@ -1532,7 +1533,7 @@ stages:
         hash: 456
     save:
       $ext:
-        function: tavern.testutils.helpers:validate_regex
+        function: tavern.helpers:validate_regex
         extra_kwargs:
           expression: "v(?P<version>[\d\.]+)-[\w\d]+"
           in_jmespath: "meta.version"
@@ -1599,7 +1600,7 @@ request:
 
 Sometimes there are situations where you need to directly include a block of
 JSON, such as a list, rather than just one value. To do this, there is a
-`!force_format_include` tag which will include whatever variable is being
+`!force_original_structure` tag which will include whatever variable is being
 referenced in the format block rather than coercing it to a string.
 
 For example, if we have an API that will return a list of users on a GET and
@@ -1631,7 +1632,7 @@ could be done by
       url: "{host}/users"
       method: DELETE
       # 'all_users' list will be sent in the request as a list, not a string
-      json: !force_format_include "{all_users}"
+      json: !force_original_structure "{all_users}"
     response:
       status_code: 204
 

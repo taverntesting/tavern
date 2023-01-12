@@ -4,7 +4,8 @@ All configuration for the project should be put into `pyproject.toml`.
 
 ## Working locally
 
-1. Create a virtualenv using whatever method you like (eg, [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/))
+1. Create a virtualenv using whatever method you like (
+   eg, [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/))
 
 1. Install dependencies from requirements.txt
 
@@ -22,8 +23,8 @@ If on Windows, you should be able to just run the 'tox' commands in that file.
 
 1. Update requirements files (BOTH of them)
 
-       pip-compile --output-file - --all-extras --resolver=backtracking pyproject.toml --reuse-hashes --generate-hashes > requirements.txt
-       pip-compile --output-file - --all-extras --resolver=backtracking pyproject.toml --strip-extras > constraints.txt
+       pip-compile --all-extras --resolver=backtracking pyproject.toml --output-file requirements.txt --reuse-hashes --generate-hashes
+       pip-compile --all-extras --resolver=backtracking pyproject.toml --output-file constraints.txt --strip-extras
 
 1. Run tests as above
 
@@ -31,3 +32,27 @@ If on Windows, you should be able to just run the 'tox' commands in that file.
 
     black tavern/ tests/
     isort --profile black tavern/ tests/
+
+## Pre-commit
+
+After installing dependencies, Run
+
+    # check it works
+    pre-commit run --all-files 
+    pre-commit install
+
+Run every so often to update the pre-commit hooks
+
+    pre-commit autoupdate
+
+## Creating a new release
+
+1. Setup `~/.pypirc`
+
+1. Install the correct version of tbump
+
+       pip install tbump@https://github.com/michaelboulton/tbump/archive/714ba8957a3c84b625608ceca39811ebe56229dc.zip
+
+1. Tag and push to git with `tbump <new-tag> --tag-message "<tag-message>"`
+
+1. Upload to pypi with `flit publish`

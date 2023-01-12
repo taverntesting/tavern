@@ -13,7 +13,7 @@ stages:
     response:
       status_code: 200
       verify_response_with:
-        function: tavern.testutils.helpers:validate_content
+        function: tavern.helpers:validate_content
         extra_kwargs:
           comparisons:
             - jmespath: "an_integer"
@@ -47,7 +47,7 @@ stages:
     response:
       status_code: 200
       verify_response_with:
-        function: tavern.testutils.helpers:validate_content
+        function: tavern.helpers:validate_content
         extra_kwargs:
           comparisons:
             - jmespath: "[1]"
@@ -220,7 +220,7 @@ stages:
         pages: 0
         data: []
       verify_response_with:
-        - function: tavern.testutils.helpers:validate_content
+        - function: tavern.helpers:validate_content
           extra_kwargs:
             comparisons:
               - jmespath: pages

@@ -16,7 +16,7 @@ stages:
   response:
     status_code: 200
     verify_response_with:
-      function: tavern.testutils.helpers:validate_jwt
+      function: tavern.helpers:validate_jwt
       extra_kwargs:
         jwt_key: "jwt"
         key: 240c8c9c-39b9-426b-9503-3126f96c2eaf
@@ -45,7 +45,7 @@ stages:
   response:
     status_code: 200
     verify_response_with:
-      function: tavern.testutils.helpers:validate_jwt
+      function: tavern.helpers:validate_jwt
       extra_kwargs:
         jwt_key: "jwt"
         key: 240c8c9c-39b9-426b-9503-3126f96c2eaf
