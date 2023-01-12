@@ -366,7 +366,6 @@ class TestFileBody:
             req["file_body"] = tmpin.name
 
             args = get_request_args(req, includes)
-            print(args)
 
         assert args["file_body"] == tmpin.name
         assert args["headers"]["content-type"] == "application/json"
