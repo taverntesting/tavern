@@ -390,3 +390,16 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  1.25.1          Remove tbump from dependencies so it can actually be uploaded to pypi (2022-12-13)
 
 ##  1.25.2          Only patch pyyaml when a test is actually being loaded to avoid side effect from Tavern just being in the python path (2022-12-15)
+
+#  2.0.0           2.0.0 release (2023-01-12)
+
+- Move anything that isn't supposed to be public into a private folder, a la pytest
+- Move helpers from tavern.testutil.helpers to tavern.helpers
+- Make --tavern-merge-ext-function-values default
+- Move 'clear cookies' to a top-level request item
+- Change force_format_include to force_original_structure
+- Change to using jsonschema instead of pykwalify for tavern schema
+- change test_block_config to a class
+- Drop explicit support for pypy3
+- Allow multiple MQTT responses to a single request
+
