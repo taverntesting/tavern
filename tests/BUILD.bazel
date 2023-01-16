@@ -19,12 +19,12 @@ pytest_test(
     name = "test_doctest",
     args = [
         "-c",
-        "pytest.ini",
+        "pyproject.toml",
         "--color",
         "yes",
         "--doctest-modules",
     ],
-    data = ["//:pytest.ini"],
+    data = ["//:pyproject.toml"],
     deps = [
         "//tavern",
         "//tests/unit:conftest",

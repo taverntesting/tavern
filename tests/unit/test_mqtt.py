@@ -18,7 +18,7 @@ def test_host_required():
     MQTTClient(**args)
 
 
-class TestClient(object):
+class TestClient:
     @pytest.fixture(name="fake_client")
     def fix_fake_client(self):
         args = {"connect": {"host": "localhost"}}
@@ -96,7 +96,7 @@ class TestClient(object):
                 fake_client.publish("abc", "123")
 
 
-class TestTLS(object):
+class TestTLS:
     def test_missing_cert_gives_error(self):
         """Missing TLS cert gives an error"""
         args = {"certfile": "/lcliueurhug/ropko3kork32"}
@@ -148,7 +148,7 @@ class TestRequests:
         MQTTRequest(Mock(), req, includes)
 
 
-class TestSubscription(object):
+class TestSubscription:
     @staticmethod
     def get_mock_client_with(subcribe_action):
         mock_paho = Mock(spec=paho.Client, subscribe=subcribe_action)

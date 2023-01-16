@@ -17,7 +17,7 @@ def pytest_collect_file(parent, path):
     test files
     """
 
-    if int(pytest.__version__.split(".")[0]) < 5:
+    if int(pytest.__version__.split(".", maxsplit=1)[0]) < 5:
         raise exceptions.TavernException("Only pytest >=5 is supported")
 
     pattern = get_option_generic(

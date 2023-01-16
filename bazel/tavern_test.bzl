@@ -7,7 +7,7 @@ def tavern_test(filename, images, extra_data = [], extra_deps = [], extra_args =
         images (dict): Mapping of name in docker compose file : label
     """
     base_data = [
-        "//:pytest.ini",
+        "//:pyproject.toml",
         "//bazel:docker-compose.yaml",
         filename,
     ]
@@ -27,7 +27,7 @@ def tavern_test(filename, images, extra_data = [], extra_deps = [], extra_args =
     base_args = [
         filename,
         "-c",
-        "pytest.ini",
+        "pyproject.toml",
         "-x",
         "--color",
         "yes",
@@ -61,8 +61,8 @@ def tavern_test(filename, images, extra_data = [], extra_deps = [], extra_args =
     )
 
 def pytest_test(name, args = [], data = [], srcs = [], **kwargs):
-    if "//:pytest.ini" not in data:
-        data = data + ["//:pytest.ini"]
+    if "//:pyproject.toml" not in data:
+        data = data + ["//:pyproject.toml"]
 
     args = args + [
         "--ignore=external",

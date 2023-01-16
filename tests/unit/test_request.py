@@ -1,9 +1,9 @@
 from contextlib import ExitStack
+import dataclasses
 import os
 import tempfile
 from unittest.mock import Mock
 
-import attr
 import pytest
 import requests
 from requests.cookies import RequestsCookieJar
@@ -39,7 +39,7 @@ def fix_example_request():
     return spec.copy()
 
 
-class TestRequests(object):
+class TestRequests:
     def test_unknown_fields(self, req, includes):
         """Unkown args should raise an error"""
         req["fodokfowe"] = "Hello"
@@ -64,7 +64,7 @@ class TestRequests(object):
             )
 
 
-class TestHttpRedirects(object):
+class TestHttpRedirects:
     def test_session_called_no_redirects(self, req, includes):
         """Always disable redirects by defauly"""
 
@@ -84,12 +84,12 @@ class TestHttpRedirects(object):
     ):
         """Globally enable following redirects in test"""
 
-        includes = attr.evolve(includes, follow_redirects=do_follow)
+        includes = dataclasses.replace(includes, follow_redirects=do_follow)
 
         assert _check_allow_redirects(req, includes) == do_follow
 
 
-class TestCookies(object):
+class TestCookies:
     @pytest.fixture
     def mock_session(self):
         return Mock(spec=requests.Session, cookies=RequestsCookieJar())
@@ -180,7 +180,7 @@ class TestCookies(object):
             _read_expected_cookies(mock_session, req, includes)
 
 
-class TestRequestArgs(object):
+class TestRequestArgs:
     def test_default_method(self, req, includes):
         del req["method"]
         del req["data"]
@@ -366,7 +366,6 @@ class TestFileBody:
             req["file_body"] = tmpin.name
 
             args = get_request_args(req, includes)
-            print(args)
 
         assert args["file_body"] == tmpin.name
         assert args["headers"]["content-type"] == "application/json"
@@ -391,7 +390,7 @@ class TestFileBody:
         assert args["headers"]["Content-Encoding"] == "gzip"
 
 
-class TestGetFiles(object):
+class TestGetFiles:
     @pytest.fixture
     def mock_stack(self):
         return Mock(spec=ExitStack)

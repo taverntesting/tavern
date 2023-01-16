@@ -29,7 +29,7 @@ stages:
     request:
       url: "{global_host}/withsession/regular"
       method: GET
-      clear_session_cookies: True  # This flows through to the next stage as well
+      clear_session_cookies: True # This flows through to the next stage as well
     response:
       json:
         regular: foo

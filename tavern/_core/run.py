@@ -1,7 +1,7 @@
 from contextlib import ExitStack
 import copy
 from copy import deepcopy
-from distutils.util import strtobool
+from distutils.util import strtobool  # pylint:disable=deprecated-module
 import functools
 import logging
 

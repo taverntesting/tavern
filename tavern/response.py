@@ -17,7 +17,7 @@ def indent_err_text(err):
     return indent(err, " " * 4)
 
 
-class BaseResponse(object):
+class BaseResponse:
     def __init__(self, name, expected, test_block_config):
         self.name = name
 

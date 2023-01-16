@@ -1,5 +1,4 @@
 ---
-
 test_name: Test matching both headers
 
 includes:
@@ -37,7 +36,6 @@ stages:
         atestheader: orange
 
 ---
-
 test_name: Test mismatch in header value
 
 _xfail: run

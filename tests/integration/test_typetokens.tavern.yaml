@@ -8,7 +8,6 @@
 # a_string: abc
 
 ---
-
 test_name: Test 'anything' token will match any response
 
 includes:
@@ -23,7 +22,6 @@ stages:
       status_code: 200
       json: !anything
 ---
-
 test_name: Test 'anything' token will match any response, from included stage
 
 includes:
@@ -34,7 +32,6 @@ stages:
     id: typetoken-anything-match
 
 ---
-
 test_name: Test bool type match
 
 strict:
@@ -63,7 +60,6 @@ stages:
         a_bool: !anybool
 
 ---
-
 test_name: Test integer type match
 
 strict:
@@ -92,7 +88,6 @@ stages:
         an_integer: !anyint
 
 ---
-
 test_name: Test list type match
 
 includes:
@@ -108,7 +103,6 @@ stages:
       json: !anylist
 
 ---
-
 test_name: Test dict type match
 
 includes:
@@ -124,7 +118,6 @@ stages:
       json: !anydict
 
 ---
-
 test_name: Test string type match
 
 strict:
@@ -153,7 +146,6 @@ stages:
         a_string: !anystr
 
 ---
-
 test_name: Test all at once
 
 includes:
@@ -175,7 +167,6 @@ stages:
         a_bool: !anybool
 
 ---
-
 test_name: Match list item responses
 
 includes:
@@ -200,7 +191,6 @@ stages:
         - !anyfloat
 
 ---
-
 test_name: Match whole list 'anything'
 
 includes:
@@ -217,7 +207,6 @@ stages:
         top: !anything
 
 ---
-
 test_name: Match list items anything
 
 includes:
@@ -237,7 +226,6 @@ stages:
           - !anything
 
 ---
-
 test_name: Test converting to a bool from a formatted string
 
 includes:
@@ -269,7 +257,6 @@ stages:
   #     status_code: 200
 
 ---
-
 test_name: Test using a converted bool as part of the validated schema
 
 includes:
@@ -285,7 +272,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test can't use approx numbers in a request
 
 includes:
@@ -307,7 +293,6 @@ stages:
       status_code: 200
 
 ---
-
 # This actually raises an error when first loading the file, so it's not easy to
 # test like this
 
@@ -346,7 +331,6 @@ stages:
         pi: !approx 3.1415926
 
 ---
-
 test_name: Test converting to an integer
 
 includes:
@@ -389,7 +373,6 @@ stages:
   #     status_code: 200
 
 ---
-
 test_name: Test using a converted int as part of the validated schema
 
 includes:
@@ -404,7 +387,6 @@ stages:
       status_code: !int "{status_200}"
 
 ---
-
 test_name: Test conversion to an float from included files
 
 includes:
@@ -456,7 +438,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test using a converted float as part of the validated schema
 
 includes:
@@ -472,7 +453,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test saving specific types between stages
 
 includes:
@@ -505,7 +485,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Ignore variable syntax with double braces
 
 includes:
@@ -524,7 +503,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test not converting a raw string (ignore variable like syntax)
 
 includes:
@@ -543,7 +521,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test raw token works in response as well
 
 includes:
@@ -562,7 +539,6 @@ stages:
         value: !raw '{"query": "{ val1 { val2 { val3 { val4, val5 } } } }"}'
 
 ---
-
 test_name: Test magic format token
 
 includes:
@@ -588,7 +564,6 @@ stages:
       json: !force_original_structure "{tavern.request_vars.json}"
 
 ---
-
 test_name: Test magic format token with list
 
 includes:
@@ -624,7 +599,6 @@ stages:
         - -3.0
 
 ---
-
 test_name: Test old tag still works
 
 includes:
@@ -660,7 +634,6 @@ stages:
         - -3.0
 
 ---
-
 test_name: Match a regex at top level
 
 includes:
@@ -676,7 +649,6 @@ stages:
       json: !re_match "c82bfa63-.*"
 
 ---
-
 test_name: Match a regex in a nested thing
 
 includes:
@@ -699,7 +671,6 @@ stages:
               inner: !re_match "value"
 
 ---
-
 test_name: Match a regex number doesnt work because its the wrong type
 
 _xfail: run
@@ -719,7 +690,6 @@ stages:
         pi: !re_match "3.14.*"
 
 ---
-
 test_name: Match a uuid v4
 
 includes:

@@ -3,13 +3,13 @@ name: basic test
 on:
   push:
     tags:
-    - ".*"
+      - ".*"
     branches:
-    - master
+      - master
   pull_request:
     branches:
-    - master
-    - feature-2.0
+      - master
+      - feature-2.0
 
 jobs:
   test:
@@ -26,14 +26,14 @@ jobs:
           BAZEL_REMOTE_DIR: ~/.cache/bazel/disk
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - uses: bazelbuild/setup-bazelisk@v2
+      - uses: bazelbuild/setup-bazelisk@v2
 
-    - name: load bazel cache
-      uses: actions/cache@v3
-      with:
-        path: "~/.cache/bazel"
-        key: bazel
+      - name: load bazel cache
+        uses: actions/cache@v3
+        with:
+          path: "~/.cache/bazel"
+          key: bazel
 
-    - run: bazel test --config=ci //tests/unit/...
+      - run: bazel test --config=ci //tests/unit/...

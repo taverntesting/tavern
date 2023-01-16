@@ -1504,7 +1504,7 @@ third block must start with 4 and the third block must start with 8, 9, "A", or
 ```
 
 This is using the `!re_fullmatch` variant of the tag - this calls
-[`re.fullmatch`](https://docs.python.org/3.7/library/re.html#re.fullmatch) under
+[`re.fullmatch`](https://docs.python.org/3.8/library/re.html#re.fullmatch) under
 the hood, which means that the regex given needs to match the _entire_ part of
 the response that is being checked for it to pass. There is also `!re_search`
 which will pass if it matches _part_ of the thing being checked, or `!re_match`

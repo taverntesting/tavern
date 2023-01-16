@@ -37,7 +37,7 @@ class FakeMessage:
         self.timestamp = 0
 
 
-class TestResponse(object):
+class TestResponse:
     @staticmethod
     def _get_fake_verifier(expected, fake_messages, includes):
         """Given a list of messages, return a mocked version of the MQTT

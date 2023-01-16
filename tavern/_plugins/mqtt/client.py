@@ -39,7 +39,7 @@ def root_topic(topic):
 
 
 @dataclasses.dataclass
-class _Subscription(object):
+class _Subscription:
     topic: str
     subscribed: bool = False
 

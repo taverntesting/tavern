@@ -1,5 +1,5 @@
 exports_files([
-    "pytest.ini",
+    "pyproject.toml",
     ".flake8",
 ])
 
@@ -22,7 +22,7 @@ py_wheel(
         "License :: OSI Approved :: MIT License",
     ],
     console_scripts = {"tavern-ci": "tavern.entry:main"},
-    description_file = "README.rst",
+    description_file = "README.md",
     distribution = "tavern",
     entry_points = {
         "console_scripts": ["tavern-ci = tavern.entry:main"],
@@ -93,7 +93,7 @@ modules_mapping(
 gazelle_python_manifest(
     name = "gazelle_python_manifest",
     modules_mapping = ":modules_map",
-    pip_repository_incremental = True,
+    #    pip_repository_incremental = True,
     pip_repository_name = "tavern_pip",
     requirements = "//:requirements.txt",
 )

@@ -1,5 +1,5 @@
-import os
 from dataclasses import dataclass
+import os
 from unittest.mock import Mock, patch
 
 from faker import Faker
@@ -83,7 +83,7 @@ def test_none():
 
 
 @pytest.mark.parametrize("faker", [Faker(), Faker("zh_CN")])
-class TestMakeFile(object):
+class TestMakeFile:
     def test_only_single(self, faker):
         marks = [get_basic_parametrize_mark(faker)]
 

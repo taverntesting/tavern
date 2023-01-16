@@ -14,8 +14,6 @@ import uuid
 
 from flask import Flask, Response, jsonify, make_response, redirect, request, session
 from itsdangerous import URLSafeTimedSerializer
-from flask import Flask, Response, jsonify, redirect, request
-import gzip
 import jwt
 
 app = Flask(__name__)

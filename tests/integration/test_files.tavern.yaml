@@ -1,5 +1,4 @@
 ---
-
 test_name: Test files can be uploaded with tavern
 
 includes:
@@ -17,7 +16,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test files can be uploaded with a formatted file name
 
 includes:
@@ -35,7 +33,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test files can be uploaded alongside data
 
 includes:
@@ -54,7 +51,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test extra headers don't break content-type
 
 includes:
@@ -74,7 +70,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test sending a text file will send the correct content type
 
 includes:
@@ -91,7 +86,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test long form file upload
 
 includes:
@@ -110,7 +104,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test sending file body
 
 includes:
@@ -128,7 +121,6 @@ stages:
         status: ok
 
 ---
-
 test_name: Test sending file body with appropriate encoding
 
 includes:
@@ -146,7 +138,6 @@ stages:
         status: ok
 
 ---
-
 test_name: Test sending file body from variable ref
 
 includes:
@@ -164,7 +155,6 @@ stages:
         status: ok
 
 ---
-
 test_name: Test sending bad file body
 
 includes:
@@ -180,7 +170,6 @@ stages:
       status_code: 400
 
 ---
-
 test_name: Test mutually exclusive with files
 
 _xfail: verify
@@ -200,7 +189,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test mutually exclusive with data
 
 _xfail: verify
@@ -219,7 +207,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test mutually exclusive with json
 
 _xfail: verify

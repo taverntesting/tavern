@@ -5,7 +5,6 @@ significantly if/when a proper plugin system is implemented!
 """
 import logging
 
-import attr
 import stevedore
 
 from tavern._core import exceptions
@@ -14,7 +13,7 @@ from tavern._core.dict_util import format_keys
 logger = logging.getLogger(__name__)
 
 
-class PluginHelperBase(object):
+class PluginHelperBase:
     """Base for plugins"""
 
 
@@ -215,7 +214,7 @@ def get_request_type(stage, test_block_config, sessions):
 
 
 class ResponseVerifier(dict):
-    plugin_name = attr.ib(type=str)
+    plugin_name: str
 
 
 def _foreach_response(stage, test_block_config, action):

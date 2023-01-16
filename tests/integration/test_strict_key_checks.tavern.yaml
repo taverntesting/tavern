@@ -9,7 +9,6 @@
 # a_bool: true
 
 ---
-
 test_name: Test setting 'strict' to a string fails
 
 _xfail: verify
@@ -24,7 +23,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test setting 'strict' to a dict fails
 
 _xfail: verify
@@ -40,7 +38,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test setting 'strict' to a list with invalid values fails
 
 _xfail: verify
@@ -56,7 +53,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test key matching matches headers case insensitive
 
 includes:
@@ -72,7 +68,6 @@ stages:
         x-InTeGrAtIoN-vALUe: _HelloWorld1
 
 ---
-
 test_name: Test strict key matching against body fails
 
 _xfail: run
@@ -101,7 +96,6 @@ stages:
         # a_bool: true
 
 ---
-
 test_name: Test strict key matching against body fails with dict missing when specified in test
 
 _xfail: run
@@ -129,7 +123,6 @@ stages:
         a_bool: true
 
 ---
-
 test_name: Test strict key matching against body fails with dict missing when specified in stage
 
 _xfail: run
@@ -156,7 +149,6 @@ stages:
         a_bool: true
 
 ---
-
 test_name: Test strict key matching against headers with mismatch body passes
 # same as above, but changing 'strict' to only check headers should work
 
@@ -185,7 +177,6 @@ stages:
         # a_bool: true
 
 ---
-
 test_name: Test strict key matching against exact body is fine when strict is specified in the test
 
 strict:
@@ -211,7 +202,6 @@ stages:
         a_bool: true
 
 ---
-
 test_name: Test strict key matching against exact body is fine when strict is specified in the stage
 
 strict:
@@ -237,7 +227,6 @@ stages:
         a_bool: true
 
 ---
-
 test_name: Test strict key matching works for specific test stages
 
 includes:
@@ -295,7 +284,6 @@ stages:
         a_bool: true
 
 ---
-
 test_name: Test non-strict key matching one list item
 
 strict:
@@ -335,7 +323,6 @@ stages:
         - 2
 
 ---
-
 test_name: Test strict key matching one list item fails
 
 _xfail: run
@@ -357,7 +344,6 @@ stages:
         - c
 
 ---
-
 test_name: Test strict key matching works for specific test stages with false
 
 includes:
@@ -378,7 +364,6 @@ stages:
         a_bool: true
 
 ---
-
 test_name: Test strict key matching works for specific test stages with true
 
 _xfail: run
@@ -401,7 +386,6 @@ stages:
         a_bool: true
 
 ---
-
 test_name: Test non-strict key matching one list item
 
 strict:
@@ -421,7 +405,6 @@ stages:
         - c
 
 ---
-
 test_name: Test matching any order on json
 
 strict:
@@ -444,9 +427,7 @@ stages:
         - 1
 
 ---
-
 test_name: Test matching any order on json
-
 
 includes:
   - !include common.yaml
@@ -467,7 +448,6 @@ stages:
         - 1
 
 ---
-
 test_name: Test matching any order on json nested
 
 strict:
@@ -484,14 +464,12 @@ stages:
       status_code: 200
       json:
         top:
-        - b
-        - key: val
-        - a
+          - b
+          - key: val
+          - a
 
 ---
-
 test_name: Test matching any order on json nested
-
 
 includes:
   - !include common.yaml
@@ -506,11 +484,10 @@ stages:
       status_code: 200
       json:
         top:
-        - b
-        - key: val
+          - b
+          - key: val
 
 ---
-
 test_name: Test non-strict key matching in one stage does not leak over to the next
 
 _xfail: run
@@ -537,7 +514,6 @@ stages:
         - c
 
 ---
-
 test_name: Test strict key matching one list item fails
 
 _xfail: run
@@ -559,43 +535,40 @@ stages:
         - c
 
 ---
-
 test_name: strict test
 
 _xfail: run
 
 stages:
-- name: Simple get
-  request:
-    url: "{global_host}/707-regression"
-    method: GET
-  response:
-    status_code: 200
-    json:
-      a: 1
-      b:
-        first: 10
-        # second: 20
-      c: 2
+  - name: Simple get
+    request:
+      url: "{global_host}/707-regression"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        a: 1
+        b:
+          first: 10
+          # second: 20
+        c: 2
 
 ---
-
 test_name: test empty list matches with strict json on
 
 strict:
   - json:on
 
 stages:
-- name: Simple get
-  request:
-    url: "{global_host}/606-regression-list"
-    method: GET
-  response:
-    status_code: 200
-    json: []
+  - name: Simple get
+    request:
+      url: "{global_host}/606-regression-list"
+      method: GET
+    response:
+      status_code: 200
+      json: []
 
 ---
-
 test_name: test full list does not match with strict json on
 
 _xfail: run
@@ -604,48 +577,45 @@ strict:
   - json:on
 
 stages:
-- name: Simple get
-  request:
-    url: "{global_host}/fake_list"
-    method: GET
-  response:
-    status_code: 200
-    json: []
+  - name: Simple get
+    request:
+      url: "{global_host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      json: []
 
 ---
-
 test_name: test full list matches with strict json off
 
 strict:
   - json:off
 
 stages:
-- name: Simple get
-  request:
-    url: "{global_host}/fake_list"
-    method: GET
-  response:
-    status_code: 200
-    json: []
+  - name: Simple get
+    request:
+      url: "{global_host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      json: []
 
 ---
-
 test_name: test empty dict matches with strict json on
 
 strict:
   - json:on
 
 stages:
-- name: Simple get
-  request:
-    url: "{global_host}/606-regression-dict"
-    method: GET
-  response:
-    status_code: 200
-    json: {}
+  - name: Simple get
+    request:
+      url: "{global_host}/606-regression-dict"
+      method: GET
+    response:
+      status_code: 200
+      json: {}
 
 ---
-
 test_name: test full dict does not match with strict json on
 
 _xfail: run
@@ -654,26 +624,25 @@ strict:
   - json:on
 
 stages:
-- name: Simple get
-  request:
-    url: "{global_host}/fake_dictionary"
-    method: GET
-  response:
-    status_code: 200
-    json: {}
+  - name: Simple get
+    request:
+      url: "{global_host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      json: {}
 
 ---
-
 test_name: test full dict matches with strict json off
 
 strict:
   - json:off
 
 stages:
-- name: Simple get
-  request:
-    url: "{global_host}/fake_dictionary"
-    method: GET
-  response:
-    status_code: 200
-    json: {}
+  - name: Simple get
+    request:
+      url: "{global_host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      json: {}

@@ -20,7 +20,7 @@ from tavern._core.stage_lines import (
 logger = logging.getLogger(__name__)
 
 
-class ReprdError(object):
+class ReprdError:
     def __init__(self, exce, item):
         self.exce = exce
         self.item = item

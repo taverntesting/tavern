@@ -6,11 +6,11 @@ def gentest(filename):
         srcs = [filename],
         args = [
             "-c",
-            "pytest.ini",
+            "pyproject.toml",
             "--color",
             "yes",
         ],
-        data = ["//:pytest.ini"],
+        data = ["//:pyproject.toml"],
         deps = [
             ":conftest",
             "@tavern_pip_faker//:pkg",

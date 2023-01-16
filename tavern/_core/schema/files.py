@@ -11,10 +11,7 @@ import yaml
 from tavern._core.exceptions import BadSchemaError
 from tavern._core.loader import load_single_document_yaml
 from tavern._core.plugins import load_plugins
-
-from .jsonschema import verify_jsonschema
-
-# core.yml.safe_load = functools.partial(yaml.load, Loader=IncludeLoader)
+from tavern._core.schema.jsonschema import verify_jsonschema
 
 logger = logging.getLogger(__name__)
 

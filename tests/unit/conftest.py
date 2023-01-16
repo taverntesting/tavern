@@ -2,8 +2,8 @@ import copy
 from unittest.mock import Mock
 
 import pytest
-from tavern._core.internal.testutil import enable_default_tavern_extensions
 
+from tavern._core.internal.testutil import enable_default_tavern_extensions
 from tavern._core.plugins import load_plugins
 from tavern._core.pytest.config import TavernInternalConfig, TestConfig
 from tavern._core.strict_util import StrictLevel

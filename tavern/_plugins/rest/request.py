@@ -398,8 +398,13 @@ def guess_filespec(filespec, stack, test_block_config):
     filepath = format_keys(filepath, test_block_config.variables)
     filename = os.path.basename(filepath)
 
+    # pylint: disable=consider-using-with
+
     # a 2-tuple ('filename', fileobj)
-    file_spec = [filename, stack.enter_context(open(bazel_path(filepath), "rb"))]
+    file_spec = [
+        filename,
+        stack.enter_context(open(bazel_path(filepath), "rb")),
+    ]
 
     # Try to guess as well, but don't override what the user specified
     guessed_content_type, guessed_encoding = mimetypes.guess_type(filepath)

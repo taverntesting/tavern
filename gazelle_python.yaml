@@ -6,93 +6,9 @@
 manifest:
   modules_mapping:
     2e032532bd2e64ed7a60__mypyc: black
-    _black_version: black
-    _cffi_backend: cffi
-    _distutils_hack: setuptools
-    _distutils_hack.__init__: setuptools
-    _distutils_hack.override: setuptools
-    _pyrsistent_version: pyrsistent
-    _pytest: pytest
-    _pytest.__init__: pytest
-    _pytest._argcomplete: pytest
-    _pytest._code: pytest
-    _pytest._code.__init__: pytest
-    _pytest._code.code: pytest
-    _pytest._code.source: pytest
-    _pytest._io: pytest
-    _pytest._io.__init__: pytest
-    _pytest._io.saferepr: pytest
-    _pytest._io.terminalwriter: pytest
-    _pytest._io.wcwidth: pytest
-    _pytest._version: pytest
-    _pytest.assertion: pytest
-    _pytest.assertion.__init__: pytest
-    _pytest.assertion.rewrite: pytest
-    _pytest.assertion.truncate: pytest
-    _pytest.assertion.util: pytest
-    _pytest.cacheprovider: pytest
-    _pytest.capture: pytest
-    _pytest.compat: pytest
-    _pytest.config: pytest
-    _pytest.config.__init__: pytest
-    _pytest.config.argparsing: pytest
-    _pytest.config.compat: pytest
-    _pytest.config.exceptions: pytest
-    _pytest.config.findpaths: pytest
-    _pytest.debugging: pytest
-    _pytest.deprecated: pytest
-    _pytest.doctest: pytest
-    _pytest.faulthandler: pytest
-    _pytest.fixtures: pytest
-    _pytest.freeze_support: pytest
-    _pytest.helpconfig: pytest
-    _pytest.hookspec: pytest
-    _pytest.junitxml: pytest
-    _pytest.legacypath: pytest
-    _pytest.logging: pytest
-    _pytest.main: pytest
-    _pytest.mark: pytest
-    _pytest.mark.__init__: pytest
-    _pytest.mark.expression: pytest
-    _pytest.mark.structures: pytest
-    _pytest.monkeypatch: pytest
-    _pytest.nodes: pytest
-    _pytest.nose: pytest
-    _pytest.outcomes: pytest
-    _pytest.pastebin: pytest
-    _pytest.pathlib: pytest
-    _pytest.pytester: pytest
-    _pytest.pytester_assertions: pytest
-    _pytest.python: pytest
-    _pytest.python_api: pytest
-    _pytest.python_path: pytest
-    _pytest.recwarn: pytest
-    _pytest.reports: pytest
-    _pytest.runner: pytest
-    _pytest.scope: pytest
-    _pytest.setuponly: pytest
-    _pytest.setupplan: pytest
-    _pytest.skipping: pytest
-    _pytest.stash: pytest
-    _pytest.stepwise: pytest
-    _pytest.terminal: pytest
-    _pytest.threadexception: pytest
-    _pytest.timing: pytest
-    _pytest.tmpdir: pytest
-    _pytest.unittest: pytest
-    _pytest.unraisableexception: pytest
-    _pytest.warning_types: pytest
-    _pytest.warnings: pytest
-    _ruamel_yaml: ruamel.yaml.clib
-    _yaml: PyYAML
-    _yaml.__init__: PyYAML
+    74cdc94b2b24dafac2a2__mypyc: mypy
     allure: allure_python_commons
     allure_commons: allure_python_commons
-    allure_commons.__init__: allure_python_commons
-    allure_commons._allure: allure_python_commons
-    allure_commons._compat: allure_python_commons
-    allure_commons._core: allure_python_commons
-    allure_commons._hooks: allure_python_commons
     allure_commons.lifecycle: allure_python_commons
     allure_commons.logger: allure_python_commons
     allure_commons.mapping: allure_python_commons
@@ -101,20 +17,15 @@ manifest:
     allure_commons.types: allure_python_commons
     allure_commons.utils: allure_python_commons
     allure_pytest: allure_pytest
-    allure_pytest.__init__: allure_pytest
     allure_pytest.helper: allure_pytest
     allure_pytest.listener: allure_pytest
     allure_pytest.plugin: allure_pytest
     allure_pytest.utils: allure_pytest
     astroid: astroid
-    astroid.__init__: astroid
-    astroid.__pkginfo__: astroid
-    astroid._ast: astroid
     astroid.arguments: astroid
     astroid.astroid_manager: astroid
     astroid.bases: astroid
     astroid.brain: astroid
-    astroid.brain.__init__: astroid
     astroid.brain.brain_argparse: astroid
     astroid.brain.brain_attrs: astroid
     astroid.brain.brain_boto3: astroid
@@ -176,11 +87,6 @@ manifest:
     astroid.inference: astroid
     astroid.inference_tip: astroid
     astroid.interpreter: astroid
-    astroid.interpreter.__init__: astroid
-    astroid.interpreter._import: astroid
-    astroid.interpreter._import.__init__: astroid
-    astroid.interpreter._import.spec: astroid
-    astroid.interpreter._import.util: astroid
     astroid.interpreter.dunder_lookup: astroid
     astroid.interpreter.objectmodel: astroid
     astroid.manager: astroid
@@ -188,14 +94,11 @@ manifest:
     astroid.modutils: astroid
     astroid.node_classes: astroid
     astroid.nodes: astroid
-    astroid.nodes.__init__: astroid
-    astroid.nodes._base_nodes: astroid
     astroid.nodes.as_string: astroid
     astroid.nodes.const: astroid
     astroid.nodes.node_classes: astroid
     astroid.nodes.node_ng: astroid
     astroid.nodes.scoped_nodes: astroid
-    astroid.nodes.scoped_nodes.__init__: astroid
     astroid.nodes.scoped_nodes.mixin: astroid
     astroid.nodes.scoped_nodes.scoped_nodes: astroid
     astroid.nodes.scoped_nodes.utils: astroid
@@ -210,33 +113,19 @@ manifest:
     astroid.typing: astroid
     astroid.util: astroid
     attr: attrs
-    attr.__init__: attrs
-    attr._cmp: attrs
-    attr._compat: attrs
-    attr._config: attrs
-    attr._funcs: attrs
-    attr._make: attrs
-    attr._next_gen: attrs
-    attr._version_info: attrs
     attr.converters: attrs
     attr.exceptions: attrs
     attr.filters: attrs
     attr.setters: attrs
     attr.validators: attrs
     attrs: attrs
-    attrs.__init__: attrs
     attrs.converters: attrs
     attrs.exceptions: attrs
     attrs.filters: attrs
     attrs.setters: attrs
     attrs.validators: attrs
     bcrypt: bcrypt
-    bcrypt.__about__: bcrypt
-    bcrypt.__init__: bcrypt
-    bcrypt._bcrypt: bcrypt
     black: black
-    black.__init__: black
-    black.__main__: black
     black.brackets: black
     black.cache: black
     black.comments: black
@@ -257,53 +146,8 @@ manifest:
     black.strings: black
     black.trans: black
     blackd: black
-    blackd.__init__: black
-    blackd.__main__: black
     blackd.middlewares: black
     bleach: bleach
-    bleach.__init__: bleach
-    bleach._vendor: bleach
-    bleach._vendor.__init__: bleach
-    bleach._vendor.html5lib: bleach
-    bleach._vendor.html5lib.__init__: bleach
-    bleach._vendor.html5lib._ihatexml: bleach
-    bleach._vendor.html5lib._inputstream: bleach
-    bleach._vendor.html5lib._tokenizer: bleach
-    bleach._vendor.html5lib._trie: bleach
-    bleach._vendor.html5lib._trie.__init__: bleach
-    bleach._vendor.html5lib._trie._base: bleach
-    bleach._vendor.html5lib._trie.py: bleach
-    bleach._vendor.html5lib._utils: bleach
-    bleach._vendor.html5lib.constants: bleach
-    bleach._vendor.html5lib.filters: bleach
-    bleach._vendor.html5lib.filters.__init__: bleach
-    bleach._vendor.html5lib.filters.alphabeticalattributes: bleach
-    bleach._vendor.html5lib.filters.base: bleach
-    bleach._vendor.html5lib.filters.inject_meta_charset: bleach
-    bleach._vendor.html5lib.filters.lint: bleach
-    bleach._vendor.html5lib.filters.optionaltags: bleach
-    bleach._vendor.html5lib.filters.sanitizer: bleach
-    bleach._vendor.html5lib.filters.whitespace: bleach
-    bleach._vendor.html5lib.html5parser: bleach
-    bleach._vendor.html5lib.serializer: bleach
-    bleach._vendor.html5lib.treeadapters: bleach
-    bleach._vendor.html5lib.treeadapters.__init__: bleach
-    bleach._vendor.html5lib.treeadapters.genshi: bleach
-    bleach._vendor.html5lib.treeadapters.sax: bleach
-    bleach._vendor.html5lib.treebuilders: bleach
-    bleach._vendor.html5lib.treebuilders.__init__: bleach
-    bleach._vendor.html5lib.treebuilders.base: bleach
-    bleach._vendor.html5lib.treebuilders.dom: bleach
-    bleach._vendor.html5lib.treebuilders.etree: bleach
-    bleach._vendor.html5lib.treebuilders.etree_lxml: bleach
-    bleach._vendor.html5lib.treewalkers: bleach
-    bleach._vendor.html5lib.treewalkers.__init__: bleach
-    bleach._vendor.html5lib.treewalkers.base: bleach
-    bleach._vendor.html5lib.treewalkers.dom: bleach
-    bleach._vendor.html5lib.treewalkers.etree: bleach
-    bleach._vendor.html5lib.treewalkers.etree_lxml: bleach
-    bleach._vendor.html5lib.treewalkers.genshi: bleach
-    bleach._vendor.parse: bleach
     bleach.callbacks: bleach
     bleach.css_sanitizer: bleach
     bleach.html5lib_shim: bleach
@@ -311,9 +155,7 @@ manifest:
     bleach.parse_shim: bleach
     bleach.sanitizer: bleach
     blib2to3: black
-    blib2to3.__init__: black
     blib2to3.pgen2: black
-    blib2to3.pgen2.__init__: black
     blib2to3.pgen2.conv: black
     blib2to3.pgen2.driver: black
     blib2to3.pgen2.grammar: black
@@ -325,7 +167,6 @@ manifest:
     blib2to3.pygram: black
     blib2to3.pytree: black
     box: python_box
-    box.__init__: python_box
     box.box: python_box
     box.box_list: python_box
     box.config_box: python_box
@@ -334,8 +175,6 @@ manifest:
     box.from_file: python_box
     box.shorthand_box: python_box
     bumpversion: bump2version
-    bumpversion.__init__: bump2version
-    bumpversion.__main__: bump2version
     bumpversion.cli: bump2version
     bumpversion.exceptions: bump2version
     bumpversion.functions: bump2version
@@ -343,11 +182,8 @@ manifest:
     bumpversion.vcs: bump2version
     bumpversion.version_part: bump2version
     certifi: certifi
-    certifi.__init__: certifi
-    certifi.__main__: certifi
     certifi.core: certifi
     cffi: cffi
-    cffi.__init__: cffi
     cffi.api: cffi
     cffi.backend_ctypes: cffi
     cffi.cffi_opcode: cffi
@@ -365,13 +201,10 @@ manifest:
     cffi.verifier: cffi
     cfgv: cfgv
     charset_normalizer: charset_normalizer
-    charset_normalizer.__init__: charset_normalizer
     charset_normalizer.api: charset_normalizer
     charset_normalizer.assets: charset_normalizer
-    charset_normalizer.assets.__init__: charset_normalizer
     charset_normalizer.cd: charset_normalizer
     charset_normalizer.cli: charset_normalizer
-    charset_normalizer.cli.__init__: charset_normalizer
     charset_normalizer.cli.normalizer: charset_normalizer
     charset_normalizer.constant: charset_normalizer
     charset_normalizer.legacy: charset_normalizer
@@ -380,11 +213,6 @@ manifest:
     charset_normalizer.utils: charset_normalizer
     charset_normalizer.version: charset_normalizer
     click: click
-    click.__init__: click
-    click._compat: click
-    click._termui_impl: click
-    click._textwrap: click
-    click._winconsole: click
     click.core: click
     click.decorators: click
     click.exceptions: click
@@ -397,12 +225,10 @@ manifest:
     click.types: click
     click.utils: click
     colorlog: colorlog
-    colorlog.__init__: colorlog
     colorlog.escape_codes: colorlog
     colorlog.formatter: colorlog
     colorlog.wrappers: colorlog
     commonmark: commonmark
-    commonmark.__init__: commonmark
     commonmark.blocks: commonmark
     commonmark.cmark: commonmark
     commonmark.common: commonmark
@@ -413,20 +239,15 @@ manifest:
     commonmark.node: commonmark
     commonmark.normalize_reference: commonmark
     commonmark.render: commonmark
-    commonmark.render.__init__: commonmark
     commonmark.render.html: commonmark
     commonmark.render.renderer: commonmark
     commonmark.render.rst: commonmark
     commonmark.tests: commonmark
-    commonmark.tests.__init__: commonmark
     commonmark.tests.rst_tests: commonmark
     commonmark.tests.run_spec_tests: commonmark
     commonmark.tests.unit_tests: commonmark
     compose: docker_compose
-    compose.__init__: docker_compose
-    compose.__main__: docker_compose
     compose.cli: docker_compose
-    compose.cli.__init__: docker_compose
     compose.cli.colors: docker_compose
     compose.cli.command: docker_compose
     compose.cli.docker_client: docker_compose
@@ -439,7 +260,6 @@ manifest:
     compose.cli.utils: docker_compose
     compose.cli.verbose_proxy: docker_compose
     compose.config: docker_compose
-    compose.config.__init__: docker_compose
     compose.config.config: docker_compose
     compose.config.environment: docker_compose
     compose.config.errors: docker_compose
@@ -452,7 +272,6 @@ manifest:
     compose.container: docker_compose
     compose.errors: docker_compose
     compose.metrics: docker_compose
-    compose.metrics.__init__: docker_compose
     compose.metrics.client: docker_compose
     compose.metrics.decorator: docker_compose
     compose.network: docker_compose
@@ -465,8 +284,6 @@ manifest:
     compose.version: docker_compose
     compose.volume: docker_compose
     coverage: coverage
-    coverage.__init__: coverage
-    coverage.__main__: coverage
     coverage.annotate: coverage
     coverage.bytecode: coverage
     coverage.cmdline: coverage
@@ -505,17 +322,11 @@ manifest:
     coverage.version: coverage
     coverage.xmlreport: coverage
     cryptography: cryptography
-    cryptography.__about__: cryptography
-    cryptography.__init__: cryptography
     cryptography.exceptions: cryptography
     cryptography.fernet: cryptography
     cryptography.hazmat: cryptography
-    cryptography.hazmat.__init__: cryptography
-    cryptography.hazmat._oid: cryptography
     cryptography.hazmat.backends: cryptography
-    cryptography.hazmat.backends.__init__: cryptography
     cryptography.hazmat.backends.openssl: cryptography
-    cryptography.hazmat.backends.openssl.__init__: cryptography
     cryptography.hazmat.backends.openssl.aead: cryptography
     cryptography.hazmat.backends.openssl.backend: cryptography
     cryptography.hazmat.backends.openssl.ciphers: cryptography
@@ -526,7 +337,6 @@ manifest:
     cryptography.hazmat.backends.openssl.ec: cryptography
     cryptography.hazmat.backends.openssl.ed25519: cryptography
     cryptography.hazmat.backends.openssl.ed448: cryptography
-    cryptography.hazmat.backends.openssl.encode_asn1: cryptography
     cryptography.hazmat.backends.openssl.hashes: cryptography
     cryptography.hazmat.backends.openssl.hmac: cryptography
     cryptography.hazmat.backends.openssl.poly1305: cryptography
@@ -536,20 +346,10 @@ manifest:
     cryptography.hazmat.backends.openssl.x448: cryptography
     cryptography.hazmat.backends.openssl.x509: cryptography
     cryptography.hazmat.bindings: cryptography
-    cryptography.hazmat.bindings.__init__: cryptography
-    cryptography.hazmat.bindings._openssl: cryptography
-    cryptography.hazmat.bindings._rust: cryptography
     cryptography.hazmat.bindings.openssl: cryptography
-    cryptography.hazmat.bindings.openssl.__init__: cryptography
-    cryptography.hazmat.bindings.openssl._conditional: cryptography
     cryptography.hazmat.bindings.openssl.binding: cryptography
     cryptography.hazmat.primitives: cryptography
-    cryptography.hazmat.primitives.__init__: cryptography
-    cryptography.hazmat.primitives._asymmetric: cryptography
-    cryptography.hazmat.primitives._cipheralgorithm: cryptography
-    cryptography.hazmat.primitives._serialization: cryptography
     cryptography.hazmat.primitives.asymmetric: cryptography
-    cryptography.hazmat.primitives.asymmetric.__init__: cryptography
     cryptography.hazmat.primitives.asymmetric.dh: cryptography
     cryptography.hazmat.primitives.asymmetric.dsa: cryptography
     cryptography.hazmat.primitives.asymmetric.ec: cryptography
@@ -562,7 +362,6 @@ manifest:
     cryptography.hazmat.primitives.asymmetric.x25519: cryptography
     cryptography.hazmat.primitives.asymmetric.x448: cryptography
     cryptography.hazmat.primitives.ciphers: cryptography
-    cryptography.hazmat.primitives.ciphers.__init__: cryptography
     cryptography.hazmat.primitives.ciphers.aead: cryptography
     cryptography.hazmat.primitives.ciphers.algorithms: cryptography
     cryptography.hazmat.primitives.ciphers.base: cryptography
@@ -572,7 +371,6 @@ manifest:
     cryptography.hazmat.primitives.hashes: cryptography
     cryptography.hazmat.primitives.hmac: cryptography
     cryptography.hazmat.primitives.kdf: cryptography
-    cryptography.hazmat.primitives.kdf.__init__: cryptography
     cryptography.hazmat.primitives.kdf.concatkdf: cryptography
     cryptography.hazmat.primitives.kdf.hkdf: cryptography
     cryptography.hazmat.primitives.kdf.kbkdf: cryptography
@@ -583,18 +381,15 @@ manifest:
     cryptography.hazmat.primitives.padding: cryptography
     cryptography.hazmat.primitives.poly1305: cryptography
     cryptography.hazmat.primitives.serialization: cryptography
-    cryptography.hazmat.primitives.serialization.__init__: cryptography
     cryptography.hazmat.primitives.serialization.base: cryptography
     cryptography.hazmat.primitives.serialization.pkcs12: cryptography
     cryptography.hazmat.primitives.serialization.pkcs7: cryptography
     cryptography.hazmat.primitives.serialization.ssh: cryptography
     cryptography.hazmat.primitives.twofactor: cryptography
-    cryptography.hazmat.primitives.twofactor.__init__: cryptography
     cryptography.hazmat.primitives.twofactor.hotp: cryptography
     cryptography.hazmat.primitives.twofactor.totp: cryptography
     cryptography.utils: cryptography
     cryptography.x509: cryptography
-    cryptography.x509.__init__: cryptography
     cryptography.x509.base: cryptography
     cryptography.x509.certificate_transparency: cryptography
     cryptography.x509.extensions: cryptography
@@ -603,44 +398,31 @@ manifest:
     cryptography.x509.ocsp: cryptography
     cryptography.x509.oid: cryptography
     dateutil: python_dateutil
-    dateutil.__init__: python_dateutil
-    dateutil._common: python_dateutil
-    dateutil._version: python_dateutil
     dateutil.easter: python_dateutil
     dateutil.parser: python_dateutil
-    dateutil.parser.__init__: python_dateutil
-    dateutil.parser._parser: python_dateutil
     dateutil.parser.isoparser: python_dateutil
     dateutil.relativedelta: python_dateutil
     dateutil.rrule: python_dateutil
     dateutil.tz: python_dateutil
-    dateutil.tz.__init__: python_dateutil
-    dateutil.tz._common: python_dateutil
-    dateutil.tz._factories: python_dateutil
     dateutil.tz.tz: python_dateutil
     dateutil.tz.win: python_dateutil
     dateutil.tzwin: python_dateutil
     dateutil.utils: python_dateutil
     dateutil.zoneinfo: python_dateutil
-    dateutil.zoneinfo.__init__: python_dateutil
     dateutil.zoneinfo.rebuild: python_dateutil
     dill: dill
-    dill.__diff: dill
-    dill.__init__: dill
-    dill._dill: dill
-    dill._objects: dill
-    dill._shims: dill
     dill.detect: dill
+    dill.logger: dill
     dill.objtypes: dill
     dill.pointers: dill
+    dill.session: dill
     dill.settings: dill
     dill.source: dill
     dill.temp: dill
     dill.tests: dill
-    dill.tests.__init__: dill
-    dill.tests.__main__: dill
     dill.tests.test_check: dill
     dill.tests.test_classdef: dill
+    dill.tests.test_dataclasses: dill
     dill.tests.test_detect: dill
     dill.tests.test_dictviews: dill
     dill.tests.test_diff: dill
@@ -649,13 +431,16 @@ manifest:
     dill.tests.test_file: dill
     dill.tests.test_functions: dill
     dill.tests.test_functors: dill
+    dill.tests.test_logger: dill
     dill.tests.test_mixins: dill
     dill.tests.test_module: dill
     dill.tests.test_moduledict: dill
     dill.tests.test_nested: dill
     dill.tests.test_objects: dill
     dill.tests.test_properties: dill
+    dill.tests.test_pycapsule: dill
     dill.tests.test_recursive: dill
+    dill.tests.test_registered: dill
     dill.tests.test_restricted: dill
     dill.tests.test_selected: dill
     dill.tests.test_session: dill
@@ -663,7 +448,6 @@ manifest:
     dill.tests.test_temp: dill
     dill.tests.test_weakref: dill
     distlib: distlib
-    distlib.__init__: distlib
     distlib.compat: distlib
     distlib.database: distlib
     distlib.index: distlib
@@ -677,14 +461,9 @@ manifest:
     distlib.version: distlib
     distlib.wheel: distlib
     distro: distro
-    distro.__init__: distro
-    distro.__main__: distro
     distro.distro: distro
     docker: docker
-    docker.__init__: docker
-    docker._version: docker
     docker.api: docker
-    docker.api.__init__: docker
     docker.api.build: docker
     docker.api.client: docker
     docker.api.config: docker
@@ -702,19 +481,16 @@ manifest:
     docker.client: docker
     docker.constants: docker
     docker.context: docker
-    docker.context.__init__: docker
     docker.context.api: docker
     docker.context.config: docker
     docker.context.context: docker
     docker.credentials: docker
-    docker.credentials.__init__: docker
     docker.credentials.constants: docker
     docker.credentials.errors: docker
     docker.credentials.store: docker
     docker.credentials.utils: docker
     docker.errors: docker
     docker.models: docker
-    docker.models.__init__: docker
     docker.models.configs: docker
     docker.models.containers: docker
     docker.models.images: docker
@@ -728,7 +504,6 @@ manifest:
     docker.models.volumes: docker
     docker.tls: docker
     docker.transport: docker
-    docker.transport.__init__: docker
     docker.transport.basehttpadapter: docker
     docker.transport.npipeconn: docker
     docker.transport.npipesocket: docker
@@ -736,7 +511,6 @@ manifest:
     docker.transport.ssladapter: docker
     docker.transport.unixconn: docker
     docker.types: docker
-    docker.types.__init__: docker
     docker.types.base: docker
     docker.types.containers: docker
     docker.types.daemon: docker
@@ -745,7 +519,6 @@ manifest:
     docker.types.services: docker
     docker.types.swarm: docker
     docker.utils: docker
-    docker.utils.__init__: docker
     docker.utils.build: docker
     docker.utils.config: docker
     docker.utils.decorators: docker
@@ -757,20 +530,16 @@ manifest:
     docker.utils.utils: docker
     docker.version: docker
     dockerpty: dockerpty
-    dockerpty.__init__: dockerpty
     dockerpty.io: dockerpty
     dockerpty.pty: dockerpty
     dockerpty.tty: dockerpty
     docopt: docopt
     docutils: docutils
-    docutils.__init__: docutils
-    docutils.__main__: docutils
     docutils.core: docutils
     docutils.examples: docutils
     docutils.frontend: docutils
     docutils.io: docutils
     docutils.languages: docutils
-    docutils.languages.__init__: docutils
     docutils.languages.af: docutils
     docutils.languages.ar: docutils
     docutils.languages.ca: docutils
@@ -800,14 +569,11 @@ manifest:
     docutils.languages.zh_tw: docutils
     docutils.nodes: docutils
     docutils.parsers: docutils
-    docutils.parsers.__init__: docutils
     docutils.parsers.commonmark_wrapper: docutils
     docutils.parsers.null: docutils
     docutils.parsers.recommonmark_wrapper: docutils
     docutils.parsers.rst: docutils
-    docutils.parsers.rst.__init__: docutils
     docutils.parsers.rst.directives: docutils
-    docutils.parsers.rst.directives.__init__: docutils
     docutils.parsers.rst.directives.admonitions: docutils
     docutils.parsers.rst.directives.body: docutils
     docutils.parsers.rst.directives.html: docutils
@@ -817,7 +583,6 @@ manifest:
     docutils.parsers.rst.directives.references: docutils
     docutils.parsers.rst.directives.tables: docutils
     docutils.parsers.rst.languages: docutils
-    docutils.parsers.rst.languages.__init__: docutils
     docutils.parsers.rst.languages.af: docutils
     docutils.parsers.rst.languages.ar: docutils
     docutils.parsers.rst.languages.ca: docutils
@@ -849,13 +614,11 @@ manifest:
     docutils.parsers.rst.states: docutils
     docutils.parsers.rst.tableparser: docutils
     docutils.readers: docutils
-    docutils.readers.__init__: docutils
     docutils.readers.doctree: docutils
     docutils.readers.pep: docutils
     docutils.readers.standalone: docutils
     docutils.statemachine: docutils
     docutils.transforms: docutils
-    docutils.transforms.__init__: docutils
     docutils.transforms.components: docutils
     docutils.transforms.frontmatter: docutils
     docutils.transforms.misc: docutils
@@ -865,11 +628,9 @@ manifest:
     docutils.transforms.universal: docutils
     docutils.transforms.writer_aux: docutils
     docutils.utils: docutils
-    docutils.utils.__init__: docutils
     docutils.utils.code_analyzer: docutils
     docutils.utils.error_reporting: docutils
     docutils.utils.math: docutils
-    docutils.utils.math.__init__: docutils
     docutils.utils.math.latex2mathml: docutils
     docutils.utils.math.math2html: docutils
     docutils.utils.math.tex2mathml_extern: docutils
@@ -880,39 +641,27 @@ manifest:
     docutils.utils.smartquotes: docutils
     docutils.utils.urischemes: docutils
     docutils.writers: docutils
-    docutils.writers.__init__: docutils
-    docutils.writers._html_base: docutils
     docutils.writers.docutils_xml: docutils
     docutils.writers.html4css1: docutils
-    docutils.writers.html4css1.__init__: docutils
     docutils.writers.html5_polyglot: docutils
-    docutils.writers.html5_polyglot.__init__: docutils
     docutils.writers.latex2e: docutils
-    docutils.writers.latex2e.__init__: docutils
     docutils.writers.manpage: docutils
     docutils.writers.null: docutils
     docutils.writers.odf_odt: docutils
-    docutils.writers.odf_odt.__init__: docutils
     docutils.writers.odf_odt.pygmentsformatter: docutils
     docutils.writers.pep_html: docutils
-    docutils.writers.pep_html.__init__: docutils
     docutils.writers.pseudoxml: docutils
     docutils.writers.s5_html: docutils
-    docutils.writers.s5_html.__init__: docutils
     docutils.writers.xetex: docutils
-    docutils.writers.xetex.__init__: docutils
     dotenv: python_dotenv
-    dotenv.__init__: python_dotenv
-    dotenv.__main__: python_dotenv
     dotenv.cli: python_dotenv
     dotenv.ipython: python_dotenv
     dotenv.main: python_dotenv
     dotenv.parser: python_dotenv
     dotenv.variables: python_dotenv
     dotenv.version: python_dotenv
+    exceptiongroup: exceptiongroup
     execnet: execnet
-    execnet.__init__: execnet
-    execnet._version: execnet
     execnet.deprecated: execnet
     execnet.gateway: execnet
     execnet.gateway_base: execnet
@@ -923,7 +672,6 @@ manifest:
     execnet.rsync: execnet
     execnet.rsync_remote: execnet
     execnet.script: execnet
-    execnet.script.__init__: execnet
     execnet.script.loop_socketserver: execnet
     execnet.script.quitserver: execnet
     execnet.script.shell: execnet
@@ -931,1169 +679,597 @@ manifest:
     execnet.script.socketserverservice: execnet
     execnet.script.xx: execnet
     execnet.xspec: execnet
-    f4771e8a540c98c8e0df__mypyc: mypy
     faker: Faker
-    faker.__init__: Faker
-    faker.__main__: Faker
     faker.cli: Faker
     faker.config: Faker
     faker.contrib: Faker
-    faker.contrib.__init__: Faker
     faker.contrib.pytest: Faker
-    faker.contrib.pytest.__init__: Faker
     faker.contrib.pytest.plugin: Faker
     faker.decode: Faker
-    faker.decode.__init__: Faker
     faker.decode.codes: Faker
     faker.documentor: Faker
     faker.exceptions: Faker
     faker.factory: Faker
     faker.generator: Faker
     faker.providers: Faker
-    faker.providers.__init__: Faker
     faker.providers.address: Faker
-    faker.providers.address.__init__: Faker
     faker.providers.address.az_AZ: Faker
-    faker.providers.address.az_AZ.__init__: Faker
     faker.providers.address.bn_BD: Faker
-    faker.providers.address.bn_BD.__init__: Faker
     faker.providers.address.cs_CZ: Faker
-    faker.providers.address.cs_CZ.__init__: Faker
     faker.providers.address.da_DK: Faker
-    faker.providers.address.da_DK.__init__: Faker
     faker.providers.address.de: Faker
-    faker.providers.address.de.__init__: Faker
     faker.providers.address.de_AT: Faker
-    faker.providers.address.de_AT.__init__: Faker
     faker.providers.address.de_CH: Faker
-    faker.providers.address.de_CH.__init__: Faker
     faker.providers.address.de_DE: Faker
-    faker.providers.address.de_DE.__init__: Faker
     faker.providers.address.el_GR: Faker
-    faker.providers.address.el_GR.__init__: Faker
     faker.providers.address.en: Faker
-    faker.providers.address.en.__init__: Faker
     faker.providers.address.en_AU: Faker
-    faker.providers.address.en_AU.__init__: Faker
     faker.providers.address.en_CA: Faker
-    faker.providers.address.en_CA.__init__: Faker
     faker.providers.address.en_GB: Faker
-    faker.providers.address.en_GB.__init__: Faker
     faker.providers.address.en_IE: Faker
-    faker.providers.address.en_IE.__init__: Faker
     faker.providers.address.en_IN: Faker
-    faker.providers.address.en_IN.__init__: Faker
     faker.providers.address.en_NZ: Faker
-    faker.providers.address.en_NZ.__init__: Faker
     faker.providers.address.en_PH: Faker
-    faker.providers.address.en_PH.__init__: Faker
     faker.providers.address.en_US: Faker
-    faker.providers.address.en_US.__init__: Faker
     faker.providers.address.es: Faker
-    faker.providers.address.es.__init__: Faker
     faker.providers.address.es_CL: Faker
-    faker.providers.address.es_CL.__init__: Faker
     faker.providers.address.es_CO: Faker
-    faker.providers.address.es_CO.__init__: Faker
     faker.providers.address.es_ES: Faker
-    faker.providers.address.es_ES.__init__: Faker
     faker.providers.address.es_MX: Faker
-    faker.providers.address.es_MX.__init__: Faker
     faker.providers.address.fa_IR: Faker
-    faker.providers.address.fa_IR.__init__: Faker
     faker.providers.address.fi_FI: Faker
-    faker.providers.address.fi_FI.__init__: Faker
     faker.providers.address.fil_PH: Faker
-    faker.providers.address.fil_PH.__init__: Faker
     faker.providers.address.fr_CH: Faker
-    faker.providers.address.fr_CH.__init__: Faker
     faker.providers.address.fr_FR: Faker
-    faker.providers.address.fr_FR.__init__: Faker
     faker.providers.address.he_IL: Faker
-    faker.providers.address.he_IL.__init__: Faker
     faker.providers.address.hi_IN: Faker
-    faker.providers.address.hi_IN.__init__: Faker
     faker.providers.address.hr_HR: Faker
-    faker.providers.address.hr_HR.__init__: Faker
     faker.providers.address.hu_HU: Faker
-    faker.providers.address.hu_HU.__init__: Faker
     faker.providers.address.hy_AM: Faker
-    faker.providers.address.hy_AM.__init__: Faker
     faker.providers.address.id_ID: Faker
-    faker.providers.address.id_ID.__init__: Faker
     faker.providers.address.it_IT: Faker
-    faker.providers.address.it_IT.__init__: Faker
     faker.providers.address.ja_JP: Faker
-    faker.providers.address.ja_JP.__init__: Faker
     faker.providers.address.ka_GE: Faker
-    faker.providers.address.ka_GE.__init__: Faker
     faker.providers.address.ko_KR: Faker
-    faker.providers.address.ko_KR.__init__: Faker
     faker.providers.address.ne_NP: Faker
-    faker.providers.address.ne_NP.__init__: Faker
     faker.providers.address.nl_BE: Faker
-    faker.providers.address.nl_BE.__init__: Faker
     faker.providers.address.nl_NL: Faker
-    faker.providers.address.nl_NL.__init__: Faker
     faker.providers.address.no_NO: Faker
-    faker.providers.address.no_NO.__init__: Faker
     faker.providers.address.pl_PL: Faker
-    faker.providers.address.pl_PL.__init__: Faker
     faker.providers.address.pt_BR: Faker
-    faker.providers.address.pt_BR.__init__: Faker
     faker.providers.address.pt_PT: Faker
-    faker.providers.address.pt_PT.__init__: Faker
     faker.providers.address.ro_RO: Faker
-    faker.providers.address.ro_RO.__init__: Faker
     faker.providers.address.ru_RU: Faker
-    faker.providers.address.ru_RU.__init__: Faker
     faker.providers.address.sk_SK: Faker
-    faker.providers.address.sk_SK.__init__: Faker
     faker.providers.address.sl_SI: Faker
-    faker.providers.address.sl_SI.__init__: Faker
     faker.providers.address.sv_SE: Faker
-    faker.providers.address.sv_SE.__init__: Faker
     faker.providers.address.ta_IN: Faker
-    faker.providers.address.ta_IN.__init__: Faker
     faker.providers.address.th: Faker
-    faker.providers.address.th.__init__: Faker
     faker.providers.address.th_TH: Faker
-    faker.providers.address.th_TH.__init__: Faker
     faker.providers.address.tl_PH: Faker
-    faker.providers.address.tl_PH.__init__: Faker
     faker.providers.address.uk_UA: Faker
-    faker.providers.address.uk_UA.__init__: Faker
     faker.providers.address.zh_CN: Faker
-    faker.providers.address.zh_CN.__init__: Faker
     faker.providers.address.zh_TW: Faker
-    faker.providers.address.zh_TW.__init__: Faker
     faker.providers.automotive: Faker
-    faker.providers.automotive.__init__: Faker
     faker.providers.automotive.ar_BH: Faker
-    faker.providers.automotive.ar_BH.__init__: Faker
     faker.providers.automotive.ar_JO: Faker
-    faker.providers.automotive.ar_JO.__init__: Faker
     faker.providers.automotive.ar_PS: Faker
-    faker.providers.automotive.ar_PS.__init__: Faker
     faker.providers.automotive.ar_SA: Faker
-    faker.providers.automotive.ar_SA.__init__: Faker
     faker.providers.automotive.az_AZ: Faker
-    faker.providers.automotive.az_AZ.__init__: Faker
     faker.providers.automotive.bn_BD: Faker
-    faker.providers.automotive.bn_BD.__init__: Faker
     faker.providers.automotive.da_DK: Faker
-    faker.providers.automotive.da_DK.__init__: Faker
     faker.providers.automotive.de_CH: Faker
-    faker.providers.automotive.de_CH.__init__: Faker
     faker.providers.automotive.de_DE: Faker
-    faker.providers.automotive.de_DE.__init__: Faker
     faker.providers.automotive.el_GR: Faker
-    faker.providers.automotive.el_GR.__init__: Faker
     faker.providers.automotive.en_CA: Faker
-    faker.providers.automotive.en_CA.__init__: Faker
     faker.providers.automotive.en_GB: Faker
-    faker.providers.automotive.en_GB.__init__: Faker
     faker.providers.automotive.en_NZ: Faker
-    faker.providers.automotive.en_NZ.__init__: Faker
     faker.providers.automotive.en_PH: Faker
-    faker.providers.automotive.en_PH.__init__: Faker
     faker.providers.automotive.en_US: Faker
-    faker.providers.automotive.en_US.__init__: Faker
     faker.providers.automotive.es_CL: Faker
-    faker.providers.automotive.es_CL.__init__: Faker
     faker.providers.automotive.es_CO: Faker
-    faker.providers.automotive.es_CO.__init__: Faker
     faker.providers.automotive.es_ES: Faker
-    faker.providers.automotive.es_ES.__init__: Faker
     faker.providers.automotive.et_EE: Faker
-    faker.providers.automotive.et_EE.__init__: Faker
     faker.providers.automotive.fi_FI: Faker
-    faker.providers.automotive.fi_FI.__init__: Faker
     faker.providers.automotive.fil_PH: Faker
-    faker.providers.automotive.fil_PH.__init__: Faker
     faker.providers.automotive.fr_FR: Faker
-    faker.providers.automotive.fr_FR.__init__: Faker
     faker.providers.automotive.he_IL: Faker
-    faker.providers.automotive.he_IL.__init__: Faker
     faker.providers.automotive.hu_HU: Faker
-    faker.providers.automotive.hu_HU.__init__: Faker
     faker.providers.automotive.id_ID: Faker
-    faker.providers.automotive.id_ID.__init__: Faker
     faker.providers.automotive.it_IT: Faker
-    faker.providers.automotive.it_IT.__init__: Faker
     faker.providers.automotive.lt_LT: Faker
-    faker.providers.automotive.lt_LT.__init__: Faker
     faker.providers.automotive.nl_NL: Faker
-    faker.providers.automotive.nl_NL.__init__: Faker
     faker.providers.automotive.no_NO: Faker
-    faker.providers.automotive.no_NO.__init__: Faker
     faker.providers.automotive.pl_PL: Faker
-    faker.providers.automotive.pl_PL.__init__: Faker
     faker.providers.automotive.pt_BR: Faker
-    faker.providers.automotive.pt_BR.__init__: Faker
     faker.providers.automotive.pt_PT: Faker
-    faker.providers.automotive.pt_PT.__init__: Faker
     faker.providers.automotive.ro_RO: Faker
-    faker.providers.automotive.ro_RO.__init__: Faker
     faker.providers.automotive.ru_RU: Faker
-    faker.providers.automotive.ru_RU.__init__: Faker
     faker.providers.automotive.sk_SK: Faker
-    faker.providers.automotive.sk_SK.__init__: Faker
     faker.providers.automotive.sq_AL: Faker
-    faker.providers.automotive.sq_AL.__init__: Faker
     faker.providers.automotive.sv_SE: Faker
-    faker.providers.automotive.sv_SE.__init__: Faker
     faker.providers.automotive.th_TH: Faker
-    faker.providers.automotive.th_TH.__init__: Faker
     faker.providers.automotive.tl_PH: Faker
-    faker.providers.automotive.tl_PH.__init__: Faker
     faker.providers.automotive.tr_TR: Faker
-    faker.providers.automotive.tr_TR.__init__: Faker
     faker.providers.automotive.vi_VN: Faker
-    faker.providers.automotive.vi_VN.__init__: Faker
     faker.providers.bank: Faker
-    faker.providers.bank.__init__: Faker
     faker.providers.bank.az_AZ: Faker
-    faker.providers.bank.az_AZ.__init__: Faker
     faker.providers.bank.bn_BD: Faker
-    faker.providers.bank.bn_BD.__init__: Faker
     faker.providers.bank.da_DK: Faker
-    faker.providers.bank.da_DK.__init__: Faker
     faker.providers.bank.de_AT: Faker
-    faker.providers.bank.de_AT.__init__: Faker
     faker.providers.bank.de_CH: Faker
-    faker.providers.bank.de_CH.__init__: Faker
     faker.providers.bank.de_DE: Faker
-    faker.providers.bank.de_DE.__init__: Faker
     faker.providers.bank.el_GR: Faker
-    faker.providers.bank.el_GR.__init__: Faker
     faker.providers.bank.en_GB: Faker
-    faker.providers.bank.en_GB.__init__: Faker
     faker.providers.bank.en_IE: Faker
-    faker.providers.bank.en_IE.__init__: Faker
+    faker.providers.bank.en_IN: Faker
     faker.providers.bank.en_PH: Faker
-    faker.providers.bank.en_PH.__init__: Faker
     faker.providers.bank.es_ES: Faker
-    faker.providers.bank.es_ES.__init__: Faker
     faker.providers.bank.es_MX: Faker
-    faker.providers.bank.es_MX.__init__: Faker
     faker.providers.bank.fa_IR: Faker
-    faker.providers.bank.fa_IR.__init__: Faker
     faker.providers.bank.fi_FI: Faker
-    faker.providers.bank.fi_FI.__init__: Faker
     faker.providers.bank.fil_PH: Faker
-    faker.providers.bank.fil_PH.__init__: Faker
     faker.providers.bank.fr_CH: Faker
-    faker.providers.bank.fr_CH.__init__: Faker
     faker.providers.bank.fr_FR: Faker
-    faker.providers.bank.fr_FR.__init__: Faker
     faker.providers.bank.it_CH: Faker
-    faker.providers.bank.it_CH.__init__: Faker
     faker.providers.bank.it_IT: Faker
-    faker.providers.bank.it_IT.__init__: Faker
     faker.providers.bank.nl_NL: Faker
-    faker.providers.bank.nl_NL.__init__: Faker
     faker.providers.bank.no_NO: Faker
-    faker.providers.bank.no_NO.__init__: Faker
     faker.providers.bank.pl_PL: Faker
-    faker.providers.bank.pl_PL.__init__: Faker
     faker.providers.bank.pt_PT: Faker
-    faker.providers.bank.pt_PT.__init__: Faker
     faker.providers.bank.ro_RO: Faker
-    faker.providers.bank.ro_RO.__init__: Faker
     faker.providers.bank.ru_RU: Faker
-    faker.providers.bank.ru_RU.__init__: Faker
     faker.providers.bank.th_TH: Faker
-    faker.providers.bank.th_TH.__init__: Faker
     faker.providers.bank.tl_PH: Faker
-    faker.providers.bank.tl_PH.__init__: Faker
     faker.providers.bank.tr_TR: Faker
-    faker.providers.bank.tr_TR.__init__: Faker
     faker.providers.barcode: Faker
-    faker.providers.barcode.__init__: Faker
     faker.providers.barcode.en_CA: Faker
-    faker.providers.barcode.en_CA.__init__: Faker
     faker.providers.barcode.en_US: Faker
-    faker.providers.barcode.en_US.__init__: Faker
     faker.providers.barcode.es_ES: Faker
-    faker.providers.barcode.es_ES.__init__: Faker
     faker.providers.barcode.fr_CA: Faker
-    faker.providers.barcode.fr_CA.__init__: Faker
     faker.providers.barcode.ja_JP: Faker
-    faker.providers.barcode.ja_JP.__init__: Faker
     faker.providers.color: Faker
-    faker.providers.color.__init__: Faker
     faker.providers.color.ar_PS: Faker
-    faker.providers.color.ar_PS.__init__: Faker
     faker.providers.color.az_AZ: Faker
-    faker.providers.color.az_AZ.__init__: Faker
     faker.providers.color.bg_BG: Faker
-    faker.providers.color.bg_BG.__init__: Faker
     faker.providers.color.bn_BD: Faker
-    faker.providers.color.bn_BD.__init__: Faker
     faker.providers.color.color: Faker
     faker.providers.color.da_DK: Faker
-    faker.providers.color.da_DK.__init__: Faker
     faker.providers.color.el_GR: Faker
-    faker.providers.color.el_GR.__init__: Faker
     faker.providers.color.en_US: Faker
-    faker.providers.color.en_US.__init__: Faker
     faker.providers.color.es: Faker
-    faker.providers.color.es.__init__: Faker
     faker.providers.color.es_CL: Faker
-    faker.providers.color.es_CL.__init__: Faker
     faker.providers.color.es_ES: Faker
-    faker.providers.color.es_ES.__init__: Faker
     faker.providers.color.fa_IR: Faker
-    faker.providers.color.fa_IR.__init__: Faker
     faker.providers.color.fr_FR: Faker
-    faker.providers.color.fr_FR.__init__: Faker
     faker.providers.color.he_IL: Faker
-    faker.providers.color.he_IL.__init__: Faker
     faker.providers.color.hr_HR: Faker
-    faker.providers.color.hr_HR.__init__: Faker
     faker.providers.color.hu_HU: Faker
-    faker.providers.color.hu_HU.__init__: Faker
     faker.providers.color.hy_AM: Faker
-    faker.providers.color.hy_AM.__init__: Faker
+    faker.providers.color.id_ID: Faker
     faker.providers.color.pt_BR: Faker
-    faker.providers.color.pt_BR.__init__: Faker
     faker.providers.color.ru_RU: Faker
-    faker.providers.color.ru_RU.__init__: Faker
     faker.providers.color.sk_SK: Faker
-    faker.providers.color.sk_SK.__init__: Faker
     faker.providers.color.th_TH: Faker
-    faker.providers.color.th_TH.__init__: Faker
     faker.providers.color.uk_UA: Faker
-    faker.providers.color.uk_UA.__init__: Faker
     faker.providers.company: Faker
-    faker.providers.company.__init__: Faker
     faker.providers.company.az_AZ: Faker
-    faker.providers.company.az_AZ.__init__: Faker
     faker.providers.company.bg_BG: Faker
-    faker.providers.company.bg_BG.__init__: Faker
     faker.providers.company.bn_BD: Faker
-    faker.providers.company.bn_BD.__init__: Faker
     faker.providers.company.cs_CZ: Faker
-    faker.providers.company.cs_CZ.__init__: Faker
     faker.providers.company.da_DK: Faker
-    faker.providers.company.da_DK.__init__: Faker
     faker.providers.company.de_DE: Faker
-    faker.providers.company.de_DE.__init__: Faker
     faker.providers.company.el_GR: Faker
-    faker.providers.company.el_GR.__init__: Faker
     faker.providers.company.en_PH: Faker
-    faker.providers.company.en_PH.__init__: Faker
     faker.providers.company.en_US: Faker
-    faker.providers.company.en_US.__init__: Faker
     faker.providers.company.es_CL: Faker
-    faker.providers.company.es_CL.__init__: Faker
     faker.providers.company.es_MX: Faker
-    faker.providers.company.es_MX.__init__: Faker
     faker.providers.company.fa_IR: Faker
-    faker.providers.company.fa_IR.__init__: Faker
     faker.providers.company.fi_FI: Faker
-    faker.providers.company.fi_FI.__init__: Faker
     faker.providers.company.fil_PH: Faker
-    faker.providers.company.fil_PH.__init__: Faker
     faker.providers.company.fr_CH: Faker
-    faker.providers.company.fr_CH.__init__: Faker
     faker.providers.company.fr_FR: Faker
-    faker.providers.company.fr_FR.__init__: Faker
     faker.providers.company.hr_HR: Faker
-    faker.providers.company.hr_HR.__init__: Faker
     faker.providers.company.hu_HU: Faker
-    faker.providers.company.hu_HU.__init__: Faker
     faker.providers.company.hy_AM: Faker
-    faker.providers.company.hy_AM.__init__: Faker
     faker.providers.company.id_ID: Faker
-    faker.providers.company.id_ID.__init__: Faker
     faker.providers.company.it_IT: Faker
-    faker.providers.company.it_IT.__init__: Faker
     faker.providers.company.ja_JP: Faker
-    faker.providers.company.ja_JP.__init__: Faker
     faker.providers.company.ko_KR: Faker
-    faker.providers.company.ko_KR.__init__: Faker
     faker.providers.company.nl_NL: Faker
-    faker.providers.company.nl_NL.__init__: Faker
     faker.providers.company.no_NO: Faker
-    faker.providers.company.no_NO.__init__: Faker
     faker.providers.company.pl_PL: Faker
-    faker.providers.company.pl_PL.__init__: Faker
     faker.providers.company.pt_BR: Faker
-    faker.providers.company.pt_BR.__init__: Faker
     faker.providers.company.pt_PT: Faker
-    faker.providers.company.pt_PT.__init__: Faker
     faker.providers.company.ro_RO: Faker
-    faker.providers.company.ro_RO.__init__: Faker
     faker.providers.company.ru_RU: Faker
-    faker.providers.company.ru_RU.__init__: Faker
     faker.providers.company.sk_SK: Faker
-    faker.providers.company.sk_SK.__init__: Faker
     faker.providers.company.sl_SI: Faker
-    faker.providers.company.sl_SI.__init__: Faker
     faker.providers.company.sv_SE: Faker
-    faker.providers.company.sv_SE.__init__: Faker
     faker.providers.company.th_TH: Faker
-    faker.providers.company.th_TH.__init__: Faker
     faker.providers.company.tl_PH: Faker
-    faker.providers.company.tl_PH.__init__: Faker
     faker.providers.company.tr_TR: Faker
-    faker.providers.company.tr_TR.__init__: Faker
     faker.providers.company.zh_CN: Faker
-    faker.providers.company.zh_CN.__init__: Faker
     faker.providers.company.zh_TW: Faker
-    faker.providers.company.zh_TW.__init__: Faker
     faker.providers.credit_card: Faker
-    faker.providers.credit_card.__init__: Faker
     faker.providers.credit_card.en_US: Faker
-    faker.providers.credit_card.en_US.__init__: Faker
     faker.providers.credit_card.fa_IR: Faker
-    faker.providers.credit_card.fa_IR.__init__: Faker
     faker.providers.credit_card.pt_PT: Faker
-    faker.providers.credit_card.pt_PT.__init__: Faker
     faker.providers.credit_card.ru_RU: Faker
-    faker.providers.credit_card.ru_RU.__init__: Faker
     faker.providers.currency: Faker
-    faker.providers.currency.__init__: Faker
     faker.providers.currency.az_AZ: Faker
-    faker.providers.currency.az_AZ.__init__: Faker
     faker.providers.currency.bn_BD: Faker
-    faker.providers.currency.bn_BD.__init__: Faker
     faker.providers.currency.cs_CZ: Faker
-    faker.providers.currency.cs_CZ.__init__: Faker
     faker.providers.currency.da_DK: Faker
-    faker.providers.currency.da_DK.__init__: Faker
     faker.providers.currency.de_AT: Faker
-    faker.providers.currency.de_AT.__init__: Faker
     faker.providers.currency.de_DE: Faker
-    faker.providers.currency.de_DE.__init__: Faker
     faker.providers.currency.el_GR: Faker
-    faker.providers.currency.el_GR.__init__: Faker
     faker.providers.currency.en_AU: Faker
-    faker.providers.currency.en_AU.__init__: Faker
     faker.providers.currency.en_CA: Faker
-    faker.providers.currency.en_CA.__init__: Faker
     faker.providers.currency.en_US: Faker
-    faker.providers.currency.en_US.__init__: Faker
     faker.providers.currency.es: Faker
-    faker.providers.currency.es.__init__: Faker
     faker.providers.currency.es_CL: Faker
-    faker.providers.currency.es_CL.__init__: Faker
     faker.providers.currency.es_ES: Faker
-    faker.providers.currency.es_ES.__init__: Faker
     faker.providers.currency.fr_CA: Faker
-    faker.providers.currency.fr_CA.__init__: Faker
     faker.providers.currency.fr_FR: Faker
-    faker.providers.currency.fr_FR.__init__: Faker
     faker.providers.currency.it_IT: Faker
-    faker.providers.currency.it_IT.__init__: Faker
     faker.providers.currency.nl_NL: Faker
-    faker.providers.currency.nl_NL.__init__: Faker
     faker.providers.currency.pl_PL: Faker
-    faker.providers.currency.pl_PL.__init__: Faker
     faker.providers.currency.pt_BR: Faker
-    faker.providers.currency.pt_BR.__init__: Faker
     faker.providers.currency.ro_RO: Faker
-    faker.providers.currency.ro_RO.__init__: Faker
     faker.providers.currency.ru_RU: Faker
-    faker.providers.currency.ru_RU.__init__: Faker
     faker.providers.currency.sk_SK: Faker
-    faker.providers.currency.sk_SK.__init__: Faker
     faker.providers.currency.sv_SE: Faker
-    faker.providers.currency.sv_SE.__init__: Faker
     faker.providers.currency.th_TH: Faker
-    faker.providers.currency.th_TH.__init__: Faker
     faker.providers.currency.tr_TR: Faker
-    faker.providers.currency.tr_TR.__init__: Faker
     faker.providers.date_time: Faker
-    faker.providers.date_time.__init__: Faker
     faker.providers.date_time.ar_AA: Faker
-    faker.providers.date_time.ar_AA.__init__: Faker
     faker.providers.date_time.ar_EG: Faker
-    faker.providers.date_time.ar_EG.__init__: Faker
     faker.providers.date_time.az_AZ: Faker
-    faker.providers.date_time.az_AZ.__init__: Faker
     faker.providers.date_time.bn_BD: Faker
-    faker.providers.date_time.bn_BD.__init__: Faker
     faker.providers.date_time.cs_CZ: Faker
-    faker.providers.date_time.cs_CZ.__init__: Faker
     faker.providers.date_time.da_DK: Faker
-    faker.providers.date_time.da_DK.__init__: Faker
     faker.providers.date_time.de_AT: Faker
-    faker.providers.date_time.de_AT.__init__: Faker
     faker.providers.date_time.de_DE: Faker
-    faker.providers.date_time.de_DE.__init__: Faker
     faker.providers.date_time.el_GR: Faker
-    faker.providers.date_time.el_GR.__init__: Faker
     faker.providers.date_time.en_PH: Faker
-    faker.providers.date_time.en_PH.__init__: Faker
     faker.providers.date_time.en_US: Faker
-    faker.providers.date_time.en_US.__init__: Faker
     faker.providers.date_time.es: Faker
-    faker.providers.date_time.es.__init__: Faker
     faker.providers.date_time.es_CL: Faker
-    faker.providers.date_time.es_CL.__init__: Faker
     faker.providers.date_time.es_ES: Faker
-    faker.providers.date_time.es_ES.__init__: Faker
     faker.providers.date_time.fil_PH: Faker
-    faker.providers.date_time.fil_PH.__init__: Faker
     faker.providers.date_time.fr_FR: Faker
-    faker.providers.date_time.fr_FR.__init__: Faker
     faker.providers.date_time.hi_IN: Faker
-    faker.providers.date_time.hi_IN.__init__: Faker
     faker.providers.date_time.hr_HR: Faker
-    faker.providers.date_time.hr_HR.__init__: Faker
     faker.providers.date_time.hu_HU: Faker
-    faker.providers.date_time.hu_HU.__init__: Faker
     faker.providers.date_time.hy_AM: Faker
-    faker.providers.date_time.hy_AM.__init__: Faker
     faker.providers.date_time.id_ID: Faker
-    faker.providers.date_time.id_ID.__init__: Faker
     faker.providers.date_time.it_IT: Faker
-    faker.providers.date_time.it_IT.__init__: Faker
     faker.providers.date_time.ko_KR: Faker
-    faker.providers.date_time.ko_KR.__init__: Faker
     faker.providers.date_time.nl_NL: Faker
-    faker.providers.date_time.nl_NL.__init__: Faker
     faker.providers.date_time.no_NO: Faker
-    faker.providers.date_time.no_NO.__init__: Faker
     faker.providers.date_time.pl_PL: Faker
-    faker.providers.date_time.pl_PL.__init__: Faker
     faker.providers.date_time.pt_BR: Faker
-    faker.providers.date_time.pt_BR.__init__: Faker
     faker.providers.date_time.pt_PT: Faker
-    faker.providers.date_time.pt_PT.__init__: Faker
     faker.providers.date_time.ro_RO: Faker
-    faker.providers.date_time.ro_RO.__init__: Faker
     faker.providers.date_time.ru_RU: Faker
-    faker.providers.date_time.ru_RU.__init__: Faker
     faker.providers.date_time.sk_SK: Faker
-    faker.providers.date_time.sk_SK.__init__: Faker
     faker.providers.date_time.sl_SI: Faker
-    faker.providers.date_time.sl_SI.__init__: Faker
     faker.providers.date_time.ta_IN: Faker
-    faker.providers.date_time.ta_IN.__init__: Faker
     faker.providers.date_time.th_TH: Faker
-    faker.providers.date_time.th_TH.__init__: Faker
     faker.providers.date_time.tl_PH: Faker
-    faker.providers.date_time.tl_PH.__init__: Faker
     faker.providers.date_time.tr_TR: Faker
-    faker.providers.date_time.tr_TR.__init__: Faker
     faker.providers.date_time.zh_CN: Faker
-    faker.providers.date_time.zh_CN.__init__: Faker
     faker.providers.file: Faker
-    faker.providers.file.__init__: Faker
     faker.providers.file.en_US: Faker
-    faker.providers.file.en_US.__init__: Faker
     faker.providers.geo: Faker
-    faker.providers.geo.__init__: Faker
     faker.providers.geo.bn_BD: Faker
-    faker.providers.geo.bn_BD.__init__: Faker
     faker.providers.geo.de_AT: Faker
-    faker.providers.geo.de_AT.__init__: Faker
     faker.providers.geo.el_GR: Faker
-    faker.providers.geo.el_GR.__init__: Faker
     faker.providers.geo.en_IE: Faker
-    faker.providers.geo.en_IE.__init__: Faker
     faker.providers.geo.en_US: Faker
-    faker.providers.geo.en_US.__init__: Faker
     faker.providers.geo.pt_PT: Faker
-    faker.providers.geo.pt_PT.__init__: Faker
     faker.providers.geo.tr_TR: Faker
-    faker.providers.geo.tr_TR.__init__: Faker
     faker.providers.internet: Faker
-    faker.providers.internet.__init__: Faker
     faker.providers.internet.ar_AA: Faker
-    faker.providers.internet.ar_AA.__init__: Faker
     faker.providers.internet.az_AZ: Faker
-    faker.providers.internet.az_AZ.__init__: Faker
     faker.providers.internet.bg_BG: Faker
-    faker.providers.internet.bg_BG.__init__: Faker
     faker.providers.internet.bn_BD: Faker
-    faker.providers.internet.bn_BD.__init__: Faker
     faker.providers.internet.bs_BA: Faker
-    faker.providers.internet.bs_BA.__init__: Faker
     faker.providers.internet.cs_CZ: Faker
-    faker.providers.internet.cs_CZ.__init__: Faker
     faker.providers.internet.de_AT: Faker
-    faker.providers.internet.de_AT.__init__: Faker
     faker.providers.internet.de_DE: Faker
-    faker.providers.internet.de_DE.__init__: Faker
     faker.providers.internet.el_GR: Faker
-    faker.providers.internet.el_GR.__init__: Faker
     faker.providers.internet.en_AU: Faker
-    faker.providers.internet.en_AU.__init__: Faker
     faker.providers.internet.en_GB: Faker
-    faker.providers.internet.en_GB.__init__: Faker
     faker.providers.internet.en_NZ: Faker
-    faker.providers.internet.en_NZ.__init__: Faker
     faker.providers.internet.en_PH: Faker
-    faker.providers.internet.en_PH.__init__: Faker
     faker.providers.internet.en_US: Faker
-    faker.providers.internet.en_US.__init__: Faker
     faker.providers.internet.es_CL: Faker
-    faker.providers.internet.es_CL.__init__: Faker
     faker.providers.internet.es_ES: Faker
-    faker.providers.internet.es_ES.__init__: Faker
     faker.providers.internet.fa_IR: Faker
-    faker.providers.internet.fa_IR.__init__: Faker
     faker.providers.internet.fi_FI: Faker
-    faker.providers.internet.fi_FI.__init__: Faker
     faker.providers.internet.fil_PH: Faker
-    faker.providers.internet.fil_PH.__init__: Faker
     faker.providers.internet.fr_CH: Faker
-    faker.providers.internet.fr_CH.__init__: Faker
     faker.providers.internet.fr_FR: Faker
-    faker.providers.internet.fr_FR.__init__: Faker
     faker.providers.internet.hr_HR: Faker
-    faker.providers.internet.hr_HR.__init__: Faker
     faker.providers.internet.hu_HU: Faker
-    faker.providers.internet.hu_HU.__init__: Faker
     faker.providers.internet.id_ID: Faker
-    faker.providers.internet.id_ID.__init__: Faker
     faker.providers.internet.it_IT: Faker
-    faker.providers.internet.it_IT.__init__: Faker
     faker.providers.internet.ja_JP: Faker
-    faker.providers.internet.ja_JP.__init__: Faker
     faker.providers.internet.ko_KR: Faker
-    faker.providers.internet.ko_KR.__init__: Faker
     faker.providers.internet.no_NO: Faker
-    faker.providers.internet.no_NO.__init__: Faker
     faker.providers.internet.pl_PL: Faker
-    faker.providers.internet.pl_PL.__init__: Faker
     faker.providers.internet.pt_BR: Faker
-    faker.providers.internet.pt_BR.__init__: Faker
     faker.providers.internet.pt_PT: Faker
-    faker.providers.internet.pt_PT.__init__: Faker
     faker.providers.internet.ro_RO: Faker
-    faker.providers.internet.ro_RO.__init__: Faker
     faker.providers.internet.ru_RU: Faker
-    faker.providers.internet.ru_RU.__init__: Faker
     faker.providers.internet.sk_SK: Faker
-    faker.providers.internet.sk_SK.__init__: Faker
     faker.providers.internet.sl_SI: Faker
-    faker.providers.internet.sl_SI.__init__: Faker
     faker.providers.internet.sv_SE: Faker
-    faker.providers.internet.sv_SE.__init__: Faker
     faker.providers.internet.th_TH: Faker
-    faker.providers.internet.th_TH.__init__: Faker
     faker.providers.internet.tl_PH: Faker
-    faker.providers.internet.tl_PH.__init__: Faker
     faker.providers.internet.tr_TR: Faker
-    faker.providers.internet.tr_TR.__init__: Faker
     faker.providers.internet.uk_UA: Faker
-    faker.providers.internet.uk_UA.__init__: Faker
     faker.providers.internet.zh_CN: Faker
-    faker.providers.internet.zh_CN.__init__: Faker
     faker.providers.internet.zh_TW: Faker
-    faker.providers.internet.zh_TW.__init__: Faker
     faker.providers.isbn: Faker
-    faker.providers.isbn.__init__: Faker
     faker.providers.isbn.en_US: Faker
-    faker.providers.isbn.en_US.__init__: Faker
     faker.providers.isbn.isbn: Faker
     faker.providers.isbn.rules: Faker
     faker.providers.job: Faker
-    faker.providers.job.__init__: Faker
     faker.providers.job.ar_AA: Faker
-    faker.providers.job.ar_AA.__init__: Faker
     faker.providers.job.az_AZ: Faker
-    faker.providers.job.az_AZ.__init__: Faker
     faker.providers.job.bn_BD: Faker
-    faker.providers.job.bn_BD.__init__: Faker
     faker.providers.job.bs_BA: Faker
-    faker.providers.job.bs_BA.__init__: Faker
     faker.providers.job.da_DK: Faker
-    faker.providers.job.da_DK.__init__: Faker
     faker.providers.job.de_DE: Faker
-    faker.providers.job.de_DE.__init__: Faker
     faker.providers.job.el_GR: Faker
-    faker.providers.job.el_GR.__init__: Faker
     faker.providers.job.en_US: Faker
-    faker.providers.job.en_US.__init__: Faker
     faker.providers.job.es: Faker
-    faker.providers.job.es.__init__: Faker
     faker.providers.job.es_CL: Faker
-    faker.providers.job.es_CL.__init__: Faker
     faker.providers.job.es_CO: Faker
-    faker.providers.job.es_CO.__init__: Faker
     faker.providers.job.es_ES: Faker
-    faker.providers.job.es_ES.__init__: Faker
     faker.providers.job.es_MX: Faker
-    faker.providers.job.es_MX.__init__: Faker
     faker.providers.job.fa_IR: Faker
-    faker.providers.job.fa_IR.__init__: Faker
     faker.providers.job.fi_FI: Faker
-    faker.providers.job.fi_FI.__init__: Faker
     faker.providers.job.fr_CH: Faker
-    faker.providers.job.fr_CH.__init__: Faker
     faker.providers.job.fr_FR: Faker
-    faker.providers.job.fr_FR.__init__: Faker
     faker.providers.job.hr_HR: Faker
-    faker.providers.job.hr_HR.__init__: Faker
     faker.providers.job.hu_HU: Faker
-    faker.providers.job.hu_HU.__init__: Faker
     faker.providers.job.hy_AM: Faker
-    faker.providers.job.hy_AM.__init__: Faker
     faker.providers.job.ja_JP: Faker
-    faker.providers.job.ja_JP.__init__: Faker
     faker.providers.job.ko_KR: Faker
-    faker.providers.job.ko_KR.__init__: Faker
     faker.providers.job.pl_PL: Faker
-    faker.providers.job.pl_PL.__init__: Faker
     faker.providers.job.pt_BR: Faker
-    faker.providers.job.pt_BR.__init__: Faker
     faker.providers.job.pt_PT: Faker
-    faker.providers.job.pt_PT.__init__: Faker
     faker.providers.job.ro_RO: Faker
-    faker.providers.job.ro_RO.__init__: Faker
     faker.providers.job.ru_RU: Faker
-    faker.providers.job.ru_RU.__init__: Faker
     faker.providers.job.sk_SK: Faker
-    faker.providers.job.sk_SK.__init__: Faker
     faker.providers.job.th_TH: Faker
-    faker.providers.job.th_TH.__init__: Faker
     faker.providers.job.tr_TR: Faker
-    faker.providers.job.tr_TR.__init__: Faker
     faker.providers.job.uk_UA: Faker
-    faker.providers.job.uk_UA.__init__: Faker
     faker.providers.job.zh_CN: Faker
-    faker.providers.job.zh_CN.__init__: Faker
     faker.providers.job.zh_TW: Faker
-    faker.providers.job.zh_TW.__init__: Faker
     faker.providers.lorem: Faker
-    faker.providers.lorem.__init__: Faker
     faker.providers.lorem.ar_AA: Faker
-    faker.providers.lorem.ar_AA.__init__: Faker
     faker.providers.lorem.az_AZ: Faker
-    faker.providers.lorem.az_AZ.__init__: Faker
     faker.providers.lorem.bn_BD: Faker
-    faker.providers.lorem.bn_BD.__init__: Faker
     faker.providers.lorem.cs_CZ: Faker
-    faker.providers.lorem.cs_CZ.__init__: Faker
     faker.providers.lorem.da_DK: Faker
-    faker.providers.lorem.da_DK.__init__: Faker
     faker.providers.lorem.de_AT: Faker
-    faker.providers.lorem.de_AT.__init__: Faker
     faker.providers.lorem.de_DE: Faker
-    faker.providers.lorem.de_DE.__init__: Faker
     faker.providers.lorem.el_GR: Faker
-    faker.providers.lorem.el_GR.__init__: Faker
     faker.providers.lorem.en_PH: Faker
-    faker.providers.lorem.en_PH.__init__: Faker
     faker.providers.lorem.en_US: Faker
-    faker.providers.lorem.en_US.__init__: Faker
     faker.providers.lorem.fa_IR: Faker
-    faker.providers.lorem.fa_IR.__init__: Faker
     faker.providers.lorem.fil_PH: Faker
-    faker.providers.lorem.fil_PH.__init__: Faker
     faker.providers.lorem.fr_FR: Faker
-    faker.providers.lorem.fr_FR.__init__: Faker
     faker.providers.lorem.he_IL: Faker
-    faker.providers.lorem.he_IL.__init__: Faker
     faker.providers.lorem.hy_AM: Faker
-    faker.providers.lorem.hy_AM.__init__: Faker
     faker.providers.lorem.ja_JP: Faker
-    faker.providers.lorem.ja_JP.__init__: Faker
     faker.providers.lorem.la: Faker
-    faker.providers.lorem.la.__init__: Faker
     faker.providers.lorem.pl_PL: Faker
-    faker.providers.lorem.pl_PL.__init__: Faker
     faker.providers.lorem.ru_RU: Faker
-    faker.providers.lorem.ru_RU.__init__: Faker
     faker.providers.lorem.th_TH: Faker
-    faker.providers.lorem.th_TH.__init__: Faker
     faker.providers.lorem.tl_PH: Faker
-    faker.providers.lorem.tl_PH.__init__: Faker
     faker.providers.lorem.zh_CN: Faker
-    faker.providers.lorem.zh_CN.__init__: Faker
     faker.providers.lorem.zh_TW: Faker
-    faker.providers.lorem.zh_TW.__init__: Faker
     faker.providers.misc: Faker
-    faker.providers.misc.__init__: Faker
     faker.providers.misc.en_PH: Faker
-    faker.providers.misc.en_PH.__init__: Faker
     faker.providers.misc.en_US: Faker
-    faker.providers.misc.en_US.__init__: Faker
     faker.providers.misc.fil_PH: Faker
-    faker.providers.misc.fil_PH.__init__: Faker
     faker.providers.misc.tl_PH: Faker
-    faker.providers.misc.tl_PH.__init__: Faker
     faker.providers.person: Faker
-    faker.providers.person.__init__: Faker
     faker.providers.person.ar_AA: Faker
-    faker.providers.person.ar_AA.__init__: Faker
     faker.providers.person.ar_PS: Faker
-    faker.providers.person.ar_PS.__init__: Faker
     faker.providers.person.ar_SA: Faker
-    faker.providers.person.ar_SA.__init__: Faker
     faker.providers.person.az_AZ: Faker
-    faker.providers.person.az_AZ.__init__: Faker
     faker.providers.person.bg_BG: Faker
-    faker.providers.person.bg_BG.__init__: Faker
     faker.providers.person.bn_BD: Faker
-    faker.providers.person.bn_BD.__init__: Faker
     faker.providers.person.cs_CZ: Faker
-    faker.providers.person.cs_CZ.__init__: Faker
     faker.providers.person.da_DK: Faker
-    faker.providers.person.da_DK.__init__: Faker
     faker.providers.person.de_AT: Faker
-    faker.providers.person.de_AT.__init__: Faker
     faker.providers.person.de_CH: Faker
-    faker.providers.person.de_CH.__init__: Faker
     faker.providers.person.de_DE: Faker
-    faker.providers.person.de_DE.__init__: Faker
     faker.providers.person.el_GR: Faker
-    faker.providers.person.el_GR.__init__: Faker
     faker.providers.person.en: Faker
-    faker.providers.person.en.__init__: Faker
     faker.providers.person.en_GB: Faker
-    faker.providers.person.en_GB.__init__: Faker
     faker.providers.person.en_IE: Faker
-    faker.providers.person.en_IE.__init__: Faker
     faker.providers.person.en_IN: Faker
-    faker.providers.person.en_IN.__init__: Faker
     faker.providers.person.en_NZ: Faker
-    faker.providers.person.en_NZ.__init__: Faker
     faker.providers.person.en_TH: Faker
-    faker.providers.person.en_TH.__init__: Faker
     faker.providers.person.en_US: Faker
-    faker.providers.person.en_US.__init__: Faker
     faker.providers.person.es: Faker
-    faker.providers.person.es.__init__: Faker
     faker.providers.person.es_CA: Faker
-    faker.providers.person.es_CA.__init__: Faker
     faker.providers.person.es_CL: Faker
-    faker.providers.person.es_CL.__init__: Faker
     faker.providers.person.es_CO: Faker
-    faker.providers.person.es_CO.__init__: Faker
     faker.providers.person.es_ES: Faker
-    faker.providers.person.es_ES.__init__: Faker
     faker.providers.person.es_MX: Faker
-    faker.providers.person.es_MX.__init__: Faker
     faker.providers.person.et_EE: Faker
-    faker.providers.person.et_EE.__init__: Faker
     faker.providers.person.fa_IR: Faker
-    faker.providers.person.fa_IR.__init__: Faker
     faker.providers.person.fi_FI: Faker
-    faker.providers.person.fi_FI.__init__: Faker
     faker.providers.person.fr_CA: Faker
-    faker.providers.person.fr_CA.__init__: Faker
     faker.providers.person.fr_CH: Faker
-    faker.providers.person.fr_CH.__init__: Faker
     faker.providers.person.fr_FR: Faker
-    faker.providers.person.fr_FR.__init__: Faker
     faker.providers.person.fr_QC: Faker
-    faker.providers.person.fr_QC.__init__: Faker
     faker.providers.person.ga_IE: Faker
-    faker.providers.person.ga_IE.__init__: Faker
     faker.providers.person.he_IL: Faker
-    faker.providers.person.he_IL.__init__: Faker
     faker.providers.person.hi_IN: Faker
-    faker.providers.person.hi_IN.__init__: Faker
     faker.providers.person.hr_HR: Faker
-    faker.providers.person.hr_HR.__init__: Faker
     faker.providers.person.hu_HU: Faker
-    faker.providers.person.hu_HU.__init__: Faker
     faker.providers.person.hy_AM: Faker
-    faker.providers.person.hy_AM.__init__: Faker
     faker.providers.person.id_ID: Faker
-    faker.providers.person.id_ID.__init__: Faker
     faker.providers.person.it_IT: Faker
-    faker.providers.person.it_IT.__init__: Faker
     faker.providers.person.ja_JP: Faker
-    faker.providers.person.ja_JP.__init__: Faker
     faker.providers.person.ka_GE: Faker
-    faker.providers.person.ka_GE.__init__: Faker
     faker.providers.person.ko_KR: Faker
-    faker.providers.person.ko_KR.__init__: Faker
     faker.providers.person.lt_LT: Faker
-    faker.providers.person.lt_LT.__init__: Faker
     faker.providers.person.lv_LV: Faker
-    faker.providers.person.lv_LV.__init__: Faker
     faker.providers.person.ne_NP: Faker
-    faker.providers.person.ne_NP.__init__: Faker
     faker.providers.person.nl_NL: Faker
-    faker.providers.person.nl_NL.__init__: Faker
     faker.providers.person.no_NO: Faker
-    faker.providers.person.no_NO.__init__: Faker
     faker.providers.person.or_IN: Faker
-    faker.providers.person.or_IN.__init__: Faker
     faker.providers.person.pl_PL: Faker
-    faker.providers.person.pl_PL.__init__: Faker
     faker.providers.person.pt_BR: Faker
-    faker.providers.person.pt_BR.__init__: Faker
     faker.providers.person.pt_PT: Faker
-    faker.providers.person.pt_PT.__init__: Faker
     faker.providers.person.ro_RO: Faker
-    faker.providers.person.ro_RO.__init__: Faker
     faker.providers.person.ru_RU: Faker
-    faker.providers.person.ru_RU.__init__: Faker
     faker.providers.person.sl_SI: Faker
-    faker.providers.person.sl_SI.__init__: Faker
     faker.providers.person.sv_SE: Faker
-    faker.providers.person.sv_SE.__init__: Faker
     faker.providers.person.ta_IN: Faker
-    faker.providers.person.ta_IN.__init__: Faker
     faker.providers.person.th_TH: Faker
-    faker.providers.person.th_TH.__init__: Faker
     faker.providers.person.tr_TR: Faker
-    faker.providers.person.tr_TR.__init__: Faker
     faker.providers.person.tw_GH: Faker
-    faker.providers.person.tw_GH.__init__: Faker
     faker.providers.person.uk_UA: Faker
-    faker.providers.person.uk_UA.__init__: Faker
     faker.providers.person.zh_CN: Faker
-    faker.providers.person.zh_CN.__init__: Faker
     faker.providers.person.zh_TW: Faker
-    faker.providers.person.zh_TW.__init__: Faker
     faker.providers.phone_number: Faker
-    faker.providers.phone_number.__init__: Faker
     faker.providers.phone_number.ar_AE: Faker
-    faker.providers.phone_number.ar_AE.__init__: Faker
     faker.providers.phone_number.ar_JO: Faker
-    faker.providers.phone_number.ar_JO.__init__: Faker
     faker.providers.phone_number.ar_PS: Faker
-    faker.providers.phone_number.ar_PS.__init__: Faker
     faker.providers.phone_number.az_AZ: Faker
-    faker.providers.phone_number.az_AZ.__init__: Faker
     faker.providers.phone_number.bg_BG: Faker
-    faker.providers.phone_number.bg_BG.__init__: Faker
     faker.providers.phone_number.bn_BD: Faker
-    faker.providers.phone_number.bn_BD.__init__: Faker
     faker.providers.phone_number.bs_BA: Faker
-    faker.providers.phone_number.bs_BA.__init__: Faker
     faker.providers.phone_number.cs_CZ: Faker
-    faker.providers.phone_number.cs_CZ.__init__: Faker
     faker.providers.phone_number.da_DK: Faker
-    faker.providers.phone_number.da_DK.__init__: Faker
     faker.providers.phone_number.de_DE: Faker
-    faker.providers.phone_number.de_DE.__init__: Faker
     faker.providers.phone_number.el_GR: Faker
-    faker.providers.phone_number.el_GR.__init__: Faker
     faker.providers.phone_number.en_AU: Faker
-    faker.providers.phone_number.en_AU.__init__: Faker
     faker.providers.phone_number.en_CA: Faker
-    faker.providers.phone_number.en_CA.__init__: Faker
     faker.providers.phone_number.en_GB: Faker
-    faker.providers.phone_number.en_GB.__init__: Faker
     faker.providers.phone_number.en_IN: Faker
-    faker.providers.phone_number.en_IN.__init__: Faker
     faker.providers.phone_number.en_NZ: Faker
-    faker.providers.phone_number.en_NZ.__init__: Faker
     faker.providers.phone_number.en_PH: Faker
-    faker.providers.phone_number.en_PH.__init__: Faker
     faker.providers.phone_number.en_US: Faker
-    faker.providers.phone_number.en_US.__init__: Faker
     faker.providers.phone_number.es_CL: Faker
-    faker.providers.phone_number.es_CL.__init__: Faker
     faker.providers.phone_number.es_CO: Faker
-    faker.providers.phone_number.es_CO.__init__: Faker
     faker.providers.phone_number.es_ES: Faker
-    faker.providers.phone_number.es_ES.__init__: Faker
     faker.providers.phone_number.es_MX: Faker
-    faker.providers.phone_number.es_MX.__init__: Faker
     faker.providers.phone_number.fa_IR: Faker
-    faker.providers.phone_number.fa_IR.__init__: Faker
     faker.providers.phone_number.fi_FI: Faker
-    faker.providers.phone_number.fi_FI.__init__: Faker
     faker.providers.phone_number.fil_PH: Faker
-    faker.providers.phone_number.fil_PH.__init__: Faker
     faker.providers.phone_number.fr_CH: Faker
-    faker.providers.phone_number.fr_CH.__init__: Faker
     faker.providers.phone_number.fr_FR: Faker
-    faker.providers.phone_number.fr_FR.__init__: Faker
     faker.providers.phone_number.he_IL: Faker
-    faker.providers.phone_number.he_IL.__init__: Faker
     faker.providers.phone_number.hi_IN: Faker
-    faker.providers.phone_number.hi_IN.__init__: Faker
     faker.providers.phone_number.hr_HR: Faker
-    faker.providers.phone_number.hr_HR.__init__: Faker
     faker.providers.phone_number.hu_HU: Faker
-    faker.providers.phone_number.hu_HU.__init__: Faker
     faker.providers.phone_number.hy_AM: Faker
-    faker.providers.phone_number.hy_AM.__init__: Faker
     faker.providers.phone_number.id_ID: Faker
-    faker.providers.phone_number.id_ID.__init__: Faker
     faker.providers.phone_number.it_IT: Faker
-    faker.providers.phone_number.it_IT.__init__: Faker
     faker.providers.phone_number.ja_JP: Faker
-    faker.providers.phone_number.ja_JP.__init__: Faker
     faker.providers.phone_number.ko_KR: Faker
-    faker.providers.phone_number.ko_KR.__init__: Faker
     faker.providers.phone_number.lt_LT: Faker
-    faker.providers.phone_number.lt_LT.__init__: Faker
     faker.providers.phone_number.lv_LV: Faker
-    faker.providers.phone_number.lv_LV.__init__: Faker
     faker.providers.phone_number.ne_NP: Faker
-    faker.providers.phone_number.ne_NP.__init__: Faker
     faker.providers.phone_number.nl_BE: Faker
-    faker.providers.phone_number.nl_BE.__init__: Faker
     faker.providers.phone_number.nl_NL: Faker
-    faker.providers.phone_number.nl_NL.__init__: Faker
     faker.providers.phone_number.no_NO: Faker
-    faker.providers.phone_number.no_NO.__init__: Faker
     faker.providers.phone_number.pl_PL: Faker
-    faker.providers.phone_number.pl_PL.__init__: Faker
     faker.providers.phone_number.pt_BR: Faker
-    faker.providers.phone_number.pt_BR.__init__: Faker
     faker.providers.phone_number.pt_PT: Faker
-    faker.providers.phone_number.pt_PT.__init__: Faker
     faker.providers.phone_number.ro_RO: Faker
-    faker.providers.phone_number.ro_RO.__init__: Faker
     faker.providers.phone_number.ru_RU: Faker
-    faker.providers.phone_number.ru_RU.__init__: Faker
     faker.providers.phone_number.sk_SK: Faker
-    faker.providers.phone_number.sk_SK.__init__: Faker
     faker.providers.phone_number.sl_SI: Faker
-    faker.providers.phone_number.sl_SI.__init__: Faker
     faker.providers.phone_number.sv_SE: Faker
-    faker.providers.phone_number.sv_SE.__init__: Faker
     faker.providers.phone_number.ta_IN: Faker
-    faker.providers.phone_number.ta_IN.__init__: Faker
     faker.providers.phone_number.th_TH: Faker
-    faker.providers.phone_number.th_TH.__init__: Faker
     faker.providers.phone_number.tl_PH: Faker
-    faker.providers.phone_number.tl_PH.__init__: Faker
     faker.providers.phone_number.tr_TR: Faker
-    faker.providers.phone_number.tr_TR.__init__: Faker
     faker.providers.phone_number.tw_GH: Faker
-    faker.providers.phone_number.tw_GH.__init__: Faker
     faker.providers.phone_number.uk_UA: Faker
-    faker.providers.phone_number.uk_UA.__init__: Faker
     faker.providers.phone_number.zh_CN: Faker
-    faker.providers.phone_number.zh_CN.__init__: Faker
     faker.providers.phone_number.zh_TW: Faker
-    faker.providers.phone_number.zh_TW.__init__: Faker
     faker.providers.profile: Faker
-    faker.providers.profile.__init__: Faker
     faker.providers.profile.en_US: Faker
-    faker.providers.profile.en_US.__init__: Faker
     faker.providers.python: Faker
-    faker.providers.python.__init__: Faker
     faker.providers.python.en_US: Faker
-    faker.providers.python.en_US.__init__: Faker
     faker.providers.ssn: Faker
-    faker.providers.ssn.__init__: Faker
     faker.providers.ssn.az_AZ: Faker
-    faker.providers.ssn.az_AZ.__init__: Faker
     faker.providers.ssn.bg_BG: Faker
-    faker.providers.ssn.bg_BG.__init__: Faker
     faker.providers.ssn.bn_BD: Faker
-    faker.providers.ssn.bn_BD.__init__: Faker
     faker.providers.ssn.cs_CZ: Faker
-    faker.providers.ssn.cs_CZ.__init__: Faker
     faker.providers.ssn.de_AT: Faker
-    faker.providers.ssn.de_AT.__init__: Faker
     faker.providers.ssn.de_CH: Faker
-    faker.providers.ssn.de_CH.__init__: Faker
     faker.providers.ssn.de_DE: Faker
-    faker.providers.ssn.de_DE.__init__: Faker
     faker.providers.ssn.dk_DK: Faker
-    faker.providers.ssn.dk_DK.__init__: Faker
     faker.providers.ssn.el_CY: Faker
-    faker.providers.ssn.el_CY.__init__: Faker
     faker.providers.ssn.el_GR: Faker
-    faker.providers.ssn.el_GR.__init__: Faker
     faker.providers.ssn.en_CA: Faker
-    faker.providers.ssn.en_CA.__init__: Faker
     faker.providers.ssn.en_GB: Faker
-    faker.providers.ssn.en_GB.__init__: Faker
     faker.providers.ssn.en_IE: Faker
-    faker.providers.ssn.en_IE.__init__: Faker
     faker.providers.ssn.en_IN: Faker
-    faker.providers.ssn.en_IN.__init__: Faker
     faker.providers.ssn.en_PH: Faker
-    faker.providers.ssn.en_PH.__init__: Faker
     faker.providers.ssn.en_US: Faker
-    faker.providers.ssn.en_US.__init__: Faker
     faker.providers.ssn.es_CA: Faker
-    faker.providers.ssn.es_CA.__init__: Faker
     faker.providers.ssn.es_CL: Faker
-    faker.providers.ssn.es_CL.__init__: Faker
     faker.providers.ssn.es_CO: Faker
-    faker.providers.ssn.es_CO.__init__: Faker
     faker.providers.ssn.es_ES: Faker
-    faker.providers.ssn.es_ES.__init__: Faker
     faker.providers.ssn.es_MX: Faker
-    faker.providers.ssn.es_MX.__init__: Faker
     faker.providers.ssn.et_EE: Faker
-    faker.providers.ssn.et_EE.__init__: Faker
     faker.providers.ssn.fi_FI: Faker
-    faker.providers.ssn.fi_FI.__init__: Faker
     faker.providers.ssn.fil_PH: Faker
-    faker.providers.ssn.fil_PH.__init__: Faker
     faker.providers.ssn.fr_CH: Faker
-    faker.providers.ssn.fr_CH.__init__: Faker
     faker.providers.ssn.fr_FR: Faker
-    faker.providers.ssn.fr_FR.__init__: Faker
     faker.providers.ssn.he_IL: Faker
-    faker.providers.ssn.he_IL.__init__: Faker
     faker.providers.ssn.hr_HR: Faker
-    faker.providers.ssn.hr_HR.__init__: Faker
     faker.providers.ssn.hu_HU: Faker
-    faker.providers.ssn.hu_HU.__init__: Faker
     faker.providers.ssn.it_IT: Faker
-    faker.providers.ssn.it_IT.__init__: Faker
     faker.providers.ssn.ko_KR: Faker
-    faker.providers.ssn.ko_KR.__init__: Faker
     faker.providers.ssn.lb_LU: Faker
-    faker.providers.ssn.lb_LU.__init__: Faker
     faker.providers.ssn.lt_LT: Faker
-    faker.providers.ssn.lt_LT.__init__: Faker
     faker.providers.ssn.lv_LV: Faker
-    faker.providers.ssn.lv_LV.__init__: Faker
     faker.providers.ssn.mt_MT: Faker
-    faker.providers.ssn.mt_MT.__init__: Faker
     faker.providers.ssn.nl_BE: Faker
-    faker.providers.ssn.nl_BE.__init__: Faker
     faker.providers.ssn.nl_NL: Faker
-    faker.providers.ssn.nl_NL.__init__: Faker
     faker.providers.ssn.no_NO: Faker
-    faker.providers.ssn.no_NO.__init__: Faker
     faker.providers.ssn.pl_PL: Faker
-    faker.providers.ssn.pl_PL.__init__: Faker
     faker.providers.ssn.pt_BR: Faker
-    faker.providers.ssn.pt_BR.__init__: Faker
     faker.providers.ssn.pt_PT: Faker
-    faker.providers.ssn.pt_PT.__init__: Faker
     faker.providers.ssn.ro_RO: Faker
-    faker.providers.ssn.ro_RO.__init__: Faker
     faker.providers.ssn.ru_RU: Faker
-    faker.providers.ssn.ru_RU.__init__: Faker
     faker.providers.ssn.sk_SK: Faker
-    faker.providers.ssn.sk_SK.__init__: Faker
     faker.providers.ssn.sl_SI: Faker
-    faker.providers.ssn.sl_SI.__init__: Faker
     faker.providers.ssn.sv_SE: Faker
-    faker.providers.ssn.sv_SE.__init__: Faker
     faker.providers.ssn.th_TH: Faker
-    faker.providers.ssn.th_TH.__init__: Faker
     faker.providers.ssn.tl_PH: Faker
-    faker.providers.ssn.tl_PH.__init__: Faker
     faker.providers.ssn.tr_TR: Faker
-    faker.providers.ssn.tr_TR.__init__: Faker
     faker.providers.ssn.uk_UA: Faker
-    faker.providers.ssn.uk_UA.__init__: Faker
     faker.providers.ssn.zh_CN: Faker
-    faker.providers.ssn.zh_CN.__init__: Faker
     faker.providers.ssn.zh_TW: Faker
-    faker.providers.ssn.zh_TW.__init__: Faker
     faker.providers.user_agent: Faker
-    faker.providers.user_agent.__init__: Faker
     faker.providers.user_agent.en_US: Faker
-    faker.providers.user_agent.en_US.__init__: Faker
     faker.proxy: Faker
     faker.sphinx: Faker
-    faker.sphinx.__init__: Faker
     faker.sphinx.autodoc: Faker
     faker.sphinx.docstring: Faker
     faker.sphinx.documentor: Faker
     faker.sphinx.validator: Faker
     faker.typing: Faker
     faker.utils: Faker
-    faker.utils.__init__: Faker
     faker.utils.checksums: Faker
     faker.utils.datasets: Faker
     faker.utils.decorators: Faker
@@ -2101,43 +1277,28 @@ manifest:
     faker.utils.loading: Faker
     faker.utils.text: Faker
     filelock: filelock
-    filelock.__init__: filelock
-    filelock._api: filelock
-    filelock._error: filelock
-    filelock._soft: filelock
-    filelock._unix: filelock
-    filelock._util: filelock
-    filelock._windows: filelock
     filelock.version: filelock
     flake8: flake8
-    flake8.__init__: flake8
-    flake8.__main__: flake8
-    flake8._compat: flake8
     flake8.api: flake8
-    flake8.api.__init__: flake8
     flake8.api.legacy: flake8
     flake8.checker: flake8
     flake8.defaults: flake8
     flake8.discover_files: flake8
     flake8.exceptions: flake8
     flake8.formatting: flake8
-    flake8.formatting.__init__: flake8
-    flake8.formatting._windows_color: flake8
     flake8.formatting.base: flake8
     flake8.formatting.default: flake8
     flake8.main: flake8
-    flake8.main.__init__: flake8
     flake8.main.application: flake8
     flake8.main.cli: flake8
     flake8.main.debug: flake8
     flake8.main.options: flake8
     flake8.options: flake8
-    flake8.options.__init__: flake8
     flake8.options.aggregator: flake8
     flake8.options.config: flake8
     flake8.options.manager: flake8
+    flake8.options.parse_args: flake8
     flake8.plugins: flake8
-    flake8.plugins.__init__: flake8
     flake8.plugins.finder: flake8
     flake8.plugins.pycodestyle: flake8
     flake8.plugins.pyflakes: flake8
@@ -2148,8 +1309,6 @@ manifest:
     flake8.utils: flake8
     flake8.violation: flake8
     flask: Flask
-    flask.__init__: Flask
-    flask.__main__: Flask
     flask.app: Flask
     flask.blueprints: Flask
     flask.cli: Flask
@@ -2159,7 +1318,6 @@ manifest:
     flask.globals: Flask
     flask.helpers: Flask
     flask.json: Flask
-    flask.json.__init__: Flask
     flask.json.provider: Flask
     flask.json.tag: Flask
     flask.logging: Flask
@@ -2172,58 +1330,12 @@ manifest:
     flask.views: Flask
     flask.wrappers: Flask
     fluent: fluent_logger
-    fluent.__init__: fluent_logger
     fluent.asynchandler: fluent_logger
     fluent.asyncsender: fluent_logger
     fluent.event: fluent_logger
     fluent.handler: fluent_logger
     fluent.sender: fluent_logger
     gevent: gevent
-    gevent.__init__: gevent
-    gevent._abstract_linkable: gevent
-    gevent._compat: gevent
-    gevent._config: gevent
-    gevent._ffi: gevent
-    gevent._ffi.__init__: gevent
-    gevent._ffi.callback: gevent
-    gevent._ffi.loop: gevent
-    gevent._ffi.watcher: gevent
-    gevent._fileobjectcommon: gevent
-    gevent._fileobjectposix: gevent
-    gevent._gevent_c_abstract_linkable: gevent
-    gevent._gevent_c_greenlet_primitives: gevent
-    gevent._gevent_c_hub_local: gevent
-    gevent._gevent_c_hub_primitives: gevent
-    gevent._gevent_c_ident: gevent
-    gevent._gevent_c_imap: gevent
-    gevent._gevent_c_semaphore: gevent
-    gevent._gevent_c_tracer: gevent
-    gevent._gevent_c_waiter: gevent
-    gevent._gevent_cevent: gevent
-    gevent._gevent_cgreenlet: gevent
-    gevent._gevent_clocal: gevent
-    gevent._gevent_cqueue: gevent
-    gevent._greenlet_primitives: gevent
-    gevent._hub_local: gevent
-    gevent._hub_primitives: gevent
-    gevent._ident: gevent
-    gevent._imap: gevent
-    gevent._interfaces: gevent
-    gevent._monitor: gevent
-    gevent._patcher: gevent
-    gevent._semaphore: gevent
-    gevent._socket2: gevent
-    gevent._socket3: gevent
-    gevent._socketcommon: gevent
-    gevent._ssl2: gevent
-    gevent._ssl3: gevent
-    gevent._sslgte279: gevent
-    gevent._tblib: gevent
-    gevent._threading: gevent
-    gevent._tracer: gevent
-    gevent._util: gevent
-    gevent._util_py2: gevent
-    gevent._waiter: gevent
     gevent.ares: gevent
     gevent.backdoor: gevent
     gevent.baseserver: gevent
@@ -2237,16 +1349,10 @@ manifest:
     gevent.greenlet: gevent
     gevent.hub: gevent
     gevent.libev: gevent
-    gevent.libev.__init__: gevent
-    gevent.libev._corecffi: gevent
-    gevent.libev._corecffi_build: gevent
     gevent.libev.corecext: gevent
     gevent.libev.corecffi: gevent
     gevent.libev.watcher: gevent
     gevent.libuv: gevent
-    gevent.libuv.__init__: gevent
-    gevent.libuv._corecffi: gevent
-    gevent.libuv._corecffi_build: gevent
     gevent.libuv.loop: gevent
     gevent.libuv.watcher: gevent
     gevent.local: gevent
@@ -2257,9 +1363,6 @@ manifest:
     gevent.pywsgi: gevent
     gevent.queue: gevent
     gevent.resolver: gevent
-    gevent.resolver.__init__: gevent
-    gevent.resolver._addresses: gevent
-    gevent.resolver._hostsfile: gevent
     gevent.resolver.ares: gevent
     gevent.resolver.blocking: gevent
     gevent.resolver.cares: gevent
@@ -2275,7 +1378,6 @@ manifest:
     gevent.ssl: gevent
     gevent.subprocess: gevent
     gevent.testing: gevent
-    gevent.testing.__init__: gevent
     gevent.testing.coveragesite.sitecustomize: gevent
     gevent.testing.errorhandler: gevent
     gevent.testing.exception: gevent
@@ -2300,20 +1402,10 @@ manifest:
     gevent.testing.travis: gevent
     gevent.testing.util: gevent
     gevent.tests: gevent
-    gevent.tests.__init__: gevent
-    gevent.tests.__main__: gevent
-    gevent.tests._blocks_at_top_level: gevent
-    gevent.tests._import_import_patch: gevent
-    gevent.tests._import_patch: gevent
-    gevent.tests._import_wait: gevent
-    gevent.tests._imports_at_top_level: gevent
-    gevent.tests._imports_imports_at_top_level: gevent
     gevent.tests.getaddrinfo_module: gevent
     gevent.tests.known_failures: gevent
     gevent.tests.lock_tests: gevent
     gevent.tests.monkey_package: gevent
-    gevent.tests.monkey_package.__init__: gevent
-    gevent.tests.monkey_package.__main__: gevent
     gevent.tests.monkey_package.issue1526_no_monkey: gevent
     gevent.tests.monkey_package.issue1526_with_monkey: gevent
     gevent.tests.monkey_package.issue302monkey: gevent
@@ -2371,6 +1463,7 @@ manifest:
     gevent.tests.test__import_wait: gevent
     gevent.tests.test__issue112: gevent
     gevent.tests.test__issue1686: gevent
+    gevent.tests.test__issue1864: gevent
     gevent.tests.test__issue230: gevent
     gevent.tests.test__issue330: gevent
     gevent.tests.test__issue467: gevent
@@ -2457,12 +1550,9 @@ manifest:
     gevent.util: gevent
     gevent.win32util: gevent
     greenlet: greenlet
-    greenlet.__init__: greenlet
-    greenlet._greenlet: greenlet
+    greenlet.platform: greenlet
     greenlet.tests: greenlet
-    greenlet.tests.__init__: greenlet
-    greenlet.tests._test_extension: greenlet
-    greenlet.tests._test_extension_cpp: greenlet
+    greenlet.tests.leakcheck: greenlet
     greenlet.tests.test_contextvars: greenlet
     greenlet.tests.test_cpp: greenlet
     greenlet.tests.test_extension_interface: greenlet
@@ -2470,6 +1560,7 @@ manifest:
     greenlet.tests.test_generator: greenlet
     greenlet.tests.test_generator_nested: greenlet
     greenlet.tests.test_greenlet: greenlet
+    greenlet.tests.test_greenlet_trash: greenlet
     greenlet.tests.test_leaks: greenlet
     greenlet.tests.test_stack_saved: greenlet
     greenlet.tests.test_throw: greenlet
@@ -2477,16 +1568,13 @@ manifest:
     greenlet.tests.test_version: greenlet
     greenlet.tests.test_weakref: greenlet
     identify: identify
-    identify.__init__: identify
     identify.cli: identify
     identify.extensions: identify
     identify.identify: identify
     identify.interpreters: identify
     identify.vendor: identify
-    identify.vendor.__init__: identify
     identify.vendor.licenses: identify
     idna: idna
-    idna.__init__: idna
     idna.codec: idna
     idna.compat: idna
     idna.core: idna
@@ -2495,34 +1583,12 @@ manifest:
     idna.package_data: idna
     idna.uts46data: idna
     importlib_metadata: importlib_metadata
-    importlib_metadata.__init__: importlib_metadata
-    importlib_metadata._adapters: importlib_metadata
-    importlib_metadata._collections: importlib_metadata
-    importlib_metadata._compat: importlib_metadata
-    importlib_metadata._functools: importlib_metadata
-    importlib_metadata._itertools: importlib_metadata
-    importlib_metadata._meta: importlib_metadata
-    importlib_metadata._text: importlib_metadata
     iniconfig: iniconfig
-    iniconfig.__init__: iniconfig
     isort: isort
-    isort.__init__: isort
-    isort.__main__: isort
-    isort._future: isort
-    isort._future.__init__: isort
-    isort._future._dataclasses: isort
-    isort._vendored.toml: isort
-    isort._vendored.toml.__init__: isort
-    isort._vendored.toml.decoder: isort
-    isort._vendored.toml.encoder: isort
-    isort._vendored.toml.ordered: isort
-    isort._vendored.toml.tz: isort
-    isort._version: isort
     isort.api: isort
     isort.comments: isort
     isort.core: isort
     isort.deprecated: isort
-    isort.deprecated.__init__: isort
     isort.deprecated.finders: isort
     isort.exceptions: isort
     isort.files: isort
@@ -2543,7 +1609,6 @@ manifest:
     isort.setuptools_commands: isort
     isort.sorting: isort
     isort.stdlibs: isort
-    isort.stdlibs.__init__: isort
     isort.stdlibs.all: isort
     isort.stdlibs.py2: isort
     isort.stdlibs.py27: isort
@@ -2557,28 +1622,27 @@ manifest:
     isort.wrap: isort
     isort.wrap_modes: isort
     itsdangerous: itsdangerous
-    itsdangerous.__init__: itsdangerous
-    itsdangerous._json: itsdangerous
     itsdangerous.encoding: itsdangerous
     itsdangerous.exc: itsdangerous
     itsdangerous.serializer: itsdangerous
     itsdangerous.signer: itsdangerous
     itsdangerous.timed: itsdangerous
     itsdangerous.url_safe: itsdangerous
+    jaraco.classes: jaraco.classes
+    jaraco.classes.ancestry: jaraco.classes
+    jaraco.classes.meta: jaraco.classes
+    jaraco.classes.properties: jaraco.classes
     jeepney: jeepney
-    jeepney.__init__: jeepney
     jeepney.auth: jeepney
     jeepney.bindgen: jeepney
     jeepney.bus: jeepney
     jeepney.bus_messages: jeepney
     jeepney.fds: jeepney
     jeepney.io: jeepney
-    jeepney.io.__init__: jeepney
     jeepney.io.asyncio: jeepney
     jeepney.io.blocking: jeepney
     jeepney.io.common: jeepney
     jeepney.io.tests: jeepney
-    jeepney.io.tests.__init__: jeepney
     jeepney.io.tests.conftest: jeepney
     jeepney.io.tests.test_asyncio: jeepney
     jeepney.io.tests.test_blocking: jeepney
@@ -2590,7 +1654,6 @@ manifest:
     jeepney.low_level: jeepney
     jeepney.routing: jeepney
     jeepney.tests: jeepney
-    jeepney.tests.__init__: jeepney
     jeepney.tests.test_auth: jeepney
     jeepney.tests.test_bindgen: jeepney
     jeepney.tests.test_bus: jeepney
@@ -2600,8 +1663,6 @@ manifest:
     jeepney.tests.test_routing: jeepney
     jeepney.wrappers: jeepney
     jinja2: Jinja2
-    jinja2.__init__: Jinja2
-    jinja2._identifier: Jinja2
     jinja2.async_utils: Jinja2
     jinja2.bccache: Jinja2
     jinja2.compiler: Jinja2
@@ -2626,7 +1687,6 @@ manifest:
     jinja2.utils: Jinja2
     jinja2.visitor: Jinja2
     jmespath: jmespath
-    jmespath.__init__: jmespath
     jmespath.ast: jmespath
     jmespath.compat: jmespath
     jmespath.exceptions: jmespath
@@ -2635,25 +1695,13 @@ manifest:
     jmespath.parser: jmespath
     jmespath.visitor: jmespath
     jsonschema: jsonschema
-    jsonschema.__init__: jsonschema
-    jsonschema.__main__: jsonschema
-    jsonschema._format: jsonschema
-    jsonschema._legacy_validators: jsonschema
-    jsonschema._reflect: jsonschema
-    jsonschema._types: jsonschema
-    jsonschema._utils: jsonschema
-    jsonschema._validators: jsonschema
     jsonschema.benchmarks: jsonschema
-    jsonschema.benchmarks.__init__: jsonschema
     jsonschema.benchmarks.issue232: jsonschema
     jsonschema.benchmarks.json_schema_test_suite: jsonschema
     jsonschema.cli: jsonschema
     jsonschema.compat: jsonschema
     jsonschema.exceptions: jsonschema
     jsonschema.tests: jsonschema
-    jsonschema.tests.__init__: jsonschema
-    jsonschema.tests._helpers: jsonschema
-    jsonschema.tests._suite: jsonschema
     jsonschema.tests.test_cli: jsonschema
     jsonschema.tests.test_exceptions: jsonschema
     jsonschema.tests.test_format: jsonschema
@@ -2662,7 +1710,6 @@ manifest:
     jsonschema.tests.test_validators: jsonschema
     jsonschema.validators: jsonschema
     jwt: PyJWT
-    jwt.__init__: PyJWT
     jwt.algorithms: PyJWT
     jwt.api_jwk: PyJWT
     jwt.api_jws: PyJWT
@@ -2674,68 +1721,50 @@ manifest:
     jwt.utils: PyJWT
     jwt.warnings: PyJWT
     keyring: keyring
-    keyring.__init__: keyring
-    keyring.__main__: keyring
     keyring.backend: keyring
     keyring.backends: keyring
     keyring.backends.OS_X: keyring
     keyring.backends.SecretService: keyring
     keyring.backends.Windows: keyring
-    keyring.backends.__init__: keyring
     keyring.backends.chainer: keyring
     keyring.backends.fail: keyring
     keyring.backends.kwallet: keyring
     keyring.backends.libsecret: keyring
     keyring.backends.macOS: keyring
-    keyring.backends.macOS.__init__: keyring
     keyring.backends.macOS.api: keyring
     keyring.backends.null: keyring
     keyring.cli: keyring
+    keyring.completion: keyring
     keyring.core: keyring
     keyring.credentials: keyring
     keyring.devpi_client: keyring
     keyring.errors: keyring
     keyring.http: keyring
-    keyring.py310compat: keyring
+    keyring.py312compat: keyring
     keyring.testing: keyring
-    keyring.testing.__init__: keyring
     keyring.testing.backend: keyring
     keyring.testing.util: keyring
     keyring.util: keyring
-    keyring.util.__init__: keyring
     keyring.util.platform_: keyring
     keyring.util.properties: keyring
     lazy_object_proxy: lazy_object_proxy
-    lazy_object_proxy.__init__: lazy_object_proxy
-    lazy_object_proxy._version: lazy_object_proxy
-    lazy_object_proxy.cext: lazy_object_proxy
     lazy_object_proxy.compat: lazy_object_proxy
     lazy_object_proxy.simple: lazy_object_proxy
     lazy_object_proxy.slots: lazy_object_proxy
     lazy_object_proxy.utils: lazy_object_proxy
-    lazy_object_proxy.utils_py3: lazy_object_proxy
     markupsafe: MarkupSafe
-    markupsafe.__init__: MarkupSafe
-    markupsafe._native: MarkupSafe
-    markupsafe._speedups: MarkupSafe
     mccabe: mccabe
     more_itertools: more_itertools
-    more_itertools.__init__: more_itertools
     more_itertools.more: more_itertools
     more_itertools.recipes: more_itertools
     msgpack: msgpack
-    msgpack.__init__: msgpack
-    msgpack._cmsgpack: msgpack
     msgpack.exceptions: msgpack
     msgpack.ext: msgpack
     msgpack.fallback: msgpack
     mypy: mypy
-    mypy.__init__: mypy
-    mypy.__main__: mypy
     mypy.api: mypy
     mypy.applytype: mypy
     mypy.argmap: mypy
-    mypy.backports: mypy
     mypy.binder: mypy
     mypy.bogus_type: mypy
     mypy.build: mypy
@@ -2749,8 +1778,6 @@ manifest:
     mypy.copytype: mypy
     mypy.defaults: mypy
     mypy.dmypy: mypy
-    mypy.dmypy.__init__: mypy
-    mypy.dmypy.__main__: mypy
     mypy.dmypy.client: mypy
     mypy.dmypy_os: mypy
     mypy.dmypy_server: mypy
@@ -2761,7 +1788,6 @@ manifest:
     mypy.expandtype: mypy
     mypy.exprtotype: mypy
     mypy.fastparse: mypy
-    mypy.fastparse2: mypy
     mypy.find_sources: mypy
     mypy.fixup: mypy
     mypy.freetree: mypy
@@ -2771,6 +1797,7 @@ manifest:
     mypy.git: mypy
     mypy.indirection: mypy
     mypy.infer: mypy
+    mypy.inspections: mypy
     mypy.ipc: mypy
     mypy.join: mypy
     mypy.literals: mypy
@@ -2790,10 +1817,10 @@ manifest:
     mypy.operators: mypy
     mypy.options: mypy
     mypy.parse: mypy
+    mypy.partially_defined: mypy
     mypy.patterns: mypy
     mypy.plugin: mypy
     mypy.plugins: mypy
-    mypy.plugins.__init__: mypy
     mypy.plugins.attrs: mypy
     mypy.plugins.common: mypy
     mypy.plugins.ctypes: mypy
@@ -2806,7 +1833,6 @@ manifest:
     mypy.reachability: mypy
     mypy.renaming: mypy
     mypy.report: mypy
-    mypy.sametypes: mypy
     mypy.scope: mypy
     mypy.semanal: mypy
     mypy.semanal_classprop: mypy
@@ -2820,7 +1846,6 @@ manifest:
     mypy.semanal_typeargs: mypy
     mypy.semanal_typeddict: mypy
     mypy.server: mypy
-    mypy.server.__init__: mypy
     mypy.server.astdiff: mypy
     mypy.server.astmerge: mypy
     mypy.server.aststrip: mypy
@@ -2846,7 +1871,6 @@ manifest:
     mypy.subtypes: mypy
     mypy.suggestions: mypy
     mypy.test: mypy
-    mypy.test.__init__: mypy
     mypy.test.config: mypy
     mypy.test.data: mypy
     mypy.test.helpers: mypy
@@ -2855,6 +1879,7 @@ manifest:
     mypy.test.testargs: mypy
     mypy.test.testcheck: mypy
     mypy.test.testcmdline: mypy
+    mypy.test.testconstraints: mypy
     mypy.test.testdaemon: mypy
     mypy.test.testdeps: mypy
     mypy.test.testdiff: mypy
@@ -2896,15 +1921,13 @@ manifest:
     mypy.typestate: mypy
     mypy.typetraverser: mypy
     mypy.typevars: mypy
+    mypy.typevartuples: mypy
     mypy.util: mypy
     mypy.version: mypy
     mypy.visitor: mypy
     mypy_extensions: mypy_extensions
     mypyc: mypy
-    mypyc.__init__: mypy
-    mypyc.__main__: mypy
     mypyc.analysis: mypy
-    mypyc.analysis.__init__: mypy
     mypyc.analysis.attrdefined: mypy
     mypyc.analysis.blockfreq: mypy
     mypyc.analysis.dataflow: mypy
@@ -2912,7 +1935,6 @@ manifest:
     mypyc.analysis.selfleaks: mypy
     mypyc.build: mypy
     mypyc.codegen: mypy
-    mypyc.codegen.__init__: mypy
     mypyc.codegen.cstring: mypy
     mypyc.codegen.emit: mypy
     mypyc.codegen.emitclass: mypy
@@ -2925,7 +1947,6 @@ manifest:
     mypyc.doc.conf: mypy
     mypyc.errors: mypy
     mypyc.ir: mypy
-    mypyc.ir.__init__: mypy
     mypyc.ir.class_ir: mypy
     mypyc.ir.func_ir: mypy
     mypyc.ir.module_ir: mypy
@@ -2933,7 +1954,6 @@ manifest:
     mypyc.ir.pprint: mypy
     mypyc.ir.rtypes: mypy
     mypyc.irbuild: mypy
-    mypyc.irbuild.__init__: mypy
     mypyc.irbuild.ast_helpers: mypy
     mypyc.irbuild.builder: mypy
     mypyc.irbuild.callable_class: mypy
@@ -2962,7 +1982,6 @@ manifest:
     mypyc.namegen: mypy
     mypyc.options: mypy
     mypyc.primitives: mypy
-    mypyc.primitives.__init__: mypy
     mypyc.primitives.bytes_ops: mypy
     mypyc.primitives.dict_ops: mypy
     mypyc.primitives.exc_ops: mypy
@@ -2982,7 +2001,6 @@ manifest:
     mypyc.test-data.driver.driver: mypy
     mypyc.test-data.fixtures.ir: mypy
     mypyc.test-data.fixtures.testutil: mypy
-    mypyc.test.__init__: mypy
     mypyc.test.config: mypy
     mypyc.test.test_alwaysdefined: mypy
     mypyc.test.test_analysis: mypy
@@ -3008,15 +2026,11 @@ manifest:
     mypyc.test.test_tuplename: mypy
     mypyc.test.testutil: mypy
     mypyc.transform: mypy
-    mypyc.transform.__init__: mypy
     mypyc.transform.exceptions: mypy
     mypyc.transform.refcount: mypy
     mypyc.transform.uninit: mypy
     nacl: PyNaCl
-    nacl.__init__: PyNaCl
-    nacl._sodium: PyNaCl
     nacl.bindings: PyNaCl
-    nacl.bindings.__init__: PyNaCl
     nacl.bindings.crypto_aead: PyNaCl
     nacl.bindings.crypto_box: PyNaCl
     nacl.bindings.crypto_core: PyNaCl
@@ -3038,8 +2052,6 @@ manifest:
     nacl.hashlib: PyNaCl
     nacl.public: PyNaCl
     nacl.pwhash: PyNaCl
-    nacl.pwhash.__init__: PyNaCl
-    nacl.pwhash._argon2: PyNaCl
     nacl.pwhash.argon2i: PyNaCl
     nacl.pwhash.argon2id: PyNaCl
     nacl.pwhash.scrypt: PyNaCl
@@ -3048,11 +2060,6 @@ manifest:
     nacl.utils: PyNaCl
     nodeenv: nodeenv
     packaging: packaging
-    packaging.__about__: packaging
-    packaging.__init__: packaging
-    packaging._manylinux: packaging
-    packaging._musllinux: packaging
-    packaging._structures: packaging
     packaging.markers: packaging
     packaging.requirements: packaging
     packaging.specifiers: packaging
@@ -3060,9 +2067,7 @@ manifest:
     packaging.utils: packaging
     packaging.version: packaging
     paho: paho_mqtt
-    paho.__init__: paho_mqtt
     paho.mqtt: paho_mqtt
-    paho.mqtt.__init__: paho_mqtt
     paho.mqtt.client: paho_mqtt
     paho.mqtt.matcher: paho_mqtt
     paho.mqtt.packettypes: paho_mqtt
@@ -3072,9 +2077,6 @@ manifest:
     paho.mqtt.subscribe: paho_mqtt
     paho.mqtt.subscribeoptions: paho_mqtt
     paramiko: paramiko
-    paramiko.__init__: paramiko
-    paramiko._version: paramiko
-    paramiko._winapi: paramiko
     paramiko.agent: paramiko
     paramiko.auth_handler: paramiko
     paramiko.ber: paramiko
@@ -3119,33 +2121,22 @@ manifest:
     paramiko.win_openssh: paramiko
     paramiko.win_pageant: paramiko
     pathspec: pathspec
-    pathspec.__init__: pathspec
-    pathspec._meta: pathspec
-    pathspec.compat: pathspec
+    pathspec.gitignore: pathspec
     pathspec.pathspec: pathspec
     pathspec.pattern: pathspec
     pathspec.patterns: pathspec
-    pathspec.patterns.__init__: pathspec
     pathspec.patterns.gitwildmatch: pathspec
-    pathspec.tests: pathspec
-    pathspec.tests.__init__: pathspec
-    pathspec.tests.test_gitwildmatch: pathspec
-    pathspec.tests.test_pathspec: pathspec
-    pathspec.tests.test_util: pathspec
     pathspec.util: pathspec
     pbr: pbr
-    pbr.__init__: pbr
     pbr.build: pbr
     pbr.builddoc: pbr
     pbr.cmd: pbr
-    pbr.cmd.__init__: pbr
     pbr.cmd.main: pbr
     pbr.core: pbr
     pbr.extra_files: pbr
     pbr.find_package: pbr
     pbr.git: pbr
     pbr.hooks: pbr
-    pbr.hooks.__init__: pbr
     pbr.hooks.backwards: pbr
     pbr.hooks.base: pbr
     pbr.hooks.commands: pbr
@@ -3157,7 +2148,6 @@ manifest:
     pbr.sphinxext: pbr
     pbr.testr_command: pbr
     pbr.tests: pbr
-    pbr.tests.__init__: pbr
     pbr.tests.base: pbr
     pbr.tests.test_commands: pbr
     pbr.tests.test_core: pbr
@@ -3172,8 +2162,6 @@ manifest:
     pbr.tests.test_wsgi: pbr
     pbr.tests.testpackage.doc.source.conf: pbr
     pbr.tests.testpackage.pbr_testpackage: pbr
-    pbr.tests.testpackage.pbr_testpackage.__init__: pbr
-    pbr.tests.testpackage.pbr_testpackage._setup_hooks: pbr
     pbr.tests.testpackage.pbr_testpackage.cmd: pbr
     pbr.tests.testpackage.pbr_testpackage.extra: pbr
     pbr.tests.testpackage.pbr_testpackage.wsgi: pbr
@@ -3182,49 +2170,8 @@ manifest:
     pbr.util: pbr
     pbr.version: pbr
     pkg_resources: setuptools
-    pkg_resources.__init__: setuptools
-    pkg_resources._vendor: setuptools
-    pkg_resources._vendor.__init__: setuptools
-    pkg_resources._vendor.appdirs: setuptools
-    pkg_resources._vendor.importlib_resources: setuptools
-    pkg_resources._vendor.importlib_resources.__init__: setuptools
-    pkg_resources._vendor.importlib_resources._adapters: setuptools
-    pkg_resources._vendor.importlib_resources._common: setuptools
-    pkg_resources._vendor.importlib_resources._compat: setuptools
-    pkg_resources._vendor.importlib_resources._itertools: setuptools
-    pkg_resources._vendor.importlib_resources._legacy: setuptools
-    pkg_resources._vendor.importlib_resources.abc: setuptools
-    pkg_resources._vendor.importlib_resources.readers: setuptools
-    pkg_resources._vendor.importlib_resources.simple: setuptools
-    pkg_resources._vendor.jaraco: setuptools
-    pkg_resources._vendor.jaraco.__init__: setuptools
-    pkg_resources._vendor.jaraco.context: setuptools
-    pkg_resources._vendor.jaraco.functools: setuptools
-    pkg_resources._vendor.jaraco.text: setuptools
-    pkg_resources._vendor.jaraco.text.__init__: setuptools
-    pkg_resources._vendor.more_itertools: setuptools
-    pkg_resources._vendor.more_itertools.__init__: setuptools
-    pkg_resources._vendor.more_itertools.more: setuptools
-    pkg_resources._vendor.more_itertools.recipes: setuptools
-    pkg_resources._vendor.packaging: setuptools
-    pkg_resources._vendor.packaging.__about__: setuptools
-    pkg_resources._vendor.packaging.__init__: setuptools
-    pkg_resources._vendor.packaging._manylinux: setuptools
-    pkg_resources._vendor.packaging._musllinux: setuptools
-    pkg_resources._vendor.packaging._structures: setuptools
-    pkg_resources._vendor.packaging.markers: setuptools
-    pkg_resources._vendor.packaging.requirements: setuptools
-    pkg_resources._vendor.packaging.specifiers: setuptools
-    pkg_resources._vendor.packaging.tags: setuptools
-    pkg_resources._vendor.packaging.utils: setuptools
-    pkg_resources._vendor.packaging.version: setuptools
-    pkg_resources._vendor.pyparsing: setuptools
-    pkg_resources._vendor.zipp: setuptools
     pkg_resources.extern: setuptools
-    pkg_resources.extern.__init__: setuptools
     pkginfo: pkginfo
-    pkginfo.__init__: pkginfo
-    pkginfo._compat: pkginfo
     pkginfo.bdist: pkginfo
     pkginfo.commandline: pkginfo
     pkginfo.develop: pkginfo
@@ -3233,7 +2180,6 @@ manifest:
     pkginfo.installed: pkginfo
     pkginfo.sdist: pkginfo
     pkginfo.tests: pkginfo
-    pkginfo.tests.__init__: pkginfo
     pkginfo.tests.test_bdist: pkginfo
     pkginfo.tests.test_commandline: pkginfo
     pkginfo.tests.test_develop: pkginfo
@@ -3246,8 +2192,6 @@ manifest:
     pkginfo.utils: pkginfo
     pkginfo.wheel: pkginfo
     platformdirs: platformdirs
-    platformdirs.__init__: platformdirs
-    platformdirs.__main__: platformdirs
     platformdirs.android: platformdirs
     platformdirs.api: platformdirs
     platformdirs.macos: platformdirs
@@ -3255,20 +2199,10 @@ manifest:
     platformdirs.version: platformdirs
     platformdirs.windows: platformdirs
     pluggy: pluggy
-    pluggy.__init__: pluggy
-    pluggy._callers: pluggy
-    pluggy._hooks: pluggy
-    pluggy._manager: pluggy
-    pluggy._result: pluggy
-    pluggy._tracing: pluggy
-    pluggy._version: pluggy
     pre_commit: pre_commit
-    pre_commit.__init__: pre_commit
-    pre_commit.__main__: pre_commit
     pre_commit.clientlib: pre_commit
     pre_commit.color: pre_commit
     pre_commit.commands: pre_commit
-    pre_commit.commands.__init__: pre_commit
     pre_commit.commands.autoupdate: pre_commit
     pre_commit.commands.clean: pre_commit
     pre_commit.commands.gc: pre_commit
@@ -3289,7 +2223,6 @@ manifest:
     pre_commit.git: pre_commit
     pre_commit.hook: pre_commit
     pre_commit.languages: pre_commit
-    pre_commit.languages.__init__: pre_commit
     pre_commit.languages.all: pre_commit
     pre_commit.languages.conda: pre_commit
     pre_commit.languages.coursier: pre_commit
@@ -3314,7 +2247,6 @@ manifest:
     pre_commit.logging_handler: pre_commit
     pre_commit.main: pre_commit
     pre_commit.meta_hooks: pre_commit
-    pre_commit.meta_hooks.__init__: pre_commit
     pre_commit.meta_hooks.check_hooks_apply: pre_commit
     pre_commit.meta_hooks.check_useless_excludes: pre_commit
     pre_commit.meta_hooks.identity: pre_commit
@@ -3323,63 +2255,15 @@ manifest:
     pre_commit.prefix: pre_commit
     pre_commit.repository: pre_commit
     pre_commit.resources: pre_commit
-    pre_commit.resources.__init__: pre_commit
     pre_commit.resources.empty_template_setup: pre_commit
     pre_commit.staged_files_only: pre_commit
     pre_commit.store: pre_commit
     pre_commit.util: pre_commit
     pre_commit.xargs: pre_commit
-    pvectorc: pyrsistent
-    py: py
-    py.__init__: py
-    py.__metainfo: py
-    py._builtin: py
-    py._code: py
-    py._code.__init__: py
-    py._code._assertionnew: py
-    py._code._assertionold: py
-    py._code._py2traceback: py
-    py._code.assertion: py
-    py._code.code: py
-    py._code.source: py
-    py._error: py
-    py._io: py
-    py._io.__init__: py
-    py._io.capture: py
-    py._io.saferepr: py
-    py._io.terminalwriter: py
-    py._log: py
-    py._log.__init__: py
-    py._log.log: py
-    py._log.warning: py
-    py._path: py
-    py._path.__init__: py
-    py._path.cacheutil: py
-    py._path.common: py
-    py._path.local: py
-    py._path.svnurl: py
-    py._path.svnwc: py
-    py._process: py
-    py._process.__init__: py
-    py._process.cmdexec: py
-    py._process.forkedfunc: py
-    py._process.killproc: py
-    py._std: py
-    py._vendored_packages: py
-    py._vendored_packages.__init__: py
-    py._vendored_packages.apipkg: py
-    py._vendored_packages.apipkg.__init__: py
-    py._vendored_packages.apipkg.version: py
-    py._vendored_packages.iniconfig: py
-    py._vendored_packages.iniconfig.__init__: py
-    py._version: py
-    py._xmlgen: py
+    py: pytest
     py.test: py
     pycodestyle: pycodestyle
     pycparser: pycparser
-    pycparser.__init__: pycparser
-    pycparser._ast_gen: pycparser
-    pycparser._build_tables: pycparser
     pycparser.ast_transforms: pycparser
     pycparser.c_ast: pycparser
     pycparser.c_generator: pycparser
@@ -3387,7 +2271,6 @@ manifest:
     pycparser.c_parser: pycparser
     pycparser.lextab: pycparser
     pycparser.ply: pycparser
-    pycparser.ply.__init__: pycparser
     pycparser.ply.cpp: pycparser
     pycparser.ply.ctokens: pycparser
     pycparser.ply.lex: pycparser
@@ -3396,21 +2279,16 @@ manifest:
     pycparser.plyparser: pycparser
     pycparser.yacctab: pycparser
     pyflakes: pyflakes
-    pyflakes.__init__: pyflakes
-    pyflakes.__main__: pyflakes
     pyflakes.api: pyflakes
     pyflakes.checker: pyflakes
     pyflakes.messages: pyflakes
     pyflakes.reporter: pyflakes
     pyflakes.scripts: pyflakes
-    pyflakes.scripts.__init__: pyflakes
     pyflakes.scripts.pyflakes: pyflakes
     pyflakes.test: pyflakes
-    pyflakes.test.__init__: pyflakes
     pyflakes.test.harness: pyflakes
     pyflakes.test.test_api: pyflakes
     pyflakes.test.test_builtin: pyflakes
-    pyflakes.test.test_checker: pyflakes
     pyflakes.test.test_code_segment: pyflakes
     pyflakes.test.test_dict: pyflakes
     pyflakes.test.test_doctests: pyflakes
@@ -3421,17 +2299,12 @@ manifest:
     pyflakes.test.test_type_annotations: pyflakes
     pyflakes.test.test_undefined_names: pyflakes
     pygments: Pygments
-    pygments.__init__: Pygments
-    pygments.__main__: Pygments
     pygments.cmdline: Pygments
     pygments.console: Pygments
     pygments.filter: Pygments
     pygments.filters: Pygments
-    pygments.filters.__init__: Pygments
     pygments.formatter: Pygments
     pygments.formatters: Pygments
-    pygments.formatters.__init__: Pygments
-    pygments.formatters._mapping: Pygments
     pygments.formatters.bbcode: Pygments
     pygments.formatters.groff: Pygments
     pygments.formatters.html: Pygments
@@ -3446,33 +2319,6 @@ manifest:
     pygments.formatters.terminal256: Pygments
     pygments.lexer: Pygments
     pygments.lexers: Pygments
-    pygments.lexers.__init__: Pygments
-    pygments.lexers._ada_builtins: Pygments
-    pygments.lexers._asy_builtins: Pygments
-    pygments.lexers._cl_builtins: Pygments
-    pygments.lexers._cocoa_builtins: Pygments
-    pygments.lexers._csound_builtins: Pygments
-    pygments.lexers._css_builtins: Pygments
-    pygments.lexers._julia_builtins: Pygments
-    pygments.lexers._lasso_builtins: Pygments
-    pygments.lexers._lilypond_builtins: Pygments
-    pygments.lexers._lua_builtins: Pygments
-    pygments.lexers._mapping: Pygments
-    pygments.lexers._mql_builtins: Pygments
-    pygments.lexers._mysql_builtins: Pygments
-    pygments.lexers._openedge_builtins: Pygments
-    pygments.lexers._php_builtins: Pygments
-    pygments.lexers._postgres_builtins: Pygments
-    pygments.lexers._qlik_builtins: Pygments
-    pygments.lexers._scheme_builtins: Pygments
-    pygments.lexers._scilab_builtins: Pygments
-    pygments.lexers._sourcemod_builtins: Pygments
-    pygments.lexers._stan_builtins: Pygments
-    pygments.lexers._stata_builtins: Pygments
-    pygments.lexers._tsql_builtins: Pygments
-    pygments.lexers._usd_builtins: Pygments
-    pygments.lexers._vbscript_builtins: Pygments
-    pygments.lexers._vim_builtins: Pygments
     pygments.lexers.actionscript: Pygments
     pygments.lexers.ada: Pygments
     pygments.lexers.agile: Pygments
@@ -3667,7 +2513,6 @@ manifest:
     pygments.sphinxext: Pygments
     pygments.style: Pygments
     pygments.styles: Pygments
-    pygments.styles.__init__: Pygments
     pygments.styles.abap: Pygments
     pygments.styles.algol: Pygments
     pygments.styles.algol_nu: Pygments
@@ -3716,7 +2561,6 @@ manifest:
     pygments.unistring: Pygments
     pygments.util: Pygments
     pykwalify: pykwalify
-    pykwalify.__init__: pykwalify
     pykwalify.cli: pykwalify
     pykwalify.compat: pykwalify
     pykwalify.core: pykwalify
@@ -3724,26 +2568,19 @@ manifest:
     pykwalify.rule: pykwalify
     pykwalify.types: pykwalify
     pylint: pylint
-    pylint.__init__: pylint
-    pylint.__main__: pylint
-    pylint.__pkginfo__: pylint
     pylint.checkers: pylint
-    pylint.checkers.__init__: pylint
     pylint.checkers.async: pylint
     pylint.checkers.base: pylint
-    pylint.checkers.base.__init__: pylint
     pylint.checkers.base.basic_checker: pylint
     pylint.checkers.base.basic_error_checker: pylint
     pylint.checkers.base.comparison_checker: pylint
     pylint.checkers.base.docstring_checker: pylint
     pylint.checkers.base.name_checker: pylint
-    pylint.checkers.base.name_checker.__init__: pylint
     pylint.checkers.base.name_checker.checker: pylint
     pylint.checkers.base.name_checker.naming_style: pylint
     pylint.checkers.base.pass_checker: pylint
     pylint.checkers.base_checker: pylint
     pylint.checkers.classes: pylint
-    pylint.checkers.classes.__init__: pylint
     pylint.checkers.classes.class_checker: pylint
     pylint.checkers.classes.special_methods_checker: pylint
     pylint.checkers.deprecated: pylint
@@ -3763,7 +2600,6 @@ manifest:
     pylint.checkers.non_ascii_names: pylint
     pylint.checkers.raw_metrics: pylint
     pylint.checkers.refactoring: pylint
-    pylint.checkers.refactoring.__init__: pylint
     pylint.checkers.refactoring.implicit_booleaness_checker: pylint
     pylint.checkers.refactoring.not_checker: pylint
     pylint.checkers.refactoring.recommendation_checker: pylint
@@ -3779,14 +2615,6 @@ manifest:
     pylint.checkers.utils: pylint
     pylint.checkers.variables: pylint
     pylint.config: pylint
-    pylint.config.__init__: pylint
-    pylint.config._pylint_config: pylint
-    pylint.config._pylint_config.__init__: pylint
-    pylint.config._pylint_config.generate_command: pylint
-    pylint.config._pylint_config.help_message: pylint
-    pylint.config._pylint_config.main: pylint
-    pylint.config._pylint_config.setup: pylint
-    pylint.config._pylint_config.utils: pylint
     pylint.config.argument: pylint
     pylint.config.arguments_manager: pylint
     pylint.config.arguments_provider: pylint
@@ -3808,8 +2636,6 @@ manifest:
     pylint.epylint: pylint
     pylint.exceptions: pylint
     pylint.extensions: pylint
-    pylint.extensions.__init__: pylint
-    pylint.extensions._check_docs_utils: pylint
     pylint.extensions.bad_builtin: pylint
     pylint.extensions.broad_try_clause: pylint
     pylint.extensions.check_elif: pylint
@@ -3836,7 +2662,6 @@ manifest:
     pylint.graph: pylint
     pylint.interfaces: pylint
     pylint.lint: pylint
-    pylint.lint.__init__: pylint
     pylint.lint.base_options: pylint
     pylint.lint.caching: pylint
     pylint.lint.expand_modules: pylint
@@ -3847,14 +2672,11 @@ manifest:
     pylint.lint.run: pylint
     pylint.lint.utils: pylint
     pylint.message: pylint
-    pylint.message.__init__: pylint
-    pylint.message._deleted_message_ids: pylint
     pylint.message.message: pylint
     pylint.message.message_definition: pylint
     pylint.message.message_definition_store: pylint
     pylint.message.message_id_store: pylint
     pylint.pyreverse: pylint
-    pylint.pyreverse.__init__: pylint
     pylint.pyreverse.diadefslib: pylint
     pylint.pyreverse.diagrams: pylint
     pylint.pyreverse.dot_printer: pylint
@@ -3868,7 +2690,6 @@ manifest:
     pylint.pyreverse.vcg_printer: pylint
     pylint.pyreverse.writer: pylint
     pylint.reporters: pylint
-    pylint.reporters.__init__: pylint
     pylint.reporters.base_reporter: pylint
     pylint.reporters.collecting_reporter: pylint
     pylint.reporters.json_reporter: pylint
@@ -3876,27 +2697,15 @@ manifest:
     pylint.reporters.reports_handler_mix_in: pylint
     pylint.reporters.text: pylint
     pylint.reporters.ureports: pylint
-    pylint.reporters.ureports.__init__: pylint
     pylint.reporters.ureports.base_writer: pylint
     pylint.reporters.ureports.nodes: pylint
     pylint.reporters.ureports.text_writer: pylint
     pylint.testutils: pylint
-    pylint.testutils.__init__: pylint
-    pylint.testutils._primer: pylint
-    pylint.testutils._primer.__init__: pylint
-    pylint.testutils._primer.package_to_lint: pylint
-    pylint.testutils._primer.primer: pylint
-    pylint.testutils._primer.primer_command: pylint
-    pylint.testutils._primer.primer_compare_command: pylint
-    pylint.testutils._primer.primer_prepare_command: pylint
-    pylint.testutils._primer.primer_run_command: pylint
-    pylint.testutils._run: pylint
     pylint.testutils.checker_test_case: pylint
     pylint.testutils.configuration_test: pylint
     pylint.testutils.constants: pylint
     pylint.testutils.decorator: pylint
     pylint.testutils.functional: pylint
-    pylint.testutils.functional.__init__: pylint
     pylint.testutils.functional.find_functional_tests: pylint
     pylint.testutils.functional.lint_module_output_update: pylint
     pylint.testutils.functional.test_file: pylint
@@ -3912,66 +2721,27 @@ manifest:
     pylint.testutils.utils: pylint
     pylint.typing: pylint
     pylint.utils: pylint
-    pylint.utils.__init__: pylint
     pylint.utils.ast_walker: pylint
     pylint.utils.docs: pylint
     pylint.utils.file_state: pylint
     pylint.utils.linterstats: pylint
     pylint.utils.pragma_parser: pylint
     pylint.utils.utils: pylint
-    pyparsing: pyparsing
-    pyparsing.__init__: pyparsing
-    pyparsing.actions: pyparsing
-    pyparsing.common: pyparsing
-    pyparsing.core: pyparsing
-    pyparsing.diagram: pyparsing
-    pyparsing.diagram.__init__: pyparsing
-    pyparsing.exceptions: pyparsing
-    pyparsing.helpers: pyparsing
-    pyparsing.results: pyparsing
-    pyparsing.testing: pyparsing
-    pyparsing.unicode: pyparsing
-    pyparsing.util: pyparsing
     pyrsistent: pyrsistent
-    pyrsistent.__init__: pyrsistent
-    pyrsistent._checked_types: pyrsistent
-    pyrsistent._field_common: pyrsistent
-    pyrsistent._helpers: pyrsistent
-    pyrsistent._immutable: pyrsistent
-    pyrsistent._pbag: pyrsistent
-    pyrsistent._pclass: pyrsistent
-    pyrsistent._pdeque: pyrsistent
-    pyrsistent._plist: pyrsistent
-    pyrsistent._pmap: pyrsistent
-    pyrsistent._precord: pyrsistent
-    pyrsistent._pset: pyrsistent
-    pyrsistent._pvector: pyrsistent
-    pyrsistent._toolz: pyrsistent
-    pyrsistent._transformations: pyrsistent
     pyrsistent.typing: pyrsistent
     pytest: pytest
-    pytest.__init__: pytest
-    pytest.__main__: pytest
     pytest_cov: pytest_cov
-    pytest_cov.__init__: pytest_cov
     pytest_cov.compat: pytest_cov
     pytest_cov.embed: pytest_cov
     pytest_cov.engine: pytest_cov
     pytest_cov.plugin: pytest_cov
     pytest_forked: pytest_forked
-    pytest_forked.__init__: pytest_forked
     readme_renderer: readme_renderer
-    readme_renderer.__about__: readme_renderer
-    readme_renderer.__init__: readme_renderer
-    readme_renderer.__main__: readme_renderer
     readme_renderer.clean: readme_renderer
     readme_renderer.markdown: readme_renderer
     readme_renderer.rst: readme_renderer
     readme_renderer.txt: readme_renderer
     requests: requests
-    requests.__init__: requests
-    requests.__version__: requests
-    requests._internal_utils: requests
     requests.adapters: requests
     requests.api: requests
     requests.auth: requests
@@ -3988,10 +2758,7 @@ manifest:
     requests.structures: requests
     requests.utils: requests
     requests_toolbelt: requests_toolbelt
-    requests_toolbelt.__init__: requests_toolbelt
-    requests_toolbelt._compat: requests_toolbelt
     requests_toolbelt.adapters: requests_toolbelt
-    requests_toolbelt.adapters.__init__: requests_toolbelt
     requests_toolbelt.adapters.appengine: requests_toolbelt
     requests_toolbelt.adapters.fingerprint: requests_toolbelt
     requests_toolbelt.adapters.host_header_ssl: requests_toolbelt
@@ -4000,38 +2767,29 @@ manifest:
     requests_toolbelt.adapters.ssl: requests_toolbelt
     requests_toolbelt.adapters.x509: requests_toolbelt
     requests_toolbelt.auth: requests_toolbelt
-    requests_toolbelt.auth.__init__: requests_toolbelt
-    requests_toolbelt.auth._digest_auth_compat: requests_toolbelt
     requests_toolbelt.auth.guess: requests_toolbelt
     requests_toolbelt.auth.handler: requests_toolbelt
     requests_toolbelt.auth.http_proxy_digest: requests_toolbelt
     requests_toolbelt.cookies: requests_toolbelt
-    requests_toolbelt.cookies.__init__: requests_toolbelt
     requests_toolbelt.cookies.forgetful: requests_toolbelt
     requests_toolbelt.downloadutils: requests_toolbelt
-    requests_toolbelt.downloadutils.__init__: requests_toolbelt
     requests_toolbelt.downloadutils.stream: requests_toolbelt
     requests_toolbelt.downloadutils.tee: requests_toolbelt
     requests_toolbelt.exceptions: requests_toolbelt
     requests_toolbelt.multipart: requests_toolbelt
-    requests_toolbelt.multipart.__init__: requests_toolbelt
     requests_toolbelt.multipart.decoder: requests_toolbelt
     requests_toolbelt.multipart.encoder: requests_toolbelt
     requests_toolbelt.sessions: requests_toolbelt
     requests_toolbelt.streaming_iterator: requests_toolbelt
     requests_toolbelt.threaded: requests_toolbelt
-    requests_toolbelt.threaded.__init__: requests_toolbelt
     requests_toolbelt.threaded.pool: requests_toolbelt
     requests_toolbelt.threaded.thread: requests_toolbelt
     requests_toolbelt.utils: requests_toolbelt
-    requests_toolbelt.utils.__init__: requests_toolbelt
     requests_toolbelt.utils.deprecated: requests_toolbelt
     requests_toolbelt.utils.dump: requests_toolbelt
     requests_toolbelt.utils.formdata: requests_toolbelt
     requests_toolbelt.utils.user_agent: requests_toolbelt
     rfc3986: rfc3986
-    rfc3986.__init__: rfc3986
-    rfc3986._mixin: rfc3986
     rfc3986.abnf_regexp: rfc3986
     rfc3986.api: rfc3986
     rfc3986.builder: rfc3986
@@ -4044,26 +2802,6 @@ manifest:
     rfc3986.uri: rfc3986
     rfc3986.validators: rfc3986
     rich: rich
-    rich.__init__: rich
-    rich.__main__: rich
-    rich._cell_widths: rich
-    rich._emoji_codes: rich
-    rich._emoji_replace: rich
-    rich._export_format: rich
-    rich._extension: rich
-    rich._inspect: rich
-    rich._log_render: rich
-    rich._loop: rich
-    rich._palettes: rich
-    rich._pick: rich
-    rich._ratio: rich
-    rich._spinners: rich
-    rich._stack: rich
-    rich._timer: rich
-    rich._win32_console: rich
-    rich._windows: rich
-    rich._windows_renderer: rich
-    rich._wrap: rich
     rich.abc: rich
     rich.align: rich
     rich.ansi: rich
@@ -4121,7 +2859,6 @@ manifest:
     rich.traceback: rich
     rich.tree: rich
     ruamel.yaml: ruamel.yaml
-    ruamel.yaml.__init__: ruamel.yaml
     ruamel.yaml.anchor: ruamel.yaml
     ruamel.yaml.comments: ruamel.yaml
     ruamel.yaml.compat: ruamel.yaml
@@ -4150,7 +2887,6 @@ manifest:
     ruamel.yaml.tokens: ruamel.yaml
     ruamel.yaml.util: ruamel.yaml
     secretstorage: SecretStorage
-    secretstorage.__init__: SecretStorage
     secretstorage.collection: SecretStorage
     secretstorage.defines: SecretStorage
     secretstorage.dhcrypto: SecretStorage
@@ -4158,141 +2894,20 @@ manifest:
     secretstorage.item: SecretStorage
     secretstorage.util: SecretStorage
     setuptools: setuptools
-    setuptools.__init__: setuptools
-    setuptools._deprecation_warning: setuptools
-    setuptools._distutils: setuptools
-    setuptools._distutils.__init__: setuptools
-    setuptools._distutils._collections: setuptools
-    setuptools._distutils._macos_compat: setuptools
-    setuptools._distutils._msvccompiler: setuptools
-    setuptools._distutils.archive_util: setuptools
-    setuptools._distutils.bcppcompiler: setuptools
-    setuptools._distutils.ccompiler: setuptools
-    setuptools._distutils.cmd: setuptools
-    setuptools._distutils.command: setuptools
-    setuptools._distutils.command.__init__: setuptools
-    setuptools._distutils.command.bdist: setuptools
-    setuptools._distutils.command.bdist_dumb: setuptools
-    setuptools._distutils.command.bdist_msi: setuptools
-    setuptools._distutils.command.bdist_rpm: setuptools
-    setuptools._distutils.command.bdist_wininst: setuptools
-    setuptools._distutils.command.build: setuptools
-    setuptools._distutils.command.build_clib: setuptools
-    setuptools._distutils.command.build_ext: setuptools
-    setuptools._distutils.command.build_py: setuptools
-    setuptools._distutils.command.build_scripts: setuptools
-    setuptools._distutils.command.check: setuptools
-    setuptools._distutils.command.clean: setuptools
-    setuptools._distutils.command.config: setuptools
-    setuptools._distutils.command.install: setuptools
-    setuptools._distutils.command.install_data: setuptools
-    setuptools._distutils.command.install_egg_info: setuptools
-    setuptools._distutils.command.install_headers: setuptools
-    setuptools._distutils.command.install_lib: setuptools
-    setuptools._distutils.command.install_scripts: setuptools
-    setuptools._distutils.command.py37compat: setuptools
-    setuptools._distutils.command.register: setuptools
-    setuptools._distutils.command.sdist: setuptools
-    setuptools._distutils.command.upload: setuptools
-    setuptools._distutils.config: setuptools
-    setuptools._distutils.core: setuptools
-    setuptools._distutils.cygwinccompiler: setuptools
-    setuptools._distutils.debug: setuptools
-    setuptools._distutils.dep_util: setuptools
-    setuptools._distutils.dir_util: setuptools
-    setuptools._distutils.dist: setuptools
-    setuptools._distutils.errors: setuptools
-    setuptools._distutils.extension: setuptools
-    setuptools._distutils.fancy_getopt: setuptools
-    setuptools._distutils.file_util: setuptools
-    setuptools._distutils.filelist: setuptools
-    setuptools._distutils.log: setuptools
-    setuptools._distutils.msvc9compiler: setuptools
-    setuptools._distutils.msvccompiler: setuptools
-    setuptools._distutils.py35compat: setuptools
-    setuptools._distutils.py38compat: setuptools
-    setuptools._distutils.py39compat: setuptools
-    setuptools._distutils.spawn: setuptools
-    setuptools._distutils.sysconfig: setuptools
-    setuptools._distutils.text_file: setuptools
-    setuptools._distutils.unixccompiler: setuptools
-    setuptools._distutils.util: setuptools
-    setuptools._distutils.version: setuptools
-    setuptools._distutils.versionpredicate: setuptools
-    setuptools._entry_points: setuptools
-    setuptools._imp: setuptools
-    setuptools._importlib: setuptools
-    setuptools._itertools: setuptools
-    setuptools._path: setuptools
-    setuptools._reqs: setuptools
-    setuptools._vendor: setuptools
-    setuptools._vendor.__init__: setuptools
-    setuptools._vendor.importlib_metadata: setuptools
-    setuptools._vendor.importlib_metadata.__init__: setuptools
-    setuptools._vendor.importlib_metadata._adapters: setuptools
-    setuptools._vendor.importlib_metadata._collections: setuptools
-    setuptools._vendor.importlib_metadata._compat: setuptools
-    setuptools._vendor.importlib_metadata._functools: setuptools
-    setuptools._vendor.importlib_metadata._itertools: setuptools
-    setuptools._vendor.importlib_metadata._meta: setuptools
-    setuptools._vendor.importlib_metadata._text: setuptools
-    setuptools._vendor.importlib_resources: setuptools
-    setuptools._vendor.importlib_resources.__init__: setuptools
-    setuptools._vendor.importlib_resources._adapters: setuptools
-    setuptools._vendor.importlib_resources._common: setuptools
-    setuptools._vendor.importlib_resources._compat: setuptools
-    setuptools._vendor.importlib_resources._itertools: setuptools
-    setuptools._vendor.importlib_resources._legacy: setuptools
-    setuptools._vendor.importlib_resources.abc: setuptools
-    setuptools._vendor.importlib_resources.readers: setuptools
-    setuptools._vendor.importlib_resources.simple: setuptools
-    setuptools._vendor.jaraco: setuptools
-    setuptools._vendor.jaraco.__init__: setuptools
-    setuptools._vendor.jaraco.context: setuptools
-    setuptools._vendor.jaraco.functools: setuptools
-    setuptools._vendor.jaraco.text: setuptools
-    setuptools._vendor.jaraco.text.__init__: setuptools
-    setuptools._vendor.more_itertools: setuptools
-    setuptools._vendor.more_itertools.__init__: setuptools
-    setuptools._vendor.more_itertools.more: setuptools
-    setuptools._vendor.more_itertools.recipes: setuptools
-    setuptools._vendor.nspektr: setuptools
-    setuptools._vendor.nspektr.__init__: setuptools
-    setuptools._vendor.nspektr._compat: setuptools
-    setuptools._vendor.ordered_set: setuptools
-    setuptools._vendor.packaging: setuptools
-    setuptools._vendor.packaging.__about__: setuptools
-    setuptools._vendor.packaging.__init__: setuptools
-    setuptools._vendor.packaging._manylinux: setuptools
-    setuptools._vendor.packaging._musllinux: setuptools
-    setuptools._vendor.packaging._structures: setuptools
-    setuptools._vendor.packaging.markers: setuptools
-    setuptools._vendor.packaging.requirements: setuptools
-    setuptools._vendor.packaging.specifiers: setuptools
-    setuptools._vendor.packaging.tags: setuptools
-    setuptools._vendor.packaging.utils: setuptools
-    setuptools._vendor.packaging.version: setuptools
-    setuptools._vendor.pyparsing: setuptools
-    setuptools._vendor.tomli: setuptools
-    setuptools._vendor.tomli.__init__: setuptools
-    setuptools._vendor.tomli._parser: setuptools
-    setuptools._vendor.tomli._re: setuptools
-    setuptools._vendor.tomli._types: setuptools
-    setuptools._vendor.typing_extensions: setuptools
-    setuptools._vendor.zipp: setuptools
     setuptools.archive_util: setuptools
     setuptools.build_meta: setuptools
     setuptools.command: setuptools
-    setuptools.command.__init__: setuptools
     setuptools.command.alias: setuptools
     setuptools.command.bdist_egg: setuptools
     setuptools.command.bdist_rpm: setuptools
+    setuptools.command.build: setuptools
     setuptools.command.build_clib: setuptools
     setuptools.command.build_ext: setuptools
     setuptools.command.build_py: setuptools
     setuptools.command.develop: setuptools
     setuptools.command.dist_info: setuptools
     setuptools.command.easy_install: setuptools
+    setuptools.command.editable_wheel: setuptools
     setuptools.command.egg_info: setuptools
     setuptools.command.install: setuptools
     setuptools.command.install_egg_info: setuptools
@@ -4308,15 +2923,6 @@ manifest:
     setuptools.command.upload: setuptools
     setuptools.command.upload_docs: setuptools
     setuptools.config: setuptools
-    setuptools.config.__init__: setuptools
-    setuptools.config._apply_pyprojecttoml: setuptools
-    setuptools.config._validate_pyproject: setuptools
-    setuptools.config._validate_pyproject.__init__: setuptools
-    setuptools.config._validate_pyproject.error_reporting: setuptools
-    setuptools.config._validate_pyproject.extra_validations: setuptools
-    setuptools.config._validate_pyproject.fastjsonschema_exceptions: setuptools
-    setuptools.config._validate_pyproject.fastjsonschema_validations: setuptools
-    setuptools.config._validate_pyproject.formats: setuptools
     setuptools.config.expand: setuptools
     setuptools.config.pyprojecttoml: setuptools
     setuptools.config.setupcfg: setuptools
@@ -4327,7 +2933,6 @@ manifest:
     setuptools.errors: setuptools
     setuptools.extension: setuptools
     setuptools.extern: setuptools
-    setuptools.extern.__init__: setuptools
     setuptools.glob: setuptools
     setuptools.installer: setuptools
     setuptools.launch: setuptools
@@ -4344,20 +2949,16 @@ manifest:
     setuptools.windows_support: setuptools
     six: six
     stevedore: stevedore
-    stevedore.__init__: stevedore
-    stevedore._cache: stevedore
     stevedore.dispatch: stevedore
     stevedore.driver: stevedore
     stevedore.enabled: stevedore
     stevedore.example: stevedore
-    stevedore.example.__init__: stevedore
     stevedore.example.base: stevedore
     stevedore.example.load_as_driver: stevedore
     stevedore.example.load_as_extension: stevedore
     stevedore.example.setup: stevedore
     stevedore.example.simple: stevedore
     stevedore.example2: stevedore
-    stevedore.example2.__init__: stevedore
     stevedore.example2.fields: stevedore
     stevedore.example2.setup: stevedore
     stevedore.exception: stevedore
@@ -4366,7 +2967,6 @@ manifest:
     stevedore.named: stevedore
     stevedore.sphinxext: stevedore
     stevedore.tests: stevedore
-    stevedore.tests.__init__: stevedore
     stevedore.tests.extension_unimportable: stevedore
     stevedore.tests.manager: stevedore
     stevedore.tests.test_cache: stevedore
@@ -4384,20 +2984,12 @@ manifest:
     stevedore.tests.utils: stevedore
     texttable: texttable
     toml: toml
-    toml.__init__: toml
     toml.decoder: toml
     toml.encoder: toml
     toml.ordered: toml
     toml.tz: toml
     tomli: tomli
-    tomli.__init__: tomli
-    tomli._parser: tomli
-    tomli._re: tomli
-    tomli._types: tomli
     tomlkit: tomlkit
-    tomlkit.__init__: tomlkit
-    tomlkit._compat: tomlkit
-    tomlkit._utils: tomlkit
     tomlkit.api: tomlkit
     tomlkit.container: tomlkit
     tomlkit.exceptions: tomlkit
@@ -4408,63 +3000,48 @@ manifest:
     tomlkit.toml_document: tomlkit
     tomlkit.toml_file: tomlkit
     tox: tox
-    tox.__init__: tox
-    tox.__main__: tox
-    tox._pytestplugin: tox
-    tox._quickstart: tox
     tox.action: tox
     tox.cli: tox
     tox.config: tox
-    tox.config.__init__: tox
     tox.config.parallel: tox
     tox.config.reporter: tox
     tox.constants: tox
     tox.exception: tox
     tox.helper: tox
-    tox.helper.__init__: tox
     tox.helper.build_isolated: tox
     tox.helper.build_requires: tox
     tox.helper.get_site_package_dir: tox
     tox.helper.get_version: tox
     tox.hookspecs: tox
     tox.interpreters: tox
-    tox.interpreters.__init__: tox
     tox.interpreters.common: tox
     tox.interpreters.py_spec: tox
     tox.interpreters.unix: tox
     tox.interpreters.via_path: tox
     tox.interpreters.windows: tox
-    tox.interpreters.windows.__init__: tox
     tox.interpreters.windows.pep514: tox
     tox.logs: tox
-    tox.logs.__init__: tox
     tox.logs.command: tox
     tox.logs.env: tox
     tox.logs.result: tox
     tox.package: tox
-    tox.package.__init__: tox
     tox.package.builder: tox
-    tox.package.builder.__init__: tox
     tox.package.builder.isolated: tox
     tox.package.builder.legacy: tox
     tox.package.local: tox
     tox.package.view: tox
     tox.reporter: tox
     tox.session: tox
-    tox.session.__init__: tox
     tox.session.commands: tox
-    tox.session.commands.__init__: tox
     tox.session.commands.help: tox
     tox.session.commands.help_ini: tox
     tox.session.commands.provision: tox
     tox.session.commands.run: tox
-    tox.session.commands.run.__init__: tox
     tox.session.commands.run.parallel: tox
     tox.session.commands.run.sequential: tox
     tox.session.commands.show_config: tox
     tox.session.commands.show_env: tox
     tox.util: tox
-    tox.util.__init__: tox
     tox.util.graph: tox
     tox.util.lock: tox
     tox.util.main: tox
@@ -4474,12 +3051,9 @@ manifest:
     tox.venv: tox
     tox.version: tox
     twine: twine
-    twine.__init__: twine
-    twine.__main__: twine
     twine.auth: twine
     twine.cli: twine
     twine.commands: twine
-    twine.commands.__init__: twine
     twine.commands.check: twine
     twine.commands.register: twine
     twine.commands.upload: twine
@@ -4492,18 +3066,9 @@ manifest:
     twine.wininst: twine
     typing_extensions: typing_extensions
     urllib3: urllib3
-    urllib3.__init__: urllib3
-    urllib3._collections: urllib3
-    urllib3._version: urllib3
     urllib3.connection: urllib3
     urllib3.connectionpool: urllib3
     urllib3.contrib: urllib3
-    urllib3.contrib.__init__: urllib3
-    urllib3.contrib._appengine_environ: urllib3
-    urllib3.contrib._securetransport: urllib3
-    urllib3.contrib._securetransport.__init__: urllib3
-    urllib3.contrib._securetransport.bindings: urllib3
-    urllib3.contrib._securetransport.low_level: urllib3
     urllib3.contrib.appengine: urllib3
     urllib3.contrib.ntlmpool: urllib3
     urllib3.contrib.pyopenssl: urllib3
@@ -4513,16 +3078,13 @@ manifest:
     urllib3.fields: urllib3
     urllib3.filepost: urllib3
     urllib3.packages: urllib3
-    urllib3.packages.__init__: urllib3
     urllib3.packages.backports: urllib3
-    urllib3.packages.backports.__init__: urllib3
     urllib3.packages.backports.makefile: urllib3
     urllib3.packages.six: urllib3
     urllib3.poolmanager: urllib3
     urllib3.request: urllib3
     urllib3.response: urllib3
     urllib3.util: urllib3
-    urllib3.util.__init__: urllib3
     urllib3.util.connection: urllib3
     urllib3.util.proxy: urllib3
     urllib3.util.queue: urllib3
@@ -4536,68 +3098,48 @@ manifest:
     urllib3.util.url: urllib3
     urllib3.util.wait: urllib3
     virtualenv: virtualenv
-    virtualenv.__init__: virtualenv
-    virtualenv.__main__: virtualenv
     virtualenv.activation: virtualenv
-    virtualenv.activation.__init__: virtualenv
     virtualenv.activation.activator: virtualenv
     virtualenv.activation.bash: virtualenv
-    virtualenv.activation.bash.__init__: virtualenv
     virtualenv.activation.batch: virtualenv
-    virtualenv.activation.batch.__init__: virtualenv
     virtualenv.activation.cshell: virtualenv
-    virtualenv.activation.cshell.__init__: virtualenv
     virtualenv.activation.fish: virtualenv
-    virtualenv.activation.fish.__init__: virtualenv
     virtualenv.activation.nushell: virtualenv
-    virtualenv.activation.nushell.__init__: virtualenv
     virtualenv.activation.powershell: virtualenv
-    virtualenv.activation.powershell.__init__: virtualenv
     virtualenv.activation.python: virtualenv
-    virtualenv.activation.python.__init__: virtualenv
     virtualenv.activation.python.activate_this: virtualenv
     virtualenv.activation.via_template: virtualenv
     virtualenv.app_data: virtualenv
-    virtualenv.app_data.__init__: virtualenv
     virtualenv.app_data.base: virtualenv
     virtualenv.app_data.na: virtualenv
     virtualenv.app_data.read_only: virtualenv
     virtualenv.app_data.via_disk_folder: virtualenv
     virtualenv.app_data.via_tempdir: virtualenv
     virtualenv.config: virtualenv
-    virtualenv.config.__init__: virtualenv
     virtualenv.config.cli: virtualenv
-    virtualenv.config.cli.__init__: virtualenv
     virtualenv.config.cli.parser: virtualenv
     virtualenv.config.convert: virtualenv
     virtualenv.config.env_var: virtualenv
     virtualenv.config.ini: virtualenv
     virtualenv.create: virtualenv
-    virtualenv.create.__init__: virtualenv
     virtualenv.create.creator: virtualenv
     virtualenv.create.debug: virtualenv
     virtualenv.create.describe: virtualenv
     virtualenv.create.pyenv_cfg: virtualenv
     virtualenv.create.via_global_ref: virtualenv
-    virtualenv.create.via_global_ref.__init__: virtualenv
-    virtualenv.create.via_global_ref._virtualenv: virtualenv
     virtualenv.create.via_global_ref.api: virtualenv
     virtualenv.create.via_global_ref.builtin: virtualenv
-    virtualenv.create.via_global_ref.builtin.__init__: virtualenv
     virtualenv.create.via_global_ref.builtin.builtin_way: virtualenv
     virtualenv.create.via_global_ref.builtin.cpython: virtualenv
-    virtualenv.create.via_global_ref.builtin.cpython.__init__: virtualenv
     virtualenv.create.via_global_ref.builtin.cpython.common: virtualenv
     virtualenv.create.via_global_ref.builtin.cpython.cpython2: virtualenv
     virtualenv.create.via_global_ref.builtin.cpython.cpython3: virtualenv
     virtualenv.create.via_global_ref.builtin.cpython.mac_os: virtualenv
     virtualenv.create.via_global_ref.builtin.pypy: virtualenv
-    virtualenv.create.via_global_ref.builtin.pypy.__init__: virtualenv
     virtualenv.create.via_global_ref.builtin.pypy.common: virtualenv
     virtualenv.create.via_global_ref.builtin.pypy.pypy2: virtualenv
     virtualenv.create.via_global_ref.builtin.pypy.pypy3: virtualenv
     virtualenv.create.via_global_ref.builtin.python2: virtualenv
-    virtualenv.create.via_global_ref.builtin.python2.__init__: virtualenv
     virtualenv.create.via_global_ref.builtin.python2.python2: virtualenv
     virtualenv.create.via_global_ref.builtin.python2.site: virtualenv
     virtualenv.create.via_global_ref.builtin.ref: virtualenv
@@ -4605,21 +3147,17 @@ manifest:
     virtualenv.create.via_global_ref.store: virtualenv
     virtualenv.create.via_global_ref.venv: virtualenv
     virtualenv.discovery: virtualenv
-    virtualenv.discovery.__init__: virtualenv
     virtualenv.discovery.builtin: virtualenv
     virtualenv.discovery.cached_py_info: virtualenv
     virtualenv.discovery.discover: virtualenv
     virtualenv.discovery.py_info: virtualenv
     virtualenv.discovery.py_spec: virtualenv
     virtualenv.discovery.windows: virtualenv
-    virtualenv.discovery.windows.__init__: virtualenv
     virtualenv.discovery.windows.pep514: virtualenv
     virtualenv.info: virtualenv
     virtualenv.report: virtualenv
     virtualenv.run: virtualenv
-    virtualenv.run.__init__: virtualenv
     virtualenv.run.plugin: virtualenv
-    virtualenv.run.plugin.__init__: virtualenv
     virtualenv.run.plugin.activators: virtualenv
     virtualenv.run.plugin.base: virtualenv
     virtualenv.run.plugin.creators: virtualenv
@@ -4627,63 +3165,36 @@ manifest:
     virtualenv.run.plugin.seeders: virtualenv
     virtualenv.run.session: virtualenv
     virtualenv.seed: virtualenv
-    virtualenv.seed.__init__: virtualenv
     virtualenv.seed.embed: virtualenv
-    virtualenv.seed.embed.__init__: virtualenv
     virtualenv.seed.embed.base_embed: virtualenv
     virtualenv.seed.embed.pip_invoke: virtualenv
     virtualenv.seed.embed.via_app_data: virtualenv
-    virtualenv.seed.embed.via_app_data.__init__: virtualenv
     virtualenv.seed.embed.via_app_data.pip_install: virtualenv
-    virtualenv.seed.embed.via_app_data.pip_install.__init__: virtualenv
     virtualenv.seed.embed.via_app_data.pip_install.base: virtualenv
     virtualenv.seed.embed.via_app_data.pip_install.copy: virtualenv
     virtualenv.seed.embed.via_app_data.pip_install.symlink: virtualenv
     virtualenv.seed.embed.via_app_data.via_app_data: virtualenv
     virtualenv.seed.seeder: virtualenv
     virtualenv.seed.wheels: virtualenv
-    virtualenv.seed.wheels.__init__: virtualenv
     virtualenv.seed.wheels.acquire: virtualenv
     virtualenv.seed.wheels.bundle: virtualenv
     virtualenv.seed.wheels.embed: virtualenv
-    virtualenv.seed.wheels.embed.__init__: virtualenv
     virtualenv.seed.wheels.periodic_update: virtualenv
     virtualenv.seed.wheels.util: virtualenv
     virtualenv.util: virtualenv
-    virtualenv.util.__init__: virtualenv
     virtualenv.util.error: virtualenv
     virtualenv.util.lock: virtualenv
     virtualenv.util.path: virtualenv
-    virtualenv.util.path.__init__: virtualenv
-    virtualenv.util.path._permission: virtualenv
-    virtualenv.util.path._sync: virtualenv
-    virtualenv.util.path._win: virtualenv
     virtualenv.util.subprocess: virtualenv
-    virtualenv.util.subprocess.__init__: virtualenv
     virtualenv.util.zipapp: virtualenv
     virtualenv.version: virtualenv
     webencodings: webencodings
-    webencodings.__init__: webencodings
     webencodings.labels: webencodings
     webencodings.mklabels: webencodings
     webencodings.tests: webencodings
     webencodings.x_user_defined: webencodings
     websocket: websocket_client
-    websocket.__init__: websocket_client
-    websocket._abnf: websocket_client
-    websocket._app: websocket_client
-    websocket._cookiejar: websocket_client
-    websocket._core: websocket_client
-    websocket._exceptions: websocket_client
-    websocket._handshake: websocket_client
-    websocket._http: websocket_client
-    websocket._logging: websocket_client
-    websocket._socket: websocket_client
-    websocket._ssl_compat: websocket_client
-    websocket._url: websocket_client
-    websocket._utils: websocket_client
     websocket.tests: websocket_client
-    websocket.tests.__init__: websocket_client
     websocket.tests.test_abnf: websocket_client
     websocket.tests.test_app: websocket_client
     websocket.tests.test_cookiejar: websocket_client
@@ -4691,12 +3202,8 @@ manifest:
     websocket.tests.test_url: websocket_client
     websocket.tests.test_websocket: websocket_client
     werkzeug: Werkzeug
-    werkzeug.__init__: Werkzeug
-    werkzeug._internal: Werkzeug
-    werkzeug._reloader: Werkzeug
     werkzeug.datastructures: Werkzeug
     werkzeug.debug: Werkzeug
-    werkzeug.debug.__init__: Werkzeug
     werkzeug.debug.console: Werkzeug
     werkzeug.debug.repr: Werkzeug
     werkzeug.debug.tbtools: Werkzeug
@@ -4705,7 +3212,6 @@ manifest:
     werkzeug.http: Werkzeug
     werkzeug.local: Werkzeug
     werkzeug.middleware: Werkzeug
-    werkzeug.middleware.__init__: Werkzeug
     werkzeug.middleware.dispatcher: Werkzeug
     werkzeug.middleware.http_proxy: Werkzeug
     werkzeug.middleware.lint: Werkzeug
@@ -4713,14 +3219,12 @@ manifest:
     werkzeug.middleware.proxy_fix: Werkzeug
     werkzeug.middleware.shared_data: Werkzeug
     werkzeug.routing: Werkzeug
-    werkzeug.routing.__init__: Werkzeug
     werkzeug.routing.converters: Werkzeug
     werkzeug.routing.exceptions: Werkzeug
     werkzeug.routing.map: Werkzeug
     werkzeug.routing.matcher: Werkzeug
     werkzeug.routing.rules: Werkzeug
     werkzeug.sansio: Werkzeug
-    werkzeug.sansio.__init__: Werkzeug
     werkzeug.sansio.http: Werkzeug
     werkzeug.sansio.multipart: Werkzeug
     werkzeug.sansio.request: Werkzeug
@@ -4734,40 +3238,28 @@ manifest:
     werkzeug.user_agent: Werkzeug
     werkzeug.utils: Werkzeug
     werkzeug.wrappers: Werkzeug
-    werkzeug.wrappers.__init__: Werkzeug
     werkzeug.wrappers.request: Werkzeug
     werkzeug.wrappers.response: Werkzeug
     werkzeug.wsgi: Werkzeug
     wheel: wheel
-    wheel.__init__: wheel
-    wheel.__main__: wheel
     wheel.bdist_wheel: wheel
     wheel.cli: wheel
-    wheel.cli.__init__: wheel
     wheel.cli.convert: wheel
     wheel.cli.pack: wheel
     wheel.cli.unpack: wheel
     wheel.macosx_libfile: wheel
     wheel.metadata: wheel
-    wheel.pkginfo: wheel
     wheel.util: wheel
     wheel.vendored: wheel
-    wheel.vendored.__init__: wheel
     wheel.vendored.packaging: wheel
-    wheel.vendored.packaging.__init__: wheel
-    wheel.vendored.packaging._typing: wheel
     wheel.vendored.packaging.tags: wheel
     wheel.wheelfile: wheel
     wrapt: wrapt
-    wrapt.__init__: wrapt
-    wrapt._wrappers: wrapt
     wrapt.arguments: wrapt
     wrapt.decorators: wrapt
     wrapt.importer: wrapt
     wrapt.wrappers: wrapt
     xdist: pytest_xdist
-    xdist.__init__: pytest_xdist
-    xdist._version: pytest_xdist
     xdist.dsession: pytest_xdist
     xdist.looponfail: pytest_xdist
     xdist.newhooks: pytest_xdist
@@ -4775,7 +3267,6 @@ manifest:
     xdist.remote: pytest_xdist
     xdist.report: pytest_xdist
     xdist.scheduler: pytest_xdist
-    xdist.scheduler.__init__: pytest_xdist
     xdist.scheduler.each: pytest_xdist
     xdist.scheduler.load: pytest_xdist
     xdist.scheduler.loadfile: pytest_xdist
@@ -4783,8 +3274,6 @@ manifest:
     xdist.scheduler.loadscope: pytest_xdist
     xdist.workermanage: pytest_xdist
     yaml: PyYAML
-    yaml.__init__: PyYAML
-    yaml._yaml: PyYAML
     yaml.composer: PyYAML
     yaml.constructor: PyYAML
     yaml.cyaml: PyYAML
@@ -4802,19 +3291,14 @@ manifest:
     yaml.serializer: PyYAML
     yaml.tokens: PyYAML
     zipp: zipp
+    zipp.py310compat: zipp
     zope.event: zope.event
-    zope.event.__init__: zope.event
     zope.event.classhandler: zope.event
     zope.event.tests: zope.event
     zope.interface: zope.interface
-    zope.interface.__init__: zope.interface
-    zope.interface._compat: zope.interface
-    zope.interface._flatten: zope.interface
-    zope.interface._zope_interface_coptimizations: zope.interface
     zope.interface.adapter: zope.interface
     zope.interface.advice: zope.interface
     zope.interface.common: zope.interface
-    zope.interface.common.__init__: zope.interface
     zope.interface.common.builtins: zope.interface
     zope.interface.common.collections: zope.interface
     zope.interface.common.idatetime: zope.interface
@@ -4824,7 +3308,6 @@ manifest:
     zope.interface.common.numbers: zope.interface
     zope.interface.common.sequence: zope.interface
     zope.interface.common.tests: zope.interface
-    zope.interface.common.tests.__init__: zope.interface
     zope.interface.common.tests.basemapping: zope.interface
     zope.interface.common.tests.test_builtins: zope.interface
     zope.interface.common.tests.test_collections: zope.interface
@@ -4840,7 +3323,6 @@ manifest:
     zope.interface.registry: zope.interface
     zope.interface.ro: zope.interface
     zope.interface.tests: zope.interface
-    zope.interface.tests.__init__: zope.interface
     zope.interface.tests.advisory_testing: zope.interface
     zope.interface.tests.dummy: zope.interface
     zope.interface.tests.idummy: zope.interface
@@ -4848,6 +3330,7 @@ manifest:
     zope.interface.tests.odd: zope.interface
     zope.interface.tests.test_adapter: zope.interface
     zope.interface.tests.test_advice: zope.interface
+    zope.interface.tests.test_compile_flags: zope.interface
     zope.interface.tests.test_declarations: zope.interface
     zope.interface.tests.test_document: zope.interface
     zope.interface.tests.test_element: zope.interface
@@ -4862,5 +3345,4 @@ manifest:
     zope.interface.verify: zope.interface
   pip_repository:
     name: tavern_pip
-    incremental: true
-integrity: 01e50f6453efaf0bf9d2d00f85dc152230c9af0ef93d358be129cf6926a9d912
+integrity: ea7d3ffcde7e00ff92c1bb4e86af0095be5fe55b4a11920436bca355d39a43e8
