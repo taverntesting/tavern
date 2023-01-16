@@ -1,5 +1,4 @@
 ---
-
 test_name: Make sure tavern repeats request
 
 includes:
@@ -17,7 +16,6 @@ stages:
         status: ready
 
 ---
-
 test_name: Setting max_retries to a float should fail - doesn't make sense
 
 includes:
@@ -37,7 +35,6 @@ stages:
         status: ready
 
 ---
-
 test_name: Format max retry variable correctly
 
 includes:
@@ -45,7 +42,7 @@ includes:
 
 stages:
   - name: polling
-    max_retries: !int '{retry_max}'
+    max_retries: !int "{retry_max}"
     request:
       url: "{host}/poll"
       method: GET
@@ -55,7 +52,6 @@ stages:
         status: ready
 
 ---
-
 test_name: Format max retry variable fails if not using type token
 
 includes:
@@ -65,7 +61,7 @@ _xfail: verify
 
 stages:
   - name: polling
-    max_retries: '{retry_max}'
+    max_retries: "{retry_max}"
     request:
       url: "{host}/poll"
       method: GET
@@ -75,7 +71,6 @@ stages:
         status: ready
 
 ---
-
 test_name: Format max retry variable fails if invalid value
 
 includes:
@@ -85,7 +80,7 @@ _xfail: run
 
 stages:
   - name: polling
-    max_retries: !int '{negative_int}'
+    max_retries: !int "{negative_int}"
     request:
       url: "{host}/poll"
       method: GET
@@ -95,7 +90,6 @@ stages:
         status: ready
 
 ---
-
 test_name: Format max retry variable fails if using wrong type token
 
 includes:
@@ -105,7 +99,7 @@ _xfail: verify
 
 stages:
   - name: polling
-    max_retries: !float '{retry_max}'
+    max_retries: !float "{retry_max}"
     request:
       url: "{host}/poll"
       method: GET
@@ -115,7 +109,6 @@ stages:
         status: ready
 
 ---
-
 test_name: Setting max_retries to less than 0 should fail
 
 includes:
@@ -135,7 +128,6 @@ stages:
         status: ready
 
 ---
-
 test_name: Setting max_retries to something other than an int should fail
 
 includes:

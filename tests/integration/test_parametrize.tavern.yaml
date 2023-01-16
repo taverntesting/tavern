@@ -1,5 +1,4 @@
 ---
-
 test_name: Test parametrizing using 'vals' directly and not in the list
 
 marks:
@@ -20,7 +19,6 @@ stages:
       json: !force_format_include "{tavern.request_vars.json}"
 
 ---
-
 test_name: Test parametrizing using 'vals' directly and not in the list, list key
 
 marks:
@@ -42,7 +40,6 @@ stages:
       json: !force_format_include "{tavern.request_vars.json}"
 
 ---
-
 test_name: Test echo parametrized
 
 includes:
@@ -69,7 +66,6 @@ stages:
         value: "{to_send}"
 
 ---
-
 test_name: Test multiple parametrized values
 
 includes:
@@ -102,7 +98,6 @@ stages:
         value: "{fruit}-{edible}"
 
 ---
-
 test_name: Test multiple parametrized values, mismatched amounts
 
 includes:
@@ -133,7 +128,6 @@ stages:
         value: "{fruit}-{edible}"
 
 ---
-
 test_name: Test skip parametrized
 
 includes:
@@ -161,7 +155,6 @@ stages:
         value: "klskdfiogj4iji34o"
 
 ---
-
 test_name: Test skipif parametrized
 
 includes:
@@ -216,7 +209,6 @@ stages:
 #        value: "{to_send}"
 
 ---
-
 test_name: Test invalid parametrize vals raises an error
 
 includes:
@@ -243,7 +235,6 @@ stages:
         value: "{to_send}"
 
 ---
-
 test_name: Test parametrize without include
 
 marks:
@@ -265,7 +256,6 @@ stages:
         value: "{to_send}"
 
 ---
-
 test_name: Test combined parametrizing
 
 includes:
@@ -294,7 +284,6 @@ stages:
         value: "{fruit}-{edible}"
 
 ---
-
 test_name: Test combined parametrizing with normal parametrizing
 
 includes:
@@ -328,7 +317,6 @@ stages:
         value: "{fruit}-{edible}_{to_send}"
 
 ---
-
 test_name: Test double combined parametrizing
 
 includes:
@@ -364,15 +352,13 @@ stages:
         value: "{fruit}-{edible}_{first_half}-{second_half}"
 
 ---
-
 test_name: Test include marks from a file
 
 includes:
   - !include common.yaml
 
 marks:
-  - parametrize:
-      !include parametrize_includes.yaml
+  - parametrize: !include parametrize_includes.yaml
   - parametrize:
       key:
         - first_half
@@ -455,7 +441,6 @@ stages:
 #        value: "{fruit}-{edible}-nope"
 
 ---
-
 test_name: Test parametrize from thing in common.yaml
 includes:
   - !include common.yaml
@@ -488,7 +473,6 @@ stages:
         value: "{generic_str}-{edible}"
 
 ---
-
 test_name: Test parametrize from thing in global config
 
 marks:
@@ -519,7 +503,6 @@ stages:
         value: "{generic_str}-{edible}"
 
 ---
-
 test_name: Test that double formatting something in
 
 marks:
@@ -545,210 +528,202 @@ stages:
         value: "{line}-{text}"
 
 ---
-
 test_name: Test parametrizing http method
 
 marks:
-- parametrize:
-    key: method
-    vals:
-    - POST
-    - GET
-    - DELETE
+  - parametrize:
+      key: method
+      vals:
+        - POST
+        - GET
+        - DELETE
 
 stages:
-- name: Make a request to the magic endpoint and expect method back
-  request:
-    url: "{global_host}/magic-multi-method"
-    method: "{method}"
-  response:
-    status_code: 200
-    json:
+  - name: Make a request to the magic endpoint and expect method back
+    request:
+      url: "{global_host}/magic-multi-method"
       method: "{method}"
+    response:
+      status_code: 200
+      json:
+        method: "{method}"
 
 ---
-
 test_name: Test parametrizing http method badly
 
 marks:
-- parametrize:
-    key: method
-    vals:
-    - Brean
+  - parametrize:
+      key: method
+      vals:
+        - Brean
 
 _xfail: verify
 
 stages:
-- name: Make a request to the magic endpoint and expect method back
-  request:
-    url: "{global_host}/magic-multi-method"
-    method: "{method}"
-  response:
-    status_code: 200
-    json:
+  - name: Make a request to the magic endpoint and expect method back
+    request:
+      url: "{global_host}/magic-multi-method"
       method: "{method}"
+    response:
+      status_code: 200
+      json:
+        method: "{method}"
 
 ---
-
 test_name: Test sending a list of keys
 
 includes:
-- !include common.yaml
+  - !include common.yaml
 
 marks:
-- parametrize:
-    key: edible
-    vals:
-    - [not, edible, at, all]
+  - parametrize:
+      key: edible
+      vals:
+        - [not, edible, at, all]
 
 stages:
-- name: make sure list is sent and returned
-  request:
-    url: "{host}/echo"
-    method: POST
-    json:
-      value: !force_format_include "{edible}"
-  response:
-    status_code: 200
-    json:
-      value:
-      - not
-      - edible
-      - at
-      - all
+  - name: make sure list is sent and returned
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: !force_format_include "{edible}"
+    response:
+      status_code: 200
+      json:
+        value:
+          - not
+          - edible
+          - at
+          - all
 
 ---
-
 test_name: Test sending a list of list of keys
 
 includes:
-- !include common.yaml
+  - !include common.yaml
 
 marks:
-- parametrize:
-    key:
-    - edible
-    - fruit
-    vals:
-    - [rotten, apple ]
-    - [poisonous, pear ]
+  - parametrize:
+      key:
+        - edible
+        - fruit
+      vals:
+        - [rotten, apple]
+        - [poisonous, pear]
 
 stages:
-- name: make sure list is sent and returned
-  request:
-    url: "{host}/echo"
-    method: POST
-    json:
-      edibility: "{edible}"
-      fruit: "{fruit}"
-  response:
-    status_code: 200
-    json:
-      edibility: "{edible}"
-      fruit: "{fruit}"
+  - name: make sure list is sent and returned
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        edibility: "{edible}"
+        fruit: "{fruit}"
+    response:
+      status_code: 200
+      json:
+        edibility: "{edible}"
+        fruit: "{fruit}"
 
 ---
-
 test_name: Test sending a list of list of keys where one is not a string
 
 includes:
-- !include common.yaml
+  - !include common.yaml
 
 marks:
-- parametrize:
-    key:
-    - fruit
-    - colours
-    vals:
-    - [apple, [red, green, pink] ]
-    - [pear, [yellow, green] ]
+  - parametrize:
+      key:
+        - fruit
+        - colours
+      vals:
+        - [apple, [red, green, pink]]
+        - [pear, [yellow, green]]
 
 stages:
-- name: make sure list and sublist is sent and returned
-  request:
-    url: "{host}/echo"
-    method: POST
-    json:
-      fruit: "{fruit}"
-      colours: !force_format_include "{colours}"
-  response:
-    status_code: 200
-    json:
-      fruit: "{fruit}"
-      colours: !force_format_include "{tavern.request_vars.json.colours}"
+  - name: make sure list and sublist is sent and returned
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        fruit: "{fruit}"
+        colours: !force_format_include "{colours}"
+    response:
+      status_code: 200
+      json:
+        fruit: "{fruit}"
+        colours: !force_format_include "{tavern.request_vars.json.colours}"
 
 ---
-
 test_name: Test parametrizing with an ext function
 
 marks:
-- parametrize:
-    key: value_to_get
-    vals:
-    - goodbye
-    - $ext:
-        function: ext_functions:return_goodbye_string
+  - parametrize:
+      key: value_to_get
+      vals:
+        - goodbye
+        - $ext:
+            function: ext_functions:return_goodbye_string
 
 stages:
-- name: Echo back parametrized value
-  request:
-    url: "{global_host}/echo"
-    method: POST
-    json:
-      value: "{value_to_get}"
-  response:
-    status_code: 200
-    json:
-      value: "goodbye"
+  - name: Echo back parametrized value
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "{value_to_get}"
+    response:
+      status_code: 200
+      json:
+        value: "goodbye"
 
 ---
-
 test_name: Test parametrizing with an ext function that returns a dict
 
 marks:
-- parametrize:
-    key: value_to_get
-    vals:
-    - hello: there
-    - $ext:
-        function: ext_functions:return_hello
+  - parametrize:
+      key: value_to_get
+      vals:
+        - hello: there
+        - $ext:
+            function: ext_functions:return_hello
 
 stages:
-- name: Echo back parametrized value
-  request:
-    url: "{global_host}/echo"
-    method: POST
-    json: !force_format_include "{value_to_get}"
-  response:
-    status_code: 200
-    json:
-      hello: "there"
+  - name: Echo back parametrized value
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json: !force_format_include "{value_to_get}"
+    response:
+      status_code: 200
+      json:
+        hello: "there"
 
 ---
-
 test_name: Test parametrizing with an ext function that returns a dict with supplemental data
 
 marks:
-- parametrize:
-    key: value_to_get
-    vals:
-    - and: this
-      hello: there
-    - and: this
-      $ext:
-        function: ext_functions:return_hello
+  - parametrize:
+      key: value_to_get
+      vals:
+        - and: this
+          hello: there
+        - and: this
+          $ext:
+            function: ext_functions:return_hello
 
 stages:
-- name: Echo back parametrized value
-  request:
-    url: "{global_host}/echo"
-    method: POST
-    json: !force_format_include "{value_to_get}"
-  response:
-    status_code: 200
-    json:
-      hello: "there"
-      and: this
+  - name: Echo back parametrized value
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json: !force_format_include "{value_to_get}"
+    response:
+      status_code: 200
+      json:
+        hello: "there"
+        and: this
 
 #---
 #
@@ -777,29 +752,28 @@ stages:
 #    json: {}
 #
 ---
-
 test_name: Test parametrizing random different data types in the same test
 
 marks:
-- parametrize:
-    key: value_to_send
-    vals:
-    - a
-    - [b, c]
-    - more: stuff
-    - yet: [more, stuff]
-    - $ext:
-        function: ext_functions:return_goodbye_string
-    - and: this
-      $ext:
-        function: ext_functions:return_hello
+  - parametrize:
+      key: value_to_send
+      vals:
+        - a
+        - [b, c]
+        - more: stuff
+        - yet: [more, stuff]
+        - $ext:
+            function: ext_functions:return_goodbye_string
+        - and: this
+          $ext:
+            function: ext_functions:return_hello
 
 stages:
-- name: Echo back parametrized value
-  request:
-    url: "{global_host}/echo"
-    method: POST
-    json: !force_format_include "{value_to_send}"
-  response:
-    status_code: 200
-    json: !force_format_include "{tavern.request_vars.json}"
+  - name: Echo back parametrized value
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json: !force_format_include "{value_to_send}"
+    response:
+      status_code: 200
+      json: !force_format_include "{tavern.request_vars.json}"

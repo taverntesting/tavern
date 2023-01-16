@@ -1,5 +1,4 @@
 ---
-
 test_name: Test 'only' keyword for test isolation
 
 includes:
@@ -28,7 +27,6 @@ stages:
       status_code: 999
 
 ---
-
 test_name: Test 'only' keyword for test isolation
 
 includes:

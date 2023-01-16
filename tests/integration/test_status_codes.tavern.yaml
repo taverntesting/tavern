@@ -1,5 +1,4 @@
 ---
-
 test_name: Test matching one of multiple status codes
 
 includes:
@@ -27,7 +26,6 @@ stages:
         - 200
 
 ---
-
 test_name: Test missing from status code list fails
 
 _xfail: run
@@ -48,7 +46,6 @@ stages:
         - 200
 
 ---
-
 test_name: Test using invalid status code format fails at verification
 
 _xfail: verify
@@ -69,7 +66,6 @@ stages:
         second: 200
 
 ---
-
 test_name: Test using invalid status code value fails at verification
 
 _xfail: verify
