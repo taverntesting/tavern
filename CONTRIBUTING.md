@@ -28,22 +28,24 @@ If on Windows, you should be able to just run the 'tox' commands in that file.
 
 1. Run tests as above
 
-## Fixing formatting issue
-
-    black tavern/ tests/
-    isort --profile black tavern/ tests/
-
 ## Pre-commit
+
+Basic checks (formatting, import order) is done with pre-commit and is controlled by [the yaml file](/.pre-commit-config.yaml).
 
 After installing dependencies, Run
 
     # check it works
-    pre-commit run --all-files 
+    pre-commit run --all-files
     pre-commit install
 
 Run every so often to update the pre-commit hooks
 
     pre-commit autoupdate
+
+### Fixing Python formatting issue
+
+    black tavern/ tests/
+    isort --profile black tavern/ tests/
 
 ## Creating a new release
 

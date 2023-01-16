@@ -20,16 +20,12 @@ jobs:
       matrix:
         include:
           # 'Basic' tests and checks
-          # Pylint, formatting/sorting, and quickest unit/integration tests
-          - TOXENV: py3black
+          - TOXENV: py3check
             TOXCFG: tox.ini
           - TOXENV: py3lint
             TOXCFG: tox.ini
           - TOXENV: py3mypy
             TOXCFG: tox.ini
-          - TOXENV: py3isort
-            TOXCFG: tox.ini
-
           - TOXENV: py3
             TOXCFG: tox.ini
 
@@ -66,6 +62,13 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'requirements.in') }}
           restore-keys: |
             ${{ runner.os }}-pip-
+
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pre-commit
+          key: ${{ runner.os }}-pre-commit-${{ hashFiles('.pre-commit-config.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pre-commit-
 
       - uses: jpribyl/action-docker-layer-caching@v0.1.1
         continue-on-error: true
