@@ -1,5 +1,4 @@
 ---
-
 test_name: Test getting format vars from environment variables
 
 includes:

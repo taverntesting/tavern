@@ -1,5 +1,4 @@
 ---
-
 test_name: Test cannot pass an invalid value to 'cert'
 
 _xfail: verify
@@ -18,7 +17,6 @@ stages:
         value: "abc"
 
 ---
-
 test_name: Test cannot pass too many values to 'cert'
 
 _xfail: verify

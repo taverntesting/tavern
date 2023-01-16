@@ -1,5 +1,4 @@
 ---
-
 test_name: Test basic auth header
 
 stages:
@@ -18,7 +17,6 @@ stages:
         auth_pass: fakepass
 
 ---
-
 test_name: Test basic auth header with wrong username/pass
 
 stages:

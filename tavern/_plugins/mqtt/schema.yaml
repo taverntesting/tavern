@@ -7,7 +7,6 @@ initialisation:
     required: false
     type: map
     mapping:
-
       client:
         required: false
         type: map

@@ -8,7 +8,7 @@ description: Schema for paho-mqtt connection
 type: object
 additionalProperties: false
 required:
-- paho-mqtt
+  - paho-mqtt
 
 properties:
   paho-mqtt:
@@ -16,7 +16,7 @@ properties:
     description: Connection options for paho-mqtt
     additionalProperties: false
     required:
-    - connect
+      - connect
 
     properties:
       client:
@@ -38,8 +38,8 @@ properties:
             type: string
             description: Whether to use raw TCP or websockets to connect
             enum:
-            - tcp
-            - websockets
+              - tcp
+              - websockets
 
       connect:
         description: Connection options
@@ -48,7 +48,7 @@ properties:
         additionalProperties: false
 
         required:
-        - host
+          - host
 
         properties:
           host:
@@ -95,9 +95,9 @@ properties:
             type: string
             description: Controls connection with cert
             enum:
-            - CERT_NONE
-            - CERT_OPTIONAL
-            - CERT_REQUIRED
+              - CERT_NONE
+              - CERT_OPTIONAL
+              - CERT_REQUIRED
 
           tls_version:
             type: string
@@ -134,9 +134,9 @@ properties:
             type: string
             description: Controls connection with cert
             enum:
-            - CERT_NONE
-            - CERT_OPTIONAL
-            - CERT_REQUIRED
+              - CERT_NONE
+              - CERT_OPTIONAL
+              - CERT_REQUIRED
 
           tls_version:
             type: string
@@ -145,7 +145,7 @@ properties:
           ciphers:
             type: string
             description: Allowed ciphers to use with connection
-          
+
           alpn_protocols:
             type: array
             description: |
@@ -159,7 +159,7 @@ properties:
         additionalProperties: false
 
         required:
-        - username
+          - username
 
         properties:
           username:

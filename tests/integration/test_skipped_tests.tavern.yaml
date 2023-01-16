@@ -1,5 +1,4 @@
 ---
-
 test_name: Test 'skip' keyword for selectively ignoring tests
 
 includes:
@@ -21,7 +20,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test unconditional skip with pytest marker
 
 includes:
@@ -39,7 +37,6 @@ stages:
       status_code: 999
 
 ---
-
 test_name: Test skipif with pytest marker
 
 includes:
@@ -57,7 +54,6 @@ stages:
       status_code: 999
 
 ---
-
 test_name: Test skipif with pytest marker with a formatted integer
 
 includes:
@@ -75,7 +71,6 @@ stages:
       status_code: 999
 
 ---
-
 test_name: Test skipif with pytest marker with a formatted string
 
 includes:
@@ -93,7 +88,6 @@ stages:
       status_code: 999
 
 ---
-
 test_name: Test skipif failure goes on to test failure
 
 includes:
@@ -114,7 +108,6 @@ stages:
       status_code: 999
 
 ---
-
 test_name: Test skipif with env var
 
 includes:
@@ -133,7 +126,6 @@ stages:
       status_code: 200
 
 ---
-
 test_name: Test skipif with env var, negative
 
 includes:

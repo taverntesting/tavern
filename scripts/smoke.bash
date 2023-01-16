@@ -5,9 +5,8 @@ set -ex
 PYVER=3
 
 tox --parallel -c tox.ini        \
-  -e py${PYVER}flakes \
   -e py${PYVER}       \
-  -e py${PYVER}black  \
+  -e py${PYVER}check  \
   -e py${PYVER}lint   \
   -e py${PYVER}mypy
 

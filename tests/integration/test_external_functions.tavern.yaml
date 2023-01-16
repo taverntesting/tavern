@@ -1,5 +1,4 @@
 ---
-
 test_name: Use one function
 
 includes:
@@ -18,7 +17,6 @@ stages:
           expression: '<a src=\".*\">'
 
 ---
-
 test_name: Use one function in a list
 
 includes:
@@ -37,7 +35,6 @@ stages:
             expression: '<a src=\".*\">'
 
 ---
-
 test_name: Use two functions
 
 includes:
@@ -59,7 +56,6 @@ stages:
             expression: '<a src=\".*\">'
 
 ---
-
 test_name: Test first function failing will cause test to fail
 
 includes:
@@ -77,13 +73,12 @@ stages:
       verify_response_with:
         - function: tavern.helpers:validate_regex
           extra_kwargs:
-            expression: 'bkllelkkkkkkkkkkfff'
+            expression: "bkllelkkkkkkkkkkfff"
         - function: tavern.helpers:validate_regex
           extra_kwargs:
             expression: '<a src=\".*\">'
 
 ---
-
 test_name: Test second function failing will cause test to fail
 
 includes:
@@ -104,10 +99,9 @@ stages:
             expression: '<a src=\".*\">'
         - function: tavern.helpers:validate_regex
           extra_kwargs:
-            expression: 'bkllelkkkkkkkkkkfff'
+            expression: "bkllelkkkkkkkkkkfff"
 
 ---
-
 test_name: Test merging in input (depends on option being enabled)
 
 includes:
@@ -129,7 +123,6 @@ stages:
         hello: "there"
 
 ---
-
 test_name: Test generating query params from ext functions
 
 stages:
@@ -146,7 +139,6 @@ stages:
         hello: "there"
 
 ---
-
 test_name: Test can still pass json in a query param
 
 stages:
