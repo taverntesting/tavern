@@ -373,9 +373,9 @@ jinja2==3.1.2 \
     --hash=sha256:31351a702a408a9e7595a8fc6150fc3f43bb6bf7e319770cbc0db9df9437e852 \
     --hash=sha256:6088930bfe239f0e6710546ab9c19c9ef35e29792895fed6e6e31a023a182a61
     # via flask
-jmespath==0.10.0 \
-    --hash=sha256:b85d0567b8666149a93172712e68920734333c0ce7e89b78b3e987f71e5ed4f9 \
-    --hash=sha256:cdf6525904cc597730141d61b36f2e4b8ecc257c420fa2f4549bac2c2d0cb72f
+jmespath==1.0.1 \
+    --hash=sha256:02e2e4cc71b5bcab88332eebf907519190dd9e6e82107fa7f83b1003a6252980 \
+    --hash=sha256:90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe
     # via tavern (pyproject.toml)
 jsonschema==3.2.0 \
     --hash=sha256:4e5b3cf8216f577bee9ce139cbe72eca3ea4f292ec60928ff24758ce626cd163 \
@@ -701,9 +701,24 @@ pytest-xdist==3.1.0 \
     --hash=sha256:40fdb8f3544921c5dfcd486ac080ce22870e71d82ced6d2e78fa97c2addd480c \
     --hash=sha256:70a76f191d8a1d2d6be69fc440cdf85f3e4c03c08b520fd5dc5d338d6cf07d89
     # via tavern (pyproject.toml)
-python-box==5.4.1 \
-    --hash=sha256:60ae9156de34cf92b899bd099580950df70a5b0813e67a3310a1cdd1976457fa \
-    --hash=sha256:b68e0f8abc86f3deda751b3390f64df64a0989459de51ba4db949662a7b4d8ac
+python-box==6.1.0 \
+    --hash=sha256:11cbe62f0dace8a6e2a10d210a5e87b99ad1a1286865568862516794c923a988 \
+    --hash=sha256:1d29eafaa287857751e27fbe9a08dd856480f0037fe988b221eba4dac33e5852 \
+    --hash=sha256:3638d3559f19ece7fa29f6a6550bc64696cd3b65e3d4154df07a3d06982252ff \
+    --hash=sha256:3f0036f91e13958d2b37d2bc74c1197aa36ffd66755342eb64910f63d8a2990f \
+    --hash=sha256:53998c3b95e31d1f31e46279ef1d27ac30b137746927260901ee61457f8468a0 \
+    --hash=sha256:594b0363b187df855ff8649488b1301dddbbeea769629b7caeb584efe779b841 \
+    --hash=sha256:6e7c243b356cb36e2c0f0e5ed7850969fede6aa812a7f501de7768996c7744d7 \
+    --hash=sha256:7b73f26e40a7adc57b9e39f5687d026dfa8a336f48aefaf852a223b4e37392ad \
+    --hash=sha256:9dbd92b67c443a97326273c9239fce04d3b6958be815d293f96ab65bc4a9dae7 \
+    --hash=sha256:ab13208b053525ef154a36a4a52873b98a12b18b946edd4c939a4d5080e9a218 \
+    --hash=sha256:ac44b3b85714a4575cc273b5dbd39ef739f938ef6c522d6757704a29e7797d16 \
+    --hash=sha256:af6bcee7e1abe9251e9a41ca9ab677e1f679f6059321cfbae7e78a3831e0b736 \
+    --hash=sha256:bdec0a5f5a17b01fc538d292602a077aa8c641fb121e1900dff0591791af80e8 \
+    --hash=sha256:c14aa4e72bf30f4d573e62ff8030a86548603a100c3fb534561dbedf4a83f454 \
+    --hash=sha256:d199cd289b4f4d053770eadd70217c76214aac30b92a23adfb9627fd8558d300 \
+    --hash=sha256:ed6d7fe47d756dc2d9dea448702cea103716580a2efee7c859954929295fe28e \
+    --hash=sha256:fa4696b5e09ccf695bf05c16bb5ca1fcc95a141a71a31eb262eee8e2ac07189a
     # via tavern (pyproject.toml)
 python-dateutil==2.8.2 \
     --hash=sha256:0123cacc1627ae19ddf3c27a5de5bd67ee4586fbdd6440d9748f8abb483d3e86 \
@@ -850,9 +865,9 @@ six==1.16.0 \
     #   python-dateutil
     #   tox
     #   websocket-client
-stevedore==3.3.3 \
-    --hash=sha256:4e485ad9b087d1ce475b747d8abd21c328cd7410b5a7a70ca73431be29dc5bac \
-    --hash=sha256:937f644e83276ca231e21376b400ffe56637d24258bbcc47db6e80be1f60894f
+stevedore==4.1.1 \
+    --hash=sha256:7f8aeb6e3f90f96832c301bff21a7eb5eefbe894c88c506483d355565d88cc1a \
+    --hash=sha256:aa6436565c069b2946fe4ebff07f5041e0c8bf18c7376dd29edf80cf7d524e4e
     # via tavern (pyproject.toml)
 texttable==1.6.7 \
     --hash=sha256:290348fb67f7746931bcdfd55ac7584ecd4e5b0846ab164333f0794b121760f2 \
