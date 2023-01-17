@@ -68,8 +68,8 @@ test_name: Test mqtt message echo json formatted topic name
 
 marks:
   - usefixtures:
-    - get_publish_topic
-    - get_response_topic_suffix
+      - get_publish_topic
+      - get_response_topic_suffix
 
 includes:
   - !include common.yaml
@@ -548,3 +548,27 @@ stages:
         payload: !anything
         timeout: 3
         qos: 1
+
+---
+
+test_name: Save something and reuse it, one response
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - *setup_device_for_test
+
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /devices/status
+    mqtt_response:
+      topic: /device/{random_device_id}/status/response
+      payload: !anything
+      timeout: 3
+      qos: 1
+      save:
+        payload:
+

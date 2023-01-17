@@ -1,4 +1,5 @@
 from abc import abstractmethod
+import collections.abc
 from collections.abc import Mapping
 import logging
 from textwrap import indent
@@ -161,14 +162,16 @@ class BaseResponse:
                     e=e,
                 )
 
-    def maybe_get_save_values_from_ext(self, response, expected):
+    def maybe_get_save_values_from_ext(self, response, expected: dict) -> dict:
         """If there is an $ext function in the save block, call it and save the response
 
         Args:
-            expected (dict): the expected response (incl body/json/headers/mqtt topic/etc etc)
-                Actual contents depends on which type of response is being checked
-            response (object): response object.
-                Actual contents depends on which type of response is being checked
+            response: response object. Actual contents depends on which type of
+                response is being checked
+            expected: the expected response (incl
+                body/json/headers/mqtt topic/etc etc) containing a spec for which things
+                should be saved from the response. Actual contents depends on which type of
+                response is being checked
 
         Returns:
             dict: mapping of name: value of things to save
@@ -199,44 +202,68 @@ class BaseResponse:
 
         return {}
 
-    def maybe_get_save_values_from_save_block(self, key, to_check):
-        """Save a value from a specific block in the response
+    def maybe_get_save_values_from_save_block(
+        self, key: str, to_check: collections.abc.Mapping
+    ) -> dict:
+        """Save a value from a specific block in the response.
 
-        This is different from maybe_get_save_values_from_ext - depends on the kind of response
-
-        Args:
-            to_check (dict): An element of the response from which the given key
-                is extracted
-            key (str): Key to use
-
-        Returns:
-            dict: dictionary of save_name: value, where save_name is the key we
-                wanted to save this value as
+        See docs for maybe_get_save_values_from_given_block for more info
         """
-        saved = {}
 
         try:
-            expected = self.expected["save"][key]
+            expected_block = self.expected["save"][key]
         except KeyError:
             logger.debug("Nothing expected to save for %s", key)
             return {}
 
         if not to_check:
-            self._adderr("No %s in response (wanted to save %s)", key, expected)
-        else:
-            for save_as, joined_key in expected.items():
-                try:
-                    saved[save_as] = recurse_access_key(to_check, joined_key)
-                except (
-                    exceptions.InvalidQueryResultTypeError,
-                    exceptions.KeySearchNotFoundError,
-                ) as e:
-                    self._adderr(
-                        "Wanted to save '%s' from '%s', but it did not exist in the response",
-                        joined_key,
-                        key,
-                        e=e,
-                    )
+            self._adderr("No %s in response (wanted to save %s)", key, expected_block)
+            return {}
+
+        return self.maybe_get_save_values_from_given_block(
+            key, to_check, expected_block
+        )
+
+    def maybe_get_save_values_from_given_block(
+        self,
+        key: str,
+        to_check: collections.abc.Mapping,
+        expected_block: collections.abc.Mapping,
+    ) -> dict:
+        """Save a value from a specific block in the response.
+
+        This is different from maybe_get_save_values_from_ext - depends on the kind of response
+
+        Args:
+            key: Name of key being used to save, for debugging
+            to_check: An element of the response from which the given key
+                is extracted
+            expected_block: block containing information about things to save
+
+        Returns:
+            dict: dictionary of save_name: value, where save_name is the key we
+                wanted to save this value as
+        """
+
+        saved = {}
+
+        if not to_check:
+            self._adderr("No %s in response (wanted to save %s)", key, expected_block)
+            return {}
+
+        for save_as, joined_key in expected_block.items():
+            try:
+                saved[save_as] = recurse_access_key(to_check, joined_key)
+            except (
+                exceptions.InvalidQueryResultTypeError,
+                exceptions.KeySearchNotFoundError,
+            ) as e:
+                self._adderr(
+                    "Wanted to save '%s' from '%s', but it did not exist in the response",
+                    joined_key,
+                    key,
+                    e=e,
+                )
 
         if saved:
             logger.debug("Saved %s for '%s' from response", saved, key)

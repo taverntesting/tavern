@@ -5,6 +5,7 @@ import itertools
 import json
 import logging
 import time
+from typing import List, Optional, Tuple, Union
 
 from paho.mqtt.client import MQTTMessage
 
@@ -36,7 +37,7 @@ class MQTTResponse(BaseResponse):
         else:
             return "<Not run yet>"
 
-    def verify(self, response):
+    def verify(self, response) -> dict:
         """Ensure mqtt message has arrived
 
         Args:
@@ -50,23 +51,24 @@ class MQTTResponse(BaseResponse):
         finally:
             self._client.unsubscribe_all()
 
-    def _await_response(self):
-        """Actually wait for response"""
+    def _await_response(self) -> dict:
+        """Actually wait for response
+
+        Returns:
+            dict: things to save to variables for the rest of this test
+        """
 
         # pylint: disable=too-many-statements
 
         # Get into class with metadata attached
-        expected = [
-            _ExpectedMessage(i, **v)
-            for i, v in enumerate(self.expected["mqtt_responses"])
-        ]
+        expected = [v for v in self.expected["mqtt_responses"]]
 
         by_topic = {
             m: list(v) for m, v in itertools.groupby(expected, lambda x: x["topic"])
         }
 
-        correct_messages = []
-        warnings = []
+        correct_messages: List["_ReturnedMessage"] = []
+        warnings: List[str] = []
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = []
@@ -112,7 +114,9 @@ class MQTTResponse(BaseResponse):
 
         return saved
 
-    def _await_messages_on_topic(self, topic, expected):
+    def _await_messages_on_topic(
+        self, topic, expected
+    ) -> Tuple[List["_ReturnedMessage"], List[str]]:
         """
         Waits for the specific message
 
@@ -132,7 +136,7 @@ class MQTTResponse(BaseResponse):
         correct_messages = []
         warnings = []
 
-        time_spent = 0
+        time_spent = 0.0
         while (time_spent < timeout) and verifiers:
             t0 = time.time()
 
@@ -167,7 +171,7 @@ class MQTTResponse(BaseResponse):
                 name="rest_response",
             )
 
-            found = []
+            found: List[int] = []
             for i, v in enumerate(verifiers):
                 if v.is_valid(msg):
                     correct_messages.append(_ReturnedMessage(v.expected, msg))
@@ -202,17 +206,11 @@ class MQTTResponse(BaseResponse):
         return correct_messages, warnings
 
 
-class _ExpectedMessage(dict):
-    original_index: int
-
-    def __init__(self, original_index, **kwargs):
-        self.original_index = original_index
-        super().__init__(**kwargs)
-
-
 @dataclass
 class _ReturnedMessage:
-    expected: _ExpectedMessage
+    """An actual message returned from the API and it's matching 'expected' block."""
+
+    expected: dict
     msg: MQTTMessage
 
 
@@ -232,7 +230,7 @@ class _MessageVerifier:
         # eg, if a message was received but it didn't match, message had payload, etc.
         self.warnings = []
 
-    def is_valid(self, msg):
+    def is_valid(self, msg) -> bool:
 
         # pylint: disable=too-many-return-statements
 
@@ -306,7 +304,13 @@ class _MessageVerifier:
         return False
 
     @staticmethod
-    def _get_payload_vals(expected):
+    def _get_payload_vals(expected) -> Tuple[Optional[Union[str, dict]], bool]:
+        """Gets the payload from the 'expected' block
+
+        Returns:
+            tuple: First element is the expected payload, second element is whether it's
+                expected to be json or not
+        """
         # TODO move this check to initialisation/schema checking
         if "json" in expected:
             if "payload" in expected:
@@ -330,7 +334,7 @@ class _MessageVerifier:
 
         return payload, json_payload
 
-    def popwarnings(self):
+    def popwarnings(self) -> List[str]:
         popped = []
         while self.warnings:
             popped.append(self.warnings.pop(0))
