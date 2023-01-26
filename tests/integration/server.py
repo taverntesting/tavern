@@ -456,3 +456,15 @@ def get_jwt():
     token = jwt.encode(payload, secret, algorithm="HS256")
 
     return jsonify({"jwt": token})
+
+
+@app.route("/multicase-string", methods=["GET"])
+def get_multicase_string():
+    fake = {
+        "uppercase": "STRING",
+        "lowercase": "string",
+        "multicase": "StRiNg",
+        "eszett": "ß",
+    }
+
+    return jsonify(fake), 200

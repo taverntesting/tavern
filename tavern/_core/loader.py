@@ -281,6 +281,24 @@ class _RegexSearchSentinel(RegexSentinel):
         return self.compiled.search(string) is not None
 
 
+class _CaseInsensitiveStrSentinel(RegexSentinel):
+    yaml_tag = "!anycase"
+    constructor = str
+
+    compiled = None
+
+    @classmethod
+    def from_yaml(cls, loader, node):
+        c = cls()
+        # This doesn't actually use a regex pattern, because case-insensitive
+        # patterns don't match weird lowercases (like ß -> ss)
+        c.compiled = node.value.casefold()
+        return c
+
+    def passes(self, string):
+        return self.compiled == string.casefold()
+
+
 class AnythingSentinel(TypeSentinel):
     yaml_tag = "!anything"
     constructor = "anything"

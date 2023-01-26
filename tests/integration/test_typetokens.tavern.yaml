@@ -704,3 +704,43 @@ stages:
       status_code: 200
       json:
         uuid: !re_fullmatch "[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+
+---
+test_name: Match a string case-sensitively
+
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match a string case-sensitively
+    request:
+      url: "{host}/multicase-string"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        uppercase: "string"
+        lowercase: "string"
+        multicase: "string"
+        eszett: "ss"
+
+---
+test_name: Match a string case-insensitively
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match a string case-insensitively
+    request:
+      url: "{host}/multicase-string"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        uppercase: !anycase "string"
+        lowercase: !anycase "string"
+        multicase: !anycase "string"
+        eszett: !anycase "ss"
