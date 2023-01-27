@@ -245,6 +245,7 @@ class RegexSentinel(TypeSentinel):
     compiled: re.Pattern
 
     def __str__(self):
+        # pylint: disable=no-member
         return "<Tavern Regex sentinel for {}>".format(self.compiled.pattern)
 
     @property
@@ -264,6 +265,7 @@ class _RegexMatchSentinel(RegexSentinel):
     yaml_tag = "!re_match"
 
     def passes(self, string):
+        # pylint: disable=no-member
         return self.compiled.match(string) is not None
 
 
@@ -271,6 +273,7 @@ class _RegexFullMatchSentinel(RegexSentinel):
     yaml_tag = "!re_fullmatch"
 
     def passes(self, string):
+        # pylint: disable=no-member
         return self.compiled.fullmatch(string) is not None
 
 
@@ -278,6 +281,7 @@ class _RegexSearchSentinel(RegexSentinel):
     yaml_tag = "!re_search"
 
     def passes(self, string):
+        # pylint: disable=no-member
         return self.compiled.search(string) is not None
 
 
