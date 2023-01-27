@@ -9,6 +9,7 @@ from typing import Optional
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
 from tavern._core.extfunctions import get_wrapped_response_function
+from tavern._core.strict_util import StrictSetting
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,13 @@ class BaseResponse:
         verification failed.
         """
 
-    def recurse_check_key_match(self, expected_block, block, blockname, strict):
+    def recurse_check_key_match(
+        self,
+        expected_block: Optional[collections.abc.Mapping],
+        block: collections.abc.Mapping,
+        blockname: str,
+        strict: StrictSetting,
+    ):
         """Valid returned data against expected data
 
         Todo:
@@ -62,9 +69,9 @@ class BaseResponse:
 
         Args:
             strict: strictness setting for this block
-            expected_block (dict): expected data
-            block (dict): actual data
-            blockname (str): 'name' of this block (params, mqtt, etc) for error messages
+            expected_block: expected data
+            block: actual data
+            blockname: 'name' of this block (params, mqtt, etc) for error messages
         """
 
         if expected_block is None:

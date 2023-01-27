@@ -242,7 +242,7 @@ class RegexSentinel(TypeSentinel):
     """
 
     constructor = str
-    compiled: re.Pattern = None
+    compiled: re.Pattern
 
     def __str__(self):
         return "<Tavern Regex sentinel for {}>".format(self.compiled.pattern)
@@ -257,9 +257,7 @@ class RegexSentinel(TypeSentinel):
 
     @classmethod
     def from_yaml(cls, loader, node):
-        c = cls()
-        c.compiled = re.compile(node.value)
-        return c
+        return cls(re.compile(node.value))
 
 
 class _RegexMatchSentinel(RegexSentinel):
