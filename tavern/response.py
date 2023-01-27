@@ -4,6 +4,7 @@ from collections.abc import Mapping
 import logging
 from textwrap import indent
 import traceback
+from typing import Optional
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
@@ -203,7 +204,9 @@ class BaseResponse:
         return {}
 
     def maybe_get_save_values_from_save_block(
-        self, key: str, to_check: collections.abc.Mapping
+        self,
+        key: str,
+        to_check: Optional[collections.abc.Mapping],
     ) -> dict:
         """Save a value from a specific block in the response.
 

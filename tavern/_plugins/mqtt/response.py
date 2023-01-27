@@ -61,7 +61,7 @@ class MQTTResponse(BaseResponse):
         # pylint: disable=too-many-statements
 
         # Get into class with metadata attached
-        expected = [v for v in self.expected["mqtt_responses"]]
+        expected = self.expected["mqtt_responses"]
 
         by_topic = {
             m: list(v) for m, v in itertools.groupby(expected, lambda x: x["topic"])
