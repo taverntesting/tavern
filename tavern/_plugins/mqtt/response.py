@@ -41,7 +41,7 @@ class MQTTResponse(BaseResponse):
         """Ensure mqtt message has arrived
 
         Args:
-            response: not used
+            response: not used except for debug printing
         """
 
         self.response = response

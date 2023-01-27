@@ -4,7 +4,7 @@ from collections.abc import Mapping
 import logging
 from textwrap import indent
 import traceback
-from typing import Optional
+from typing import Any, Optional
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
@@ -171,29 +171,30 @@ class BaseResponse:
                 )
 
     def maybe_get_save_values_from_ext(
-        self, response, expected: collections.abc.Mapping
+        self, response: Any, read_save_from: collections.abc.Mapping
     ) -> dict:
         """If there is an $ext function in the save block, call it and save the response
 
         Args:
             response: response object. Actual contents depends on which type of
                 response is being checked
-            expected: the expected response (incl
+            read_save_from: the expected response (incl
                 body/json/headers/mqtt topic/etc etc) containing a spec for which things
                 should be saved from the response. Actual contents depends on which type of
                 response is being checked
 
         Returns:
-            dict: mapping of name: value of things to save
+            mapping of name to value of things to save
         """
+
         try:
-            wrapped = get_wrapped_response_function(expected["save"]["$ext"])
+            wrapped = get_wrapped_response_function(read_save_from["save"]["$ext"])
         except KeyError:
             logger.debug("No save function for this stage")
             return {}
 
         try:
-            to_save = wrapped(response)
+            saved = wrapped(response)
         except Exception as e:  # pylint: disable=broad-except
             self._adderr(
                 "Error calling save function '%s':\n%s",
@@ -203,11 +204,14 @@ class BaseResponse:
             )
             return {}
 
-        if isinstance(to_save, dict):
-            return to_save
-        elif to_save is not None:
+        logger.debug("saved %s from ext function", saved)
+
+        if isinstance(saved, dict):
+            return saved
+        elif saved is not None:
             self._adderr(
-                "Unexpected return value '%s' from $ext save function", to_save
+                "Unexpected return value '%s' from $ext save function (expected a dict or None)",
+                saved,
             )
 
         return {}
