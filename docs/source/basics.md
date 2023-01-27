@@ -1557,6 +1557,31 @@ as in the example. If a named matching group is used as shown above, the saved v
       made_on: "2020-02-21"
 ```
 
+### Matching a string case-insensitively
+
+You might also have a specific string that you know the content will always be the
+same, but that can be in upper/lowercase. This can also be done using an external
+function (like regular expression matching), but as a shorthand there is also the
+`!anycase` YAML tag.
+
+```yaml
+  - name: Check that a mixed-case string is returned
+    request:
+      url: {host}/multicase-string
+      method: GET
+    response:
+      status_code: 200
+      json:
+        upper: !anycase "string"
+        lower: !anycase "string"
+        mixed: !anycase "string"
+```
+
+This tag uses the
+[`str.casefold`](https://docs.python.org/3/library/stdtypes.html#str.casefold)
+method call to lowercase characters, which can alleviate some issues with certain
+characters (such as the German `'ß'`).
+
 ## Type conversions
 
 [YAML](http://yaml.org/spec/1.1/current.html#id867381) has some magic variables
