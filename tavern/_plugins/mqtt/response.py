@@ -109,14 +109,14 @@ class MQTTResponse(BaseResponse):
             saved.update(
                 self.maybe_get_save_values_from_save_block(
                     "payload",
-                    msg.expected.get("payload"),
+                    msg.msg.payload,
                     outer_save_block=msg.expected,
                 )
             )
             saved.update(
                 self.maybe_get_save_values_from_save_block(
                     "json",
-                    msg.expected.get("json"),
+                    msg.msg.payload,
                     outer_save_block=msg.expected,
                 )
             )
@@ -250,7 +250,7 @@ class _MessageVerifier:
         # eg, if a message was received but it didn't match, message had payload, etc.
         self.warnings = []
 
-    def is_valid(self, msg) -> bool:
+    def is_valid(self, msg: MQTTMessage) -> bool:
 
         # pylint: disable=too-many-return-statements
 
