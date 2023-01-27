@@ -566,9 +566,20 @@ stages:
       topic: /devices/status
     mqtt_response:
       topic: /device/{random_device_id}/status/response
-      payload: !anything
+      json:
+        lights: !anything
       timeout: 3
       qos: 1
       save:
-        payload:
+        json:
+          lights_status: lights
 
+  - name: Echo text
+    mqtt_publish:
+      topic: /device/{random_device_id}/echo
+      payload: "{lights_status}"
+    mqtt_response:
+      topic: /device/{random_device_id}/echo/response
+      payload: "{lights_status}"
+      timeout: 5
+      qos: 1

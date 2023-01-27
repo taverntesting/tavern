@@ -240,9 +240,9 @@ definitions:
             items:
               $ref: "#/definitions/verify_block"
 
-      # save:
-      #   type: object
-      #   description: Which objects to save from the response
+      save:
+        type: object
+        description: Which objects to save from the response
 
   http_response:
     type: object

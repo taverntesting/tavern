@@ -105,12 +105,32 @@ class MQTTResponse(BaseResponse):
         saved = {}
 
         for msg in correct_messages:
+            # Check saving things from the payload and from json
             saved.update(
                 self.maybe_get_save_values_from_save_block(
-                    "json", msg.expected.get("payload")
+                    "payload",
+                    msg.expected.get("payload"),
+                    outer_save_block=msg.expected,
                 )
             )
+            saved.update(
+                self.maybe_get_save_values_from_save_block(
+                    "json",
+                    msg.expected.get("json"),
+                    outer_save_block=msg.expected,
+                )
+            )
+
             saved.update(self.maybe_get_save_values_from_ext(msg.msg, msg.expected))
+
+        # Trying to save might have introduced errors, so check again
+        if self.errors:
+            raise exceptions.TestFailError(
+                "Saving results from test '{:s}' failed:\n{:s}".format(
+                    self.name, self._str_errors()
+                ),
+                failures=self.errors,
+            )
 
         return saved
 

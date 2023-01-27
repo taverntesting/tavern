@@ -206,32 +206,36 @@ class BaseResponse:
     def maybe_get_save_values_from_save_block(
         self,
         key: str,
-        to_check: Optional[collections.abc.Mapping],
+        save_from: Optional[collections.abc.Mapping],
+        *,
+        outer_save_block: Optional[collections.abc.Mapping] = None,
     ) -> dict:
         """Save a value from a specific block in the response.
 
         See docs for maybe_get_save_values_from_given_block for more info
+
+        Keyword Args:
+            outer_save_block: Read things to save from this block instead of self.expected
         """
 
+        logger.debug("save from: %s", save_from)
+
+        read_save_from = outer_save_block or self.expected
+        logger.debug("save spec: %s", read_save_from.get("save"))
+
         try:
-            expected_block = self.expected["save"][key]
+            to_save = read_save_from["save"][key]
         except KeyError:
             logger.debug("Nothing expected to save for %s", key)
             return {}
 
-        if not to_check:
-            self._adderr("No %s in response (wanted to save %s)", key, expected_block)
-            return {}
-
-        return self.maybe_get_save_values_from_given_block(
-            key, to_check, expected_block
-        )
+        return self.maybe_get_save_values_from_given_block(key, save_from, to_save)
 
     def maybe_get_save_values_from_given_block(
         self,
         key: str,
-        to_check: collections.abc.Mapping,
-        expected_block: collections.abc.Mapping,
+        save_from: Optional[collections.abc.Mapping],
+        to_save: collections.abc.Mapping,
     ) -> dict:
         """Save a value from a specific block in the response.
 
@@ -239,9 +243,8 @@ class BaseResponse:
 
         Args:
             key: Name of key being used to save, for debugging
-            to_check: An element of the response from which the given key
-                is extracted
-            expected_block: block containing information about things to save
+            save_from: An element of the response from which values are being saved
+            to_save: block containing information about things to save
 
         Returns:
             dict: dictionary of save_name: value, where save_name is the key we
@@ -250,13 +253,13 @@ class BaseResponse:
 
         saved = {}
 
-        if not to_check:
-            self._adderr("No %s in response (wanted to save %s)", key, expected_block)
+        if not save_from:
+            self._adderr("No %s in response (wanted to save %s)", key, to_save)
             return {}
 
-        for save_as, joined_key in expected_block.items():
+        for save_as, joined_key in to_save.items():
             try:
-                saved[save_as] = recurse_access_key(to_check, joined_key)
+                saved[save_as] = recurse_access_key(save_from, joined_key)
             except (
                 exceptions.InvalidQueryResultTypeError,
                 exceptions.KeySearchNotFoundError,
