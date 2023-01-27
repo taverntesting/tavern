@@ -170,7 +170,9 @@ class BaseResponse:
                     e=e,
                 )
 
-    def maybe_get_save_values_from_ext(self, response, expected: dict) -> dict:
+    def maybe_get_save_values_from_ext(
+        self, response, expected: collections.abc.Mapping
+    ) -> dict:
         """If there is an $ext function in the save block, call it and save the response
 
         Args:

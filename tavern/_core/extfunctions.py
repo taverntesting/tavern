@@ -1,18 +1,20 @@
+import collections.abc
 import functools
 import importlib
 import logging
+from typing import Any, List
 
 from tavern._core import exceptions
 
 from .dict_util import deep_dict_merge
 
 
-def is_ext_function(block):
+def is_ext_function(block: Any) -> bool:
     """
     Whether the given object is an ext function block
 
     Args:
-        block (object): Any object
+        block: Any object
 
     Returns:
         bool: If it is an ext function style dict
@@ -38,12 +40,12 @@ def _getlogger():
     return get_pykwalify_logger("tavern._core.extfunctions")
 
 
-def import_ext_function(entrypoint):
+def import_ext_function(entrypoint: str):
     """Given a function name in the form of a setuptools entry point, try to
     dynamically load and return it
 
     Args:
-        entrypoint (str): setuptools-style entrypoint in the form
+        entrypoint: setuptools-style entrypoint in the form
             module.submodule:function
 
     Returns:
@@ -62,14 +64,14 @@ def import_ext_function(entrypoint):
         raise exceptions.InvalidExtFunctionError(msg) from e
 
     try:
-        module = importlib.import_module(module)
+        imported = importlib.import_module(module)
     except ImportError as e:
         msg = "Error importing module {}".format(module)
         logger.exception(msg)
         raise exceptions.InvalidExtFunctionError(msg) from e
 
     try:
-        function = getattr(module, funcname)
+        function = getattr(imported, funcname)
     except AttributeError as e:
         msg = "No function named {} in {}".format(funcname, module)
         logger.exception(msg)
@@ -78,14 +80,14 @@ def import_ext_function(entrypoint):
     return function
 
 
-def get_wrapped_response_function(ext):
+def get_wrapped_response_function(ext: collections.abc.Mapping):
     """Wraps a ext function with arguments given in the test file
 
     This is similar to functools.wrap, but this makes sure that 'response' is
     always the first argument passed to the function
 
     Args:
-        ext (dict): $ext function dict with function, extra_args, and
+        ext: $ext function dict with function, extra_args, and
             extra_kwargs to pass
 
     Returns:
@@ -100,12 +102,12 @@ def get_wrapped_response_function(ext):
         _getlogger().debug("Result of calling '%s': '%s'", func, result)
         return result
 
-    inner.func = func
+    inner.func = func  # type: ignore
 
     return inner
 
 
-def get_wrapped_create_function(ext):
+def get_wrapped_create_function(ext: collections.abc.Mapping):
     """Same as get_wrapped_response_function, but don't require a response"""
 
     func, args, kwargs = _get_ext_values(ext)
@@ -116,12 +118,12 @@ def get_wrapped_create_function(ext):
         _getlogger().debug("Result of calling '%s': '%s'", func, result)
         return result
 
-    inner.func = func
+    inner.func = func  # type: ignore
 
     return inner
 
 
-def _get_ext_values(ext):
+def _get_ext_values(ext: collections.abc.Mapping):
     args = ext.get("extra_args") or ()
     kwargs = ext.get("extra_kwargs") or {}
     try:
@@ -134,13 +136,13 @@ def _get_ext_values(ext):
     return func, args, kwargs
 
 
-def update_from_ext(request_args, keys_to_check):
+def update_from_ext(request_args: dict, keys_to_check: List[str]):
     """
     Updates the request_args dict with any values from external functions
 
     Args:
-        request_args (dict): dictionary of request args
-        keys_to_check (list): list of keys in request to possibly update from
+        request_args: dictionary of request args
+        keys_to_check: list of keys in request to possibly update from
     """
 
     new_args = {}
