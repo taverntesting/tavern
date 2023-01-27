@@ -65,7 +65,7 @@ class ReprdError:
                     if match.group("format_var") is not None:
                         yield match.group("format_var")
 
-        format_variables = list(read_formatted_vars(code_lines))
+        format_variables = set(list(read_formatted_vars(code_lines)))
 
         keys = self._get_available_format_keys()
 
