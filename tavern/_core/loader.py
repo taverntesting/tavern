@@ -1,5 +1,6 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
 from abc import abstractmethod
+import dataclasses
 from distutils.util import strtobool  # pylint: disable=deprecated-module
 from itertools import chain
 import logging
@@ -233,6 +234,7 @@ class DictSentinel(TypeSentinel):
     constructor = dict
 
 
+@dataclasses.dataclass
 class RegexSentinel(TypeSentinel):
     """Sentinel that matches a regex in a part of the response
 
@@ -240,7 +242,7 @@ class RegexSentinel(TypeSentinel):
     """
 
     constructor = str
-    compiled = None
+    compiled: re.Pattern = None
 
     def __str__(self):
         return "<Tavern Regex sentinel for {}>".format(self.compiled.pattern)
