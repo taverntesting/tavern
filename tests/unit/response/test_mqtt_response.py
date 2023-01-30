@@ -1,4 +1,5 @@
 import random
+import re
 import threading
 from unittest.mock import Mock, patch
 
@@ -125,7 +126,7 @@ class TestResponse:
                 "topic": "/a/b/c/{}".format(i + 1),
                 "payload": "hello",
                 "save": {
-                    "$ext": {"function": "abcdef"},
+                    "$ext": {"function": "function_name_{}".format(i + 1)},
                 },
             }
 
@@ -139,19 +140,14 @@ class TestResponse:
         def fake_get_wrapped_response():
             def wrap(ext):
                 def actual(response, *args, **kwargs):
-                    fake_get_wrapped_response.message_number += 1
-                    saved = {
-                        "saved_topic_{}".format(
-                            fake_get_wrapped_response.message_number
-                        ): response.topic
-                    }
-                    return saved
+                    match = re.match(r"function_name_(?P<idx>\d+)", ext["function"])
+                    assert match
+                    message_number = match.group("idx")
+                    return {"saved_topic_{}".format(message_number): response.topic}
 
                 return actual
 
             return wrap
-
-        fake_get_wrapped_response.message_number = 0
 
         with patch(
             "tavern.response.get_wrapped_response_function",
