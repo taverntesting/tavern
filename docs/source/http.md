@@ -282,7 +282,8 @@ stages:
     request:
       url: "{host}/userinfo"
       method: GET
-      Authorization: "Bearer {test_login_token:s}"
+      headers:
+        Authorization: "Bearer {test_login_token:s}"
     response:
       status_code: 200
       json:
