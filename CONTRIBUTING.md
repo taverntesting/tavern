@@ -47,6 +47,10 @@ Run every so often to update the pre-commit hooks
     black tavern/ tests/
     isort --profile black tavern/ tests/
 
+### Fix yaml formatting issues
+
+    pre-commit run --all-files
+
 ## Creating a new release
 
 1. Setup `~/.pypirc`

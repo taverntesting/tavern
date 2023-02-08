@@ -24,6 +24,7 @@ from .pytest import call_hook
 from .pytest.config import TestConfig
 from .report import attach_stage_content, wrap_step
 from .testhelpers import delay, retry
+from .tincture import Tinctures, get_stage_tinctures
 
 logger = logging.getLogger(__name__)
 
@@ -192,12 +193,13 @@ def run_test(
             test_block_config = test_block_config.with_strictness(
                 _calculate_stage_strictness(stage, test_block_config, test_spec)
             )
+            tinctures = get_stage_tinctures(stage, test_spec)
 
             # Wrap run_stage with retry helper
             run_stage_with_retries = retry(stage, test_block_config)(run_stage)
 
             partial = functools.partial(
-                run_stage_with_retries, sessions, stage, test_block_config
+                run_stage_with_retries, sessions, stage, test_block_config, tinctures
             )
 
             allure_name = "Stage {}: {}".format(
@@ -282,10 +284,12 @@ def run_stage(
     sessions: collections.abc.Mapping,
     stage: collections.abc.Mapping,
     test_block_config: TestConfig,
+    tinctures: Tinctures,
 ):
     """Run one stage from the test
 
     Args:
+        tinctures: tinctures for this stage/test
         sessions: Dictionary of relevant 'session' objects used for this test
         stage: specification of stage to be run
         test_block_config: available variables for test
@@ -314,7 +318,11 @@ def run_stage(
 
     verifiers = get_verifiers(stage, test_block_config, sessions, expected)
 
+    tinctures.start_tinctures(stage)
+
     response = r.run()
+
+    tinctures.end_tinctures(response)
 
     for response_type, response_verifiers in verifiers.items():
         logger.debug("Running verifiers for %s", response_type)

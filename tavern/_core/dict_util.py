@@ -91,18 +91,22 @@ def _attempt_find_include(to_format: str, box_vars: box.Box):
     return formatter.convert_field(would_replace, conversion)  # type: ignore
 
 
-def format_keys(val, variables, no_double_format=True):
+def format_keys(
+    val: collections.abc.Mapping,
+    variables: collections.abc.Mapping,
+    no_double_format: bool = True,
+) -> Any:
     """recursively format a dictionary with the given values
 
     Args:
-        val (object): Input dictionary to format
-        variables (dict): Dictionary of keys to format it with
-        no_double_format (bool): Whether to use the 'inner formatted string' class to avoid double formatting
+        val: Input dictionary to format
+        variables: Dictionary of keys to format it with
+        no_double_format: Whether to use the 'inner formatted string' class to avoid double formatting
             This is required if passing something via pytest-xdist, such as markers:
             https://github.com/taverntesting/tavern/issues/431
 
     Returns:
-        str,int,list,dict: recursively formatted values
+        recursively formatted values
     """
     formatted = val
 
@@ -117,14 +121,14 @@ def format_keys(val, variables, no_double_format=True):
         for key in val:
             formatted[key] = format_keys(val[key], box_vars)
     elif isinstance(val, (list, tuple)):
-        formatted = [format_keys(item, box_vars) for item in val]
+        formatted = [format_keys(item, box_vars) for item in val]  # type: ignore
     elif isinstance(formatted, FormattedString):
         logger.debug("Already formatted %s, not double-formatting", formatted)
     elif isinstance(val, str):
         formatted = _check_and_format_values(val, box_vars)
 
         if no_double_format:
-            formatted = FormattedString(formatted)
+            formatted = FormattedString(formatted)  # type: ignore
     elif isinstance(val, TypeConvertToken):
         logger.debug("Got type convert token '%s'", val)
         if isinstance(val, ForceIncludeToken):
