@@ -2,7 +2,7 @@
 
 set -ex
 
-PYVER=39
+PYVER=3
 
 fd pycache -u | xargs rm -rf
 
@@ -11,7 +11,6 @@ tox -c tox.ini        \
 
 tox --parallel -c tox.ini        \
   -e py${PYVER}       \
-  -e py${PYVER}-pytest6       \
   -e py${PYVER}black  \
   -e py${PYVER}lint   \
   -e py${PYVER}mypy

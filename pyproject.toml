@@ -1,0 +1,213 @@
+[build-system]
+requires = ["flit-core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Framework :: Pytest",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Utilities",
+    "Topic :: Software Development :: Testing",
+    "License :: OSI Approved :: MIT License",
+]
+
+keywords = ["testing", "pytest"]
+
+name = "tavern"
+description = "Simple testing of RESTful APIs"
+version = "2.0.0rc1"
+
+dependencies = [
+    "PyYAML>=5.3.1,<7",
+    "attrs",
+    "jmespath<1",
+    "jsonschema~=3.2.0",
+    "paho-mqtt>=1.3.1,<=1.5.1",
+    "pyjwt>=2.4.0,<3",
+    "pykwalify>=1.8.0,<2",
+    "pytest>=7,<8",
+    "python-box>=5,<6",
+    "requests>=2.22.0,<3",
+    "stevedore~=3.3.0",
+]
+
+requires-python = ">=3.8"
+
+[[project.authors]]
+name = "Michael Boulton"
+
+[project.license]
+file = "LICENSE"
+
+[project.readme]
+file = "README.md"
+content-type = "text/markdown"
+
+[project.urls]
+Home = "https://taverntesting.github.io/"
+Documentation = "https://tavern.readthedocs.io/en/latest/"
+Source = "https://github.com/taverntesting/tavern"
+
+[project.optional-dependencies]
+dev = [
+    "Faker",
+    "allure-pytest",
+    "black",
+    "bump2version",
+    "Flake8-pyproject",
+    "colorlog",
+    "docker-compose",
+    "flake8",
+    "flask",
+    "fluent-logger",
+    "isort",
+    "itsdangerous",
+    "mypy",
+    "mypy-extensions",
+    "coverage[toml]",
+    "types-PyYAML",
+    "flit >=3.2,<4",
+    "pip-tools",
+    "pre-commit",
+    "pygments",
+    "pylint",
+    "pytest-cov",
+    "ruff",
+    "pytest-xdist",
+    "py",
+    "tox>=3,<4",
+    "tox-travis",
+    "twine",
+    "wheel",
+    # This has to be installed separately, otherwise you can't upload to pypi
+    # "tbump@https://github.com/michaelboulton/tbump/archive/714ba8957a3c84b625608ceca39811ebe56229dc.zip",
+]
+
+
+[project.scripts]
+
+tavern-ci = "tavern.entry:main"
+
+[project.entry-points.pytest11]
+
+tavern = "tavern._core.pytest"
+
+[project.entry-points.tavern_http]
+requests = "tavern._plugins.rest.tavernhook:TavernRestPlugin"
+[project.entry-points.tavern_mqtt]
+paho-mqtt = "tavern._plugins.mqtt.tavernhook"
+
+[tool.black]
+target-version = ['py37']
+
+[tool.mypy]
+python_version = 3.8
+ignore_missing_imports = true
+
+[tool.coverage.run]
+branch = false
+omit = [
+    "tests/*",
+    ".eggs/*",
+    "env/*",
+    "build/*",
+    "dist/*",
+]
+source = ["tavern"]
+
+[tool.coverage.paths]
+tavern = [
+    "tavern/",
+    ".tox/py39-generic/lib/python3.9/site-packages/tavern/",
+    ".tox/py39-mqtt/lib/python3.9/site-packages/tavern",
+]
+
+[tool.isort]
+multi_line_output = 3
+include_trailing_comma = true
+indent = 4
+atomic = true
+combine_star = true
+use_parentheses = true
+line_length = 88
+skip_glob = ["docs/**", "example/**"]
+known_tavern = "tavern"
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "TAVERN", "LOCALFOLDER"]
+force_sort_within_sections = true
+
+[tool.pytest.ini_options]
+testpaths = ["tavern", "tests/unit"]
+addopts = [
+    "--doctest-modules",
+    "-r", "xs",
+    "-vv",
+    "--strict-markers",
+    "-p", "no:logging",
+    "--tb=short",
+]
+norecursedirs = [
+    ".git",
+    ".tox",
+    "example",
+]
+
+[tool.pylint.MASTER]
+disable = "missing-docstring,fixme,invalid-name,line-too-long,too-few-public-methods,no-else-return,too-many-branches,locally-disabled,useless-object-inheritance,no-else-raise,abstract-method,import-outside-toplevel,cyclic-import,consider-using-f-string,useless-option-value"
+ignore = "tests"
+
+[tool.pylint.REPORTS]
+reports = false
+
+[tool.pylint.SIMILARITIES]
+min-similarity-lines = 6
+ignore-imports = true
+
+[tool.pylint.TYPECHECK]
+ignored-classes = "RememberComposer"
+ignored-modules = "distutils"
+
+[tool.flake8]
+ignore = ["E501", "W503", "C901", "W504"]
+exclude = [".git", "__pycache__", "docs/source/conf.py", "build", "dist"]
+max-complexity = 10
+
+[tool.tbump.version]
+current = "2.0.0rc1"
+
+regex = '''
+  (?P<major>\d+)
+  \.
+  (?P<minor>\d+)
+  \.
+  (?P<patch>\d+)
+  ((?P<release>[a-zA-Z]+)(?P<build>\d+))?
+  '''
+
+[tool.tbump.git]
+message_template = "Bump to {new_version}"
+tag_template = "{new_version}"
+
+[[tool.tbump.file]]
+src = "tavern/__init__.py"
+
+[[tool.tbump.file]]
+src = "pyproject.toml"
+
+[[tool.tbump.file]]
+src = "docs/source/conf.py"
+
+
+[[tool.tbump.before_commit]]
+name = "Update changelog"
+cmd = "./scripts/update-changelog.bash"
+
+# TODO: enable
+# [[tool.tbump.after_push]]
+# name = "publish"
+# cmd = "./scripts/release.sh"

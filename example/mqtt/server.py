@@ -4,9 +4,9 @@ import logging.config
 import os
 import sqlite3
 
-from flask import Flask, g, jsonify, request
 import paho.mqtt.client as paho
 import yaml
+from flask import Flask, g, jsonify, request
 
 app = Flask(__name__)
 application = app
@@ -124,13 +124,54 @@ def get_device():
     try:
         status = next(row)[1]
     except StopIteration:
-        return jsonify({"error": "bad device id"}), 400
+        return (
+            jsonify(
+                {"error": "could not find device with id {}".format(r["device_id"])}
+            ),
+            400,
+        )
 
     onoff = "on" if status else "off"
 
     logging.info("Lights are %s", onoff)
 
     return jsonify({"lights": onoff})
+
+
+@app.route("/create_device", methods=["PUT"])
+def create_device():
+    r = request.get_json(force=True)
+    logging.error(r)
+
+    try:
+        r["device_id"]
+    except (KeyError, TypeError):
+        return jsonify({"error": "missing key device_id"}), 400
+
+    db = get_cached_db()
+    with db:
+        row = db.execute(
+            "SELECT device_id from devices_table where device_id is :device_id", r
+        )
+
+    try:
+        next(row)
+    except StopIteration:
+        pass
+    else:
+        return jsonify({"error": "device already exists"}), 400
+
+    new_device = dict(lights_on=False, **r)
+
+    logging.info("Creating new device: %s", new_device)
+
+    with db:
+        db.execute(
+            "INSERT INTO devices_table (device_id, lights_on) VALUES (:device_id, :lights_on)",
+            new_device,
+        )
+
+    return jsonify({"status": "created device {device_id}".format(**r)}), 201
 
 
 @app.route("/reset", methods=["POST"])
@@ -152,7 +193,10 @@ def _reset_db(db):
         attempt(
             "CREATE TABLE devices_table (device_id TEXT NOT NULL, lights_on INTEGER NOT NULL)"
         )
-        attempt("INSERT INTO devices_table VALUES ('123', 0)")
-        attempt("INSERT INTO devices_table VALUES ('456', 0)")
 
     return "", 204
+
+
+if __name__ == "__main__":
+    db = get_db()
+    _reset_db(db)

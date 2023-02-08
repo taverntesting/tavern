@@ -626,8 +626,12 @@ With strict being turned off for the body, any of these in the test will pass:
 
 But not:
 
-- `[3, 1]`, `[2, 1]` - items present, but out of order
 - `[2, 4]` - '4' not present in response from the server
+- `[3, 1]`, `[2, 1]` - items present, but out of order
+
+To match the last case you can use the special setting `list_any_order`. This setting
+can only be used in the 'json' key of a request, but will match list items in any order as
+long as they are present in the response.
 
 ### Changing the setting
 
@@ -1500,7 +1504,7 @@ third block must start with 4 and the third block must start with 8, 9, "A", or
 ```
 
 This is using the `!re_fullmatch` variant of the tag - this calls
-[`re.fullmatch`](https://docs.python.org/3.7/library/re.html#re.fullmatch) under
+[`re.fullmatch`](https://docs.python.org/3.8/library/re.html#re.fullmatch) under
 the hood, which means that the regex given needs to match the _entire_ part of
 the response that is being checked for it to pass. There is also `!re_search`
 which will pass if it matches _part_ of the thing being checked, or `!re_match`

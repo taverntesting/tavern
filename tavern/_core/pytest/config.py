@@ -1,19 +1,19 @@
 import copy
-
-import attr
+import dataclasses
+from typing import Any
 
 from tavern._core.strict_util import StrictSetting
 
 
-@attr.s(frozen=True)
+@dataclasses.dataclass(frozen=True)
 class TavernInternalConfig:
     """Internal config that should be used only by tavern"""
 
-    pytest_hook_caller = attr.ib()
-    backends = attr.ib(type=dict)
+    pytest_hook_caller: Any
+    backends: dict
 
 
-@attr.s(frozen=True)
+@dataclasses.dataclass(frozen=True)
 class TestConfig:
     """Tavern configuration - there is a global config, then test-specific config, and finally stage-specific config, but they all use this structure
 
@@ -24,15 +24,15 @@ class TestConfig:
         tinctures (list): List of tinctures to use for anything using this config
     """
 
-    variables = attr.ib(type=dict)
-    strict = attr.ib(type=StrictSetting)
-    follow_redirects = attr.ib(type=bool)
-    stages = attr.ib(type=list)
+    variables: dict
+    strict: StrictSetting
+    follow_redirects: bool
+    stages: list
 
-    tavern_internal = attr.ib(type=TavernInternalConfig)
+    tavern_internal: TavernInternalConfig
 
     def copy(self):
         return copy.copy(self)
 
     def with_strictness(self, new_strict):
-        return attr.evolve(self, strict=new_strict)
+        return dataclasses.replace(self, strict=new_strict)

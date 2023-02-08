@@ -6,7 +6,7 @@ from box import Box
 logger = logging.getLogger(__name__)
 
 
-class BaseRequest(object):
+class BaseRequest:
     @property
     @abstractmethod
     def request_vars(self) -> Box:

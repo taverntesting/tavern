@@ -1,9 +1,8 @@
-from distutils.util import strtobool
+import dataclasses
+from distutils.util import strtobool  # pylint: disable=deprecated-module
 import enum
 import logging
 import re
-
-import attr
 
 from tavern._core import exceptions
 
@@ -38,10 +37,10 @@ def strict_setting_factory(str_setting):
             return StrictSetting.OFF
 
 
-@attr.s(frozen=True)
+@dataclasses.dataclass(frozen=True)
 class StrictOption:
-    section = attr.ib(type=str)
-    setting = attr.ib(type=StrictSetting)
+    section: str
+    setting: StrictSetting
 
     def is_on(self):
         if self.section == "json":
@@ -78,11 +77,15 @@ def validate_and_parse_option(key):
     return StrictOption(as_dict["section"], strict_setting_factory(as_dict["setting"]))
 
 
-@attr.s(frozen=True)
+@dataclasses.dataclass(frozen=True)
 class StrictLevel:
-    json = attr.ib(default=StrictOption("json", strict_setting_factory(None)))
-    headers = attr.ib(default=StrictOption("headers", strict_setting_factory(None)))
-    redirect_query_params = attr.ib(
+    json: StrictOption = dataclasses.field(
+        default=StrictOption("json", strict_setting_factory(None))
+    )
+    headers: StrictOption = dataclasses.field(
+        default=StrictOption("headers", strict_setting_factory(None))
+    )
+    redirect_query_params: StrictOption = dataclasses.field(
         default=StrictOption("redirect_query_params", strict_setting_factory(None))
     )
 

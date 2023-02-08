@@ -28,7 +28,7 @@ from tavern._core.stage_lines import get_stage_lines, read_relevant_lines
 logger = logging.getLogger(__name__)
 
 
-def _prepare_yaml(val):
+def prepare_yaml(val):
     """Sanitises the formatted string into a format safe for dumping"""
     formatted = val
 
@@ -38,9 +38,9 @@ def _prepare_yaml(val):
         for key in val:
             if isinstance(key, FormattedString):
                 key = str(key)
-            formatted[key] = _prepare_yaml(val[key])
+            formatted[key] = prepare_yaml(val[key])
     elif isinstance(val, (list, tuple, set)):
-        formatted = [_prepare_yaml(item) for item in val]
+        formatted = [prepare_yaml(item) for item in val]
     elif isinstance(formatted, FormattedString):
         return str(formatted)
 
@@ -56,7 +56,7 @@ def attach_stage_content(stage):
 
 
 def attach_yaml(payload, name):
-    prepared = _prepare_yaml(payload)
+    prepared = prepare_yaml(payload)
     dumped = yaml.safe_dump(prepared)
     return attach_text(dumped, name, yaml_type)
 

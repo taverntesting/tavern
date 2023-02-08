@@ -91,7 +91,6 @@ ENV/
 tags
 .pytest_cache
 
-.bumpversion.cfg
 dist
 docker
 docs
@@ -101,8 +100,8 @@ example
 .gitignore
 LICENSE
 # MANIFEST.in
-.pylintrc
-README.rst
+README.md
+README.md
 requirements.txt
 # setup.cfg
 # setup.py
@@ -112,7 +111,6 @@ tests
 .tox
 tox.ini
 tox-integration.ini
-.travis.yml
 
 venv
 .idea

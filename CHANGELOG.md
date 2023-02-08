@@ -373,6 +373,24 @@ Also log the result from 'response' ext functions
 
 ##  1.23.4          Update stevedore version (2022-10-23)
 
+##  1.23.5          Fix missing dependency in newer pytest versions (2022-11-07)
+
+#  1.24.0          Fix using 'py' library (2022-11-08)
+
+
+This locks pytest to <=7.2 to avoid having to fix imports every time a new version comes out.
+
+##  1.24.1          Format variables in test error log before dumping as a YAML string (2022-11-22)
+
+#  1.25.0          More changes to packaging (2022-12-13)
+
+
+This is technically not a operational change but I'm adding a new tag so it can br reverted in future
+
+##  1.25.1          Remove tbump from dependencies so it can actually be uploaded to pypi (2022-12-13)
+
+##  1.25.2          Only patch pyyaml when a test is actually being loaded to avoid side effect from Tavern just being in the python path (2022-12-15)
+
 ##  2.0.0alpha3     Bump version: 2.0.0alpha2 → 2.0.0alpha3 (2021-10-17)
 
 ##  2.0.0alpha4     Bump version: 2.0.0alpha3 → 2.0.0alpha4 (2021-11-06)
@@ -403,3 +421,14 @@ Also log the result from 'response' ext functions
 
 ##  2.0.0alpha16    Bump version: 2.0.0alpha15 → 2.0.0alpha16 (2022-10-23)
 
+##  2.0.0alpha17    Fix out of order MQTT messages and ext functions in mqtt responses (2022-11-08)
+
+##  2.0.0alpha18    Spin up separate message queue for each topic to avoid spinlocking (2022-12-09)
+
+##  2.0.0a19        2.0.0a19 (2022-12-15)
+
+#  2.0.0a20        Drop pypy3 tests (2022-12-15)
+
+##  2.0.0a21        2.0.0a21 (2022-12-19)
+
+##  2.0.0a22        Fix 'attr' issue (2022-12-19)
