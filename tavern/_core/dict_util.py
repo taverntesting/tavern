@@ -173,8 +173,6 @@ def recurse_access_key(data, query):
 
         raise exceptions.JMESError("Invalid JMES query") from e
 
-    logger.debug("%s in %s => %s", query, data, from_jmespath)
-
     return from_jmespath
 
 

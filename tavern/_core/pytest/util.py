@@ -115,6 +115,9 @@ def load_global_cfg(pytest_config):
         exceptions.UnexpectedKeysError: Invalid settings in one or more config
             files detected
     """
+
+    # FIXME: LRU cache means config is cached between invocations - need a way to cache just things like the load path, but not the variables
+
     # Load ini first
     ini_global_cfg_paths = pytest_config.getini("tavern-global-cfg") or []
     # THEN load command line, to allow overwriting of values
