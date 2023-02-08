@@ -1,5 +1,6 @@
 import copy
 import dataclasses
+import logging
 from typing import Any
 
 from tavern._core.strict_util import StrictSetting
@@ -15,11 +16,12 @@ class TavernInternalConfig:
 
 @dataclasses.dataclass(frozen=True)
 class TestConfig:
-    """Tavern configuration - there is aglobal config, then test-specific config, and finally stage-specific config, but they all use this structure
+    """Tavern configuration - there is a global config, then test-specific config, and
+    finally stage-specific config, but they all use this structure
 
     Attributes:
-        follow_redirects (bool): whether the test should follow redirects
-        variables (dict): variables available for use in the stage
+        follow_redirects: whether the test should follow redirects
+        variables: variables available for use in the stage
         strict: Strictness for test/stage
     """
 
@@ -30,8 +32,12 @@ class TestConfig:
 
     tavern_internal: TavernInternalConfig
 
-    def copy(self):
-        return copy.copy(self)
+    def copy(self) -> "TestConfig":
+        # Use a deep copy, otherwise variables can leak into subsequent tests
+        logger = logging.getLogger(__name__)
+        logger.critical(self.variables)
+        return dataclasses.replace(self, variables=copy.deepcopy(self.variables))
 
-    def with_strictness(self, new_strict):
+    def with_strictness(self, new_strict: StrictSetting) -> "TestConfig":
+        """Create a copy of the config but with a new strictness setting"""
         return dataclasses.replace(self, strict=new_strict)

@@ -1,4 +1,6 @@
 import logging
+import os
+from typing import List
 
 from tavern._core.loader import load_single_document_yaml
 
@@ -7,14 +9,14 @@ from .dict_util import deep_dict_merge
 logger = logging.getLogger(__name__)
 
 
-def load_global_config(global_cfg_paths):
+def load_global_config(global_cfg_paths: List[os.PathLike]):
     """Given a list of file paths to global config files, load each of them and
     return the joined dictionary.
 
     This does a deep dict merge.
 
     Args:
-        global_cfg_paths (list(str)): List of filenames to load from
+        global_cfg_paths: List of filenames to load from
 
     Returns:
         dict: joined global configs

@@ -1,8 +1,9 @@
-import collections
+import collections.abc
 import logging
 import os
 import re
 import string
+from typing import Dict
 
 import box
 from box import Box
@@ -53,7 +54,7 @@ def _check_and_format_values(to_format, box_vars):
     return to_format.format(**box_vars)
 
 
-def _attempt_find_include(to_format, box_vars):
+def _attempt_find_include(to_format: str, box_vars: box.Box):
     formatter = string.Formatter()
     would_format = list(formatter.parse(to_format))
 
@@ -87,7 +88,7 @@ def _attempt_find_include(to_format, box_vars):
 
     would_replace = formatter.get_field(field_name, [], box_vars)[0]
 
-    return formatter.convert_field(would_replace, conversion)
+    return formatter.convert_field(would_replace, conversion)  # type: ignore
 
 
 def format_keys(val, variables, no_double_format=True):
@@ -224,7 +225,7 @@ def _deprecated_recurse_access_key(current_val, keys):
             raise
 
 
-def deep_dict_merge(initial_dct, merge_dct):
+def deep_dict_merge(initial_dct: Dict, merge_dct: collections.abc.Mapping) -> dict:
     """Recursive dict merge. Instead of updating only top-level keys,
     dict_merge recurses down into dicts nested to an arbitrary depth
     and returns the merged dict. Keys values present in merge_dct take
@@ -236,7 +237,7 @@ def deep_dict_merge(initial_dct, merge_dct):
         merge_dct: dct merged into dct
 
     Returns:
-        dict: recursively merged dict
+        recursively merged dict
     """
     dct = initial_dct.copy()
 

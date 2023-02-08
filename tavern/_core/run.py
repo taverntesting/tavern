@@ -1,9 +1,14 @@
+import collections.abc
 from contextlib import ExitStack
 import copy
 from copy import deepcopy
 from distutils.util import strtobool  # pylint: disable=deprecated-module
 import functools
 import logging
+import os
+from typing import List
+
+import box
 
 from tavern._core import exceptions
 from tavern._core.plugins import (
@@ -16,13 +21,16 @@ from tavern._core.strict_util import StrictLevel
 
 from .dict_util import format_keys, get_tavern_box
 from .pytest import call_hook
+from .pytest.config import TestConfig
 from .report import attach_stage_content, wrap_step
 from .testhelpers import delay, retry
 
 logger = logging.getLogger(__name__)
 
 
-def _resolve_test_stages(test_spec, available_stages):
+def _resolve_test_stages(
+    test_spec: collections.abc.Mapping, available_stages: collections.abc.Mapping
+):
     # Need to get a final list of stages in the tests (resolving refs)
     test_stages = []
     for raw_stage in test_spec["stages"]:
@@ -48,19 +56,24 @@ def _resolve_test_stages(test_spec, available_stages):
     return test_stages
 
 
-def _get_included_stages(tavern_box, test_block_config, test_spec, available_stages):
+def _get_included_stages(
+    tavern_box: box.Box,
+    test_block_config: TestConfig,
+    test_spec: collections.abc.Mapping,
+    available_stages: List[dict],
+) -> List[dict]:
     """
     Get any stages which were included via config files which will be available
     for use in this test
 
     Args:
-        available_stages (list): List of stages which already exist
-        tavern_box (box.Box): Available parameters for fomatting at this point
-        test_block_config (dict): Current test config dictionary
-        test_spec (dict): Specification for current test
+        available_stages: List of stages which already exist
+        tavern_box: Available parameters for fomatting at this point
+        test_block_config: Current test config dictionary
+        test_spec: Specification for current test
 
     Returns:
-        list: Fully resolved
+        Fully resolved stages
     """
 
     def stage_ids(s):
@@ -77,7 +90,7 @@ def _get_included_stages(tavern_box, test_block_config, test_spec, available_sta
                         )
                     )
 
-        included_stages = []
+        included_stages = []  # type: ignore
 
         for included in test_spec["includes"]:
             if "variables" in included:
@@ -98,22 +111,26 @@ def _get_included_stages(tavern_box, test_block_config, test_spec, available_sta
     return included_stages
 
 
-def run_test(in_file, test_spec, global_cfg):
+def run_test(
+    in_file: os.PathLike,
+    test_spec: collections.abc.MutableMapping,
+    global_cfg: TestConfig,
+):
     """Run a single tavern test
 
     Note that each tavern test can consist of multiple requests (log in,
-    create, update, delete, etc).
+     create, update, delete, etc).
 
     The global configuration is copied and used as an initial configuration for
     this test. Any values which are saved from any tests are saved into this
     test block and can be used for formatting in later stages in the test.
 
     Args:
-        in_file (str): filename containing this test
-        test_spec (dict): The specification for this test
-        global_cfg (TestConfig): Any global configuration for this test
+        in_file: filename containing this test
+        test_spec: The specification for this test
+        global_cfg: Any global configuration for this test
 
-    No Longer Raises:
+    Raises:
         TavernException: If any of the tests failed
     """
 
@@ -191,15 +208,17 @@ def run_test(in_file, test_spec, global_cfg):
             try:
                 step()
             except exceptions.TavernException as e:
-                e.stage = stage
-                e.test_block_config = test_block_config
+                e.stage = stage  # type: ignore
+                e.test_block_config = test_block_config  # type: ignore
                 raise
 
             if getonly(stage):
                 break
 
 
-def _calculate_stage_strictness(stage, test_block_config, test_spec):
+def _calculate_stage_strictness(
+    stage: dict, test_block_config: TestConfig, test_spec: collections.abc.Mapping
+):
     """Figure out the strictness for this stage
 
     Can be overridden per stage, or per test
@@ -259,13 +278,17 @@ def _calculate_stage_strictness(stage, test_block_config, test_spec):
     return new_strict
 
 
-def run_stage(sessions, stage, test_block_config):
+def run_stage(
+    sessions: collections.abc.Mapping,
+    stage: collections.abc.Mapping,
+    test_block_config: TestConfig,
+):
     """Run one stage from the test
 
     Args:
-        sessions (dict): Dictionary of relevant 'session' objects used for this test
-        stage (dict): specification of stage to be run
-        test_block_config (TestConfig): available variables for test
+        sessions: Dictionary of relevant 'session' objects used for this test
+        stage: specification of stage to be run
+        test_block_config: available variables for test
     """
     stage = copy.deepcopy(stage)
     name = stage["name"]

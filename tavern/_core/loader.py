@@ -436,15 +436,15 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):  # type:ignore
 yaml.dumper.Dumper.add_representer(ApproxScalar, ApproxSentinel.to_yaml)
 
 
-def load_single_document_yaml(filename):
+def load_single_document_yaml(filename: os.PathLike) -> dict:
     """
     Load a yaml file and expect only one document
 
     Args:
-        filename (str): path to document
+        filename: path to document
 
     Returns:
-        dict: content of file
+        content of file
 
     Raises:
         UnexpectedDocumentsError: If more than one document was in the file
