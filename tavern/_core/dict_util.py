@@ -1,8 +1,9 @@
-import collections
+import collections.abc
 import logging
 import os
 import re
 import string
+from typing import Any, Dict, List, Optional, Union
 
 import box
 from box import Box
@@ -53,7 +54,7 @@ def _check_and_format_values(to_format, box_vars):
     return to_format.format(**box_vars)
 
 
-def _attempt_find_include(to_format, box_vars):
+def _attempt_find_include(to_format: str, box_vars: box.Box):
     formatter = string.Formatter()
     would_format = list(formatter.parse(to_format))
 
@@ -87,7 +88,7 @@ def _attempt_find_include(to_format, box_vars):
 
     would_replace = formatter.get_field(field_name, [], box_vars)[0]
 
-    return formatter.convert_field(would_replace, conversion)
+    return formatter.convert_field(would_replace, conversion)  # type: ignore
 
 
 def format_keys(val, variables, no_double_format=True):
@@ -224,7 +225,7 @@ def _deprecated_recurse_access_key(current_val, keys):
             raise
 
 
-def deep_dict_merge(initial_dct, merge_dct):
+def deep_dict_merge(initial_dct: Dict, merge_dct: collections.abc.Mapping) -> dict:
     """Recursive dict merge. Instead of updating only top-level keys,
     dict_merge recurses down into dicts nested to an arbitrary depth
     and returns the merged dict. Keys values present in merge_dct take
@@ -236,7 +237,7 @@ def deep_dict_merge(initial_dct, merge_dct):
         merge_dct: dct merged into dct
 
     Returns:
-        dict: recursively merged dict
+        recursively merged dict
     """
     dct = initial_dct.copy()
 
@@ -323,7 +324,12 @@ def yield_keyvals(block):
             yield [sidx], sidx, val
 
 
-def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
+def check_keys_match_recursive(
+    expected_val: Any,
+    actual_val: Any,
+    keys: List[Union[str, int]],
+    strict: Optional[Union[StrictSetting, bool]] = True,
+) -> None:
     """Utility to recursively check response values
 
     expected and actual both have to be of the same type or it will raise an
@@ -343,11 +349,11 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
         code and to remove a load of the isinstance checks
 
     Args:
-        expected_val (dict, list, str): expected value
-        actual_val (dict, list, str): actual value
-        keys (list): any keys which have been recursively parsed to get to this
+        expected_val: expected value
+        actual_val: actual value
+        keys: any keys which have been recursively parsed to get to this
             point. Used for debug output.
-        strict (bool): Whether 'strict' key checking should be done. If this is
+        strict: Whether 'strict' key checking should be done. If this is
             False, a mismatch in dictionary keys between the expected and the
             actual values will not raise an error (but a mismatch in value will
             raise an error)

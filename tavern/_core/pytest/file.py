@@ -1,7 +1,9 @@
+import collections.abc
 import copy
 import functools
 import itertools
 import logging
+from typing import Dict, Iterator, List
 
 from box import Box
 import pytest
@@ -85,11 +87,11 @@ def _format_test_marks(original_marks, fmt_vars, test_name):
     return pytest_marks, formatted_marks
 
 
-def _generate_parametrized_test_items(keys, vals_combination):
+def _generate_parametrized_test_items(keys: List, vals_combination):
     """Generate test name from given key(s)/value(s) combination
 
     Args:
-        keys (list): list of keys to format name with
+        keys: list of keys to format name with
         vals_combination (tuple(str)): this combination of values for the key
     """
     flattened_values = []
@@ -162,7 +164,12 @@ def _generate_parametrized_test_items(keys, vals_combination):
     return variables, inner_formatted
 
 
-def _get_parametrized_items(parent, test_spec, parametrize_marks, pytest_marks):
+def _get_parametrized_items(
+    parent: pytest.File,
+    test_spec: Dict,
+    parametrize_marks: List[Dict],
+    pytest_marks: List[pytest.Mark],
+) -> Iterator[YamlItem]:
     """Return new items with new format values available based on the mark
 
     This will change the name from something like 'test a thing' to 'test a
@@ -252,20 +259,20 @@ class YamlFile(pytest.File):
 
         self.obj = FakeObj
 
-    def _get_test_fmt_vars(self, test_spec):
+    def _get_test_fmt_vars(self, test_spec: collections.abc.Mapping) -> dict:
         """Get any format variables that can be inferred for the test at this point
 
         Args:
-            test_spec (dict): Test specification, possibly with included config files
+            test_spec: Test specification, possibly with included config files
 
         Returns:
-            dict: available format variables
+            available format variables
         """
         # Get included variables so we can do things like:
         # skipif: {my_integer} > 2
         # skipif: 'https' in '{hostname}'
         # skipif: '{hostname}'.contains('ignoreme')
-        fmt_vars = {}
+        fmt_vars: Dict = {}
 
         global_cfg = load_global_cfg(self.config)
         fmt_vars.update(**global_cfg.variables)
@@ -290,17 +297,17 @@ class YamlFile(pytest.File):
         tavern_box.merge_update(**fmt_vars)
         return tavern_box
 
-    def _generate_items(self, test_spec):
+    def _generate_items(self, test_spec: Dict) -> Iterator[YamlItem]:
         """Modify or generate tests based on test spec
 
         If there are any 'parametrize' marks, this will generate extra tests
         based on the values
 
         Args:
-            test_spec (dict): Test specification
+            test_spec: Test specification
 
         Yields:
-            YamlItem: Tavern YAML test
+            Tavern YAML test
         """
         item = YamlItem.yamlitem_from_parent(
             test_spec["test_name"], self, test_spec, self.fspath
@@ -333,11 +340,11 @@ class YamlFile(pytest.File):
 
         yield item
 
-    def collect(self):
+    def collect(self) -> Iterator[YamlItem]:
         """Load each document in the given input file into a different test
 
         Yields:
-            YamlItem: Essentially an individual pytest 'test object'
+            Pytest 'test objects'
         """
 
         try:

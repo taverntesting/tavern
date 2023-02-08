@@ -1,6 +1,8 @@
 from functools import lru_cache
 import logging
 
+import pytest
+
 from tavern._core.dict_util import format_keys, get_tavern_box
 from tavern._core.general import load_global_config
 from tavern._core.pytest.config import TavernInternalConfig, TestConfig
@@ -101,20 +103,25 @@ def add_ini_options(parser):
     )
 
 
+def load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
+    return _load_global_cfg(pytest_config).with_new_variables()
+
+
 @lru_cache()
-def load_global_cfg(pytest_config):
+def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     """Load globally included config files from cmdline/cfg file arguments
 
     Args:
-        pytest_config (pytest.Config): Pytest config object
+        pytest_config: Pytest config object
 
     Returns:
-        dict: variables/stages/etc from global config files
+        variables/stages/etc from global config files
 
     Raises:
         exceptions.UnexpectedKeysError: Invalid settings in one or more config
             files detected
     """
+
     # Load ini first
     ini_global_cfg_paths = pytest_config.getini("tavern-global-cfg") or []
     # THEN load command line, to allow overwriting of values
@@ -172,7 +179,7 @@ def _load_global_follow_redirects(pytest_config):
     return get_option_generic(pytest_config, "tavern-always-follow-redirects", False)
 
 
-def get_option_generic(pytest_config, flag, default):
+def get_option_generic(pytest_config: pytest.Config, flag, default):
     """Get a configuration option or return the default
 
     Priority order is cmdline, then ini, then default"""

@@ -1,4 +1,5 @@
 import random
+import re
 import threading
 from unittest.mock import Mock, patch
 
@@ -114,27 +115,54 @@ class TestResponse:
         assert len(verifier.received_messages) == 1
         assert verifier.received_messages[0].topic == fake_message.topic
 
-    def test_ext_function_called(self, includes):
-        expected = {
-            "topic": "/a/b/c",
-            "payload": "hello",
-            "save": {
-                "$ext": {"function": "abcdef"},
-            },
-        }
+    @pytest.mark.parametrize("n_messages", (1, 2))
+    def test_ext_function_called_save(self, includes, n_messages: int):
+        """Make sure that it calls ext functions appropriately on individual MQTT
+        responses and saved the response"""
+        expecteds = []
+        fake_messages = []
+        for i in range(n_messages):
+            expected = {
+                "topic": "/a/b/c/{}".format(i + 1),
+                "payload": "hello",
+                "save": {
+                    "$ext": {"function": "function_name_{}".format(i + 1)},
+                },
+            }
 
-        fake_message = FakeMessage(expected)
+            fake_message = FakeMessage(expected)
 
-        verifier = self._get_fake_verifier(expected, [fake_message], includes)
+            expecteds += [expected]
+            fake_messages += [fake_message]
 
-        with patch("tavern.response.get_wrapped_response_function") as mock_get_wrapped:
-            verifier.verify(expected)
+        verifier = self._get_fake_verifier(expecteds, fake_messages, includes)
 
-        assert mock_get_wrapped.call_count == 1
-        assert mock_get_wrapped.call_args[0][0] == {"function": "abcdef"}
+        def fake_get_wrapped_response():
+            def wrap(ext):
+                def actual(response, *args, **kwargs):
+                    match = re.match(r"function_name_(?P<idx>\d+)", ext["function"])
+                    assert match
+                    message_number = match.group("idx")
+                    return {"saved_topic_{}".format(message_number): response.topic}
 
-        assert len(verifier.received_messages) == 1
-        assert verifier.received_messages[0].topic == fake_message.topic
+                return actual
+
+            return wrap
+
+        with patch(
+            "tavern.response.get_wrapped_response_function",
+            new_callable=fake_get_wrapped_response,
+        ):
+            saved = verifier.verify(None)
+
+        assert len(verifier.received_messages) == n_messages
+
+        for i in range(n_messages):
+            assert verifier.received_messages[i].topic == fake_messages[i].topic
+
+            assert len(saved) == n_messages
+
+            assert saved["saved_topic_{}".format(i + 1)] == expecteds[i]["topic"]
 
     def test_correct_message_eventually(self, includes):
         """One wrong messge, then the correct one"""

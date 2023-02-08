@@ -1,5 +1,6 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
 from abc import abstractmethod
+import dataclasses
 from distutils.util import strtobool  # pylint: disable=deprecated-module
 from itertools import chain
 import logging
@@ -233,6 +234,7 @@ class DictSentinel(TypeSentinel):
     constructor = dict
 
 
+@dataclasses.dataclass
 class RegexSentinel(TypeSentinel):
     """Sentinel that matches a regex in a part of the response
 
@@ -240,9 +242,10 @@ class RegexSentinel(TypeSentinel):
     """
 
     constructor = str
-    compiled = None
+    compiled: re.Pattern
 
     def __str__(self):
+        # pylint: disable=no-member
         return "<Tavern Regex sentinel for {}>".format(self.compiled.pattern)
 
     @property
@@ -255,15 +258,14 @@ class RegexSentinel(TypeSentinel):
 
     @classmethod
     def from_yaml(cls, loader, node):
-        c = cls()
-        c.compiled = re.compile(node.value)
-        return c
+        return cls(re.compile(node.value))
 
 
 class _RegexMatchSentinel(RegexSentinel):
     yaml_tag = "!re_match"
 
     def passes(self, string):
+        # pylint: disable=no-member
         return self.compiled.match(string) is not None
 
 
@@ -271,6 +273,7 @@ class _RegexFullMatchSentinel(RegexSentinel):
     yaml_tag = "!re_fullmatch"
 
     def passes(self, string):
+        # pylint: disable=no-member
         return self.compiled.fullmatch(string) is not None
 
 
@@ -278,6 +281,7 @@ class _RegexSearchSentinel(RegexSentinel):
     yaml_tag = "!re_search"
 
     def passes(self, string):
+        # pylint: disable=no-member
         return self.compiled.search(string) is not None
 
 
@@ -432,15 +436,15 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):  # type:ignore
 yaml.dumper.Dumper.add_representer(ApproxScalar, ApproxSentinel.to_yaml)
 
 
-def load_single_document_yaml(filename):
+def load_single_document_yaml(filename: os.PathLike) -> dict:
     """
     Load a yaml file and expect only one document
 
     Args:
-        filename (str): path to document
+        filename: path to document
 
     Returns:
-        dict: content of file
+        content of file
 
     Raises:
         UnexpectedDocumentsError: If more than one document was in the file

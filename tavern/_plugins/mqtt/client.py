@@ -4,6 +4,7 @@ from queue import Empty, Full, Queue
 import ssl
 import threading
 import time
+from typing import Dict
 
 import paho.mqtt.client as paho
 
@@ -293,14 +294,14 @@ class MQTTClient:
                 self._client.tls_insecure_set(True)
 
         # Topics to subscribe to - mapping of subscription message id to subscription object
-        self._subscribed: dict[int, _Subscription] = {}
+        self._subscribed: Dict[int, _Subscription] = {}
         # Lock to ensure there is no race condition when subscribing
         self._subscribe_lock = threading.RLock()
         # callback
         self._client.on_subscribe = self._on_subscribe
 
         # Mapping of topic -> subscription id, for indexing into self._subscribed
-        self._subscription_mappings: dict[str, int] = {}
+        self._subscription_mappings: Dict[str, int] = {}
         self._userdata = {
             "_subscription_mappings": self._subscription_mappings,
             "_subscribed": self._subscribed,

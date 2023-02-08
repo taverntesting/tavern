@@ -10,6 +10,7 @@ import pytest
 import requests
 
 from tavern._core import exceptions
+from tavern._core.pytest.util import load_global_cfg
 from tavern._core.run import run_test
 from tavern._plugins.mqtt.client import MQTTClient
 
@@ -497,3 +498,13 @@ class TestFormatMQTTVarsPlain:
             run_test("heif", fulltest, includes)
 
         assert pmock.called
+
+
+def test_copy_config(pytestconfig):
+    cfg_1 = load_global_cfg(pytestconfig)
+
+    cfg_1.variables["test1"] = "abc"
+
+    cfg_2 = load_global_cfg(pytestconfig)
+
+    assert cfg_2.variables.get("test1") is None
