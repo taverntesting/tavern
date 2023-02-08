@@ -48,10 +48,11 @@ coverage==7.0.0
     # via
     #   pytest-cov
     #   tavern (pyproject.toml)
-cryptography==38.0.4
+cryptography==39.0.1
     # via
     #   paramiko
     #   secretstorage
+    #   tavern (pyproject.toml)
 dill==0.3.6
     # via pylint
 distlib==0.3.6
