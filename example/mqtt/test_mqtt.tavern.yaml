@@ -670,3 +670,73 @@ stages:
       topic: /device/{random_device_id_2}
       payload: "0"
       timeout: 5
+
+---
+
+test_name: Save something from an ext function and reuse it, one response
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - *setup_device_for_test
+
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /devices/status
+    mqtt_response:
+      topic: /device/{random_device_id}/status/response
+      json:
+        lights: !anything
+      timeout: 3
+      qos: 1
+      save:
+        $ext:
+          function: testing_utils:return_hello
+
+  - name: Echo text
+    mqtt_publish:
+      topic: /device/{random_device_id}/echo
+      payload: "{hello}"
+    mqtt_response:
+      topic: /device/{random_device_id}/echo/response
+      payload: "there"
+      timeout: 5
+      qos: 1
+
+---
+
+test_name: Save something from an ext function and reuse it, multiple response
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - *setup_device_for_test
+
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /devices/status
+    mqtt_response:
+      - topic: /device/{random_device_id}/status/response
+        json:
+          lights: !anything
+        timeout: 3
+        qos: 1
+        save:
+          $ext:
+            function: testing_utils:return_hello
+
+  - name: Echo text
+    mqtt_publish:
+      topic: /device/{random_device_id}/echo
+      payload: "{hello}"
+    mqtt_response:
+      topic: /device/{random_device_id}/echo/response
+      payload: "there"
+      timeout: 5
+      qos: 1
