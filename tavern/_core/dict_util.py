@@ -3,7 +3,7 @@ import logging
 import os
 import re
 import string
-from typing import Dict
+from typing import Any, Dict, List, Optional, Union
 
 import box
 from box import Box
@@ -324,7 +324,12 @@ def yield_keyvals(block):
             yield [sidx], sidx, val
 
 
-def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
+def check_keys_match_recursive(
+    expected_val: Any,
+    actual_val: Any,
+    keys: List[Union[str, int]],
+    strict: Optional[Union[StrictSetting, bool]] = True,
+) -> None:
     """Utility to recursively check response values
 
     expected and actual both have to be of the same type or it will raise an
@@ -344,11 +349,11 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
         code and to remove a load of the isinstance checks
 
     Args:
-        expected_val (dict, list, str): expected value
-        actual_val (dict, list, str): actual value
-        keys (list): any keys which have been recursively parsed to get to this
+        expected_val: expected value
+        actual_val: actual value
+        keys: any keys which have been recursively parsed to get to this
             point. Used for debug output.
-        strict (bool): Whether 'strict' key checking should be done. If this is
+        strict: Whether 'strict' key checking should be done. If this is
             False, a mismatch in dictionary keys between the expected and the
             actual values will not raise an error (but a mismatch in value will
             raise an error)

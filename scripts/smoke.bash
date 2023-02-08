@@ -4,9 +4,12 @@ set -ex
 
 PYVER=3
 
+# Separate as isort can interfere with other testenvs
+tox --parallel -c tox.ini        \
+  -e py${PYVER}check
+
 tox --parallel -c tox.ini        \
   -e py${PYVER}       \
-  -e py${PYVER}check  \
   -e py${PYVER}lint   \
   -e py${PYVER}mypy
 
