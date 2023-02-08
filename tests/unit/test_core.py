@@ -500,11 +500,11 @@ class TestFormatMQTTVarsPlain:
         assert pmock.called
 
 
-def test_copy_config(config):
-    cfg = load_global_cfg(config)
+def test_copy_config(pytestconfig):
+    cfg_1 = load_global_cfg(pytestconfig)
 
-    cfg.variables["test1"] = "abc"
+    cfg_1.variables["test1"] = "abc"
 
-    copied = cfg.copy()
+    cfg_2 = load_global_cfg(pytestconfig)
 
-    assert copied.variables.get("test1") is None
+    assert cfg_2.variables.get("test1") is None

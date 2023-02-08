@@ -1,6 +1,5 @@
 import copy
 import dataclasses
-import logging
 from typing import Any
 
 from tavern._core.strict_util import StrictSetting
@@ -33,10 +32,15 @@ class TestConfig:
     tavern_internal: TavernInternalConfig
 
     def copy(self) -> "TestConfig":
-        # Use a deep copy, otherwise variables can leak into subsequent tests
-        logger = logging.getLogger(__name__)
-        logger.critical(self.variables)
-        return dataclasses.replace(self, variables=copy.deepcopy(self.variables))
+        """Returns a shallow copy of self"""
+        return copy.copy(self)
+
+    def with_new_variables(self) -> "TestConfig":
+        """Returns a shallow copy of self but with the variables copied. This stops things being
+        copied between tests. Can't use deepcopy because the variables might contain things that
+        can't be pickled and hence can't be deep copied."""
+        copied = self.copy()
+        return dataclasses.replace(copied, variables=copy.copy(self.variables))
 
     def with_strictness(self, new_strict: StrictSetting) -> "TestConfig":
         """Create a copy of the config but with a new strictness setting"""

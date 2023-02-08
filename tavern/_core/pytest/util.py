@@ -103,8 +103,12 @@ def add_ini_options(parser):
     )
 
 
-@lru_cache()
 def load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
+    return _load_global_cfg(pytest_config).with_new_variables()
+
+
+@lru_cache()
+def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     """Load globally included config files from cmdline/cfg file arguments
 
     Args:

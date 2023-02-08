@@ -9,7 +9,7 @@ from .dict_util import deep_dict_merge
 logger = logging.getLogger(__name__)
 
 
-def load_global_config(global_cfg_paths: List[os.PathLike]):
+def load_global_config(global_cfg_paths: List[os.PathLike]) -> dict:
     """Given a list of file paths to global config files, load each of them and
     return the joined dictionary.
 
@@ -19,9 +19,9 @@ def load_global_config(global_cfg_paths: List[os.PathLike]):
         global_cfg_paths: List of filenames to load from
 
     Returns:
-        dict: joined global configs
+        joined global configs
     """
-    global_cfg = {}
+    global_cfg: dict = {}
 
     if global_cfg_paths:
         logger.debug("Loading global config from %s", global_cfg_paths)
