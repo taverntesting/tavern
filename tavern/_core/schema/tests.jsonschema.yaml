@@ -413,6 +413,12 @@ properties:
                 - key
                 - vals
 
+  tinctures:
+    type: array
+    description: Tinctures for whole test
+    items:
+      $ref: "#/definitions/verify_block"
+
   strict:
     $ref: "#/definitions/strict_block"
 
