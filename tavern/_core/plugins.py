@@ -3,10 +3,9 @@
 This is here mainly to make MQTT easier, this will almost defintiely change
 significantly if/when a proper plugin system is implemented!
 """
-import collections.abc
 import dataclasses
 import logging
-from typing import Any, List, Optional
+from typing import Any, List, Mapping, Optional
 
 import stevedore
 
@@ -136,9 +135,7 @@ class _PluginCache:
 load_plugins = _PluginCache()
 
 
-def get_extra_sessions(
-    test_spec: collections.abc.Mapping, test_block_config: TestConfig
-) -> dict:
+def get_extra_sessions(test_spec: Mapping, test_block_config: TestConfig) -> dict:
     """Get extra 'sessions' for any extra test types
 
     Args:
@@ -169,9 +166,9 @@ def get_extra_sessions(
 
 
 def get_request_type(
-    stage: collections.abc.Mapping,
+    stage: Mapping,
     test_block_config: TestConfig,
-    sessions: collections.abc.Mapping,
+    sessions: Mapping,
 ) -> BaseRequest:
     """Get the request object for this stage
 
@@ -228,9 +225,7 @@ class ResponseVerifier(dict):
     plugin_name: str
 
 
-def _foreach_response(
-    stage: collections.abc.Mapping, test_block_config: TestConfig, action
-):
+def _foreach_response(stage: Mapping, test_block_config: TestConfig, action):
     """Do something for each response
 
     Args:
@@ -255,9 +250,9 @@ def _foreach_response(
 
 
 def get_expected(
-    stage: collections.abc.Mapping,
+    stage: Mapping,
     test_block_config: TestConfig,
-    sessions: collections.abc.Mapping,
+    sessions: Mapping,
 ):
     """Get expected responses for each type of request
 
@@ -291,10 +286,10 @@ def get_expected(
 
 
 def get_verifiers(
-    stage: collections.abc.Mapping,
+    stage: Mapping,
     test_block_config: TestConfig,
-    sessions: collections.abc.Mapping,
-    expected: collections.abc.Mapping,
+    sessions: Mapping,
+    expected: Mapping,
 ):
     """Get one or more response validators for this stage
 

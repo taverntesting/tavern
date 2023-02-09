@@ -1,4 +1,3 @@
-import collections.abc
 import logging
 import os
 import re
@@ -91,7 +90,7 @@ def _attempt_find_include(to_format: str, box_vars: box.Box):
     return formatter.convert_field(would_replace, conversion)  # type: ignore
 
 
-def format_keys(val, variables: collections.abc.Mapping, no_double_format: bool = True):
+def format_keys(val, variables: Mapping, no_double_format: bool = True):
     """recursively format a dictionary with the given values
 
     Args:
@@ -225,7 +224,7 @@ def _deprecated_recurse_access_key(current_val, keys):
             raise
 
 
-def deep_dict_merge(initial_dct: Dict, merge_dct: collections.abc.Mapping) -> dict:
+def deep_dict_merge(initial_dct: Dict, merge_dct: Mapping) -> dict:
     """Recursive dict merge. Instead of updating only top-level keys,
     dict_merge recurses down into dicts nested to an arbitrary depth
     and returns the merged dict. Keys values present in merge_dct take
@@ -242,11 +241,7 @@ def deep_dict_merge(initial_dct: Dict, merge_dct: collections.abc.Mapping) -> di
     dct = initial_dct.copy()
 
     for k in merge_dct:
-        if (
-            k in dct
-            and isinstance(dct[k], dict)
-            and isinstance(merge_dct[k], collections.abc.Mapping)
-        ):
+        if k in dct and isinstance(dct[k], dict) and isinstance(merge_dct[k], Mapping):
             dct[k] = deep_dict_merge(dct[k], merge_dct[k])
         else:
             dct[k] = merge_dct[k]

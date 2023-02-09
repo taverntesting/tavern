@@ -1,8 +1,7 @@
-import collections.abc
 import functools
 import importlib
 import logging
-from typing import Any, List, Optional
+from typing import Any, List, Mapping, Optional
 
 from tavern._core import exceptions
 
@@ -80,7 +79,7 @@ def import_ext_function(entrypoint: str):
     return function
 
 
-def get_wrapped_response_function(ext: collections.abc.Mapping):
+def get_wrapped_response_function(ext: Mapping):
     """Wraps a ext function with arguments given in the test file
 
     This is similar to functools.wrap, but this makes sure that 'response' is
@@ -107,7 +106,7 @@ def get_wrapped_response_function(ext: collections.abc.Mapping):
     return inner
 
 
-def get_wrapped_create_function(ext: collections.abc.Mapping):
+def get_wrapped_create_function(ext: Mapping):
     """Same as get_wrapped_response_function, but don't require a response"""
 
     func, args, kwargs = _get_ext_values(ext)
@@ -123,7 +122,7 @@ def get_wrapped_create_function(ext: collections.abc.Mapping):
     return inner
 
 
-def _get_ext_values(ext: collections.abc.Mapping):
+def _get_ext_values(ext: Mapping):
     args = ext.get("extra_args") or ()
     kwargs = ext.get("extra_kwargs") or {}
     try:

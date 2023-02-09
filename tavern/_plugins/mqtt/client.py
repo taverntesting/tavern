@@ -1,11 +1,10 @@
-import collections.abc
 import dataclasses
 import logging
 from queue import Empty, Full, Queue
 import ssl
 import threading
 import time
-from typing import Dict, Optional
+from typing import Dict, Mapping, MutableMapping, Optional
 
 import paho.mqtt.client as paho
 
@@ -62,8 +61,8 @@ def check_file_exists(key, filename) -> None:
 
 
 def _handle_tls_args(
-    tls_args: collections.abc.MutableMapping,
-) -> Optional[collections.abc.Mapping]:
+    tls_args: MutableMapping,
+) -> Optional[Mapping]:
     """Make sure TLS options are valid"""
 
     if not tls_args:
@@ -108,8 +107,8 @@ def _handle_tls_args(
 
 
 def _handle_ssl_context_args(
-    ssl_context_args: collections.abc.MutableMapping,
-) -> Optional[collections.abc.Mapping]:
+    ssl_context_args: MutableMapping,
+) -> Optional[Mapping]:
     """Make sure SSL Context options are valid"""
     if not ssl_context_args:
         return None

@@ -1,9 +1,8 @@
-import collections.abc
 import copy
 import functools
 import itertools
 import logging
-from typing import Dict, Iterator, List
+from typing import Dict, Iterator, List, Mapping
 
 from box import Box
 import pytest
@@ -260,7 +259,7 @@ class YamlFile(pytest.File):
 
         self.obj = FakeObj
 
-    def _get_test_fmt_vars(self, test_spec: collections.abc.Mapping) -> dict:
+    def _get_test_fmt_vars(self, test_spec: Mapping) -> dict:
         """Get any format variables that can be inferred for the test at this point
 
         Args:

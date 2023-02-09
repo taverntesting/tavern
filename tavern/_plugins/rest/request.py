@@ -5,6 +5,7 @@ import json
 import logging
 import mimetypes
 import os
+from typing import Mapping
 from urllib.parse import quote_plus
 import warnings
 
@@ -17,13 +18,14 @@ from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys, deep_dict_merge, format_keys
 from tavern._core.extfunctions import update_from_ext
 from tavern._core.general import valid_http_methods
+from tavern._core.pytest.config import TestConfig
 from tavern._core.report import attach_yaml
 from tavern.request import BaseRequest
 
 logger = logging.getLogger(__name__)
 
 
-def get_request_args(rspec, test_block_config):
+def get_request_args(rspec, test_block_config: TestConfig) -> dict:
     """Format the test spec given values inthe global config
 
     Todo:
@@ -31,11 +33,11 @@ def get_request_args(rspec, test_block_config):
         can be generated from a function
 
     Args:
-        rspec (dict): Test spec
-        test_block_config (dict): Test block config
+        rspec: Test spec
+        test_block_config: Test block config
 
     Returns:
-        dict: Formatted test spec
+        Formatted test spec
 
     Raises:
         BadSchemaError: Tried to pass a body in a GET request
@@ -199,7 +201,7 @@ def get_request_args(rspec, test_block_config):
 
 
 @contextlib.contextmanager
-def _set_cookies_for_request(session, request_args):
+def _set_cookies_for_request(session: requests.Session, request_args: Mapping):
     """
     Possibly reset session cookies for a single request then set them back.
     If no cookies were present in the request arguments, do nothing.
@@ -208,8 +210,8 @@ def _set_cookies_for_request(session, request_args):
     the cookies anyway
 
     Args:
-        session (requests.Session): Current session
-        request_args (dict): current request arguments
+        session: Current session
+        request_args: current request arguments
     """
     if "cookies" in request_args:
         old_cookies = dict_from_cookiejar(session.cookies)
@@ -220,13 +222,13 @@ def _set_cookies_for_request(session, request_args):
         yield
 
 
-def _check_allow_redirects(rspec, test_block_config):
+def _check_allow_redirects(rspec, test_block_config: TestConfig):
     """
     Check for allow_redirects flag in settings/stage
 
     Args:
-        rspec (dict): request dictionary
-        test_block_config (dict): config available for test
+        rspec: request dictionary
+        test_block_config: config available for test
 
     Returns:
         bool: Whether to allow redirects for this stage or not

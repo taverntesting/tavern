@@ -1,5 +1,4 @@
 from abc import abstractmethod
-import collections.abc
 from collections.abc import Mapping
 import logging
 from textwrap import indent
@@ -58,8 +57,8 @@ class BaseResponse:
 
     def recurse_check_key_match(
         self,
-        expected_block: Optional[collections.abc.Mapping],
-        block: collections.abc.Mapping,
+        expected_block: Optional[Mapping],
+        block: Mapping,
         blockname: str,
         strict: StrictSetting,
     ) -> None:
@@ -172,7 +171,7 @@ class BaseResponse:
                 )
 
     def maybe_get_save_values_from_ext(
-        self, response: Any, read_save_from: collections.abc.Mapping
+        self, response: Any, read_save_from: Mapping
     ) -> dict:
         """If there is an $ext function in the save block, call it and save the response
 
@@ -220,9 +219,9 @@ class BaseResponse:
     def maybe_get_save_values_from_save_block(
         self,
         key: str,
-        save_from: Optional[collections.abc.Mapping],
+        save_from: Optional[Mapping],
         *,
-        outer_save_block: Optional[collections.abc.Mapping] = None,
+        outer_save_block: Optional[Mapping] = None,
     ) -> dict:
         """Save a value from a specific block in the response.
 
@@ -248,8 +247,8 @@ class BaseResponse:
     def maybe_get_save_values_from_given_block(
         self,
         key: str,
-        save_from: Optional[collections.abc.Mapping],
-        to_save: collections.abc.Mapping,
+        save_from: Optional[Mapping],
+        to_save: Mapping,
     ) -> dict:
         """Save a value from a specific block in the response.
 

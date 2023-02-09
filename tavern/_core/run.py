@@ -1,12 +1,11 @@
-import collections.abc
 from contextlib import ExitStack
 import copy
 from copy import deepcopy
 from distutils.util import strtobool  # pylint: disable=deprecated-module
 import functools
 import logging
-import os
-from typing import List
+import pathlib
+from typing import List, Mapping, MutableMapping
 
 import box
 
@@ -28,9 +27,7 @@ from .testhelpers import delay, retry
 logger = logging.getLogger(__name__)
 
 
-def _resolve_test_stages(
-    test_spec: collections.abc.Mapping, available_stages: collections.abc.Mapping
-):
+def _resolve_test_stages(test_spec: Mapping, available_stages: Mapping):
     # Need to get a final list of stages in the tests (resolving refs)
     test_stages = []
     for raw_stage in test_spec["stages"]:
@@ -59,7 +56,7 @@ def _resolve_test_stages(
 def _get_included_stages(
     tavern_box: box.Box,
     test_block_config: TestConfig,
-    test_spec: collections.abc.Mapping,
+    test_spec: Mapping,
     available_stages: List[dict],
 ) -> List[dict]:
     """
@@ -112,8 +109,8 @@ def _get_included_stages(
 
 
 def run_test(
-    in_file: os.PathLike,
-    test_spec: collections.abc.MutableMapping,
+    in_file: pathlib.Path,
+    test_spec: MutableMapping,
     global_cfg: TestConfig,
 ) -> None:
     """Run a single tavern test
@@ -217,7 +214,7 @@ def run_test(
 
 
 def _calculate_stage_strictness(
-    stage: dict, test_block_config: TestConfig, test_spec: collections.abc.Mapping
+    stage: dict, test_block_config: TestConfig, test_spec: Mapping
 ):
     """Figure out the strictness for this stage
 
@@ -279,8 +276,8 @@ def _calculate_stage_strictness(
 
 
 def run_stage(
-    sessions: collections.abc.Mapping,
-    stage: collections.abc.Mapping,
+    sessions: Mapping,
+    stage: Mapping,
     test_block_config: TestConfig,
 ) -> None:
     """Run one stage from the test
