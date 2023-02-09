@@ -3,10 +3,10 @@ import logging
 import os
 import re
 import string
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Mapping, Optional, Union
 
 import box
-from box import Box
+from box.box import Box
 import jmespath
 
 from tavern._core import exceptions
@@ -24,7 +24,7 @@ from .strict_util import StrictSetting, extract_strict_setting
 logger = logging.getLogger(__name__)
 
 
-def _check_and_format_values(to_format, box_vars):
+def _check_and_format_values(to_format, box_vars: Mapping[str, Any]) -> str:
     formatter = string.Formatter()
     would_format = formatter.parse(to_format)
 
@@ -91,7 +91,7 @@ def _attempt_find_include(to_format: str, box_vars: box.Box):
     return formatter.convert_field(would_replace, conversion)  # type: ignore
 
 
-def format_keys(val, variables, no_double_format=True):
+def format_keys(val, variables: collections.abc.Mapping, no_double_format: bool = True):
     """recursively format a dictionary with the given values
 
     Args:
@@ -138,7 +138,7 @@ def format_keys(val, variables, no_double_format=True):
     return formatted
 
 
-def recurse_access_key(data, query):
+def recurse_access_key(data, query: str):
     """
     Search for something in the given data using the given query.
 
@@ -254,7 +254,7 @@ def deep_dict_merge(initial_dct: Dict, merge_dct: collections.abc.Mapping) -> di
     return dct
 
 
-def check_expected_keys(expected, actual):
+def check_expected_keys(expected, actual) -> None:
     """Check that a set of expected keys is a superset of the actual keys
 
     Args:

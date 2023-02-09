@@ -2,8 +2,9 @@ import importlib
 import json
 import logging
 import re
+from typing import Dict, Optional
 
-from box import Box
+from box.box import Box
 import jmespath
 import jwt
 
@@ -15,7 +16,7 @@ from tavern._core.schema.files import verify_pykwalify
 logger = logging.getLogger(__name__)
 
 
-def check_exception_raised(response, exception_location):
+def check_exception_raised(response, exception_location) -> None:
     """Make sure the result from the server is the same as the exception we
     expect to raise
 
@@ -52,7 +53,7 @@ def check_exception_raised(response, exception_location):
     assert response.status_code == int(exception.status.split()[0])
 
 
-def validate_jwt(response, jwt_key, **kwargs):
+def validate_jwt(response, jwt_key, **kwargs) -> Dict[str, Box]:
     """Make sure a jwt is valid
 
     This uses the pyjwt library to decode the jwt, so any keyword args needed
@@ -80,7 +81,7 @@ def validate_jwt(response, jwt_key, **kwargs):
     return {"jwt": Box(decoded)}
 
 
-def validate_pykwalify(response, schema):
+def validate_pykwalify(response, schema) -> None:
     """Make sure the response matches a given schema
 
     Args:
@@ -98,7 +99,9 @@ def validate_pykwalify(response, schema):
         verify_pykwalify(to_verify, schema)
 
 
-def validate_regex(response, expression, *, header=None, in_jmespath=None):
+def validate_regex(
+    response, expression, *, header=None, in_jmespath: Optional[str] = None
+) -> Dict[str, Box]:
     """Make sure the response matches a regex expression
 
     Args:
@@ -149,7 +152,7 @@ def validate_regex(response, expression, *, header=None, in_jmespath=None):
     return {"regex": Box(match.groupdict())}
 
 
-def validate_content(response, comparisons):
+def validate_content(response, comparisons) -> None:
     """Asserts expected value with actual value using JMES path expression
 
     Args:
@@ -175,7 +178,7 @@ def validate_content(response, comparisons):
             raise exceptions.JMESError("Error validating JMES") from e
 
 
-def check_jmespath_match(parsed_response, query, expected=None):
+def check_jmespath_match(parsed_response, query: str, expected=None):
     """
     Check that the JMES path given in 'query' is present in the given response
 

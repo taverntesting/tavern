@@ -2,18 +2,19 @@ import functools
 import json
 import logging
 
-from box import Box
+from box.box import Box
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys, format_keys
 from tavern._core.extfunctions import update_from_ext
+from tavern._core.pytest.config import TestConfig
 from tavern._core.report import attach_yaml
 from tavern.request import BaseRequest
 
 logger = logging.getLogger(__name__)
 
 
-def get_publish_args(rspec, test_block_config):
+def get_publish_args(rspec, test_block_config: TestConfig):
     """Format mqtt request args
 
     Todo:
@@ -39,7 +40,7 @@ class MQTTRequest(BaseRequest):
     Similar to RestRequest, publishes a single message.
     """
 
-    def __init__(self, client, rspec, test_block_config):
+    def __init__(self, client, rspec, test_block_config: TestConfig) -> None:
         expected = {"topic", "payload", "json", "qos", "retain"}
 
         check_expected_keys(expected, rspec)
@@ -73,5 +74,5 @@ class MQTTRequest(BaseRequest):
             raise exceptions.MQTTRequestException from e
 
     @property
-    def request_vars(self):
+    def request_vars(self) -> Box:
         return Box(self._original_publish_args)

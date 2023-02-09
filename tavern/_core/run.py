@@ -115,7 +115,7 @@ def run_test(
     in_file: os.PathLike,
     test_spec: collections.abc.MutableMapping,
     global_cfg: TestConfig,
-):
+) -> None:
     """Run a single tavern test
 
     Note that each tavern test can consist of multiple requests (log in,
@@ -282,7 +282,7 @@ def run_stage(
     sessions: collections.abc.Mapping,
     stage: collections.abc.Mapping,
     test_block_config: TestConfig,
-):
+) -> None:
     """Run one stage from the test
 
     Args:

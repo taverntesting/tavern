@@ -3,6 +3,7 @@ from distutils.util import strtobool  # pylint: disable=deprecated-module
 import enum
 import logging
 import re
+from typing import Optional, Tuple, Union
 
 from tavern._core import exceptions
 
@@ -21,7 +22,7 @@ valid_keys = ["json", "headers", "redirect_query_params"]
 valid_switches = ["on", "off", "list_any_order"]
 
 
-def strict_setting_factory(str_setting):
+def strict_setting_factory(str_setting: Optional[str]) -> StrictSetting:
     """Converts from cmdline/setting file to an enum"""
     if str_setting is None:
         return StrictSetting.UNSET
@@ -42,7 +43,7 @@ class StrictOption:
     section: str
     setting: StrictSetting
 
-    def is_on(self):
+    def is_on(self) -> bool:
         if self.section == "json":
             # Must be specifically disabled for response body
             return self.setting not in [StrictSetting.OFF, StrictSetting.LIST_ANY_ORDER]
@@ -51,7 +52,7 @@ class StrictOption:
             return self.setting in [StrictSetting.ON]
 
 
-def validate_and_parse_option(key):
+def validate_and_parse_option(key) -> StrictOption:
     regex = re.compile(
         "(?P<section>{sections})(:(?P<setting>{switches}))?".format(
             sections="|".join(valid_keys), switches="|".join(valid_switches)
@@ -90,7 +91,7 @@ class StrictLevel:
     )
 
     @classmethod
-    def from_options(cls, options):
+    def from_options(cls, options) -> "StrictLevel":
         if isinstance(options, str):
             options = [options]
         elif not isinstance(options, list):
@@ -112,15 +113,17 @@ class StrictLevel:
             ) from e
 
     @classmethod
-    def all_on(cls):
+    def all_on(cls) -> "StrictLevel":
         return cls.from_options([i + ":on" for i in valid_keys])
 
     @classmethod
-    def all_off(cls):
+    def all_off(cls) -> "StrictLevel":
         return cls.from_options([i + ":off" for i in valid_keys])
 
 
-def extract_strict_setting(strict):
+def extract_strict_setting(
+    strict: Union[None, bool, StrictSetting]
+) -> Tuple[bool, StrictSetting]:
     """Takes either a bool, StrictOption, or a StrictSetting and return the bool representation and StrictSetting representation"""
 
     logger.debug("Parsing a '%s': %s", type(strict), strict)

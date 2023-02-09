@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Dict
 from urllib.parse import parse_qs, urlparse
 
 from requests.status_codes import _codes  # type:ignore
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class RestResponse(BaseResponse):
-    def __init__(self, session, name, expected, test_block_config):
+    def __init__(self, session, name, expected, test_block_config) -> None:
         # pylint: disable=unused-argument
 
         defaults = {"status_code": 200}
@@ -43,7 +44,7 @@ class RestResponse(BaseResponse):
         else:
             return "<Not run yet>"
 
-    def _verbose_log_response(self, response):
+    def _verbose_log_response(self, response) -> None:
         """Verbosely log the response object, with query params etc."""
 
         logger.info("Response: '%s'", response)
@@ -76,7 +77,7 @@ class RestResponse(BaseResponse):
             logger.debug("Redirect location: %s", to_path)
             log_dict_block(redirect_query_params, "Redirect URL query parameters")
 
-    def _get_redirect_query_params(self, response):
+    def _get_redirect_query_params(self, response) -> Dict[str, str]:
         """If there was a redirect header, get any query parameters from it"""
 
         try:
@@ -96,7 +97,7 @@ class RestResponse(BaseResponse):
 
         return redirect_query_params
 
-    def _check_status_code(self, status_code, body):
+    def _check_status_code(self, status_code, body) -> None:
         expected_code = self.expected["status_code"]
 
         if (isinstance(expected_code, int) and status_code == expected_code) or (
@@ -205,7 +206,7 @@ class RestResponse(BaseResponse):
 
         return saved
 
-    def _validate_block(self, blockname, block):
+    def _validate_block(self, blockname: str, block) -> None:
         """Validate a block of the response
 
         Args:

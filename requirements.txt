@@ -1024,3 +1024,19 @@ zipp==3.11.0 \
 # pinned when the requirements file includes hashes. Consider using the --allow-unsafe flag.
 # pip
 # setuptools
+
+recommonmark~=0.5.0
+pytest~=7.2.0
+paho-mqtt~=1.5.1
+requests~=2.28.1
+PyYAML~=5.4.1
+Faker~=15.3.4
+py~=1.11.0
+stevedore~=3.3.3
+PyJWT~=2.6.0
+Flask~=2.2.2
+itsdangerous~=2.1.2
+attrs~=21.4.0
+pykwalify~=1.8.0
+jsonschema~=3.2.0
+jmespath~=0.10.0

@@ -30,7 +30,7 @@ def plugin_load_error(mgr, entry_point, err):
     raise exceptions.PluginLoadError(msg) from err
 
 
-def is_valid_reqresp_plugin(ext: Any):
+def is_valid_reqresp_plugin(ext: Any) -> bool:
     """Whether this is a valid 'reqresp' plugin
 
     Requires certain functions/variables to be present
@@ -69,9 +69,6 @@ class _PluginCache:
     # pylint: disable=inconsistent-return-statements
 
     plugins: List[Any] = dataclasses.field(default_factory=list)
-
-    # def __init__(self):
-    #     self.plugins = []
 
     def __call__(self, config: Optional[TestConfig] = None):
         if not config and not self.plugins:

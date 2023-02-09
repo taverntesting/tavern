@@ -1,5 +1,9 @@
 import logging
+import pathlib
+from typing import Optional, Tuple
 
+from _pytest._code.code import ExceptionInfo
+from _pytest.nodes import Node
 import attr
 import pytest
 import yaml
@@ -8,11 +12,12 @@ from tavern._core import exceptions
 from tavern._core.loader import error_on_empty_scalar
 from tavern._core.plugins import load_plugins
 from tavern._core.pytest import call_hook
+from tavern._core.pytest.error import ReprdError
 from tavern._core.report import attach_text
 from tavern._core.run import run_test
 from tavern._core.schema.files import verify_tests
 
-from .error import ReprdError
+from .config import TestConfig
 from .util import load_global_cfg
 
 logger = logging.getLogger(__name__)
@@ -26,38 +31,40 @@ class YamlItem(pytest.Item):
     should be enough to track down what went wrong
 
     Attributes:
-        path (str): filename that this test came from
-        spec (dict): The whole dictionary of the test
+        path: filename that this test came from
+        spec: The whole dictionary of the test
     """
 
     # See https://github.com/taverntesting/tavern/issues/825
     _patched_yaml = False
 
-    def __init__(self, *, name, parent, spec, path, **kwargs):
+    def __init__(
+        self, *, name: str, parent, spec, path: pathlib.Path, **kwargs
+    ) -> None:
         super().__init__(name, parent, **kwargs)
         self.path = path
         self.spec = spec
 
-        self.global_cfg = {}
+        self.global_cfg: Optional[TestConfig] = None
 
         if not YamlItem._patched_yaml:
-            yaml.parser.Parser.process_empty_scalar = (
+            yaml.parser.Parser.process_empty_scalar = (  # type:ignore
                 error_on_empty_scalar
-            )  # type:ignore
+            )
 
             YamlItem._patched_yaml = True
 
     @classmethod
-    def yamlitem_from_parent(cls, name, parent, spec, path):
+    def yamlitem_from_parent(cls, name, parent: Node, spec, path: pathlib.Path):
         return cls.from_parent(parent, name=name, spec=spec, path=path)
 
-    def initialise_fixture_attrs(self):
+    def initialise_fixture_attrs(self) -> None:
         # pylint: disable=protected-access,attribute-defined-outside-init
-        self.funcargs = {}
+        self.funcargs = {}  # type: ignore
 
         # _get_direct_parametrize_args checks parametrize arguments in Python
         # functions, but we don't care about that in Tavern.
-        self.session._fixturemanager._get_direct_parametrize_args = lambda _: []
+        self.session._fixturemanager._get_direct_parametrize_args = lambda _: []  # type: ignore
 
         fixtureinfo = self.session._fixturemanager.getfixtureinfo(
             self, self.obj, type(self), funcargs=False
@@ -76,7 +83,7 @@ class YamlItem(pytest.Item):
     #     Hack to stop issue with pytest-rerunfailures
     _initrequest = initialise_fixture_attrs
 
-    def setup(self):
+    def setup(self) -> None:
         super().setup()
         self._request._fillfixtures()  # pylint: disable=protected-access
 
@@ -102,7 +109,7 @@ class YamlItem(pytest.Item):
     def _obj(self):
         return self.obj
 
-    def add_markers(self, pytest_marks):
+    def add_markers(self, pytest_marks) -> None:
         for pm in pytest_marks:
             if pm.name == "usefixtures":
                 if (
@@ -172,7 +179,7 @@ class YamlItem(pytest.Item):
 
         return values
 
-    def runtest(self):
+    def runtest(self) -> None:
         self.global_cfg = load_global_cfg(self.config)
 
         load_plugins(self.global_cfg)
@@ -232,7 +239,9 @@ class YamlItem(pytest.Item):
                 variables=self.global_cfg.variables,
             )
 
-    def repr_failure(self, excinfo, style=None):
+    def repr_failure(
+        self, excinfo: ExceptionInfo[BaseException], style: Optional[str] = None
+    ):
         """called when self.runtest() raises an exception.
 
         By default, will raise a custom formatted traceback if it's a tavern error. if not, will use the default
@@ -254,10 +263,10 @@ class YamlItem(pytest.Item):
         attach_text(str(error), name="error_output")
         return error
 
-    def reportinfo(self):
+    def reportinfo(self) -> Tuple[pathlib.Path, int, str]:
         # pylint:disable=no-member
         return (
-            self.fspath,
+            self.path,
             0,
             "{s.path}::{s.name:s}".format(s=self),
         )

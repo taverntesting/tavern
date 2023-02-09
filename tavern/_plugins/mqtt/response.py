@@ -24,7 +24,7 @@ _default_timeout = 1
 
 
 class MQTTResponse(BaseResponse):
-    def __init__(self, client: MQTTClient, name, expected, test_block_config):
+    def __init__(self, client: MQTTClient, name, expected, test_block_config) -> None:
         super().__init__(name, expected, test_block_config)
 
         self._client = client
@@ -135,7 +135,7 @@ class MQTTResponse(BaseResponse):
         return saved
 
     def _await_messages_on_topic(
-        self, topic, expected
+        self, topic: str, expected
     ) -> Tuple[List["_ReturnedMessage"], List[str]]:
         """
         Waits for the specific message
@@ -235,7 +235,7 @@ class _ReturnedMessage:
 
 
 class _MessageVerifier:
-    def __init__(self, test_block_config, expected):
+    def __init__(self, test_block_config, expected) -> None:
         self.expires = time.time() + expected.get("timeout", _default_timeout)
 
         self.expected = expected
@@ -248,7 +248,7 @@ class _MessageVerifier:
 
         # Any warnings to do with the request
         # eg, if a message was received but it didn't match, message had payload, etc.
-        self.warnings = []
+        self.warnings: List[str] = []
 
     def is_valid(self, msg: MQTTMessage) -> bool:
 

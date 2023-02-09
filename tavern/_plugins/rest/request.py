@@ -8,7 +8,7 @@ import os
 from urllib.parse import quote_plus
 import warnings
 
-from box import Box
+from box.box import Box
 import requests
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
@@ -442,7 +442,7 @@ class RestRequest(BaseRequest):
         # "auth"
     ]
 
-    def __init__(self, session, rspec, test_block_config):
+    def __init__(self, session, rspec, test_block_config) -> None:
         """Prepare request
 
         Args:
@@ -555,5 +555,5 @@ class RestRequest(BaseRequest):
             raise exceptions.RestRequestException from e
 
     @property
-    def request_vars(self):
+    def request_vars(self) -> Box:
         return Box(self._request_args)

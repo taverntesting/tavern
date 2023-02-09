@@ -4,11 +4,12 @@ import time
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
+from tavern._core.pytest.config import TestConfig
 
 logger = logging.getLogger(__name__)
 
 
-def delay(stage, when, variables):
+def delay(stage, when, variables) -> None:
     """Look for delay_before/delay_after and sleep
 
     Args:
@@ -26,7 +27,7 @@ def delay(stage, when, variables):
         time.sleep(length)
 
 
-def retry(stage, test_block_config):
+def retry(stage, test_block_config: TestConfig):
     """Look for retry and try to repeat the stage `retry` times.
 
     Args:
@@ -99,7 +100,7 @@ def retry(stage, test_block_config):
         return retry_wrapper
 
 
-def maybe_format_max_retries(max_retries, test_block_config):
+def maybe_format_max_retries(max_retries: int, test_block_config: TestConfig) -> int:
     """Possibly handle max_retries validation"""
 
     # Probably a format variable, or just invalid (in which case it will fail further down)

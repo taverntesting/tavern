@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 class ReprdError:
-    def __init__(self, exce, item):
+    def __init__(self, exce, item) -> None:
         self.exce = exce
         self.item = item
 
@@ -105,7 +105,7 @@ class ReprdError:
 
     def _print_test_stage(
         self, tw, code_lines, missing_format_vars, line_start
-    ):  # pylint: disable=no-self-use
+    ) -> None:  # pylint: disable=no-self-use
         """Print the direct source lines from this test stage
 
         If we couldn't get the stage for some reason, print the entire test out.
@@ -133,7 +133,7 @@ class ReprdError:
             else:
                 tw.line(line, white=True)
 
-    def _print_formatted_stage(self, tw, stage):
+    def _print_formatted_stage(self, tw, stage) -> None:
         """Print the 'formatted' stage that Tavern will actually use to send the
         request/process the response
 
@@ -161,7 +161,7 @@ class ReprdError:
                 continue
             tw.line("  {}".format(line), white=True)
 
-    def _print_errors(self, tw):
+    def _print_errors(self, tw) -> None:
         """Print any errors in the 'normal' Pytest style
 
         Args:
@@ -176,7 +176,7 @@ class ReprdError:
         for line in lines:
             tw.line(line, red=True, bold=True)
 
-    def toterminal(self, tw):
+    def toterminal(self, tw) -> None:
         """Print out a custom error message to the terminal"""
 
         # Try to get the stage so we can print it out. I'm not sure if the stage
@@ -216,12 +216,12 @@ class ReprdError:
         self._print_errors(tw)
 
     @property
-    def longreprtext(self):
+    def longreprtext(self) -> str:
         # information.
         io = StringIO()
         tw = TerminalWriter(file=io)
         self.toterminal(tw)
         return io.getvalue().strip()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.longreprtext

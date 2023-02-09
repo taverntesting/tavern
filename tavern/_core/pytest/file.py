@@ -236,7 +236,7 @@ def _get_parametrized_items(
         )
         # And create the new item
         item_new = YamlItem.yamlitem_from_parent(
-            spec_new["test_name"], parent, spec_new, parent.fspath
+            spec_new["test_name"], parent, spec_new, parent.path
         )
         item_new.add_markers(pytest_marks)
 
@@ -248,14 +248,15 @@ class YamlFile(pytest.File):
 
     # pylint:disable=no-member
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         # This (and the FakeObj below) are to make pytest-pspec not error out.
         # The 'docstring' for this is the filename, the 'docstring' for each
         # individual test is the actual test name.
         class FakeObj:
-            __doc__ = self.fspath.strpath
+            # pylint: disable=empty-docstring
+            __doc__ = str(self.path)
 
         self.obj = FakeObj
 
@@ -310,7 +311,7 @@ class YamlFile(pytest.File):
             Tavern YAML test
         """
         item = YamlItem.yamlitem_from_parent(
-            test_spec["test_name"], self, test_spec, self.fspath
+            test_spec["test_name"], self, test_spec, self.path
         )
 
         original_marks = test_spec.get("marks", [])
@@ -350,14 +351,14 @@ class YamlFile(pytest.File):
         try:
             # Convert to a list so we can catch parser exceptions
             all_tests = list(
-                yaml.load_all(self.fspath.open(encoding="utf-8"), Loader=IncludeLoader)
+                yaml.load_all(self.path.open(encoding="utf-8"), Loader=IncludeLoader)
             )
         except yaml.parser.ParserError as e:
             raise exceptions.BadSchemaError from e
 
         for test_spec in all_tests:
             if not test_spec:
-                logger.warning("Empty document in input file '%s'", self.fspath)
+                logger.warning("Empty document in input file '%s'", self.path)
                 continue
 
             try:
