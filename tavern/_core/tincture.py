@@ -23,12 +23,12 @@ class Tinctures:
                 self._needs_response.append(r)
                 next(r)
 
-    def end_tinctures(self, response):
+    def end_tinctures(self, response) -> None:
         """
         Send the response object to any tinctures that want it
 
         Args:
-            The response from 'run' for the stage
+            response: The response from 'run' for the stage
         """
         if self._needs_response is None:
             raise RuntimeError(
