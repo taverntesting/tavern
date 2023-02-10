@@ -2,7 +2,7 @@ import logging
 import os
 import re
 import string
-from typing import Any, Dict, List, Mapping, Optional, Union
+from typing import Any, Dict, List, Mapping, Union
 
 import box
 from box.box import Box
@@ -18,7 +18,7 @@ from tavern._core.loader import (
 )
 
 from .formatted_str import FormattedString
-from .strict_util import StrictSetting, extract_strict_setting
+from .strict_util import StrictSetting, StrictSettingKinds, extract_strict_setting
 
 logger = logging.getLogger(__name__)
 
@@ -323,7 +323,7 @@ def check_keys_match_recursive(
     expected_val: Any,
     actual_val: Any,
     keys: List[Union[str, int]],
-    strict: Optional[Union[StrictSetting, bool]] = True,
+    strict: StrictSettingKinds = True,
 ) -> None:
     """Utility to recursively check response values
 

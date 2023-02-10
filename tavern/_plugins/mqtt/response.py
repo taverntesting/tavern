@@ -14,6 +14,7 @@ from tavern._core.dict_util import check_keys_match_recursive
 from tavern._core.loader import ANYTHING
 from tavern._core.pytest.newhooks import call_hook
 from tavern._core.report import attach_yaml
+from tavern._core.strict_util import StrictSetting
 from tavern.response import BaseResponse
 
 from .client import MQTTClient
@@ -244,7 +245,7 @@ class _MessageVerifier:
         )
 
         test_strictness = test_block_config.strict
-        self.block_strictness = test_strictness.setting_for("json")
+        self.block_strictness: StrictSetting = test_strictness.setting_for("json")
 
         # Any warnings to do with the request
         # eg, if a message was received but it didn't match, message had payload, etc.

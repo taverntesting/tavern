@@ -108,6 +108,8 @@ class StrictLevel:
                 "'strict' setting should be a list of strings"
             )
 
+        logger.debug("Parsing options to strict level: %s", options)
+
         parsed = [validate_and_parse_option(key) for key in options]
 
         return cls(**{i.section: i for i in parsed})
@@ -130,9 +132,10 @@ class StrictLevel:
         return cls.from_options([i + ":off" for i in valid_keys])
 
 
-def extract_strict_setting(
-    strict: Union[None, bool, StrictSetting]
-) -> Tuple[bool, StrictSetting]:
+StrictSettingKinds = Union[None, bool, StrictSetting, StrictOption]
+
+
+def extract_strict_setting(strict: StrictSettingKinds) -> Tuple[bool, StrictSetting]:
     """Takes either a bool, StrictOption, or a StrictSetting and return the bool representation
     and StrictSetting representation"""
 
@@ -155,5 +158,7 @@ def extract_strict_setting(
                 strict, type(strict)
             )
         )
+
+    logger.debug("Got strict as '%s', setting as '%s'", strict, strict_setting)
 
     return strict, strict_setting

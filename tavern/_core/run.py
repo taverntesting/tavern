@@ -215,7 +215,7 @@ def run_test(
 
 def _calculate_stage_strictness(
     stage: dict, test_block_config: TestConfig, test_spec: Mapping
-):
+) -> StrictLevel:
     """Figure out the strictness for this stage
 
     Can be overridden per stage, or per test
