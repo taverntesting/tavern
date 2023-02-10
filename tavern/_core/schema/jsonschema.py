@@ -104,7 +104,7 @@ CustomValidator = extend(
 )
 
 
-def verify_jsonschema(to_verify, schema):
+def verify_jsonschema(to_verify, schema) -> None:
     """Verify a generic file against a given jsonschema
 
     Args:

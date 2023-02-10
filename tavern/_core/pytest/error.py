@@ -2,6 +2,7 @@ from io import StringIO
 import json
 import logging
 import re
+from typing import List, Mapping, Optional
 
 from _pytest._code.code import FormattedExcinfo
 from _pytest._io import TerminalWriter
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 class ReprdError:
-    def __init__(self, exce, item):
+    def __init__(self, exce, item) -> None:
         self.exce = exce
         self.item = item
 
@@ -43,17 +44,19 @@ class ReprdError:
 
         return keys
 
-    def _print_format_variables(self, tw, code_lines):
+    def _print_format_variables(
+        self, tw: TerminalWriter, code_lines: List[str]
+    ) -> List[str]:
         """Print a list of the format variables and their value at this stage
 
         If the format variable is not defined, print it in red as '???'
 
         Args:
-            tw (TerminalWriter): Pytest TW instance
-            code_lines (list(str)): Source lines for this stage
+            tw: Pytest TW instance
+            code_lines: Source lines for this stage
 
         Returns:
-            list(str): List of all missing format variables
+            List of all missing format variables
         """
 
         def read_formatted_vars(lines):
@@ -104,8 +107,12 @@ class ReprdError:
         return missing
 
     def _print_test_stage(
-        self, tw, code_lines, missing_format_vars, line_start
-    ):  # pylint: disable=no-self-use
+        self,
+        tw: TerminalWriter,
+        code_lines: List[str],
+        missing_format_vars: List[str],
+        line_start: Optional[int],
+    ) -> None:  # pylint: disable=no-self-use
         """Print the direct source lines from this test stage
 
         If we couldn't get the stage for some reason, print the entire test out.
@@ -114,11 +121,11 @@ class ReprdError:
         them in red.
 
         Args:
-            tw (Termin): Pytest TW instance
-            code_lines (list(str)): Raw source for this stage
-            missing_format_vars (list(str)): List of all missing format
+            tw: Pytest TW instance
+            code_lines: Raw source for this stage
+            missing_format_vars: List of all missing format
                 variables for this stage
-            line_start (int): Source line of this stage
+            line_start: Source line of this stage
         """
         if line_start:
             tw.line(
@@ -133,13 +140,13 @@ class ReprdError:
             else:
                 tw.line(line, white=True)
 
-    def _print_formatted_stage(self, tw, stage):
+    def _print_formatted_stage(self, tw: TerminalWriter, stage: Mapping) -> None:
         """Print the 'formatted' stage that Tavern will actually use to send the
         request/process the response
 
         Args:
-            tw (TerminalWriter): Pytest TW instance
-            stage (dict): The 'final' stage used by Tavern
+            tw: Pytest TW instance
+            stage: The 'final' stage used by Tavern
         """
         tw.line("Formatted stage:", white=True, bold=True)
 
@@ -161,11 +168,11 @@ class ReprdError:
                 continue
             tw.line("  {}".format(line), white=True)
 
-    def _print_errors(self, tw):
+    def _print_errors(self, tw: TerminalWriter) -> None:
         """Print any errors in the 'normal' Pytest style
 
         Args:
-            tw (TerminalWriter): Pytest TW instance
+            tw: Pytest TW instance
         """
         tw.line("Errors:", white=True, bold=True)
 
@@ -176,7 +183,7 @@ class ReprdError:
         for line in lines:
             tw.line(line, red=True, bold=True)
 
-    def toterminal(self, tw):
+    def toterminal(self, tw: TerminalWriter) -> None:
         """Print out a custom error message to the terminal"""
 
         # Try to get the stage so we can print it out. I'm not sure if the stage
@@ -216,12 +223,12 @@ class ReprdError:
         self._print_errors(tw)
 
     @property
-    def longreprtext(self):
+    def longreprtext(self) -> str:
         # information.
         io = StringIO()
         tw = TerminalWriter(file=io)
         self.toterminal(tw)
         return io.getvalue().strip()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.longreprtext

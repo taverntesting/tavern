@@ -1,5 +1,6 @@
 import os
 import re
+from typing import Union
 
 from pykwalify.types import is_bool, is_float, is_int
 
@@ -49,7 +50,7 @@ float_variable = validator_like(is_float_like, "float-like")
 bool_variable = validator_like(is_bool_like, "bool-like")
 
 
-def _validate_one_extension(input_value):
+def _validate_one_extension(input_value) -> None:
     expected_keys = {"function", "extra_args", "extra_kwargs"}
     extra = set(input_value) - expected_keys
 
@@ -78,7 +79,7 @@ def _validate_one_extension(input_value):
         )
 
 
-def validate_extensions(value, rule_obj, path):
+def validate_extensions(value, rule_obj, path) -> bool:
     """Given a specification for calling a validation function, make sure that
     the arguments are valid (ie, function is valid, arguments are of the
     correct type...)
@@ -108,7 +109,7 @@ def validate_extensions(value, rule_obj, path):
     return True
 
 
-def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path):
+def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path) -> bool:
     # pylint: disable=unused-argument
     err_msg = "status_code has to be an integer or a list of integers (got {})".format(
         value
@@ -124,7 +125,7 @@ def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path):
     return True
 
 
-def check_usefixtures(value, rule_obj, path):
+def check_usefixtures(value, rule_obj, path) -> bool:
     # pylint: disable=unused-argument
     err_msg = "'usefixtures' has to be a list with at least one item"
 
@@ -137,7 +138,7 @@ def check_usefixtures(value, rule_obj, path):
     return True
 
 
-def verify_oneof_id_name(value, rule_obj, path):
+def verify_oneof_id_name(value, rule_obj, path) -> bool:
     """Checks that if 'name' is not present, 'id' is"""
     # pylint: disable=unused-argument
 
@@ -152,7 +153,7 @@ def verify_oneof_id_name(value, rule_obj, path):
     return True
 
 
-def check_parametrize_marks(value, rule_obj, path):
+def check_parametrize_marks(value, rule_obj, path) -> bool:
     # pylint: disable=unused-argument
 
     key_or_keys = value["key"]
@@ -215,7 +216,7 @@ def check_parametrize_marks(value, rule_obj, path):
     return True
 
 
-def validate_data_key(value, rule_obj, path):
+def validate_data_key(value, rule_obj, path) -> bool:
     """Validate the 'data' key in a http request
 
     From requests docs:
@@ -259,7 +260,7 @@ def validate_data_key(value, rule_obj, path):
     return True
 
 
-def validate_request_json(value, rule_obj, path):
+def validate_request_json(value, rule_obj, path) -> bool:
     """Performs the above match, but also matches a dict or a list. This it
     just because it seems like you can't match a dict OR a list in pykwalify
     """
@@ -289,7 +290,7 @@ def validate_request_json(value, rule_obj, path):
     return True
 
 
-def validate_json_with_ext(value, rule_obj, path):
+def validate_json_with_ext(value, rule_obj, path) -> bool:
     """Validate json with extensions"""
     validate_request_json(value, rule_obj, path)
 
@@ -303,7 +304,7 @@ def validate_json_with_ext(value, rule_obj, path):
     return True
 
 
-def check_strict_key(value, rule_obj, path):
+def check_strict_key(value, rule_obj, path) -> bool:
     """Make sure the 'strict' key is either a bool or a list"""
     # pylint: disable=unused-argument
 
@@ -321,7 +322,7 @@ def check_strict_key(value, rule_obj, path):
     return True
 
 
-def validate_timeout_tuple_or_float(value, rule_obj, path):
+def validate_timeout_tuple_or_float(value, rule_obj, path) -> bool:
     """Make sure timeout is a float/int or a tuple of floats/ints"""
     # pylint: disable=unused-argument
 
@@ -346,7 +347,7 @@ def validate_timeout_tuple_or_float(value, rule_obj, path):
     return True
 
 
-def validate_verify_bool_or_str(value, rule_obj, path):
+def validate_verify_bool_or_str(value: Union[bool, str], rule_obj, path) -> bool:
     """Make sure the 'verify' key is either a bool or a str"""
     # pylint: disable=unused-argument
 
@@ -358,7 +359,7 @@ def validate_verify_bool_or_str(value, rule_obj, path):
     return True
 
 
-def validate_cert_tuple_or_str(value, rule_obj, path):
+def validate_cert_tuple_or_str(value, rule_obj, path) -> bool:
     """Make sure the 'cert' key is either a str or tuple"""
     # pylint: disable=unused-argument
 
@@ -379,7 +380,7 @@ def validate_cert_tuple_or_str(value, rule_obj, path):
     return True
 
 
-def validate_file_spec(value, rule_obj, path):
+def validate_file_spec(value, rule_obj, path) -> bool:
     """Validate file upload arguments"""
     # pylint: disable=unused-argument
 
@@ -433,7 +434,7 @@ def raise_body_error(value, rule_obj, path):
     raise BadSchemaError(msg)
 
 
-def retry_variable(value, rule_obj, path):
+def retry_variable(value: int, rule_obj, path) -> bool:
     """Check retry variables"""
 
     int_variable(value, rule_obj, path)
@@ -445,7 +446,7 @@ def retry_variable(value, rule_obj, path):
     return True
 
 
-def validate_http_method(value, rule_obj, path):
+def validate_http_method(value: str, rule_obj, path) -> bool:
     """Check http method"""
     # pylint: disable=unused-argument
 

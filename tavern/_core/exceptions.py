@@ -9,7 +9,7 @@ class BadSchemaError(TavernException):
 class TestFailError(TavernException):
     """Test failed somehow"""
 
-    def __init__(self, msg, failures=None):
+    def __init__(self, msg, failures=None) -> None:
         super().__init__(msg)
         self.failures = failures or []
 
@@ -117,7 +117,7 @@ class InvalidFormattedJsonError(TavernException):
 class InvalidExtBlockException(TavernException):
     """Tried to use the '$ext' block in a place it is no longer valid to use it"""
 
-    def __init__(self, block):
+    def __init__(self, block) -> None:
         super().__init__(
             "$ext function found in block {} - this has been moved to verify_response_with block - see documentation".format(
                 block
