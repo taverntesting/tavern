@@ -114,10 +114,10 @@ class StrictLevel:
 
         return cls(**{i.section: i for i in parsed})
 
-    def setting_for(self, section: str) -> StrictSetting:
+    def option_for(self, section: str) -> StrictOption:
         """Provides a string-based way of getting strict settings for a section"""
         try:
-            return getattr(self, section).setting
+            return getattr(self, section)
         except AttributeError as e:
             raise exceptions.InvalidConfigurationException(
                 "No setting for '{}'".format(section)

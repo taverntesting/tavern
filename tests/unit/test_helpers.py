@@ -394,35 +394,37 @@ class TestStrictUtils:
 
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     def test_defaults(self, section):
-        level = StrictLevel([])
+        level = StrictLevel()
 
         if section == "json":
-            assert level.setting_for(section)
+            assert level.option_for(section)
         else:
-            assert not level.setting_for(section)
+            assert not level.option_for(section)
 
     @pytest.mark.parametrize("section", ["true", "1", "hi", ""])
     def test_defaults(self, section):
         level = StrictLevel()
 
         with pytest.raises(exceptions.InvalidConfigurationException):
-            level.setting_for(section)
+            level.option_for(section)
 
     # These tests could be removed, they are testing implementation details...
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     def test_set_on(self, section):
         level = StrictLevel.from_options([section + ":on"])
 
-        assert level.setting_for(section) == StrictSetting.ON
+        assert level.option_for(section).setting == StrictSetting.ON
+        assert level.option_for(section).is_on()
 
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     def test_set_off(self, section):
         level = StrictLevel.from_options([section + ":off"])
 
-        assert level.setting_for(section) == StrictSetting.OFF
+        assert level.option_for(section).setting == StrictSetting.OFF
+        assert not level.option_for(section).is_on()
 
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     def test_unset(self, section):
         level = StrictLevel.from_options([section])
 
-        assert level.setting_for(section) == StrictSetting.UNSET
+        assert level.option_for(section).setting == StrictSetting.UNSET

@@ -245,7 +245,7 @@ class _MessageVerifier:
         )
 
         test_strictness = test_block_config.strict
-        self.block_strictness: StrictSetting = test_strictness.setting_for("json")
+        self.block_strictness: StrictSetting = test_strictness.option_for("json")
 
         # Any warnings to do with the request
         # eg, if a message was received but it didn't match, message had payload, etc.

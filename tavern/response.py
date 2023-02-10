@@ -9,7 +9,7 @@ from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
 from tavern._core.extfunctions import get_wrapped_response_function
 from tavern._core.pytest.config import TestConfig
-from tavern._core.strict_util import StrictSetting
+from tavern._core.strict_util import StrictOption
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ class BaseResponse:
         expected_block: Optional[Mapping],
         block: Mapping,
         blockname: str,
-        strict: StrictSetting,
+        strict: StrictOption,
     ) -> None:
         """Valid returned data against expected data
 

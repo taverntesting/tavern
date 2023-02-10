@@ -233,5 +233,5 @@ class RestResponse(BaseResponse):
         logger.debug("Validating response %s against %s", blockname, expected_block)
 
         test_strictness = self.test_block_config.strict
-        block_strictness = test_strictness.setting_for(blockname)
+        block_strictness = test_strictness.option_for(blockname)
         self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
