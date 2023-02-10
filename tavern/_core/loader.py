@@ -1,7 +1,6 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
 from abc import abstractmethod
 import dataclasses
-from distutils.util import strtobool  # pylint: disable=deprecated-module
 from itertools import chain
 import logging
 import os.path
@@ -19,6 +18,7 @@ from yaml.scanner import Scanner
 
 from tavern._core import exceptions
 from tavern._core.exceptions import BadSchemaError
+from tavern._core.strtobool import strtobool
 
 logger = logging.getLogger(__name__)
 
@@ -364,7 +364,7 @@ class StrToBoolConstructor:
     """Using `bool` as a constructor directly will evaluate all strings to `True`."""
 
     def __new__(cls, s):
-        return bool(strtobool(s))
+        return strtobool(s)
 
 
 class BoolToken(TypeConvertToken):

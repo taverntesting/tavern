@@ -2,7 +2,7 @@ import copy
 import dataclasses
 from typing import Any
 
-from tavern._core.strict_util import StrictSetting
+from tavern._core.strict_util import StrictLevel
 
 
 @dataclasses.dataclass(frozen=True)
@@ -22,10 +22,11 @@ class TestConfig:
         follow_redirects: whether the test should follow redirects
         variables: variables available for use in the stage
         strict: Strictness for test/stage
+        stages: Any extra stages imported from other config files
     """
 
     variables: dict
-    strict: StrictSetting
+    strict: StrictLevel
     follow_redirects: bool
     stages: list
 
@@ -42,6 +43,6 @@ class TestConfig:
         copied = self.copy()
         return dataclasses.replace(copied, variables=copy.copy(self.variables))
 
-    def with_strictness(self, new_strict: StrictSetting) -> "TestConfig":
+    def with_strictness(self, new_strict: StrictLevel) -> "TestConfig":
         """Create a copy of the config but with a new strictness setting"""
         return dataclasses.replace(self, strict=new_strict)

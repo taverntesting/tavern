@@ -2,6 +2,7 @@ import collections.abc
 from functools import wraps
 import logging
 import time
+from typing import Mapping
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def delay(
     stage: collections.abc.Mapping, when: str, variables: collections.abc.Mapping
-):
+) -> None:
     """Look for delay_before/delay_after and sleep
 
     Args:
@@ -30,12 +31,12 @@ def delay(
         time.sleep(length)
 
 
-def retry(stage: collections.abc.Mapping, test_block_config: TestConfig):
+def retry(stage: Mapping, test_block_config: TestConfig):
     """Look for retry and try to repeat the stage `retry` times.
 
     Args:
-        test_block_config: Configuration for current test
         stage: test stage
+        test_block_config: Configuration for current test
     """
 
     if "max_retries" in stage:

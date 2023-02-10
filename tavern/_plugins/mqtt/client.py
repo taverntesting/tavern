@@ -4,7 +4,7 @@ from queue import Empty, Full, Queue
 import ssl
 import threading
 import time
-from typing import Dict
+from typing import Dict, Mapping, MutableMapping, Optional
 
 import paho.mqtt.client as paho
 
@@ -50,7 +50,7 @@ class _Subscription:
     queue: Queue = dataclasses.field(default_factory=lambda: Queue(maxsize=30))
 
 
-def check_file_exists(key, filename):
+def check_file_exists(key, filename) -> None:
     try:
         with open(filename, "r", encoding="utf-8"):
             pass
@@ -60,7 +60,9 @@ def check_file_exists(key, filename):
         ) from e
 
 
-def _handle_tls_args(tls_args):
+def _handle_tls_args(
+    tls_args: MutableMapping,
+) -> Optional[Mapping]:
     """Make sure TLS options are valid"""
 
     if not tls_args:
@@ -104,7 +106,9 @@ def _handle_tls_args(tls_args):
     return tls_args
 
 
-def _handle_ssl_context_args(ssl_context_args):
+def _handle_ssl_context_args(
+    ssl_context_args: MutableMapping,
+) -> Optional[Mapping]:
     """Make sure SSL Context options are valid"""
     if not ssl_context_args:
         return None
@@ -144,7 +148,7 @@ def _handle_ssl_context_args(ssl_context_args):
 class MQTTClient:
     # pylint: disable=too-many-instance-attributes,too-many-locals,too-many-statements
 
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         expected_blocks = {
             "client": {
                 "client_id",
@@ -309,7 +313,7 @@ class MQTTClient:
         self._client.user_data_set(self._userdata)
 
     @staticmethod
-    def _on_message(client, userdata, message):
+    def _on_message(client, userdata, message) -> None:
         """Add any messages received to the queue
 
         Todo:
@@ -333,7 +337,7 @@ class MQTTClient:
             logger.exception("message queue full")
 
     @staticmethod
-    def _on_connect(client, userdata, flags, rc):
+    def _on_connect(client, userdata, flags, rc) -> None:
         # pylint: disable=unused-argument,protected-access
         logger.debug(
             "Client '%s' successfully connected to the broker with result code '%s'",
@@ -342,7 +346,7 @@ class MQTTClient:
         )
 
     @staticmethod
-    def _on_disconnect(client, userdata, rc):
+    def _on_disconnect(client, userdata, rc) -> None:
         # pylint: disable=unused-argument,protected-access
         if rc == paho.CONNACK_ACCEPTED:
             logger.debug(
@@ -358,19 +362,19 @@ class MQTTClient:
             )
 
     @staticmethod
-    def _on_connect_fail(client, userdata):
+    def _on_connect_fail(client, userdata) -> None:
         # pylint: disable=unused-argument,protected-access
         logger.error(
             "Failed to connect client '%s' to the broker", client._client_id.decode()
         )
 
     @staticmethod
-    def _on_socket_open(client, userdata, socket):
+    def _on_socket_open(client, userdata, socket) -> None:
         # pylint: disable=unused-argument
         logger.debug("MQTT socket opened")
 
     @staticmethod
-    def _on_socket_close(client, userdata, socket):
+    def _on_socket_close(client, userdata, socket) -> None:
         # pylint: disable=unused-argument
         logger.debug("MQTT socket closed")
 
@@ -427,7 +431,7 @@ class MQTTClient:
 
         return msg
 
-    def _wait_for_subscriptions(self):
+    def _wait_for_subscriptions(self) -> None:
         """Wait for all pending subscriptions to finish"""
         logger.debug("Checking subscriptions")
 
@@ -465,7 +469,7 @@ class MQTTClient:
         if not to_wait_for:
             logger.debug("Finished subscribing to all topics")
 
-    def subscribe(self, topic: str, *args, **kwargs):
+    def subscribe(self, topic: str, *args, **kwargs) -> None:
         """Subscribe to topic
 
         should be called for every expected message in mqtt_response
@@ -484,13 +488,13 @@ class MQTTClient:
                     "Error subscribing to '{}' (err code {})".format(topic, status)
                 )
 
-    def unsubscribe_all(self):
+    def unsubscribe_all(self) -> None:
         """Unsubscribe from all topics"""
         with self._subscribe_lock:
             for subscription in self._subscribed.values():
                 self._client.unsubscribe(subscription.topic)
 
-    def _on_subscribe(self, client, userdata, mid, granted_qos):
+    def _on_subscribe(self, client, userdata, mid: int, granted_qos) -> None:
         # pylint: disable=unused-argument
         with self._subscribe_lock:
             if mid in self._subscribed:
@@ -505,13 +509,13 @@ class MQTTClient:
                     mid,
                 )
 
-    def __enter__(self):
+    def __enter__(self) -> "MQTTClient":
         logger.debug("Connecting to %s", self._connect_args)
 
         self._client.connect_async(**self._connect_args)
         self._client.loop_start()
 
-        elapsed = 0
+        elapsed = 0.0
 
         while elapsed < self._connect_timeout:
             # pylint: disable=protected-access
@@ -532,9 +536,9 @@ class MQTTClient:
         )
         raise exceptions.MQTTError
 
-    def __exit__(self, *args):
+    def __exit__(self, *args) -> None:
         self._disconnect()
 
-    def _disconnect(self):
+    def _disconnect(self) -> None:
         self._client.disconnect()
         self._client.loop_stop()

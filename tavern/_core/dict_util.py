@@ -1,12 +1,11 @@
-import collections.abc
 import logging
 import os
 import re
 import string
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Mapping, Union
 
 import box
-from box import Box
+from box.box import Box
 import jmespath
 
 from tavern._core import exceptions
@@ -19,12 +18,12 @@ from tavern._core.loader import (
 )
 
 from .formatted_str import FormattedString
-from .strict_util import StrictSetting, extract_strict_setting
+from .strict_util import StrictSetting, StrictSettingKinds, extract_strict_setting
 
 logger = logging.getLogger(__name__)
 
 
-def _check_and_format_values(to_format, box_vars):
+def _check_and_format_values(to_format, box_vars: Mapping[str, Any]) -> str:
     formatter = string.Formatter()
     would_format = formatter.parse(to_format)
 
@@ -91,11 +90,7 @@ def _attempt_find_include(to_format: str, box_vars: box.Box):
     return formatter.convert_field(would_replace, conversion)  # type: ignore
 
 
-def format_keys(
-    val: collections.abc.Mapping,
-    variables: collections.abc.Mapping,
-    no_double_format: bool = True,
-) -> Any:
+def format_keys(val, variables: Mapping, no_double_format: bool = True):
     """recursively format a dictionary with the given values
 
     Args:
@@ -142,7 +137,7 @@ def format_keys(
     return formatted
 
 
-def recurse_access_key(data, query):
+def recurse_access_key(data, query: str):
     """
     Search for something in the given data using the given query.
 
@@ -229,7 +224,7 @@ def _deprecated_recurse_access_key(current_val, keys):
             raise
 
 
-def deep_dict_merge(initial_dct: Dict, merge_dct: collections.abc.Mapping) -> dict:
+def deep_dict_merge(initial_dct: Dict, merge_dct: Mapping) -> dict:
     """Recursive dict merge. Instead of updating only top-level keys,
     dict_merge recurses down into dicts nested to an arbitrary depth
     and returns the merged dict. Keys values present in merge_dct take
@@ -246,11 +241,7 @@ def deep_dict_merge(initial_dct: Dict, merge_dct: collections.abc.Mapping) -> di
     dct = initial_dct.copy()
 
     for k in merge_dct:
-        if (
-            k in dct
-            and isinstance(dct[k], dict)
-            and isinstance(merge_dct[k], collections.abc.Mapping)
-        ):
+        if k in dct and isinstance(dct[k], dict) and isinstance(merge_dct[k], Mapping):
             dct[k] = deep_dict_merge(dct[k], merge_dct[k])
         else:
             dct[k] = merge_dct[k]
@@ -258,7 +249,7 @@ def deep_dict_merge(initial_dct: Dict, merge_dct: collections.abc.Mapping) -> di
     return dct
 
 
-def check_expected_keys(expected, actual):
+def check_expected_keys(expected, actual) -> None:
     """Check that a set of expected keys is a superset of the actual keys
 
     Args:
@@ -332,7 +323,7 @@ def check_keys_match_recursive(
     expected_val: Any,
     actual_val: Any,
     keys: List[Union[str, int]],
-    strict: Optional[Union[StrictSetting, bool]] = True,
+    strict: StrictSettingKinds = True,
 ) -> None:
     """Utility to recursively check response values
 

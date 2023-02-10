@@ -243,7 +243,7 @@ stages:
     response:
       status_code: 200
 
-  # We could use strtobool from distutils to make this pass, but it's a bit
+  # We could use strtobool to make this pass, but it's a bit
   # of magic
   # - name: Convert bool from a string
   #   request:

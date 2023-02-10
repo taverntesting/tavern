@@ -1,45 +1,45 @@
 from abc import abstractmethod
-import collections.abc
 from collections.abc import Mapping
 import logging
 from textwrap import indent
 import traceback
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
 from tavern._core.extfunctions import get_wrapped_response_function
-from tavern._core.strict_util import StrictSetting
+from tavern._core.pytest.config import TestConfig
+from tavern._core.strict_util import StrictOption
 
 logger = logging.getLogger(__name__)
 
 
-def indent_err_text(err):
+def indent_err_text(err: str) -> str:
     if err == "null":
         err = "<No body>"
     return indent(err, " " * 4)
 
 
 class BaseResponse:
-    def __init__(self, name, expected, test_block_config):
+    def __init__(self, name: str, expected, test_block_config: TestConfig) -> None:
         self.name = name
 
         # all errors in this response
-        self.errors = []
+        self.errors: List[str] = []
 
-        self.validate_functions = []
+        self.validate_functions: List = []
         self._check_for_validate_functions(expected)
 
         self.test_block_config = test_block_config
 
         self.expected = expected
 
-        self.response = None
+        self.response: Optional[Any] = None
 
-    def _str_errors(self):
+    def _str_errors(self) -> str:
         return "- " + "\n- ".join(self.errors)
 
-    def _adderr(self, msg, *args, e=None):
+    def _adderr(self, msg, *args, e=None) -> None:
         if e:
             logger.exception(msg, *args)
         else:
@@ -57,11 +57,11 @@ class BaseResponse:
 
     def recurse_check_key_match(
         self,
-        expected_block: Optional[collections.abc.Mapping],
-        block: collections.abc.Mapping,
+        expected_block: Optional[Mapping],
+        block: Mapping,
         blockname: str,
-        strict: StrictSetting,
-    ):
+        strict: StrictOption,
+    ) -> None:
         """Valid returned data against expected data
 
         Todo:
@@ -110,7 +110,7 @@ class BaseResponse:
         except exceptions.KeyMismatchError as e:
             self._adderr(e.args[0], e=e)
 
-    def _check_for_validate_functions(self, response_block):
+    def _check_for_validate_functions(self, response_block) -> None:
         """
         See if there were any functions specified in the response block and save them for later use
 
@@ -146,7 +146,7 @@ class BaseResponse:
         # Could put in an isinstance check here
         check_deprecated_validate("json")
 
-    def _maybe_run_validate_functions(self, response):
+    def _maybe_run_validate_functions(self, response) -> None:
         """Run validation functions if available
 
         Note:
@@ -171,7 +171,7 @@ class BaseResponse:
                 )
 
     def maybe_get_save_values_from_ext(
-        self, response: Any, read_save_from: collections.abc.Mapping
+        self, response: Any, read_save_from: Mapping
     ) -> dict:
         """If there is an $ext function in the save block, call it and save the response
 
@@ -219,9 +219,9 @@ class BaseResponse:
     def maybe_get_save_values_from_save_block(
         self,
         key: str,
-        save_from: Optional[collections.abc.Mapping],
+        save_from: Optional[Mapping],
         *,
-        outer_save_block: Optional[collections.abc.Mapping] = None,
+        outer_save_block: Optional[Mapping] = None,
     ) -> dict:
         """Save a value from a specific block in the response.
 
@@ -247,8 +247,8 @@ class BaseResponse:
     def maybe_get_save_values_from_given_block(
         self,
         key: str,
-        save_from: Optional[collections.abc.Mapping],
-        to_save: collections.abc.Mapping,
+        save_from: Optional[Mapping],
+        to_save: Mapping,
     ) -> dict:
         """Save a value from a specific block in the response.
 

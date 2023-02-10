@@ -394,3 +394,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 #  2.0.0           2.0.0 release (2023-01-12)
 
 ##  2.0.1           Bump some dependency versions (2023-01-16)
+
+##  2.0.2           Fix saving in MQTT (2023-02-08)

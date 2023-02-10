@@ -1,15 +1,18 @@
 import dataclasses
-from distutils.util import strtobool  # pylint: disable=deprecated-module
 import enum
 import logging
 import re
+from typing import List, Optional, Tuple, Union
 
 from tavern._core import exceptions
+from tavern._core.strtobool import strtobool
 
 logger = logging.getLogger(__name__)
 
 
 class StrictSetting(enum.Enum):
+    """The actual setting for a particular block"""
+
     ON = 1
     OFF = 2
     UNSET = 3
@@ -21,7 +24,7 @@ valid_keys = ["json", "headers", "redirect_query_params"]
 valid_switches = ["on", "off", "list_any_order"]
 
 
-def strict_setting_factory(str_setting):
+def strict_setting_factory(str_setting: Optional[str]) -> StrictSetting:
     """Converts from cmdline/setting file to an enum"""
     if str_setting is None:
         return StrictSetting.UNSET
@@ -39,10 +42,13 @@ def strict_setting_factory(str_setting):
 
 @dataclasses.dataclass(frozen=True)
 class StrictOption:
+    """The section and the setting. The setting is only stored here because json works slightly
+    differently, otherwise it's redundant"""
+
     section: str
     setting: StrictSetting
 
-    def is_on(self):
+    def is_on(self) -> bool:
         if self.section == "json":
             # Must be specifically disabled for response body
             return self.setting not in [StrictSetting.OFF, StrictSetting.LIST_ANY_ORDER]
@@ -51,7 +57,7 @@ class StrictOption:
             return self.setting in [StrictSetting.ON]
 
 
-def validate_and_parse_option(key):
+def validate_and_parse_option(key: str) -> StrictOption:
     regex = re.compile(
         "(?P<section>{sections})(:(?P<setting>{switches}))?".format(
             sections="|".join(valid_keys), switches="|".join(valid_switches)
@@ -79,6 +85,10 @@ def validate_and_parse_option(key):
 
 @dataclasses.dataclass(frozen=True)
 class StrictLevel:
+    """Strictness settings for every block in a response
+
+    TODO: change the name of this class, it's awful"""
+
     json: StrictOption = dataclasses.field(
         default=StrictOption("json", strict_setting_factory(None))
     )
@@ -90,7 +100,7 @@ class StrictLevel:
     )
 
     @classmethod
-    def from_options(cls, options):
+    def from_options(cls, options: Union[List[str], str]) -> "StrictLevel":
         if isinstance(options, str):
             options = [options]
         elif not isinstance(options, list):
@@ -98,11 +108,13 @@ class StrictLevel:
                 "'strict' setting should be a list of strings"
             )
 
+        logger.debug("Parsing options to strict level: %s", options)
+
         parsed = [validate_and_parse_option(key) for key in options]
 
         return cls(**{i.section: i for i in parsed})
 
-    def setting_for(self, section):
+    def option_for(self, section: str) -> StrictOption:
         """Provides a string-based way of getting strict settings for a section"""
         try:
             return getattr(self, section)
@@ -112,16 +124,20 @@ class StrictLevel:
             ) from e
 
     @classmethod
-    def all_on(cls):
+    def all_on(cls) -> "StrictLevel":
         return cls.from_options([i + ":on" for i in valid_keys])
 
     @classmethod
-    def all_off(cls):
+    def all_off(cls) -> "StrictLevel":
         return cls.from_options([i + ":off" for i in valid_keys])
 
 
-def extract_strict_setting(strict):
-    """Takes either a bool, StrictOption, or a StrictSetting and return the bool representation and StrictSetting representation"""
+StrictSettingKinds = Union[None, bool, StrictSetting, StrictOption]
+
+
+def extract_strict_setting(strict: StrictSettingKinds) -> Tuple[bool, StrictSetting]:
+    """Takes either a bool, StrictOption, or a StrictSetting and return the bool representation
+    and StrictSetting representation"""
 
     logger.debug("Parsing a '%s': %s", type(strict), strict)
 
@@ -142,5 +158,7 @@ def extract_strict_setting(strict):
                 strict, type(strict)
             )
         )
+
+    logger.debug("Got strict as '%s', setting as '%s'", strict, strict_setting)
 
     return strict, strict_setting
