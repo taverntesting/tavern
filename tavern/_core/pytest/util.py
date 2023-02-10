@@ -2,7 +2,6 @@ from functools import lru_cache
 import logging
 from typing import Any, Dict
 
-from _pytest.config import Config
 import pytest
 
 from tavern._core.dict_util import format_keys, get_tavern_box
@@ -62,7 +61,7 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
     )
 
 
-def add_ini_options(parser) -> None:
+def add_ini_options(parser: pytest.Parser) -> None:
     """Add an option to pass in a global config file for tavern
 
     See also _core.pytesthook._core.util.add_parser_options
@@ -155,7 +154,7 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     return global_cfg
 
 
-def _load_global_backends(pytest_config) -> Dict[str, Any]:
+def _load_global_backends(pytest_config: pytest.Config) -> Dict[str, Any]:
     """Load which backend should be used"""
     backend_settings = {}
 
@@ -168,7 +167,7 @@ def _load_global_backends(pytest_config) -> Dict[str, Any]:
     return backend_settings
 
 
-def _load_global_strictness(pytest_config: Config) -> StrictLevel:
+def _load_global_strictness(pytest_config: pytest.Config) -> StrictLevel:
     """Load the global 'strictness' setting"""
 
     options = get_option_generic(pytest_config, "tavern-strict", [])
@@ -176,7 +175,7 @@ def _load_global_strictness(pytest_config: Config) -> StrictLevel:
     return StrictLevel.from_options(options)
 
 
-def _load_global_follow_redirects(pytest_config: Config):
+def _load_global_follow_redirects(pytest_config: pytest.Config):
     """Load the global 'follow redirects' setting"""
     return get_option_generic(pytest_config, "tavern-always-follow-redirects", False)
 

@@ -1,16 +1,18 @@
 import dataclasses
-from distutils.util import strtobool  # pylint: disable=deprecated-module
 import enum
 import logging
 import re
-from typing import Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 from tavern._core import exceptions
+from tavern._core.strtobool import strtobool
 
 logger = logging.getLogger(__name__)
 
 
 class StrictSetting(enum.Enum):
+    """The actual setting for a particular block"""
+
     ON = 1
     OFF = 2
     UNSET = 3
@@ -40,6 +42,9 @@ def strict_setting_factory(str_setting: Optional[str]) -> StrictSetting:
 
 @dataclasses.dataclass(frozen=True)
 class StrictOption:
+    """The section and the setting. The setting is only stored here because json works slightly
+    differently, otherwise it's redundant"""
+
     section: str
     setting: StrictSetting
 
@@ -52,7 +57,7 @@ class StrictOption:
             return self.setting in [StrictSetting.ON]
 
 
-def validate_and_parse_option(key) -> StrictOption:
+def validate_and_parse_option(key: str) -> StrictOption:
     regex = re.compile(
         "(?P<section>{sections})(:(?P<setting>{switches}))?".format(
             sections="|".join(valid_keys), switches="|".join(valid_switches)
@@ -80,6 +85,10 @@ def validate_and_parse_option(key) -> StrictOption:
 
 @dataclasses.dataclass(frozen=True)
 class StrictLevel:
+    """Strictness settings for every block in a response
+
+    TODO: change the name of this class, it's awful"""
+
     json: StrictOption = dataclasses.field(
         default=StrictOption("json", strict_setting_factory(None))
     )
@@ -91,7 +100,7 @@ class StrictLevel:
     )
 
     @classmethod
-    def from_options(cls, options) -> "StrictLevel":
+    def from_options(cls, options: Union[List[str], str]) -> "StrictLevel":
         if isinstance(options, str):
             options = [options]
         elif not isinstance(options, list):
@@ -103,10 +112,10 @@ class StrictLevel:
 
         return cls(**{i.section: i for i in parsed})
 
-    def setting_for(self, section):
+    def setting_for(self, section: str) -> StrictSetting:
         """Provides a string-based way of getting strict settings for a section"""
         try:
-            return getattr(self, section)
+            return getattr(self, section).setting
         except AttributeError as e:
             raise exceptions.InvalidConfigurationException(
                 "No setting for '{}'".format(section)
@@ -124,7 +133,8 @@ class StrictLevel:
 def extract_strict_setting(
     strict: Union[None, bool, StrictSetting]
 ) -> Tuple[bool, StrictSetting]:
-    """Takes either a bool, StrictOption, or a StrictSetting and return the bool representation and StrictSetting representation"""
+    """Takes either a bool, StrictOption, or a StrictSetting and return the bool representation
+    and StrictSetting representation"""
 
     logger.debug("Parsing a '%s': %s", type(strict), strict)
 

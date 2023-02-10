@@ -403,7 +403,7 @@ class TestStrictUtils:
 
     @pytest.mark.parametrize("section", ["true", "1", "hi", ""])
     def test_defaults(self, section):
-        level = StrictLevel([])
+        level = StrictLevel()
 
         with pytest.raises(exceptions.InvalidConfigurationException):
             level.setting_for(section)
@@ -413,18 +413,16 @@ class TestStrictUtils:
     def test_set_on(self, section):
         level = StrictLevel.from_options([section + ":on"])
 
-        assert level.setting_for(section).setting == StrictSetting.ON
-        assert level.setting_for(section).is_on()
+        assert level.setting_for(section) == StrictSetting.ON
 
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     def test_set_off(self, section):
         level = StrictLevel.from_options([section + ":off"])
 
-        assert level.setting_for(section).setting == StrictSetting.OFF
-        assert not level.setting_for(section).is_on()
+        assert level.setting_for(section) == StrictSetting.OFF
 
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     def test_unset(self, section):
         level = StrictLevel.from_options([section])
 
-        assert level.setting_for(section).setting == StrictSetting.UNSET
+        assert level.setting_for(section) == StrictSetting.UNSET

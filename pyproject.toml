@@ -169,7 +169,6 @@ ignore-imports = true
 
 [tool.pylint.TYPECHECK]
 ignored-classes = "RememberComposer"
-ignored-modules = "distutils"
 
 [tool.flake8]
 ignore = ["E501", "W503", "C901", "W504"]

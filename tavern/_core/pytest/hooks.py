@@ -1,3 +1,4 @@
+import os
 import pathlib
 import re
 
@@ -8,12 +9,12 @@ from tavern._core import exceptions
 from .util import add_ini_options, add_parser_options, get_option_generic
 
 
-def pytest_addoption(parser) -> None:
+def pytest_addoption(parser: pytest.Parser) -> None:
     add_parser_options(parser.addoption, with_defaults=False)
     add_ini_options(parser)
 
 
-def pytest_collect_file(parent, path: pathlib.Path):
+def pytest_collect_file(parent, path: os.PathLike):
     """On collecting files, get any files that end in .tavern.yaml or .tavern.yml as tavern
     test files
     """
@@ -40,6 +41,8 @@ def pytest_collect_file(parent, path: pathlib.Path):
     match_tavern_file = compiled.search
 
     from .file import YamlFile
+
+    path = pathlib.Path(path)
 
     if match_tavern_file(str(path)):
         return YamlFile.from_parent(parent, path=path)

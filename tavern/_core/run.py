@@ -1,7 +1,6 @@
 from contextlib import ExitStack
 import copy
 from copy import deepcopy
-from distutils.util import strtobool  # pylint: disable=deprecated-module
 import functools
 import logging
 import pathlib
@@ -22,6 +21,7 @@ from .dict_util import format_keys, get_tavern_box
 from .pytest import call_hook
 from .pytest.config import TestConfig
 from .report import attach_stage_content, wrap_step
+from .strtobool import strtobool
 from .testhelpers import delay, retry
 
 logger = logging.getLogger(__name__)
