@@ -1,8 +1,9 @@
 import json
 import logging
-from typing import Dict
+from typing import Dict, Mapping, Optional
 from urllib.parse import parse_qs, urlparse
 
+import requests
 from requests.status_codes import _codes  # type:ignore
 
 from tavern._core import exceptions
@@ -15,16 +16,16 @@ logger = logging.getLogger(__name__)
 
 
 class RestResponse(BaseResponse):
-    def __init__(self, session, name, expected, test_block_config) -> None:
+    def __init__(self, session, name: str, expected, test_block_config) -> None:
         # pylint: disable=unused-argument
 
         defaults = {"status_code": 200}
 
         super().__init__(name, deep_dict_merge(defaults, expected), test_block_config)
 
-        self.status_code = None
+        self.status_code: Optional[int] = None
 
-        def check_code(code):
+        def check_code(code: int) -> None:
             if int(code) not in _codes:
                 logger.warning("Unexpected status code '%s'", code)
 
@@ -38,7 +39,7 @@ class RestResponse(BaseResponse):
         except TypeError as e:
             raise exceptions.BadSchemaError("Invalid code") from e
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.response:
             return self.response.text.strip()
         else:
@@ -123,7 +124,7 @@ class RestResponse(BaseResponse):
                     "Status code was %s, expected %s", status_code, expected_code
                 )
 
-    def verify(self, response):
+    def verify(self, response: requests.Response) -> dict:
         """Verify response against expected values and returns any values that
         we wanted to save for use in future requests
 
@@ -131,10 +132,10 @@ class RestResponse(BaseResponse):
         matching values, validating a schema, etc...
 
         Args:
-            response (requests.Response): response object
+            response: response object
 
         Returns:
-            dict: Any saved values
+            Any saved values
 
         Raises:
             TestFailError: Something went wrong with validating the response
@@ -206,12 +207,12 @@ class RestResponse(BaseResponse):
 
         return saved
 
-    def _validate_block(self, blockname: str, block) -> None:
+    def _validate_block(self, blockname: str, block: Mapping) -> None:
         """Validate a block of the response
 
         Args:
-            blockname (str): which part of the response is being checked
-            block (dict): The actual part being checked
+            blockname: which part of the response is being checked
+            block: The actual part being checked
         """
         try:
             expected_block = self.expected[blockname]

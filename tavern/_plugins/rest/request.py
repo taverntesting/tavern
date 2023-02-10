@@ -5,7 +5,7 @@ import json
 import logging
 import mimetypes
 import os
-from typing import Mapping
+from typing import Mapping, MutableMapping, Optional, Union
 from urllib.parse import quote_plus
 import warnings
 
@@ -25,7 +25,7 @@ from tavern.request import BaseRequest
 logger = logging.getLogger(__name__)
 
 
-def get_request_args(rspec, test_block_config: TestConfig) -> dict:
+def get_request_args(rspec: MutableMapping, test_block_config: TestConfig) -> dict:
     """Format the test spec given values inthe global config
 
     Todo:
@@ -222,7 +222,7 @@ def _set_cookies_for_request(session: requests.Session, request_args: Mapping):
         yield
 
 
-def _check_allow_redirects(rspec, test_block_config: TestConfig):
+def _check_allow_redirects(rspec: dict, test_block_config: TestConfig):
     """
     Check for allow_redirects flag in settings/stage
 
@@ -257,17 +257,19 @@ def _check_allow_redirects(rspec, test_block_config: TestConfig):
     return allow_redirects
 
 
-def _read_expected_cookies(session, rspec, test_block_config):
+def _read_expected_cookies(
+    session: requests.Session, rspec: Mapping, test_block_config: TestConfig
+) -> Optional[dict]:
     """
     Read cookies to inject into request, ignoring others which are present
 
     Args:
-        session (Session): session object
-        rspec (dict): test spec
-        test_block_config (dict): config available for test
+        session: session object
+        rspec: test spec
+        test_block_config: config available for test
 
     Returns:
-        dict: cookies to use in request, if any
+        cookies to use in request, if any
     """
     # Need to do this down here - it is separate from getting request args as
     # it depends on the state of the session
@@ -326,7 +328,7 @@ def _read_expected_cookies(session, rspec, test_block_config):
     return deep_dict_merge(from_cookiejar, from_extra)
 
 
-def _read_filespec(filespec):
+def _read_filespec(filespec: Union[str, dict]):
     """
     Get configuration for uploading file
 
@@ -336,7 +338,7 @@ def _read_filespec(filespec):
         filespec: Either a string with the path to a file or a dictionary with file_path and possible content_type and/or content_encoding
 
     Returns:
-        tuple: (file path, content type, content encoding)
+        (file path, content type, content encoding)
     """
     if isinstance(filespec, str):
         return filespec, None, None
@@ -353,17 +355,20 @@ def _read_filespec(filespec):
         )
 
 
-def _get_file_arguments(request_args, stack, test_block_config):
+def _get_file_arguments(
+    request_args: dict, stack: ExitStack, test_block_config: TestConfig
+) -> dict:
     """Get corect arguments for anything that should be passed as a file to
     requests
 
     Args:
-        test_block_config (dict): config for test
-        stack (ExitStack): context stack to add file objects to so they're
+        request_args: args passed to requests
+        test_block_config: config for test
+        stack: context stack to add file objects to so they're
             closed correctly after use
 
     Returns:
-        dict: mapping of {"files": ...} to pass directly to requests
+        mapping of 'files' block to pass directly to requests
     """
 
     files_to_send = {}
@@ -379,10 +384,14 @@ def _get_file_arguments(request_args, stack, test_block_config):
         return {}
 
 
-def guess_filespec(filespec, stack, test_block_config):
+def guess_filespec(
+    filespec: Union[str, dict], stack: ExitStack, test_block_config: TestConfig
+):
     """tries to guess the content type and encoding from a file.
 
     Args:
+        test_block_config: config for test/stage
+        stack: exit stack to add open files context to
         filespec: a string path to a file or a dictionary of the file path, content type, and encoding.
 
     Returns:
@@ -444,13 +453,15 @@ class RestRequest(BaseRequest):
         # "auth"
     ]
 
-    def __init__(self, session, rspec, test_block_config) -> None:
+    def __init__(
+        self, session: requests.Session, rspec: dict, test_block_config: TestConfig
+    ) -> None:
         """Prepare request
 
         Args:
-            session (requests.Session): existing session
-            rspec (dict): test spec
-            test_block_config (dict): Any configuration for this the block of
+            session: existing session
+            rspec: test spec
+            test_block_config   : Any configuration for this the block of
                 tests
 
         Raises:

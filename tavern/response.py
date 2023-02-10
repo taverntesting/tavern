@@ -34,7 +34,7 @@ class BaseResponse:
 
         self.expected = expected
 
-        self.response = None
+        self.response: Optional[Any] = None
 
     def _str_errors(self) -> str:
         return "- " + "\n- ".join(self.errors)
