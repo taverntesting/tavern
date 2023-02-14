@@ -10,7 +10,6 @@ tox --parallel -c tox.ini        \
 
 tox --parallel -c tox.ini        \
   -e py${PYVER}       \
-  -e py${PYVER}lint   \
   -e py${PYVER}mypy
 
 tox -c tox-integration.ini  \

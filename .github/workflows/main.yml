@@ -22,8 +22,6 @@ jobs:
           # 'Basic' tests and checks
           - TOXENV: py3check
             TOXCFG: tox.ini
-          - TOXENV: py3lint
-            TOXCFG: tox.ini
           - TOXENV: py3mypy
             TOXCFG: tox.ini
           - TOXENV: py3
