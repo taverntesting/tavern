@@ -103,16 +103,15 @@ class _PluginCache:
 
         plugins = []
 
+        def enabled(current_backend, ext):
+            return ext.name == test_block_config.tavern_internal.backends[current_backend]
+
         for backend in ["http", "mqtt"]:
             namespace = "tavern_{}".format(backend)
 
-            def enabled(ext):
-                # pylint: disable=cell-var-from-loop
-                return ext.name == test_block_config.tavern_internal.backends[backend]
-
             manager = stevedore.EnabledExtensionManager(
                 namespace=namespace,
-                check_func=enabled,
+                check_func=partial(enabled, backend),
                 verify_requirements=True,
                 on_load_failure_callback=plugin_load_error,
             )
