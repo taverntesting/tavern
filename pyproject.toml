@@ -57,7 +57,7 @@ Source = "https://github.com/taverntesting/tavern"
 dev = [
     "Faker",
     "allure-pytest",
-    "black",
+    "black==23.1.0",
     "bump2version",
     "colorlog",
     "docker-compose",

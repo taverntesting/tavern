@@ -15,7 +15,7 @@ attrs==22.1.0
     #   pytest
 bcrypt==4.0.1
     # via paramiko
-black==22.12.0
+black==23.1.0
     # via tavern (pyproject.toml)
 bleach==5.0.1
     # via readme-renderer
@@ -135,6 +135,7 @@ nodeenv==1.7.0
     # via pre-commit
 packaging==22.0
     # via
+    #   black
     #   build
     #   docker
     #   pytest
