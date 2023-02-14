@@ -393,7 +393,7 @@ class TestStrictUtils:
             validate_and_parse_option("json:{}".format(setting))
 
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
-    def test_defaults(self, section):
+    def test_defaults_good(self, section):
         level = StrictLevel()
 
         if section == "json":
@@ -402,7 +402,7 @@ class TestStrictUtils:
             assert not level.option_for(section)
 
     @pytest.mark.parametrize("section", ["true", "1", "hi", ""])
-    def test_defaults(self, section):
+    def test_defaults_bad(self, section):
         level = StrictLevel()
 
         with pytest.raises(exceptions.InvalidConfigurationException):
