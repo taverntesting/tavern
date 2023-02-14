@@ -59,13 +59,10 @@ dev = [
     "allure-pytest",
     "black",
     "bump2version",
-    "Flake8-pyproject",
     "colorlog",
     "docker-compose",
-    "flake8",
     "flask",
     "fluent-logger",
-    "isort",
     "itsdangerous",
     "mypy",
     "mypy-extensions",
@@ -75,9 +72,8 @@ dev = [
     "pip-tools",
     "pre-commit",
     "pygments",
-    "pylint",
     "pytest-cov",
-    "ruff",
+    "ruff>=0.0.246",
     "pytest-xdist",
     "py",
     "tox>=3,<4",
@@ -127,19 +123,6 @@ tavern = [
     ".tox/py39-mqtt/lib/python3.9/site-packages/tavern",
 ]
 
-[tool.isort]
-multi_line_output = 3
-include_trailing_comma = true
-indent = 4
-atomic = true
-combine_star = true
-use_parentheses = true
-line_length = 88
-skip_glob = ["docs/**", "example/**"]
-known_tavern = "tavern"
-sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "TAVERN", "LOCALFOLDER"]
-force_sort_within_sections = true
-
 [tool.pytest.ini_options]
 testpaths = ["tavern", "tests/unit"]
 addopts = [
@@ -156,24 +139,13 @@ norecursedirs = [
     "example",
 ]
 
-[tool.pylint.MASTER]
-disable = "missing-docstring,fixme,invalid-name,line-too-long,too-few-public-methods,no-else-return,too-many-branches,locally-disabled,useless-object-inheritance,no-else-raise,abstract-method,import-outside-toplevel,cyclic-import,consider-using-f-string,useless-option-value"
-ignore = "tests"
+[tool.ruff]
+ignore = ["E501", "UP007"]
+select = ["E", "F", "B", "W", "I", "UP", "S", "C4", "ICN", "T20", "PT", "PLE", "RUF"]
+# Look at: SIM PTH PGH PL
 
-[tool.pylint.REPORTS]
-reports = false
-
-[tool.pylint.SIMILARITIES]
-min-similarity-lines = 6
-ignore-imports = true
-
-[tool.pylint.TYPECHECK]
-ignored-classes = "RememberComposer"
-
-[tool.flake8]
-ignore = ["E501", "W503", "C901", "W504"]
-exclude = [".git", "__pycache__", "docs/source/conf.py", "build", "dist"]
-max-complexity = 10
+[tool.ruff.isort]
+known-first-party = ["tavern"]
 
 [tool.tbump.version]
 current = "2.0.3"

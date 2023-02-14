@@ -8,8 +8,6 @@ allure-pytest==2.12.0
     # via tavern (pyproject.toml)
 allure-python-commons==2.12.0
     # via allure-pytest
-astroid==2.12.13
-    # via pylint
 attrs==22.1.0
     # via
     #   allure-python-commons
@@ -52,9 +50,6 @@ cryptography==39.0.1
     # via
     #   paramiko
     #   secretstorage
-    #   tavern (pyproject.toml)
-dill==0.3.6
-    # via pylint
 distlib==0.3.6
     # via virtualenv
 distro==1.8.0
@@ -83,12 +78,6 @@ filelock==3.8.2
     # via
     #   tox
     #   virtualenv
-flake8==6.0.0
-    # via
-    #   flake8-pyproject
-    #   tavern (pyproject.toml)
-flake8-pyproject==1.2.2
-    # via tavern (pyproject.toml)
 flask==2.2.2
     # via tavern (pyproject.toml)
 flit==3.8.0
@@ -107,10 +96,6 @@ importlib-metadata==5.2.0
     #   twine
 iniconfig==1.1.1
     # via pytest
-isort==5.11.3
-    # via
-    #   pylint
-    #   tavern (pyproject.toml)
 itsdangerous==2.1.2
     # via
     #   flask
@@ -131,16 +116,10 @@ jsonschema==3.2.0
     #   tavern (pyproject.toml)
 keyring==23.13.1
     # via twine
-lazy-object-proxy==1.8.0
-    # via astroid
 markupsafe==2.1.1
     # via
     #   jinja2
     #   werkzeug
-mccabe==0.7.0
-    # via
-    #   flake8
-    #   pylint
 more-itertools==9.0.0
     # via jaraco-classes
 msgpack==1.0.4
@@ -177,7 +156,6 @@ pkginfo==1.9.2
 platformdirs==2.6.0
     # via
     #   black
-    #   pylint
     #   virtualenv
 pluggy==1.0.0
     # via
@@ -190,12 +168,8 @@ py==1.11.0
     # via
     #   tavern (pyproject.toml)
     #   tox
-pycodestyle==2.10.0
-    # via flake8
 pycparser==2.21
     # via cffi
-pyflakes==3.0.1
-    # via flake8
 pygments==2.13.0
     # via
     #   readme-renderer
@@ -204,8 +178,6 @@ pygments==2.13.0
 pyjwt==2.6.0
     # via tavern (pyproject.toml)
 pykwalify==1.8.0
-    # via tavern (pyproject.toml)
-pylint==2.15.9
     # via tavern (pyproject.toml)
 pynacl==1.5.0
     # via paramiko
@@ -254,7 +226,7 @@ ruamel-yaml==0.17.21
     # via pykwalify
 ruamel-yaml-clib==0.2.7
     # via ruamel-yaml
-ruff==0.0.187
+ruff==0.0.246
     # via tavern (pyproject.toml)
 secretstorage==3.3.3
     # via keyring
@@ -280,16 +252,12 @@ tomli==2.0.1
     #   black
     #   build
     #   coverage
-    #   flake8-pyproject
     #   mypy
     #   pep517
-    #   pylint
     #   pytest
     #   tox
 tomli-w==1.0.0
     # via flit
-tomlkit==0.11.6
-    # via pylint
 tox==3.28.0
     # via
     #   tavern (pyproject.toml)
@@ -323,8 +291,6 @@ wheel==0.38.4
     # via
     #   pip-tools
     #   tavern (pyproject.toml)
-wrapt==1.14.1
-    # via astroid
 zipp==3.11.0
     # via importlib-metadata
 
