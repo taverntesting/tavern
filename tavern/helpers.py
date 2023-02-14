@@ -4,10 +4,10 @@ import logging
 import re
 from typing import Dict, List, Optional
 
-from box.box import Box
 import jmespath
 import jwt
 import requests
+from box.box import Box
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
@@ -41,7 +41,7 @@ def check_exception_raised(
 
     actual_description = dumped.get("description", dumped.get("error_description"))
     expected_description = getattr(
-        exception, "error_description", getattr(exception, "description")
+        exception, "error_description", exception.description
     )
 
     try:
@@ -205,7 +205,7 @@ def check_jmespath_match(parsed_response, query: str, expected: Optional[str] = 
     if expected is not None:
         # Reuse dict util helper as it should behave the same
         check_keys_match_recursive(expected, actual, [], True)
-    elif not actual and not (actual == expected):  # pylint: disable=superfluous-parens
+    elif not actual and not (actual == expected):
         # This can return an empty list, but it might be what we expect. if not,
         # raise an exception
         raise exceptions.JMESError(msg)

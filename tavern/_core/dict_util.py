@@ -5,8 +5,8 @@ import string
 from typing import Any, Dict, List, Mapping, Union
 
 import box
-from box.box import Box
 import jmespath
+from box.box import Box
 
 from tavern._core import exceptions
 from tavern._core.loader import (
@@ -27,7 +27,7 @@ def _check_and_format_values(to_format, box_vars: Mapping[str, Any]) -> str:
     formatter = string.Formatter()
     would_format = formatter.parse(to_format)
 
-    for (_, field_name, _, _) in would_format:
+    for _, field_name, _, _ in would_format:
         if field_name is None:
             continue
 
@@ -357,8 +357,6 @@ def check_keys_match_recursive(
         KeyMismatchError: expected_val and actual_val did not match
     """
 
-    # pylint: disable=too-many-locals,too-many-statements,too-many-nested-blocks
-
     def full_err():
         """Get error in the format:
 
@@ -410,7 +408,7 @@ def check_keys_match_recursive(
         # At this point, there is likely to be an error unless we're using any
         # of the type sentinels
 
-        if not (expected_val is ANYTHING):  # pylint: disable=superfluous-parens
+        if expected_val is not ANYTHING:
             if not expected_matches:
                 if isinstance(expected_val, RegexSentinel):
                     msg = "Expected a string to match regex '{}' ({})".format(

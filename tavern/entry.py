@@ -1,6 +1,6 @@
 import argparse
-from argparse import ArgumentParser
 import logging.config
+from argparse import ArgumentParser
 from textwrap import dedent
 
 from .core import run

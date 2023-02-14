@@ -1,7 +1,7 @@
-from contextlib import ExitStack
 import dataclasses
 import os
 import tempfile
+from contextlib import ExitStack
 from unittest.mock import Mock
 
 import pytest
@@ -68,7 +68,7 @@ class TestHttpRedirects:
     def test_session_called_no_redirects(self, req, includes):
         """Always disable redirects by defauly"""
 
-        assert _check_allow_redirects(req, includes) == False
+        assert _check_allow_redirects(req, includes) is False
 
     @pytest.mark.parametrize("do_follow", [True, False])
     def test_session_do_follow_redirects_based_on_test(self, req, includes, do_follow):
@@ -108,7 +108,7 @@ class TestCookies:
         cookiejar.set("a", 2)
         mock_session = Mock(spec=requests.Session, cookies=cookiejar)
 
-        assert _read_expected_cookies(mock_session, req, includes) == None
+        assert _read_expected_cookies(mock_session, req, includes) is None
 
     def test_ask_for_nothing(self, req, includes):
         """explicitly ask fo rno cookies"""

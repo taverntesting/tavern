@@ -1,9 +1,9 @@
-from contextlib import ExitStack
 import copy
-from copy import deepcopy
 import functools
 import logging
 import pathlib
+from contextlib import ExitStack
+from copy import deepcopy
 from typing import List, Mapping, MutableMapping
 
 import box
@@ -130,8 +130,6 @@ def run_test(
     Raises:
         TavernException: If any of the tests failed
     """
-
-    # pylint: disable=too-many-locals
 
     # Initialise test config for this test with the global configuration before
     # starting

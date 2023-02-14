@@ -1,20 +1,19 @@
 import base64
-import datetime
-from datetime import datetime, timedelta
 import gzip
-from hashlib import sha512
 import itertools
 import json
 import math
 import mimetypes
 import os
 import time
-from urllib.parse import unquote_plus
 import uuid
+from datetime import datetime, timedelta
+from hashlib import sha512
+from urllib.parse import unquote_plus
 
+import jwt
 from flask import Flask, Response, jsonify, make_response, redirect, request, session
 from itsdangerous import URLSafeTimedSerializer
-import jwt
 
 app = Flask(__name__)
 app.config.update(SECRET_KEY="secret")
@@ -87,7 +86,7 @@ def upload_fake_file():
     if not mimetypes.inited:
         mimetypes.init()
 
-    for key, item in request.files.items():
+    for _key, item in request.files.items():
         if item.filename:
             filetype = ".{}".format(item.filename.split(".")[-1])
             if filetype in mimetypes.suffix_map:
@@ -119,7 +118,7 @@ def upload_fake_file_and_data():
     if not mimetypes.inited:
         mimetypes.init()
 
-    for key, item in request.files.items():
+    for _key, item in request.files.items():
         if item.filename:
             filetype = ".{}".format(item.filename.split(".")[-1])
             if filetype in mimetypes.suffix_map:
@@ -375,7 +374,7 @@ users = {"mark": {"password": "password", "regular": "foo", "protected": "bar"}}
 serializer = URLSafeTimedSerializer(
     secret_key="secret",
     salt="cookie",
-    signer_kwargs=dict(key_derivation="hmac", digest_method=sha512),
+    signer_kwargs={"key_derivation": "hmac", "digest_method": sha512},
 )
 
 

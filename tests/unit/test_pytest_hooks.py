@@ -1,6 +1,6 @@
-from dataclasses import dataclass
 import os
 import pathlib
+from dataclasses import dataclass
 from unittest.mock import Mock, patch
 
 from faker import Faker
@@ -9,9 +9,9 @@ from tavern._core import exceptions
 from tavern._core.pytest.file import YamlFile, _get_parametrized_items
 
 try:
-    from py.path import LocalPath
+    pass
 except ImportError:
-    from py._path.local import LocalPath
+    pass
 
 import pytest
 

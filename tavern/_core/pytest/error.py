@@ -1,12 +1,12 @@
-from io import StringIO
 import json
 import logging
 import re
+from io import StringIO
 from typing import List, Mapping, Optional
 
+import yaml
 from _pytest._code.code import FormattedExcinfo
 from _pytest._io import TerminalWriter
-import yaml
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -36,7 +36,6 @@ class ReprdError:
             dict: variables for formatting test
         """
         try:
-            # pylint: disable=protected-access
             keys = self.exce._excinfo[1].test_block_config.variables
         except AttributeError:
             logger.warning("Unable to read stage variables - error output may be wrong")
@@ -68,7 +67,7 @@ class ReprdError:
                     if match.group("format_var") is not None:
                         yield match.group("format_var")
 
-        format_variables = set(list(read_formatted_vars(code_lines)))
+        format_variables = set(read_formatted_vars(code_lines))
 
         keys = self._get_available_format_keys()
 
@@ -112,7 +111,7 @@ class ReprdError:
         code_lines: List[str],
         missing_format_vars: List[str],
         line_start: Optional[int],
-    ) -> None:  # pylint: disable=no-self-use
+    ) -> None:
         """Print the direct source lines from this test stage
 
         If we couldn't get the stage for some reason, print the entire test out.
@@ -189,7 +188,6 @@ class ReprdError:
         # Try to get the stage so we can print it out. I'm not sure if the stage
         # will ever NOT be present, but better to check just in case
         try:
-            # pylint: disable=protected-access
             stage = self.exce._excinfo[1].stage
         except AttributeError:
             stage = None

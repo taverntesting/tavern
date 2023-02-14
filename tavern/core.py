@@ -1,5 +1,5 @@
-from contextlib import ExitStack
 import os
+from contextlib import ExitStack
 
 import pytest
 
@@ -51,7 +51,7 @@ def run(
     tavern_http_backend=None,
     tavern_strict=None,
     pytest_args=None,
-):  # pylint: disable=too-many-arguments
+):
     """Run all tests contained in a file using pytest.main()
 
     Args:

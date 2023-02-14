@@ -2,11 +2,11 @@ import logging
 import pathlib
 from typing import Optional, Tuple
 
-from _pytest._code.code import ExceptionInfo
-from _pytest.nodes import Node
 import attr
 import pytest
 import yaml
+from _pytest._code.code import ExceptionInfo
+from _pytest.nodes import Node
 
 from tavern._core import exceptions
 from tavern._core.loader import error_on_empty_scalar
@@ -59,7 +59,6 @@ class YamlItem(pytest.Item):
         return cls.from_parent(parent, name=name, spec=spec, path=path)
 
     def initialise_fixture_attrs(self) -> None:
-        # pylint: disable=protected-access,attribute-defined-outside-init
         self.funcargs = {}  # type: ignore
 
         # _get_direct_parametrize_args checks parametrize arguments in Python
@@ -74,7 +73,7 @@ class YamlItem(pytest.Item):
         self._request = pytest.FixtureRequest(self, _ispytest=True)
 
     @property
-    def location(self):  # pylint: disable=invalid-overridden-method
+    def location(self):
         """get location in file"""
         location = super().location
         location = (location[0], self.spec.start_mark.line, location[2])
@@ -85,7 +84,7 @@ class YamlItem(pytest.Item):
 
     def setup(self) -> None:
         super().setup()
-        self._request._fillfixtures()  # pylint: disable=protected-access
+        self._request._fillfixtures()
 
     @property
     def obj(self):
@@ -264,7 +263,6 @@ class YamlItem(pytest.Item):
         return error
 
     def reportinfo(self) -> Tuple[pathlib.Path, int, str]:
-        # pylint:disable=no-member
         return (
             self.path,
             0,

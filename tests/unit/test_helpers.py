@@ -25,7 +25,7 @@ from tavern.helpers import validate_content, validate_pykwalify, validate_regex
 class FakeResponse:
     def __init__(self, text):
         self.text = text
-        self.headers = dict(test_header=text)
+        self.headers = {"test_header": text}
 
 
 class TestRegex:
@@ -124,9 +124,7 @@ class TestOptionParsing:
 
     @pytest.mark.parametrize("optval", valid)
     def test_strictness_parsing_good(self, pytestconfig, optval):
-        args = pytestconfig._parser.parse_known_args(
-            ["--tavern-strict={}".format(optval)]
-        )
+        pytestconfig._parser.parse_known_args(["--tavern-strict={}".format(optval)])
 
 
 class TestTavernRepr:
@@ -305,7 +303,7 @@ class TestCheckParseValues:
             )
         )
 
-    @pytest.mark.parametrize("item", [1, "a", 1.3, format_keys("{s}", dict(s=2))])
+    @pytest.mark.parametrize("item", [1, "a", 1.3, format_keys("{s}", {"s": 2})])
     def test_no_warn_good_type(self, item):
         with patch("tavern._core.dict_util.logger.warning") as wmock:
             _check_and_format_values("{fd}", {"fd": item})
@@ -397,9 +395,9 @@ class TestStrictUtils:
         level = StrictLevel()
 
         if section == "json":
-            assert level.option_for(section)
+            assert level.option_for(section).is_on()
         else:
-            assert not level.option_for(section)
+            assert not level.option_for(section).is_on()
 
     @pytest.mark.parametrize("section", ["true", "1", "hi", ""])
     def test_defaults_bad(self, section):

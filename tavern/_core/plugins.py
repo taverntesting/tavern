@@ -5,6 +5,7 @@ significantly if/when a proper plugin system is implemented!
 """
 import dataclasses
 import logging
+from functools import partial
 from typing import Any, List, Mapping, Optional
 
 import stevedore
@@ -23,7 +24,6 @@ class PluginHelperBase:
 
 def plugin_load_error(mgr, entry_point, err):
     """Handle import errors"""
-    # pylint: disable=unused-argument
     logger.exception("f")
     msg = "Error loading plugin {} - {}".format(entry_point, err)
     raise exceptions.PluginLoadError(msg) from err
@@ -65,8 +65,6 @@ def is_valid_reqresp_plugin(ext: Any) -> bool:
 
 @dataclasses.dataclass
 class _PluginCache:
-    # pylint: disable=inconsistent-return-statements
-
     plugins: List[Any] = dataclasses.field(default_factory=list)
 
     def __call__(self, config: Optional[TestConfig] = None):
@@ -99,12 +97,13 @@ class _PluginCache:
         Returns:
             list: Loaded plugins, can be a class or a module
         """
-        # pylint: disable=no-self-use
 
         plugins = []
 
         def enabled(current_backend, ext):
-            return ext.name == test_block_config.tavern_internal.backends[current_backend]
+            return (
+                ext.name == test_block_config.tavern_internal.backends[current_backend]
+            )
 
         for backend in ["http", "mqtt"]:
             namespace = "tavern_{}".format(backend)
@@ -302,7 +301,7 @@ def get_verifiers(
         response validator object with a verify(response) method
     """
 
-    def action(p, _):  # pylint: disable=unused-argument
+    def action(p, _):
         session = sessions[p.name]
         logger.debug(
             "Initialising verifier for %s (%s)", p.name, p.plugin.verifier_type

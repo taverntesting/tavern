@@ -1,9 +1,9 @@
 import dataclasses
 import logging
-from queue import Empty, Full, Queue
 import ssl
 import threading
 import time
+from queue import Empty, Full, Queue
 from typing import Dict, Mapping, MutableMapping, Optional
 
 import paho.mqtt.client as paho
@@ -146,8 +146,6 @@ def _handle_ssl_context_args(
 
 
 class MQTTClient:
-    # pylint: disable=too-many-instance-attributes,too-many-locals,too-many-statements
-
     def __init__(self, **kwargs) -> None:
         expected_blocks = {
             "client": {
@@ -319,7 +317,6 @@ class MQTTClient:
         Todo:
             If the queue is faull trigger an error in main thread somehow
         """
-        # pylint: disable=unused-argument
 
         logger.info("Received mqtt message on %s", message.topic)
 
@@ -338,7 +335,6 @@ class MQTTClient:
 
     @staticmethod
     def _on_connect(client, userdata, flags, rc) -> None:
-        # pylint: disable=unused-argument,protected-access
         logger.debug(
             "Client '%s' successfully connected to the broker with result code '%s'",
             client._client_id.decode(),
@@ -347,7 +343,6 @@ class MQTTClient:
 
     @staticmethod
     def _on_disconnect(client, userdata, rc) -> None:
-        # pylint: disable=unused-argument,protected-access
         if rc == paho.CONNACK_ACCEPTED:
             logger.debug(
                 "Client '%s' successfully disconnected from the broker with result code '%s'",
@@ -363,19 +358,16 @@ class MQTTClient:
 
     @staticmethod
     def _on_connect_fail(client, userdata) -> None:
-        # pylint: disable=unused-argument,protected-access
         logger.error(
             "Failed to connect client '%s' to the broker", client._client_id.decode()
         )
 
     @staticmethod
     def _on_socket_open(client, userdata, socket) -> None:
-        # pylint: disable=unused-argument
         logger.debug("MQTT socket opened")
 
     @staticmethod
     def _on_socket_close(client, userdata, socket) -> None:
-        # pylint: disable=unused-argument
         logger.debug("MQTT socket closed")
 
     def message_received(self, topic: str, timeout: int = 1):
@@ -495,7 +487,6 @@ class MQTTClient:
                 self._client.unsubscribe(subscription.topic)
 
     def _on_subscribe(self, client, userdata, mid: int, granted_qos) -> None:
-        # pylint: disable=unused-argument
         with self._subscribe_lock:
             if mid in self._subscribed:
                 self._subscribed[mid].subscribed = True
@@ -518,7 +509,6 @@ class MQTTClient:
         elapsed = 0.0
 
         while elapsed < self._connect_timeout:
-            # pylint: disable=protected-access
             if self._client.is_connected():
                 logger.debug("Connected to broker at %s", self._connect_args["host"])
                 return self
