@@ -19,9 +19,7 @@ class TavernRestPlugin(PluginHelperBase):
     request_block_name = "request"
 
     @staticmethod
-    def get_expected_from_request(
-        response_block, test_block_config, session
-    ):  # pylint: disable=unused-argument
+    def get_expected_from_request(response_block, test_block_config, session):
         if response_block is None:
             raise exceptions.MissingSettingsError(
                 "no response block specified for HTTP test stage"

@@ -1,7 +1,6 @@
-import collections.abc
-from functools import wraps
 import logging
 import time
+from functools import wraps
 from typing import Mapping
 
 from tavern._core import exceptions
@@ -11,9 +10,7 @@ from tavern._core.pytest.config import TestConfig
 logger = logging.getLogger(__name__)
 
 
-def delay(
-    stage: collections.abc.Mapping, when: str, variables: collections.abc.Mapping
-) -> None:
+def delay(stage: Mapping, when: str, variables: Mapping) -> None:
     """Look for delay_before/delay_after and sleep
 
     Args:

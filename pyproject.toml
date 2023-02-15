@@ -57,15 +57,12 @@ Source = "https://github.com/taverntesting/tavern"
 dev = [
     "Faker",
     "allure-pytest",
-    "black",
+    "black==23.1.0",
     "bump2version",
-    "Flake8-pyproject",
     "colorlog",
     "docker-compose",
-    "flake8",
     "flask",
     "fluent-logger",
-    "isort",
     "itsdangerous",
     "mypy",
     "mypy-extensions",
@@ -75,9 +72,8 @@ dev = [
     "pip-tools",
     "pre-commit",
     "pygments",
-    "pylint",
     "pytest-cov",
-    "ruff",
+    "ruff>=0.0.246",
     "pytest-xdist",
     "py",
     "tox>=3,<4",
@@ -127,19 +123,6 @@ tavern = [
     ".tox/py39-mqtt/lib/python3.9/site-packages/tavern",
 ]
 
-[tool.isort]
-multi_line_output = 3
-include_trailing_comma = true
-indent = 4
-atomic = true
-combine_star = true
-use_parentheses = true
-line_length = 88
-skip_glob = ["docs/**", "example/**"]
-known_tavern = "tavern"
-sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "TAVERN", "LOCALFOLDER"]
-force_sort_within_sections = true
-
 [tool.pytest.ini_options]
 testpaths = ["tavern", "tests/unit"]
 addopts = [
@@ -156,24 +139,23 @@ norecursedirs = [
     "example",
 ]
 
-[tool.pylint.MASTER]
-disable = "missing-docstring,fixme,invalid-name,line-too-long,too-few-public-methods,no-else-return,too-many-branches,locally-disabled,useless-object-inheritance,no-else-raise,abstract-method,import-outside-toplevel,cyclic-import,consider-using-f-string,useless-option-value"
-ignore = "tests"
+[tool.ruff]
+ignore = [
+    "E501", # line length
+    "RUF005", # union types only valid from 3.10+
+    "B905", # zip(..., strict=True) only valid from 3.10+
+    "PLR0912", "PLR0915", "PLR0911", "PLR0913", # too many branches/variables/return values - sometimes this is just unavoidable
+    "PLR2004", # 'magic numbers'
+]
+select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL"]
+# Look at: UP
+target-version = "py38"
 
-[tool.pylint.REPORTS]
-reports = false
+[tool.ruff.per-file-ignores]
+"tests/*" = ["S"]
 
-[tool.pylint.SIMILARITIES]
-min-similarity-lines = 6
-ignore-imports = true
-
-[tool.pylint.TYPECHECK]
-ignored-classes = "RememberComposer"
-
-[tool.flake8]
-ignore = ["E501", "W503", "C901", "W504"]
-exclude = [".git", "__pycache__", "docs/source/conf.py", "build", "dist"]
-max-complexity = 10
+[tool.ruff.isort]
+known-first-party = ["tavern"]
 
 [tool.tbump.version]
 current = "2.0.3"

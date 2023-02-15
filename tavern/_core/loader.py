@@ -1,11 +1,11 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
-from abc import abstractmethod
 import dataclasses
-from itertools import chain
 import logging
 import os.path
 import re
 import uuid
+from abc import abstractmethod
+from itertools import chain
 
 import pytest
 import yaml
@@ -24,7 +24,6 @@ logger = logging.getLogger(__name__)
 
 
 def makeuuid(loader, node):
-    # pylint: disable=unused-argument
     return str(uuid.uuid4())
 
 
@@ -49,7 +48,7 @@ class RememberComposer(Composer):
 
 
 def create_node_class(cls):
-    class node_class(cls):  # noqa
+    class node_class(cls):
         def __init__(self, x, start_mark, end_mark):
             cls.__init__(self, x)
             self.start_mark = start_mark
@@ -93,7 +92,6 @@ yaml.add_representer(dict_node, yaml.representer.SafeRepresenter.represent_dict)
 yaml.add_representer(list_node, yaml.representer.SafeRepresenter.represent_list)
 
 
-# pylint: disable=too-many-ancestors
 class IncludeLoader(
     Reader,
     Scanner,
@@ -127,7 +125,6 @@ class IncludeLoader(
 
 
 def _get_include_dirs(loader):
-    # pylint: disable=protected-access
     loader_list = [loader._root]
 
     if IncludeLoader.env_path_list is None:
@@ -245,7 +242,6 @@ class RegexSentinel(TypeSentinel):
     compiled: re.Pattern
 
     def __str__(self):
-        # pylint: disable=no-member
         return "<Tavern Regex sentinel for {}>".format(self.compiled.pattern)
 
     @property
@@ -265,7 +261,6 @@ class _RegexMatchSentinel(RegexSentinel):
     yaml_tag = "!re_match"
 
     def passes(self, string):
-        # pylint: disable=no-member
         return self.compiled.match(string) is not None
 
 
@@ -273,7 +268,6 @@ class _RegexFullMatchSentinel(RegexSentinel):
     yaml_tag = "!re_fullmatch"
 
     def passes(self, string):
-        # pylint: disable=no-member
         return self.compiled.fullmatch(string) is not None
 
 
@@ -281,7 +275,6 @@ class _RegexSearchSentinel(RegexSentinel):
     yaml_tag = "!re_search"
 
     def passes(self, string):
-        # pylint: disable=no-member
         return self.compiled.search(string) is not None
 
 
@@ -452,7 +445,7 @@ def load_single_document_yaml(filename: os.PathLike) -> dict:
 
     with open(filename, "r", encoding="utf-8") as fileobj:
         try:
-            contents = yaml.load(fileobj, Loader=IncludeLoader)
+            contents = yaml.load(fileobj, Loader=IncludeLoader)  # noqa
         except yaml.composer.ComposerError as e:
             msg = "Expected only one document in this file but found multiple"
             raise exceptions.UnexpectedDocumentsError(msg) from e
@@ -460,7 +453,7 @@ def load_single_document_yaml(filename: os.PathLike) -> dict:
     return contents
 
 
-def error_on_empty_scalar(self, mark):  # pylint: disable=unused-argument
+def error_on_empty_scalar(self, mark):
     location = "{mark.name:s}:{mark.line:d} - column {mark.column:d}".format(mark=mark)
     error = "Error at {} - cannot define an empty value in test - either give it a value or explicitly set it to None".format(
         location

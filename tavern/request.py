@@ -1,5 +1,5 @@
-from abc import abstractmethod
 import logging
+from abc import abstractmethod
 
 import box
 

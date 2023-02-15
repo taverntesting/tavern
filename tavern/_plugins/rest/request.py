@@ -1,16 +1,16 @@
 import contextlib
-from contextlib import ExitStack
-from itertools import filterfalse, tee
 import json
 import logging
 import mimetypes
 import os
+import warnings
+from contextlib import ExitStack
+from itertools import filterfalse, tee
 from typing import Mapping, MutableMapping, Optional, Union
 from urllib.parse import quote_plus
-import warnings
 
-from box.box import Box
 import requests
+from box.box import Box
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
 
@@ -42,8 +42,6 @@ def get_request_args(rspec: MutableMapping, test_block_config: TestConfig) -> di
     Raises:
         BadSchemaError: Tried to pass a body in a GET request
     """
-
-    # pylint: disable=too-many-locals,too-many-statements
 
     if "method" not in rspec:
         logger.debug("Using default GET method")
@@ -407,8 +405,6 @@ def guess_filespec(
 
     filepath = format_keys(filepath, test_block_config.variables)
     filename = os.path.basename(filepath)
-
-    # pylint: disable=consider-using-with
 
     # a 2-tuple ('filename', fileobj)
     file_spec = [

@@ -1,3 +1,4 @@
+import contextlib
 import logging
 import os
 import re
@@ -5,8 +6,8 @@ import string
 from typing import Any, Dict, List, Mapping, Union
 
 import box
-from box.box import Box
 import jmespath
+from box.box import Box
 
 from tavern._core import exceptions
 from tavern._core.loader import (
@@ -27,7 +28,7 @@ def _check_and_format_values(to_format, box_vars: Mapping[str, Any]) -> str:
     formatter = string.Formatter()
     would_format = formatter.parse(to_format)
 
-    for (_, field_name, _, _) in would_format:
+    for _, field_name, _, _ in would_format:
         if field_name is None:
             continue
 
@@ -207,10 +208,8 @@ def _deprecated_recurse_access_key(current_val, keys):
     else:
         current_key = keys.pop(0)
 
-        try:
+        with contextlib.suppress(ValueError):
             current_key = int(current_key)
-        except ValueError:
-            pass
 
         try:
             return _deprecated_recurse_access_key(current_val[current_key], keys)
@@ -357,8 +356,6 @@ def check_keys_match_recursive(
         KeyMismatchError: expected_val and actual_val did not match
     """
 
-    # pylint: disable=too-many-locals,too-many-statements,too-many-nested-blocks
-
     def full_err():
         """Get error in the format:
 
@@ -405,12 +402,12 @@ def check_keys_match_recursive(
     strict_bool, strict_setting = extract_strict_setting(strict)
 
     try:
-        assert actual_val == expected_val
+        assert actual_val == expected_val  # noqa
     except AssertionError as e:
         # At this point, there is likely to be an error unless we're using any
         # of the type sentinels
 
-        if not (expected_val is ANYTHING):  # pylint: disable=superfluous-parens
+        if expected_val is not ANYTHING:
             if not expected_matches:
                 if isinstance(expected_val, RegexSentinel):
                     msg = "Expected a string to match regex '{}' ({})".format(

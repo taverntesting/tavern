@@ -1,19 +1,13 @@
-from dataclasses import dataclass
 import os
 import pathlib
+from dataclasses import dataclass
 from unittest.mock import Mock, patch
 
+import pytest
 from faker import Faker
 
 from tavern._core import exceptions
 from tavern._core.pytest.file import YamlFile, _get_parametrized_items
-
-try:
-    from py.path import LocalPath
-except ImportError:
-    from py._path.local import LocalPath
-
-import pytest
 
 
 @dataclass

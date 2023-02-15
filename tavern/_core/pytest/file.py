@@ -4,9 +4,9 @@ import itertools
 import logging
 from typing import Dict, Iterator, List, Mapping
 
-from box import Box
 import pytest
 import yaml
+from box import Box
 
 from tavern._core import exceptions
 from tavern._core.dict_util import deep_dict_merge, format_keys, get_tavern_box
@@ -245,8 +245,6 @@ def _get_parametrized_items(
 class YamlFile(pytest.File):
     """Custom `File` class that loads each test block as a different test"""
 
-    # pylint:disable=no-member
-
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
@@ -254,7 +252,6 @@ class YamlFile(pytest.File):
         # The 'docstring' for this is the filename, the 'docstring' for each
         # individual test is the actual test name.
         class FakeObj:
-            # pylint: disable=empty-docstring
             __doc__ = str(self.path)
 
         self.obj = FakeObj
