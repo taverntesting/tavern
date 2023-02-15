@@ -1,3 +1,4 @@
+import contextlib
 import logging
 import os
 import re
@@ -207,10 +208,8 @@ def _deprecated_recurse_access_key(current_val, keys):
     else:
         current_key = keys.pop(0)
 
-        try:
+        with contextlib.suppress(ValueError):
             current_key = int(current_key)
-        except ValueError:
-            pass
 
         try:
             return _deprecated_recurse_access_key(current_val[current_key], keys)

@@ -4,7 +4,7 @@ import ssl
 import threading
 import time
 from queue import Empty, Full, Queue
-from typing import Dict, Mapping, MutableMapping, Optional
+from typing import Dict, List, Mapping, MutableMapping, Optional
 
 import paho.mqtt.client as paho
 
@@ -68,28 +68,46 @@ def _handle_tls_args(
     if not tls_args:
         return None
 
-    if "enable" in tls_args:
-        if not tls_args["enable"]:
-            # if enable=false, return immediately
-            return None
+    if "enable" in tls_args and not tls_args["enable"]:
+        # if enable=false, return immediately
+        return None
+
+    _check_and_update_common_tls_args(tls_args, ["certfile", "keyfile"])
+
+    return tls_args
+
+
+def _handle_ssl_context_args(
+    ssl_context_args: MutableMapping,
+) -> Optional[Mapping]:
+    """Make sure SSL Context options are valid"""
+    if not ssl_context_args:
+        return None
+
+    _check_and_update_common_tls_args(
+        ssl_context_args, ["certfile", "keyfile", "cafile"]
+    )
+
+    return ssl_context_args
+
+
+def _check_and_update_common_tls_args(
+    tls_args: MutableMapping, check_file_keys: List[str]
+):
+    """Checks common args between ssl/tls args"""
+
+    # could be moved to schema validation stage
+    for key in check_file_keys:
+        if key in tls_args:
+            check_file_exists(key, tls_args[key])
 
     if "keyfile" in tls_args and "certfile" not in tls_args:
         raise exceptions.MQTTTLSError(
             "If specifying a TLS keyfile, a certfile also needs to be specified"
         )
 
-    # could be moved to schema validation stage
-    for key in ["certfile", "keyfile"]:
-        try:
-            check_file_exists(key, tls_args[key])
-        except KeyError:
-            pass
-
-    # This shouldn't raise an AttributeError because it's enumerated
-    try:
+    if "cert_reqs" in tls_args:
         tls_args["cert_reqs"] = getattr(ssl, tls_args["cert_reqs"])
-    except KeyError:
-        pass
 
     try:
         tls_args["tls_version"] = getattr(ssl, tls_args["tls_version"])
@@ -102,47 +120,6 @@ def _handle_tls_args(
         ) from e
     except KeyError:
         pass
-
-    return tls_args
-
-
-def _handle_ssl_context_args(
-    ssl_context_args: MutableMapping,
-) -> Optional[Mapping]:
-    """Make sure SSL Context options are valid"""
-    if not ssl_context_args:
-        return None
-
-    if "keyfile" in ssl_context_args and "certfile" not in ssl_context_args:
-        raise exceptions.MQTTTLSError(
-            "If specifying a TLS keyfile, a certfile also needs to be specified"
-        )
-
-    # could be moved to schema validation stage
-    check_file_exists("certfile", ssl_context_args["certfile"])
-    check_file_exists("keyfile", ssl_context_args["keyfile"])
-    if "cafile" in ssl_context_args:
-        check_file_exists("cafile", ssl_context_args["cafile"])
-
-    # This shouldn't raise an AttributeError because it's enumerated
-    try:
-        ssl_context_args["cert_reqs"] = getattr(ssl, ssl_context_args["cert_reqs"])
-    except KeyError:
-        pass
-
-    try:
-        ssl_context_args["tls_version"] = getattr(ssl, ssl_context_args["tls_version"])
-    except AttributeError as e:
-        raise exceptions.MQTTTLSError(
-            "Error getting TLS version from "
-            "ssl module - ssl module had no attribute '{}'. Check the "
-            "documentation for the version of python you're using to see "
-            "if this a valid option.".format(ssl_context_args["tls_version"])
-        ) from e
-    except KeyError:
-        pass
-
-    return ssl_context_args
 
 
 class MQTTClient:

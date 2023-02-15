@@ -145,7 +145,7 @@ ignore = [
     "RUF005", # union types only valid from 3.10+
     "B905", # zip(..., strict=True) only valid from 3.10+
 ]
-select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF"]
+select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105"]
 # Look at: SIM PTH PGH PL UP PT
 target-version = "py38"
 
