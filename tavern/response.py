@@ -1,42 +1,45 @@
+import logging
+import traceback
 from abc import abstractmethod
 from collections.abc import Mapping
-import logging
 from textwrap import indent
-import traceback
+from typing import Any, List, Optional
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
 from tavern._core.extfunctions import get_wrapped_response_function
+from tavern._core.pytest.config import TestConfig
+from tavern._core.strict_util import StrictOption
 
 logger = logging.getLogger(__name__)
 
 
-def indent_err_text(err):
+def indent_err_text(err: str) -> str:
     if err == "null":
         err = "<No body>"
     return indent(err, " " * 4)
 
 
 class BaseResponse:
-    def __init__(self, name, expected, test_block_config):
+    def __init__(self, name: str, expected, test_block_config: TestConfig) -> None:
         self.name = name
 
         # all errors in this response
-        self.errors = []
+        self.errors: List[str] = []
 
-        self.validate_functions = []
+        self.validate_functions: List = []
         self._check_for_validate_functions(expected)
 
         self.test_block_config = test_block_config
 
         self.expected = expected
 
-        self.response = None
+        self.response: Optional[Any] = None
 
-    def _str_errors(self):
+    def _str_errors(self) -> str:
         return "- " + "\n- ".join(self.errors)
 
-    def _adderr(self, msg, *args, e=None):
+    def _adderr(self, msg, *args, e=None) -> None:
         if e:
             logger.exception(msg, *args)
         else:
@@ -52,7 +55,13 @@ class BaseResponse:
         verification failed.
         """
 
-    def recurse_check_key_match(self, expected_block, block, blockname, strict):
+    def recurse_check_key_match(
+        self,
+        expected_block: Optional[Mapping],
+        block: Mapping,
+        blockname: str,
+        strict: StrictOption,
+    ) -> None:
         """Valid returned data against expected data
 
         Todo:
@@ -60,9 +69,9 @@ class BaseResponse:
 
         Args:
             strict: strictness setting for this block
-            expected_block (dict): expected data
-            block (dict): actual data
-            blockname (str): 'name' of this block (params, mqtt, etc) for error messages
+            expected_block: expected data
+            block: actual data
+            blockname: 'name' of this block (params, mqtt, etc) for error messages
         """
 
         if expected_block is None:
@@ -101,7 +110,7 @@ class BaseResponse:
         except exceptions.KeyMismatchError as e:
             self._adderr(e.args[0], e=e)
 
-    def _check_for_validate_functions(self, response_block):
+    def _check_for_validate_functions(self, response_block) -> None:
         """
         See if there were any functions specified in the response block and save them for later use
 
@@ -137,7 +146,7 @@ class BaseResponse:
         # Could put in an isinstance check here
         check_deprecated_validate("json")
 
-    def _maybe_run_validate_functions(self, response):
+    def _maybe_run_validate_functions(self, response) -> None:
         """Run validation functions if available
 
         Note:
@@ -153,7 +162,7 @@ class BaseResponse:
         for vf in self.validate_functions:
             try:
                 vf(response)
-            except Exception as e:  # pylint: disable=broad-except
+            except Exception as e:
                 self._adderr(
                     "Error calling validate function '%s':\n%s",
                     vf.func,
@@ -161,27 +170,32 @@ class BaseResponse:
                     e=e,
                 )
 
-    def maybe_get_save_values_from_ext(self, response, expected):
+    def maybe_get_save_values_from_ext(
+        self, response: Any, read_save_from: Mapping
+    ) -> dict:
         """If there is an $ext function in the save block, call it and save the response
 
         Args:
-            expected (dict): the expected response (incl body/json/headers/mqtt topic/etc etc)
-                Actual contents depends on which type of response is being checked
-            response (object): response object.
-                Actual contents depends on which type of response is being checked
+            response: response object. Actual contents depends on which type of
+                response is being checked
+            read_save_from: the expected response (incl
+                body/json/headers/mqtt topic/etc etc) containing a spec for which things
+                should be saved from the response. Actual contents depends on which type of
+                response is being checked
 
         Returns:
-            dict: mapping of name: value of things to save
+            mapping of name to value of things to save
         """
+
         try:
-            wrapped = get_wrapped_response_function(expected["save"]["$ext"])
+            wrapped = get_wrapped_response_function(read_save_from["save"]["$ext"])
         except KeyError:
             logger.debug("No save function for this stage")
             return {}
 
         try:
-            to_save = wrapped(response)
-        except Exception as e:  # pylint: disable=broad-except
+            saved = wrapped(response)
+        except Exception as e:
             self._adderr(
                 "Error calling save function '%s':\n%s",
                 wrapped.func,
@@ -190,53 +204,85 @@ class BaseResponse:
             )
             return {}
 
-        if isinstance(to_save, dict):
-            return to_save
-        elif to_save is not None:
+        logger.debug("saved %s from ext function", saved)
+
+        if isinstance(saved, dict):
+            return saved
+        elif saved is not None:
             self._adderr(
-                "Unexpected return value '%s' from $ext save function", to_save
+                "Unexpected return value '%s' from $ext save function (expected a dict or None)",
+                saved,
             )
 
         return {}
 
-    def maybe_get_save_values_from_save_block(self, key, to_check):
-        """Save a value from a specific block in the response
+    def maybe_get_save_values_from_save_block(
+        self,
+        key: str,
+        save_from: Optional[Mapping],
+        *,
+        outer_save_block: Optional[Mapping] = None,
+    ) -> dict:
+        """Save a value from a specific block in the response.
+
+        See docs for maybe_get_save_values_from_given_block for more info
+
+        Keyword Args:
+            outer_save_block: Read things to save from this block instead of self.expected
+        """
+
+        logger.debug("save from: %s", save_from)
+
+        read_save_from = outer_save_block or self.expected
+        logger.debug("save spec: %s", read_save_from.get("save"))
+
+        try:
+            to_save = read_save_from["save"][key]
+        except KeyError:
+            logger.debug("Nothing expected to save for %s", key)
+            return {}
+
+        return self.maybe_get_save_values_from_given_block(key, save_from, to_save)
+
+    def maybe_get_save_values_from_given_block(
+        self,
+        key: str,
+        save_from: Optional[Mapping],
+        to_save: Mapping,
+    ) -> dict:
+        """Save a value from a specific block in the response.
 
         This is different from maybe_get_save_values_from_ext - depends on the kind of response
 
         Args:
-            to_check (dict): An element of the response from which the given key
-                is extracted
-            key (str): Key to use
+            key: Name of key being used to save, for debugging
+            save_from: An element of the response from which values are being saved
+            to_save: block containing information about things to save
 
         Returns:
             dict: dictionary of save_name: value, where save_name is the key we
                 wanted to save this value as
         """
+
         saved = {}
 
-        try:
-            expected = self.expected["save"][key]
-        except KeyError:
-            logger.debug("Nothing expected to save for %s", key)
+        if not save_from:
+            self._adderr("No %s in response (wanted to save %s)", key, to_save)
             return {}
 
-        if not to_check:
-            self._adderr("No %s in response (wanted to save %s)", key, expected)
-        else:
-            for save_as, joined_key in expected.items():
-                try:
-                    saved[save_as] = recurse_access_key(to_check, joined_key)
-                except (
-                    exceptions.InvalidQueryResultTypeError,
-                    exceptions.KeySearchNotFoundError,
-                ) as e:
-                    self._adderr(
-                        "Wanted to save '%s' from '%s', but it did not exist in the response",
-                        joined_key,
-                        key,
-                        e=e,
-                    )
+        for save_as, joined_key in to_save.items():
+            try:
+                saved[save_as] = recurse_access_key(save_from, joined_key)
+            except (
+                exceptions.InvalidQueryResultTypeError,
+                exceptions.KeySearchNotFoundError,
+            ) as e:
+                self._adderr(
+                    "Wanted to save '%s' from '%s', but it did not exist in the response",
+                    joined_key,
+                    key,
+                    e=e,
+                )
 
         if saved:
             logger.debug("Saved %s for '%s' from response", saved, key)

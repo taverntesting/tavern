@@ -1,10 +1,11 @@
 import operator
 import re
+from typing import Any, Dict, List, Sized
 
 from tavern._core import exceptions
 
 
-def test_type(val, mytype):
+def test_type(val, mytype) -> bool:
     """Check value fits one of the types, if so return true, else false"""
     typelist = TYPES.get(str(mytype).lower())
     if typelist is None:
@@ -13,11 +14,11 @@ def test_type(val, mytype):
         )
     try:
         for testtype in typelist:
-            if isinstance(val, testtype):
+            if isinstance(val, testtype):  # type: ignore
                 return True
         return False
     except TypeError:
-        return isinstance(val, typelist)
+        return isinstance(val, typelist)  # type: ignore
 
 
 COMPARATORS = {
@@ -36,7 +37,7 @@ COMPARATORS = {
     "regex": lambda x, y: regex_compare(str(x), str(y)),
     "type": test_type,
 }
-TYPES = {
+TYPES: Dict[str, List[Any]] = {
     "none": [type(None)],
     "number": [int, float],
     "int": [int],
@@ -48,11 +49,11 @@ TYPES = {
 }
 
 
-def regex_compare(_input, regex):
+def regex_compare(_input, regex) -> bool:
     return bool(re.search(regex, _input))
 
 
-def safe_length(var):
+def safe_length(var: Sized) -> int:
     """Exception-safe length check, returns -1 if no length on type or error"""
     try:
         return len(var)
@@ -61,12 +62,12 @@ def safe_length(var):
 
 
 def validate_comparison(each_comparison):
-    try:
-        assert set(each_comparison.keys()) == {"jmespath", "operator", "expected"}
-    except KeyError as e:
+    if extra := set(each_comparison.keys()) - {"jmespath", "operator", "expected"}:
         raise exceptions.BadSchemaError(
-            "Invalid keys given to JMES validation function"
-        ) from e
+            "Invalid keys given to JMES validation function (got extra keys: {})".format(
+                extra
+            )
+        )
 
     jmespath, _operator, expected = (
         each_comparison["jmespath"],
@@ -82,7 +83,9 @@ def validate_comparison(each_comparison):
     return jmespath, _operator, expected
 
 
-def actual_validation(_operator, _actual, expected, _expression, expression):
+def actual_validation(
+    _operator: str, _actual, expected, _expression, expression
+) -> None:
     if not COMPARATORS[_operator](_actual, expected):
         raise exceptions.JMESError(
             "Validation '{}' ({}) failed!".format(expression, _expression)

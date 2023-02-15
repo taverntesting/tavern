@@ -1,5 +1,4 @@
 ---
-
 test_name: Test sending form encoded data works
 
 includes:
@@ -18,7 +17,6 @@ stages:
         id: *sent_uuid
 
 ---
-
 test_name: Test sending raw data
 
 includes:
@@ -46,7 +44,6 @@ stages:
         status: denied
 
 ---
-
 test_name: Test sending base64 data
 
 includes:
@@ -84,7 +81,6 @@ stages:
         status: "err: 'ERR'"
 
 ---
-
 test_name: Test sending a list in 'data' raises an error
 
 _xfail: verify
@@ -103,7 +99,6 @@ stages:
         status: ok
 
 ---
-
 test_name: Test sending a float in 'data' raises an error
 
 _xfail: verify
@@ -120,7 +115,6 @@ stages:
         status: ok
 
 ---
-
 test_name: Test sending JSON and data at the same time fails
 
 _xfail: verify

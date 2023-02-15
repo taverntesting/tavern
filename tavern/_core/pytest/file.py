@@ -2,10 +2,11 @@ import copy
 import functools
 import itertools
 import logging
+from typing import Dict, Iterator, List, Mapping
 
-from box import Box
 import pytest
 import yaml
+from box import Box
 
 from tavern._core import exceptions
 from tavern._core.dict_util import deep_dict_merge, format_keys, get_tavern_box
@@ -85,11 +86,11 @@ def _format_test_marks(original_marks, fmt_vars, test_name):
     return pytest_marks, formatted_marks
 
 
-def _generate_parametrized_test_items(keys, vals_combination):
+def _generate_parametrized_test_items(keys: List, vals_combination):
     """Generate test name from given key(s)/value(s) combination
 
     Args:
-        keys (list): list of keys to format name with
+        keys: list of keys to format name with
         vals_combination (tuple(str)): this combination of values for the key
     """
     flattened_values = []
@@ -162,7 +163,12 @@ def _generate_parametrized_test_items(keys, vals_combination):
     return variables, inner_formatted
 
 
-def _get_parametrized_items(parent, test_spec, parametrize_marks, pytest_marks):
+def _get_parametrized_items(
+    parent: pytest.File,
+    test_spec: Dict,
+    parametrize_marks: List[Dict],
+    pytest_marks: List[pytest.Mark],
+) -> Iterator[YamlItem]:
     """Return new items with new format values available based on the mark
 
     This will change the name from something like 'test a thing' to 'test a
@@ -229,7 +235,7 @@ def _get_parametrized_items(parent, test_spec, parametrize_marks, pytest_marks):
         )
         # And create the new item
         item_new = YamlItem.yamlitem_from_parent(
-            spec_new["test_name"], parent, spec_new, parent.fspath
+            spec_new["test_name"], parent, spec_new, parent.path
         )
         item_new.add_markers(pytest_marks)
 
@@ -239,33 +245,31 @@ def _get_parametrized_items(parent, test_spec, parametrize_marks, pytest_marks):
 class YamlFile(pytest.File):
     """Custom `File` class that loads each test block as a different test"""
 
-    # pylint:disable=no-member
-
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
         # This (and the FakeObj below) are to make pytest-pspec not error out.
         # The 'docstring' for this is the filename, the 'docstring' for each
         # individual test is the actual test name.
         class FakeObj:
-            __doc__ = self.fspath.strpath
+            __doc__ = str(self.path)
 
         self.obj = FakeObj
 
-    def _get_test_fmt_vars(self, test_spec):
+    def _get_test_fmt_vars(self, test_spec: Mapping) -> dict:
         """Get any format variables that can be inferred for the test at this point
 
         Args:
-            test_spec (dict): Test specification, possibly with included config files
+            test_spec: Test specification, possibly with included config files
 
         Returns:
-            dict: available format variables
+            available format variables
         """
         # Get included variables so we can do things like:
         # skipif: {my_integer} > 2
         # skipif: 'https' in '{hostname}'
         # skipif: '{hostname}'.contains('ignoreme')
-        fmt_vars = {}
+        fmt_vars: Dict = {}
 
         global_cfg = load_global_cfg(self.config)
         fmt_vars.update(**global_cfg.variables)
@@ -290,20 +294,20 @@ class YamlFile(pytest.File):
         tavern_box.merge_update(**fmt_vars)
         return tavern_box
 
-    def _generate_items(self, test_spec):
+    def _generate_items(self, test_spec: Dict) -> Iterator[YamlItem]:
         """Modify or generate tests based on test spec
 
         If there are any 'parametrize' marks, this will generate extra tests
         based on the values
 
         Args:
-            test_spec (dict): Test specification
+            test_spec: Test specification
 
         Yields:
-            YamlItem: Tavern YAML test
+            Tavern YAML test
         """
         item = YamlItem.yamlitem_from_parent(
-            test_spec["test_name"], self, test_spec, self.fspath
+            test_spec["test_name"], self, test_spec, self.path
         )
 
         original_marks = test_spec.get("marks", [])
@@ -333,24 +337,24 @@ class YamlFile(pytest.File):
 
         yield item
 
-    def collect(self):
+    def collect(self) -> Iterator[YamlItem]:
         """Load each document in the given input file into a different test
 
         Yields:
-            YamlItem: Essentially an individual pytest 'test object'
+            Pytest 'test objects'
         """
 
         try:
             # Convert to a list so we can catch parser exceptions
             all_tests = list(
-                yaml.load_all(self.fspath.open(encoding="utf-8"), Loader=IncludeLoader)
+                yaml.load_all(self.path.open(encoding="utf-8"), Loader=IncludeLoader)
             )
         except yaml.parser.ParserError as e:
             raise exceptions.BadSchemaError from e
 
         for test_spec in all_tests:
             if not test_spec:
-                logger.warning("Empty document in input file '%s'", self.fspath)
+                logger.warning("Empty document in input file '%s'", self.path)
                 continue
 
             try:

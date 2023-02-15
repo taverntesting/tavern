@@ -106,3 +106,8 @@ def get_response_topic_suffix():
 @pytest.fixture(scope="function", autouse=True)
 def random_device_id():
     return str(random.randint(100, 10000))
+
+
+@pytest.fixture(scope="function", autouse=True)
+def random_device_id_2():
+    return str(random.randint(100, 10000))

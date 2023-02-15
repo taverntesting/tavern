@@ -390,3 +390,9 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  1.25.1          Remove tbump from dependencies so it can actually be uploaded to pypi (2022-12-13)
 
 ##  1.25.2          Only patch pyyaml when a test is actually being loaded to avoid side effect from Tavern just being in the python path (2022-12-15)
+
+#  2.0.0           2.0.0 release (2023-01-12)
+
+##  2.0.1           Bump some dependency versions (2023-01-16)
+
+##  2.0.2           Fix saving in MQTT (2023-02-08)

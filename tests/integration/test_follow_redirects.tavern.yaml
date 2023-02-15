@@ -1,5 +1,4 @@
 ---
-
 includes:
   - !include common.yaml
 
@@ -12,7 +11,6 @@ stages:
     response:
       status_code: 302
 ---
-
 includes:
   - !include common.yaml
 
@@ -28,7 +26,6 @@ stages:
       status_code: 200
 
 ---
-
 includes:
   - !include common.yaml
 

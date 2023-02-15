@@ -1,12 +1,13 @@
-import collections
+import contextlib
 import logging
 import os
 import re
 import string
+from typing import Any, Dict, List, Mapping, Union
 
 import box
-from box import Box
 import jmespath
+from box.box import Box
 
 from tavern._core import exceptions
 from tavern._core.loader import (
@@ -18,16 +19,16 @@ from tavern._core.loader import (
 )
 
 from .formatted_str import FormattedString
-from .strict_util import StrictSetting, extract_strict_setting
+from .strict_util import StrictSetting, StrictSettingKinds, extract_strict_setting
 
 logger = logging.getLogger(__name__)
 
 
-def _check_and_format_values(to_format, box_vars):
+def _check_and_format_values(to_format, box_vars: Mapping[str, Any]) -> str:
     formatter = string.Formatter()
     would_format = formatter.parse(to_format)
 
-    for (_, field_name, _, _) in would_format:
+    for _, field_name, _, _ in would_format:
         if field_name is None:
             continue
 
@@ -53,7 +54,7 @@ def _check_and_format_values(to_format, box_vars):
     return to_format.format(**box_vars)
 
 
-def _attempt_find_include(to_format, box_vars):
+def _attempt_find_include(to_format: str, box_vars: box.Box):
     formatter = string.Formatter()
     would_format = list(formatter.parse(to_format))
 
@@ -87,10 +88,10 @@ def _attempt_find_include(to_format, box_vars):
 
     would_replace = formatter.get_field(field_name, [], box_vars)[0]
 
-    return formatter.convert_field(would_replace, conversion)
+    return formatter.convert_field(would_replace, conversion)  # type: ignore
 
 
-def format_keys(val, variables, no_double_format=True):
+def format_keys(val, variables: Mapping, no_double_format: bool = True):
     """recursively format a dictionary with the given values
 
     Args:
@@ -137,7 +138,7 @@ def format_keys(val, variables, no_double_format=True):
     return formatted
 
 
-def recurse_access_key(data, query):
+def recurse_access_key(data, query: str):
     """
     Search for something in the given data using the given query.
 
@@ -207,10 +208,8 @@ def _deprecated_recurse_access_key(current_val, keys):
     else:
         current_key = keys.pop(0)
 
-        try:
+        with contextlib.suppress(ValueError):
             current_key = int(current_key)
-        except ValueError:
-            pass
 
         try:
             return _deprecated_recurse_access_key(current_val[current_key], keys)
@@ -224,7 +223,7 @@ def _deprecated_recurse_access_key(current_val, keys):
             raise
 
 
-def deep_dict_merge(initial_dct, merge_dct):
+def deep_dict_merge(initial_dct: Dict, merge_dct: Mapping) -> dict:
     """Recursive dict merge. Instead of updating only top-level keys,
     dict_merge recurses down into dicts nested to an arbitrary depth
     and returns the merged dict. Keys values present in merge_dct take
@@ -236,16 +235,12 @@ def deep_dict_merge(initial_dct, merge_dct):
         merge_dct: dct merged into dct
 
     Returns:
-        dict: recursively merged dict
+        recursively merged dict
     """
     dct = initial_dct.copy()
 
     for k in merge_dct:
-        if (
-            k in dct
-            and isinstance(dct[k], dict)
-            and isinstance(merge_dct[k], collections.abc.Mapping)
-        ):
+        if k in dct and isinstance(dct[k], dict) and isinstance(merge_dct[k], Mapping):
             dct[k] = deep_dict_merge(dct[k], merge_dct[k])
         else:
             dct[k] = merge_dct[k]
@@ -253,7 +248,7 @@ def deep_dict_merge(initial_dct, merge_dct):
     return dct
 
 
-def check_expected_keys(expected, actual):
+def check_expected_keys(expected, actual) -> None:
     """Check that a set of expected keys is a superset of the actual keys
 
     Args:
@@ -323,7 +318,12 @@ def yield_keyvals(block):
             yield [sidx], sidx, val
 
 
-def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
+def check_keys_match_recursive(
+    expected_val: Any,
+    actual_val: Any,
+    keys: List[Union[str, int]],
+    strict: StrictSettingKinds = True,
+) -> None:
     """Utility to recursively check response values
 
     expected and actual both have to be of the same type or it will raise an
@@ -343,11 +343,11 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
         code and to remove a load of the isinstance checks
 
     Args:
-        expected_val (dict, list, str): expected value
-        actual_val (dict, list, str): actual value
-        keys (list): any keys which have been recursively parsed to get to this
+        expected_val: expected value
+        actual_val: actual value
+        keys: any keys which have been recursively parsed to get to this
             point. Used for debug output.
-        strict (bool): Whether 'strict' key checking should be done. If this is
+        strict: Whether 'strict' key checking should be done. If this is
             False, a mismatch in dictionary keys between the expected and the
             actual values will not raise an error (but a mismatch in value will
             raise an error)
@@ -355,8 +355,6 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
     Raises:
         KeyMismatchError: expected_val and actual_val did not match
     """
-
-    # pylint: disable=too-many-locals,too-many-statements,too-many-nested-blocks
 
     def full_err():
         """Get error in the format:
@@ -404,12 +402,12 @@ def check_keys_match_recursive(expected_val, actual_val, keys, strict=True):
     strict_bool, strict_setting = extract_strict_setting(strict)
 
     try:
-        assert actual_val == expected_val
+        assert actual_val == expected_val  # noqa
     except AssertionError as e:
         # At this point, there is likely to be an error unless we're using any
         # of the type sentinels
 
-        if not (expected_val is ANYTHING):  # pylint: disable=superfluous-parens
+        if expected_val is not ANYTHING:
             if not expected_matches:
                 if isinstance(expected_val, RegexSentinel):
                     msg = "Expected a string to match regex '{}' ({})".format(

@@ -1,5 +1,4 @@
 ---
-
 test_name: Test finally block doing nothing
 
 stages:
@@ -23,7 +22,6 @@ finally:
         value: "123"
 
 ---
-
 test_name: Test finally block fail
 
 _xfail: run

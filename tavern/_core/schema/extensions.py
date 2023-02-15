@@ -1,5 +1,6 @@
 import os
 import re
+from typing import Union
 
 from pykwalify.types import is_bool, is_float, is_int
 
@@ -32,7 +33,6 @@ is_bool_like = validate_type_and_token(is_bool, BoolToken)
 # These plug into the pykwalify extension function API
 def validator_like(validate, description):
     def validator(value, rule_obj, path):
-        # pylint: disable=unused-argument
         if validate(value):
             return True
         else:
@@ -49,7 +49,7 @@ float_variable = validator_like(is_float_like, "float-like")
 bool_variable = validator_like(is_bool_like, "bool-like")
 
 
-def _validate_one_extension(input_value):
+def _validate_one_extension(input_value) -> None:
     expected_keys = {"function", "extra_args", "extra_kwargs"}
     extra = set(input_value) - expected_keys
 
@@ -61,7 +61,7 @@ def _validate_one_extension(input_value):
 
     try:
         import_ext_function(input_value["function"])
-    except Exception as e:  # pylint: disable=broad-except
+    except Exception as e:
         raise BadSchemaError("Couldn't load {}".format(input_value["function"])) from e
 
     extra_args = input_value.get("extra_args")
@@ -78,7 +78,7 @@ def _validate_one_extension(input_value):
         )
 
 
-def validate_extensions(value, rule_obj, path):
+def validate_extensions(value, rule_obj, path) -> bool:
     """Given a specification for calling a validation function, make sure that
     the arguments are valid (ie, function is valid, arguments are of the
     correct type...)
@@ -97,8 +97,6 @@ def validate_extensions(value, rule_obj, path):
         BadSchemaError: Something in the validation function spec was wrong
     """
 
-    # pylint: disable=unused-argument
-
     if isinstance(value, list):
         for vf in value:
             _validate_one_extension(vf)
@@ -108,8 +106,7 @@ def validate_extensions(value, rule_obj, path):
     return True
 
 
-def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path):
-    # pylint: disable=unused-argument
+def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path) -> bool:
     err_msg = "status_code has to be an integer or a list of integers (got {})".format(
         value
     )
@@ -124,8 +121,7 @@ def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path):
     return True
 
 
-def check_usefixtures(value, rule_obj, path):
-    # pylint: disable=unused-argument
+def check_usefixtures(value, rule_obj, path) -> bool:
     err_msg = "'usefixtures' has to be a list with at least one item"
 
     if not isinstance(value, (list, tuple)):
@@ -137,9 +133,8 @@ def check_usefixtures(value, rule_obj, path):
     return True
 
 
-def verify_oneof_id_name(value, rule_obj, path):
+def verify_oneof_id_name(value, rule_obj, path) -> bool:
     """Checks that if 'name' is not present, 'id' is"""
-    # pylint: disable=unused-argument
 
     name = value.get("name")
     if not name:
@@ -152,9 +147,7 @@ def verify_oneof_id_name(value, rule_obj, path):
     return True
 
 
-def check_parametrize_marks(value, rule_obj, path):
-    # pylint: disable=unused-argument
-
+def check_parametrize_marks(value, rule_obj, path) -> bool:
     key_or_keys = value["key"]
     vals = value["vals"]
 
@@ -215,7 +208,7 @@ def check_parametrize_marks(value, rule_obj, path):
     return True
 
 
-def validate_data_key(value, rule_obj, path):
+def validate_data_key(value, rule_obj, path) -> bool:
     """Validate the 'data' key in a http request
 
     From requests docs:
@@ -227,7 +220,6 @@ def validate_data_key(value, rule_obj, path):
     We could handle lists of tuples, but it seems entirely pointless to maintain
     compatibility for something which is more verbose and does the same thing
     """
-    # pylint: disable=unused-argument
 
     if isinstance(value, dict):
         # Fine
@@ -259,12 +251,10 @@ def validate_data_key(value, rule_obj, path):
     return True
 
 
-def validate_request_json(value, rule_obj, path):
+def validate_request_json(value, rule_obj, path) -> bool:
     """Performs the above match, but also matches a dict or a list. This it
     just because it seems like you can't match a dict OR a list in pykwalify
     """
-
-    # pylint: disable=unused-argument
 
     def nested_values(d):
         if isinstance(d, dict):
@@ -289,7 +279,7 @@ def validate_request_json(value, rule_obj, path):
     return True
 
 
-def validate_json_with_ext(value, rule_obj, path):
+def validate_json_with_ext(value, rule_obj, path) -> bool:
     """Validate json with extensions"""
     validate_request_json(value, rule_obj, path)
 
@@ -303,9 +293,8 @@ def validate_json_with_ext(value, rule_obj, path):
     return True
 
 
-def check_strict_key(value, rule_obj, path):
+def check_strict_key(value, rule_obj, path) -> bool:
     """Make sure the 'strict' key is either a bool or a list"""
-    # pylint: disable=unused-argument
 
     if not isinstance(value, list) and not is_bool_like(value):
         raise BadSchemaError("'strict' has to be either a boolean or a list")
@@ -321,9 +310,8 @@ def check_strict_key(value, rule_obj, path):
     return True
 
 
-def validate_timeout_tuple_or_float(value, rule_obj, path):
+def validate_timeout_tuple_or_float(value, rule_obj, path) -> bool:
     """Make sure timeout is a float/int or a tuple of floats/ints"""
-    # pylint: disable=unused-argument
 
     err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{}' (type {})".format(
         value, type(value)
@@ -346,9 +334,8 @@ def validate_timeout_tuple_or_float(value, rule_obj, path):
     return True
 
 
-def validate_verify_bool_or_str(value, rule_obj, path):
+def validate_verify_bool_or_str(value: Union[bool, str], rule_obj, path) -> bool:
     """Make sure the 'verify' key is either a bool or a str"""
-    # pylint: disable=unused-argument
 
     if not isinstance(value, (bool, str)) and not is_bool_like(value):
         raise BadSchemaError(
@@ -358,9 +345,8 @@ def validate_verify_bool_or_str(value, rule_obj, path):
     return True
 
 
-def validate_cert_tuple_or_str(value, rule_obj, path):
+def validate_cert_tuple_or_str(value, rule_obj, path) -> bool:
     """Make sure the 'cert' key is either a str or tuple"""
-    # pylint: disable=unused-argument
 
     err_msg = (
         "The 'cert' key must be the path to a single file (containing the private key and the certificate) "
@@ -379,9 +365,8 @@ def validate_cert_tuple_or_str(value, rule_obj, path):
     return True
 
 
-def validate_file_spec(value, rule_obj, path):
+def validate_file_spec(value, rule_obj, path) -> bool:
     """Validate file upload arguments"""
-    # pylint: disable=unused-argument
 
     if not isinstance(value, dict):
         raise BadSchemaError(
@@ -427,13 +412,12 @@ def validate_file_spec(value, rule_obj, path):
 
 def raise_body_error(value, rule_obj, path):
     """Raise an error about the deprecated 'body' key"""
-    # pylint: disable=unused-argument
 
     msg = "The 'body' key has been replaced with 'json' in 1.0 to make it more in line with other blocks. see https://github.com/taverntesting/tavern/issues/495 for details."
     raise BadSchemaError(msg)
 
 
-def retry_variable(value, rule_obj, path):
+def retry_variable(value: int, rule_obj, path) -> bool:
     """Check retry variables"""
 
     int_variable(value, rule_obj, path)
@@ -445,9 +429,8 @@ def retry_variable(value, rule_obj, path):
     return True
 
 
-def validate_http_method(value, rule_obj, path):
+def validate_http_method(value: str, rule_obj, path) -> bool:
     """Check http method"""
-    # pylint: disable=unused-argument
 
     if not isinstance(value, str):
         raise BadSchemaError("HTTP method should be a string")

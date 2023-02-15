@@ -1,10 +1,9 @@
-# pylint: disable=unused-argument
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-def pytest_tavern_beta_before_every_test_run(test_dict, variables):
+def pytest_tavern_beta_before_every_test_run(test_dict, variables) -> None:
     """Called:
 
     - directly after fixtures are loaded for a test
@@ -21,7 +20,7 @@ def pytest_tavern_beta_before_every_test_run(test_dict, variables):
     """
 
 
-def pytest_tavern_beta_after_every_test_run(test_dict, variables):
+def pytest_tavern_beta_after_every_test_run(test_dict, variables) -> None:
     """Called:
 
     - After test run
@@ -32,7 +31,7 @@ def pytest_tavern_beta_after_every_test_run(test_dict, variables):
     """
 
 
-def pytest_tavern_beta_after_every_response(expected, response):
+def pytest_tavern_beta_after_every_response(expected, response) -> None:
     """Called after every _response_ - including MQTT/HTTP/etc
 
     Note:
@@ -45,7 +44,7 @@ def pytest_tavern_beta_after_every_response(expected, response):
     """
 
 
-def pytest_tavern_beta_before_every_request(request_args):
+def pytest_tavern_beta_before_every_request(request_args) -> None:
     """Called just before every request - including MQTT/HTTP/etc
 
     Note:
@@ -57,7 +56,7 @@ def pytest_tavern_beta_before_every_request(request_args):
     """
 
 
-def call_hook(test_block_config, hookname, **kwargs):
+def call_hook(test_block_config, hookname, **kwargs) -> None:
     """Utility to call the hooks"""
     try:
         hook = getattr(test_block_config.tavern_internal.pytest_hook_caller, hookname)

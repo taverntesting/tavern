@@ -1,3 +1,4 @@
+import contextlib
 import json
 import sys
 import tempfile
@@ -25,7 +26,7 @@ from tavern.helpers import validate_content, validate_pykwalify, validate_regex
 class FakeResponse:
     def __init__(self, text):
         self.text = text
-        self.headers = dict(test_header=text)
+        self.headers = {"test_header": text}
 
 
 class TestRegex:
@@ -127,6 +128,8 @@ class TestOptionParsing:
         args = pytestconfig._parser.parse_known_args(
             ["--tavern-strict={}".format(optval)]
         )
+        assert "tavern_strict" in args
+        assert args.tavern_strict == [optval]
 
 
 class TestTavernRepr:
@@ -141,10 +144,8 @@ class TestTavernRepr:
     def add_opts(self, pytestconfig):
         from tavern._core.pytest.hooks import pytest_addoption
 
-        try:
+        with contextlib.suppress(ValueError):
             pytest_addoption(pytestconfig._parser)
-        except ValueError:
-            pass
 
     def _make_fake_exc_info(self, exc_type):
         # Copied from pytest tests
@@ -305,7 +306,7 @@ class TestCheckParseValues:
             )
         )
 
-    @pytest.mark.parametrize("item", [1, "a", 1.3, format_keys("{s}", dict(s=2))])
+    @pytest.mark.parametrize("item", [1, "a", 1.3, format_keys("{s}", {"s": 2})])
     def test_no_warn_good_type(self, item):
         with patch("tavern._core.dict_util.logger.warning") as wmock:
             _check_and_format_values("{fd}", {"fd": item})
@@ -393,38 +394,38 @@ class TestStrictUtils:
             validate_and_parse_option("json:{}".format(setting))
 
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
-    def test_defaults(self, section):
-        level = StrictLevel([])
+    def test_defaults_good(self, section):
+        level = StrictLevel()
 
         if section == "json":
-            assert level.setting_for(section)
+            assert level.option_for(section).is_on()
         else:
-            assert not level.setting_for(section)
+            assert not level.option_for(section).is_on()
 
     @pytest.mark.parametrize("section", ["true", "1", "hi", ""])
-    def test_defaults(self, section):
-        level = StrictLevel([])
+    def test_defaults_bad(self, section):
+        level = StrictLevel()
 
         with pytest.raises(exceptions.InvalidConfigurationException):
-            level.setting_for(section)
+            level.option_for(section)
 
     # These tests could be removed, they are testing implementation details...
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     def test_set_on(self, section):
         level = StrictLevel.from_options([section + ":on"])
 
-        assert level.setting_for(section).setting == StrictSetting.ON
-        assert level.setting_for(section).is_on()
+        assert level.option_for(section).setting == StrictSetting.ON
+        assert level.option_for(section).is_on()
 
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     def test_set_off(self, section):
         level = StrictLevel.from_options([section + ":off"])
 
-        assert level.setting_for(section).setting == StrictSetting.OFF
-        assert not level.setting_for(section).is_on()
+        assert level.option_for(section).setting == StrictSetting.OFF
+        assert not level.option_for(section).is_on()
 
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     def test_unset(self, section):
         level = StrictLevel.from_options([section])
 
-        assert level.setting_for(section).setting == StrictSetting.UNSET
+        assert level.option_for(section).setting == StrictSetting.UNSET

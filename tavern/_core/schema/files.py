@@ -3,10 +3,11 @@ import copy
 import logging
 import os
 import tempfile
+from typing import Dict
 
 import pykwalify
-from pykwalify import core
 import yaml
+from pykwalify import core
 
 from tavern._core.exceptions import BadSchemaError
 from tavern._core.loader import load_single_document_yaml
@@ -19,8 +20,8 @@ logger = logging.getLogger(__name__)
 class SchemaCache:
     """Caches loaded schemas"""
 
-    def __init__(self):
-        self._loaded = {}
+    def __init__(self) -> None:
+        self._loaded: Dict[str, dict] = {}
 
     def _load_base_schema(self, schema_filename):
         try:
@@ -79,7 +80,7 @@ class SchemaCache:
 load_schema_file = SchemaCache()
 
 
-def verify_pykwalify(to_verify, schema):
+def verify_pykwalify(to_verify, schema) -> None:
     """Verify a generic file against a given pykwalify schema
     Args:
         to_verify (dict): Filename of source tests to check
@@ -128,7 +129,7 @@ def wrapfile(to_wrap):
             os.remove(wrapped_tmp.name)
 
 
-def verify_tests(test_spec, with_plugins=True):
+def verify_tests(test_spec, with_plugins: bool = True) -> None:
     """Verify that a specific test block is correct
 
     Todo:

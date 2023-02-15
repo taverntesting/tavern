@@ -2,10 +2,12 @@ import importlib
 import json
 import logging
 import re
+from typing import Dict, List, Optional
 
-from box import Box
 import jmespath
 import jwt
+import requests
+from box.box import Box
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
@@ -15,13 +17,15 @@ from tavern._core.schema.files import verify_pykwalify
 logger = logging.getLogger(__name__)
 
 
-def check_exception_raised(response, exception_location):
+def check_exception_raised(
+    response: requests.Response, exception_location: str
+) -> None:
     """Make sure the result from the server is the same as the exception we
     expect to raise
 
     Args:
-        response (requests.Response): response object
-        exception_location (str): entry point style location of exception
+        response: response object
+        exception_location: entry point style location of exception
     """
 
     dumped = json.loads(response.content.decode("utf8"))
@@ -30,29 +34,41 @@ def check_exception_raised(response, exception_location):
     module = importlib.import_module(module_name)
     exception = getattr(module, exception_name)
 
-    if "title" in dumped:
-        assert dumped["title"] == exception.error_title
-    elif "error" in dumped:
-        assert dumped["error"] == exception.error_title
+    for possible_title in ["title", "error"]:
+        if possible_title in dumped:
+            try:
+                assert dumped[possible_title] == exception.error_title  # noqa
+            except AssertionError as e:
+                raise exceptions.UnexpectedExceptionError(
+                    "Incorrect title of exception"
+                ) from e
 
     actual_description = dumped.get("description", dumped.get("error_description"))
     expected_description = getattr(
-        exception, "error_description", getattr(exception, "description")
+        exception, "error_description", exception.description
     )
 
     try:
-        assert actual_description == expected_description
-    except AssertionError:
+        assert actual_description == expected_description  # noqa
+    except AssertionError as e:
         # If it has a format, ignore this error. Would be annoying to say how to
         # format things in the validator, especially if it's a set/dict which is
         # unordered
+        # TODO: improve logic? Use a regex like '{.+?}' instead?
         if not any(i in expected_description for i in "{}"):
-            raise
+            raise exceptions.UnexpectedExceptionError(
+                "exception description did not match"
+            ) from e
 
-    assert response.status_code == int(exception.status.split()[0])
+    try:
+        assert response.status_code == int(exception.status.split()[0])  # noqa
+    except AssertionError as e:
+        raise exceptions.UnexpectedExceptionError(
+            "exception status code did not match"
+        ) from e
 
 
-def validate_jwt(response, jwt_key, **kwargs):
+def validate_jwt(response, jwt_key, **kwargs) -> Dict[str, Box]:
     """Make sure a jwt is valid
 
     This uses the pyjwt library to decode the jwt, so any keyword args needed
@@ -80,7 +96,7 @@ def validate_jwt(response, jwt_key, **kwargs):
     return {"jwt": Box(decoded)}
 
 
-def validate_pykwalify(response, schema):
+def validate_pykwalify(response, schema) -> None:
     """Make sure the response matches a given schema
 
     Args:
@@ -98,17 +114,23 @@ def validate_pykwalify(response, schema):
         verify_pykwalify(to_verify, schema)
 
 
-def validate_regex(response, expression, *, header=None, in_jmespath=None):
+def validate_regex(
+    response: requests.Response,
+    expression: str,
+    *,
+    header: Optional[str] = None,
+    in_jmespath: Optional[str] = None,
+) -> Dict[str, Box]:
     """Make sure the response matches a regex expression
 
     Args:
-        response (requests.Response): requests.Response object
-        expression (str): Regex expression to use
-        header (str): Match against a particular header instead of the body
-        in_jmespath (str): if present, jmespath to access before trying to match
+        response: requests.Response object
+        expression: Regex expression to use
+        header: Match against a particular header instead of the body
+        in_jmespath: if present, jmespath to access before trying to match
 
     Returns:
-        dict: dictionary of regex: boxed name capture groups
+        mapping of regex to boxed name capture groups
     """
 
     if header and in_jmespath:
@@ -149,12 +171,12 @@ def validate_regex(response, expression, *, header=None, in_jmespath=None):
     return {"regex": Box(match.groupdict())}
 
 
-def validate_content(response, comparisons):
+def validate_content(response: requests.Response, comparisons: List[str]) -> None:
     """Asserts expected value with actual value using JMES path expression
 
     Args:
-        response (Response): reqeusts.Response object.
-        comparisons(list):
+        response: reqeusts.Response object.
+        comparisons:
             A list of dict containing the following keys:
                 1. jmespath : JMES path expression to extract data from.
                 2. operator : Operator to use to compare data.
@@ -175,14 +197,14 @@ def validate_content(response, comparisons):
             raise exceptions.JMESError("Error validating JMES") from e
 
 
-def check_jmespath_match(parsed_response, query, expected=None):
+def check_jmespath_match(parsed_response, query: str, expected: Optional[str] = None):
     """
     Check that the JMES path given in 'query' is present in the given response
 
     Args:
-        parsed_response (dict, list): Response list or dict
-        query (str): JMES query
-        expected (str, optional): Possible value to match against. If None,
+        parsed_response: Response list or dict
+        query: JMES query
+        expected: Possible value to match against. If None,
             'query' will just check that _something_ is present
     """
     actual = jmespath.search(query, parsed_response)
@@ -195,7 +217,7 @@ def check_jmespath_match(parsed_response, query, expected=None):
     if expected is not None:
         # Reuse dict util helper as it should behave the same
         check_keys_match_recursive(expected, actual, [], True)
-    elif not actual and not (actual == expected):  # pylint: disable=superfluous-parens
+    elif not actual and not (actual == expected):
         # This can return an empty list, but it might be what we expect. if not,
         # raise an exception
         raise exceptions.JMESError(msg)

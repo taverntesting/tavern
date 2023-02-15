@@ -1,11 +1,13 @@
-from contextlib import ExitStack
 import copy
-from copy import deepcopy
 import dataclasses
-from distutils.util import strtobool  # pylint: disable=deprecated-module
 import functools
 import logging
-from typing import Dict
+import pathlib
+from contextlib import ExitStack
+from copy import deepcopy
+from typing import Dict, List, Mapping, MutableMapping
+
+import box
 
 from tavern._core import exceptions
 from tavern._core.plugins import (
@@ -15,18 +17,19 @@ from tavern._core.plugins import (
     get_request_type,
     get_verifiers,
 )
-from tavern._core.strict_util import StrictLevel, StrictSetting
+from tavern._core.strict_util import StrictLevel
 
 from .dict_util import format_keys, get_tavern_box
 from .pytest import call_hook
 from .pytest.config import TestConfig
 from .report import attach_stage_content, wrap_step
+from .strtobool import strtobool
 from .testhelpers import delay, retry
 
 logger = logging.getLogger(__name__)
 
 
-def _resolve_test_stages(test_spec, available_stages):
+def _resolve_test_stages(test_spec: Mapping, available_stages: Mapping):
     # Need to get a final list of stages in the tests (resolving refs)
     test_stages = []
     for raw_stage in test_spec["stages"]:
@@ -52,19 +55,24 @@ def _resolve_test_stages(test_spec, available_stages):
     return test_stages
 
 
-def _get_included_stages(tavern_box, test_block_config, test_spec, available_stages):
+def _get_included_stages(
+    tavern_box: box.Box,
+    test_block_config: TestConfig,
+    test_spec: Mapping,
+    available_stages: List[dict],
+) -> List[dict]:
     """
     Get any stages which were included via config files which will be available
     for use in this test
 
     Args:
-        available_stages (list): List of stages which already exist
-        tavern_box (box.Box): Available parameters for fomatting at this point
-        test_block_config (dict): Current test config dictionary
-        test_spec (dict): Specification for current test
+        available_stages: List of stages which already exist
+        tavern_box: Available parameters for fomatting at this point
+        test_block_config: Current test config dictionary
+        test_spec: Specification for current test
 
     Returns:
-        list: Fully resolved
+        Fully resolved stages
     """
 
     def stage_ids(s):
@@ -81,7 +89,7 @@ def _get_included_stages(tavern_box, test_block_config, test_spec, available_sta
                         )
                     )
 
-        included_stages = []
+        included_stages = []  # type: ignore
 
         for included in test_spec["includes"]:
             if "variables" in included:
@@ -102,26 +110,28 @@ def _get_included_stages(tavern_box, test_block_config, test_spec, available_sta
     return included_stages
 
 
-def run_test(in_file, test_spec, global_cfg):
+def run_test(
+    in_file: pathlib.Path,
+    test_spec: MutableMapping,
+    global_cfg: TestConfig,
+) -> None:
     """Run a single tavern test
 
     Note that each tavern test can consist of multiple requests (log in,
-    create, update, delete, etc).
+     create, update, delete, etc).
 
     The global configuration is copied and used as an initial configuration for
     this test. Any values which are saved from any tests are saved into this
     test block and can be used for formatting in later stages in the test.
 
     Args:
-        in_file (str): filename containing this test
-        test_spec (dict): The specification for this test
-        global_cfg (TestConfig): Any global configuration for this test
+        in_file: filename containing this test
+        test_spec: The specification for this test
+        global_cfg: Any global configuration for this test
 
-    No Longer Raises:
+    Raises:
         TavernException: If any of the tests failed
     """
-
-    # pylint: disable=too-many-locals
 
     # Initialise test config for this test with the global configuration before
     # starting
@@ -178,16 +188,18 @@ def run_test(in_file, test_spec, global_cfg):
                 if has_only and not getonly(stage):
                     continue
 
-                runner.wrap_run_stage(idx, stage)
+                runner.run_stage(idx, stage)
 
                 if getonly(stage):
                     break
         finally:
             for idx, stage in enumerate(test_spec.get("finally", [])):
-                runner.wrap_run_stage(idx, stage)
+                runner.run_stage(idx, stage)
 
 
-def _calculate_stage_strictness(stage, test_block_config, test_spec):
+def _calculate_stage_strictness(
+    stage: dict, test_block_config: TestConfig, test_spec: Mapping
+) -> StrictLevel:
     """Figure out the strictness for this stage
 
     Can be overridden per stage, or per test
@@ -249,12 +261,12 @@ def _calculate_stage_strictness(stage, test_block_config, test_spec):
 
 @dataclasses.dataclass(frozen=True)
 class _TestRunner:
-    default_global_strictness: StrictSetting
+    default_global_strictness: StrictLevel
     sessions: Dict[str, PluginHelperBase]
     test_block_config: TestConfig
-    test_spec: Dict
+    test_spec: Mapping
 
-    def wrap_run_stage(self, idx: int, stage):
+    def run_stage(self, idx: int, stage):
         stage_config = self.test_block_config.with_strictness(
             self.default_global_strictness
         )
@@ -262,7 +274,7 @@ class _TestRunner:
             _calculate_stage_strictness(stage, stage_config, self.test_spec)
         )
         # Wrap run_stage with retry helper
-        run_stage_with_retries = retry(stage, stage_config)(self.run_stage)
+        run_stage_with_retries = retry(stage, stage_config)(self.wrapped_run_stage)
         partial = functools.partial(run_stage_with_retries, stage, stage_config)
         allure_name = "Stage {}: {}".format(
             idx, format_keys(stage["name"], stage_config.variables)
@@ -276,7 +288,7 @@ class _TestRunner:
             e.test_block_config = stage_config
             raise
 
-    def run_stage(self, stage: dict, stage_config: TestConfig):
+    def wrapped_run_stage(self, stage: dict, stage_config: TestConfig):
         """Run one stage from the test
 
         Args:
