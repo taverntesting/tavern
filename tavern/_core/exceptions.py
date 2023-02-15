@@ -139,3 +139,8 @@ class DuplicateStrictError(TavernException):
 
 class ConcurrentError(TavernException):
     """Error while processing concurrent future"""
+
+
+class UnexpectedExceptionError(TavernException):
+    """We expected a certain kind of exception in check_exception_raised but it was something
+    else"""

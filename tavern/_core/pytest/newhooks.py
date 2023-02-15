@@ -1,4 +1,3 @@
-# pylint: disable=unused-argument
 import logging
 
 logger = logging.getLogger(__name__)

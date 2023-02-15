@@ -35,7 +35,7 @@ def pytest_collect_file(parent, path: os.PathLike):
 
     try:
         compiled = re.compile(pattern)
-    except Exception as e:  # pylint: disable=broad-except
+    except Exception as e:
         raise exceptions.InvalidConfigurationException(e) from e
 
     match_tavern_file = compiled.search
@@ -52,6 +52,6 @@ def pytest_collect_file(parent, path: os.PathLike):
 
 def pytest_addhooks(pluginmanager) -> None:
     """Add our custom tavern hooks"""
-    from . import newhooks  # pylint: disable=import-outside-toplevel
+    from . import newhooks
 
     pluginmanager.add_hookspecs(newhooks)

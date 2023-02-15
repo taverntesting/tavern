@@ -1,9 +1,9 @@
-from copy import deepcopy
 import dataclasses
 import json
 import os
-from unittest.mock import MagicMock, Mock, patch
 import uuid
+from copy import deepcopy
+from unittest.mock import MagicMock, Mock, patch
 
 import paho.mqtt.client as paho
 import pytest

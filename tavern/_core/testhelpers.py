@@ -1,6 +1,6 @@
-from functools import wraps
 import logging
 import time
+from functools import wraps
 from typing import Mapping
 
 from tavern._core import exceptions

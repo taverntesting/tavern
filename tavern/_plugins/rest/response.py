@@ -1,3 +1,4 @@
+import contextlib
 import json
 import logging
 from typing import Dict, Mapping, Optional
@@ -17,8 +18,6 @@ logger = logging.getLogger(__name__)
 
 class RestResponse(BaseResponse):
     def __init__(self, session, name: str, expected, test_block_config) -> None:
-        # pylint: disable=unused-argument
-
         defaults = {"status_code": 200}
 
         super().__init__(name, deep_dict_merge(defaults, expected), test_block_config)
@@ -66,10 +65,8 @@ class RestResponse(BaseResponse):
 
         log_dict_block(response.headers, "Headers")
 
-        try:
+        with contextlib.suppress(ValueError):
             log_dict_block(response.json(), "Body")
-        except ValueError:
-            pass
 
         redirect_query_params = self._get_redirect_query_params(response)
         if redirect_query_params:

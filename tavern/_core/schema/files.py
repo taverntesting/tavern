@@ -6,8 +6,8 @@ import tempfile
 from typing import Dict
 
 import pykwalify
-from pykwalify import core
 import yaml
+from pykwalify import core
 
 from tavern._core.exceptions import BadSchemaError
 from tavern._core.loader import load_single_document_yaml
