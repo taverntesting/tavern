@@ -83,23 +83,24 @@ def upload_fake_file():
     if not request.files:
         return "", 401
 
+    return _handle_files()
+
+
+def _handle_files():
     if not mimetypes.inited:
         mimetypes.init()
-
-    for _key, item in request.files.items():
+    for item in request.files.values():
         if item.filename:
             filetype = ".{}".format(item.filename.split(".")[-1])
             if filetype in mimetypes.suffix_map:
                 if not item.content_type:
                     return "", 400
-
     # Try to download each of the files downloaded to /tmp and
     # then remove them
     for key in request.files:
         file_to_save = request.files[key]
         path = os.path.join("/tmp", file_to_save.filename)
         file_to_save.save(path)
-
     return "", 200
 
 
@@ -115,23 +116,7 @@ def upload_fake_file_and_data():
     if not request.content_type.startswith("multipart/form-data"):
         return "", 403
 
-    if not mimetypes.inited:
-        mimetypes.init()
-
-    for _key, item in request.files.items():
-        if item.filename:
-            filetype = ".{}".format(item.filename.split(".")[-1])
-            if filetype in mimetypes.suffix_map:
-                if not item.content_type:
-                    return "", 400
-
-    # Try to download each of the files downloaded to /tmp
-    for key in request.files:
-        file_to_save = request.files[key]
-        path = os.path.join("/tmp", file_to_save.filename)
-        file_to_save.save(path)
-
-    return "", 200
+    return _handle_files()
 
 
 @app.route("/nested/again", methods=["GET"])

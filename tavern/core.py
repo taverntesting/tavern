@@ -71,7 +71,7 @@ def run(
             to Pytest as if they were command line arguments
 
     Returns:
-        bool: Whether ALL tests passed or not
+        Whether ALL tests passed or not
     """
 
     pytest_args = pytest_args or []

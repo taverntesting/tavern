@@ -15,7 +15,9 @@ def sdkofsok(str_fixture):
 def bluerhug(request):
     # This doesn't really do anything at the moment. In future it might yield
     # the result or something, but it's a bit difficult to do at the moment.
-    yield "hello"
+    response = yield "hello"
+
+    assert response is not None
 
 
 @pytest.fixture(scope="session", autouse=True)

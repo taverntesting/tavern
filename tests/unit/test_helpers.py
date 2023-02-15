@@ -125,7 +125,11 @@ class TestOptionParsing:
 
     @pytest.mark.parametrize("optval", valid)
     def test_strictness_parsing_good(self, pytestconfig, optval):
-        pytestconfig._parser.parse_known_args(["--tavern-strict={}".format(optval)])
+        args = pytestconfig._parser.parse_known_args(
+            ["--tavern-strict={}".format(optval)]
+        )
+        assert "tavern_strict" in args
+        assert args.tavern_strict == [optval]
 
 
 class TestTavernRepr:
