@@ -1,3 +1,4 @@
+import contextlib
 import json
 import logging
 from typing import Dict, Mapping, Optional
@@ -64,10 +65,8 @@ class RestResponse(BaseResponse):
 
         log_dict_block(response.headers, "Headers")
 
-        try:
+        with contextlib.suppress(ValueError):
             log_dict_block(response.json(), "Body")
-        except ValueError:
-            pass
 
         redirect_query_params = self._get_redirect_query_params(response)
         if redirect_query_params:

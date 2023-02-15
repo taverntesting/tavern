@@ -3,17 +3,11 @@ import pathlib
 from dataclasses import dataclass
 from unittest.mock import Mock, patch
 
+import pytest
 from faker import Faker
 
 from tavern._core import exceptions
 from tavern._core.pytest.file import YamlFile, _get_parametrized_items
-
-try:
-    pass
-except ImportError:
-    pass
-
-import pytest
 
 
 @dataclass

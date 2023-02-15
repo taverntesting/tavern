@@ -1,5 +1,6 @@
 import concurrent
 import concurrent.futures
+import contextlib
 import itertools
 import json
 import logging
@@ -175,10 +176,8 @@ class MQTTResponse(BaseResponse):
 
             self.received_messages.append(msg)
 
-            try:
+            with contextlib.suppress(AttributeError):
                 msg.payload = msg.payload.decode("utf8")
-            except AttributeError:
-                pass
 
             attach_yaml(
                 {

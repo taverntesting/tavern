@@ -1,3 +1,4 @@
+import contextlib
 import json
 import sys
 import tempfile
@@ -139,10 +140,8 @@ class TestTavernRepr:
     def add_opts(self, pytestconfig):
         from tavern._core.pytest.hooks import pytest_addoption
 
-        try:
+        with contextlib.suppress(ValueError):
             pytest_addoption(pytestconfig._parser)
-        except ValueError:
-            pass
 
     def _make_fake_exc_info(self, exc_type):
         # Copied from pytest tests
