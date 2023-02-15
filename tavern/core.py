@@ -8,7 +8,9 @@ from tavern._core import exceptions
 from tavern._core.schema.files import wrapfile
 
 
-def _get_or_wrap_global_cfg(stack: ExitStack, tavern_global_cfg: Union[dict, str]) -> str:
+def _get_or_wrap_global_cfg(
+    stack: ExitStack, tavern_global_cfg: Union[dict, str]
+) -> str:
     """
     Try to parse global configuration from given argument.
 
