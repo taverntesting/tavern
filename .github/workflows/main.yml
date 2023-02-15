@@ -12,6 +12,17 @@ on:
       - feature-2.0
 
 jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+      - uses: pre-commit/action@v3.0.0
+
   test:
     runs-on: ubuntu-latest
 
@@ -20,8 +31,6 @@ jobs:
       matrix:
         include:
           # 'Basic' tests and checks
-          - TOXENV: py3check
-            TOXCFG: tox.ini
           - TOXENV: py3mypy
             TOXCFG: tox.ini
           - TOXENV: py3
@@ -74,7 +83,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.10"
+          python-version: "3.8"
 
       - name: install deps
         run: |
