@@ -403,7 +403,7 @@ def check_keys_match_recursive(
     strict_bool, strict_setting = extract_strict_setting(strict)
 
     try:
-        assert actual_val == expected_val
+        assert actual_val == expected_val  # noqa
     except AssertionError as e:
         # At this point, there is likely to be an error unless we're using any
         # of the type sentinels
