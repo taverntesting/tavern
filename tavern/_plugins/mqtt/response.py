@@ -335,7 +335,7 @@ class _MessageVerifier:
             json_payload = True
 
             if payload.pop("$ext", None):
-                raise exceptions.InvalidExtBlockException(
+                raise exceptions.MisplacedExtBlockException(
                     "json",
                 )
         elif "payload" in expected:

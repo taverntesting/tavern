@@ -1,3 +1,4 @@
+from typing import Dict
 from unittest.mock import MagicMock, Mock, patch
 
 import paho.mqtt.client as paho
@@ -18,18 +19,19 @@ def test_host_required():
     MQTTClient(**args)
 
 
+@pytest.fixture(name="fake_client")
+def fix_fake_client():
+    args = {"connect": {"host": "localhost"}}
+
+    mqtt_client = MQTTClient(**args)
+
+    mqtt_client._subscribed[2] = _Subscription("abc")
+    mqtt_client._subscription_mappings["abc"] = 2
+
+    return mqtt_client
+
+
 class TestClient:
-    @pytest.fixture(name="fake_client")
-    def fix_fake_client(self):
-        args = {"connect": {"host": "localhost"}}
-
-        mqtt_client = MQTTClient(**args)
-
-        mqtt_client._subscribed[2] = _Subscription("abc")
-        mqtt_client._subscription_mappings["abc"] = 2
-
-        return mqtt_client
-
     def test_no_queue(self, fake_client):
         """Trying to fetch from a nonexistent queue raised exception"""
 
@@ -192,3 +194,33 @@ class TestSubscription:
         MQTTClient._on_subscribe(mock_client, "abc", {}, 123, 0)
 
         assert mock_client._subscribed == {}
+
+
+class TestExtFunctions:
+    @pytest.fixture()
+    def basic_mqtt_request_args(self) -> Dict:
+        return {
+            "topic": "/a/b/c",
+        }
+
+    def test_basic(self, fake_client, basic_mqtt_request_args, includes):
+        MQTTRequest(fake_client, basic_mqtt_request_args, includes)
+
+    def test_ext_function_bad(self, fake_client, basic_mqtt_request_args, includes):
+        basic_mqtt_request_args["json"] = {"$ext": "kk"}
+
+        with pytest.raises(exceptions.InvalidExtFunctionError):
+            MQTTRequest(fake_client, basic_mqtt_request_args, includes)
+
+    def test_ext_function_good(self, fake_client, basic_mqtt_request_args, includes):
+        basic_mqtt_request_args["json"] = {
+            "$ext": {
+                "function": "operator:add",
+                "extra_args": (1, 2),
+            }
+        }
+
+        m = MQTTRequest(fake_client, basic_mqtt_request_args, includes)
+
+        assert "payload" in m._publish_args
+        assert m._publish_args["payload"] == "3"
