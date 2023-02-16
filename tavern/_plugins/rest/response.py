@@ -218,7 +218,7 @@ class RestResponse(BaseResponse):
 
         if isinstance(expected_block, dict):
             if expected_block.pop("$ext", None):
-                raise exceptions.InvalidExtBlockException(
+                raise exceptions.MisplacedExtBlockException(
                     blockname,
                 )
 
