@@ -286,7 +286,7 @@ websocket-client==0.59.0
     # via
     #   docker
     #   docker-compose
-werkzeug==2.2.2
+werkzeug==2.2.3
     # via flask
 wheel==0.38.4
     # via
