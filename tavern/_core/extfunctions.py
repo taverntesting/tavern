@@ -161,7 +161,7 @@ def update_from_ext(request_args: dict, keys_to_check: List[str]) -> None:
 
         try:
             pop = block.pop("$ext")
-        except KeyError:
+        except (KeyError, AttributeError, TypeError):
             logger.debug("No ext functions in %s block", key)
             continue
 
