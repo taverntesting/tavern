@@ -139,7 +139,7 @@ class BaseResponse:
             if isinstance(block, dict):
                 check_ext_functions(block.get("$ext", None))
                 if nfuncs != len(self.validate_functions):
-                    raise exceptions.InvalidExtBlockException(
+                    raise exceptions.MisplacedExtBlockException(
                         name,
                     )
 

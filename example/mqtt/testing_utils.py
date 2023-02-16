@@ -3,5 +3,5 @@ def message_says_hello(msg):
     assert msg.payload.get("message") == "hello world"
 
 
-def return_hello(_):
+def return_hello(_=None):
     return {"hello": "there"}

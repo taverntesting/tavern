@@ -114,7 +114,7 @@ class InvalidFormattedJsonError(TavernException):
     """Tried to use the magic json format tag in an invalid way"""
 
 
-class InvalidExtBlockException(TavernException):
+class MisplacedExtBlockException(TavernException):
     """Tried to use the '$ext' block in a place it is no longer valid to use it"""
 
     def __init__(self, block) -> None:

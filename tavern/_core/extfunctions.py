@@ -123,6 +123,11 @@ def get_wrapped_create_function(ext: Mapping):
 
 
 def _get_ext_values(ext: Mapping):
+    if not isinstance(ext, Mapping):
+        raise exceptions.InvalidExtFunctionError(
+            "ext block should be a dict, but it was a {}".format(type(ext))
+        )
+
     args = ext.get("extra_args") or ()
     kwargs = ext.get("extra_kwargs") or {}
     try:
@@ -145,14 +150,23 @@ def update_from_ext(request_args: dict, keys_to_check: List[str]) -> None:
     """
 
     new_args = {}
+    logger = _getlogger()
 
     for key in keys_to_check:
         try:
-            func = get_wrapped_create_function(request_args[key].pop("$ext"))
-        except (KeyError, TypeError, AttributeError):
-            pass
-        else:
-            new_args[key] = func()
+            block = request_args[key]
+        except KeyError:
+            logger.debug("No %s block", key)
+            continue
+
+        try:
+            pop = block.pop("$ext")
+        except KeyError:
+            logger.debug("No ext functions in %s block", key)
+            continue
+
+        func = get_wrapped_create_function(pop)
+        new_args[key] = func()
 
     merged_args = deep_dict_merge(request_args, new_args)
 
