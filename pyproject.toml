@@ -38,6 +38,7 @@ dependencies = [
     "grpcio",
     "grpcio-reflection",
     "grpcio-status",
+    "google-api-python-client",
 ]
 
 requires-python = ">=3.8"

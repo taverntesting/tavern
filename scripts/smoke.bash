@@ -14,8 +14,8 @@ tox --parallel -c tox.ini        \
 
 tox -c tox-integration.ini  \
   -e py3-generic     \
+  -e py3-mqtt       \
   -e py3-advanced     \
   -e py3-cookies     \
   -e py3-components     \
-  -e py3-hooks     \
-  -e py3-mqtt
+  -e py3-hooks

@@ -3,11 +3,11 @@ import pathlib
 from typing import Optional, Tuple
 
 import attr
+import pytest
 import yaml
 from _pytest._code.code import ExceptionInfo
 from _pytest.nodes import Node
 
-import pytest
 from tavern._core import exceptions
 from tavern._core.loader import error_on_empty_scalar
 from tavern._core.plugins import load_plugins
