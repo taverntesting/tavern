@@ -7,7 +7,6 @@ initialisation:
     required: false
     type: map
     mapping:
-
       client:
         required: false
         type: map
@@ -81,6 +80,51 @@ initialisation:
           ciphers:
             required: false
             type: str
+
+      ssl_context:
+        required: false
+        type: map
+        mapping:
+          ca_certs:
+            required: false
+            type: str
+
+          certfile:
+            required: false
+            type: str
+
+          keyfile:
+            required: false
+            type: str
+
+          password:
+            required: false
+            type: str
+            # This is the password for the keyfile, and is only needed if the keyfile is password encrypted
+            # If not supplied, but the keyfile is password protect, the ssl module will prompt for a password in terminal
+
+          cert_reqs:
+            required: false
+            type: str
+            enum:
+              - CERT_NONE
+              - CERT_OPTIONAL
+              - CERT_REQUIRED
+
+          tls_version:
+            required: false
+            type: str
+            # This could be an enum but there's lots of them, and which ones are
+            # actually valid changes based on which version of python you're
+            # using. Just let any ssl errors propagate through
+
+          ciphers:
+            required: false
+            type: str
+
+          alpn_protocols:
+            required: false
+            type: array
 
       auth:
         required: false

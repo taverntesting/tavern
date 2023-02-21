@@ -1,5 +1,4 @@
 ---
-
 test_name: Test empty usefixtures errors
 
 includes:
@@ -27,7 +26,6 @@ stages:
         value: "{yield_str_fixture}"
 
 ---
-
 test_name: Test usefixtures being a mapping errors
 
 includes:
@@ -51,7 +49,6 @@ stages:
         value: "{yield_str_fixture}"
 
 ---
-
 test_name: Test usefixtures
 
 includes:
@@ -75,7 +72,6 @@ stages:
         value: "{yield_str_fixture}"
 
 ---
-
 test_name: Test yielding fixture
 
 includes:
@@ -99,7 +95,6 @@ stages:
       json:
         value: "{yield_str_fixture}"
 ---
-
 test_name: Test yielding fixture
 
 includes:
@@ -108,8 +103,7 @@ includes:
 _xfail: verify
 
 marks:
-  usefixtures:
-    thing
+  usefixtures: thing
 
 stages:
   - name: Echo back a unicode value and make sure it matches
@@ -123,7 +117,6 @@ stages:
       json:
         value: "{yield_str_fixture}"
 ---
-
 test_name: Test autouse fixture
 
 includes:

@@ -1,5 +1,4 @@
 ---
-
 test_name: Test validating with extension function
 
 includes:
@@ -13,7 +12,7 @@ stages:
     response:
       status_code: 200
       verify_response_with:
-        function: tavern.testutils.helpers:validate_pykwalify
+        function: tavern.helpers:validate_pykwalify
         extra_kwargs:
           schema:
             type: map
@@ -34,7 +33,6 @@ stages:
                         required: true
 
 ---
-
 test_name: Test validating with extension function mismatch
 
 _xfail: run
@@ -50,7 +48,7 @@ stages:
     response:
       status_code: 200
       verify_response_with:
-        function: tavern.testutils.helpers:validate_pykwalify
+        function: tavern.helpers:validate_pykwalify
         extra_kwargs:
           schema:
             type: mapping

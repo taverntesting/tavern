@@ -49,13 +49,13 @@ def login():
         "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
     }
 
-    token = jwt.encode(payload, SECRET, algorithm="HS256").decode("utf8")
+    token = jwt.encode(payload, SECRET, algorithm="HS256")
 
     return jsonify({"token": token})
 
 
 def requires_jwt(endpoint):
-    """ Makes sure a jwt is in the request before accepting it """
+    """Makes sure a jwt is in the request before accepting it"""
 
     @functools.wraps(endpoint)
     def check_auth_call(*args, **kwargs):

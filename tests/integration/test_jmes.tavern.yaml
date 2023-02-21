@@ -1,5 +1,4 @@
 ---
-
 test_name: test dict comparisons
 
 includes:
@@ -13,7 +12,7 @@ stages:
     response:
       status_code: 200
       verify_response_with:
-        function: tavern.testutils.helpers:validate_content
+        function: tavern.helpers:validate_content
         extra_kwargs:
           comparisons:
             - jmespath: "an_integer"
@@ -33,7 +32,6 @@ stages:
               expected: value
 
 ---
-
 test_name: test list comparisons
 
 includes:
@@ -47,7 +45,7 @@ stages:
     response:
       status_code: 200
       verify_response_with:
-        function: tavern.testutils.helpers:validate_content
+        function: tavern.helpers:validate_content
         extra_kwargs:
           comparisons:
             - jmespath: "[1]"
@@ -72,7 +70,6 @@ stages:
               expected: -3.0
 
 ---
-
 test_name: Test we can save a single value with jmespath
 
 includes:
@@ -102,7 +99,6 @@ stages:
         value: c82bfa63-fd2a-419a-8c06-21cb283fd9f7
 
 ---
-
 test_name: Test saving an item from a list
 
 includes:
@@ -143,7 +139,6 @@ stages:
         value: "b"
 
 ---
-
 test_name: Test saving an item from a dict inside a list
 
 includes:
@@ -184,7 +179,6 @@ stages:
         value: "c"
 
 ---
-
 test_name: Test we can save a single value with jmespath if it has a dot in
 
 includes:
@@ -203,7 +197,6 @@ stages:
           saved_with_dot_b: '"data.b"'
 
 ---
-
 test_name: Test 'negative' jmespath tests
 
 includes:
@@ -220,7 +213,7 @@ stages:
         pages: 0
         data: []
       verify_response_with:
-        - function: tavern.testutils.helpers:validate_content
+        - function: tavern.helpers:validate_content
           extra_kwargs:
             comparisons:
               - jmespath: pages

@@ -3,15 +3,15 @@ import logging
 from google.protobuf import json_format
 from grpc import StatusCode
 
-from tavern.response.base import BaseResponse
-from tavern.util.exceptions import TestFailError
+from tavern._core.exceptions import TestFailError
+from tavern.response import BaseResponse
 
 logger = logging.getLogger(__name__)
 
 
 class GRPCResponse(BaseResponse):
     def __init__(self, client, name, expected, test_block_config):
-        super().__init__(name, expected, test_block_config)
+        super(GRPCResponse, self).__init__(name, expected, test_block_config)
 
         self._client = client
 
@@ -22,6 +22,37 @@ class GRPCResponse(BaseResponse):
             return self.response.payload
         else:
             return "<Not run yet>"
+
+    def _validate_block(self, blockname, block):
+        """Validate a block of the response
+
+        Args:
+            blockname (str): which part of the response is being checked
+            block (dict): The actual part being checked
+        """
+        try:
+            expected_block = self.expected[blockname] or {}
+        except KeyError:
+            expected_block = {}
+
+        if isinstance(expected_block, dict):
+            if expected_block.pop("$ext", None):
+                logger.warning(
+                    "$ext function found in block %s - this has been moved to verify_response_with block - see documentation",
+                    blockname,
+                )
+
+        logger.debug("Validating response %s against %s", blockname, expected_block)
+
+        # 'strict' could be a list, in which case we only want to enable strict
+        # key checking for that specific bit of the response
+        test_strictness = self.test_block_config["strict"]
+        if isinstance(test_strictness, list):
+            block_strictness = blockname in test_strictness
+        else:
+            block_strictness = test_strictness
+
+        self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
 
     def verify(self, response):
         # Get any keys to save

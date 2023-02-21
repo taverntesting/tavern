@@ -1,28 +1,31 @@
 import contextlib
-from contextlib import ExitStack
-from itertools import filterfalse, tee
 import json
 import logging
 import mimetypes
 import os
-from urllib.parse import quote_plus
 import warnings
+from contextlib import ExitStack
+from itertools import filterfalse, tee
+from typing import Mapping, MutableMapping, Optional, Union
+from urllib.parse import quote_plus
 
-from box import Box
 import requests
+from box.box import Box
 from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
 
-from tavern.request.base import BaseRequest
-from tavern.util import exceptions
-from tavern.util.dict_util import check_expected_keys, deep_dict_merge, format_keys
-from tavern.util.extfunctions import update_from_ext
-from tavern.util.report import attach_yaml
+from tavern._core import exceptions
+from tavern._core.dict_util import check_expected_keys, deep_dict_merge, format_keys
+from tavern._core.extfunctions import update_from_ext
+from tavern._core.general import valid_http_methods
+from tavern._core.pytest.config import TestConfig
+from tavern._core.report import attach_yaml
+from tavern.request import BaseRequest
 
 logger = logging.getLogger(__name__)
 
 
-def get_request_args(rspec, test_block_config):
+def get_request_args(rspec: MutableMapping, test_block_config: TestConfig) -> dict:
     """Format the test spec given values inthe global config
 
     Todo:
@@ -30,28 +33,22 @@ def get_request_args(rspec, test_block_config):
         can be generated from a function
 
     Args:
-        rspec (dict): Test spec
-        test_block_config (dict): Test block config
+        rspec: Test spec
+        test_block_config: Test block config
 
     Returns:
-        dict: Formatted test spec
+        Formatted test spec
 
     Raises:
         BadSchemaError: Tried to pass a body in a GET request
     """
 
-    # pylint: disable=too-many-locals,too-many-statements
-
-    request_args = {}
-
-    # Ones that are required and are enforced to be present by the schema
-    required_in_file = ["method", "url"]
-
-    optional_with_default = {"verify": True, "stream": False}
-
     if "method" not in rspec:
         logger.debug("Using default GET method")
         rspec["method"] = "GET"
+
+    if "headers" not in rspec:
+        rspec["headers"] = {}
 
     content_keys = ["data", "json", "files", "file_body"]
 
@@ -67,23 +64,71 @@ def get_request_args(rspec, test_block_config):
                 "send {})".format(" and ".join(in_request))
             )
 
-    headers = rspec.get("headers", {})
-    has_content_header = "content-type" in [h.lower() for h in headers.keys()]
+    normalised_headers = {k.lower(): v for k, v in rspec["headers"].items()}
+
+    def get_header(name):
+        return normalised_headers.get(name, None)
+
+    content_header = get_header("content-type")
+    encoding_header = get_header("content-encoding")
 
     if "files" in rspec:
-        if has_content_header:
+        if content_header:
             logger.warning(
-                "Tried to specify a content-type header while sending a file - this will be ignored"
+                "Tried to specify a content-type header while sending multipart files - this will be ignored"
             )
             rspec["headers"] = {
-                i: j for i, j in headers.items() if i.lower() != "content-type"
+                i: j
+                for i, j in normalised_headers.items()
+                if i.lower() != "content-type"
             }
 
-    fspec = format_keys(rspec, test_block_config["variables"])
+    fspec = format_keys(rspec, test_block_config.variables)
 
-    send_in_body = fspec.get("file_body")
-    if send_in_body:
-        request_args["file_body"] = send_in_body
+    if fspec["method"] not in valid_http_methods:
+        raise exceptions.BadSchemaError(
+            "Unknown HTTP method {}".format(fspec["method"])
+        )
+
+    # If the user is using the file_body key, try to guess what type of file/encoding it is.
+    filename = fspec.get("file_body")
+    if filename:
+        with ExitStack() as stack:
+            file_spec = guess_filespec(filename, stack, test_block_config)
+            fspec["file_body"] = filename
+            if len(file_spec) == 2:
+                logger.debug(
+                    "No content type or encoding inferred from file_body for %s",
+                    filename,
+                )
+
+            if len(file_spec) >= 3:
+                inferred_content_type = file_spec[2]
+                if content_header:
+                    logger.info(
+                        "inferred content type '%s' from %s, but using user specified content type '%s'",
+                        inferred_content_type,
+                        filename,
+                        content_header,
+                    )
+                else:
+                    fspec["headers"]["content-type"] = inferred_content_type
+
+            if len(file_spec) == 4:
+                inferred_content_encoding = file_spec[3]
+                if encoding_header:
+                    logger.info(
+                        "inferred content encoding '%s' from %s, but using user specified encoding '%s",
+                        inferred_content_encoding,
+                        filename,
+                        encoding_header,
+                    )
+                else:
+                    fspec["headers"].update(**inferred_content_encoding)
+
+    #########################################
+
+    request_args = {}
 
     def add_request_args(keys, optional):
         for key in keys:
@@ -96,6 +141,12 @@ def get_request_args(rspec, test_block_config):
                 # This should never happen
                 raise
 
+    # Ones that are required and are enforced to be present by the schema
+    required_in_file = ["method", "url"]
+
+    optional_with_default = {"verify": True, "stream": False}
+
+    add_request_args(["file_body"], True)
     add_request_args(required_in_file, False)
     add_request_args(RestRequest.optional_in_file, True)
 
@@ -148,7 +199,7 @@ def get_request_args(rspec, test_block_config):
 
 
 @contextlib.contextmanager
-def _set_cookies_for_request(session, request_args):
+def _set_cookies_for_request(session: requests.Session, request_args: Mapping):
     """
     Possibly reset session cookies for a single request then set them back.
     If no cookies were present in the request arguments, do nothing.
@@ -157,8 +208,8 @@ def _set_cookies_for_request(session, request_args):
     the cookies anyway
 
     Args:
-        session (requests.Session): Current session
-        request_args (dict): current request arguments
+        session: Current session
+        request_args: current request arguments
     """
     if "cookies" in request_args:
         old_cookies = dict_from_cookiejar(session.cookies)
@@ -169,13 +220,13 @@ def _set_cookies_for_request(session, request_args):
         yield
 
 
-def _check_allow_redirects(rspec, test_block_config):
+def _check_allow_redirects(rspec: dict, test_block_config: TestConfig):
     """
     Check for allow_redirects flag in settings/stage
 
     Args:
-        rspec (dict): request dictionary
-        test_block_config (dict): config available for test
+        rspec: request dictionary
+        test_block_config: config available for test
 
     Returns:
         bool: Whether to allow redirects for this stage or not
@@ -184,7 +235,7 @@ def _check_allow_redirects(rspec, test_block_config):
     allow_redirects = False
 
     # Then check to see if we should follow redirects based on settings
-    global_follow_redirects = test_block_config.get("follow_redirects")
+    global_follow_redirects = test_block_config.follow_redirects
     if global_follow_redirects is not None:
         allow_redirects = global_follow_redirects
 
@@ -204,23 +255,25 @@ def _check_allow_redirects(rspec, test_block_config):
     return allow_redirects
 
 
-def _read_expected_cookies(session, rspec, test_block_config):
+def _read_expected_cookies(
+    session: requests.Session, rspec: Mapping, test_block_config: TestConfig
+) -> Optional[dict]:
     """
     Read cookies to inject into request, ignoring others which are present
 
     Args:
-        session (Session): session object
-        rspec (dict): test spec
-        test_block_config (dict): config available for test
+        session: session object
+        rspec: test spec
+        test_block_config: config available for test
 
     Returns:
-        dict: cookies to use in request, if any
+        cookies to use in request, if any
     """
     # Need to do this down here - it is separate from getting request args as
     # it depends on the state of the session
     existing_cookies = session.cookies.get_dict()
     cookies_to_use = format_keys(
-        rspec.get("cookies", None), test_block_config["variables"]
+        rspec.get("cookies", None), test_block_config.variables
     )
 
     if cookies_to_use is None:
@@ -273,7 +326,7 @@ def _read_expected_cookies(session, rspec, test_block_config):
     return deep_dict_merge(from_cookiejar, from_extra)
 
 
-def _read_filespec(filespec):
+def _read_filespec(filespec: Union[str, dict]):
     """
     Get configuration for uploading file
 
@@ -283,7 +336,7 @@ def _read_filespec(filespec):
         filespec: Either a string with the path to a file or a dictionary with file_path and possible content_type and/or content_encoding
 
     Returns:
-        tuple: (file path, content type, content encoding)
+        (file path, content type, content encoding)
     """
     if isinstance(filespec, str):
         return filespec, None, None
@@ -300,51 +353,26 @@ def _read_filespec(filespec):
         )
 
 
-def _get_file_arguments(request_args, stack, test_block_config):
+def _get_file_arguments(
+    request_args: dict, stack: ExitStack, test_block_config: TestConfig
+) -> dict:
     """Get corect arguments for anything that should be passed as a file to
     requests
 
     Args:
-        test_block_config (dict): config for test
-        stack (ExitStack): context stack to add file objects to so they're
+        request_args: args passed to requests
+        test_block_config: config for test
+        stack: context stack to add file objects to so they're
             closed correctly after use
 
     Returns:
-        dict: mapping of {"files": ...} to pass directly to requests
+        mapping of 'files' block to pass directly to requests
     """
 
     files_to_send = {}
 
     for key, filespec in request_args.get("files", {}).items():
-        if not mimetypes.inited:
-            mimetypes.init()
-
-        filepath, content_type, encoding = _read_filespec(filespec)
-        filepath = format_keys(filepath, test_block_config["variables"])
-
-        filename = os.path.basename(filepath)
-
-        # a 2-tuple ('filename', fileobj)
-        file_spec = [filename, stack.enter_context(open(filepath, "rb"))]
-
-        # Try to guess as well, but don't override what the user specified
-        guessed_content_type, guessed_encoding = mimetypes.guess_type(filepath)
-        content_type = content_type or guessed_content_type
-        encoding = encoding or guessed_encoding
-
-        # If it doesn't have a mimetype, or can't guess it, don't
-        # send the content type for the file
-        if content_type:
-            # a 3-tuple ('filename', fileobj, 'content_type')
-            logger.debug("content_type for '%s' = '%s'", filename, content_type)
-            file_spec.append(content_type)
-            if encoding:
-                # or a 4-tuple ('filename', fileobj, 'content_type', custom_headers)
-                logger.debug("encoding for '%s' = '%s'", filename, encoding)
-                # encoding is None for no encoding or the name of the
-                # program used to encode (e.g. compress or gzip). The
-                # encoding is suitable for use as a Content-Encoding header.
-                file_spec.append({"Content-Encoding": encoding})
+        file_spec = guess_filespec(filespec, stack, test_block_config)
 
         files_to_send[key] = tuple(file_spec)
 
@@ -352,6 +380,58 @@ def _get_file_arguments(request_args, stack, test_block_config):
         return {"files": files_to_send}
     else:
         return {}
+
+
+def guess_filespec(
+    filespec: Union[str, dict], stack: ExitStack, test_block_config: TestConfig
+):
+    """tries to guess the content type and encoding from a file.
+
+    Args:
+        test_block_config: config for test/stage
+        stack: exit stack to add open files context to
+        filespec: a string path to a file or a dictionary of the file path, content type, and encoding.
+
+    Returns:
+        tuple: A tuple of either length 2 (filename and file object), 3 (as before, with ceontent type), or 4 (as before, with with content encoding)
+
+    Notes:
+        If a 4-tuple is returned, the last element is a dictionary of headers to send to requests, _not_ the raw encoding value.
+    """
+    if not mimetypes.inited:
+        mimetypes.init()
+
+    filepath, content_type, encoding = _read_filespec(filespec)
+
+    filepath = format_keys(filepath, test_block_config.variables)
+    filename = os.path.basename(filepath)
+
+    # a 2-tuple ('filename', fileobj)
+    file_spec = [
+        filename,
+        stack.enter_context(open(filepath, "rb")),
+    ]
+
+    # Try to guess as well, but don't override what the user specified
+    guessed_content_type, guessed_encoding = mimetypes.guess_type(filepath)
+    content_type = content_type or guessed_content_type
+    encoding = encoding or guessed_encoding
+
+    # If it doesn't have a mimetype, or can't guess it, don't
+    # send the content type for the file
+    if content_type:
+        # a 3-tuple ('filename', fileobj, 'content_type')
+        logger.debug("content_type for '%s' = '%s'", filename, content_type)
+        file_spec.append(content_type)
+        if encoding:
+            # or a 4-tuple ('filename', fileobj, 'content_type', custom_headers)
+            logger.debug("encoding for '%s' = '%s'", filename, encoding)
+            # encoding is None for no encoding or the name of the
+            # program used to encode (e.g. compress or gzip). The
+            # encoding is suitable for use as a Content-Encoding header.
+            file_spec.append({"Content-Encoding": encoding})
+
+    return file_spec
 
 
 class RestRequest(BaseRequest):
@@ -369,13 +449,15 @@ class RestRequest(BaseRequest):
         # "auth"
     ]
 
-    def __init__(self, session, rspec, test_block_config):
+    def __init__(
+        self, session: requests.Session, rspec: dict, test_block_config: TestConfig
+    ) -> None:
         """Prepare request
 
         Args:
-            session (requests.Session): existing session
-            rspec (dict): test spec
-            test_block_config (dict): Any configuration for this the block of
+            session: existing session
+            rspec: test spec
+            test_block_config   : Any configuration for this the block of
                 tests
 
         Raises:
@@ -383,10 +465,8 @@ class RestRequest(BaseRequest):
                 spec. Only valid keyword args to requests can be passed
         """
 
-        if "meta" in rspec:
-            meta = rspec.pop("meta")
-            if meta and "clear_session_cookies" in meta:
-                session.cookies.clear_session_cookies()
+        if rspec.pop("clear_session_cookies", False):
+            session.cookies.clear_session_cookies()
 
         expected = {
             "method",
@@ -413,7 +493,6 @@ class RestRequest(BaseRequest):
         update_from_ext(
             request_args,
             RestRequest.optional_in_file,
-            test_block_config,
         )
 
         # Used further down, but pop it asap to avoid unwanted side effects
@@ -447,12 +526,17 @@ class RestRequest(BaseRequest):
 
                 # These are mutually exclusive
                 if file_body:
+                    # Any headers will have been set in the above function
                     file = stack.enter_context(open(file_body, "rb"))
                     request_args.update(data=file)
                 else:
                     self._request_args.update(
                         _get_file_arguments(request_args, stack, test_block_config)
                     )
+
+                headers = self._request_args.get("headers", {})
+                for k, v in headers.items():
+                    headers[str(k)] = str(v)
 
                 return session.request(**self._request_args)
 
@@ -480,5 +564,5 @@ class RestRequest(BaseRequest):
             raise exceptions.RestRequestException from e
 
     @property
-    def request_vars(self):
+    def request_vars(self) -> Box:
         return Box(self._request_args)

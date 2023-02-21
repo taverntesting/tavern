@@ -19,10 +19,11 @@ stages:
     response:
       status_code: 200
       verify_response_with: &verify_token
-        function: tavern.testutils.helpers:validate_jwt
+        function: tavern.helpers:validate_jwt
         extra_kwargs:
           jwt_key: "token"
           key: CGQgaG7GYvTcpaQZqosLy4
+          algorithms: [ HS256 ]
           options:
             verify_signature: true
             verify_aud: true

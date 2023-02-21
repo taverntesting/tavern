@@ -1,0 +1,57 @@
+---
+test_name: Make sure JWT verification works
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: login
+    request:
+      url: "{host}/get_jwt"
+      json:
+        user: test-user
+        password: correct-password
+      method: POST
+    response:
+      status_code: 200
+      verify_response_with:
+        function: tavern.helpers:validate_jwt
+        extra_kwargs:
+          jwt_key: "jwt"
+          key: 240c8c9c-39b9-426b-9503-3126f96c2eaf
+          algorithms: [HS256]
+          options:
+            verify_signature: true
+            verify_aud: true
+            verify_exp: true
+          audience: testserver
+
+---
+test_name: Make sure JWT rejects the wrong algorithm
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: login
+    request:
+      url: "{host}/get_jwt"
+      json:
+        user: test-user
+        password: correct-password
+      method: POST
+    response:
+      status_code: 200
+      verify_response_with:
+        function: tavern.helpers:validate_jwt
+        extra_kwargs:
+          jwt_key: "jwt"
+          key: 240c8c9c-39b9-426b-9503-3126f96c2eaf
+          algorithms: [RS256]
+          options:
+            verify_signature: true
+            verify_aud: true
+            verify_exp: true
+          audience: testserver
+
+_xfail: run

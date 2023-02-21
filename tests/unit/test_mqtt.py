@@ -1,13 +1,12 @@
-import contextlib
-import threading
+from typing import Dict
 from unittest.mock import MagicMock, Mock, patch
 
 import paho.mqtt.client as paho
 import pytest
 
+from tavern._core import exceptions
 from tavern._plugins.mqtt.client import MQTTClient, _handle_tls_args, _Subscription
 from tavern._plugins.mqtt.request import MQTTRequest
-from tavern.util import exceptions
 
 
 def test_host_required():
@@ -20,25 +19,37 @@ def test_host_required():
     MQTTClient(**args)
 
 
-class TestClient(object):
-    @pytest.fixture(name="fake_client")
-    def fix_fake_client(self):
-        args = {"connect": {"host": "localhost"}}
+@pytest.fixture(name="fake_client")
+def fix_fake_client():
+    args = {"connect": {"host": "localhost"}}
 
-        return MQTTClient(**args)
+    mqtt_client = MQTTClient(**args)
+
+    mqtt_client._subscribed[2] = _Subscription("abc")
+    mqtt_client._subscription_mappings["abc"] = 2
+
+    return mqtt_client
+
+
+class TestClient:
+    def test_no_queue(self, fake_client):
+        """Trying to fetch from a nonexistent queue raised exception"""
+
+        with pytest.raises(exceptions.MQTTTopicException):
+            fake_client.message_received("", 0)
 
     def test_no_message(self, fake_client):
         """No message in queue returns None"""
 
-        assert fake_client.message_received(0) is None
+        assert fake_client.message_received("abc", 0) is None
 
     def test_message_queued(self, fake_client):
         """Returns message in queue"""
 
         message = "abc123"
 
-        fake_client._userdata["queue"].put(message)
-        assert fake_client.message_received(0) == message
+        fake_client._userdata["_subscribed"][2].queue.put(message)
+        assert fake_client.message_received("abc", 0) == message
 
     def test_context_connection_failure(self, fake_client):
         """Unable to connect on __enter__ raises MQTTError"""
@@ -87,7 +98,7 @@ class TestClient(object):
                 fake_client.publish("abc", "123")
 
 
-class TestTLS(object):
+class TestTLS:
     def test_missing_cert_gives_error(self):
         """Missing TLS cert gives an error"""
         args = {"certfile": "/lcliueurhug/ropko3kork32"}
@@ -129,7 +140,7 @@ class TestRequests:
 
     def test_missing_format(self, req, includes):
         """All format variables should be present"""
-        del includes["variables"]["request_topic"]
+        del includes.variables["request_topic"]
 
         with pytest.raises(exceptions.MissingFormatError):
             MQTTRequest(Mock(), req, includes)
@@ -139,7 +150,7 @@ class TestRequests:
         MQTTRequest(Mock(), req, includes)
 
 
-class TestSubscription(object):
+class TestSubscription:
     @staticmethod
     def get_mock_client_with(subcribe_action):
         mock_paho = Mock(spec=paho.Client, subscribe=subcribe_action)
@@ -147,6 +158,7 @@ class TestSubscription(object):
             spec=MQTTClient,
             _client=mock_paho,
             _subscribed={},
+            _subscription_mappings={},
             _subscribe_lock=MagicMock(),
         )
         return mock_client
@@ -160,7 +172,7 @@ class TestSubscription(object):
         MQTTClient.subscribe(mock_client, "abc")
 
         assert mock_client._subscribed[123].topic == "abc"
-        assert mock_client._subscribed[123].subscribed == False
+        assert mock_client._subscribed[123].subscribed is False
 
     def test_no_subscribe_on_err(self):
         def subscribe_err(topic, *args, **kwargs):
@@ -168,7 +180,8 @@ class TestSubscription(object):
 
         mock_client = TestSubscription.get_mock_client_with(subscribe_err)
 
-        MQTTClient.subscribe(mock_client, "abc")
+        with pytest.raises(exceptions.MQTTError):
+            MQTTClient.subscribe(mock_client, "abc")
 
         assert mock_client._subscribed == {}
 
@@ -181,3 +194,33 @@ class TestSubscription(object):
         MQTTClient._on_subscribe(mock_client, "abc", {}, 123, 0)
 
         assert mock_client._subscribed == {}
+
+
+class TestExtFunctions:
+    @pytest.fixture()
+    def basic_mqtt_request_args(self) -> Dict:
+        return {
+            "topic": "/a/b/c",
+        }
+
+    def test_basic(self, fake_client, basic_mqtt_request_args, includes):
+        MQTTRequest(fake_client, basic_mqtt_request_args, includes)
+
+    def test_ext_function_bad(self, fake_client, basic_mqtt_request_args, includes):
+        basic_mqtt_request_args["json"] = {"$ext": "kk"}
+
+        with pytest.raises(exceptions.InvalidExtFunctionError):
+            MQTTRequest(fake_client, basic_mqtt_request_args, includes)
+
+    def test_ext_function_good(self, fake_client, basic_mqtt_request_args, includes):
+        basic_mqtt_request_args["json"] = {
+            "$ext": {
+                "function": "operator:add",
+                "extra_args": (1, 2),
+            }
+        }
+
+        m = MQTTRequest(fake_client, basic_mqtt_request_args, includes)
+
+        assert "payload" in m._publish_args
+        assert m._publish_args["payload"] == "3"

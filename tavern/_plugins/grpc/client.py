@@ -1,20 +1,20 @@
-from distutils.spawn import find_executable
-from importlib import import_module
 import logging
 import os
 import pkgutil
 import subprocess
 import sys
 import warnings
+from distutils.spawn import find_executable
+from importlib import import_module
 
+import grpc
 from google.protobuf import descriptor_pb2, json_format
 from google.protobuf import symbol_database as _symbol_database
-import grpc
 from grpc_reflection.v1alpha import reflection_pb2, reflection_pb2_grpc
 from grpc_status import rpc_status
 
-from tavern.util import exceptions
-from tavern.util.dict_util import check_expected_keys
+from tavern._core import exceptions
+from tavern._core.dict_util import check_expected_keys
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +22,19 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     warnings.warn("deprecated", DeprecationWarning)
 
-# Find the Protocol Compiler.
-if "PROTOC" in os.environ and os.path.exists(os.environ["PROTOC"]):
-    protoc = os.environ.get("PROTOC")
-else:
-    protoc = find_executable("protoc")
+
+def find_protoc() -> str:
+    # Find the Protocol Compiler.
+    if "PROTOC" in os.environ and os.path.exists(os.environ["PROTOC"]):
+        return os.environ["PROTOC"]
+
+    if protoc := find_executable("protoc"):
+        return protoc
+
+    raise exceptions.ProtoCompilerException
+
+
+protoc = find_protoc()
 
 
 def _generate_proto_import(source, output):
@@ -34,14 +42,10 @@ def _generate_proto_import(source, output):
     .proto file.  Does nothing if the output already exists and is newer than
     the input."""
 
-    if protoc is None:
-        raise exceptions.ProtoGenError(
-            "protoc is not installed nor found in ../src.  Please compile it "
-            "or install the binary package.\n"
-        )
-
     if not os.path.exists(source):
-        raise exceptions.ProtoGenError("Can't find required file: %s\n" % source)
+        raise exceptions.ProtoCompilerException(
+            "Can't find required file: {}".format(source)
+        )
 
     if not os.path.exists(output):
         os.makedirs(output)
@@ -56,11 +60,9 @@ def _generate_proto_import(source, output):
     protoc_command = [protoc, "-I" + source, "--python_out=" + output]
     protoc_command.extend(protos)
 
-    call = subprocess.run(protoc_command, capture_output=True)
-    try:
-        call.check_returncode()
-    except subprocess.CalledProcessError as e:
-        raise exceptions.ProtoGenError(call.stderr) from e
+    call = subprocess.run(protoc_command)
+    if call.returncode != 0:
+        raise exceptions.ProtoCompilerException(call.stderr)
 
 
 def _import_grpc_module(output):
@@ -72,7 +74,7 @@ def _import_grpc_module(output):
         output_path.extend(mod.__path__)
 
     sys.path.extend(output_path)
-    for (_, name, _) in pkgutil.iter_modules(output_path):
+    for _, name, _ in pkgutil.iter_modules(output_path):
         import_module("." + name, package=output)
 
 
@@ -91,7 +93,7 @@ class GRPCClient(object):
         check_expected_keys(expected_blocks["connect"], _connect_args)
 
         metadata = kwargs.pop("metadata", {})
-        self._metadata = metadata.items()
+        self._metadata = [(key, value) for key, value in metadata.items()]
 
         _proto_args = kwargs.pop("proto", {})
         check_expected_keys(expected_blocks["proto"], _proto_args)
@@ -117,13 +119,12 @@ class GRPCClient(object):
         self.channels = {}
         self.sym_db = _symbol_database.Default()
 
-        if _proto_args:
-            proto_module = _proto_args.get("module", "proto")
-            if "source" in _proto_args:
-                proto_source = _proto_args["source"]
-                _generate_proto_import(proto_source, proto_module)
+        proto_module = _proto_args.get("module", "proto")
+        if "source" in _proto_args:
+            proto_source = _proto_args["source"]
+            _generate_proto_import(proto_source, proto_module)
 
-            _import_grpc_module(proto_module)
+        _import_grpc_module(proto_module)
 
     def _register_file_descriptor(self, service_proto):
         for i in range(len(service_proto.file_descriptor_proto)):
@@ -198,7 +199,9 @@ class GRPCClient(object):
 
         try:
             self._get_reflection_info(channel, service_name=service)
-        except grpc.RpcError as rpc_error:  # Since this object is guaranteed to be a grpc.Call, might as well include that in its name.
+        except (
+            grpc.RpcError
+        ) as rpc_error:  # Since this object is guaranteed to be a grpc.Call, might as well include that in its name.
             logger.error("Call failure: %s", rpc_error)
             status = rpc_status.from_call(rpc_error)
             if status is None:

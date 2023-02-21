@@ -114,7 +114,6 @@ The full list of keys for this block:
   serialize into JSON.
 - `qos`: QoS level for publishing. Defaults to 0 in paho-mqtt.
 
-
 ### Options for receiving MQTT messages
 
 The `mqtt_response` key gives a topic and payload which should be received by
@@ -156,6 +155,24 @@ HTTP JSON responses, The special 'anything' token can be used with the
 ```
 
 Other type tokens such as `!anyint` will _not_ work.
+
+### Unexpected messages
+
+If you want to make sure that you do _not_ want to receive a message when a certain request (MQTT or
+HTTP) is sent, use the 'unexpected' key like so:
+
+```yaml
+  mqtt_response:
+    topic: /device/123/status/response
+    payload: !anything
+    timeout: 3
+    qos: 1
+    unexpected: true
+```
+
+If this message is received during the test, it will fail it. Be careful when using this as if this
+message just happened to be sent during the test and not as a result of anything during your test,
+it will still make the test fail.
 
 ## Mixing MQTT tests and HTTP tests
 

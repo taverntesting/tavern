@@ -3,8 +3,7 @@ from os.path import abspath, dirname, join
 
 import yaml
 
-from tavern.util.dict_util import format_keys
-
+from ..._core.dict_util import format_keys
 from .client import GRPCClient
 from .request import GRPCRequest
 from .response import GRPCResponse

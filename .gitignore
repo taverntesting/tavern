@@ -116,3 +116,12 @@ out/
 .idea
 
 allure/
+
+.ijwb/
+.pants.d/
+.pids/
+bazel-bin
+bazel-out
+bazel-tavern
+bazel-testlogs
+

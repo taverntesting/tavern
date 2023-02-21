@@ -17,6 +17,9 @@ stages:
       status_code: 200
       json:
         id: 1
+        userId: 1
+        title: "sunt aut facere repellat provident occaecati excepturi optio reprehenderit"
+        body: "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
       save:
         json:
           returned_id: id
@@ -128,16 +131,24 @@ This can be saved into the value `first_val` with this response block:
 response:
   save:
     json:
-      first_val: thing.nested[0]
+      first_val: "thing.nested[0]"
 ```
 
 The query should be defined as a JMES query (see [JMESPath](http://jmespath.org/)
 for more information). In the above example, this essentially performs
 the operation `json["thing"]["nested"][0]`. This can be used to perform
-powerful queries on response data, but note that only 'simple' values
-like integers, strings, or float values can be saved. Trying to save a
-'block' of data such as a JSON list or object is currently unsupported
-and will cause the test to fail.
+powerful queries on response data.
+
+This can be used to save blocks of data as well, for example:
+
+```yaml
+response:
+  save:
+    json:
+      nested_thing: "thing"
+```
+
+This will save `{"nested": [1, 2, 3, 4]}` into the `nested_thing` variable. See the documentation for the `force_format_include` tag for how this can be used.
 
 **NOTE**: The behaviour of these queries used to be different and indexing into
 an array was done like `thing.nested.0`. This will be deprecated in the
@@ -326,7 +337,7 @@ changed to use a different library to avoid this issue.**
 # valid jwt which is signed by the given key.
 response:
   verify_response_with:
-    function: tavern.testutils.helpers:validate_jwt
+    function: tavern.helpers:validate_jwt
     extra_kwargs:
       jwt_key: "token"
       key: CGQgaG7GYvTcpaQZqosLy4
@@ -344,7 +355,7 @@ body of the response against it.
 # which has to contain a user name and may contain a user number.
 response:
   verify_response_with:
-    function: tavern.testutils.helpers:validate_pykwalify
+    function: tavern.helpers:validate_pykwalify
     extra_kwargs:
       schema:
         type: seq
@@ -404,6 +415,7 @@ This can be used as so:
   request:
     url: http://server.com/login
     headers:
+      x-my-header: abc123
       $ext:
         function: utils:generate_bearer_token
     json:
@@ -434,7 +446,14 @@ def return_hello():
 ```
 
 If `tavern-merge-ext-function-values` is set, this will send "hello" and "goodbye" in 
-the request. If not, it will just sent "hello". 
+the request. If not, it will just send "hello". 
+
+Example `pytest.ini` setting `tavern-merge-ext-function-values` as an argument.
+```python
+# pytest.ini
+[pytest]
+addopts = --tavern-merge-ext-function-values 
+```
 
 #### Saving data from a response
 
@@ -499,7 +518,7 @@ For example, if our server saves the user ID in the 'sub' field of the JWT:
     status_code: 200
     verify_response_with:
       # Make sure a token exists
-      function: tavern.testutils.helpers:validate_jwt
+      function: tavern.helpers:validate_jwt
       extra_kwargs:
         jwt_key: "token"
         options:
@@ -509,7 +528,7 @@ For example, if our server saves the user ID in the 'sub' field of the JWT:
       # in the test configuration for use in future tests
       # Note the use of $ext again
       $ext:
-        function: tavern.testutils.helpers:validate_jwt
+        function: tavern.helpers:validate_jwt
         extra_kwargs:
           jwt_key: "token"
           options:
@@ -607,8 +626,12 @@ With strict being turned off for the body, any of these in the test will pass:
 
 But not:
 
-- `[3, 1]`, `[2, 1]` - items present, but out of order
 - `[2, 4]` - '4' not present in response from the server
+- `[3, 1]`, `[2, 1]` - items present, but out of order
+
+To match the last case you can use the special setting `list_any_order`. This setting
+can only be used in the 'json' key of a request, but will match list items in any order as
+long as they are present in the response.
 
 ### Changing the setting
 
@@ -927,7 +950,7 @@ stages:
         json:
           test_user_login_token: token
       verify_response_with:
-        function: tavern.testutils.helpers:validate_jwt
+        function: tavern.helpers:validate_jwt
         extra_kwargs:
           jwt_key: "token"
           options:
@@ -1481,7 +1504,7 @@ third block must start with 4 and the third block must start with 8, 9, "A", or
 ```
 
 This is using the `!re_fullmatch` variant of the tag - this calls
-[`re.fullmatch`](https://docs.python.org/3.7/library/re.html#re.fullmatch) under
+[`re.fullmatch`](https://docs.python.org/3.8/library/re.html#re.fullmatch) under
 the hood, which means that the regex given needs to match the _entire_ part of
 the response that is being checked for it to pass. There is also `!re_search`
 which will pass if it matches _part_ of the thing being checked, or `!re_match`
@@ -1510,7 +1533,7 @@ stages:
         hash: 456
     save:
       $ext:
-        function: tavern.testutils.helpers:validate_regex
+        function: tavern.helpers:validate_regex
         extra_kwargs:
           expression: "v(?P<version>[\d\.]+)-[\w\d]+"
           in_jmespath: "meta.version"
@@ -1577,7 +1600,7 @@ request:
 
 Sometimes there are situations where you need to directly include a block of
 JSON, such as a list, rather than just one value. To do this, there is a
-`!force_format_include` tag which will include whatever variable is being
+`!force_original_structure` tag which will include whatever variable is being
 referenced in the format block rather than coercing it to a string.
 
 For example, if we have an API that will return a list of users on a GET and
@@ -1609,7 +1632,7 @@ could be done by
       url: "{host}/users"
       method: DELETE
       # 'all_users' list will be sent in the request as a list, not a string
-      json: !force_format_include "{all_users}"
+      json: !force_original_structure "{all_users}"
     response:
       status_code: 204
 
@@ -2073,8 +2096,89 @@ This will result in 6 tests:
 - cheap fresh orange
 - cheap unripe pear
 
+Since 1.19.0 you can now also parametrize generic blocks of data instead of only strings. This can
+also be mixed and matched with items which _are_ strings. If you do this, remember to use the
+[force_format_include](#Including raw JSON data) tag so it doesn't come out as a string:
+
+```yaml
+test_name: Test sending a list of list of keys where one is not a string
+
+marks:
+  - parametrize:
+      key:
+      - fruit
+      - colours
+      vals:
+        - [ apple, [red, green, pink] ]
+        - [ pear, [yellow, green] ]
+
+stages:
+  - name: Send fruit and colours
+    request:
+      url: "{host}/newfruit"
+      method: POST
+      json:
+        fruit: "{fruit}"
+        colours: !force_format_include "{colours}"
+
+        # This sends:
+        # {
+        #   "fruit": "apple",
+        #   "colours": [
+        #     "red",
+        #     "green",
+        #     "pink"
+        #   ]
+        # }
+```
+
+The type of the 'val' does not need to be the same for each version of the test, and even external
+functions can be used to read values. For example this block will create 6 tests which sets the
+`value_to_send` key to a string, a list, or a dictionary:
+
+```yaml
+---
+
+test_name: Test parametrizing random different data types in the same test
+
+marks:
+- parametrize:
+    key: value_to_send
+    vals:
+    - a
+    - [b, c]
+    - more: stuff
+    - yet: [more, stuff]
+    - $ext:
+        function: ext_functions:return_string
+    - and: this
+      $ext:
+        function: ext_functions:return_dict
+        
+      # If 'return_dict' returns {"keys: ["a","b","c"]} this results in:
+      # {
+      #   "and": "this",
+      #   "keys": [
+      #     "a",
+      #     "b",
+      #     "c"
+      #   ]
+      # }
+```
+
+As see in the last example, if the `$ext` function returns a dictionary then it will also be merged
+with any existing data in the 'val'. In this case, the return value of the function _must_ be a
+dictionary or an error will be raised.
+
+```yaml
+    # This would raise an error
+    #- and: this
+    #  $ext:
+    #    function: ext_functions:return_string
+```
+
 **NOTE**: Due to implementation reasons it is currently impossible to
-parametrize either the HTTP method or the MQTT QoS parameter.
+parametrize the MQTT QoS parameter.
 
 #### usefixtures
 
@@ -2213,6 +2317,20 @@ def pytest_tavern_beta_before_every_test_run(test_dict, variables):
     logging.info("Starting test %s", test_dict["test_name"])
 
     variables["extra_var"] = "abc123"
+```
+
+### After every test run
+
+This hook is called _after_ execution of each test, regardless of the test 
+result. The hook can, for example, be used to perform cleanup after the test is run.
+
+Example usage:
+
+```python
+import logging
+
+def pytest_tavern_beta_after_every_test_run(test_dict, variables):
+    logging.info("Ending test %s", test_dict["test_name"])
 ```
 
 ### After every response

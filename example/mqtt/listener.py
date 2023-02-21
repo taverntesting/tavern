@@ -3,10 +3,10 @@ import logging
 import logging.config
 import os
 import sqlite3
+import time
 
-import yaml
 import paho.mqtt.client as paho
-
+import yaml
 
 DATABASE = os.environ.get("DB_NAME")
 
@@ -53,16 +53,30 @@ loggers:
         propagate: true
 """
 
-    as_dict = yaml.load(log_cfg)
+    as_dict = yaml.load(log_cfg, Loader=yaml.SafeLoader)
     logging.config.dictConfig(as_dict)
 
     logging.info("Logging set up")
+
+
+def assert_device_exists(device_id):
+    db = get_db()
+    with db:
+        row = db.execute(
+            "SELECT device_id from devices_table where device_id IS (?)", (device_id,)
+        )
+
+    try:
+        next(row)
+    except:
+        raise Exception("Device {} is not registered".format(device_id))
 
 
 def handle_lights_topic(message):
     db = get_db()
 
     device_id = message.topic.split("/")[-2]
+    assert_device_exists(device_id)
 
     if message.payload.decode("utf8") == "on":
         logging.info("Lights have been turned on")
@@ -80,17 +94,20 @@ def handle_lights_topic(message):
             )
 
 
-def handle_request_topic(client, message):
-    db = get_db()
-
+def handle_status_topic(client, message):
     device_id = message.topic.split("/")[-2]
+    assert_device_exists(device_id)
 
+    publish_device_status(client, device_id)
+
+
+def publish_device_status(client, device_id):
+    db = get_db()
     logging.info("Checking lights status")
     with db:
         row = db.execute(
             "SELECT lights_on FROM devices_table WHERE device_id IS (?)", (device_id,)
         )
-
     try:
         status = int(next(row)[0])
     except Exception:
@@ -102,31 +119,50 @@ def handle_request_topic(client, message):
         )
 
 
+def handle_full_status_topic(client, message):
+    db = get_db()
+
+    logging.info("all devices reporting status")
+
+    with db:
+        device_ids = db.execute("SELECT device_id FROM devices_table")
+
+    for device_id in device_ids:
+        publish_device_status(client, device_id[0])
+
+
 def handle_ping_topic(client, message):
     device_id = message.topic.split("/")[-2]
+    assert_device_exists(device_id)
 
     client.publish("/device/{}/pong".format(device_id))
 
 
 def handle_echo_topic(client, message):
     device_id = message.topic.split("/")[-2]
+    assert_device_exists(device_id)
 
     client.publish("/device/{}/echo/response".format(device_id), message.payload)
 
 
 def on_message_callback(client, userdata, message):
-    logging.info("Received message on %s", message.topic)
+    try:
+        logging.info("Received message on %s", message.topic)
 
-    if "lights" in message.topic:
-        handle_lights_topic(message)
-    elif "echo" in message.topic:
-        handle_echo_topic(client, message)
-    elif "ping" in message.topic:
-        handle_ping_topic(client, message)
-    elif "status" in message.topic:
-        handle_request_topic(client, message)
-    else:
-        logging.warning("Got unexpected MQTT topic '%s'", message.topic)
+        if "devices/status" in message.topic:
+            handle_full_status_topic(client, message)
+        elif "lights" in message.topic:
+            handle_lights_topic(message)
+        elif "echo" in message.topic:
+            handle_echo_topic(client, message)
+        elif "ping" in message.topic:
+            handle_ping_topic(client, message)
+        elif "status" in message.topic:
+            handle_status_topic(client, message)
+        else:
+            logging.warning("Got unexpected MQTT topic '%s'", message.topic)
+    except Exception as e:
+        logging.exception(e)
 
 
 def wait_for_messages():
@@ -138,27 +174,14 @@ def wait_for_messages():
     topics = ["lights", "ping", "echo", "status"]
 
     for t in topics:
-        device_topic = "/device/{}/{}".format(123, t)
+        device_topic = "/device/+/{}".format(t)
         logging.debug("Subscribing to '%s'", device_topic)
         mqtt_client.subscribe(device_topic)
+
+    mqtt_client.subscribe("/devices/status")
 
     mqtt_client.loop_forever()
 
 
 if __name__ == "__main__":
-    db = get_db()
-
-    with db:
-        try:
-            db.execute(
-                "CREATE TABLE devices_table (device_id TEXT NOT NULL, lights_on INTEGER NOT NULL)"
-            )
-        except:
-            pass
-
-        try:
-            db.execute("INSERT INTO devices_table VALUES ('123', 0)")
-        except:
-            pass
-
     wait_for_messages()

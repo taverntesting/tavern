@@ -1,16 +1,22 @@
 import base64
+import gzip
 import itertools
 import json
+import math
 import mimetypes
 import os
 import time
-from urllib.parse import unquote_plus
 import uuid
+from datetime import datetime, timedelta
+from hashlib import sha512
+from urllib.parse import unquote_plus
 
-from flask import Flask, Response, jsonify, redirect, request
-import math
+import jwt
+from flask import Flask, Response, jsonify, make_response, redirect, request, session
+from itsdangerous import URLSafeTimedSerializer
 
 app = Flask(__name__)
+app.config.update(SECRET_KEY="secret")
 
 
 @app.route("/token", methods=["GET"])
@@ -77,23 +83,24 @@ def upload_fake_file():
     if not request.files:
         return "", 401
 
+    return _handle_files()
+
+
+def _handle_files():
     if not mimetypes.inited:
         mimetypes.init()
-
-    for key, item in request.files.items():
+    for item in request.files.values():
         if item.filename:
             filetype = ".{}".format(item.filename.split(".")[-1])
             if filetype in mimetypes.suffix_map:
                 if not item.content_type:
                     return "", 400
-
     # Try to download each of the files downloaded to /tmp and
     # then remove them
     for key in request.files:
         file_to_save = request.files[key]
         path = os.path.join("/tmp", file_to_save.filename)
         file_to_save.save(path)
-
     return "", 200
 
 
@@ -109,23 +116,7 @@ def upload_fake_file_and_data():
     if not request.content_type.startswith("multipart/form-data"):
         return "", 403
 
-    if not mimetypes.inited:
-        mimetypes.init()
-
-    for key, item in request.files.items():
-        if item.filename:
-            filetype = ".{}".format(item.filename.split(".")[-1])
-            if filetype in mimetypes.suffix_map:
-                if not item.content_type:
-                    return "", 400
-
-    # Try to download each of the files downloaded to /tmp
-    for key in request.files:
-        file_to_save = request.files[key]
-        path = os.path.join("/tmp", file_to_save.filename)
-        file_to_save.save(path)
-
-    return "", 200
+    return _handle_files()
 
 
 @app.route("/nested/again", methods=["GET"])
@@ -174,7 +165,7 @@ def status_code_return():
 
 @app.route("/echo", methods=["POST"])
 def echo_values():
-    body = request.get_json()
+    body = request.get_json(silent=True)
     response = body
     return jsonify(response), 200
 
@@ -203,6 +194,34 @@ def expect_raw_data():
     elif raw_data == "DENIED":
         response = {"status": "denied"}
         code = 401
+    else:
+        response = {"status": "err: '{}'".format(raw_data)}
+        code = 400
+
+    return jsonify(response), code
+
+
+@app.route("/expect_compressed_data", methods=["POST"])
+def expect_compressed_data():
+    content_type_header = request.headers.get("content-type")
+    if content_type_header != "application/json":
+        return jsonify("invalid content type " + content_type_header), 400
+
+    content_encoding_header = request.headers.get("content-encoding")
+    if content_encoding_header != "gzip":
+        return jsonify("invalid content encoding " + content_encoding_header), 400
+
+    compressed_data = request.stream.read()
+
+    decompressed = gzip.decompress(compressed_data)
+
+    raw_data = decompressed.decode("utf8").strip()
+
+    loaded = json.loads(raw_data)
+
+    if loaded == "OK":
+        response = {"status": "ok"}
+        code = 200
     else:
         response = {"status": "err: '{}'".format(raw_data)}
         code = 400
@@ -239,7 +258,7 @@ def poll():
 
 
 def _maybe_get_cookie_name():
-    return (request.get_json() or {}).get("cookie_name", "tavern-cookie")
+    return (request.get_json(silent=True) or {}).get("cookie_name", "tavern-cookie")
 
 
 @app.route("/get_cookie", methods=["POST"])
@@ -265,6 +284,19 @@ def expect_cookie():
 @app.route("/redirect/source", methods=["GET"])
 def redirect_to_other_endpoint():
     return redirect("/redirect/destination", 302)
+
+
+@app.route("/redirect/loop", methods=["GET"])
+def redirect_loop():
+    try:
+        if redirect_loop.tries > 50:
+            return redirect("/redirect/destination", 302)
+        else:
+            redirect_loop.tries += 1
+    except AttributeError:
+        redirect_loop.tries = 1
+
+    return redirect("/redirect/loop", 302)
 
 
 @app.route("/redirect/destination", methods=["GET"])
@@ -315,3 +347,96 @@ def return_with_dot():
 @app.route("/uuid/v4", methods=["GET"])
 def get_uuid_v4():
     return jsonify({"uuid": uuid.uuid4()}), 200
+
+
+@app.route("/707-regression", methods=["GET"])
+def get_707():
+    return jsonify({"a": 1, "b": {"first": 10, "second": 20}, "c": 2})
+
+
+users = {"mark": {"password": "password", "regular": "foo", "protected": "bar"}}
+
+serializer = URLSafeTimedSerializer(
+    secret_key="secret",
+    salt="cookie",
+    signer_kwargs={"key_derivation": "hmac", "digest_method": sha512},
+)
+
+
+@app.route("/withsession/login", methods=["POST"])
+def login():
+    r = request.get_json()
+    username = r["username"]
+    password = r["password"]
+
+    if password == users[username]["password"]:
+        session["user"] = username
+        response = make_response("", 200)
+        response.set_cookie(
+            "remember",
+            value=serializer.dumps(username),
+            expires=datetime.utcnow() + timedelta(days=30),
+            httponly=True,
+        )
+        return response
+
+    return "", 401
+
+
+@app.route("/withsession/regular", methods=["GET"])
+def regular():
+    username = session.get("user")
+
+    if not username:
+        remember = request.cookies.get("remember")
+        if remember:
+            username = serializer.loads(remember, max_age=3600)
+
+    if username:
+        return jsonify(regular=users[username]["regular"]), 200
+
+    return "", 401
+
+
+@app.route("/withsession/protected", methods=["GET"])
+def protected():
+    username = session.get("user")
+    if username:
+        return jsonify(protected=users[username]["protected"]), 200
+    return "", 401
+
+
+@app.route("/606-regression-list", methods=["GET"])
+def get_606_list():
+    return jsonify([])
+
+
+@app.route("/606-regression-dict", methods=["GET"])
+def get_606_dict():
+    return jsonify({})
+
+
+@app.route("/magic-multi-method", methods=["GET", "POST", "DELETE"])
+def get_any_method():
+    return jsonify({"method": request.method})
+
+
+@app.route("/get_jwt", methods=["POST"])
+def get_jwt():
+    secret = "240c8c9c-39b9-426b-9503-3126f96c2eaf"
+    audience = "testserver"
+
+    r = request.get_json()
+
+    if r["user"] != "test-user" or r["password"] != "correct-password":
+        return jsonify({"error": "Incorrect username/password"}), 401
+
+    payload = {
+        "sub": "test-user",
+        "aud": audience,
+        "exp": datetime.utcnow() + timedelta(hours=1),
+    }
+
+    token = jwt.encode(payload, secret, algorithm="HS256")
+
+    return jsonify({"jwt": token})

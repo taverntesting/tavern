@@ -1,0 +1,15 @@
+---
+test_name: "Test test name can have formatting in it: {host}"
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: "Test stage name can have formatting in it: {host}"
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: hi
+    response:
+      status_code: 200
+      json: hi

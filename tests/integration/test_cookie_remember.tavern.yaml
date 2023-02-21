@@ -1,0 +1,80 @@
+---
+test_name: test after browser close
+
+stages:
+  - name: login
+    request:
+      url: "{global_host}/withsession/login"
+      method: POST
+      json:
+        username: mark
+        password: password
+    response:
+      cookies:
+        - session
+        - remember
+      status_code: 200
+
+  - name: get regular
+    request:
+      url: "{global_host}/withsession/protected"
+      method: GET
+      clear_session_cookies: False
+    response:
+      json:
+        protected: bar
+      status_code: 200
+
+  - name: get regular
+    request:
+      url: "{global_host}/withsession/regular"
+      method: GET
+      clear_session_cookies: True # This flows through to the next stage as well
+    response:
+      json:
+        regular: foo
+      status_code: 200
+
+  - name: get protected stale
+    request:
+      url: "{global_host}/withsession/protected"
+      method: GET
+    response:
+      status_code: 401
+
+---
+test_name: test without browser close
+
+stages:
+  - name: login again
+    request:
+      url: "{global_host}/withsession/login"
+      method: POST
+      json:
+        username: mark
+        password: password
+    response:
+      cookies:
+        - session
+        - remember
+      status_code: 200
+
+  - name: get protected fresh
+    request:
+      url: "{global_host}/withsession/protected"
+      method: GET
+    response:
+      json:
+        protected: bar
+      status_code: 200
+
+---
+test_name: test without login
+
+stages:
+  - name: get regular
+    request:
+      url: "{global_host}/withsession/regular"
+      method: GET
+    response:
+      status_code: 401

@@ -23,7 +23,7 @@ any Pytest plugins as mentioned above):
 
 ```dockerfile
 # tavern.Dockerfile
-FROM python:3.7-alpine
+FROM python:3.10-slim
 
 RUN pip3 install tavern
 ```
@@ -38,7 +38,7 @@ Or if you need a specific version (hopefully you shouldn't):
 
 ```dockerfile
 # tavern.Dockerfile
-FROM python:3.7-alpine
+FROM python:3.10-slim
 
 ARG TAVERNVER
 RUN pip3 install tavern==$TAVERNVER
@@ -66,7 +66,7 @@ services:
   tavern:
     build:
       context: .
-      image: tavern.Dockerfile
+      dockerfile: tavern.Dockerfile
     env_file:
       # Any extra environment variables for testing
       # This will probably contain things like names of docker containers to run tests against
@@ -93,7 +93,7 @@ services:
   application:
     build:
       context: .
-      image: application.Dockerfile
+      dockerfile: application.Dockerfile
     command:
       ...
 ```

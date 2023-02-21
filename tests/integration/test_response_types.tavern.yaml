@@ -1,5 +1,4 @@
 ---
-
 test_name: Make sure it can handle list responses
 
 includes:
@@ -32,7 +31,6 @@ stages:
       json: [a, b, c, 1, 2, 3, -1.0, -2.0, -3.0]
 
 ---
-
 test_name: Test unicode responses
 
 includes:
@@ -51,7 +49,6 @@ stages:
         value: 手机号格式不正确
 
 ---
-
 test_name: Test string as top-level JSON type
 
 includes:
@@ -68,7 +65,6 @@ stages:
       json: "json_string"
 
 ---
-
 test_name: Test boolean as top-level JSON type
 
 includes:
@@ -85,7 +81,6 @@ stages:
       json: False
 
 ---
-
 test_name: Test number as top-level JSON type
 
 includes:
@@ -102,14 +97,13 @@ stages:
       json: 1337
 
 ---
-
 test_name: Test null as top-level JSON type
 
 includes:
   - !include common.yaml
 
 stages:
-  - name: Echo back a number value and make sure it matches
+  - name: Echo back a null value and make sure it matches
     request:
       url: "{host}/echo"
       method: POST

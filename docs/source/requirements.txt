@@ -3,5 +3,5 @@ sphinx_rtd_theme
 recommonmark==0.5.0
 commonmark==0.8.1
 docutils==0.14
-pygments==2.3.1
+pygments==2.7.4
 sphinx-markdown-tables==0.0.9

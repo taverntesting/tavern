@@ -1,29 +1,30 @@
+import contextlib
 import json
 import logging
+from typing import Dict, Mapping, Optional
 from urllib.parse import parse_qs, urlparse
 
+import requests
 from requests.status_codes import _codes  # type:ignore
 
-from tavern.response.base import BaseResponse, indent_err_text
-from tavern.testutils.pytesthook.newhooks import call_hook
-from tavern.util import exceptions
-from tavern.util.dict_util import deep_dict_merge
-from tavern.util.report import attach_yaml
+from tavern._core import exceptions
+from tavern._core.dict_util import deep_dict_merge
+from tavern._core.pytest.newhooks import call_hook
+from tavern._core.report import attach_yaml
+from tavern.response import BaseResponse, indent_err_text
 
 logger = logging.getLogger(__name__)
 
 
 class RestResponse(BaseResponse):
-    def __init__(self, session, name, expected, test_block_config):
-        # pylint: disable=unused-argument
-
+    def __init__(self, session, name: str, expected, test_block_config) -> None:
         defaults = {"status_code": 200}
 
         super().__init__(name, deep_dict_merge(defaults, expected), test_block_config)
 
-        self.status_code = None
+        self.status_code: Optional[int] = None
 
-        def check_code(code):
+        def check_code(code: int) -> None:
             if int(code) not in _codes:
                 logger.warning("Unexpected status code '%s'", code)
 
@@ -37,13 +38,13 @@ class RestResponse(BaseResponse):
         except TypeError as e:
             raise exceptions.BadSchemaError("Invalid code") from e
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.response:
             return self.response.text.strip()
         else:
             return "<Not run yet>"
 
-    def _verbose_log_response(self, response):
+    def _verbose_log_response(self, response) -> None:
         """Verbosely log the response object, with query params etc."""
 
         logger.info("Response: '%s'", response)
@@ -64,10 +65,8 @@ class RestResponse(BaseResponse):
 
         log_dict_block(response.headers, "Headers")
 
-        try:
+        with contextlib.suppress(ValueError):
             log_dict_block(response.json(), "Body")
-        except ValueError:
-            pass
 
         redirect_query_params = self._get_redirect_query_params(response)
         if redirect_query_params:
@@ -76,7 +75,7 @@ class RestResponse(BaseResponse):
             logger.debug("Redirect location: %s", to_path)
             log_dict_block(redirect_query_params, "Redirect URL query parameters")
 
-    def _get_redirect_query_params(self, response):
+    def _get_redirect_query_params(self, response) -> Dict[str, str]:
         """If there was a redirect header, get any query parameters from it"""
 
         try:
@@ -96,7 +95,7 @@ class RestResponse(BaseResponse):
 
         return redirect_query_params
 
-    def _check_status_code(self, status_code, body):
+    def _check_status_code(self, status_code, body) -> None:
         expected_code = self.expected["status_code"]
 
         if (isinstance(expected_code, int) and status_code == expected_code) or (
@@ -122,7 +121,7 @@ class RestResponse(BaseResponse):
                     "Status code was %s, expected %s", status_code, expected_code
                 )
 
-    def verify(self, response):
+    def verify(self, response: requests.Response) -> dict:
         """Verify response against expected values and returns any values that
         we wanted to save for use in future requests
 
@@ -130,10 +129,10 @@ class RestResponse(BaseResponse):
         matching values, validating a schema, etc...
 
         Args:
-            response (requests.Response): response object
+            response: response object
 
         Returns:
-            dict: Any saved values
+            Any saved values
 
         Raises:
             TestFailError: Something went wrong with validating the response
@@ -204,3 +203,33 @@ class RestResponse(BaseResponse):
             )
 
         return saved
+
+    def _validate_block(self, blockname: str, block: Mapping) -> None:
+        """Validate a block of the response
+
+        Args:
+            blockname: which part of the response is being checked
+            block: The actual part being checked
+        """
+        try:
+            expected_block = self.expected[blockname]
+        except KeyError:
+            expected_block = None
+
+        if isinstance(expected_block, dict):
+            if expected_block.pop("$ext", None):
+                raise exceptions.MisplacedExtBlockException(
+                    blockname,
+                )
+
+        if blockname == "headers" and expected_block is not None:
+            # Special case for headers. These need to be checked in a case
+            # insensitive manner
+            block = {i.lower(): j for i, j in block.items()}
+            expected_block = {i.lower(): j for i, j in expected_block.items()}
+
+        logger.debug("Validating response %s against %s", blockname, expected_block)
+
+        test_strictness = self.test_block_config.strict
+        block_strictness = test_strictness.option_for(blockname)
+        self.recurse_check_key_match(expected_block, block, blockname, block_strictness)

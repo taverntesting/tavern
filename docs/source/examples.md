@@ -16,6 +16,9 @@ stages:
       status_code: 200
       json:
         id: 1
+        userId: 1
+        title: "sunt aut facere repellat provident occaecati excepturi optio reprehenderit"
+        body: "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
 ```
 
 Next, install Tavern if you have not already:
@@ -158,10 +161,11 @@ The Python library allows you to include Tavern tests in deploy scripts written 
 
 ```python
 from tavern.core import run
+from pytest import ExitCode
 
-success = run("test_server.tavern.yaml")
+exit_code = run("test_server.tavern.yaml")
 
-if not success:
+if exit_code != ExitCode.OK:
     print("Error running tests")
 ```
 
@@ -193,7 +197,7 @@ stages:
       status_code: 200
       json:
         $ext:
-          function: tavern.testutils.helpers:validate_jwt
+          function: tavern.helpers:validate_jwt
           extra_kwargs:
             jwt_key: "token"
             key: CGQgaG7GYvTcpaQZqosLy4

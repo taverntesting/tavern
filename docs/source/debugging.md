@@ -1,7 +1,5 @@
 # Debugging a test
 
-**This section assumes you're using pytest to run tests**.
-
 When making a test it's not always going to work first time, and at the time of
 writing the error reporting is a bit messy because it shows the whole stack
 trace from pytest is printed out (which can be a few hundred lines, most of
@@ -16,7 +14,8 @@ the logs in case something goes wrong. The easiest way to do this is with
 [dictConfig](https://docs.python.org/3/library/logging.config.html#logging.config.dictConfig)
 from the Python logging library. It can also be useful to use
 [colorlog](https://pypi.org/project/colorlog/) to colourize the output so it's
-easier to see the different log levels. An example logging configuration
+easier to see the different log levels. An example logging configuration (note that this requires
+the `colorlog` package to be installed):
 
 ```yaml
 # log_spec.yaml
@@ -66,6 +65,11 @@ By default, recent versions of pytest will print out log messages in the
 "Captured stderr call" section of the output - if you have set up your own
 logging, you probably want to disable this by also passing `-p no:logging` to
 the invocation of pytest.
+
+**WARNING**: Tavern will try not to log any response data or request data at the `INFO` level or
+above (unless it is in an error trace). Logging at the `DEBUG` level will log things like response
+headers, return values from any external functions etc. If this contains sensitive data, either
+log at the `INFO` level, or make sure that any data logged is obfuscated, or the logs are not public.
 
 ### Setting pytest options
 
@@ -140,7 +144,7 @@ tavern/core.py:111: in run_test
     saved = v.verify(response)
 tavern/response/rest.py:147: in verify
     raise TestFailError("Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()))
-E   tavern.util.exceptions.TestFailError: Test 'login' failed:
+E   tavern._core.exceptions.TestFailError: Test 'login' failed:
 E   - Key not present: a_key
 ---------------------------- Captured stderr call -----------------------------
 16:30:46 [INFO]: (tavern.core:70) Running test : Check trying to get a number that we didnt post before returns a 404
@@ -154,78 +158,13 @@ E   - Key not present: a_key
 Traceback (most recent call last):
   File "/home/michael/code/tavern/tavern/tavern/response/base.py", line 87, in recurse_check_key_match
     actual_val = recurse_access_key(block, list(split_key))
-  File "/home/michael/code/tavern/tavern/tavern/util/dict_util.py", line 77, in recurse_access_key
+  File "/home/michael/code/tavern/tavern/tavern/_core/dict_util.py", line 77, in recurse_access_key
     return recurse_access_key(current_val[current_key], keys)
 KeyError: 'a_key'
 16:30:46 [ERROR]: (tavern.printer:21) FAILED: login [200]
-16:30:46 [ERROR]: (tavern.printer:22) Expected: {'requests': {'save': {'$ext': {'extra_kwargs': {'jwt_key': 'token', 'key': 'CGQgaG7GYvTcpaQZqosLy4', 'options': {'verify_aud': True, 'verify_signature': True, 'verify_exp': True}, 'audience': 'testserver'}, 'function': 'tavern.testutils.helpers:validate_jwt'}, 'body': {'test_login_token': 'token'}}, 'status_code': 200, 'headers': {'content-type': 'application/json'}, 'body': {'a_key': 'missing', 'token': <tavern.util.loader.AnythingSentinel object at 0x7fce0b395c50>}}}
+16:30:46 [ERROR]: (tavern.printer:22) Expected: {'requests': {'save': {'$ext': {'extra_kwargs': {'jwt_key': 'token', 'key': 'CGQgaG7GYvTcpaQZqosLy4', 'options': {'verify_aud': True, 'verify_signature': True, 'verify_exp': True}, 'audience': 'testserver'}, 'function': 'tavern.helpers:validate_jwt'}, 'body': {'test_login_token': 'token'}}, 'status_code': 200, 'headers': {'content-type': 'application/json'}, 'body': {'a_key': 'missing', 'token': <tavern._core.loader.AnythingSentinel object at 0x7fce0b395c50>}}}
 ```
 
 When tavern tries to access `a_key` in the response it gets a `KeyError` (shown
 in the logs), and the `TestFailError` in the stack trace gives a more
 human-readable explanation as to why the test failed.
-
-### New traceback option
-
-Though this does give a lot of information about exactly when and where a test
-failed, it's not very easy to tell what input actually caused this error. Since
-0.13.0, you can use the `tavern-beta-new-traceback` flag to give a much nicer
-output showing the original source code for the stage, the formatted stages that
-Tavern uses to send the request, and any format variables. This is used like any
-other Pytest flag:
-
-1. Passed on on the command line using `--tavern-beta-new-traceback`
-2. Put in the Pytest configuration file (pytest.ini, setup.cfg, ...) `tavern-beta-new-traceback = True`
-
-Rather than the Python traceback as shown above, we get an error output like this:
-
-```
-Format variables:
-  tavern.env_vars.TEST_HOST = 'http://localhost:5003'
-  first_part = 'nested'
-  second_part = 'again'
-
-Source test stage:
-  - name: Make requests using environment variables
-    request:
-      url: "{tavern.env_vars.TEST_HOST}/{first_part}/{second_part}"
-      method: GET
-    response:
-      status_code: 200
-      json:
-        status: OKdfokd
-
-Formatted stage:
-  name: Make requests using environment variables
-  request:
-    method: GET
-    url: 'http://localhost:5003/nested/again'
-  response:
-    json:
-      status: OKdfokd
-    status_code: 200
-
-Errors:
-E   tavern.util.exceptions.TestFailError: Test 'Make requests using environment variables' failed:
-    - Value mismatch in json: Key mismatch: (expected["status"] = 'OKdfokd', actual["status"] = 'OK')
-```
-
-- Format variables shows all the variables which are used for formatting in that
-  stage. Any variables which are missing will be highlighted in red.
-- The source test stage is the raw source code for the stage from the input
-  file. This is before anything has been done to it - no formatting, no anchors,
-  no includes, etc.
-- The formatted stage shows the stage at the point that Tavern will start to
-  perform the request - all variables will be formatted (if present), all YAML
-  anchors will be resolved, etc.
-- The errors will show which exception caused this test to fail
-
-This output style will become the default in version 1.0.
-
-Note that this will only show when a test fails in a way that Tavern can handle,
-and it will not be shown on things like IOErrors on input files or unhandled
-errors.
-
-If a test fails in a way that does not raise a `TestFailError`, it might be a
-bug in Tavern - if this happens, feel free to make an issue
-[on the repo](https://github.com/taverntesting/tavern/issues).

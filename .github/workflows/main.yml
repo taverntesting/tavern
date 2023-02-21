@@ -3,54 +3,56 @@ name: basic test
 on:
   push:
     tags:
-    - ".*"
+      - ".*"
     branches:
-    - master
+      - master
   pull_request:
     branches:
-    - master
+      - master
+      - feature-2.0
 
 jobs:
+  simple-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - uses: pre-commit/action@v3.0.0
+
   test:
     runs-on: ubuntu-latest
+    needs: simple-checks
 
     strategy:
       fail-fast: false
       matrix:
         include:
-        # 'Basic' tests and checks
-        # Pylint, formatting/sorting, and quickest unit/integration tests
-        - TOXENV: py38black
-          python: "3.8"
-          TOXCFG: tox.ini
-        - TOXENV: py38
-          python: "3.8"
-          TOXCFG: tox.ini
-        - TOXENV: py38lint
-          python: "3.8"
-          TOXCFG: tox.ini
-        - TOXENV: py38mypy
-          python: "3.8"
-          TOXCFG: tox.ini
-        - TOXENV: py38isort
-          python: "3.8"
-          TOXCFG: tox.ini
+          # 'Basic' tests and checks
+          - TOXENV: py3mypy
+            TOXCFG: tox.ini
+          - TOXENV: py3
+            TOXCFG: tox.ini
 
-        - TOXENV: py38-generic
-          python: "3.8"
-          TOXCFG: tox-integration.ini
-        - TOXENV: pypy3-noextra
-          python: pypy3
-          TOXCFG: tox-integration.ini
-        - TOXENV: py38-mqtt
-          python: "3.8"
-          TOXCFG: tox-integration.ini
-        - TOXENV: py38-hooks
-          python: "3.8"
-          TOXCFG: tox-integration.ini
-        - TOXENV: py38-advanced
-          python: "3.8"
-          TOXCFG: tox-integration.ini
+          - TOXENV: py3-generic
+            TOXCFG: tox-integration.ini
+          - TOXENV: py3-mqtt
+            TOXCFG: tox-integration.ini
+          - TOXENV: py3-hooks
+            TOXCFG: tox-integration.ini
+          - TOXENV: py3-advanced
+            TOXCFG: tox-integration.ini
 
     services:
       docker:
@@ -61,34 +63,34 @@ jobs:
       TOXCFG: ${{ matrix.TOXCFG }}
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
-    - uses: actions/cache@v2
-      env:
-        cache-name: cache-${{ matrix.TOXENV }}
-      with:
-        path: .tox
-        key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('tox.ini', 'tox-integration.ini') }}
-        restore-keys: |
-          ${{ runner.os }}-tox-${{ env.cache-name }}-
-          ${{ runner.os }}-tox-
+      - uses: actions/cache@v3
+        env:
+          cache-name: cache-${{ matrix.TOXENV }}
+        with:
+          path: .tox
+          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('tox.ini', 'tox-integration.ini', 'pyproject.toml', 'requirements.in') }}
 
-    - uses: actions/cache@v2
-      with:
-        path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt', 'setup.cfg', 'setup.py') }}
-        restore-keys: |
-          ${{ runner.os }}-pip-
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
 
-    - name: Set up Python
-      uses: actions/setup-python@v2
-      with:
-        python-version: ${{ matrix.python }}
+      - uses: jpribyl/action-docker-layer-caching@v0.1.1
+        continue-on-error: true
 
-    - name: install deps
-      run: |
-        pip install tox-travis
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
 
-    - name: tox
-      run: |
-        tox -c ${TOXCFG}
+      - name: install deps
+        run: |
+          pip install tox-travis -c constraints.txt
+
+      - name: tox
+        run: |
+          tox -c ${TOXCFG}
