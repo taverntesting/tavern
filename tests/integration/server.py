@@ -1,20 +1,19 @@
 import base64
-import datetime
-from datetime import datetime, timedelta
 import gzip
-from hashlib import sha512
 import itertools
 import json
 import math
 import mimetypes
 import os
 import time
-from urllib.parse import unquote_plus
 import uuid
+from datetime import datetime, timedelta
+from hashlib import sha512
+from urllib.parse import unquote_plus
 
+import jwt
 from flask import Flask, Response, jsonify, make_response, redirect, request, session
 from itsdangerous import URLSafeTimedSerializer
-import jwt
 
 app = Flask(__name__)
 app.config.update(SECRET_KEY="secret")
@@ -84,23 +83,24 @@ def upload_fake_file():
     if not request.files:
         return "", 401
 
+    return _handle_files()
+
+
+def _handle_files():
     if not mimetypes.inited:
         mimetypes.init()
-
-    for key, item in request.files.items():
+    for item in request.files.values():
         if item.filename:
             filetype = ".{}".format(item.filename.split(".")[-1])
             if filetype in mimetypes.suffix_map:
                 if not item.content_type:
                     return "", 400
-
     # Try to download each of the files downloaded to /tmp and
     # then remove them
     for key in request.files:
         file_to_save = request.files[key]
         path = os.path.join("/tmp", file_to_save.filename)
         file_to_save.save(path)
-
     return "", 200
 
 
@@ -116,23 +116,7 @@ def upload_fake_file_and_data():
     if not request.content_type.startswith("multipart/form-data"):
         return "", 403
 
-    if not mimetypes.inited:
-        mimetypes.init()
-
-    for key, item in request.files.items():
-        if item.filename:
-            filetype = ".{}".format(item.filename.split(".")[-1])
-            if filetype in mimetypes.suffix_map:
-                if not item.content_type:
-                    return "", 400
-
-    # Try to download each of the files downloaded to /tmp
-    for key in request.files:
-        file_to_save = request.files[key]
-        path = os.path.join("/tmp", file_to_save.filename)
-        file_to_save.save(path)
-
-    return "", 200
+    return _handle_files()
 
 
 @app.route("/nested/again", methods=["GET"])
@@ -375,7 +359,7 @@ users = {"mark": {"password": "password", "regular": "foo", "protected": "bar"}}
 serializer = URLSafeTimedSerializer(
     secret_key="secret",
     salt="cookie",
-    signer_kwargs=dict(key_derivation="hmac", digest_method=sha512),
+    signer_kwargs={"key_derivation": "hmac", "digest_method": sha512},
 )
 
 

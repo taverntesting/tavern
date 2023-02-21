@@ -1,8 +1,8 @@
+import logging
+import traceback
 from abc import abstractmethod
 from collections.abc import Mapping
-import logging
 from textwrap import indent
-import traceback
 from typing import Any, List, Optional
 
 from tavern._core import exceptions
@@ -139,7 +139,7 @@ class BaseResponse:
             if isinstance(block, dict):
                 check_ext_functions(block.get("$ext", None))
                 if nfuncs != len(self.validate_functions):
-                    raise exceptions.InvalidExtBlockException(
+                    raise exceptions.MisplacedExtBlockException(
                         name,
                     )
 
@@ -162,7 +162,7 @@ class BaseResponse:
         for vf in self.validate_functions:
             try:
                 vf(response)
-            except Exception as e:  # pylint: disable=broad-except
+            except Exception as e:
                 self._adderr(
                     "Error calling validate function '%s':\n%s",
                     vf.func,
@@ -195,7 +195,7 @@ class BaseResponse:
 
         try:
             saved = wrapped(response)
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception as e:
             self._adderr(
                 "Error calling save function '%s':\n%s",
                 wrapped.func,

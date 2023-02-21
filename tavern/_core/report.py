@@ -4,18 +4,17 @@ from textwrap import dedent
 import yaml
 
 try:
-    from allure import attach
+    from allure import attach, step
     from allure import attachment_type as at
-    from allure import step
 
     yaml_type = at.YAML
 except ImportError:
     yaml_type = None
 
-    def attach(*args, **kwargs) -> None:  # pylint: disable=unused-argument
+    def attach(*args, **kwargs) -> None:
         logger.debug("Not attaching anything as allure is not installed")
 
-    def step(name):  # pylint: disable=unused-argument
+    def step(name):
         def call(step_func):
             return step_func
 

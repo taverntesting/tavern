@@ -166,6 +166,8 @@ calling run() directly will now cause a pytest isntance to be run in the backgro
 
 #  0.18.0          Add 'timeout' parameter for http requests (2018-08-24)
 
+##  show            Bump version: 0.17.2 → 0.18.0 (2018-08-24)
+
 ##  0.18.1          Add content type/encoding to uploaded files (2018-09-05)
 
 ##  0.18.2          Fix formatting environment variables in command line global config files (2018-09-21)
@@ -258,6 +260,8 @@ The initial 2 hooks should allow a user to do something before every test and af
 #  1.1.0           Add new global option to enable merging of keys from external functions (2020-05-01)
 
 ##  1.1.1           Travis fix (2020-05-23)
+
+##  travis-force    Attempt to force travis to commit (2020-05-23)
 
 ##  1.1.2           fforce new verison to make travis actually commit (2020-05-23)
 
@@ -396,3 +400,7 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  2.0.1           Bump some dependency versions (2023-01-16)
 
 ##  2.0.2           Fix saving in MQTT (2023-02-08)
+
+##  2.0.3           Add type annotations (internal change) (2023-02-10)
+
+##  2.0.4           Fix using ext functions in MQTT publish (2023-02-16)

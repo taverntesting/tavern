@@ -1,10 +1,10 @@
 import dataclasses
 import logging
-from queue import Empty, Full, Queue
 import ssl
 import threading
 import time
-from typing import Dict, Mapping, MutableMapping, Optional
+from queue import Empty, Full, Queue
+from typing import Dict, List, Mapping, MutableMapping, Optional
 
 import paho.mqtt.client as paho
 
@@ -68,28 +68,46 @@ def _handle_tls_args(
     if not tls_args:
         return None
 
-    if "enable" in tls_args:
-        if not tls_args["enable"]:
-            # if enable=false, return immediately
-            return None
+    if "enable" in tls_args and not tls_args["enable"]:
+        # if enable=false, return immediately
+        return None
+
+    _check_and_update_common_tls_args(tls_args, ["certfile", "keyfile"])
+
+    return tls_args
+
+
+def _handle_ssl_context_args(
+    ssl_context_args: MutableMapping,
+) -> Optional[Mapping]:
+    """Make sure SSL Context options are valid"""
+    if not ssl_context_args:
+        return None
+
+    _check_and_update_common_tls_args(
+        ssl_context_args, ["certfile", "keyfile", "cafile"]
+    )
+
+    return ssl_context_args
+
+
+def _check_and_update_common_tls_args(
+    tls_args: MutableMapping, check_file_keys: List[str]
+):
+    """Checks common args between ssl/tls args"""
+
+    # could be moved to schema validation stage
+    for key in check_file_keys:
+        if key in tls_args:
+            check_file_exists(key, tls_args[key])
 
     if "keyfile" in tls_args and "certfile" not in tls_args:
         raise exceptions.MQTTTLSError(
             "If specifying a TLS keyfile, a certfile also needs to be specified"
         )
 
-    # could be moved to schema validation stage
-    for key in ["certfile", "keyfile"]:
-        try:
-            check_file_exists(key, tls_args[key])
-        except KeyError:
-            pass
-
-    # This shouldn't raise an AttributeError because it's enumerated
-    try:
+    if "cert_reqs" in tls_args:
         tls_args["cert_reqs"] = getattr(ssl, tls_args["cert_reqs"])
-    except KeyError:
-        pass
 
     try:
         tls_args["tls_version"] = getattr(ssl, tls_args["tls_version"])
@@ -103,51 +121,8 @@ def _handle_tls_args(
     except KeyError:
         pass
 
-    return tls_args
-
-
-def _handle_ssl_context_args(
-    ssl_context_args: MutableMapping,
-) -> Optional[Mapping]:
-    """Make sure SSL Context options are valid"""
-    if not ssl_context_args:
-        return None
-
-    if "keyfile" in ssl_context_args and "certfile" not in ssl_context_args:
-        raise exceptions.MQTTTLSError(
-            "If specifying a TLS keyfile, a certfile also needs to be specified"
-        )
-
-    # could be moved to schema validation stage
-    check_file_exists("certfile", ssl_context_args["certfile"])
-    check_file_exists("keyfile", ssl_context_args["keyfile"])
-    if "cafile" in ssl_context_args:
-        check_file_exists("cafile", ssl_context_args["cafile"])
-
-    # This shouldn't raise an AttributeError because it's enumerated
-    try:
-        ssl_context_args["cert_reqs"] = getattr(ssl, ssl_context_args["cert_reqs"])
-    except KeyError:
-        pass
-
-    try:
-        ssl_context_args["tls_version"] = getattr(ssl, ssl_context_args["tls_version"])
-    except AttributeError as e:
-        raise exceptions.MQTTTLSError(
-            "Error getting TLS version from "
-            "ssl module - ssl module had no attribute '{}'. Check the "
-            "documentation for the version of python you're using to see "
-            "if this a valid option.".format(ssl_context_args["tls_version"])
-        ) from e
-    except KeyError:
-        pass
-
-    return ssl_context_args
-
 
 class MQTTClient:
-    # pylint: disable=too-many-instance-attributes,too-many-locals,too-many-statements
-
     def __init__(self, **kwargs) -> None:
         expected_blocks = {
             "client": {
@@ -319,7 +294,6 @@ class MQTTClient:
         Todo:
             If the queue is faull trigger an error in main thread somehow
         """
-        # pylint: disable=unused-argument
 
         logger.info("Received mqtt message on %s", message.topic)
 
@@ -338,7 +312,6 @@ class MQTTClient:
 
     @staticmethod
     def _on_connect(client, userdata, flags, rc) -> None:
-        # pylint: disable=unused-argument,protected-access
         logger.debug(
             "Client '%s' successfully connected to the broker with result code '%s'",
             client._client_id.decode(),
@@ -347,7 +320,6 @@ class MQTTClient:
 
     @staticmethod
     def _on_disconnect(client, userdata, rc) -> None:
-        # pylint: disable=unused-argument,protected-access
         if rc == paho.CONNACK_ACCEPTED:
             logger.debug(
                 "Client '%s' successfully disconnected from the broker with result code '%s'",
@@ -363,19 +335,16 @@ class MQTTClient:
 
     @staticmethod
     def _on_connect_fail(client, userdata) -> None:
-        # pylint: disable=unused-argument,protected-access
         logger.error(
             "Failed to connect client '%s' to the broker", client._client_id.decode()
         )
 
     @staticmethod
     def _on_socket_open(client, userdata, socket) -> None:
-        # pylint: disable=unused-argument
         logger.debug("MQTT socket opened")
 
     @staticmethod
     def _on_socket_close(client, userdata, socket) -> None:
-        # pylint: disable=unused-argument
         logger.debug("MQTT socket closed")
 
     def message_received(self, topic: str, timeout: int = 1):
@@ -396,18 +365,20 @@ class MQTTClient:
         sanitised = root_topic(topic)
 
         try:
-            msg = self._subscribed[self._subscription_mappings[sanitised]].queue.get(
-                block=True, timeout=timeout
-            )
+            with self._subscribe_lock:
+                queue = self._subscribed[self._subscription_mappings[sanitised]].queue
         except KeyError as e:
             raise exceptions.MQTTTopicException(
                 "Unregistered topic: {}".format(topic)
             ) from e
+
+        try:
+            msg = queue.get(block=True, timeout=timeout)
         except Empty:
             logger.error("Message not received after %d seconds", timeout)
             return None
-        else:
-            return msg
+
+        return msg
 
     def publish(self, topic, payload=None, qos=None, retain=None):
         """publish message using paho library"""
@@ -476,17 +447,17 @@ class MQTTClient:
         """
         logger.debug("Subscribing to topic '%s'", topic)
 
-        with self._subscribe_lock:
-            (status, mid) = self._client.subscribe(topic, *args, **kwargs)
+        (status, mid) = self._client.subscribe(topic, *args, **kwargs)
 
-            if status == 0:
-                sanitised = root_topic(topic)
+        if status == 0:
+            sanitised = root_topic(topic)
+            with self._subscribe_lock:
                 self._subscription_mappings[sanitised] = mid
                 self._subscribed[mid] = _Subscription(topic)
-            else:
-                raise exceptions.MQTTError(
-                    "Error subscribing to '{}' (err code {})".format(topic, status)
-                )
+        else:
+            raise exceptions.MQTTError(
+                "Error subscribing to '{}' (err code {})".format(topic, status)
+            )
 
     def unsubscribe_all(self) -> None:
         """Unsubscribe from all topics"""
@@ -495,7 +466,6 @@ class MQTTClient:
                 self._client.unsubscribe(subscription.topic)
 
     def _on_subscribe(self, client, userdata, mid: int, granted_qos) -> None:
-        # pylint: disable=unused-argument
         with self._subscribe_lock:
             if mid in self._subscribed:
                 self._subscribed[mid].subscribed = True
@@ -518,7 +488,6 @@ class MQTTClient:
         elapsed = 0.0
 
         while elapsed < self._connect_timeout:
-            # pylint: disable=protected-access
             if self._client.is_connected():
                 logger.debug("Connected to broker at %s", self._connect_args["host"])
                 return self

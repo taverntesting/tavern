@@ -1,10 +1,11 @@
 import concurrent
 import concurrent.futures
-from dataclasses import dataclass
+import contextlib
 import itertools
 import json
 import logging
 import time
+from dataclasses import dataclass
 from typing import List, Optional, Tuple, Union
 
 from paho.mqtt.client import MQTTMessage
@@ -58,8 +59,6 @@ class MQTTResponse(BaseResponse):
         Returns:
             dict: things to save to variables for the rest of this test
         """
-
-        # pylint: disable=too-many-statements
 
         # Get into class with metadata attached
         expected = self.expected["mqtt_responses"]
@@ -147,7 +146,6 @@ class MQTTResponse(BaseResponse):
         Returns:
             tuple(msg, list): The correct message (if any) and warnings from processing the message
         """
-        # pylint: disable=too-many-statements
 
         timeout = max(m.get("timeout", _default_timeout) for m in expected)
 
@@ -178,10 +176,8 @@ class MQTTResponse(BaseResponse):
 
             self.received_messages.append(msg)
 
-            try:
+            with contextlib.suppress(AttributeError):
                 msg.payload = msg.payload.decode("utf8")
-            except AttributeError:
-                pass
 
             attach_yaml(
                 {
@@ -253,9 +249,6 @@ class _MessageVerifier:
         self.warnings: List[str] = []
 
     def is_valid(self, msg: MQTTMessage) -> bool:
-
-        # pylint: disable=too-many-return-statements
-
         if time.time() > self.expires:
             return False
 
@@ -277,7 +270,6 @@ class _MessageVerifier:
                 return False
 
         if self.expected_payload is None:
-            # pylint: disable=no-else-break
             if msg.payload is None or msg.payload == "":
                 logger.info("Got message with no payload (as expected) on '%s'", topic)
                 return True
@@ -344,7 +336,7 @@ class _MessageVerifier:
             json_payload = True
 
             if payload.pop("$ext", None):
-                raise exceptions.InvalidExtBlockException(
+                raise exceptions.MisplacedExtBlockException(
                     "json",
                 )
         elif "payload" in expected:
