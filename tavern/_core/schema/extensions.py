@@ -122,6 +122,18 @@ def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path) -> bool:
     return True
 
 
+def check_usefixtures(value, rule_obj, path) -> bool:
+    err_msg = "'usefixtures' has to be a list with at least one item"
+
+    if not isinstance(value, (list, tuple)):
+        raise BadSchemaError(err_msg)
+
+    if not value:
+        raise BadSchemaError(err_msg)
+
+    return True
+
+
 def validate_grpc_status_is_valid_or_list_of_names(value, rule_obj, path):
     """Validate GRPC statuses https://github.com/grpc/grpc/blob/master/doc/statuscodes.md"""
     # pylint: disable=unused-argument
@@ -143,18 +155,6 @@ def is_grpc_status(value):
         if status.name == value:
             return True
     return False
-
-
-def check_usefixtures(value, rule_obj, path) -> bool:
-    err_msg = "'usefixtures' has to be a list with at least one item"
-
-    if not isinstance(value, (list, tuple)):
-        raise BadSchemaError(err_msg)
-
-    if not value:
-        raise BadSchemaError(err_msg)
-
-    return True
 
 
 def verify_oneof_id_name(value, rule_obj, path) -> bool:

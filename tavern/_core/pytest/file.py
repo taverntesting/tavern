@@ -4,10 +4,10 @@ import itertools
 import logging
 from typing import Dict, Iterator, List, Mapping
 
-import pytest
 import yaml
 from box import Box
 
+import pytest
 from tavern._core import exceptions
 from tavern._core.dict_util import deep_dict_merge, format_keys, get_tavern_box
 from tavern._core.extfunctions import get_wrapped_create_function, is_ext_function
