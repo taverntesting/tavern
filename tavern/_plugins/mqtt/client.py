@@ -313,7 +313,7 @@ class MQTTClient:
     @staticmethod
     def _on_connect(client, userdata, flags, rc) -> None:
         logger.debug(
-            "Client '%s' successfully connected to the broker with result code '%s'",
+            "Client '%s' connected to the broker with result code '%s'",
             client._client_id.decode(),
             paho.connack_string(rc),
         )
