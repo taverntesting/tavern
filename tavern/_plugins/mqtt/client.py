@@ -160,7 +160,7 @@ class MQTTClient:
         sanitised_kwargs = copy.deepcopy(kwargs)
         if auth := kwargs.get("auth"):
             if "password" in auth:
-                sanitised_kwargs["auth"]["password"] = "******"
+                sanitised_kwargs["auth"]["password"] = "******"  # noqa
 
         logger.debug("Initialising MQTT client with %s", sanitised_kwargs)
 
