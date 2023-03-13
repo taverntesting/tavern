@@ -6,6 +6,9 @@ includes:
   - !include common.yaml
 
 paho-mqtt: &mqtt_spec
+  auth:
+    username: tavern
+    password: tavern
   # tls:
   #   enable: true
   connect:
@@ -466,6 +469,9 @@ includes:
   - !include common.yaml
 
 paho-mqtt:
+  auth:
+    username: tavern
+    password: tavern
   client:
     transport: websockets
     client_id: tavern-tester-{random_device_id}

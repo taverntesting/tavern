@@ -1,3 +1,4 @@
+import copy
 import dataclasses
 import logging
 import ssl
@@ -156,7 +157,12 @@ class MQTTClient:
             },
         }
 
-        logger.debug("Initialising MQTT client with %s", kwargs)
+        sanitised_kwargs = copy.deepcopy(kwargs)
+        if auth := kwargs.get("auth"):
+            if "password" in auth:
+                sanitised_kwargs["auth"]["password"] = "******"  # noqa
+
+        logger.debug("Initialising MQTT client with %s", sanitised_kwargs)
 
         # check main block first
         check_expected_keys(expected_blocks.keys(), kwargs)
@@ -200,6 +206,7 @@ class MQTTClient:
         self._client.enable_logger()
 
         if self._auth_args:
+            logger.debug("authenticating as '%s'", self._auth_args.get("username"))
             self._client.username_pw_set(**self._auth_args)
 
         self._client.on_message = self._on_message
@@ -313,7 +320,7 @@ class MQTTClient:
     @staticmethod
     def _on_connect(client, userdata, flags, rc) -> None:
         logger.debug(
-            "Client '%s' successfully connected to the broker with result code '%s'",
+            "Client '%s' connected to the broker with result code '%s'",
             client._client_id.decode(),
             paho.connack_string(rc),
         )

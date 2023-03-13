@@ -18,6 +18,8 @@ DATABASE = os.environ.get("DB_NAME")
 def get_client():
     mqtt_client = paho.Client(transport="websockets", client_id="server")
     mqtt_client.enable_logger()
+    mqtt_client.username_pw_set(username="tavern", password="tavern")
+
     mqtt_client.connect(host="broker", port=9001)
 
     try:
