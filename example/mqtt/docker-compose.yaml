@@ -1,5 +1,5 @@
 ---
-version: '2'
+version: "2.4"
 
 services:
   server:
@@ -29,12 +29,19 @@ services:
       - fluent
 
   broker:
-    image: eclipse-mosquitto:1.4.12
+    image: eclipse-mosquitto:2.0.15
     ports:
       - "9001:9001"
       - "1883:1883"
     volumes:
-      - "./mosquitto.conf:/mosquitto/config/mosquitto.conf"
+      - target: /mosquitto/config/mosquitto.conf
+        source: ./mosquitto.conf
+        type: bind
+        read_only: true
+      - target: /mosquitto/config/mosquitto_passwd
+        source: ./mosquitto_passwd
+        type: bind
+        read_only: true
 
   fluent:
     image: fluent/fluentd
