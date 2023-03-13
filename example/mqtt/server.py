@@ -157,11 +157,19 @@ def create_device():
         )
 
     try:
-        next(row)
-    except StopIteration:
-        pass
+        r["clean"]
+    except (TypeError):
+        return jsonify({"error": "checking for clean key"}), 500
+    except KeyError:
+        try:
+            next(row)
+        except StopIteration:
+            pass
+        else:
+            return jsonify({"error": "device already exists"}), 400
     else:
-        return jsonify({"error": "device already exists"}), 400
+        with db:
+            db.execute("DELETE FROM devices_table")
 
     new_device = dict(lights_on=False, **r)
 

@@ -163,7 +163,7 @@ def on_message_callback(client, userdata, message):
         else:
             logging.warning("Got unexpected MQTT topic '%s'", message.topic)
     except Exception as e:
-        logging.exception(e)
+        logging.exception("error handling message: {}".format(e))
 
 
 def wait_for_messages():
