@@ -210,7 +210,9 @@ class ReprdError:
         tw.line("")
 
         if not stage:
-            tw.line("Stage not found", red=True, bold=True)
+            tw.line(
+                "[Could not determine which stage was running]", red=True, bold=True
+            )
         elif missing_format_vars:
             tw.line("Missing format vars for stage", red=True, bold=True)
         else:

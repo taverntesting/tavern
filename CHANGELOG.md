@@ -404,3 +404,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  2.0.3           Add type annotations (internal change) (2023-02-10)
 
 ##  2.0.4           Fix using ext functions in MQTT publish (2023-02-16)
+
+##  2.0.5           Attempt to fix deadlock in subscribe locks (2023-02-16)
