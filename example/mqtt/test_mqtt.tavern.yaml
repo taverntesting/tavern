@@ -27,6 +27,7 @@ stages:
       method: PUT
       json:
         device_id: "{random_device_id}"
+        clean: True
     response:
       status_code: 201
 
