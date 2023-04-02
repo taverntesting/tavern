@@ -1,4 +1,4 @@
-FROM python:3.5-slim-jessie
+FROM python:3.9-slim-buster
 
 RUN pip install grpcio grpcio-tools grpcio-reflection
 
