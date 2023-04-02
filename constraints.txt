@@ -107,10 +107,13 @@ grpcio==1.51.1
     # via
     #   grpcio-reflection
     #   grpcio-status
+    #   grpcio-tools
     #   tavern (pyproject.toml)
 grpcio-reflection==1.51.1
     # via tavern (pyproject.toml)
 grpcio-status==1.51.1
+    # via tavern (pyproject.toml)
+grpcio-tools==1.51.1
     # via tavern (pyproject.toml)
 httplib2==0.21.0
     # via
@@ -202,6 +205,7 @@ protobuf==4.22.0
     #   googleapis-common-protos
     #   grpcio-reflection
     #   grpcio-status
+    #   grpcio-tools
 py==1.11.0
     # via
     #   tavern (pyproject.toml)

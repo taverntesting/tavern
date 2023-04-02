@@ -5,6 +5,6 @@ services:
   server:
     build:
       context: .
-      dockerfile: server.Dockerfile
+      dockerfile: Dockerfile
     ports:
       - "50051:50051"
