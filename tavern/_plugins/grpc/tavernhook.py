@@ -18,16 +18,10 @@ request_type = GRPCRequest
 request_block_name = "grpc_request"
 
 
-def get_expected_from_request(stage, test_block_config, session):
-    # pylint: disable=unused-argument
-    # grpc response is not required
-    grpc_expected = stage.get("grpc_response")
-    if grpc_expected:
-        # format so we can subscribe to the right topic
-        f_expected = format_keys(grpc_expected, test_block_config["variables"])
-        expected = f_expected
-    else:
-        expected = {}
+def get_expected_from_request(response_block, test_block_config, session):
+    # format so we can subscribe to the right topic
+    f_expected = format_keys(response_block, test_block_config.variables)
+    expected = f_expected
 
     return expected
 
@@ -35,6 +29,6 @@ def get_expected_from_request(stage, test_block_config, session):
 verifier_type = GRPCResponse
 response_block_name = "grpc_response"
 
-schema_path = join(abspath(dirname(__file__)), "schema.yaml")
+schema_path = join(abspath(dirname(__file__)), "jsonschema.yaml")
 with open(schema_path, "r") as schema_file:
     schema = yaml.load(schema_file, Loader=yaml.SafeLoader)

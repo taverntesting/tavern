@@ -712,6 +712,10 @@ pre-commit==2.20.0 \
     --hash=sha256:51a5ba7c480ae8072ecdb6933df22d2f812dc897d5fe848778116129a681aac7 \
     --hash=sha256:a978dac7bc9ec0bcee55c18a277d553b0f419d259dadb4b9418ff2d00eb43959
     # via tavern (pyproject.toml)
+proto-plus==1.22.2 \
+    --hash=sha256:0e8cda3d5a634d9895b75c573c9352c16486cb75deb0e078b5fda34db4243165 \
+    --hash=sha256:de34e52d6c9c6fcd704192f09767cb561bb4ee64e70eede20b0834d841f0be4d
+    # via tavern (pyproject.toml)
 protobuf==4.22.0 \
     --hash=sha256:1669cb7524221a8e2d9008d0842453dbefdd0fcdd64d67672f657244867635fb \
     --hash=sha256:29288813aacaa302afa2381db1d6e0482165737b0afdf2811df5fa99185c457b \
@@ -732,6 +736,8 @@ protobuf==4.22.0 \
     #   grpcio-reflection
     #   grpcio-status
     #   grpcio-tools
+    #   proto-plus
+    #   tavern (pyproject.toml)
 py==1.11.0 \
     --hash=sha256:51c75c4126074b472f746a24399ad32f6053d1b34b68d2fa41e558e6f4a98719 \
     --hash=sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378

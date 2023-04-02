@@ -64,6 +64,12 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
         action="store",
         nargs=1,
     )
+    parser_addoption(
+        "--tavern-setup-init-logging",
+        help="Set up a simple logger for tavern initialisation. Only for internal use and debugging, may be removed in future with no warning.",
+        default=False,
+        action="store_true",
+    )
 
 
 def add_ini_options(parser: pytest.Parser) -> None:
@@ -109,6 +115,12 @@ def add_ini_options(parser: pytest.Parser) -> None:
         help="Regex to search for Tavern YAML test files",
         default=r".+\.tavern\.ya?ml$",
         type="args",
+    )
+    parser.addini(
+        "tavern-setup-init-logging",
+        help="Set up a simple logger for tavern initialisation. Only for internal use and debugging, may be removed in future with no warning.",
+        type="bool",
+        default=False,
     )
 
 

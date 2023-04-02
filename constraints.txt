@@ -199,6 +199,8 @@ pluggy==1.0.0
     #   tox
 pre-commit==2.20.0
     # via tavern (pyproject.toml)
+proto-plus==1.22.2
+    # via tavern (pyproject.toml)
 protobuf==4.22.0
     # via
     #   google-api-core
@@ -206,6 +208,8 @@ protobuf==4.22.0
     #   grpcio-reflection
     #   grpcio-status
     #   grpcio-tools
+    #   proto-plus
+    #   tavern (pyproject.toml)
 py==1.11.0
     # via
     #   tavern (pyproject.toml)

@@ -110,12 +110,12 @@ class BaseResponse:
         except exceptions.KeyMismatchError as e:
             self._adderr(e.args[0], e=e)
 
-    def _check_for_validate_functions(self, response_block) -> None:
+    def _check_for_validate_functions(self, response_block: Mapping) -> None:
         """
         See if there were any functions specified in the response block and save them for later use
 
         Args:
-            response_block (dict): block of external functions to call
+            response_block: block of external functions to call
         """
 
         def check_ext_functions(verify_block):

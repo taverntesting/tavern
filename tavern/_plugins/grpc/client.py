@@ -98,23 +98,14 @@ class GRPCClient(object):
         _proto_args = kwargs.pop("proto", {})
         check_expected_keys(expected_blocks["proto"], _proto_args)
 
-        host = "localhost"
-        port = "50051"
+        self.default_host = _connect_args["host"]
+        if port := _connect_args.get("port"):
+            self.default_host += ":{}".format(port)
 
-        if "host" in _connect_args:
-            host_arg = _connect_args["host"]
-            host_port = host_arg.split(":")
-
-            if len(host_port) == 2:
-                host = host_port[0]
-                port = host_port[1]
-            elif len(host_port) == 1:
-                host = host_arg
-
-        port = _connect_args.get("port", port)
-        self.default_host = "{}:{}".format(host, port)
         self.timeout = int(_connect_args.get("timeout", 5))
         self.tls = bool(_connect_args.get("tls", False))
+
+        logger.critical(self.default_host)
 
         self.channels = {}
         self.sym_db = _symbol_database.Default()

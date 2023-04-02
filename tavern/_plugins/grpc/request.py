@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 def get_grpc_args(rspec, test_block_config):
     """Format GRPC request args"""
 
-    fspec = format_keys(rspec, test_block_config["variables"])
+    fspec = format_keys(rspec, test_block_config.variables)
 
     if "json" in rspec:
         if "body" in rspec:
@@ -45,7 +45,7 @@ class GRPCRequest(BaseRequest):
         # Need to do this here because get_publish_args will modify the original
         # input, which we might want to use to format. No error handling because
         # all the error handling is done in the previous call
-        self._original_publish_args = format_keys(rspec, test_block_config["variables"])
+        self._original_publish_args = format_keys(rspec, test_block_config.variables)
 
     def run(self):
         try:
