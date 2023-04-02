@@ -1,6 +1,6 @@
 import copy
 import dataclasses
-from typing import Any
+from typing import Any, List
 
 from tavern._core.strict_util import StrictLevel
 
@@ -46,3 +46,9 @@ class TestConfig:
     def with_strictness(self, new_strict: StrictLevel) -> "TestConfig":
         """Create a copy of the config but with a new strictness setting"""
         return dataclasses.replace(self, strict=new_strict)
+
+    @staticmethod
+    def backends() -> List[str]:
+        # TODO: This is here in case in future we want to be able to turn some of these
+        #  on or off
+        return ["http", "mqtt", "grpc"]

@@ -77,7 +77,7 @@ class _PluginCache:
             self.plugins = self._load_plugins(config)
             return self.plugins
 
-    def _load_plugins(self, test_block_config):
+    def _load_plugins(self, test_block_config: TestConfig) -> List[Any]:
         """Load plugins from the 'tavern' entrypoint namespace
 
         This can be a module or a class as long as it defines the right things
@@ -88,13 +88,13 @@ class _PluginCache:
             - Different plugin names
 
         Args:
-            test_block_config (tavern.pytesthook.config.TestConfig): available config for test
+            test_block_config: available config for test
 
         Raises:
-            exceptions.MissingSettingsError: Description
+            exceptions.MissingSettingsError: invalid entry points set
 
         Returns:
-            list: Loaded plugins, can be a class or a module
+            Loaded plugins, can be a class or a module
         """
 
         plugins = []
@@ -104,7 +104,7 @@ class _PluginCache:
                 ext.name == test_block_config.tavern_internal.backends[current_backend]
             )
 
-        for backend in ["http", "mqtt", "grpc"]:
+        for backend in test_block_config.backends():
             namespace = "tavern_{}".format(backend)
 
             manager = stevedore.EnabledExtensionManager(

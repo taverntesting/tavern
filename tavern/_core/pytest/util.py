@@ -166,8 +166,7 @@ def _load_global_backends(pytest_config: pytest.Config) -> Dict[str, Any]:
     """Load which backend should be used"""
     backend_settings = {}
 
-    backends = ["http", "mqtt", "grpc"]
-    for b in backends:
+    for b in TestConfig.backends():
         backend_settings[b] = get_option_generic(
             pytest_config, "tavern-{}-backend".format(b), None
         )
