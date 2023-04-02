@@ -18,5 +18,28 @@ stages:
       body:
         name: "John"
     grpc_response:
+      status: "OK"
       body:
         message: "Hello, John!"
+
+---
+
+test_name: Test cannot use invalid string status
+
+includes:
+  - !include common.yaml
+
+grpc: *grpc_spec
+
+_xfail: verify
+
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.Greeter/SayHello
+      body:
+        name: "Jim"
+    grpc_response:
+      status: "GREETINGS"
+      body:
+        message: "Hello, Jim!"

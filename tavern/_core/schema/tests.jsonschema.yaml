@@ -262,7 +262,9 @@ definitions:
     type: object
     properties:
       status:
-        type: object # TODO: Add jsonschema validation
+        oneOf:
+          - type: string
+          - type: integer
 
       details:
         type: object

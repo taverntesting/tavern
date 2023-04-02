@@ -21,8 +21,6 @@ class GRPCResponse(BaseResponse):
 
         self._client = client
 
-        self.received_messages = []
-
     def __str__(self):
         if self.response:
             return self.response.payload
