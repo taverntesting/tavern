@@ -6,6 +6,9 @@ includes:
   - !include common.yaml
 
 paho-mqtt: &mqtt_spec
+  auth:
+    username: tavern
+    password: tavern
   # tls:
   #   enable: true
   connect:
@@ -19,6 +22,16 @@ paho-mqtt: &mqtt_spec
 _xfail: verify
 
 stages:
+  - &setup_device_for_test
+    name: create device
+    request:
+      url: "{host}/create_device"
+      method: PUT
+      json:
+        device_id: "{random_device_id}"
+    response:
+      status_code: 201
+
   - name: step 1 - ping/pong
     mqtt_publish:
       topic: /device/123/ping
@@ -41,6 +54,8 @@ paho-mqtt: *mqtt_spec
 _xfail: verify
 
 stages:
+  - *setup_device_for_test
+
   - name: step 1 - ping/pong
     mqtt_publish:
       topic: /device/123/ping
@@ -50,6 +65,36 @@ stages:
       payload: pong
       timeout: 5
       qos: weefwe
+
+---
+
+test_name: Test trying to connect with an invalid username/password fails
+
+includes:
+  - !include common.yaml
+
+_xfail: run
+
+paho-mqtt:
+    <<: *mqtt_spec
+    auth:
+      username: tavern
+      password: hhehehehh
+
+stages:
+  - *setup_device_for_test
+
+  - name: Echo json
+    mqtt_publish:
+      topic: /device/{random_device_id}/echo
+      json:
+        message: hello world
+    mqtt_response:
+      topic: /device/{random_device_id}/echo/response
+      json:
+        message: hello world
+      timeout: 5
+      qos: 1
 
 ---
 
@@ -63,6 +108,8 @@ paho-mqtt: *mqtt_spec
 _xfail: run
 
 stages:
+  - *setup_device_for_test
+
   - name: Test checking for lights status with anystr fails
     mqtt_publish:
       topic: /device/123/status
@@ -85,6 +132,8 @@ paho-mqtt: *mqtt_spec
 _xfail: run
 
 stages:
+  - *setup_device_for_test
+
   - name: Test checking for lights status with anyint
     mqtt_publish:
       topic: /device/123/status
@@ -98,45 +147,49 @@ stages:
 test_name: Test unexpected message fails
 
 includes:
-- !include common.yaml
+  - !include common.yaml
 
 paho-mqtt: *mqtt_spec
 
 _xfail: run
 
 stages:
-- name: step 1 - ping/pong
-  mqtt_publish:
-    topic: /devices/status
-  mqtt_response:
-  - topic: /device/456/status/response
-    payload: !anything
-    timeout: 2
-    qos: 1
-  - topic: /device/123/status/response
-    payload: !anything
-    timeout: 2
-    qos: 1
-    unexpected: true
+  - *setup_device_for_test
+
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /devices/status
+    mqtt_response:
+      - topic: /device/456/status/response
+        payload: !anything
+        timeout: 2
+        qos: 1
+      - topic: /device/123/status/response
+        payload: !anything
+        timeout: 2
+        qos: 1
+        unexpected: true
 
 ---
 
 test_name: Test unexpected message fails even on its own
 
 includes:
-- !include common.yaml
+  - !include common.yaml
 
 paho-mqtt: *mqtt_spec
 
 _xfail: run
 
 stages:
-- name: step 1 - ping/pong
-  mqtt_publish:
-    topic: /devices/status
-  mqtt_response:
-  - topic: /device/123/status/response
-    payload: !anything
-    timeout: 3
-    qos: 1
-    unexpected: true
+  - *setup_device_for_test
+
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /devices/status
+    mqtt_response:
+      - topic: /device/123/status/response
+        payload: !anything
+        timeout: 3
+        qos: 1
+        unexpected: true
