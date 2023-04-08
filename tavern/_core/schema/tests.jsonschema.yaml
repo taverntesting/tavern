@@ -249,10 +249,16 @@ definitions:
     required:
       - service
     properties:
+      host:
+        type: string
+
       service:
         type: string
 
-      proto_body:
+      body:
+        type: object
+
+      json:
         type: object
 
       retain:

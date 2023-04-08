@@ -24,6 +24,60 @@ stages:
 
 ---
 
+test_name: Test grpc message echo importing a module instead of compiling from source
+
+includes:
+  - !include common.yaml
+
+grpc:
+  connect:
+    host: "{grpc_host}"
+    port: !int "{grpc_port}"
+    timeout: 3
+  proto:
+    module: helloworld_pb2_grpc
+
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
+test_name: Test grpc message echo importing a module instead of compiling from source
+
+includes:
+  - !include common.yaml
+
+grpc:
+  connect:
+    host: "{grpc_host}"
+    port: !int "{grpc_port}"
+    timeout: 3
+  proto:
+    module: cool_grpc_server
+
+_xfail: run
+
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
 test_name: Test cannot use invalid string status
 
 includes:

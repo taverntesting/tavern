@@ -17,9 +17,6 @@ properties:
     properties:
       connect:
         type: object
-        required:
-          - host
-          - port
         properties:
           host:
             type: string
@@ -30,8 +27,10 @@ properties:
           keepalive:
             type: integer
           tls:
-            type: object
-            # TODO: tls options
+            type: boolean
+
+      attempt_reflection:
+        type: boolean
 
       metadata:
         type: object

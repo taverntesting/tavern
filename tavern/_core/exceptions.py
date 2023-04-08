@@ -58,6 +58,10 @@ class GRPCRequestException(TavernException):
     """Error making requests in GRPCRequest()"""
 
 
+class GRPCServiceException(TavernException):
+    """Some kind of error when trying to get the gRPC service"""
+
+
 class ProtoCompilerException(TavernException):
     """Some kind of error using protoc"""
 

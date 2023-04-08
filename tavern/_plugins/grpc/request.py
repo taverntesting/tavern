@@ -1,11 +1,14 @@
 import functools
 import json
 import logging
+from typing import Mapping
 
 from box import Box
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys, format_keys
+from tavern._core.pytest.config import TestConfig
+from tavern._plugins.grpc.client import GRPCClient
 from tavern.request import BaseRequest
 
 logger = logging.getLogger(__name__)
@@ -33,8 +36,10 @@ class GRPCRequest(BaseRequest):
     Similar to RestRequest, publishes a single message.
     """
 
-    def __init__(self, client, rspec, test_block_config):
-        expected = {"host", "service", "body"}
+    def __init__(
+        self, client: GRPCClient, rspec: Mapping, test_block_config: TestConfig
+    ):
+        expected = {"host", "retain", "service", "body", "json"}
 
         check_expected_keys(expected, rspec)
 
