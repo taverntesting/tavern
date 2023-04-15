@@ -29,6 +29,7 @@ stages:
       method: PUT
       json:
         device_id: "{random_device_id}"
+        clean: True
     response:
       status_code: 201
 
@@ -164,7 +165,8 @@ stages:
         payload: !anything
         timeout: 2
         qos: 1
-      - topic: /device/123/status/response
+        unexpected: true
+      - topic: /device/{random_device_id}/status/response
         payload: !anything
         timeout: 2
         qos: 1
@@ -188,7 +190,7 @@ stages:
     mqtt_publish:
       topic: /devices/status
     mqtt_response:
-      - topic: /device/123/status/response
+      - topic: /device/88466412/status/response
         payload: !anything
         timeout: 3
         qos: 1
