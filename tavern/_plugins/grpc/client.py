@@ -136,7 +136,8 @@ class GRPCClient:
         if proto_module := _proto_args.get("module"):
             if proto_module.endswith(".py"):
                 raise exceptions.GRPCServiceException(
-                    f"grpc module definitions should not end with .py, but got {proto_module}")
+                    f"grpc module definitions should not end with .py, but got {proto_module}"
+                )
 
             try:
                 _import_grpc_module(proto_module)
@@ -286,7 +287,9 @@ class GRPCClient:
             try:
                 request = json_format.ParseDict(body, request)
             except ParseError as e:
-                raise exceptions.GRPCRequestException("error creating request from json body") from e
+                raise exceptions.GRPCRequestException(
+                    "error creating request from json body"
+                ) from e
 
         logger.debug("Send request %s", request)
 

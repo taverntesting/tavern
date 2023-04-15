@@ -63,7 +63,9 @@ class YamlItem(pytest.Item):
 
         # _get_direct_parametrize_args checks parametrize arguments in Python
         # functions, but we don't care about that in Tavern.
-        self.session._fixturemanager._get_direct_parametrize_args = lambda _: []  # type: ignore
+        self.session._fixturemanager._get_direct_parametrize_args = (
+            lambda _: []
+        )  # type: ignore
 
         fixtureinfo = self.session._fixturemanager.getfixtureinfo(
             self, self.obj, type(self), funcargs=False
@@ -216,8 +218,18 @@ class YamlItem(pytest.Item):
                 logger.info("xfailing test while verifying schema")
                 self.add_marker(pytest.mark.xfail, True)
             raise
-        except exceptions.TavernException:
-            if xfail == "run":
+        except exceptions.TavernException as e:
+            if isinstance(xfail, dict):
+                if msg := xfail.get("run"):
+                    if msg not in str(e):
+                        raise Exception(
+                            f"error message did not match: expected '{msg}', got '{str(e)}'"
+                        )
+                    logger.info("xfailing test when running")
+                    self.add_marker(pytest.mark.xfail, True)
+                else:
+                    logger.warning("internal error checking 'xfail'")
+            elif xfail == "run":
                 logger.info("xfailing test when running")
                 self.add_marker(pytest.mark.xfail, True)
             raise

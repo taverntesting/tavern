@@ -24,6 +24,38 @@ stages:
       status: "OK"
       body:
         message: "Hello, John!"
+---
+
+test_name: Test trying to compile a folder with no protos in it
+
+includes:
+  - !include common.yaml
+
+marks:
+  - usefixtures:
+      - make_temp_dir
+
+_xfail:
+  run: "No protos defined in"
+
+grpc:
+  connect:
+    host: "{grpc_host}"
+    port: !int "{grpc_port}"
+    timeout: 3
+  proto:
+    source: "{make_temp_dir}"
+
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
 
 ---
 

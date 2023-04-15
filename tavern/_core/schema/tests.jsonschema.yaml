@@ -426,10 +426,17 @@ properties:
     description: Name of test
 
   _xfail:
-    type: string
-    enum:
-      - verify
-      - run
+    oneOf:
+      - type: string
+        enum:
+          - verify
+          - run
+      - type: object
+        properties:
+          verify:
+            type: string
+          run:
+            type: string
 
   marks:
     type: array
