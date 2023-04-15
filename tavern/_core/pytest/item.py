@@ -224,7 +224,7 @@ class YamlItem(pytest.Item):
                     if msg not in str(e):
                         raise Exception(
                             f"error message did not match: expected '{msg}', got '{str(e)}'"
-                        )
+                        ) from e
                     logger.info("xfailing test when running")
                     self.add_marker(pytest.mark.xfail, True)
                 else:

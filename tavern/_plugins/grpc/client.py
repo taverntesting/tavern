@@ -3,6 +3,7 @@ import logging
 import os
 import pkgutil
 import subprocess
+import sys
 import warnings
 from distutils.spawn import find_executable
 from importlib import import_module
@@ -10,7 +11,6 @@ from typing import Mapping, Optional
 
 import grpc
 import grpc_reflection
-import sys
 from google.protobuf import descriptor_pb2, json_format, message_factory
 from google.protobuf import symbol_database as _symbol_database
 from google.protobuf.json_format import ParseError
