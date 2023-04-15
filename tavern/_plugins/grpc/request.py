@@ -19,6 +19,8 @@ def get_grpc_args(rspec, test_block_config):
 
     fspec = format_keys(rspec, test_block_config.variables)
 
+    # FIXME: Clarify 'json' and 'body' for grpc requests
+    # FIXME 2: also it should allow proto text format. Maybe binary.
     if "json" in rspec:
         if "body" in rspec:
             raise exceptions.BadSchemaError(
