@@ -11,7 +11,7 @@ grpc: &grpc_spec
     port: !int "{grpc_port}"
     timeout: 3
   proto:
-    source: server
+    source: .
 
 
 stages:
@@ -39,6 +39,34 @@ grpc:
     timeout: 3
   proto:
     module: server/helloworld_pb2_grpc
+
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
+test_name: Test grpc message echo importing a module but its a path to a file
+
+includes:
+  - !include common.yaml
+
+_xfail: run
+
+grpc:
+  connect:
+    host: "{grpc_host}"
+    port: !int "{grpc_port}"
+    timeout: 3
+  proto:
+    module: server/helloworld_pb2_grpc.py
 
 stages:
   - name: Echo text
@@ -143,15 +171,13 @@ stages:
 
 ---
 
-test_name: Test grpc compiling source
+test_name: Test grpc compiling source, with a bad message
 
 includes:
   - !include common.yaml
 
-grpc:
-  <<: *grpc_spec
-  proto:
-    source: .
+grpc: *grpc_spec
+
 _xfail: run
 
 stages:
@@ -161,6 +187,7 @@ stages:
       service: helloworld.Greeter/SayHello
       body:
         name: "John"
+        A: klk
     grpc_response:
       status: "OK"
       body:

@@ -9,3 +9,4 @@ services:
     ports:
       - "50051:50051"
       - "50052:50052"
+    stop_grace_period: "1s"

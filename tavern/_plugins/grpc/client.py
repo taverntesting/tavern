@@ -13,6 +13,7 @@ import grpc_reflection
 import sys
 from google.protobuf import descriptor_pb2, json_format, message_factory
 from google.protobuf import symbol_database as _symbol_database
+from google.protobuf.json_format import ParseError
 from grpc_reflection.v1alpha import reflection_pb2, reflection_pb2_grpc
 from grpc_status import rpc_status
 
@@ -40,7 +41,8 @@ def find_protoc() -> str:
     )
 
 
-def _generate_proto_import(source, output):
+@functools.lru_cache
+def _generate_proto_import(source: str, output: str):
     """Invokes the Protocol Compiler to generate a _pb2.py from the given
     .proto file.  Does nothing if the output already exists and is newer than
     the input."""
@@ -57,25 +59,35 @@ def _generate_proto_import(source, output):
     protos = [
         os.path.join(source, child)
         for child in os.listdir(source)
-        if child.rsplit(".", 1)[-1] == "proto"
+        if (not os.path.isdir(child)) and child.endswith(".proto")
     ]
+
+    if not protos:
+        raise exceptions.ProtoCompilerException(
+            f"No protos defined in {os.path.abspath(source)}"
+        )
 
     protoc = find_protoc()
 
     protoc_command = [protoc, "-I" + source, "--python_out=" + output]
     protoc_command.extend(protos)
 
-    call = subprocess.run(protoc_command)
+    call = subprocess.run(protoc_command, capture_output=True)
     if call.returncode != 0:
-        raise exceptions.ProtoCompilerException(call.stdout)
+        logger.error(f"Error calling '{protoc_command}'")
+        raise exceptions.ProtoCompilerException(call.stderr.decode("utf8"))
+
+    logger.info(f"Generated module from protos: {protos}")
 
 
 def _import_grpc_module(output: str):
     output_path = []
-    if os.path.exists(output):
-        output_path.append(output)
+
+    py_module = output + ".py"
+    if os.path.exists(py_module):
+        output_path.append(py_module)
     else:
-        mod = import_module(output, output)
+        mod = import_module(output)
         output_path.extend(mod.__name__)
 
     sys.path.extend(output_path)
@@ -117,19 +129,26 @@ class GRPCClient:
         self.channels = {}
         self.sym_db = _symbol_database.Default()
 
-        proto_module = _proto_args.get("module", "proto")
         if proto_source := _proto_args.get("source"):
-            _generate_proto_import(proto_source, proto_module)
+            # TODO: Use a temp dir instead?
+            _generate_proto_import(proto_source, "proto")
 
-        if proto_module:
+        if proto_module := _proto_args.get("module"):
+            if proto_module.endswith(".py"):
+                raise exceptions.GRPCServiceException(
+                    f"grpc module definitions should not end with .py, but got {proto_module}")
+
             try:
                 _import_grpc_module(proto_module)
             except ImportError as e:
                 raise exceptions.GRPCServiceException(
-                    "error importing gRPC modules") from e
+                    "error importing gRPC modules"
+                ) from e
 
-    def _register_file_descriptor(self,
-        service_proto: grpc_reflection.v1alpha.reflection_pb2.FileDescriptorResponse):
+    def _register_file_descriptor(
+        self,
+        service_proto: grpc_reflection.v1alpha.reflection_pb2.FileDescriptorResponse,
+    ):
         for file_descriptor_proto in service_proto.file_descriptor_proto:
             proto = descriptor_pb2.FileDescriptorProto()
             proto.ParseFromString(file_descriptor_proto)
@@ -203,7 +222,9 @@ class GRPCClient:
             return grpc_method, input_type
 
         if not self._attempt_reflection:
-            logger.error("could not find service and gRPC reflection disabled, cannot continue")
+            logger.error(
+                "could not find service and gRPC reflection disabled, cannot continue"
+            )
             raise exceptions.GRPCServiceException(
                 "Service {} was not registered for host {}".format(service, host)
             )
@@ -221,8 +242,7 @@ class GRPCClient:
             except AttributeError:
                 status = rpc_status.from_call(rpc_error)
                 if status is None:
-                    logger.warning("Unknown error occurred in RPC call",
-                                   exc_info=True)
+                    logger.warning("Unknown error occurred in RPC call", exc_info=True)
                 else:
                     code = status.code
                     details = status.details
@@ -263,7 +283,10 @@ class GRPCClient:
 
         request = grpc_request()
         if body is not None:
-            request = json_format.ParseDict(body, request)
+            try:
+                request = json_format.ParseDict(body, request)
+            except ParseError as e:
+                raise exceptions.GRPCRequestException("error creating request from json body") from e
 
         logger.debug("Send request %s", request)
 
