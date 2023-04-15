@@ -63,8 +63,8 @@ class YamlItem(pytest.Item):
 
         # _get_direct_parametrize_args checks parametrize arguments in Python
         # functions, but we don't care about that in Tavern.
-        self.session._fixturemanager._get_direct_parametrize_args = (
-            lambda _: []
+        self.session._fixturemanager._get_direct_parametrize_args = (  # type: ignore
+            lambda _: []  # type: ignore
         )  # type: ignore
 
         fixtureinfo = self.session._fixturemanager.getfixtureinfo(

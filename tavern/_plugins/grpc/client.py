@@ -176,8 +176,8 @@ class GRPCClient:
         full_service_name = "{}.{}".format(service, method)
         try:
             grpc_service = self.sym_db.pool.FindMethodByName(full_service_name)
-            input_type = message_factory.GetMessageClass(grpc_service.input_type)
-            output_type = message_factory.GetMessageClass(grpc_service.output_type)
+            input_type = message_factory.GetMessageClass(grpc_service.input_type)  # type: ignore
+            output_type = message_factory.GetMessageClass(grpc_service.output_type)  # type: ignore
         except KeyError:
             return None, None
 
