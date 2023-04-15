@@ -53,6 +53,8 @@ jobs:
             TOXCFG: tox-integration.ini
           - TOXENV: py3-advanced
             TOXCFG: tox-integration.ini
+          - TOXENV: py3-grpc
+            TOXCFG: tox-integration.ini
 
     services:
       docker:
