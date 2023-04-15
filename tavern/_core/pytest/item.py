@@ -1,6 +1,8 @@
+import copy
+import dataclasses
 import logging
 import pathlib
-from typing import Optional, Tuple
+from typing import Optional, Tuple, List
 
 import attr
 import pytest
@@ -108,7 +110,7 @@ class YamlItem(pytest.Item):
     def _obj(self):
         return self.obj
 
-    def add_markers(self, pytest_marks) -> None:
+    def add_markers(self, pytest_marks: List[pytest.MarkDecorator]) -> None:
         for pm in pytest_marks:
             if pm.name == "usefixtures":
                 if (
@@ -124,8 +126,10 @@ class YamlItem(pytest.Item):
                 # usefixtures, which pytest then wraps in a tuple. we need to
                 # extract this tuple so pytest can use both fixtures.
                 if isinstance(pm.mark.args[0], (list, tuple)):
-                    new_mark = attr.evolve(pm.mark, args=pm.mark.args[0])
-                    pm = attr.evolve(pm, mark=new_mark)
+                    new_mark = copy.deepcopy(pm.mark)
+                    setattr(new_mark, "args", pm.mark.args[0])
+                    # new_mark = dataclasses.replace(pm.mark, args=pm.mark.args[0])
+                    pm = dataclasses.replace(pm, mark=new_mark)
                 elif isinstance(pm.mark.args[0], (dict)):
                     # We could raise a TypeError here instead, but then it's a
                     # failure at collection time (which is a bit annoying to
