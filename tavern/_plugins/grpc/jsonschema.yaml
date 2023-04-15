@@ -12,8 +12,6 @@ required:
 properties:
   grpc:
     type: object
-    required:
-      - connect
     properties:
       connect:
         type: object

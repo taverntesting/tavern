@@ -148,6 +148,7 @@ norecursedirs = [
     ".git",
     ".tox",
     "example",
+    "example/grpc/server"
 ]
 
 [tool.ruff]

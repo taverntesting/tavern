@@ -10,6 +10,9 @@ grpc: &grpc_spec
     host: "{grpc_host}"
     port: !int "{grpc_port}"
     timeout: 3
+  proto:
+    source: server
+
 
 stages:
   - name: Echo text
@@ -35,7 +38,7 @@ grpc:
     port: !int "{grpc_port}"
     timeout: 3
   proto:
-    module: helloworld_pb2_grpc
+    module: server/helloworld_pb2_grpc
 
 stages:
   - name: Echo text
@@ -50,7 +53,122 @@ stages:
 
 ---
 
-test_name: Test grpc message echo importing a module instead of compiling from source
+test_name: Test grpc connection without the 'connect' block
+
+includes:
+  - !include common.yaml
+
+grpc:
+  proto:
+    module: server/helloworld_pb2_grpc
+
+stages:
+  - name: Echo text
+    grpc_request:
+      host: "{grpc_host}:{grpc_port}"
+      service: helloworld.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
+test_name: Test grpc connection without the 'connect' block, with a bad message
+
+includes:
+  - !include common.yaml
+
+grpc:
+  proto:
+    module: server/helloworld_pb2_grpc
+
+_xfail: run
+
+stages:
+  - name: Echo text
+    grpc_request:
+      host: "{grpc_host}:{grpc_port}"
+      service: helloworld.Greeter/SayHello
+      body:
+        aarg: wooo
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
+test_name: Test grpc connection without the 'connect' block, using server reflection
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Echo text
+    grpc_request:
+      host: "{grpc_host}:{grpc_reflecting_port}"
+      service: helloworld.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
+test_name: Test grpc connection without the 'connect' block, using server reflection, with a bad message
+
+includes:
+  - !include common.yaml
+
+_xfail: run
+
+stages:
+  - name: Echo text
+    grpc_request:
+      host: "{grpc_host}:{grpc_reflecting_port}"
+      service: helloworld.Greeter/SayHello
+      body:
+        aarg: wooo
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
+test_name: Test grpc compiling source
+
+includes:
+  - !include common.yaml
+
+grpc:
+  <<: *grpc_spec
+  proto:
+    source: .
+_xfail: run
+
+stages:
+  - name: Echo text
+    grpc_request:
+      host: "{grpc_host}:{grpc_port}"
+      service: helloworld.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
+test_name: Test grpc message echo importing a module that doesn't exist
 
 includes:
   - !include common.yaml

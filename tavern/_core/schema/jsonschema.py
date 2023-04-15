@@ -165,7 +165,7 @@ def verify_jsonschema(to_verify, schema) -> None:
                 )
 
         msg = "\n---\n" + "\n---\n".join([str(i) for i in real_context])
-        raise BadSchemaError(msg) from None
+        raise BadSchemaError(msg) from e
 
     extra_checks = {
         "stages[*].mqtt_publish.json[]": validate_request_json,

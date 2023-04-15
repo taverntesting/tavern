@@ -3,14 +3,15 @@ import logging
 import os
 import pkgutil
 import subprocess
-import sys
 import warnings
 from distutils.spawn import find_executable
 from importlib import import_module
 from typing import Mapping, Optional
 
 import grpc
-from google.protobuf import descriptor_pb2, json_format
+import grpc_reflection
+import sys
+from google.protobuf import descriptor_pb2, json_format, message_factory
 from google.protobuf import symbol_database as _symbol_database
 from grpc_reflection.v1alpha import reflection_pb2, reflection_pb2_grpc
 from grpc_status import rpc_status
@@ -66,7 +67,7 @@ def _generate_proto_import(source, output):
 
     call = subprocess.run(protoc_command)
     if call.returncode != 0:
-        raise exceptions.ProtoCompilerException(call.stderr)
+        raise exceptions.ProtoCompilerException(call.stdout)
 
 
 def _import_grpc_module(output: str):
@@ -89,6 +90,7 @@ class GRPCClient:
             "connect": {"host", "port", "options", "compression", "timeout", "tls"},
             "proto": {"source", "module"},
             "metadata": {},
+            "attempt_reflection": {},
         }
         # check main block first
         check_expected_keys(expected_blocks.keys(), kwargs)
@@ -119,16 +121,19 @@ class GRPCClient:
         if proto_source := _proto_args.get("source"):
             _generate_proto_import(proto_source, proto_module)
 
-        try:
-            _import_grpc_module(proto_module)
-        except ImportError as e:
-            raise exceptions.GRPCServiceException("error importing gRPC modules") from e
+        if proto_module:
+            try:
+                _import_grpc_module(proto_module)
+            except ImportError as e:
+                raise exceptions.GRPCServiceException(
+                    "error importing gRPC modules") from e
 
-    def _register_file_descriptor(self, service_proto):
-        for d in service_proto.file_descriptor_proto:
-            file_descriptor_proto = service_proto.file_descriptor_proto[d]
+    def _register_file_descriptor(self,
+        service_proto: grpc_reflection.v1alpha.reflection_pb2.FileDescriptorResponse):
+        for file_descriptor_proto in service_proto.file_descriptor_proto:
             proto = descriptor_pb2.FileDescriptorProto()
             proto.ParseFromString(file_descriptor_proto)
+            logger.critical("ksdo")
             self.sym_db.pool.Add(proto)
 
     def _get_reflection_info(
@@ -151,8 +156,8 @@ class GRPCClient:
         full_service_name = "{}.{}".format(service, method)
         try:
             grpc_service = self.sym_db.pool.FindMethodByName(full_service_name)
-            input_type = self.sym_db.GetPrototype(grpc_service.input_type)
-            output_type = self.sym_db.GetPrototype(grpc_service.output_type)
+            input_type = message_factory.GetMessageClass(grpc_service.input_type)
+            output_type = message_factory.GetMessageClass(grpc_service.output_type)
         except KeyError:
             return None, None
 
@@ -197,24 +202,41 @@ class GRPCClient:
         if grpc_method and input_type:
             return grpc_method, input_type
 
-        if self._attempt_reflection:
+        if not self._attempt_reflection:
+            logger.error("could not find service and gRPC reflection disabled, cannot continue")
+            raise exceptions.GRPCServiceException(
+                "Service {} was not registered for host {}".format(service, host)
+            )
+
+        logger.info("service not registered, doing reflection from server")
+        try:
+            self._get_reflection_info(channel, service_name=service)
+        except (
+            grpc.RpcError
+        ) as rpc_error:  # Since this object is guaranteed to be a grpc.Call, might as well include that in its name.
+            code = details = None
             try:
-                self._get_reflection_info(channel, service_name=service)
-            except (
-                grpc.RpcError
-            ) as rpc_error:  # Since this object is guaranteed to be a grpc.Call, might as well include that in its name.
+                code = rpc_error.code()
+                details = rpc_error.details()
+            except AttributeError:
                 status = rpc_status.from_call(rpc_error)
                 if status is None:
-                    logger.warning("Unknown error occurred in RPC call", exc_info=True)
+                    logger.warning("Unknown error occurred in RPC call",
+                                   exc_info=True)
                 else:
-                    logger.warning(
-                        "Unable get %s service reflection information code %s detail %s",
-                        service,
-                        status.code,
-                        status.details,
-                        exc_info=True,
-                    )
-                raise exceptions.GRPCRequestException from rpc_error
+                    code = status.code
+                    details = status.details
+
+            if code and details:
+                logger.warning(
+                    "Unable get %s service reflection information code %s detail %s",
+                    service,
+                    code,
+                    details,
+                    exc_info=True,
+                )
+
+            raise exceptions.GRPCRequestException from rpc_error
 
         return self._get_grpc_service(channel, service, method)
 

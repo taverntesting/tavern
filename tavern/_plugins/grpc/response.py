@@ -15,8 +15,6 @@ class GRPCResponse(BaseResponse):
     def __init__(
         self, client, name: str, expected: Mapping, test_block_config: TestConfig
     ):
-        logger.critical(expected)
-
         super(GRPCResponse, self).__init__(name, expected, test_block_config)
 
         self._client = client
