@@ -78,7 +78,7 @@ filelock==3.8.2
     # via
     #   tox
     #   virtualenv
-flask==2.2.2
+flask==2.3.2
     # via tavern (pyproject.toml)
 flit==3.8.0
     # via tavern (pyproject.toml)
