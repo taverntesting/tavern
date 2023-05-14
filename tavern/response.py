@@ -131,9 +131,11 @@ class BaseResponse:
                     "Badly formatted 'verify_response_with' block"
                 )
 
-        mqtt_responses = response_block.get("mqtt_responses")
-        for mqtt_response in mqtt_responses:
-            check_ext_functions(mqtt_response.get("verify_response_with", None))
+        if mqtt_responses := response_block.get("mqtt_responses"):
+            for mqtt_response in mqtt_responses:
+                check_ext_functions(mqtt_response.get("verify_response_with", None))
+        else:
+            check_ext_functions(response_block.get("verify_response_with", None))
 
         def check_deprecated_validate(name):
             nfuncs = len(self.validate_functions)
