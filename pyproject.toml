@@ -61,7 +61,7 @@ dev = [
     "bump2version",
     "colorlog",
     "docker-compose",
-    "flask",
+    "flask>=2.2.3",
     "fluent-logger",
     "itsdangerous",
     "mypy",
