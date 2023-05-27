@@ -10,10 +10,10 @@ from requests.cookies import RequestsCookieJar
 
 from tavern._core import exceptions
 from tavern._core.extfunctions import update_from_ext
+from tavern._plugins.rest.files import get_file_arguments
 from tavern._plugins.rest.request import (
     RestRequest,
     _check_allow_redirects,
-    _get_file_arguments,
     _read_expected_cookies,
     get_request_args,
 )
@@ -400,14 +400,14 @@ class TestGetFiles:
 
         request_args = {}
 
-        assert _get_file_arguments(request_args, mock_stack, includes) == {}
+        assert get_file_arguments(request_args, mock_stack, includes) == {}
 
     def test_get_empty_files_list(self, mock_stack, includes):
         """No specific files specified -> no files"""
 
         request_args = {"files": {}}
 
-        assert _get_file_arguments(request_args, mock_stack, includes) == {}
+        assert get_file_arguments(request_args, mock_stack, includes) == {}
 
     def test_a_file(self, mock_stack, includes):
         """Json file should have the correct mimetype etc."""
@@ -415,7 +415,7 @@ class TestGetFiles:
         with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
             request_args = {"files": {"file1": tfile.name}}
 
-            file_spec = _get_file_arguments(request_args, mock_stack, includes)
+            file_spec = get_file_arguments(request_args, mock_stack, includes)
 
         file = file_spec["files"]["file1"]
         assert file[0] == os.path.basename(tfile.name)
@@ -435,7 +435,7 @@ class TestGetFiles:
                 }
             }
 
-            file_spec = _get_file_arguments(request_args, mock_stack, includes)
+            file_spec = get_file_arguments(request_args, mock_stack, includes)
 
         file = file_spec["files"]["file1"]
         assert file[0] == os.path.basename(tfile.name)
@@ -462,7 +462,7 @@ class TestGetFiles:
             includes.variables["tmpname"] = tfile.name
             request_args = {"files": {"file1": tfile.name}}
 
-            file_spec = _get_file_arguments(request_args, mock_stack, includes)
+            file_spec = get_file_arguments(request_args, mock_stack, includes)
 
         file = file_spec["files"]["file1"]
         assert file[0] == os.path.basename(tfile.name)
