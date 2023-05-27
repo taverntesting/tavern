@@ -82,7 +82,7 @@ class TestHttpRedirects:
 
     @pytest.mark.parametrize("do_follow", [True, False])
     def test_session_do_follow_redirects_based_on_global_flag(
-            self, req, includes, do_follow
+        self, req, includes, do_follow
     ):
         """Globally enable following redirects in test"""
 
@@ -361,7 +361,7 @@ class TestFileBody:
         req.pop("headers")
 
         with tempfile.NamedTemporaryFile(
-                encoding="utf8", mode="w", suffix=".json"
+            encoding="utf8", mode="w", suffix=".json"
         ) as tmpin:
             tmpin.write("OK")
 
@@ -379,7 +379,7 @@ class TestFileBody:
         req.pop("headers")
 
         with tempfile.NamedTemporaryFile(
-                encoding="utf8", mode="w", suffix=".tar.gz"
+            encoding="utf8", mode="w", suffix=".tar.gz"
         ) as tmpin:
             tmpin.write("OK")
 

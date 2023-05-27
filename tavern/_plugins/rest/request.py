@@ -428,9 +428,10 @@ class RestRequest(BaseRequest):
                     file = stack.enter_context(open(file_body, "rb"))
                     request_args.update(data=file)
                 else:
-                    self._request_args.update(
-                        get_file_arguments(request_args, stack, test_block_config)
-                    )
+                    files = get_file_arguments(request_args, stack, test_block_config)
+                    if files:
+                        logger.debug("Sending %d files in request", len(files["files"]))
+                        self._request_args.update(files)
 
                 headers = self._request_args.get("headers", {})
                 for k, v in headers.items():
