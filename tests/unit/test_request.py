@@ -2,10 +2,12 @@ import dataclasses
 import os
 import tempfile
 from contextlib import ExitStack
+from textwrap import dedent
 from unittest.mock import Mock
 
 import pytest
 import requests
+import yaml
 from requests.cookies import RequestsCookieJar
 
 from tavern._core import exceptions
@@ -80,7 +82,7 @@ class TestHttpRedirects:
 
     @pytest.mark.parametrize("do_follow", [True, False])
     def test_session_do_follow_redirects_based_on_global_flag(
-        self, req, includes, do_follow
+            self, req, includes, do_follow
     ):
         """Globally enable following redirects in test"""
 
@@ -359,7 +361,7 @@ class TestFileBody:
         req.pop("headers")
 
         with tempfile.NamedTemporaryFile(
-            encoding="utf8", mode="w", suffix=".json"
+                encoding="utf8", mode="w", suffix=".json"
         ) as tmpin:
             tmpin.write("OK")
 
@@ -377,7 +379,7 @@ class TestFileBody:
         req.pop("headers")
 
         with tempfile.NamedTemporaryFile(
-            encoding="utf8", mode="w", suffix=".tar.gz"
+                encoding="utf8", mode="w", suffix=".tar.gz"
         ) as tmpin:
             tmpin.write("OK")
 
@@ -466,3 +468,49 @@ class TestGetFiles:
 
         file = file_spec["files"]["file1"]
         assert file[0] == os.path.basename(tfile.name)
+
+    def test_grouped_file_names(self, mock_stack, includes):
+        """Parse grouped names appropriately"""
+        with tempfile.NamedTemporaryFile() as tfile:
+            raw_yaml_args = """
+                # Send file_1.txt and file_2.txt, both with name="input_files", in the multipart data.
+                - form_field_name: "input_files"
+                  file_path: "%FILENAME%"
+                  content_type: "application/customtype"
+                  content_encoding: "UTF16"
+                - form_field_name: "input_files"
+                  file_path: "%FILENAME%"
+                  content_type: "application/json"
+                """
+
+            raw_yaml_args = raw_yaml_args.replace("%FILENAME%", tfile.name)
+
+            file_args = yaml.safe_load(dedent(raw_yaml_args))
+
+            request_args = {"files": file_args}
+
+            parsed = get_file_arguments(request_args, mock_stack, includes)
+
+            parsed_into = {
+                "files": [
+                    (
+                        "input_files",
+                        (
+                            os.path.basename(tfile.name),
+                            mock_stack.enter_context.return_value,
+                            "application/customtype",
+                            {"Content-Encoding": "UTF16"},
+                        ),
+                    ),
+                    (
+                        "input_files",
+                        (
+                            os.path.basename(tfile.name),
+                            mock_stack.enter_context.return_value,
+                            "application/json",
+                        ),
+                    ),
+                ],
+            }
+
+        assert parsed_into == parsed

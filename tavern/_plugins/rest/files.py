@@ -3,7 +3,7 @@ import logging
 import mimetypes
 import os
 from contextlib import ExitStack
-from typing import Optional, Union
+from typing import Any, List, Optional, Tuple, Union
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -19,7 +19,7 @@ class _Filespec:
     path: str
     content_type: Optional[str] = None
     content_encoding: Optional[str] = None
-    group_name: Optional[str] = None
+    form_field_name: Optional[str] = None
 
 
 def _parse_filespec(filespec: Union[str, dict]) -> _Filespec:
@@ -53,7 +53,7 @@ def _parse_filespec(filespec: Union[str, dict]) -> _Filespec:
             path,
             filespec.get("content_type"),
             filespec.get("content_encoding"),
-            filespec.get("group_name"),
+            filespec.get("form_field_name"),
         )
     else:
         # Could remove, also done in schema check
@@ -64,7 +64,7 @@ def _parse_filespec(filespec: Union[str, dict]) -> _Filespec:
 
 def guess_filespec(
     filespec: Union[str, dict], stack: ExitStack, test_block_config: TestConfig
-):
+) -> Tuple[List, Optional[str]]:
     """tries to guess the content type and encoding from a file.
 
     Args:
@@ -73,10 +73,13 @@ def guess_filespec(
         filespec: a string path to a file or a dictionary of the file path, content type, and encoding.
 
     Returns:
-        A tuple of either length 2 (filename and file object), 3 (as before, with content type), or 4 (as before, with with content encoding)
+        A tuple of either length 2 (filename and file object), 3 (as before, with content type),
+            or 4 (as before, with with content encoding). If a group name for the multipart upload
+            was specified, this is also returned.
 
     Notes:
-        If a 4-tuple is returned, the last element is a dictionary of headers to send to requests, _not_ the raw encoding value.
+        If a 4-tuple is returned, the last element is a dictionary of headers to send to requests,
+            _not_ the raw encoding value.
     """
     if not mimetypes.inited:
         mimetypes.init()
@@ -111,7 +114,44 @@ def guess_filespec(
             # encoding is suitable for use as a Content-Encoding header.
             file_spec.append({"Content-Encoding": encoding})
 
-    return file_spec
+    return file_spec, parsed.form_field_name
+
+
+def _parse_file_mapping(file_args, stack, test_block_config) -> dict:
+    """Parses a simple mapping of uploads where each key is mapped to one form field name which has one file"""
+    files_to_send = {}
+    for key, filespec in file_args.items():
+        file_spec, form_field_name = guess_filespec(filespec, stack, test_block_config)
+
+        # If it's a dict then the key is used as the name, at least to maintain backwards compatability
+        if form_field_name:
+            logger.warning(
+                f"Specified 'form_field_name' as '{form_field_name}' in file spec, but the file name was inferred to be '{key}' from the mapping - the form_field_name will be ignored"
+            )
+
+        files_to_send[key] = tuple(file_spec)
+    return files_to_send
+
+
+def _parse_file_list(file_args, stack, test_block_config) -> List:
+    """Parses a case where there may be multiple files uploaded as part of one form field"""
+    files_to_send: List[Any] = []
+    for filespec in file_args:
+        file_spec, form_field_name = guess_filespec(filespec, stack, test_block_config)
+
+        if not form_field_name:
+            raise exceptions.BadSchemaError(
+                "If specifying a list of files to upload for a multi part upload, the 'form_field_name' key must also be specified for each file to upload"
+            )
+
+        files_to_send.append(
+            (
+                form_field_name,
+                tuple(file_spec),
+            )
+        )
+
+    return files_to_send
 
 
 def get_file_arguments(
@@ -130,12 +170,18 @@ def get_file_arguments(
         mapping of 'files' block to pass directly to requests
     """
 
-    files_to_send = {}
+    files_to_send: Optional[Union[dict, List]] = None
 
-    for key, filespec in request_args.get("files", {}).items():
-        file_spec = guess_filespec(filespec, stack, test_block_config)
+    file_args = request_args.get("files")
 
-        files_to_send[key] = tuple(file_spec)
+    if isinstance(file_args, dict):
+        files_to_send = _parse_file_mapping(file_args, stack, test_block_config)
+    elif isinstance(file_args, list):
+        files_to_send = _parse_file_list(file_args, stack, test_block_config)
+    elif file_args is not None:
+        raise exceptions.BadSchemaError(
+            f"'files' key in a HTTP request can only be a dict or a list but was {type(file_args)}"
+        )
 
     if files_to_send:
         return {"files": files_to_send}

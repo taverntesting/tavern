@@ -93,7 +93,14 @@ def get_request_args(rspec: MutableMapping, test_block_config: TestConfig) -> di
     filename = fspec.get("file_body")
     if filename:
         with ExitStack() as stack:
-            file_spec = guess_filespec(filename, stack, test_block_config)
+            file_spec, group_name = guess_filespec(filename, stack, test_block_config)
+
+            # Group name doesn't matter here as it's a single file
+            if group_name:
+                logger.warning(
+                    f"'group_name' for the 'file_body' key was specified as '{group_name}' but this will be ignored "
+                )
+
             fspec["file_body"] = filename
             if len(file_spec) == 2:
                 logger.debug(
