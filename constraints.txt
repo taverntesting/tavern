@@ -46,7 +46,7 @@ coverage==7.0.0
     # via
     #   pytest-cov
     #   tavern (pyproject.toml)
-cryptography==39.0.1
+cryptography==41.0.0
     # via
     #   paramiko
     #   secretstorage
