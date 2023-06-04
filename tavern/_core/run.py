@@ -317,7 +317,7 @@ def run_stage(
 
     response = r.run()
 
-    tinctures.end_tinctures(response)
+    tinctures.end_tinctures(expected, response)
 
     for response_type, response_verifiers in verifiers.items():
         logger.debug("Running verifiers for %s", response_type)

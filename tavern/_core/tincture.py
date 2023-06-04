@@ -23,7 +23,7 @@ class Tinctures:
                 self._needs_response.append(r)
                 next(r)
 
-    def end_tinctures(self, response) -> None:
+    def end_tinctures(self, expected, response) -> None:
         """
         Send the response object to any tinctures that want it
 
@@ -37,7 +37,7 @@ class Tinctures:
 
         for n in self._needs_response:
             try:
-                n.send(response)
+                n.send((expected, response))
             except StopIteration:
                 pass
             else:
