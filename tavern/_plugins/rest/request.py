@@ -196,7 +196,7 @@ def get_request_args(rspec: MutableMapping, test_block_config: TestConfig) -> di
     # https://developer.mozilla.org/en-US/docs/Web/HTTP/Methods
     if request_args["method"] in ["GET", "HEAD", "OPTIONS"]:
         if any(i in request_args for i in ["json", "data"]):
-            warnings.warn(
+            warnings.warn(  # noqa
                 "You are trying to send a body with a HTTP verb that has no semantic use for it",
                 RuntimeWarning,
             )

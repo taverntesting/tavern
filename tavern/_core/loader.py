@@ -445,7 +445,7 @@ def load_single_document_yaml(filename: os.PathLike) -> dict:
 
     with open(filename, "r", encoding="utf-8") as fileobj:
         try:
-            contents = yaml.load(fileobj, Loader=IncludeLoader)  # noqa
+            contents = yaml.load(fileobj, Loader=IncludeLoader)  # type:ignore # noqa
         except yaml.composer.ComposerError as e:
             msg = "Expected only one document in this file but found multiple"
             raise exceptions.UnexpectedDocumentsError(msg) from e
