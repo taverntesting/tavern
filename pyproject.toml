@@ -21,7 +21,7 @@ keywords = ["testing", "pytest"]
 
 name = "tavern"
 description = "Simple testing of RESTful APIs"
-version = "2.0.3"
+version = "2.1.0"
 
 dependencies = [
     "PyYAML>=5.3.1,<7",
@@ -30,7 +30,7 @@ dependencies = [
     "paho-mqtt>=1.3.1,<=1.6.1",
     "pyjwt>=2.4.0,<3",
     "pykwalify>=1.8.0,<2",
-    "pytest>=7,<8",
+    "pytest>=7,<7.3",
     "python-box>=6,<7",
     "requests>=2.22.0,<3",
     "stevedore>=4,<5",
@@ -57,11 +57,11 @@ Source = "https://github.com/taverntesting/tavern"
 dev = [
     "Faker",
     "allure-pytest",
-    "black==23.1.0",
+    "black==23.3.0",
     "bump2version",
     "colorlog",
     "docker-compose",
-    "flask",
+    "flask>=2.2.3",
     "fluent-logger",
     "itsdangerous",
     "mypy",
@@ -73,13 +73,15 @@ dev = [
     "pre-commit",
     "pygments",
     "pytest-cov",
-    "ruff>=0.0.246",
+    "ruff>=0.0.270",
     "pytest-xdist",
     "py",
     "tox>=3,<4",
     "tox-travis",
     "twine",
     "wheel",
+    "types-setuptools",
+    "types-requests",
     # This has to be installed separately, otherwise you can't upload to pypi
     # "tbump@https://github.com/michaelboulton/tbump/archive/714ba8957a3c84b625608ceca39811ebe56229dc.zip",
 ]
@@ -132,6 +134,7 @@ addopts = [
     "--strict-markers",
     "-p", "no:logging",
     "--tb=short",
+    "--color=yes"
 ]
 norecursedirs = [
     ".git",
@@ -146,6 +149,7 @@ ignore = [
     "B905", # zip(..., strict=True) only valid from 3.10+
     "PLR0912", "PLR0915", "PLR0911", "PLR0913", # too many branches/variables/return values - sometimes this is just unavoidable
     "PLR2004", # 'magic numbers'
+    "PLW2901", # Loop variable overridden
 ]
 select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL"]
 # Look at: UP
@@ -158,7 +162,7 @@ target-version = "py38"
 known-first-party = ["tavern"]
 
 [tool.tbump.version]
-current = "2.0.3"
+current = "2.1.0"
 
 regex = '''
   (?P<major>\d+)

@@ -105,21 +105,18 @@ class RestResponse(BaseResponse):
                 "Status code '%s' matched expected '%s'", status_code, expected_code
             )
             return
+        elif 400 <= status_code < 500:
+            # special case if there was a bad request. This assumes that the
+            # response would contain some kind of information as to why this
+            # request was rejected.
+            self._adderr(
+                "Status code was %s, expected %s:\n%s",
+                status_code,
+                expected_code,
+                indent_err_text(json.dumps(body)),
+            )
         else:
-            if 400 <= status_code < 500:
-                # special case if there was a bad request. This assumes that the
-                # response would contain some kind of information as to why this
-                # request was rejected.
-                self._adderr(
-                    "Status code was %s, expected %s:\n%s",
-                    status_code,
-                    expected_code,
-                    indent_err_text(json.dumps(body)),
-                )
-            else:
-                self._adderr(
-                    "Status code was %s, expected %s", status_code, expected_code
-                )
+            self._adderr("Status code was %s, expected %s", status_code, expected_code)
 
     def verify(self, response: requests.Response) -> dict:
         """Verify response against expected values and returns any values that
@@ -218,7 +215,7 @@ class RestResponse(BaseResponse):
 
         if isinstance(expected_block, dict):
             if expected_block.pop("$ext", None):
-                raise exceptions.InvalidExtBlockException(
+                raise exceptions.MisplacedExtBlockException(
                     blockname,
                 )
 

@@ -6,7 +6,7 @@ import json
 import logging
 import time
 from dataclasses import dataclass
-from typing import List, Optional, Tuple, Union
+from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 from paho.mqtt.client import MQTTMessage
 
@@ -135,13 +135,14 @@ class MQTTResponse(BaseResponse):
         return saved
 
     def _await_messages_on_topic(
-        self, topic: str, expected
+        self, topic: str, expected: List[Dict]
     ) -> Tuple[List["_ReturnedMessage"], List[str]]:
         """
         Waits for the specific message
 
         Args:
-            expected (list): expected response for this block
+            topic: topic to listen on
+            expected: expected response for this block
 
         Returns:
             tuple(msg, list): The correct message (if any) and warnings from processing the message
@@ -269,7 +270,7 @@ class _MessageVerifier:
                 return False
 
         if self.expected_payload is None:
-            if msg.payload is None or msg.payload == "":
+            if msg.payload is None or msg.payload == "":  # noqa
                 logger.info("Got message with no payload (as expected) on '%s'", topic)
                 return True
             else:
@@ -317,7 +318,7 @@ class _MessageVerifier:
         return False
 
     @staticmethod
-    def _get_payload_vals(expected) -> Tuple[Optional[Union[str, dict]], bool]:
+    def _get_payload_vals(expected: Mapping) -> Tuple[Optional[Union[str, dict]], bool]:
         """Gets the payload from the 'expected' block
 
         Returns:
@@ -335,7 +336,7 @@ class _MessageVerifier:
             json_payload = True
 
             if payload.pop("$ext", None):
-                raise exceptions.InvalidExtBlockException(
+                raise exceptions.MisplacedExtBlockException(
                     "json",
                 )
         elif "payload" in expected:

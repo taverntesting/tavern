@@ -18,6 +18,8 @@ DATABASE = os.environ.get("DB_NAME")
 def get_client():
     mqtt_client = paho.Client(transport="websockets", client_id="server")
     mqtt_client.enable_logger()
+    mqtt_client.username_pw_set(username="tavern", password="tavern")
+
     mqtt_client.connect(host="broker", port=9001)
 
     try:
@@ -40,7 +42,6 @@ def get_cached_db():
     return db
 
 
-@app.before_first_request
 def setup_logging():
     log_cfg = """
 version: 1
@@ -155,11 +156,19 @@ def create_device():
         )
 
     try:
-        next(row)
-    except StopIteration:
-        pass
+        r["clean"]
+    except (TypeError):
+        return jsonify({"error": "checking for clean key"}), 500
+    except KeyError:
+        try:
+            next(row)
+        except StopIteration:
+            pass
+        else:
+            return jsonify({"error": "device already exists"}), 400
     else:
-        return jsonify({"error": "device already exists"}), 400
+        with db:
+            db.execute("DELETE FROM devices_table")
 
     new_device = dict(lights_on=False, **r)
 
@@ -198,5 +207,6 @@ def _reset_db(db):
 
 
 if __name__ == "__main__":
+    setup_logging()
     db = get_db()
     _reset_db(db)

@@ -1,3 +1,4 @@
+import copy
 import dataclasses
 import logging
 import ssl
@@ -156,7 +157,12 @@ class MQTTClient:
             },
         }
 
-        logger.debug("Initialising MQTT client with %s", kwargs)
+        sanitised_kwargs = copy.deepcopy(kwargs)
+        if auth := kwargs.get("auth"):
+            if "password" in auth:
+                sanitised_kwargs["auth"]["password"] = "******"  # noqa
+
+        logger.debug("Initialising MQTT client with %s", sanitised_kwargs)
 
         # check main block first
         check_expected_keys(expected_blocks.keys(), kwargs)
@@ -200,6 +206,7 @@ class MQTTClient:
         self._client.enable_logger()
 
         if self._auth_args:
+            logger.debug("authenticating as '%s'", self._auth_args.get("username"))
             self._client.username_pw_set(**self._auth_args)
 
         self._client.on_message = self._on_message
@@ -313,7 +320,7 @@ class MQTTClient:
     @staticmethod
     def _on_connect(client, userdata, flags, rc) -> None:
         logger.debug(
-            "Client '%s' successfully connected to the broker with result code '%s'",
+            "Client '%s' connected to the broker with result code '%s'",
             client._client_id.decode(),
             paho.connack_string(rc),
         )
@@ -365,18 +372,20 @@ class MQTTClient:
         sanitised = root_topic(topic)
 
         try:
-            msg = self._subscribed[self._subscription_mappings[sanitised]].queue.get(
-                block=True, timeout=timeout
-            )
+            with self._subscribe_lock:
+                queue = self._subscribed[self._subscription_mappings[sanitised]].queue
         except KeyError as e:
             raise exceptions.MQTTTopicException(
                 "Unregistered topic: {}".format(topic)
             ) from e
+
+        try:
+            msg = queue.get(block=True, timeout=timeout)
         except Empty:
             logger.error("Message not received after %d seconds", timeout)
             return None
-        else:
-            return msg
+
+        return msg
 
     def publish(self, topic, payload=None, qos=None, retain=None):
         """publish message using paho library"""
@@ -445,17 +454,17 @@ class MQTTClient:
         """
         logger.debug("Subscribing to topic '%s'", topic)
 
-        with self._subscribe_lock:
-            (status, mid) = self._client.subscribe(topic, *args, **kwargs)
+        (status, mid) = self._client.subscribe(topic, *args, **kwargs)
 
-            if status == 0:
-                sanitised = root_topic(topic)
+        if status == 0:
+            sanitised = root_topic(topic)
+            with self._subscribe_lock:
                 self._subscription_mappings[sanitised] = mid
                 self._subscribed[mid] = _Subscription(topic)
-            else:
-                raise exceptions.MQTTError(
-                    "Error subscribing to '{}' (err code {})".format(topic, status)
-                )
+        else:
+            raise exceptions.MQTTError(
+                "Error subscribing to '{}' (err code {})".format(topic, status)
+            )
 
     def unsubscribe_all(self) -> None:
         """Unsubscribe from all topics"""
