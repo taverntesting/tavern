@@ -2,7 +2,6 @@ import importlib
 import json
 import logging
 import re
-import time
 from typing import Dict, List, Optional
 
 import jmespath
@@ -224,16 +223,3 @@ def check_jmespath_match(parsed_response, query: str, expected: Optional[str] = 
         raise exceptions.JMESError(msg)
 
     return actual
-
-
-def time_request(_):
-    t0 = time.time()
-    yield
-    t1 = time.time()
-    logger.warning("Request took %s", t1 - t0)
-
-
-def print_response(_, extra_print="affa"):
-    logger.warning("STARTING:")
-    (_, r) = yield
-    logger.warning("Response is %s (%s)", r, extra_print)
