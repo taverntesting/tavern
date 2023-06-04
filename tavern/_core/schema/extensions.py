@@ -138,7 +138,7 @@ def verify_oneof_id_name(value, rule_obj, path) -> bool:
 
     name = value.get("name")
     if not name:
-        if name == "":
+        if name == "":  # noqa
             raise BadSchemaError("Name cannot be empty")
 
         if not value.get("id"):

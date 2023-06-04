@@ -57,7 +57,7 @@ Source = "https://github.com/taverntesting/tavern"
 dev = [
     "Faker",
     "allure-pytest",
-    "black==23.1.0",
+    "black==23.3.0",
     "bump2version",
     "colorlog",
     "docker-compose",
@@ -73,7 +73,7 @@ dev = [
     "pre-commit",
     "pygments",
     "pytest-cov",
-    "ruff>=0.0.246",
+    "ruff>=0.0.270",
     "pytest-xdist",
     "py",
     "tox>=3,<4",
@@ -149,6 +149,7 @@ ignore = [
     "B905", # zip(..., strict=True) only valid from 3.10+
     "PLR0912", "PLR0915", "PLR0911", "PLR0913", # too many branches/variables/return values - sometimes this is just unavoidable
     "PLR2004", # 'magic numbers'
+    "PLW2901", # Loop variable overridden
 ]
 select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL"]
 # Look at: UP
