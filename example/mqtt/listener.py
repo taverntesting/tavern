@@ -14,6 +14,7 @@ DATABASE = os.environ.get("DB_NAME")
 def get_client():
     mqtt_client = paho.Client(transport="websockets", client_id="listener")
     mqtt_client.enable_logger()
+    mqtt_client.username_pw_set(username="tavern", password="tavern")
     mqtt_client.connect_async(host="broker", port=9001)
 
     return mqtt_client
@@ -162,7 +163,7 @@ def on_message_callback(client, userdata, message):
         else:
             logging.warning("Got unexpected MQTT topic '%s'", message.topic)
     except Exception as e:
-        logging.exception(e)
+        logging.exception("error handling message: {}".format(e))
 
 
 def wait_for_messages():

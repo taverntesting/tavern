@@ -2,7 +2,8 @@
 
 set -ex
 
-ruff tavern
+ruff tavern tests --fix
+black tavern tests
 
 # Separate as isort can interfere with other testenvs
 tox --parallel -c tox.ini        \

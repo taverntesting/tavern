@@ -1,7 +1,7 @@
 import functools
 import json
 import logging
-from typing import Mapping
+from typing import Dict
 
 from box.box import Box
 
@@ -16,20 +16,18 @@ from tavern.request import BaseRequest
 logger = logging.getLogger(__name__)
 
 
-def get_publish_args(rspec: Mapping, test_block_config: TestConfig) -> dict:
-    """Format mqtt request args
-
-    Todo:
-        Anything else to do here?
-    """
+def get_publish_args(rspec: Dict, test_block_config: TestConfig) -> dict:
+    """Format mqtt request args and update using ext functions"""
 
     fspec = format_keys(rspec, test_block_config.variables)
 
-    if "json" in rspec:
-        if "payload" in rspec:
+    if "json" in fspec:
+        if "payload" in fspec:
             raise exceptions.BadSchemaError(
                 "Can only specify one of 'payload' or 'json' in MQTT request"
             )
+
+        update_from_ext(fspec, ["json"])
 
         fspec["payload"] = json.dumps(fspec.pop("json"))
 
@@ -43,15 +41,15 @@ class MQTTRequest(BaseRequest):
     """
 
     def __init__(
-        self, client: MQTTClient, rspec: Mapping, test_block_config: TestConfig
+        self, client: MQTTClient, rspec: Dict, test_block_config: TestConfig
     ) -> None:
         expected = {"topic", "payload", "json", "qos", "retain"}
 
         check_expected_keys(expected, rspec)
 
         publish_args = get_publish_args(rspec, test_block_config)
-        update_from_ext(publish_args, ["json"])
 
+        self._publish_args = publish_args
         self._prepared = functools.partial(client.publish, **publish_args)
 
         # Need to do this here because get_publish_args will modify the original

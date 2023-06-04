@@ -6,6 +6,9 @@ includes:
   - !include common.yaml
 
 paho-mqtt: &mqtt_spec
+  auth:
+    username: tavern
+    password: tavern
   # tls:
   #   enable: true
   connect:
@@ -24,6 +27,7 @@ stages:
       method: PUT
       json:
         device_id: "{random_device_id}"
+        clean: True
     response:
       status_code: 201
 
@@ -466,6 +470,9 @@ includes:
   - !include common.yaml
 
 paho-mqtt:
+  auth:
+    username: tavern
+    password: tavern
   client:
     transport: websockets
     client_id: tavern-tester-{random_device_id}
@@ -740,3 +747,28 @@ stages:
       payload: "there"
       timeout: 5
       qos: 1
+
+---
+
+test_name: Update an MQTT publish from an ext function
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - *setup_device_for_test
+
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /device/{random_device_id}/echo
+      json:
+        $ext:
+          function: testing_utils:return_hello
+    mqtt_response:
+        topic: /device/{random_device_id}/echo/response
+        timeout: 3
+        qos: 1
+        json:
+          hello: there
