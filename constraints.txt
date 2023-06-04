@@ -269,6 +269,12 @@ twine==4.0.2
     # via tavern (pyproject.toml)
 types-pyyaml==6.0.12.2
     # via tavern (pyproject.toml)
+types-requests==2.31.0.0
+    # via tavern (pyproject.toml)
+types-setuptools==67.8.0.0
+    # via tavern (pyproject.toml)
+types-urllib3==1.26.25.13
+    # via types-requests
 typing-extensions==4.4.0
     # via mypy
 urllib3==1.26.13

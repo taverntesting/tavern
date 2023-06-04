@@ -162,7 +162,9 @@ definitions:
         description: Path to a file to upload as the request body
 
       files:
-        type: object
+        oneOf:
+          - type: object
+          - type: array
         description: Files to send as part of the request
 
       clear_session_cookies:
