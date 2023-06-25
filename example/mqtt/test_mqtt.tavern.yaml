@@ -68,6 +68,31 @@ stages:
 
 ---
 
+test_name: Test mqtt wildcard subscription
+
+includes:
+  - !include common.yaml
+
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - *setup_device_for_test
+
+  - name: Echo json
+    mqtt_publish:
+      topic: /device/{random_device_id}/echo
+      json:
+        message: hello world
+    mqtt_response:
+      topic: /device/+/echo/response
+      json:
+        message: hello world
+      timeout: 5
+      qos: 1
+
+---
+
 test_name: Test mqtt message echo json formatted topic name
 
 marks:
