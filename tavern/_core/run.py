@@ -194,7 +194,7 @@ def run_test(
                     break
         finally:
             for idx, stage in enumerate(test_spec.get("finally", [])):
-                runner.run_stage(idx, stage)
+                runner.run_stage(idx, stage, is_final=True)
 
 
 def _calculate_stage_strictness(
@@ -266,7 +266,7 @@ class _TestRunner:
     test_block_config: TestConfig
     test_spec: Mapping
 
-    def run_stage(self, idx: int, stage):
+    def run_stage(self, idx: int, stage, *, is_final: bool = False):
         stage_config = self.test_block_config.with_strictness(
             self.default_global_strictness
         )
@@ -286,6 +286,7 @@ class _TestRunner:
         except exceptions.TavernException as e:
             e.stage = stage
             e.test_block_config = stage_config
+            e.is_final = is_final
             raise
 
     def wrapped_run_stage(self, stage: dict, stage_config: TestConfig):

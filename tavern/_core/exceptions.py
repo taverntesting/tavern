@@ -5,10 +5,14 @@ if TYPE_CHECKING:
 
 
 class TavernException(Exception):
-    """Base exception"""
+    """Base exception
+
+    Fields are internal and might change in future
+    """
 
     stage: Optional[Dict]
     test_block_config: Optional["TestConfig"]
+    is_final: bool = False
 
 
 class BadSchemaError(TavernException):

@@ -382,6 +382,7 @@ properties:
     enum:
       - verify
       - run
+      - finally
 
   marks:
     type: array

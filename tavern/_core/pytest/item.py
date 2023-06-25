@@ -216,10 +216,15 @@ class YamlItem(pytest.Item):
                 logger.info("xfailing test while verifying schema")
                 self.add_marker(pytest.mark.xfail, True)
             raise
-        except exceptions.TavernException:
-            if xfail == "run":
+        except exceptions.TavernException as e:
+            if xfail == "run" and not e.is_final:
                 logger.info("xfailing test when running")
                 self.add_marker(pytest.mark.xfail, True)
+            elif xfail == "finally" and e.is_final:
+                logger.critical(self.spec)
+                logger.info("xfailing test when finalising")
+                self.add_marker(pytest.mark.xfail, True)
+
             raise
         else:
             if xfail:

@@ -24,12 +24,12 @@ finally:
 ---
 test_name: Test finally block fail
 
-_xfail: run
+_xfail: finally
 
 stages:
   - name: Simple echo
     request:
-      url: "{host}/echo"
+      url: "{global_host}/echo"
       method: POST
       json:
         value: "123"
@@ -41,7 +41,7 @@ stages:
 finally:
   - name: nothing
     request:
-      url: "{host}/echo"
+      url: "{global_host}/echo"
       method: DELETE
       json:
         value: "123"
