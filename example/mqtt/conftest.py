@@ -1,4 +1,3 @@
-import datetime
 import logging
 import logging.config
 import random
@@ -51,7 +50,7 @@ loggers:
             - stderr
         level: DEBUG
         propagate: False
-    tavern: 
+    tavern:
         <<: *log
 
     tavern.mqtt: &reduced_log
