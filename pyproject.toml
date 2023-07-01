@@ -77,7 +77,6 @@ dev = [
     "pytest-xdist",
     "py",
     "tox>=3,<4",
-    "tox-travis",
     "twine",
     "wheel",
     "types-setuptools",

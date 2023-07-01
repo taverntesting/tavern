@@ -948,12 +948,6 @@ tomli-w==1.0.0 \
 tox==3.28.0 \
     --hash=sha256:57b5ab7e8bb3074edc3c0c0b4b192a4f3799d3723b2c5b76f1fa9f2d40316eea \
     --hash=sha256:d0d28f3fe6d6d7195c27f8b054c3e99d5451952b54abdae673b71609a581f640
-    # via
-    #   tavern (pyproject.toml)
-    #   tox-travis
-tox-travis==0.13 \
-    --hash=sha256:3e1e4868d108748012f78cd0bd64f05b5a12b33809d6721a0b35cfb00986e55e \
-    --hash=sha256:71fa355d84d32b592428ac8016f669a7c63e459fa42774a33d60072d3d7371dc
     # via tavern (pyproject.toml)
 twine==4.0.2 \
     --hash=sha256:929bc3c280033347a00f847236564d1c52a3e61b1ac2516c97c48f3ceab756d8 \

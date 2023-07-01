@@ -259,10 +259,6 @@ tomli==2.0.1
 tomli-w==1.0.0
     # via flit
 tox==3.28.0
-    # via
-    #   tavern (pyproject.toml)
-    #   tox-travis
-tox-travis==0.13
     # via tavern (pyproject.toml)
 twine==4.0.2
     # via tavern (pyproject.toml)
