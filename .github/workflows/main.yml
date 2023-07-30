@@ -20,14 +20,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.8"
-
-      - uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'requirements.in') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+          python-version: "3.11"
 
       - uses: pre-commit/action@v3.0.0
 
@@ -85,12 +78,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: "3.8"
+          python-version: "3.11"
 
       - name: install deps
         run: |
-          pip install tox-travis -c constraints.txt
+          pip install tox -c constraints.txt
 
       - name: tox
         run: |
-          tox -c ${TOXCFG}
+          tox -c ${TOXCFG} -e ${TOXENV}
