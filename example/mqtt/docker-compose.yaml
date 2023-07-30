@@ -44,7 +44,7 @@ services:
         read_only: true
 
   fluent:
-    image: fluent/fluentd
+    image: fluent/fluentd:v1.16
     ports:
       - "24224:24224"
     volumes:
