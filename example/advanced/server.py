@@ -1,9 +1,10 @@
-import sqlite3
+import contextlib
 import datetime
 import functools
-from flask import Flask, jsonify, request, g
-import jwt
+import sqlite3
 
+import jwt
+from flask import Flask, g, jsonify, request
 
 app = Flask(__name__)
 
@@ -19,12 +20,11 @@ def get_db():
         db = g._database = sqlite3.connect(DATABASE)
 
         with db:
-            try:
+            with contextlib.suppress(Exception):
                 db.execute(
                     "CREATE TABLE numbers_table (name TEXT NOT NULL, number INTEGER NOT NULL)"
                 )
-            except Exception:
-                pass
+
 
     return db
 

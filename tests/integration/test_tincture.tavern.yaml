@@ -58,4 +58,3 @@ stages:
       status_code: 200
       json:
         value: "{yield_str_fixture}"
-

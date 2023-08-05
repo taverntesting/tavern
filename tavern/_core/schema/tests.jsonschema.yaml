@@ -388,6 +388,7 @@ properties:
     enum:
       - verify
       - run
+      - finally
 
   marks:
     type: array
@@ -439,3 +440,10 @@ properties:
       oneOf:
         - $ref: "#/definitions/stage"
         - $ref: "#/definitions/stage_ref"
+
+  finally:
+    type: array
+    description: Stages to run after test finishes
+
+    items:
+      $ref: "#/definitions/stage"

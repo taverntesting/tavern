@@ -313,6 +313,7 @@ mapping:
     enum:
       - verify
       - run
+      - finally
 
   strict:
     func: check_strict_key

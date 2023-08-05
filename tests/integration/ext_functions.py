@@ -1,7 +1,5 @@
 import time
 
-import freezegun
-
 
 def return_hello():
     return {"hello": "there"}
@@ -23,5 +21,3 @@ def time_request(_):
 
 def print_response(_, extra_print="affa"):
     (_, r) = yield
-
-

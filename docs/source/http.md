@@ -171,7 +171,7 @@ stages:
     request:
       url: "{host}/expect_cookie"
       method: GET
-      cookies: []
+      cookies: [ ]
     response:
       status_code: 403
       json:

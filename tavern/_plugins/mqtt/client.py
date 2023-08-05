@@ -36,10 +36,6 @@ _err_vals = {
 logger = logging.getLogger(__name__)
 
 
-def root_topic(topic):
-    return topic.split("+")[0].split("#")[0]
-
-
 @dataclasses.dataclass
 class _Subscription:
     topic: str
@@ -304,16 +300,15 @@ class MQTTClient:
 
         logger.info("Received mqtt message on %s", message.topic)
 
-        sanitised = root_topic(message.topic)
-
         try:
-            userdata["_subscribed"][
-                userdata["_subscription_mappings"][sanitised]
-            ].queue.put(message)
-        except KeyError as e:
-            raise exceptions.MQTTTopicException(
-                "Message received on unregistered topic: {}".format(message.topic)
-            ) from e
+            for sub_topic, sub_id in userdata["_subscription_mappings"].items():
+                if paho.topic_matches_sub(sub_topic, message.topic):
+                    userdata["_subscribed"][sub_id].queue.put(message)
+                    break
+            else:
+                raise exceptions.MQTTTopicException(
+                    "Message received on unregistered topic: {}".format(message.topic)
+                )
         except Full:
             logger.exception("message queue full")
 
@@ -369,11 +364,9 @@ class MQTTClient:
             Allow regexes for topic names? Better validation for mqtt payloads
         """
 
-        sanitised = root_topic(topic)
-
         try:
             with self._subscribe_lock:
-                queue = self._subscribed[self._subscription_mappings[sanitised]].queue
+                queue = self._subscribed[self._subscription_mappings[topic]].queue
         except KeyError as e:
             raise exceptions.MQTTTopicException(
                 "Unregistered topic: {}".format(topic)
@@ -457,9 +450,8 @@ class MQTTClient:
         (status, mid) = self._client.subscribe(topic, *args, **kwargs)
 
         if status == 0:
-            sanitised = root_topic(topic)
             with self._subscribe_lock:
-                self._subscription_mappings[sanitised] = mid
+                self._subscription_mappings[topic] = mid
                 self._subscribed[mid] = _Subscription(topic)
         else:
             raise exceptions.MQTTError(
