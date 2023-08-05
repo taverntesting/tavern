@@ -24,7 +24,7 @@ jobs:
 
       - uses: pre-commit/action@v3.0.0
 
-  test:
+  unit-tests:
     runs-on: ubuntu-latest
     needs: simple-checks
 
@@ -38,6 +38,49 @@ jobs:
           - TOXENV: py3
             TOXCFG: tox.ini
 
+    env:
+      TOXENV: ${{ matrix.TOXENV }}
+      TOXCFG: ${{ matrix.TOXCFG }}
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        env:
+          cache-name: cache-${{ matrix.TOXENV }}
+        with:
+          path: .tox
+          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+
+      - uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: install deps
+        run: |
+          pip install tox -c constraints.txt
+
+      - name: tox
+        run: |
+          tox -c ${TOXCFG} -e ${TOXENV}
+
+  integration-tests:
+    runs-on: ubuntu-latest
+    needs: unit-tests
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # integration tests
           - TOXENV: py3-generic
             TOXCFG: tox-integration.ini
           - TOXENV: py3-mqtt
@@ -56,6 +99,9 @@ jobs:
       TOXCFG: ${{ matrix.TOXCFG }}
 
     steps:
+      - uses: jpribyl/action-docker-layer-caching@v0.1.1
+        continue-on-error: true
+
       - uses: actions/checkout@v3
 
       - uses: actions/cache@v3
@@ -63,7 +109,7 @@ jobs:
           cache-name: cache-${{ matrix.TOXENV }}
         with:
           path: .tox
-          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('tox.ini', 'tox-integration.ini', 'pyproject.toml', 'requirements.in') }}
+          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml', 'requirements.in') }}
 
       - uses: actions/cache@v3
         with:
@@ -71,9 +117,6 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'requirements.in') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-
-      - uses: jpribyl/action-docker-layer-caching@v0.1.1
-        continue-on-error: true
 
       - name: Set up Python
         uses: actions/setup-python@v4
