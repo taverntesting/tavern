@@ -270,7 +270,7 @@ class _MessageVerifier:
                 return False
 
         if self.expected_payload is None:
-            if msg.payload is None or msg.payload == "":  # noqa
+            if msg.payload is None or msg.payload == "":
                 logger.info("Got message with no payload (as expected) on '%s'", topic)
                 return True
             else:

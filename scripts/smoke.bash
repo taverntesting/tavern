@@ -2,8 +2,8 @@
 
 set -ex
 
-ruff tavern tests --fix
-black tavern tests
+pre-commit run ruff --all-files
+pre-commit run black --all-files
 
 # Separate as isort can interfere with other testenvs
 tox --parallel -c tox.ini        \

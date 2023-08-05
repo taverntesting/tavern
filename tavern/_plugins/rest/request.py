@@ -4,7 +4,7 @@ import logging
 import warnings
 from contextlib import ExitStack
 from itertools import filterfalse, tee
-from typing import Mapping, MutableMapping, Optional
+from typing import ClassVar, List, Mapping, MutableMapping, Optional
 from urllib.parse import quote_plus
 
 import requests
@@ -333,7 +333,7 @@ def _read_expected_cookies(
 
 
 class RestRequest(BaseRequest):
-    optional_in_file = [
+    optional_in_file: ClassVar[List[str]] = [
         "json",
         "data",
         "params",
