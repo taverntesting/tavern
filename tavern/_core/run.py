@@ -193,7 +193,16 @@ def run_test(
                 if getonly(stage):
                     break
         finally:
-            for idx, stage in enumerate(test_spec.get("finally", [])):
+            finally_stages = test_spec.get("finally", [])
+            if not isinstance(finally_stages, list):
+                raise exceptions.BadSchemaError(
+                    f"finally block should be a list of dicts but was {type(finally_stages)}"
+                )
+            for idx, stage in enumerate(finally_stages):
+                if not isinstance(stage, dict):
+                    raise exceptions.BadSchemaError(
+                        f"finally block should be a dict but was {type(stage)}"
+                    )
                 runner.run_stage(idx, stage, is_final=True)
 
 
