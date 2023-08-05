@@ -410,3 +410,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 #  2.1.0           Allow multi part file uploads with the same form field name (2023-06-04)
 
 #  2.2.0           Allow wildcards in MQTT topics (2023-06-25)
+
+##  2.2.1           Update some dependencies (2023-07-30)
