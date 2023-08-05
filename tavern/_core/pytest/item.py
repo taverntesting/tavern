@@ -221,7 +221,6 @@ class YamlItem(pytest.Item):
                 logger.info("xfailing test when running")
                 self.add_marker(pytest.mark.xfail, True)
             elif xfail == "finally" and e.is_final:
-                logger.critical(self.spec)
                 logger.info("xfailing test when finalising")
                 self.add_marker(pytest.mark.xfail, True)
 
@@ -229,12 +228,6 @@ class YamlItem(pytest.Item):
         else:
             if xfail:
                 raise Exception("internal: xfail test did not fail '{}'".format(xfail))
-        # else:
-        #     if xfail:
-        #         logger.error("Expected test to fail")
-        #         raise exceptions.TestFailError(
-        #             "Expected test to fail at {} stage".format(xfail)
-        #         )
         finally:
             call_hook(
                 self.global_cfg,
