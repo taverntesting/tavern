@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 class Tinctures:
     def __init__(self, tinctures: List[Any]):
         self._tinctures = tinctures
-        self._needs_response = None
+        self._needs_response: List[Any] = []
 
     def start_tinctures(self, stage: collections.abc.Mapping):
         results = [t(stage) for t in self._tinctures]
