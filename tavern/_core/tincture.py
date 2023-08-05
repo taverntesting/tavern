@@ -1,6 +1,7 @@
 import collections.abc
 import inspect
 import logging
+from typing import Any, List
 
 from tavern._core import exceptions
 from tavern._core.extfunctions import get_wrapped_response_function
@@ -9,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class Tinctures:
-    def __init__(self, tinctures):
+    def __init__(self, tinctures: List[Any]):
         self._tinctures = tinctures
         self._needs_response = None
 
@@ -23,7 +24,7 @@ class Tinctures:
                 self._needs_response.append(r)
                 next(r)
 
-    def end_tinctures(self, expected, response) -> None:
+    def end_tinctures(self, expected: collections.abc.Mapping, response) -> None:
         """
         Send the response object to any tinctures that want it
 
@@ -46,7 +47,7 @@ class Tinctures:
 
 def get_stage_tinctures(
     stage: collections.abc.Mapping, test_spec: collections.abc.Mapping
-):
+) -> Tinctures:
     """Get tinctures for stage
 
     Args:
@@ -55,7 +56,7 @@ def get_stage_tinctures(
     """
     stage_tinctures = []
 
-    def add_tinctures_from_block(maybe_tinctures, blockname):
+    def add_tinctures_from_block(maybe_tinctures, blockname: str):
         logger.debug("Trying to add tinctures from %s", blockname)
 
         def inner_yield():

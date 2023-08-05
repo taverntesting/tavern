@@ -2394,11 +2394,11 @@ import time
 logger = logging.getLogger(__name__)
 
 
-def time_request(_):
+def time_request(stage):
     t0 = time.time()
     yield
     t1 = time.time()
-    logger.info("Request took %s", t1 - t0)
+    logger.info("Request for stage %s took %s", stage, t1 - t0)
 
 
 def print_response(_, extra_print="affa"):
