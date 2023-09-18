@@ -77,8 +77,13 @@ definitions:
 
     properties:
       url:
-        type: string
         description: URL to make request to
+        oneOf:
+          - type: string
+          - type: object
+            properties:
+              "$ext":
+                $ref: "#/definitions/verify_block"
 
       cert:
         description: Certificate to use - either a path to a certificate and key in one file, or a two item list containing the certificate and key separately

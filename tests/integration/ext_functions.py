@@ -13,6 +13,10 @@ def return_list_vals():
     return [{"a_value": "b_value"}, 2]
 
 
+def gen_echo_url(host):
+    return "{0}/echo".format(host)
+
+
 def time_request(_):
     time.time()
     yield

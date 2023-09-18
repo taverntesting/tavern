@@ -390,7 +390,7 @@ class RestRequest(BaseRequest):
         request_args = get_request_args(rspec, test_block_config)
         update_from_ext(
             request_args,
-            RestRequest.optional_in_file,
+            RestRequest.optional_in_file + ["url"],
         )
 
         # Used further down, but pop it asap to avoid unwanted side effects

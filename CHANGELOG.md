@@ -414,3 +414,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  2.2.1           Update some dependencies (2023-07-30)
 
 #  2.3.0           Add 'finally' block (2023-08-05)
+
+##  2.3.1           Fix error formatting when including files with curly braces (2023-09-18)
