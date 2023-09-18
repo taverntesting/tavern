@@ -1,0 +1,65 @@
+---
+test_name: Test including json
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send included json
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: !include 881_1.json
+    response:
+      status_code: 200
+      json: !include 881_1.json
+
+---
+test_name: Test including json with key
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send included json
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: !include 881_2.yaml
+    response:
+      status_code: 200
+      json: !include 881_2.yaml
+
+---
+test_name: Test including json with error
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send included json
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: !include 881_1.json
+    response:
+      status_code: 201
+
+_xfail: run
+
+---
+test_name: Test including json with error and key
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send included json
+    request:
+      url: "{host}/echo"
+      method: POST
+      json: !include 881_2.yaml
+    response:
+      status_code: 201
+
+_xfail: run
