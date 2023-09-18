@@ -23,6 +23,11 @@ def autouse_thing():
     return "abc"
 
 
+@pytest.fixture(scope="session", autouse=True)
+def fixture_echo_url():
+    return "http://localhost:5003/echo"
+
+
 @pytest.fixture(scope="session", autouse=True, name="autouse_thing_named")
 def second(autouse_thing):
     return autouse_thing
