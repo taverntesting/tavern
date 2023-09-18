@@ -21,7 +21,7 @@ keywords = ["testing", "pytest"]
 
 name = "tavern"
 description = "Simple testing of RESTful APIs"
-version = "2.2.1"
+version = "2.3.1"
 
 dependencies = [
     "PyYAML>=6.0.1,<7",
@@ -158,7 +158,7 @@ target-version = "py38"
 known-first-party = ["tavern"]
 
 [tool.tbump.version]
-current = "2.2.1"
+current = "2.3.1"
 
 regex = '''
   (?P<major>\d+)
