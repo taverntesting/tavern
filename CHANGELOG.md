@@ -412,3 +412,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 #  2.2.0           Allow wildcards in MQTT topics (2023-06-25)
 
 ##  2.2.1           Update some dependencies (2023-07-30)
+
+#  2.3.0           Add 'finally' block (2023-08-05)
