@@ -276,7 +276,7 @@ types-urllib3==1.26.25.13
     # via types-requests
 typing-extensions==4.6.3
     # via mypy
-urllib3==2.0.2
+urllib3==2.0.7
     # via
     #   requests
     #   twine
