@@ -416,3 +416,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 #  2.3.0           Add 'finally' block (2023-08-05)
 
 ##  2.3.1           Fix error formatting when including files with curly braces (2023-09-18)
+
+#  2.4.0           Allow using an ext function to create a URL (2023-09-18)
