@@ -25,6 +25,7 @@ from .pytest.config import TestConfig
 from .report import attach_stage_content, wrap_step
 from .strtobool import strtobool
 from .testhelpers import delay, retry
+from .tincture import Tinctures, get_stage_tinctures
 
 logger = logging.getLogger(__name__)
 
@@ -276,6 +277,8 @@ class _TestRunner:
     test_spec: Mapping
 
     def run_stage(self, idx: int, stage, *, is_final: bool = False):
+        tinctures = get_stage_tinctures(stage, self.test_spec)
+
         stage_config = self.test_block_config.with_strictness(
             self.default_global_strictness
         )
@@ -284,7 +287,9 @@ class _TestRunner:
         )
         # Wrap run_stage with retry helper
         run_stage_with_retries = retry(stage, stage_config)(self.wrapped_run_stage)
-        partial = functools.partial(run_stage_with_retries, stage, stage_config)
+        partial = functools.partial(
+            run_stage_with_retries, stage, stage_config, tinctures
+        )
         allure_name = "Stage {}: {}".format(
             idx, format_keys(stage["name"], stage_config.variables)
         )
@@ -298,12 +303,15 @@ class _TestRunner:
             e.is_final = is_final
             raise
 
-    def wrapped_run_stage(self, stage: dict, stage_config: TestConfig):
+    def wrapped_run_stage(
+        self, stage: dict, stage_config: TestConfig, tinctures: Tinctures
+    ):
         """Run one stage from the test
 
         Args:
             stage: specification of stage to be run
             stage_config: available variables for test
+            tinctures: tinctures for this stage/test
         """
         stage = copy.deepcopy(stage)
         name = stage["name"]
@@ -329,7 +337,11 @@ class _TestRunner:
 
         verifiers = get_verifiers(stage, stage_config, self.sessions, expected)
 
+        tinctures.start_tinctures(stage)
+
         response = r.run()
+
+        tinctures.end_tinctures(expected, response)
 
         for response_type, response_verifiers in verifiers.items():
             logger.debug("Running verifiers for %s", response_type)

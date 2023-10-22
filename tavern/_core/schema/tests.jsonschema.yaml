@@ -322,6 +322,12 @@ definitions:
       - name
 
     properties:
+      tinctures:
+        type: array
+        description: Tinctures for stage
+        items:
+          $ref: "#/definitions/verify_block"
+
       id:
         type: string
         description: ID of stage for use in stage references
@@ -414,6 +420,12 @@ properties:
               required:
                 - key
                 - vals
+
+  tinctures:
+    type: array
+    description: Tinctures for whole test
+    items:
+      $ref: "#/definitions/verify_block"
 
   strict:
     $ref: "#/definitions/strict_block"

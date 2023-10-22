@@ -111,7 +111,7 @@ def format_keys(
             in broken output, only use for debugging purposes.
 
     Returns:
-        str,int,list,dict: recursively formatted values
+        recursively formatted values
     """
     formatted = val
 
@@ -131,7 +131,7 @@ def format_keys(
         for key in val:
             formatted[key] = format_keys_(val[key], box_vars)
     elif isinstance(val, (list, tuple)):
-        formatted = [format_keys_(item, box_vars) for item in val]
+        formatted = [format_keys_(item, box_vars) for item in val]  # type: ignore
     elif isinstance(formatted, FormattedString):
         logger.debug("Already formatted %s, not double-formatting", formatted)
     elif isinstance(val, str):
@@ -142,7 +142,7 @@ def format_keys(
                 raise
 
         if no_double_format:
-            formatted = FormattedString(formatted)
+            formatted = FormattedString(formatted)  # type: ignore
     elif isinstance(val, TypeConvertToken):
         logger.debug("Got type convert token '%s'", val)
         if isinstance(val, ForceIncludeToken):

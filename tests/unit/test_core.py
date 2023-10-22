@@ -587,6 +587,52 @@ class TestFinally:
         assert pmock.mock_calls[1].kwargs.items() >= finally_request["request"].items()
 
 
+class TestTinctures:
+    @pytest.mark.parametrize(
+        "tinctures",
+        (
+            {"function": "abc"},
+            [{"function": "abc"}],
+            [{"function": "abc"}, {"function": "def"}],
+        ),
+    )
+    @pytest.mark.parametrize(
+        "at_stage_level",
+        (
+            True,
+            False,
+        ),
+    )
+    def test_tinctures(
+        self,
+        fulltest,
+        mockargs,
+        includes,
+        tinctures,
+        at_stage_level,
+    ):
+        if at_stage_level:
+            fulltest["tinctures"] = tinctures
+        else:
+            fulltest["stages"][0]["tinctures"] = tinctures
+
+        mock_response = Mock(**mockargs)
+
+        tincture_func_mock = Mock()
+
+        with patch(
+            "tavern._plugins.rest.request.requests.Session.request",
+            return_value=mock_response,
+        ) as pmock, patch(
+            "tavern._core.tincture.get_wrapped_response_function",
+            return_value=tincture_func_mock,
+        ):
+            run_test("heif", fulltest, includes)
+
+        assert pmock.call_count == 1
+        assert tincture_func_mock.call_count == len(tinctures)
+
+
 def test_copy_config(pytestconfig):
     cfg_1 = load_global_cfg(pytestconfig)
 

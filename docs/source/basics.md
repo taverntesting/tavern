@@ -2381,6 +2381,79 @@ def pytest_tavern_beta_before_every_request(request_args):
     logging.info("Making request: %s", request_args)
 ```
 
+## Tinctures
+
+Another way of running functions at certain times is to use the 'tinctures' functionality:
+
+```python
+# package/helpers.py
+
+import logging
+import time
+
+logger = logging.getLogger(__name__)
+
+
+def time_request(stage):
+    t0 = time.time()
+    yield
+    t1 = time.time()
+    logger.info("Request for stage %s took %s", stage, t1 - t0)
+
+
+def print_response(_, extra_print="affa"):
+    logger.info("STARTING:")
+    (expected, response) = yield
+    logger.info("Response is %s (%s)", response, extra_print)
+```
+
+```yaml
+---
+test_name: Test tincture
+
+tinctures:
+  - function: package.helpers:time_request
+
+stages:
+  - name: Make a request
+    tinctures:
+      - function: package.helpers:print_response
+        extra_kwargs:
+          extra_print: "blooble"
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "one"
+
+  - name: Make another request
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "two"
+```
+
+Tinctures can be specified on a per-stage level or a per-test level. When specified on the test level, the tincture is
+run for every stage in the test. In the above example, the `time_request` function will be run for both stages, but
+the 'print_response' function will only be run for the first stage.
+
+Tinctures are _similar_ to fixtures but are more similar to [external functions](#calling-external-functions). Tincture
+functions do not need to be annotated with a function like Pytest fixtures, and are referred to in the same
+way (`path.to.package:function`), and have arguments passed to them in the same way (`extra_kwargs`, `extra_args`) as
+external functions.
+
+The first argument to a tincture is always a dictionary of the stage to be run.
+
+If a tincture has a `yield` in the middle of it, during the `yield` the stage itself will be run. If a return value is
+expected from the `yield` (eg `(expected, response) = yield` in the example above) then the _expected_ return values and
+the response object from the stage will be returned. This allows a tincture to introspect the response, and compare it
+against the expected, the same as the `pytest_tavern_beta_after_every_response` [hook](#after-every-response). This
+response object will be different for MQTT and HTTP tests!
+
+If you need to run something before _every_ stage or after _every_ response in your test suite, look at using
+the [hooks](#hooks) instead.
+
 ## Finalising stages
 
 If you need a stage to run after a test runs, whether it passes or fails (for example, to log out of a service or
@@ -2396,7 +2469,7 @@ stages:
 
   - name: stage 2
     ...
-    
+
   - name: stage 3
     ...
 
