@@ -1,7 +1,8 @@
 import sys
 from urllib.parse import urlparse
-from coreapi import Client
+
 import yaml
+from coreapi import Client
 
 
 def generate_tavern_yaml(json_path):
@@ -68,7 +69,7 @@ def display_help():
     print(
         "eg: pub_tavern.py https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-simple.json"
     )
-    exit(-1)
+    sys.exit(-1)
 
 
 if __name__ == "__main__":

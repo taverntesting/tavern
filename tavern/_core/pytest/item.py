@@ -223,25 +223,23 @@ class YamlItem(pytest.Item):
                 if msg := xfail.get("run"):
                     if msg not in str(e):
                         raise Exception(
-                            f"error message did not match: expected '{msg}', got '{str(e)}'"
+                            f"error message did not match: expected '{msg}', got '{e!s}'"
                         ) from e
                     logger.info("xfailing test when running")
                     self.add_marker(pytest.mark.xfail, True)
                 else:
                     logger.warning("internal error checking 'xfail'")
-            elif xfail == "run":
+            elif xfail == "run" and not e.is_final:
                 logger.info("xfailing test when running")
                 self.add_marker(pytest.mark.xfail, True)
+            elif xfail == "finally" and e.is_final:
+                logger.info("xfailing test when finalising")
+                self.add_marker(pytest.mark.xfail, True)
+
             raise
         else:
             if xfail:
                 raise Exception("internal: xfail test did not fail '{}'".format(xfail))
-        # else:
-        #     if xfail:
-        #         logger.error("Expected test to fail")
-        #         raise exceptions.TestFailError(
-        #             "Expected test to fail at {} stage".format(xfail)
-        #         )
         finally:
             call_hook(
                 self.global_cfg,

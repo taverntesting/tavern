@@ -1,7 +1,8 @@
+import contextlib
 import functools
 import sqlite3
 
-from flask import Flask, jsonify, request, g, session
+from flask import Flask, g, jsonify, request, session
 
 app = Flask(__name__)
 app.secret_key = "t1uNraxw+9oxUyCuXHO2G0u38ig="
@@ -17,12 +18,11 @@ def get_db():
         db = g._database = sqlite3.connect(DATABASE)
 
         with db:
-            try:
+            with contextlib.suppress(Exception):
                 db.execute(
                     "CREATE TABLE numbers_table (name TEXT NOT NULL, number INTEGER NOT NULL)"
                 )
-            except:
-                pass
+
 
     return db
 

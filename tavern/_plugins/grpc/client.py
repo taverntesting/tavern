@@ -24,7 +24,7 @@ logger = logging.getLogger(__name__)
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
-    warnings.warn("deprecated", DeprecationWarning)
+    warnings.warn("deprecated", DeprecationWarning)  # noqa: B028
 
 
 @functools.lru_cache
@@ -72,7 +72,7 @@ def _generate_proto_import(source: str, output: str):
     protoc_command = [protoc, "-I" + source, "--python_out=" + output]
     protoc_command.extend(protos)
 
-    call = subprocess.run(protoc_command, capture_output=True)
+    call = subprocess.run(protoc_command, capture_output=True)  # noqa: S603
     if call.returncode != 0:
         logger.error(f"Error calling '{protoc_command}'")
         raise exceptions.ProtoCompilerException(call.stderr.decode("utf8"))

@@ -43,14 +43,14 @@ def pytest_collect_file(parent, path: os.PathLike):
                 format: "%(asctime)s [%(levelname)s]: (%(name)s:%(lineno)d) %(message)s"
                 style: "%"
                 datefmt: "%X"
-            
+
             handlers:
               stderr:
                 class : logging.StreamHandler
                 level   : DEBUG
                 formatter: default
                 stream  : ext://sys.stderr
-            
+
             loggers:
               tavern:
                 handlers:

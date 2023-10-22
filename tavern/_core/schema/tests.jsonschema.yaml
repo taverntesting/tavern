@@ -77,8 +77,13 @@ definitions:
 
     properties:
       url:
-        type: string
         description: URL to make request to
+        oneOf:
+          - type: string
+          - type: object
+            properties:
+              "$ext":
+                $ref: "#/definitions/verify_block"
 
       cert:
         description: Certificate to use - either a path to a certificate and key in one file, or a two item list containing the certificate and key separately
@@ -162,7 +167,9 @@ definitions:
         description: Path to a file to upload as the request body
 
       files:
-        type: object
+        oneOf:
+          - type: object
+          - type: array
         description: Files to send as part of the request
 
       clear_session_cookies:
@@ -359,6 +366,12 @@ definitions:
       - name
 
     properties:
+      tinctures:
+        type: array
+        description: Tinctures for stage
+        items:
+          $ref: "#/definitions/verify_block"
+
       id:
         type: string
         description: ID of stage for use in stage references
@@ -431,6 +444,7 @@ properties:
         enum:
           - verify
           - run
+          - finally
       - type: object
         properties:
           verify:
@@ -464,6 +478,12 @@ properties:
                 - key
                 - vals
 
+  tinctures:
+    type: array
+    description: Tinctures for whole test
+    items:
+      $ref: "#/definitions/verify_block"
+
   strict:
     $ref: "#/definitions/strict_block"
 
@@ -482,3 +502,10 @@ properties:
       oneOf:
         - $ref: "#/definitions/stage"
         - $ref: "#/definitions/stage_ref"
+
+  finally:
+    type: array
+    description: Stages to run after test finishes
+
+    items:
+      $ref: "#/definitions/stage"

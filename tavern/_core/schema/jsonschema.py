@@ -164,6 +164,8 @@ def verify_jsonschema(to_verify, schema) -> None:
 """
                 )
 
+        logger.debug("original exception from jsonschema: %s", e)
+
         msg = "\n---\n" + "\n---\n".join([str(i) for i in real_context])
         raise BadSchemaError(msg) from e
 

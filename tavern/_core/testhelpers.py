@@ -10,13 +10,13 @@ from tavern._core.pytest.config import TestConfig
 logger = logging.getLogger(__name__)
 
 
-def delay(stage, when, variables) -> None:
+def delay(stage: Mapping, when: str, variables: Mapping) -> None:
     """Look for delay_before/delay_after and sleep
 
     Args:
-        stage (dict): test stage
-        when (str): 'before' or 'after'
-        variables (dict): Variables to format with
+        stage: test stage
+        when: 'before' or 'after'
+        variables: Variables to format with
     """
 
     try:
