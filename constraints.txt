@@ -286,7 +286,7 @@ virtualenv==20.23.0
     #   tox
 webencodings==0.5.1
     # via bleach
-werkzeug==2.3.4
+werkzeug==3.0.1
     # via flask
 wheel==0.40.0
     # via
