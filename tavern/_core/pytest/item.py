@@ -1,6 +1,6 @@
 import logging
 import pathlib
-from typing import Optional, Tuple
+from typing import MutableMapping, Optional, Tuple
 
 import attr
 import yaml
@@ -39,8 +39,11 @@ class YamlItem(pytest.Item):
     _patched_yaml = False
 
     def __init__(
-        self, *, name: str, parent, spec, path: pathlib.Path, **kwargs
+        self, *, name: str, parent, spec: MutableMapping, path: pathlib.Path, **kwargs
     ) -> None:
+        if "grpc" in spec:
+            logger.warning("Tavern grpc support is in an experimental stage")
+
         super().__init__(name, parent, **kwargs)
         self.path = path
         self.spec = spec
