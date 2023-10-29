@@ -5,9 +5,9 @@ import pathlib
 import re
 from textwrap import dedent
 
+import pytest
 import yaml
 
-import pytest
 from tavern._core import exceptions
 
 from .util import add_ini_options, add_parser_options, get_option_generic
