@@ -57,9 +57,9 @@ def serve():
             port = 50051
 
         server.add_insecure_port(f"[::]:{port:d}")
-        logging.info("Starting...")
         server.start()
 
+    logging.info("Starting grpc server")
     event = threading.Event()
     event.wait()
 

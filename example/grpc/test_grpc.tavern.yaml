@@ -13,7 +13,6 @@ grpc: &grpc_spec
   proto:
     source: .
 
-
 stages:
   - name: Echo text
     grpc_request:
@@ -24,6 +23,7 @@ stages:
       status: "OK"
       body:
         message: "Hello, John!"
+
 ---
 
 test_name: Test trying to compile a folder with no protos in it
