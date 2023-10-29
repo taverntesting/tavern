@@ -9,8 +9,8 @@ import sys
 import tempfile
 import warnings
 from distutils.spawn import find_executable
-from importlib.util import spec_from_file_location
-from typing import Mapping, Optional
+from importlib.machinery import ModuleSpec
+from typing import List, Mapping, Optional
 
 import grpc
 import grpc_reflection
@@ -74,14 +74,14 @@ def _generate_proto_import(source: str):
         )
 
     def sanitise(s):
-        """Do basic sanitisation for """
+        """Do basic sanitisation for"""
         return "".join(c for c in s if c in string.ascii_letters)
 
     output = os.path.join(
         tempfile.gettempdir(),
         "tavern_proto",
         sanitise(protos[0]),
-        hashlib.md5("".join(protos).encode("utf8")).hexdigest(),
+        hashlib.new("sha3_224", "".join(protos).encode("utf8")).hexdigest(),
     )
 
     if not os.path.exists(output):
@@ -122,7 +122,7 @@ def _import_grpc_module(python_module_name: str):
             f"relative imports for Python grpc modules not allowed (got {python_module_name})"
         )
 
-    import_specs = []
+    import_specs: List[ModuleSpec] = []
 
     # Check if its already on the python path
     if (spec := importlib.util.find_spec(python_module_name)) is not None:
@@ -133,8 +133,12 @@ def _import_grpc_module(python_module_name: str):
     module_path = python_module_name.replace(".", "/") + ".py"
     if os.path.exists(module_path):
         logger.debug(f"{python_module_name} found in file")
-        spec = importlib.util.spec_from_file_location(python_module_name, module_path)
-        import_specs.append(spec)
+        if (
+            spec := importlib.util.spec_from_file_location(
+                python_module_name, module_path
+            )
+        ) is not None:
+            import_specs.append(spec)
 
     if os.path.isdir(python_module_name):
         for s in os.listdir(python_module_name):
@@ -142,8 +146,10 @@ def _import_grpc_module(python_module_name: str):
             if s.endswith(".py"):
                 logger.debug(f"found py file {s}")
                 # Guess a package name
-                spec = importlib.util.spec_from_file_location(s[:-3], s)
-                import_specs.append(spec)
+                if (
+                    spec := importlib.util.spec_from_file_location(s[:-3], s)
+                ) is not None:
+                    import_specs.append(spec)
 
     if not import_specs:
         raise exceptions.GRPCServiceException(
@@ -153,7 +159,8 @@ def _import_grpc_module(python_module_name: str):
     for spec in import_specs:
         mod = importlib.util.module_from_spec(spec)
         logger.debug(f"loading from {spec.name}")
-        spec.loader.exec_module(mod)
+        if spec.loader:
+            spec.loader.exec_module(mod)
 
 
 class GRPCClient:
