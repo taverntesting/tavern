@@ -1,18 +1,25 @@
 import functools
+import hashlib
+import importlib
 import logging
 import os
-import pkgutil
+import string
 import subprocess
 import sys
+import tempfile
 import warnings
 from distutils.spawn import find_executable
-from importlib import import_module
+from importlib.util import spec_from_file_location
 from typing import Mapping, Optional
 
 import grpc
 import grpc_reflection
-from google.protobuf import descriptor_pb2, json_format, message_factory
-from google.protobuf import symbol_database as _symbol_database
+from google.protobuf import (
+    descriptor_pb2,
+    json_format,
+    message_factory,
+    symbol_database,
+)
 from google.protobuf.json_format import ParseError
 from grpc_reflection.v1alpha import reflection_pb2, reflection_pb2_grpc
 from grpc_status import rpc_status
@@ -42,20 +49,19 @@ def find_protoc() -> str:
 
 
 @functools.lru_cache
-def _generate_proto_import(source: str, output: str):
+def _generate_proto_import(source: str):
     """Invokes the Protocol Compiler to generate a _pb2.py from the given
     .proto file.  Does nothing if the output already exists and is newer than
-    the input."""
+    the input.
+    """
 
     if not os.path.exists(source):
         raise exceptions.ProtoCompilerException(
             "Can't find required file: {}".format(source)
         )
 
-    if not os.path.exists(output):
-        os.makedirs(output)
+    logger.info("Generating protos from %s...", source)
 
-    logger.info("Generating %s...", output)
     protos = [
         os.path.join(source, child)
         for child in os.listdir(source)
@@ -66,6 +72,20 @@ def _generate_proto_import(source: str, output: str):
         raise exceptions.ProtoCompilerException(
             f"No protos defined in {os.path.abspath(source)}"
         )
+
+    def sanitise(s):
+        """Do basic sanitisation for """
+        return "".join(c for c in s if c in string.ascii_letters)
+
+    output = os.path.join(
+        tempfile.gettempdir(),
+        "tavern_proto",
+        sanitise(protos[0]),
+        hashlib.md5("".join(protos).encode("utf8")).hexdigest(),
+    )
+
+    if not os.path.exists(output):
+        os.makedirs(output)
 
     protoc = find_protoc()
 
@@ -79,20 +99,61 @@ def _generate_proto_import(source: str, output: str):
 
     logger.info(f"Generated module from protos: {protos}")
 
+    # Invalidate caches so the module can be loaded
+    sys.path.append(output)
+    importlib.invalidate_caches()
+    _import_grpc_module(output)
 
-def _import_grpc_module(output: str):
-    output_path = []
 
-    py_module = output + ".py"
-    if os.path.exists(py_module):
-        output_path.append(py_module)
-    else:
-        mod = import_module(output)
-        output_path.extend(mod.__name__)
+def _import_grpc_module(python_module_name: str):
+    """takes an expected python module name and tries to import the relevant
+    file, adding service to the symbol database.
+    """
 
-    sys.path.extend(output_path)
-    for _, name, _ in pkgutil.iter_modules(output_path):
-        import_module("." + name, package=output)
+    logger.debug("attempting to import %s", python_module_name)
+
+    if python_module_name.endswith(".py"):
+        raise exceptions.GRPCServiceException(
+            f"grpc module definitions should not end with .py, but got {python_module_name}"
+        )
+
+    if python_module_name.startswith("."):
+        raise exceptions.GRPCServiceException(
+            f"relative imports for Python grpc modules not allowed (got {python_module_name})"
+        )
+
+    import_specs = []
+
+    # Check if its already on the python path
+    if (spec := importlib.util.find_spec(python_module_name)) is not None:
+        logger.debug(f"{python_module_name} on sys path already")
+        import_specs.append(spec)
+
+    # See if the file exists
+    module_path = python_module_name.replace(".", "/") + ".py"
+    if os.path.exists(module_path):
+        logger.debug(f"{python_module_name} found in file")
+        spec = importlib.util.spec_from_file_location(python_module_name, module_path)
+        import_specs.append(spec)
+
+    if os.path.isdir(python_module_name):
+        for s in os.listdir(python_module_name):
+            s = os.path.join(python_module_name, s)
+            if s.endswith(".py"):
+                logger.debug(f"found py file {s}")
+                # Guess a package name
+                spec = importlib.util.spec_from_file_location(s[:-3], s)
+                import_specs.append(spec)
+
+    if not import_specs:
+        raise exceptions.GRPCServiceException(
+            f"could not determine how to import {python_module_name}"
+        )
+
+    for spec in import_specs:
+        mod = importlib.util.module_from_spec(spec)
+        logger.debug(f"loading from {spec.name}")
+        spec.loader.exec_module(mod)
 
 
 class GRPCClient:
@@ -127,21 +188,20 @@ class GRPCClient:
         self.tls = bool(_connect_args.get("tls", False))
 
         self.channels = {}
-        self.sym_db = _symbol_database.Default()
+        # Using the default symbol database is a bit undesirable because it means that things being imported from
+        # previous tests will affect later ones which can mask bugs. But there isn't a nice way to have a
+        # self-contained symbol database, because then you need to transitively import all dependencies of protos and
+        # add them to the database.
+        self.sym_db = symbol_database.Default()
 
         if proto_source := _proto_args.get("source"):
-            # TODO: Use a temp dir instead?
-            _generate_proto_import(proto_source, "proto")
+            _generate_proto_import(proto_source)
 
         if proto_module := _proto_args.get("module"):
-            if proto_module.endswith(".py"):
-                raise exceptions.GRPCServiceException(
-                    f"grpc module definitions should not end with .py, but got {proto_module}"
-                )
-
             try:
                 _import_grpc_module(proto_module)
-            except ImportError as e:
+            except (ImportError, ModuleNotFoundError) as e:
+                logger.exception(f"could not import {proto_module}")
                 raise exceptions.GRPCServiceException(
                     "error importing gRPC modules"
                 ) from e
@@ -180,6 +240,8 @@ class GRPCClient:
             output_type = message_factory.GetMessageClass(grpc_service.output_type)  # type: ignore
         except KeyError:
             return None, None
+
+        logger.critical(f"reflected info for {service}: {full_service_name}")
 
         service_url = "/{}/{}".format(service, method)
         grpc_method = channel.unary_unary(

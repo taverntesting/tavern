@@ -98,7 +98,7 @@ grpc:
     port: !int "{grpc_port}"
     timeout: 3
   proto:
-    module: server/helloworld_pb2_grpc.py
+    module: server.helloworld_pb2_grpc.py
 
 stages:
   - name: Echo text
@@ -120,7 +120,7 @@ includes:
 
 grpc:
   proto:
-    module: server/helloworld_pb2_grpc
+    module: server.helloworld_pb2_grpc
 
 stages:
   - name: Echo text
@@ -143,7 +143,7 @@ includes:
 
 grpc:
   proto:
-    module: server/helloworld_pb2_grpc
+    module: server.helloworld_pb2_grpc
 
 _xfail: run
 
