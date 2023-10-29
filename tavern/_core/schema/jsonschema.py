@@ -1,10 +1,13 @@
+import importlib
 import logging
 import re
+from typing import Mapping
 
 import jsonschema
 from jsonschema import Draft7Validator, ValidationError
 from jsonschema.validators import extend
 
+from tavern._core import exceptions
 from tavern._core.dict_util import recurse_access_key
 from tavern._core.exceptions import BadSchemaError
 from tavern._core.loader import (
@@ -103,7 +106,7 @@ CustomValidator = extend(
 )
 
 
-def verify_jsonschema(to_verify, schema) -> None:
+def verify_jsonschema(to_verify: Mapping, schema) -> None:
     """Verify a generic file against a given jsonschema
 
     Args:
@@ -115,6 +118,11 @@ def verify_jsonschema(to_verify, schema) -> None:
     """
 
     validator = CustomValidator(schema)
+
+    if "grpc" in to_verify and not importlib.util.find_spec("grpc"):
+        raise exceptions.BadSchemaError(
+            "Tried to use grpc connection string, but grpc was not installed. Reinstall Tavern with the grpc extra like `pip install tavern[grpc]`"
+        )
 
     try:
         validator.validate(to_verify)

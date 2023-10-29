@@ -1,5 +1,6 @@
 import copy
 import dataclasses
+import importlib
 from typing import Any, List
 
 from tavern._core.strict_util import StrictLevel
@@ -49,6 +50,11 @@ class TestConfig:
 
     @staticmethod
     def backends() -> List[str]:
-        # TODO: This is here in case in future we want to be able to turn some of these
-        #  on or off
-        return ["http", "mqtt", "grpc"]
+        available_backends = ["http"]
+
+        if importlib.util.find_spec("paho.mqtt"):
+            available_backends.append("mqtt")
+        if importlib.util.find_spec("grpc"):
+            available_backends.append("grpc")
+
+        return available_backends

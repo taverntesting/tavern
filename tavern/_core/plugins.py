@@ -105,6 +105,8 @@ class _PluginCache:
             )
 
         for backend in test_block_config.backends():
+            logger.debug("loading backend for %s", backend)
+
             namespace = "tavern_{}".format(backend)
 
             manager = stevedore.EnabledExtensionManager(

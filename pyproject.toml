@@ -34,13 +34,6 @@ dependencies = [
     "python-box>=6,<7",
     "requests>=2.22.0,<3",
     "stevedore>=4,<5",
-
-    "grpcio",
-    "grpcio-reflection",
-    "grpcio-status",
-    "google-api-python-client",
-    "protobuf",
-    "proto-plus"
 ]
 
 requires-python = ">=3.8"
@@ -61,6 +54,15 @@ Documentation = "https://tavern.readthedocs.io/en/latest/"
 Source = "https://github.com/taverntesting/tavern"
 
 [project.optional-dependencies]
+grpc = [
+    "grpcio",
+    "grpcio-reflection",
+    "grpcio-status",
+    "google-api-python-client",
+    "protobuf",
+    "proto-plus",
+]
+
 dev = [
     "Faker",
     "allure-pytest",

@@ -3,7 +3,6 @@ from functools import lru_cache
 from typing import Any, Dict
 
 import pytest
-
 from tavern._core.dict_util import format_keys, get_tavern_box
 from tavern._core.general import load_global_config
 from tavern._core.pytest.config import TavernInternalConfig, TestConfig

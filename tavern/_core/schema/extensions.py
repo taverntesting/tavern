@@ -2,7 +2,6 @@ import os
 import re
 from typing import Union
 
-from grpc import StatusCode
 from pykwalify.types import is_bool, is_float, is_int
 
 from tavern._core import exceptions
@@ -151,6 +150,9 @@ def validate_grpc_status_is_valid_or_list_of_names(value, rule_obj, path):
 
 def is_grpc_status(value):
     value = value.upper()
+
+    from grpc import StatusCode
+
     for status in StatusCode:
         if status.name == value:
             return True
