@@ -1,5 +1,18 @@
+from typing import TYPE_CHECKING, Dict, Optional
+
+if TYPE_CHECKING:
+    from tavern._core.pytest.config import TestConfig
+
+
 class TavernException(Exception):
-    """Base exception"""
+    """Base exception
+
+    Fields are internal and might change in future
+    """
+
+    stage: Optional[Dict]
+    test_block_config: Optional["TestConfig"]
+    is_final: bool = False
 
 
 class BadSchemaError(TavernException):
@@ -9,7 +22,7 @@ class BadSchemaError(TavernException):
 class TestFailError(TavernException):
     """Test failed somehow"""
 
-    def __init__(self, msg, failures=None):
+    def __init__(self, msg, failures=None) -> None:
         super().__init__(msg)
         self.failures = failures or []
 
@@ -114,10 +127,10 @@ class InvalidFormattedJsonError(TavernException):
     """Tried to use the magic json format tag in an invalid way"""
 
 
-class InvalidExtBlockException(TavernException):
+class MisplacedExtBlockException(TavernException):
     """Tried to use the '$ext' block in a place it is no longer valid to use it"""
 
-    def __init__(self, block):
+    def __init__(self, block) -> None:
         super().__init__(
             "$ext function found in block {} - this has been moved to verify_response_with block - see documentation".format(
                 block
@@ -139,3 +152,8 @@ class DuplicateStrictError(TavernException):
 
 class ConcurrentError(TavernException):
     """Error while processing concurrent future"""
+
+
+class UnexpectedExceptionError(TavernException):
+    """We expected a certain kind of exception in check_exception_raised but it was something
+    else"""

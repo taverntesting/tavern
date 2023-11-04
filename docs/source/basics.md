@@ -52,17 +52,24 @@ just be to check that an endpoint returns a 401 with no login information. A
 more complicated one might be:
 
 1. Log in to server
-  - `POST` login information in body
-  - Expect login details to be returned in body
+
+- `POST` login information in body
+- Expect login details to be returned in body
+
 2. Get user information
-  - `GET` with login information in `Authorization` header
-  - Expect user information returned in body
+
+- `GET` with login information in `Authorization` header
+- Expect user information returned in body
+
 3. Create a new resource with that user information
-  - `POST` with login information in `Authorization` header and user information in body
-  - Expect a 201 with the created resource in the body
+
+- `POST` with login information in `Authorization` header and user information in body
+- Expect a 201 with the created resource in the body
+
 4. Make sure it's stored on the server
-  - `GET` with login information in `Authorization` header
-  - Expect the same information returned as in the previous step
+
+- `GET` with login information in `Authorization` header
+- Expect the same information returned as in the previous step
 
 The **name** of each stage is a description of what is happening in that
 particular test.
@@ -117,11 +124,14 @@ and lists recursively. If the response is:
 
 ```json
 {
-    "thing": {
-        "nested": [
-            1, 2, 3, 4
-        ]
-    }
+  "thing": {
+    "nested": [
+      1,
+      2,
+      3,
+      4
+    ]
+  }
 }
 ```
 
@@ -148,7 +158,8 @@ response:
       nested_thing: "thing"
 ```
 
-This will save `{"nested": [1, 2, 3, 4]}` into the `nested_thing` variable. See the documentation for the `force_format_include` tag for how this can be used.
+This will save `{"nested": [1, 2, 3, 4]}` into the `nested_thing` variable. See the documentation for
+the `force_format_include` tag for how this can be used.
 
 **NOTE**: The behaviour of these queries used to be different and indexing into
 an array was done like `thing.nested.0`. This will be deprecated in the
@@ -157,7 +168,8 @@ an array was done like `thing.nested.0`. This will be deprecated in the
 It is also possible to save data using function calls, [explained below](#saving-data-from-a-response).
 
 For a more formal definition of the schema that the tests are validated against,
-check [tests schema](https://github.com/taverntesting/tavern/blob/master/tavern/schemas/tests.schema.yaml) in the main Tavern repository.
+check [tests schema](https://github.com/taverntesting/tavern/blob/master/tavern/schemas/tests.schema.yaml) in the main
+Tavern repository.
 
 ## Generating Test Reports
 
@@ -167,7 +179,7 @@ to your Pip dependencies and pass the `--alluredir=<dir>` flag when running Tave
 a test report with the stages that were run, the responses, any fixtures used, and any errors.
 
 See the [Allure documentation](https://docs.qameta.io/allure/#_installing_a_commandline) for more
-information on how to use it. 
+information on how to use it.
 
 ## Variable formatting
 
@@ -361,14 +373,14 @@ response:
         type: seq
         required: True
         sequence:
-        - type: map
-          mapping:
-            user_number:
-              type: int
-              required: False
-            user_name:
-              type: str
-              required: True
+          - type: map
+            mapping:
+              user_number:
+                type: int
+                required: False
+              user_name:
+                type: str
+                required: True
 ```
 
 If an external function you are using raises any exception, the test will be
@@ -399,6 +411,7 @@ above that this function should _not_ take any arguments):
 ```python
 # utils.py
 from box import Box
+
 
 def generate_bearer_token():
     token = sign_a_jwt()
@@ -435,6 +448,7 @@ Input from external functions can be merged into a request instead by specifying
 def return_hello():
     return {"hello": "there"}
 ```
+
 ```yaml
     request:
       url: "{host}/echo"
@@ -445,14 +459,15 @@ def return_hello():
           function: ext_functions:return_hello
 ```
 
-If `tavern-merge-ext-function-values` is set, this will send "hello" and "goodbye" in 
-the request. If not, it will just send "hello". 
+If `tavern-merge-ext-function-values` is set, this will send "hello" and "goodbye" in
+the request. If not, it will just send "hello".
 
 Example `pytest.ini` setting `tavern-merge-ext-function-values` as an argument.
+
 ```python
 # pytest.ini
 [pytest]
-addopts = --tavern-merge-ext-function-values 
+addopts = --tavern - merge - ext - function - values 
 ```
 
 #### Saving data from a response
@@ -466,10 +481,10 @@ Say that we have a server which returns a response like this:
 
 ```json
 {
-    "user": {
-        "name": "John Smith",
-        "id": "abcdef12345"
-    }
+  "user": {
+    "name": "John Smith",
+    "id": "abcdef12345"
+  }
 }
 ```
 
@@ -479,6 +494,7 @@ that this function should take the response object as the first argument):
 ```python
 # utils.py
 from box import Box
+
 
 def test_function(response):
     return Box({"test_user_name": response.json()["user"]["name"]})
@@ -500,7 +516,8 @@ in later requests.
 #### A more complicated example
 
 For a more practical example, the built in `validate_jwt` function also returns the
-decoded token as a dictionary wrapped in a [Box](https://pypi.python.org/pypi/python-box/) object, which allows dot-notation
+decoded token as a dictionary wrapped in a [Box](https://pypi.python.org/pypi/python-box/) object, which allows
+dot-notation
 access to members. This means that the contents of the token can be used for
 future requests. Because Tavern will already be in the Python path (because you
 installed it as a library) you do not need to modify the `PYTHONPATH`.
@@ -602,12 +619,12 @@ response:
 
 The behaviour of various levels of 'strictness' based on the response:
 
-| Response | strict=on | strict=off |
-| ---- | -------- | ------ |
-| `{ "first": 1, "second": { "nested": 2 } }`  | PASS | PASS |
-| `{ "first": 1 }`  | FAIL | PASS |
-| `{ "first": 1, "second": { "another": 2 } }`  | FAIL | FAIL |
-| `{ "first": 1, "second": { "nested": 2, "another": 2 } }`  | FAIL | PASS |
+| Response                                                  | strict=on | strict=off |
+|-----------------------------------------------------------|-----------|------------|
+| `{ "first": 1, "second": { "nested": 2 } }`               | PASS      | PASS       |
+| `{ "first": 1 }`                                          | FAIL      | PASS       |
+| `{ "first": 1, "second": { "another": 2 } }`              | FAIL      | FAIL       |
+| `{ "first": 1, "second": { "nested": 2, "another": 2 } }` | FAIL      | PASS       |
 
 Turning 'strict' off also means that extra items in lists will be ignored as
 long as the ones specified in the test response are present. For example, if the
@@ -675,7 +692,7 @@ whichever configuration file Pytest is using.
 
 ```ini
 [pytest]
-tavern-strict=json:off headers:on
+tavern-strict = json:off headers:on
 ```
 
 #### Per test
@@ -966,8 +983,8 @@ stages:
       status_code: 200
       json:
     location:
-          road: 123 Fake Street
-          country: England
+      road: 123 Fake Street
+      country: England
 
 ---
 test_name: Make sure giving premium works
@@ -1005,7 +1022,6 @@ stages:
       json:
         has_premium: true
 ```
-
 
 ## Including external files
 
@@ -1057,9 +1073,8 @@ automatically be loaded and available for formatting as before. Multiple include
 files can be specified.
 
 The environment variable TAVERN_INCLUDE can contain a : separated list of
-paths to search for include files.  Each path in TAVERN_INCLUDE has
-environment variables expanded before it is searched. 
-
+paths to search for include files. Each path in TAVERN_INCLUDE has
+environment variables expanded before it is searched.
 
 ### Including global configuration files
 
@@ -1197,17 +1212,17 @@ might not work as expected:
 # pytest.ini
 [pytest]
 addopts =
-    # This will work
+# This will work
     --tavern-global-cfg=integration_tests/local_urls.yaml
-    # This will not!
-    # --tavern-global-cfg integration_tests/local_urls.yaml
+# This will not!
+# --tavern-global-cfg integration_tests/local_urls.yaml
 ```
 
 Instead, use the `tavern-global-cfg` option in your pytest.ini file:
 
 ```ini
 [pytest]
-tavern-global-cfg=
+tavern-global-cfg =
     integration_tests/local_urls.yaml
 ```
 
@@ -1226,10 +1241,11 @@ every test:
 $ tavern-ci --tavern-global-cfg common.yaml test_urls.yaml -- test_server.tavern.yaml
 $ py.test --tavern-global-cfg common.yaml local_docker_urls.yaml -- test_server.tavern.yaml
 ```
+
 ```ini
 # pytest.ini
 [pytest]
-tavern-global-cfg=
+tavern-global-cfg =
     common.yaml
     test_urls.yaml
 ```
@@ -1419,7 +1435,6 @@ This is also how things such as strict key checking is controlled via the
 
 An example of using `pytest_args` to exit on the first failure:
 
-
 ```python
 from tavern.core import run
 
@@ -1455,6 +1470,7 @@ This would match both of these response bodies:
 ```yaml
 returned_block: hello
 ```
+
 ```yaml
 returned_block:
   nested: value
@@ -1495,7 +1511,7 @@ third block must start with 4 and the third block must start with 8, 9, "A", or
 ```yaml
   - name: Check that uuidv4 is returned
     request:
-      url: {host}/get_uuid/v4
+      url: { host }/get_uuid/v4
       method: GET
     response:
       status_code: 200
@@ -1517,31 +1533,31 @@ format `v1.2.3-510c2665d771e1`:
 
 ```yaml
 stages:
-- name: get a token by id
-  request:
-    url: "{host}/tokens/get"
-    method: GET
-    params:
-      id: 456
-  response:
-    status_code: 200
-    json:
-      code: abc123
-      id: 456
-      meta:
-        version: !anystr
-        hash: 456
-    save:
-      $ext:
-        function: tavern.helpers:validate_regex
-        extra_kwargs:
-          expression: "v(?P<version>[\d\.]+)-[\w\d]+"
-          in_jmespath: "meta.version"
+  - name: get a token by id
+    request:
+      url: "{host}/tokens/get"
+      method: GET
+      params:
+        id: 456
+    response:
+      status_code: 200
+      json:
+        code: abc123
+        id: 456
+        meta:
+          version: !anystr
+          hash: 456
+      save:
+        $ext:
+          function: tavern.helpers:validate_regex
+          extra_kwargs:
+            expression: "v(?P<version>[\d\.]+)-[\w\d]+"
+            in_jmespath: "meta.version"
 ```
 
 This is a more flexible version of the helper which can also be used to save values
 as in the example. If a named matching group is used as shown above, the saved values
- can then be accessed in subsequent stages by using the `regex.<group-name>` syntax, eg: 
+can then be accessed in subsequent stages by using the `regex.<group-name>` syntax, eg:
 
 ```yaml
 - name: Reuse thing specified in first request
@@ -1643,7 +1659,7 @@ could be done by
     response:
       status_code: 200
       # Expect no users
-      json: []
+      json: [ ]
 ```
 
 Any blocks of JSON that are included this way will not be recursively formatted.
@@ -2020,7 +2036,6 @@ variable_. Using the above example, perhaps we just want to test the server
 works correctly with the items "rotten apple", "fresh orange", and "unripe pear"
 rather than the 9 combinations listed above. This can be done like this:
 
-
 ```yaml
 ---
 test_name: Test post a new fruit
@@ -2031,9 +2046,9 @@ marks:
         - fruit
         - edible
       vals:
-        - [rotten, apple]
-        - [fresh, orange]
-        - [unripe, pear]
+        - [ rotten, apple ]
+        - [ fresh, orange ]
+        - [ unripe, pear ]
         # NOTE: we can specify a nested list like this as well:
         # -
         #   - unripe
@@ -2056,7 +2071,6 @@ This can be combined with the 'simpler' style of parametrisation as well - for
 example, to run the above test but also to specify whether the fruit was
 expensive or cheap:
 
-
 ```yaml
 ---
 test_name: Test post a new fruit and price
@@ -2067,9 +2081,9 @@ marks:
         - fruit
         - edible
       vals:
-        - [rotten, apple]
-        - [fresh, orange]
-        - [unripe, pear]
+        - [ rotten, apple ]
+        - [ fresh, orange ]
+        - [ unripe, pear ]
   - parametrize:
       key: price
       vals:
@@ -2106,11 +2120,11 @@ test_name: Test sending a list of list of keys where one is not a string
 marks:
   - parametrize:
       key:
-      - fruit
-      - colours
+        - fruit
+        - colours
       vals:
-        - [ apple, [red, green, pink] ]
-        - [ pear, [yellow, green] ]
+        - [ apple, [ red, green, pink ] ]
+        - [ pear, [ yellow, green ] ]
 
 stages:
   - name: Send fruit and colours
@@ -2142,28 +2156,28 @@ functions can be used to read values. For example this block will create 6 tests
 test_name: Test parametrizing random different data types in the same test
 
 marks:
-- parametrize:
-    key: value_to_send
-    vals:
-    - a
-    - [b, c]
-    - more: stuff
-    - yet: [more, stuff]
-    - $ext:
-        function: ext_functions:return_string
-    - and: this
-      $ext:
-        function: ext_functions:return_dict
-        
-      # If 'return_dict' returns {"keys: ["a","b","c"]} this results in:
-      # {
-      #   "and": "this",
-      #   "keys": [
-      #     "a",
-      #     "b",
-      #     "c"
-      #   ]
-      # }
+  - parametrize:
+      key: value_to_send
+      vals:
+        - a
+        - [ b, c ]
+        - more: stuff
+        - yet: [ more, stuff ]
+        - $ext:
+            function: ext_functions:return_string
+        - and: this
+          $ext:
+            function: ext_functions:return_dict
+
+          # If 'return_dict' returns {"keys: ["a","b","c"]} this results in:
+          # {
+          #   "and": "this",
+          #   "keys": [
+          #     "a",
+          #     "b",
+          #     "c"
+          #   ]
+          # }
 ```
 
 As see in the last example, if the `$ext` function returns a dictionary then it will also be merged
@@ -2196,12 +2210,14 @@ import pytest
 import logging
 import time
 
+
 @pytest.fixture
 def server_password():
     with open("/path/to/password/file", "r") as pfile:
         password = pfile.read().strip()
 
     return password
+
 
 @pytest.fixture(name="time_request")
 def fix_time_request():
@@ -2258,7 +2274,7 @@ There are some limitations on fixtures:
 Fixtures which are specified as `autouse` can also be used without explicitly
 using `usefixtures` in a test. This is a good way to essentially precompute a
 format variable without also having to use an external function or specify a
-`usefixtures` block in every test where you need it. 
+`usefixtures` block in every test where you need it.
 
 To do this, just pass the `autouse=True` parameter to your fixtures along with
 the relevant scope. Using 'session' will evalute the fixture once at the beginning
@@ -2313,6 +2329,7 @@ Example usage:
 ```python
 import logging
 
+
 def pytest_tavern_beta_before_every_test_run(test_dict, variables):
     logging.info("Starting test %s", test_dict["test_name"])
 
@@ -2321,13 +2338,14 @@ def pytest_tavern_beta_before_every_test_run(test_dict, variables):
 
 ### After every test run
 
-This hook is called _after_ execution of each test, regardless of the test 
+This hook is called _after_ execution of each test, regardless of the test
 result. The hook can, for example, be used to perform cleanup after the test is run.
 
 Example usage:
 
 ```python
 import logging
+
 
 def pytest_tavern_beta_after_every_test_run(test_dict, variables):
     logging.info("Ending test %s", test_dict["test_name"])
@@ -2350,14 +2368,123 @@ def pytest_tavern_beta_after_every_response(expected, response):
 ### Before every request
 
 This hook is called just before each request with the arguments passed to the request
-"function". By default, this is Session.request (from requests) for HTTP and Client.publish 
-(from paho-mqtt) for MQTT. 
+"function". By default, this is Session.request (from requests) for HTTP and Client.publish
+(from paho-mqtt) for MQTT.
 
 Example usage:
 
 ```python
 import logging
 
+
 def pytest_tavern_beta_before_every_request(request_args):
     logging.info("Making request: %s", request_args)
 ```
+
+## Tinctures
+
+Another way of running functions at certain times is to use the 'tinctures' functionality:
+
+```python
+# package/helpers.py
+
+import logging
+import time
+
+logger = logging.getLogger(__name__)
+
+
+def time_request(stage):
+    t0 = time.time()
+    yield
+    t1 = time.time()
+    logger.info("Request for stage %s took %s", stage, t1 - t0)
+
+
+def print_response(_, extra_print="affa"):
+    logger.info("STARTING:")
+    (expected, response) = yield
+    logger.info("Response is %s (%s)", response, extra_print)
+```
+
+```yaml
+---
+test_name: Test tincture
+
+tinctures:
+  - function: package.helpers:time_request
+
+stages:
+  - name: Make a request
+    tinctures:
+      - function: package.helpers:print_response
+        extra_kwargs:
+          extra_print: "blooble"
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "one"
+
+  - name: Make another request
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "two"
+```
+
+Tinctures can be specified on a per-stage level or a per-test level. When specified on the test level, the tincture is
+run for every stage in the test. In the above example, the `time_request` function will be run for both stages, but
+the 'print_response' function will only be run for the first stage.
+
+Tinctures are _similar_ to fixtures but are more similar to [external functions](#calling-external-functions). Tincture
+functions do not need to be annotated with a function like Pytest fixtures, and are referred to in the same
+way (`path.to.package:function`), and have arguments passed to them in the same way (`extra_kwargs`, `extra_args`) as
+external functions.
+
+The first argument to a tincture is always a dictionary of the stage to be run.
+
+If a tincture has a `yield` in the middle of it, during the `yield` the stage itself will be run. If a return value is
+expected from the `yield` (eg `(expected, response) = yield` in the example above) then the _expected_ return values and
+the response object from the stage will be returned. This allows a tincture to introspect the response, and compare it
+against the expected, the same as the `pytest_tavern_beta_after_every_response` [hook](#after-every-response). This
+response object will be different for MQTT and HTTP tests!
+
+If you need to run something before _every_ stage or after _every_ response in your test suite, look at using
+the [hooks](#hooks) instead.
+
+## Finalising stages
+
+If you need a stage to run after a test runs, whether it passes or fails (for example, to log out of a service or
+invalidate a short-lived auth token) you can use the `finally` block:
+
+```yaml
+---
+test_name: Test finally block doing nothing
+
+stages:
+  - name: stage 1
+    ...
+
+  - name: stage 2
+    ...
+
+  - name: stage 3
+    ...
+
+finally:
+  - name: clean up
+    request:
+      url: "{global_host}/cleanup"
+      method: POST
+```
+
+The `finally` block accepts a list of stages which will always be run after the rest of the test finishes, whether it
+passed or failed. Each stage in run in order - if one of the `finally` stages fails, the rest will not be run.
+
+In the above example, if "stage 2" fails then the execution order would be:
+
+- stage 1
+- stage 2 (fails)
+- clean up

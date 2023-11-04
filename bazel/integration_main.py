@@ -1,9 +1,9 @@
 import json
 import os
 import subprocess
+import sys
 
 import pytest
-import sys
 
 from tavern._core.internal.testutil import enable_default_tavern_extensions
 from tavern._core.pytest import hooks as pytesthook
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     os_path_dirname = os.path.dirname(test_file_location_)
 
     sys.path.append(os_path_dirname)
-    images__split_ = [i for i in json.loads(os.environ["TAVERN_DOCKER_IMAGES"])]
+    images__split_ = list(json.loads(os.environ["TAVERN_DOCKER_IMAGES"]))
 
     subprocess.run(
         [

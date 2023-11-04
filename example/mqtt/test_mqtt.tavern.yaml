@@ -6,6 +6,9 @@ includes:
   - !include common.yaml
 
 paho-mqtt: &mqtt_spec
+  auth:
+    username: tavern
+    password: tavern
   # tls:
   #   enable: true
   connect:
@@ -24,6 +27,7 @@ stages:
       method: PUT
       json:
         device_id: "{random_device_id}"
+        clean: True
     response:
       status_code: 201
 
@@ -64,12 +68,37 @@ stages:
 
 ---
 
+test_name: Test mqtt wildcard subscription
+
+includes:
+  - !include common.yaml
+
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - *setup_device_for_test
+
+  - name: Echo json
+    mqtt_publish:
+      topic: /device/{random_device_id}/echo
+      json:
+        message: hello world
+    mqtt_response:
+      topic: /device/+/echo/response
+      json:
+        message: hello world
+      timeout: 5
+      qos: 1
+
+---
+
 test_name: Test mqtt message echo json formatted topic name
 
 marks:
   - usefixtures:
-    - get_publish_topic
-    - get_response_topic_suffix
+      - get_publish_topic
+      - get_response_topic_suffix
 
 includes:
   - !include common.yaml
@@ -251,7 +280,7 @@ stages:
 
 ---
 
-test_name: Make sure posting publishes mqtt message
+test_name: Make sure can handle multiple types of responses
 
 includes:
   - !include common.yaml
@@ -466,6 +495,9 @@ includes:
   - !include common.yaml
 
 paho-mqtt:
+  auth:
+    username: tavern
+    password: tavern
   client:
     transport: websockets
     client_id: tavern-tester-{random_device_id}
@@ -502,7 +534,7 @@ stages:
       url: "{host}/create_device"
       method: PUT
       json:
-        device_id: "3487589234754"
+        device_id: "{random_device_id_2}"
 
   - name: step 1 - ping/pong
     mqtt_publish:
@@ -512,7 +544,7 @@ stages:
         payload: !anything
         timeout: 3
         qos: 1
-      - topic: /device/3487589234754/status/response
+      - topic: /device/{random_device_id_2}/status/response
         payload: !anything
         timeout: 3
         qos: 1
@@ -534,13 +566,13 @@ stages:
       url: "{host}/create_device"
       method: PUT
       json:
-        device_id: "43676974864576"
+        device_id: "{random_device_id_2}"
 
   - name: step 1 - ping/pong
     mqtt_publish:
       topic: /devices/status
     mqtt_response:
-      - topic: /device/43676974864576/status/response
+      - topic: /device/{random_device_id_2}/status/response
         payload: !anything
         timeout: 3
         qos: 1
@@ -548,3 +580,220 @@ stages:
         payload: !anything
         timeout: 3
         qos: 1
+
+---
+
+test_name: Save something and reuse it, one response
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - *setup_device_for_test
+
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /devices/status
+    mqtt_response:
+      topic: /device/{random_device_id}/status/response
+      json:
+        lights: !anything
+      timeout: 3
+      qos: 1
+      save:
+        json:
+          lights_status: lights
+
+  - name: Echo text
+    mqtt_publish:
+      topic: /device/{random_device_id}/echo
+      payload: "{lights_status}"
+    mqtt_response:
+      topic: /device/{random_device_id}/echo/response
+      payload: "{lights_status}"
+      timeout: 5
+      qos: 1
+
+---
+
+test_name: Save something and reuse it, multiple responses, saved from both
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - *setup_device_for_test
+
+  - name: Turn lights on for first device
+    mqtt_publish:
+      topic: /device/{random_device_id}/lights
+      qos: 1
+      payload: "on"
+    delay_after: 2
+
+  - name: create device 2
+    request:
+      url: "{host}/create_device"
+      method: PUT
+      json:
+        device_id: "{random_device_id_2}"
+
+  - name: Get device statuses
+    mqtt_publish:
+      topic: /devices/status
+    mqtt_response:
+      - topic: /device/{random_device_id}/status/response
+        timeout: 3
+        qos: 1
+        json:
+          lights: 1
+        save:
+          json:
+            device_1_lights: lights
+      - topic: /device/{random_device_id_2}/status/response
+        timeout: 3
+        qos: 1
+        json:
+          lights: 0
+        save:
+          json:
+            device_2_lights: lights
+
+  - name: Ensure can use saved values 1
+    request:
+      url: "{host}/send_mqtt_message"
+      json:
+        device_id: "{random_device_id}"
+        payload: "{device_1_lights}"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        topic: "/device/{random_device_id}"
+      headers:
+        content-type: application/json
+    mqtt_response:
+      topic: /device/{random_device_id}
+      payload: "1"
+      timeout: 5
+
+  - name: Ensure can use saved values 2
+    request:
+      url: "{host}/send_mqtt_message"
+      json:
+        device_id: "{random_device_id_2}"
+        payload: "{device_2_lights}"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        topic: "/device/{random_device_id_2}"
+      headers:
+        content-type: application/json
+    mqtt_response:
+      topic: /device/{random_device_id_2}
+      payload: "0"
+      timeout: 5
+
+---
+
+test_name: Save something from an ext function and reuse it, one response
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - *setup_device_for_test
+
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /devices/status
+    mqtt_response:
+      topic: /device/{random_device_id}/status/response
+      json:
+        lights: !anything
+      timeout: 3
+      qos: 1
+      save:
+        $ext:
+          function: testing_utils:return_hello
+
+  - name: Echo text
+    mqtt_publish:
+      topic: /device/{random_device_id}/echo
+      payload: "{hello}"
+    mqtt_response:
+      topic: /device/{random_device_id}/echo/response
+      payload: "there"
+      timeout: 5
+      qos: 1
+
+---
+
+test_name: Save something from an ext function and reuse it, multiple response
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - *setup_device_for_test
+
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /devices/status
+    mqtt_response:
+      - topic: /device/{random_device_id}/status/response
+        json:
+          lights: !anything
+        timeout: 3
+        qos: 1
+        save:
+          $ext:
+            function: testing_utils:return_hello
+
+  - name: Echo text
+    mqtt_publish:
+      topic: /device/{random_device_id}/echo
+      payload: "{hello}"
+    mqtt_response:
+      topic: /device/{random_device_id}/echo/response
+      payload: "there"
+      timeout: 5
+      qos: 1
+
+---
+
+test_name: Update an MQTT publish from an ext function
+
+includes:
+  - !include common.yaml
+
+paho-mqtt: *mqtt_spec
+
+stages:
+  - *setup_device_for_test
+
+  - name: step 1 - ping/pong
+    mqtt_publish:
+      topic: /device/{random_device_id}/echo
+      json:
+        $ext:
+          function: testing_utils:return_hello
+    mqtt_response:
+        topic: /device/{random_device_id}/echo/response
+        timeout: 3
+        qos: 1
+        json:
+          hello: there

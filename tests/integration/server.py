@@ -1,20 +1,19 @@
 import base64
-import datetime
-from datetime import datetime, timedelta
 import gzip
-from hashlib import sha512
 import itertools
 import json
 import math
 import mimetypes
 import os
 import time
-from urllib.parse import unquote_plus
 import uuid
+from datetime import datetime, timedelta
+from hashlib import sha512
+from urllib.parse import unquote_plus
 
+import jwt
 from flask import Flask, Response, jsonify, make_response, redirect, request, session
 from itsdangerous import URLSafeTimedSerializer
-import jwt
 
 app = Flask(__name__)
 app.config.update(SECRET_KEY="secret")
@@ -84,53 +83,87 @@ def upload_fake_file():
     if not request.files:
         return "", 401
 
-    if not mimetypes.inited:
-        mimetypes.init()
+    return _handle_files()
 
-    for key, item in request.files.items():
+
+def _handle_files():
+    for item in request.files.values():
         if item.filename:
             filetype = ".{}".format(item.filename.split(".")[-1])
             if filetype in mimetypes.suffix_map:
                 if not item.content_type:
                     return "", 400
-
     # Try to download each of the files downloaded to /tmp and
     # then remove them
     for key in request.files:
         file_to_save = request.files[key]
         path = os.path.join("/tmp", file_to_save.filename)
         file_to_save.save(path)
-
     return "", 200
+
+
+class BadFileUploadException(Exception):
+    """Something wrong when uploading files"""
+
+
+def _verify_is_file_multipart():
+    if not mimetypes.inited:
+        mimetypes.init()
+
+    if not request.content_type.startswith("multipart/form-data"):
+        raise BadFileUploadException("Was not a multipart form upload")
+
+    if not request.files:
+        raise BadFileUploadException("No files in request")
 
 
 @app.route("/fake_upload_file_data", methods=["POST"])
 def upload_fake_file_and_data():
-    if not request.files:
-        return "", 401
+    try:
+        _verify_is_file_multipart()
+    except BadFileUploadException as e:
+        return jsonify({"error": str(e)}), 400
 
     if not request.form.to_dict():
-        return "", 402
+        return "", 400
 
-    # Verify that the content type is `multipart`
-    if not request.content_type.startswith("multipart/form-data"):
-        return "", 403
+    return _handle_files()
 
-    if not mimetypes.inited:
-        mimetypes.init()
 
-    for key, item in request.files.items():
-        if item.filename:
-            filetype = ".{}".format(item.filename.split(".")[-1])
-            if filetype in mimetypes.suffix_map:
-                if not item.content_type:
-                    return "", 400
+@app.route("/files_expect_in_order", methods=["POST"])
+def upload_specific_files_in_order():
+    """Expects a multipart form upload with files in the correct order
 
-    # Try to download each of the files downloaded to /tmp
-    for key in request.files:
-        file_to_save = request.files[key]
-        path = os.path.join("/tmp", file_to_save.filename)
-        file_to_save.save(path)
+    See test_files.tavern.yaml for expected list of files here
+    """
+
+    try:
+        _verify_is_file_multipart()
+    except BadFileUploadException as e:
+        return jsonify({"error": str(e)}), 400
+
+    try:
+        group_1 = request.files.getlist("group_1")
+        if len(group_1) != 2:
+            raise Exception(f"expected 2 files in group 1, got {len(group_1)}")
+        if group_1[0].filename != "OK.txt":
+            raise Exception(
+                f"First file in group 1 should be OK.txt, was {group_1[0].filename}"
+            )
+        if group_1[1].filename != "OK.json.gz":
+            raise Exception(
+                f"Second file in group 1 should be OK.json.gz, was {group_1[1].filename}"
+            )
+
+        group_2 = request.files.getlist("group_2")
+        if len(group_2) != 1:
+            raise Exception(f"expected 1 files in group 2, got {len(group_2)}")
+        if group_2[0].filename != "OK.txt":
+            raise Exception(
+                f"First file in group 2 should be OK.txt, was {group_2[0].filename}"
+            )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
 
     return "", 200
 
@@ -375,7 +408,7 @@ users = {"mark": {"password": "password", "regular": "foo", "protected": "bar"}}
 serializer = URLSafeTimedSerializer(
     secret_key="secret",
     salt="cookie",
-    signer_kwargs=dict(key_derivation="hmac", digest_method=sha512),
+    signer_kwargs={"key_derivation": "hmac", "digest_method": sha512},
 )
 
 

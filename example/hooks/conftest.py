@@ -1,6 +1,6 @@
+import logging
 import os
 import tempfile
-import logging
 
 import pytest
 

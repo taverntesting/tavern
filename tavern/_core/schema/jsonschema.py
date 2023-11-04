@@ -34,31 +34,31 @@ from tavern._core.stage_lines import (
 logger = logging.getLogger(__name__)
 
 
-def is_str_or_bytes_or_token(checker, instance):  # pylint: disable=unused-argument
+def is_str_or_bytes_or_token(checker, instance):
     return Draft7Validator.TYPE_CHECKER.is_type(instance, "string") or isinstance(
         instance, (bytes, RawStrToken, AnythingSentinel)
     )
 
 
-def is_number_or_token(checker, instance):  # pylint: disable=unused-argument
+def is_number_or_token(checker, instance):
     return Draft7Validator.TYPE_CHECKER.is_type(instance, "number") or isinstance(
         instance, (IntToken, FloatToken, AnythingSentinel)
     )
 
 
-def is_integer_or_token(checker, instance):  # pylint: disable=unused-argument
+def is_integer_or_token(checker, instance):
     return Draft7Validator.TYPE_CHECKER.is_type(instance, "integer") or isinstance(
         instance, (IntToken, AnythingSentinel)
     )
 
 
-def is_boolean_or_token(checker, instance):  # pylint: disable=unused-argument
+def is_boolean_or_token(checker, instance):
     return Draft7Validator.TYPE_CHECKER.is_type(instance, "boolean") or isinstance(
         instance, (BoolToken, AnythingSentinel)
     )
 
 
-def is_object_or_sentinel(checker, instance):  # pylint: disable=unused-argument
+def is_object_or_sentinel(checker, instance):
     return (
         Draft7Validator.TYPE_CHECKER.is_type(instance, "object")
         or isinstance(instance, (TypeSentinel, TypeConvertToken))
@@ -66,9 +66,7 @@ def is_object_or_sentinel(checker, instance):  # pylint: disable=unused-argument
     )
 
 
-def oneOf(  # noqa
-    validator, oneOf, instance, schema  # noqa
-):  # pylint: disable=redefined-outer-name,unused-argument
+def oneOf(validator, oneOf, instance, schema):
     """Patched version of 'oneof' that does not complain if something is matched by multiple branches"""
     subschemas = enumerate(oneOf)
     all_errors = []
@@ -104,7 +102,7 @@ CustomValidator = extend(
 )
 
 
-def verify_jsonschema(to_verify, schema):
+def verify_jsonschema(to_verify, schema) -> None:
     """Verify a generic file against a given jsonschema
 
     Args:
@@ -114,8 +112,6 @@ def verify_jsonschema(to_verify, schema):
     Raises:
         BadSchemaError: Schema did not match
     """
-
-    # pylint: disable=too-many-locals
 
     validator = CustomValidator(schema)
 
@@ -166,6 +162,8 @@ def verify_jsonschema(to_verify, schema):
 <error: unable to find input file for context>
 """
                 )
+
+        logger.debug("original exception from jsonschema: %s", e)
 
         msg = "\n---\n" + "\n---\n".join([str(i) for i in real_context])
         raise BadSchemaError(msg) from None

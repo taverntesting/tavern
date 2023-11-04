@@ -45,7 +45,11 @@ Run every so often to update the pre-commit hooks
 ### Fixing Python formatting issue
 
     black tavern/ tests/
-    isort --profile black tavern/ tests/
+    ruff --fix tavern/ tests/
+
+### Fix yaml formatting issues
+
+    pre-commit run --all-files
 
 ## Creating a new release
 
@@ -58,3 +62,10 @@ Run every so often to update the pre-commit hooks
 1. Tag and push to git with `tbump <new-tag> --tag-message "<tag-message>"`
 
 1. Upload to pypi with `flit publish`
+
+## Building the documentation
+
+```shell
+mkdir -p dist/
+sphinx-build docs/source/ dist/
+```

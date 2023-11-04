@@ -12,8 +12,21 @@ on:
       - feature-2.0
 
 jobs:
-  test:
+  simple-checks:
     runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - uses: pre-commit/action@v3.0.0
+
+  unit-tests:
+    runs-on: ubuntu-latest
+    needs: simple-checks
 
     services:
       docker:
@@ -26,6 +39,9 @@ jobs:
           BAZEL_REMOTE_DIR: ~/.cache/bazel/disk
 
     steps:
+      - uses: jpribyl/action-docker-layer-caching@v0.1.1
+        continue-on-error: true
+
       - uses: actions/checkout@v3
 
       - uses: bazelbuild/setup-bazelisk@v2

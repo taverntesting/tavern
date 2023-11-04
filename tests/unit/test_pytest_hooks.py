@@ -1,33 +1,28 @@
-from dataclasses import dataclass
 import os
+import pathlib
+from dataclasses import dataclass
 from unittest.mock import Mock, patch
 
+import pytest
 from faker import Faker
 
 from tavern._core import exceptions
 from tavern._core.pytest.file import YamlFile, _get_parametrized_items
-
-try:
-    from py.path import LocalPath
-except ImportError:
-    from py._path.local import LocalPath
-
-import pytest
 
 
 @dataclass
 class MockArgs:
     session: pytest.Session
     parent: pytest.File
-    fspath: LocalPath
+    path: pathlib.Path
 
 
 def mock_args():
     """Get a basic test config to initialise a YamlFile object with"""
 
-    fspath = LocalPath("abc")
+    path = pathlib.Path("abc")
 
-    cargs = {"rootdir": "abc", "fspath": fspath}
+    cargs = {"rootdir": "abc", "path": path}
 
     config = Mock(**cargs, rootpath="abc")
 
@@ -35,7 +30,6 @@ def mock_args():
 
     parent = Mock(
         spec=os.PathLike,
-        path=fspath,
         config=config,
         parent=None,
         nodeid="sdlfs",
@@ -43,7 +37,7 @@ def mock_args():
         session=session,
     )
 
-    return MockArgs(session, parent, fspath)
+    return MockArgs(session, parent, path)
 
 
 def get_basic_parametrize_mark(faker):
@@ -63,7 +57,7 @@ def get_joined_parametrize_mark(faker):
 
 def get_parametrised_tests(marks):
     args = mock_args()
-    y = YamlFile.from_parent(args.parent, fspath=args.fspath)
+    y = YamlFile.from_parent(args.parent, path=args.path)
     y.session = args.session
 
     spec = {"test_name": "a test", "stages": []}
@@ -220,6 +214,6 @@ class TestMakeFile:
 
 def test_doc_string():
     args = mock_args()
-    y = YamlFile.from_parent(args.parent, fspath=args.fspath)
+    y = YamlFile.from_parent(args.parent, path=args.path)
 
     assert isinstance(y.obj.__doc__, str)

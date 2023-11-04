@@ -11,26 +11,34 @@ common --incompatible_allow_tags_propagation
 test --incompatible_exclusive_test_sandboxed
 build --incompatible_strict_action_env
 build --modify_execution_info=PackageTar=+no-remote
-build --nolegacy_external_runfiles
-startup --host_jvm_args=-DBAZEL_TRACK_SOURCE_DIRECTORIES=1
-build --experimental_remote_merkle_tree_cache
-build --incompatible_remote_results_ignore_disk
 build --incompatible_default_to_explicit_init_py
 build --noexperimental_check_output_files
-build --incompatible_remote_build_event_upload_respect_no_cache
-build --bes_upload_mode=fully_async
 build --experimental_reuse_sandbox_directories
+build --nolegacy_external_runfiles
+
+build:release --workspace_status_command=tools/workspace_status.sh --stamp
+build --incompatible_strict_action_env
+
+startup --host_jvm_args=-DBAZEL_TRACK_SOURCE_DIRECTORIES=1
+
+build --remote_download_minimal
+build --experimental_guard_against_concurrent_changes
+build --experimental_remote_cache_async
+build --experimental_remote_merkle_tree_cache
+build --incompatible_remote_results_ignore_disk
+build --experimental_remote_cache_compression
+build --experimental_inprocess_symlink_creation
+build --experimental_remotable_source_manifests
+test --test_output=errors
+test --test_keep_going
+test --build_tests_only
 
 
-# Only used in CI
-build:ci --repository_cache=~/.cache/bazel/repository
-build:ci --experimental_remote_cache_async
-build:ci --experimental_remote_cache_compression
-build:ci --remote_cache=grpc://localhost:9092
-build:ci --remote_download_minimal
-build:ci --experimental_remote_merkle_tree_cache
-run:ci --remote_download_toplevel
+# Enable sky query https://bazel.build/query/language#sky-query
+query --infer_universe_scope --order_output=no
 
-
+# Required for some C++ dependencies
+build --cxxopt='-std=c++17'
+build --host_cxxopt='-std=c++17'
 
 try-import %workspace%/.bazelrc.user

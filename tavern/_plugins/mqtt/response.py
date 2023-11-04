@@ -1,10 +1,12 @@
 import concurrent
 import concurrent.futures
-from dataclasses import dataclass
+import contextlib
 import itertools
 import json
 import logging
 import time
+from dataclasses import dataclass
+from typing import Dict, List, Mapping, Optional, Tuple, Union
 
 from paho.mqtt.client import MQTTMessage
 
@@ -13,6 +15,7 @@ from tavern._core.dict_util import check_keys_match_recursive
 from tavern._core.loader import ANYTHING
 from tavern._core.pytest.newhooks import call_hook
 from tavern._core.report import attach_yaml
+from tavern._core.strict_util import StrictSetting
 from tavern.response import BaseResponse
 
 from .client import MQTTClient
@@ -23,7 +26,7 @@ _default_timeout = 1
 
 
 class MQTTResponse(BaseResponse):
-    def __init__(self, client: MQTTClient, name, expected, test_block_config):
+    def __init__(self, client: MQTTClient, name, expected, test_block_config) -> None:
         super().__init__(name, expected, test_block_config)
 
         self._client = client
@@ -36,11 +39,11 @@ class MQTTResponse(BaseResponse):
         else:
             return "<Not run yet>"
 
-    def verify(self, response):
+    def verify(self, response) -> dict:
         """Ensure mqtt message has arrived
 
         Args:
-            response: not used
+            response: not used except for debug printing
         """
 
         self.response = response
@@ -50,23 +53,22 @@ class MQTTResponse(BaseResponse):
         finally:
             self._client.unsubscribe_all()
 
-    def _await_response(self):
-        """Actually wait for response"""
+    def _await_response(self) -> dict:
+        """Actually wait for response
 
-        # pylint: disable=too-many-statements
+        Returns:
+            dict: things to save to variables for the rest of this test
+        """
 
         # Get into class with metadata attached
-        expected = [
-            _ExpectedMessage(i, **v)
-            for i, v in enumerate(self.expected["mqtt_responses"])
-        ]
+        expected = self.expected["mqtt_responses"]
 
         by_topic = {
             m: list(v) for m, v in itertools.groupby(expected, lambda x: x["topic"])
         }
 
-        correct_messages = []
-        warnings = []
+        correct_messages: List["_ReturnedMessage"] = []
+        warnings: List[str] = []
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = []
@@ -103,26 +105,48 @@ class MQTTResponse(BaseResponse):
         saved = {}
 
         for msg in correct_messages:
+            # Check saving things from the payload and from json
             saved.update(
                 self.maybe_get_save_values_from_save_block(
-                    "json", msg.expected.get("payload")
+                    "payload",
+                    msg.msg.payload,
+                    outer_save_block=msg.expected,
                 )
             )
+            saved.update(
+                self.maybe_get_save_values_from_save_block(
+                    "json",
+                    msg.msg.payload,
+                    outer_save_block=msg.expected,
+                )
+            )
+
             saved.update(self.maybe_get_save_values_from_ext(msg.msg, msg.expected))
+
+        # Trying to save might have introduced errors, so check again
+        if self.errors:
+            raise exceptions.TestFailError(
+                "Saving results from test '{:s}' failed:\n{:s}".format(
+                    self.name, self._str_errors()
+                ),
+                failures=self.errors,
+            )
 
         return saved
 
-    def _await_messages_on_topic(self, topic, expected):
+    def _await_messages_on_topic(
+        self, topic: str, expected: List[Dict]
+    ) -> Tuple[List["_ReturnedMessage"], List[str]]:
         """
         Waits for the specific message
 
         Args:
-            expected (list): expected response for this block
+            topic: topic to listen on
+            expected: expected response for this block
 
         Returns:
             tuple(msg, list): The correct message (if any) and warnings from processing the message
         """
-        # pylint: disable=too-many-statements
 
         timeout = max(m.get("timeout", _default_timeout) for m in expected)
 
@@ -132,7 +156,7 @@ class MQTTResponse(BaseResponse):
         correct_messages = []
         warnings = []
 
-        time_spent = 0
+        time_spent = 0.0
         while (time_spent < timeout) and verifiers:
             t0 = time.time()
 
@@ -153,10 +177,8 @@ class MQTTResponse(BaseResponse):
 
             self.received_messages.append(msg)
 
-            try:
+            with contextlib.suppress(AttributeError):
                 msg.payload = msg.payload.decode("utf8")
-            except AttributeError:
-                pass
 
             attach_yaml(
                 {
@@ -167,7 +189,7 @@ class MQTTResponse(BaseResponse):
                 name="rest_response",
             )
 
-            found = []
+            found: List[int] = []
             for i, v in enumerate(verifiers):
                 if v.is_valid(msg):
                     correct_messages.append(_ReturnedMessage(v.expected, msg))
@@ -202,22 +224,16 @@ class MQTTResponse(BaseResponse):
         return correct_messages, warnings
 
 
-class _ExpectedMessage(dict):
-    original_index: int
-
-    def __init__(self, original_index, **kwargs):
-        self.original_index = original_index
-        super().__init__(**kwargs)
-
-
 @dataclass
 class _ReturnedMessage:
-    expected: _ExpectedMessage
+    """An actual message returned from the API and it's matching 'expected' block."""
+
+    expected: dict
     msg: MQTTMessage
 
 
 class _MessageVerifier:
-    def __init__(self, test_block_config, expected):
+    def __init__(self, test_block_config, expected) -> None:
         self.expires = time.time() + expected.get("timeout", _default_timeout)
 
         self.expected = expected
@@ -226,16 +242,13 @@ class _MessageVerifier:
         )
 
         test_strictness = test_block_config.strict
-        self.block_strictness = test_strictness.setting_for("json")
+        self.block_strictness: StrictSetting = test_strictness.option_for("json")
 
         # Any warnings to do with the request
         # eg, if a message was received but it didn't match, message had payload, etc.
-        self.warnings = []
+        self.warnings: List[str] = []
 
-    def is_valid(self, msg):
-
-        # pylint: disable=too-many-return-statements
-
+    def is_valid(self, msg: MQTTMessage) -> bool:
         if time.time() > self.expires:
             return False
 
@@ -257,7 +270,6 @@ class _MessageVerifier:
                 return False
 
         if self.expected_payload is None:
-            # pylint: disable=no-else-break
             if msg.payload is None or msg.payload == "":
                 logger.info("Got message with no payload (as expected) on '%s'", topic)
                 return True
@@ -306,7 +318,13 @@ class _MessageVerifier:
         return False
 
     @staticmethod
-    def _get_payload_vals(expected):
+    def _get_payload_vals(expected: Mapping) -> Tuple[Optional[Union[str, dict]], bool]:
+        """Gets the payload from the 'expected' block
+
+        Returns:
+            tuple: First element is the expected payload, second element is whether it's
+                expected to be json or not
+        """
         # TODO move this check to initialisation/schema checking
         if "json" in expected:
             if "payload" in expected:
@@ -318,7 +336,7 @@ class _MessageVerifier:
             json_payload = True
 
             if payload.pop("$ext", None):
-                raise exceptions.InvalidExtBlockException(
+                raise exceptions.MisplacedExtBlockException(
                     "json",
                 )
         elif "payload" in expected:
@@ -330,7 +348,7 @@ class _MessageVerifier:
 
         return payload, json_payload
 
-    def popwarnings(self):
+    def popwarnings(self) -> List[str]:
         popped = []
         while self.warnings:
             popped.append(self.warnings.pop(0))

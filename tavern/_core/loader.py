@@ -1,11 +1,11 @@
 # https://gist.github.com/joshbode/569627ced3076931b02f
-from abc import abstractmethod
-from distutils.util import strtobool  # pylint: disable=deprecated-module
-from itertools import chain
+import dataclasses
 import logging
 import os.path
 import re
 import uuid
+from abc import abstractmethod
+from itertools import chain
 
 import pytest
 import yaml
@@ -18,12 +18,12 @@ from yaml.scanner import Scanner
 
 from tavern._core import exceptions
 from tavern._core.exceptions import BadSchemaError
+from tavern._core.strtobool import strtobool
 
 logger = logging.getLogger(__name__)
 
 
 def makeuuid(loader, node):
-    # pylint: disable=unused-argument
     return str(uuid.uuid4())
 
 
@@ -48,7 +48,7 @@ class RememberComposer(Composer):
 
 
 def create_node_class(cls):
-    class node_class(cls):  # noqa
+    class node_class(cls):
         def __init__(self, x, start_mark, end_mark):
             cls.__init__(self, x)
             self.start_mark = start_mark
@@ -92,7 +92,6 @@ yaml.add_representer(dict_node, yaml.representer.SafeRepresenter.represent_dict)
 yaml.add_representer(list_node, yaml.representer.SafeRepresenter.represent_list)
 
 
-# pylint: disable=too-many-ancestors
 class IncludeLoader(
     Reader,
     Scanner,
@@ -126,7 +125,6 @@ class IncludeLoader(
 
 
 def _get_include_dirs(loader):
-    # pylint: disable=protected-access
     loader_list = [loader._root]
 
     if IncludeLoader.env_path_list is None:
@@ -233,6 +231,7 @@ class DictSentinel(TypeSentinel):
     constructor = dict
 
 
+@dataclasses.dataclass
 class RegexSentinel(TypeSentinel):
     """Sentinel that matches a regex in a part of the response
 
@@ -240,7 +239,7 @@ class RegexSentinel(TypeSentinel):
     """
 
     constructor = str
-    compiled = None
+    compiled: re.Pattern
 
     def __str__(self):
         return "<Tavern Regex sentinel for {}>".format(self.compiled.pattern)
@@ -255,9 +254,7 @@ class RegexSentinel(TypeSentinel):
 
     @classmethod
     def from_yaml(cls, loader, node):
-        c = cls()
-        c.compiled = re.compile(node.value)
-        return c
+        return cls(re.compile(node.value))
 
 
 class _RegexMatchSentinel(RegexSentinel):
@@ -360,7 +357,7 @@ class StrToBoolConstructor:
     """Using `bool` as a constructor directly will evaluate all strings to `True`."""
 
     def __new__(cls, s):
-        return bool(strtobool(s))
+        return strtobool(s)
 
 
 class BoolToken(TypeConvertToken):
@@ -432,15 +429,15 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):  # type:ignore
 yaml.dumper.Dumper.add_representer(ApproxScalar, ApproxSentinel.to_yaml)
 
 
-def load_single_document_yaml(filename):
+def load_single_document_yaml(filename: os.PathLike) -> dict:
     """
     Load a yaml file and expect only one document
 
     Args:
-        filename (str): path to document
+        filename: path to document
 
     Returns:
-        dict: content of file
+        content of file
 
     Raises:
         UnexpectedDocumentsError: If more than one document was in the file
@@ -448,7 +445,7 @@ def load_single_document_yaml(filename):
 
     with open(filename, "r", encoding="utf-8") as fileobj:
         try:
-            contents = yaml.load(fileobj, Loader=IncludeLoader)
+            contents = yaml.load(fileobj, Loader=IncludeLoader)  # type:ignore # noqa
         except yaml.composer.ComposerError as e:
             msg = "Expected only one document in this file but found multiple"
             raise exceptions.UnexpectedDocumentsError(msg) from e
@@ -456,7 +453,7 @@ def load_single_document_yaml(filename):
     return contents
 
 
-def error_on_empty_scalar(self, mark):  # pylint: disable=unused-argument
+def error_on_empty_scalar(self, mark):
     location = "{mark.name:s}:{mark.line:d} - column {mark.column:d}".format(mark=mark)
     error = "Error at {} - cannot define an empty value in test - either give it a value or explicitly set it to None".format(
         location

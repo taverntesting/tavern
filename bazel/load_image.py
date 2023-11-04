@@ -1,7 +1,7 @@
 import json
+import sys
 
 import docker
-import sys
 
 if __name__ == "__main__":
     repo_tags = []

@@ -392,3 +392,29 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  1.25.2          Only patch pyyaml when a test is actually being loaded to avoid side effect from Tavern just being in the python path (2022-12-15)
 
 #  2.0.0           2.0.0 release (2023-01-12)
+
+##  2.0.1           Bump some dependency versions (2023-01-16)
+
+##  2.0.2           Fix saving in MQTT (2023-02-08)
+
+##  2.0.3           Add type annotations (internal change) (2023-02-10)
+
+##  2.0.4           Fix using ext functions in MQTT publish (2023-02-16)
+
+##  2.0.5           Attempt to fix deadlock in subscribe locks (2023-02-16)
+
+##  2.0.6           Fix a few small MQTT issues (2023-03-13)
+
+##  2.0.7           Lock pytest to <7.3 to fix issue with marks (2023-04-15)
+
+#  2.1.0           Allow multi part file uploads with the same form field name (2023-06-04)
+
+#  2.2.0           Allow wildcards in MQTT topics (2023-06-25)
+
+##  2.2.1           Update some dependencies (2023-07-30)
+
+#  2.3.0           Add 'finally' block (2023-08-05)
+
+##  2.3.1           Fix error formatting when including files with curly braces (2023-09-18)
+
+#  2.4.0           Allow using an ext function to create a URL (2023-09-18)

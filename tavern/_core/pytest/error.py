@@ -1,11 +1,12 @@
-from io import StringIO
 import json
 import logging
 import re
+from io import StringIO
+from typing import List, Mapping, Optional
 
+import yaml
 from _pytest._code.code import FormattedExcinfo
 from _pytest._io import TerminalWriter
-import yaml
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 
 
 class ReprdError:
-    def __init__(self, exce, item):
+    def __init__(self, exce, item) -> None:
         self.exce = exce
         self.item = item
 
@@ -35,7 +36,6 @@ class ReprdError:
             dict: variables for formatting test
         """
         try:
-            # pylint: disable=protected-access
             keys = self.exce._excinfo[1].test_block_config.variables
         except AttributeError:
             logger.warning("Unable to read stage variables - error output may be wrong")
@@ -43,17 +43,19 @@ class ReprdError:
 
         return keys
 
-    def _print_format_variables(self, tw, code_lines):
+    def _print_format_variables(
+        self, tw: TerminalWriter, code_lines: List[str]
+    ) -> List[str]:
         """Print a list of the format variables and their value at this stage
 
         If the format variable is not defined, print it in red as '???'
 
         Args:
-            tw (TerminalWriter): Pytest TW instance
-            code_lines (list(str)): Source lines for this stage
+            tw: Pytest TW instance
+            code_lines: Source lines for this stage
 
         Returns:
-            list(str): List of all missing format variables
+            List of all missing format variables
         """
 
         def read_formatted_vars(lines):
@@ -65,7 +67,7 @@ class ReprdError:
                     if match.group("format_var") is not None:
                         yield match.group("format_var")
 
-        format_variables = list(read_formatted_vars(code_lines))
+        format_variables = set(read_formatted_vars(code_lines))
 
         keys = self._get_available_format_keys()
 
@@ -104,8 +106,12 @@ class ReprdError:
         return missing
 
     def _print_test_stage(
-        self, tw, code_lines, missing_format_vars, line_start
-    ):  # pylint: disable=no-self-use
+        self,
+        tw: TerminalWriter,
+        code_lines: List[str],
+        missing_format_vars: List[str],
+        line_start: Optional[int],
+    ) -> None:
         """Print the direct source lines from this test stage
 
         If we couldn't get the stage for some reason, print the entire test out.
@@ -114,11 +120,11 @@ class ReprdError:
         them in red.
 
         Args:
-            tw (Termin): Pytest TW instance
-            code_lines (list(str)): Raw source for this stage
-            missing_format_vars (list(str)): List of all missing format
+            tw: Pytest TW instance
+            code_lines: Raw source for this stage
+            missing_format_vars: List of all missing format
                 variables for this stage
-            line_start (int): Source line of this stage
+            line_start: Source line of this stage
         """
         if line_start:
             tw.line(
@@ -133,20 +139,22 @@ class ReprdError:
             else:
                 tw.line(line, white=True)
 
-    def _print_formatted_stage(self, tw, stage):
+    def _print_formatted_stage(self, tw: TerminalWriter, stage: Mapping) -> None:
         """Print the 'formatted' stage that Tavern will actually use to send the
         request/process the response
 
         Args:
-            tw (TerminalWriter): Pytest TW instance
-            stage (dict): The 'final' stage used by Tavern
+            tw: Pytest TW instance
+            stage: The 'final' stage used by Tavern
         """
         tw.line("Formatted stage:", white=True, bold=True)
 
         keys = self._get_available_format_keys()
 
         # Format stage variables recursively
-        formatted_stage = format_keys(stage, keys)
+        formatted_stage = format_keys(
+            stage, keys, dangerously_ignore_string_format_errors=True
+        )
 
         # Replace formatted strings with strings for dumping
         formatted_stage = prepare_yaml(formatted_stage)
@@ -161,11 +169,11 @@ class ReprdError:
                 continue
             tw.line("  {}".format(line), white=True)
 
-    def _print_errors(self, tw):
+    def _print_errors(self, tw: TerminalWriter) -> None:
         """Print any errors in the 'normal' Pytest style
 
         Args:
-            tw (TerminalWriter): Pytest TW instance
+            tw: Pytest TW instance
         """
         tw.line("Errors:", white=True, bold=True)
 
@@ -176,13 +184,12 @@ class ReprdError:
         for line in lines:
             tw.line(line, red=True, bold=True)
 
-    def toterminal(self, tw):
+    def toterminal(self, tw: TerminalWriter) -> None:
         """Print out a custom error message to the terminal"""
 
         # Try to get the stage so we can print it out. I'm not sure if the stage
         # will ever NOT be present, but better to check just in case
         try:
-            # pylint: disable=protected-access
             stage = self.exce._excinfo[1].stage
         except AttributeError:
             stage = None
@@ -205,7 +212,9 @@ class ReprdError:
         tw.line("")
 
         if not stage:
-            tw.line("Stage not found", red=True, bold=True)
+            tw.line(
+                "[Could not determine which stage was running]", red=True, bold=True
+            )
         elif missing_format_vars:
             tw.line("Missing format vars for stage", red=True, bold=True)
         else:
@@ -216,12 +225,12 @@ class ReprdError:
         self._print_errors(tw)
 
     @property
-    def longreprtext(self):
+    def longreprtext(self) -> str:
         # information.
         io = StringIO()
         tw = TerminalWriter(file=io)
         self.toterminal(tw)
         return io.getvalue().strip()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return self.longreprtext

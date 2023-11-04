@@ -1,5 +1,6 @@
-from contextlib import ExitStack
 import os
+from contextlib import ExitStack
+from typing import Union
 
 import pytest
 
@@ -7,17 +8,19 @@ from tavern._core import exceptions
 from tavern._core.schema.files import wrapfile
 
 
-def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
+def _get_or_wrap_global_cfg(
+    stack: ExitStack, tavern_global_cfg: Union[dict, str]
+) -> str:
     """
     Try to parse global configuration from given argument.
 
     Args:
-        stack (ExitStack): context stack for wrapping file if a dictionary is given
-        tavern_global_cfg (dict, str): Dictionary or string. It should be a
+        stack: context stack for wrapping file if a dictionary is given
+        tavern_global_cfg: Dictionary or string. It should be a
             path to a file or a dictionary with configuration.
 
     Returns:
-        str: path to global config file
+        path to global config file
 
     Raises:
         InvalidSettingsError: If global config was not of the right type or a given path
@@ -26,6 +29,7 @@ def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
     Todo:
         Once python 2 is dropped, allow this to take a 'path like object'
     """
+
     if isinstance(tavern_global_cfg, str):
         if not os.path.exists(tavern_global_cfg):
             raise exceptions.InvalidSettingsError(
@@ -45,17 +49,17 @@ def _get_or_wrap_global_cfg(stack, tavern_global_cfg):
 
 
 def run(
-    in_file,
+    in_file: str,
     tavern_global_cfg=None,
     tavern_mqtt_backend=None,
     tavern_http_backend=None,
     tavern_strict=None,
     pytest_args=None,
-):  # pylint: disable=too-many-arguments
+):
     """Run all tests contained in a file using pytest.main()
 
     Args:
-        in_file (str): file to run tests on
+        in_file: file to run tests on
         tavern_global_cfg (str, dict): Extra global config
         tavern_mqtt_backend (str, optional): name of MQTT plugin to use. If not
             specified, uses tavern-mqtt
@@ -67,7 +71,7 @@ def run(
             to Pytest as if they were command line arguments
 
     Returns:
-        bool: Whether ALL tests passed or not
+        Whether ALL tests passed or not
     """
 
     pytest_args = pytest_args or []

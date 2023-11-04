@@ -1,0 +1,60 @@
+---
+test_name: Test tincture + fixtures
+
+includes:
+  - !include common.yaml
+
+tinctures:
+  - function: ext_functions:time_request
+  - function: ext_functions:print_response
+    extra_kwargs:
+      extra_print: "blooble"
+
+marks:
+  - usefixtures:
+      - yielder
+      - str_fixture
+      - yield_str_fixture
+
+stages:
+  - name: do something
+    tinctures:
+      - function: ext_functions:time_request
+      - function: ext_functions:print_response
+        extra_kwargs:
+          extra_print: "blooble"
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{str_fixture}"
+    response:
+      status_code: 200
+      json:
+        value: "{yield_str_fixture}"
+
+---
+test_name: Test tincture extra kwargs fails
+
+includes:
+  - !include common.yaml
+
+tinctures:
+  - function: ext_functions:print_response
+    extra_kwargs:
+      extra_print: "blooble"
+      something: else
+
+_xfail: run
+
+stages:
+  - name: do something
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{str_fixture}"
+    response:
+      status_code: 200
+      json:
+        value: "{yield_str_fixture}"

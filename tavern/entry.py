@@ -1,13 +1,13 @@
 import argparse
-from argparse import ArgumentParser
 import logging.config
+from argparse import ArgumentParser
 from textwrap import dedent
 
 from .core import run
 
 
 class TavernArgParser(ArgumentParser):
-    def __init__(self):
+    def __init__(self) -> None:
         description = """Parse yaml + make requests against an API
 
         Any extra arguments will be passed directly to Pytest. Run py.test --help for a list"""

@@ -1,15 +1,17 @@
-from copy import deepcopy
+import copy
 import dataclasses
 import json
 import os
-from unittest.mock import MagicMock, Mock, patch
 import uuid
+from copy import deepcopy
+from unittest.mock import MagicMock, Mock, patch
 
 import paho.mqtt.client as paho
 import pytest
 import requests
 
 from tavern._core import exceptions
+from tavern._core.pytest.util import load_global_cfg
 from tavern._core.run import run_test
 from tavern._plugins.mqtt.client import MQTTClient
 
@@ -36,7 +38,7 @@ def fix_example_test():
 
 @pytest.fixture(name="mockargs")
 def fix_mock_response_args(fulltest):
-    response = fulltest["stages"][0]["response"]
+    response = copy.deepcopy(fulltest["stages"][0]["response"])
     content = response["json"]
 
     args = {
@@ -497,3 +499,145 @@ class TestFormatMQTTVarsPlain:
             run_test("heif", fulltest, includes)
 
         assert pmock.called
+
+
+class TestFinally:
+    @staticmethod
+    def run_test(fulltest, mockargs, includes):
+        mock_response = Mock(**mockargs)
+
+        with patch(
+            "tavern._plugins.rest.request.requests.Session.request",
+            return_value=mock_response,
+        ) as pmock:
+            run_test("heif", fulltest, includes)
+
+        assert pmock.called
+
+        return pmock
+
+    @pytest.mark.parametrize("finally_block", ([],))
+    def test_nop(self, fulltest, mockargs, includes, finally_block):
+        """ignore empty finally blocks"""
+        fulltest["finally"] = finally_block
+
+        self.run_test(fulltest, mockargs, includes)
+
+    @pytest.mark.parametrize(
+        "finally_block",
+        (
+            {},
+            "hi",
+            3,
+        ),
+    )
+    def test_wrong_type(self, fulltest, mockargs, includes, finally_block):
+        """final stages need to be dicts too"""
+        fulltest["finally"] = finally_block
+
+        with pytest.raises(exceptions.BadSchemaError):
+            self.run_test(fulltest, mockargs, includes)
+
+    @pytest.fixture
+    def finally_request(self):
+        return {
+            "name": "step 1",
+            "request": {"url": "http://www.myfinal.com", "method": "POST"},
+            "response": {
+                "status_code": 200,
+                "json": {"key": "value"},
+                "headers": {"content-type": "application/json"},
+            },
+        }
+
+    def test_finally_run(self, fulltest, mockargs, includes, finally_request):
+        fulltest["finally"] = [finally_request]
+
+        pmock = self.run_test(fulltest, mockargs, includes)
+
+        assert pmock.call_count == 2
+        assert pmock.mock_calls[1].kwargs.items() >= finally_request["request"].items()
+
+    def test_finally_run_twice(self, fulltest, mockargs, includes, finally_request):
+        fulltest["finally"] = [finally_request, finally_request]
+
+        pmock = self.run_test(fulltest, mockargs, includes)
+
+        assert pmock.call_count == 3
+        assert pmock.mock_calls[1].kwargs.items() >= finally_request["request"].items()
+        assert pmock.mock_calls[2].kwargs.items() >= finally_request["request"].items()
+
+    def test_finally_run_on_main_failure(
+        self, fulltest, mockargs, includes, finally_request
+    ):
+        fulltest["finally"] = [finally_request]
+
+        mockargs["status_code"] = 503
+
+        mock_response = Mock(**mockargs)
+
+        with patch(
+            "tavern._plugins.rest.request.requests.Session.request",
+            return_value=mock_response,
+        ) as pmock:
+            with pytest.raises(exceptions.TestFailError):
+                run_test("heif", fulltest, includes)
+
+        assert pmock.call_count == 2
+        assert pmock.mock_calls[1].kwargs.items() >= finally_request["request"].items()
+
+
+class TestTinctures:
+    @pytest.mark.parametrize(
+        "tinctures",
+        (
+            {"function": "abc"},
+            [{"function": "abc"}],
+            [{"function": "abc"}, {"function": "def"}],
+        ),
+    )
+    @pytest.mark.parametrize(
+        "at_stage_level",
+        (
+            True,
+            False,
+        ),
+    )
+    def test_tinctures(
+        self,
+        fulltest,
+        mockargs,
+        includes,
+        tinctures,
+        at_stage_level,
+    ):
+        if at_stage_level:
+            fulltest["tinctures"] = tinctures
+        else:
+            fulltest["stages"][0]["tinctures"] = tinctures
+
+        mock_response = Mock(**mockargs)
+
+        tincture_func_mock = Mock()
+
+        with patch(
+            "tavern._plugins.rest.request.requests.Session.request",
+            return_value=mock_response,
+        ) as pmock, patch(
+            "tavern._core.tincture.get_wrapped_response_function",
+            return_value=tincture_func_mock,
+        ):
+            run_test("heif", fulltest, includes)
+
+        assert pmock.call_count == 1
+        assert tincture_func_mock.call_count == len(tinctures)
+
+
+def test_copy_config(pytestconfig):
+    cfg_1 = load_global_cfg(pytestconfig)
+
+    cfg_1.variables["test1"] = "abc"
+
+    cfg_2 = load_global_cfg(pytestconfig)
+
+    assert cfg_2.variables.get("test1") is None

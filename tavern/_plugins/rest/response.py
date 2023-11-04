@@ -1,7 +1,10 @@
+import contextlib
 import json
 import logging
+from typing import Dict, Mapping, Optional
 from urllib.parse import parse_qs, urlparse
 
+import requests
 from requests.status_codes import _codes  # type:ignore
 
 from tavern._core import exceptions
@@ -14,16 +17,14 @@ logger = logging.getLogger(__name__)
 
 
 class RestResponse(BaseResponse):
-    def __init__(self, session, name, expected, test_block_config):
-        # pylint: disable=unused-argument
-
+    def __init__(self, session, name: str, expected, test_block_config) -> None:
         defaults = {"status_code": 200}
 
         super().__init__(name, deep_dict_merge(defaults, expected), test_block_config)
 
-        self.status_code = None
+        self.status_code: Optional[int] = None
 
-        def check_code(code):
+        def check_code(code: int) -> None:
             if int(code) not in _codes:
                 logger.warning("Unexpected status code '%s'", code)
 
@@ -37,13 +38,13 @@ class RestResponse(BaseResponse):
         except TypeError as e:
             raise exceptions.BadSchemaError("Invalid code") from e
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.response:
             return self.response.text.strip()
         else:
             return "<Not run yet>"
 
-    def _verbose_log_response(self, response):
+    def _verbose_log_response(self, response) -> None:
         """Verbosely log the response object, with query params etc."""
 
         logger.info("Response: '%s'", response)
@@ -64,10 +65,8 @@ class RestResponse(BaseResponse):
 
         log_dict_block(response.headers, "Headers")
 
-        try:
+        with contextlib.suppress(ValueError):
             log_dict_block(response.json(), "Body")
-        except ValueError:
-            pass
 
         redirect_query_params = self._get_redirect_query_params(response)
         if redirect_query_params:
@@ -76,7 +75,7 @@ class RestResponse(BaseResponse):
             logger.debug("Redirect location: %s", to_path)
             log_dict_block(redirect_query_params, "Redirect URL query parameters")
 
-    def _get_redirect_query_params(self, response):
+    def _get_redirect_query_params(self, response) -> Dict[str, str]:
         """If there was a redirect header, get any query parameters from it"""
 
         try:
@@ -96,7 +95,7 @@ class RestResponse(BaseResponse):
 
         return redirect_query_params
 
-    def _check_status_code(self, status_code, body):
+    def _check_status_code(self, status_code, body) -> None:
         expected_code = self.expected["status_code"]
 
         if (isinstance(expected_code, int) and status_code == expected_code) or (
@@ -106,23 +105,20 @@ class RestResponse(BaseResponse):
                 "Status code '%s' matched expected '%s'", status_code, expected_code
             )
             return
+        elif 400 <= status_code < 500:
+            # special case if there was a bad request. This assumes that the
+            # response would contain some kind of information as to why this
+            # request was rejected.
+            self._adderr(
+                "Status code was %s, expected %s:\n%s",
+                status_code,
+                expected_code,
+                indent_err_text(json.dumps(body)),
+            )
         else:
-            if 400 <= status_code < 500:
-                # special case if there was a bad request. This assumes that the
-                # response would contain some kind of information as to why this
-                # request was rejected.
-                self._adderr(
-                    "Status code was %s, expected %s:\n%s",
-                    status_code,
-                    expected_code,
-                    indent_err_text(json.dumps(body)),
-                )
-            else:
-                self._adderr(
-                    "Status code was %s, expected %s", status_code, expected_code
-                )
+            self._adderr("Status code was %s, expected %s", status_code, expected_code)
 
-    def verify(self, response):
+    def verify(self, response: requests.Response) -> dict:
         """Verify response against expected values and returns any values that
         we wanted to save for use in future requests
 
@@ -130,10 +126,10 @@ class RestResponse(BaseResponse):
         matching values, validating a schema, etc...
 
         Args:
-            response (requests.Response): response object
+            response: response object
 
         Returns:
-            dict: Any saved values
+            Any saved values
 
         Raises:
             TestFailError: Something went wrong with validating the response
@@ -205,12 +201,12 @@ class RestResponse(BaseResponse):
 
         return saved
 
-    def _validate_block(self, blockname, block):
+    def _validate_block(self, blockname: str, block: Mapping) -> None:
         """Validate a block of the response
 
         Args:
-            blockname (str): which part of the response is being checked
-            block (dict): The actual part being checked
+            blockname: which part of the response is being checked
+            block: The actual part being checked
         """
         try:
             expected_block = self.expected[blockname]
@@ -219,7 +215,7 @@ class RestResponse(BaseResponse):
 
         if isinstance(expected_block, dict):
             if expected_block.pop("$ext", None):
-                raise exceptions.InvalidExtBlockException(
+                raise exceptions.MisplacedExtBlockException(
                     blockname,
                 )
 
@@ -232,5 +228,5 @@ class RestResponse(BaseResponse):
         logger.debug("Validating response %s against %s", blockname, expected_block)
 
         test_strictness = self.test_block_config.strict
-        block_strictness = test_strictness.setting_for(blockname)
+        block_strictness = test_strictness.option_for(blockname)
         self.recurse_check_key_match(expected_block, block, blockname, block_strictness)

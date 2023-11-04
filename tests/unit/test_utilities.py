@@ -1,8 +1,8 @@
-from collections import OrderedDict
 import contextlib
 import copy
 import os
 import tempfile
+from collections import OrderedDict
 from textwrap import dedent
 from unittest.mock import Mock, patch
 
@@ -173,7 +173,7 @@ class TestMatchRecursive:
 
     def test_match_ordered(self):
         """Should be able to match an ordereddict"""
-        first = dict(a=1, b=2)
+        first = {"a": 1, "b": 2}
 
         second = OrderedDict(b=2, a=1)
 

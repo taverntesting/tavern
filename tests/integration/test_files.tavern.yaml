@@ -224,3 +224,59 @@ stages:
         test_files: OK.txt
     response:
       status_code: 200
+
+---
+test_name: Test uploading multi part files in a common group
+
+stages:
+  - name: Upload files
+    request:
+      url: "{global_host}/files_expect_in_order"
+      method: POST
+      files:
+        - form_field_name: group_2
+          file_path: OK.txt
+        - form_field_name: group_1
+          file_path: OK.txt
+        - form_field_name: group_1
+          file_path: OK.json.gz
+    response:
+      status_code: 200
+
+---
+test_name: Test uploading multi part files in a common group in a different order
+
+stages:
+  - name: Upload files
+    request:
+      url: "{global_host}/files_expect_in_order"
+      method: POST
+      files:
+        - form_field_name: group_1
+          file_path: OK.txt
+        - form_field_name: group_2
+          file_path: OK.txt
+        - form_field_name: group_1
+          file_path: OK.json.gz
+    response:
+      status_code: 200
+
+---
+test_name: Test uploading multi part files with wrong groups
+
+stages:
+  - name: Upload files
+    request:
+      url: "{global_host}/files_expect_in_order"
+      method: POST
+      files:
+        - form_field_name: group_1
+          file_path: OK.txt
+        - form_field_name: group_2
+          file_path: OK.txt
+        - form_field_name: group_3
+          file_path: OK.json.gz
+    response:
+      status_code: 400
+      json:
+        error: expected 2 files in group 1, got 1
