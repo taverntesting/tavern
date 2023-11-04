@@ -17,10 +17,10 @@ py_library(
     deps = [
         "//tavern/_core",
         "//tavern/_core/schema",
-        "@tavern_pip_attrs//:pkg",
-        "@tavern_pip_py//:pkg",
+        "@tavern_pip//attrs",
+        "@tavern_pip//pytest",
+        "@tavern_pip//python_box",
+        "@tavern_pip//pyyaml",
         "@tavern_pip_pytest//:pkg",
-        "@tavern_pip_python_box//:pkg",
-        "@tavern_pip_pyyaml//:pkg",
     ],
 )

@@ -1,6 +1,6 @@
-[build-system]
-requires = ["flit-core >=3.2,<4"]
-build-backend = "flit_core.buildapi"
+#[build-system]
+#requires = ["flit-core >=3.2,<4"]
+#build-backend = "flit_core.buildapi"
 
 [project]
 

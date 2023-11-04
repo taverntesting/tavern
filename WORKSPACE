@@ -15,43 +15,6 @@ load("@bazel_skylib//:workspace.bzl", "bazel_skylib_workspace")
 
 bazel_skylib_workspace()
 
-http_archive(
-    name = "rules_python",
-    patch_args = [
-        "-p",
-        "1",
-    ],
-    #    patches = ["//bazel:0001-don-t-run-test-by-default.patch"],
-    sha256 = "9d04041ac92a0985e344235f5d946f71ac543f1b1565f2cdbc9a2aaee8adf55b",
-    strip_prefix = "rules_python-0.26.0",
-    url = "https://github.com/bazelbuild/rules_python/archive/refs/tags/0.26.0.tar.gz",
-)
-
-load("@rules_python//python:repositories.bzl", "py_repositories")
-
-py_repositories()
-
-load("@rules_python//python:repositories.bzl", "python_register_toolchains")
-
-python_register_toolchains(
-    name = "python3_10",
-    python_version = "3.10",
-)
-
-load("@python3_10//:defs.bzl", "interpreter")
-load("@rules_python//python:pip.bzl", "pip_parse")
-
-pip_parse(
-    name = "tavern_pip",
-    isolated = True,
-    python_interpreter_target = interpreter,
-    requirements_lock = "//:requirements.txt",
-)
-
-load("@tavern_pip//:requirements.bzl", "install_deps")
-
-install_deps()
-
 ####################### GAZELLE
 
 http_archive(
@@ -76,15 +39,65 @@ load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_depe
 
 go_rules_dependencies()
 
-go_register_toolchains(version = "1.21  ")
+go_register_toolchains(version = "1.20")
 
 load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies")
 
 gazelle_dependencies()
 
-load("@rules_python//gazelle:deps.bzl", _py_gazelle_deps = "gazelle_deps")
+### Python
 
+http_archive(
+    name = "rules_python",
+    patch_args = [
+        "-p",
+        "1",
+    ],
+    #    patches = ["//bazel:0001-don-t-run-test-by-default.patch"],
+    sha256 = "28637eb9c5ed4544c7300615a3b9ddaf7cd0cfdc2a8c48f806418b7bd79c4610",
+    strip_prefix = "rules_python-cb56a0fcbedab8e81d522e40b471e8b14efb46fe",
+    url = "https://github.com/bazelbuild/rules_python/archive/cb56a0fcbedab8e81d522e40b471e8b14efb46fe.tar.gz",
+)
+
+load("@rules_python//python:repositories.bzl", "py_repositories")
+
+py_repositories()
+
+http_archive(
+    name = "rules_python_gazelle_plugin",
+    sha256 = "28637eb9c5ed4544c7300615a3b9ddaf7cd0cfdc2a8c48f806418b7bd79c4610",
+    strip_prefix = "rules_python-cb56a0fcbedab8e81d522e40b471e8b14efb46fe/gazelle",
+    url = "https://github.com/bazelbuild/rules_python/archive/cb56a0fcbedab8e81d522e40b471e8b14efb46fe.tar.gz",
+)
+
+load("@rules_python//python:repositories.bzl", "python_register_toolchains")
+
+python_register_toolchains(
+    name = "python3_10",
+    python_version = "3.10",
+)
+
+# which we need to fetch in order to compile it.
+load("@rules_python_gazelle_plugin//:deps.bzl", _py_gazelle_deps = "gazelle_deps")
+
+# See: https://github.com/bazelbuild/rules_python/blob/main/gazelle/README.md
+# This rule loads and compiles various go dependencies that running gazelle
+# for python requirements.
 _py_gazelle_deps()
+
+load("@python3_10//:defs.bzl", "interpreter")
+load("@rules_python//python:pip.bzl", "pip_parse")
+
+pip_parse(
+    name = "tavern_pip",
+    isolated = True,
+    python_interpreter_target = interpreter,
+    requirements_lock = "//:requirements.txt",
+)
+
+load("@tavern_pip//:requirements.bzl", "install_deps")
+
+install_deps()
 
 ####################### BUILD TOOLS
 

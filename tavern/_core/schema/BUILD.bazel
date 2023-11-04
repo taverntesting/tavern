@@ -16,8 +16,8 @@ py_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//tavern/_core",
-        "@tavern_pip_jsonschema//:pkg",
-        "@tavern_pip_pykwalify//:pkg",
-        "@tavern_pip_pyyaml//:pkg",
+        "@tavern_pip//jsonschema",
+        "@tavern_pip//pykwalify",
+        "@tavern_pip//pyyaml",
     ],
 )

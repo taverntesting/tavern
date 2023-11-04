@@ -1,21 +1,12 @@
-load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
 py_library(
     name = "conftest",
-    srcs = [
-        "conftest.py",
-        "ext_functions.py",
-        "server.py",
-        "test_dummy.py",
-    ],
+    testonly = True,
+    srcs = ["conftest.py"],
     imports = ["../.."],
     visibility = ["//:__subpackages__"],
-    deps = [
-        "@tavern_pip_flask//:pkg",
-        "@tavern_pip_itsdangerous//:pkg",
-        "@tavern_pip_pyjwt//:pkg",
-        "@tavern_pip_pytest//:pkg",
-    ],
+    deps = ["@tavern_pip//pytest"],
 )
 
 load(":gentest.bzl", "gentest")
@@ -37,4 +28,24 @@ py3_image(
         "@tavern_pip_flask//:pkg",
         "@tavern_pip_pyjwt//:pkg",
     ],
+)
+
+py_library(
+    name = "integration",
+    srcs = [
+        "ext_functions.py",
+        "server.py",
+    ],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@tavern_pip//flask",
+        "@tavern_pip//itsdangerous",
+        "@tavern_pip//pyjwt",
+    ],
+)
+
+py_test(
+    name = "test_dummy",
+    srcs = ["test_dummy.py"],
+    deps = [":conftest"],
 )

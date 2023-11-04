@@ -31,8 +31,8 @@ py_library(
         "//tests:__subpackages__",
     ],
     deps = [
-        "@tavern_pip_docker//:pkg",
-        "@tavern_pip_pytest//:pkg",
+        "@tavern_pip//docker",
+        "@tavern_pip//pytest",
     ],
 )
 

@@ -28,3 +28,7 @@ tavern/schemas/__pycache__/
 tavern/testutils/__pycache__/
 tavern/testutils/pytesthook/__pycache__/
 tavern/util/__pycache__/
+
+.mypy_cache
+.ruff_cache
+venv

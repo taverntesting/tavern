@@ -2,7 +2,6 @@ import stevedore
 
 
 def enable_default_tavern_extensions():
-    # pylint: disable=protected-access
     def extension(name, point):
         return stevedore.extension.Extension(name, point, point, point)
 

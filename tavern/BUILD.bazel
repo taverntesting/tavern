@@ -14,10 +14,12 @@ py_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//tavern/_core",
+        "//tavern/_core/pytest",
         "//tavern/_core/schema",
-        "@tavern_pip_jmespath//:pkg",
-        "@tavern_pip_pyjwt//:pkg",
-        "@tavern_pip_pytest//:pkg",
-        "@tavern_pip_python_box//:pkg",
+        "@tavern_pip//jmespath",
+        "@tavern_pip//pyjwt",
+        "@tavern_pip//pytest",
+        "@tavern_pip//python_box",
+        "@tavern_pip//requests",
     ],
 )

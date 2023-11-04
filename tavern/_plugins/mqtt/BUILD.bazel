@@ -19,8 +19,8 @@ py_library(
         "//tavern",
         "//tavern/_core",
         "//tavern/_core/pytest",
-        "@tavern_pip_paho_mqtt//:pkg",
-        "@tavern_pip_python_box//:pkg",
-        "@tavern_pip_pyyaml//:pkg",
+        "@tavern_pip//paho_mqtt",
+        "@tavern_pip//python_box",
+        "@tavern_pip//pyyaml",
     ],
 )

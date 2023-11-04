@@ -4,6 +4,7 @@ py_library(
     name = "rest",
     srcs = [
         "__init__.py",
+        "files.py",
         "request.py",
         "response.py",
         "tavernhook.py",
@@ -15,7 +16,7 @@ py_library(
         "//tavern/_core",
         "//tavern/_core/pytest",
         "//tavern/bazelutil",
-        "@tavern_pip_python_box//:pkg",
-        "@tavern_pip_requests//:pkg",
+        "@tavern_pip//python_box",
+        "@tavern_pip//requests",
     ],
 )

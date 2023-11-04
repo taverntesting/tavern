@@ -66,6 +66,8 @@ py_wheel(
 # gazelle:exclude .idea
 # gazelle:exclude .ijwb
 # gazelle:exclude .pytest_cache
+# gazelle:exclude .mypy_cache
+# gazelle:exclude .ruff_cache
 # gazelle:exclude **/__pycache__
 # gazelle:exclude .run
 # gazelle:exclude scripts
@@ -73,17 +75,24 @@ py_wheel(
 # gazelle:exclude .tox
 # gazelle:exclude docs/
 
+# gazelle:resolve py _pytest @tavern_pip_pytest//:pkg
+
 load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
 compile_pip_requirements(
     name = "requirements",
-    extra_args = ["--allow-unsafe"],
+    src = "//:pyproject.toml",
+    extra_args = [
+        "--all-extras",
+        "--allow-unsafe",
+        "--resolver=backtracking",
+    ],
     tags = ["requires-network"],
 )
 
 load("@tavern_pip//:requirements.bzl", "all_whl_requirements")
-load("@rules_python//gazelle/manifest:defs.bzl", "gazelle_python_manifest")
-load("@rules_python//gazelle/modules_mapping:def.bzl", "modules_mapping")
+load("@rules_python_gazelle_plugin//manifest:defs.bzl", "gazelle_python_manifest")
+load("@rules_python_gazelle_plugin//modules_mapping:def.bzl", "modules_mapping")
 
 modules_mapping(
     name = "modules_map",
@@ -99,22 +108,12 @@ gazelle_python_manifest(
 )
 
 load("@bazel_gazelle//:def.bzl", "gazelle")
-load("@rules_python//gazelle:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
+load("@rules_python_gazelle_plugin//:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
 
 gazelle(
     name = "gazelle",
     data = GAZELLE_PYTHON_RUNTIME_DEPS,
-    gazelle = "@rules_python//gazelle:gazelle_python_binary",
-)
-
-alias(
-    name = "isort",
-    actual = "@tavern_pip_isort//:rules_python_wheel_entry_point_isort",
-)
-
-alias(
-    name = "pylint",
-    actual = "@tavern_pip_pylint//:rules_python_wheel_entry_point_pylint",
+    gazelle = "@rules_python_gazelle_plugin//python:gazelle_binary",
 )
 
 alias(
