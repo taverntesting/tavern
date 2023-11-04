@@ -16,7 +16,6 @@ py_library(
     visibility = ["//:__subpackages__"],
     deps = [
         "//tavern/_core",
-        "//tavern/_core/schema",
         "@tavern_pip//attrs",
         "@tavern_pip//pytest",
         "@tavern_pip//python_box",

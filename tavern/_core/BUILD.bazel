@@ -23,8 +23,8 @@ py_library(
     imports = ["../.."],
     visibility = ["//:__subpackages__"],
     deps = [
-        "//tavern",
-        "//tavern/_core/pytest",
+        # FIXME: This keeps getting added - why?
+        # "//tavern",
         "@tavern_pip//allure_python_commons",
         "@tavern_pip//jmespath",
         "@tavern_pip//pytest",
@@ -33,3 +33,9 @@ py_library(
         "@tavern_pip//stevedore",
     ],
 )
+
+# gazelle:python_ignore_dependencies tavern._core.schema.files
+# gazelle:python_ignore_dependencies tavern._core.pytest
+# gazelle:python_ignore_dependencies tavern._core.pytest.error
+# gazelle:python_ignore_dependencies tavern._core.pytest.config
+# gazelle:python_ignore_dependencies tavern
