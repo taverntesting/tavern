@@ -9,7 +9,6 @@ dist
 .idea
 .pytest_cache
 .run
-scripts
 tavern.egg-info
 .tox
 
