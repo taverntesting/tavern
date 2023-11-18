@@ -66,7 +66,7 @@ def is_object_or_sentinel(checker, instance):
     )
 
 
-def oneOf(validator, oneOf, instance, schema):
+def oneOf(validator: jsonschema.protocols.Validator, oneOf, instance, schema):
     """Patched version of 'oneof' that does not complain if something is matched by multiple branches"""
     subschemas = enumerate(oneOf)
     all_errors = []
@@ -82,7 +82,9 @@ def oneOf(validator, oneOf, instance, schema):
             context=all_errors,
         )
 
-    more_valid = [s for i, s in subschemas if validator.is_valid(instance, s)]
+    more_valid = [
+        s for i, s in subschemas if validator.evolve(schema=s).is_valid(instance)
+    ]
     if more_valid:
         more_valid.append(first_valid)
         reprs = ", ".join(repr(schema) for schema in more_valid)
