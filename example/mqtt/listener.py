@@ -3,7 +3,6 @@ import logging
 import logging.config
 import os
 import sqlite3
-import time
 
 import paho.mqtt.client as paho
 import yaml

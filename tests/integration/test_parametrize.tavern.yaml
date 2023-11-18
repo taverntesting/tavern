@@ -19,6 +19,27 @@ stages:
       json: !force_format_include "{tavern.request_vars.json}"
 
 ---
+test_name: Test parametrizing query parameters
+
+marks:
+  - parametrize:
+      key: query_param
+      vals:
+        - example_value
+
+stages:
+  - name: Echo back parametrized value from query parameter
+    request:
+      url: "{global_host}/echo_params"
+      method: GET
+      params:
+        example_param: "{query_param}"
+    response:
+      status_code: 200
+      json:
+        example_param: example_value
+
+---
 test_name: Test parametrizing using 'vals' directly and not in the list, list key
 
 marks:

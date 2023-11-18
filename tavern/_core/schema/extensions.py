@@ -368,6 +368,8 @@ def validate_cert_tuple_or_str(value, rule_obj, path) -> bool:
 def validate_file_spec(value, rule_obj, path) -> bool:
     """Validate file upload arguments"""
 
+    logger = get_pykwalify_logger("tavern.schema.extensions")
+
     if not isinstance(value, dict):
         raise BadSchemaError(
             "File specification must be a mapping of file names to file specs, got {}".format(
@@ -375,11 +377,16 @@ def validate_file_spec(value, rule_obj, path) -> bool:
             )
         )
 
+    if value.get("file_path"):
+        # If the file spec was a list, this function will be called for each item. Just call this
+        # function recursively to check each item.
+        return validate_file_spec({"file": value}, rule_obj, path)
+
     for _, filespec in value.items():
         if isinstance(filespec, str):
             file_path = filespec
         elif isinstance(filespec, dict):
-            valid = {"file_path", "content_type", "content_encoding"}
+            valid = {"file_path", "content_type", "content_encoding", "form_field_name"}
             extra = set(filespec.keys()) - valid
             if extra:
                 raise BadSchemaError(
@@ -399,7 +406,7 @@ def validate_file_spec(value, rule_obj, path) -> bool:
 
         if not os.path.exists(file_path):
             if re.search(".*{.+}.*", file_path):
-                get_pykwalify_logger("tavern.schemas.extensions").debug(
+                logger.debug(
                     "Could not find file path, but it might be a format variable, so continuing"
                 )
             else:

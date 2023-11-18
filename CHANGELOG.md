@@ -166,8 +166,6 @@ calling run() directly will now cause a pytest isntance to be run in the backgro
 
 #  0.18.0          Add 'timeout' parameter for http requests (2018-08-24)
 
-##  show            Bump version: 0.17.2 → 0.18.0 (2018-08-24)
-
 ##  0.18.1          Add content type/encoding to uploaded files (2018-09-05)
 
 ##  0.18.2          Fix formatting environment variables in command line global config files (2018-09-21)
@@ -260,8 +258,6 @@ The initial 2 hooks should allow a user to do something before every test and af
 #  1.1.0           Add new global option to enable merging of keys from external functions (2020-05-01)
 
 ##  1.1.1           Travis fix (2020-05-23)
-
-##  travis-force    Attempt to force travis to commit (2020-05-23)
 
 ##  1.1.2           fforce new verison to make travis actually commit (2020-05-23)
 
@@ -408,3 +404,17 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  2.0.5           Attempt to fix deadlock in subscribe locks (2023-02-16)
 
 ##  2.0.6           Fix a few small MQTT issues (2023-03-13)
+
+##  2.0.7           Lock pytest to <7.3 to fix issue with marks (2023-04-15)
+
+#  2.1.0           Allow multi part file uploads with the same form field name (2023-06-04)
+
+#  2.2.0           Allow wildcards in MQTT topics (2023-06-25)
+
+##  2.2.1           Update some dependencies (2023-07-30)
+
+#  2.3.0           Add 'finally' block (2023-08-05)
+
+##  2.3.1           Fix error formatting when including files with curly braces (2023-09-18)
+
+#  2.4.0           Allow using an ext function to create a URL (2023-09-18)

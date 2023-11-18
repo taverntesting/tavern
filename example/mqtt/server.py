@@ -193,10 +193,9 @@ def _reset_db(db):
     with db:
 
         def attempt(query):
-            try:
+            with contextlib.suppress(Exception):
                 db.execute(query)
-            except:
-                pass
+
 
         attempt("DELETE FROM devices_table")
         attempt(
