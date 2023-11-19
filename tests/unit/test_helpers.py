@@ -300,10 +300,10 @@ class TestCheckParseValues:
         with patch("tavern._core.dict_util.logger.warning") as wmock:
             _check_and_format_values("{fd}", {"fd": item})
 
-        assert wmock.called_with(
-            "Formatting 'fd' will result in it being coerced to a string (it is a {})".format(
-                type(item)
-            )
+        wmock.assert_called_with(
+            "Formatting '%s' will result in it being coerced to a string (it is a %s)",
+            "fd",
+            type(item),
         )
 
     @pytest.mark.parametrize("item", [1, "a", 1.3, format_keys("{s}", {"s": 2})])
