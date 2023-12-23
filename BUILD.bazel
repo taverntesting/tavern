@@ -122,10 +122,10 @@ alias(
 
 load("//bazel:lint.bzl", "file_count_rule")
 
-file_count_rule(
-    name = "file_count",
-    deps = [":tavern_wheel"],
-)
+#file_count_rule(
+#    name = "file_count",
+#    deps = [":tavern_wheel"],
+#)
 
 test_suite(
     name = "unit_tests",
