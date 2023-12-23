@@ -48,6 +48,7 @@ def tavern_test(filename, images, extra_data = [], extra_deps = [], extra_args =
         data = base_data + extra_data + [image_names] + images.values(),
         main = "//bazel:integration_main.py",
         deps = base_deps + extra_deps,
+        visibility = ["//:__subpackages__"],
         env = {
             "TAVERN_TEST_FILE_LOCATION": "$(location " + filename + ")",
             "TAVERN_DOCKER_IMAGES": str(images.keys()),

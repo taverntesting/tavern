@@ -29,6 +29,7 @@ pytest_test(
         "--doctest-modules",
     ],
     data = ["//:pyproject.toml"],
+    visibility = ["//:__subpackages__"],
     deps = [
         "//tavern",
         "//tests/unit:conftest",
