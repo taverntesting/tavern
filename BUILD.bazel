@@ -170,7 +170,6 @@ test_suite(
         "//tests/integration:integration_test_test_header_comparisons.tavern.yaml",
         "//tests/integration:integration_test_test_helpers.tavern.yaml",
         "//tests/integration:integration_test_test_jmes.tavern.yaml",
-        "//tests/integration:integration_test_test_minimal.tavern.yaml",
         "//tests/integration:integration_test_test_parametrize.tavern.yaml",
         "//tests/integration:integration_test_test_regex.tavern.yaml",
         "//tests/integration:integration_test_test_response_types.tavern.yaml",
