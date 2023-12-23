@@ -65,6 +65,7 @@ dev = [
     "itsdangerous",
     "mypy",
     "mypy-extensions",
+    "docker",
     "coverage[toml]",
     "types-PyYAML",
     "flit >=3.2,<4",

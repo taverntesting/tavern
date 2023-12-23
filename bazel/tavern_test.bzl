@@ -20,8 +20,6 @@ def tavern_test(filename, images, extra_data = [], extra_deps = [], extra_args =
         "@rules_python//python/runfiles",
         "//tavern/_core/pytest",
         "@tavern_pip_colorlog//:pkg",
-        "@tavern_pip_docker//:pkg",
-        "@tavern_pip_docker_compose//:rules_python_wheel_entry_point_docker-compose",
     ]
 
     base_args = [
@@ -54,7 +52,6 @@ def tavern_test(filename, images, extra_data = [], extra_deps = [], extra_args =
             "TAVERN_TEST_FILE_LOCATION": "$(location " + filename + ")",
             "TAVERN_DOCKER_IMAGES": str(images.keys()),
             "TAVERN_DOCKER_COMPOSE": "$(location " + "//bazel:docker-compose.yaml" + ")",
-            "DOCKER_COMPOSE_BINARY": "$(location " + "@tavern_pip_docker_compose//:rules_python_wheel_entry_point_docker-compose" + ")",
         },
         tags = tags + ["requires-network"],
         **kwargs

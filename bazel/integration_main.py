@@ -19,7 +19,8 @@ if __name__ == "__main__":
 
     subprocess.run(
         [
-            os.environ["DOCKER_COMPOSE_BINARY"],
+            "docker",
+            "compose",
             "-f",
             os.environ["TAVERN_DOCKER_COMPOSE"],
             "up",
