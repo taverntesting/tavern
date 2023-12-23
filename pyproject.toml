@@ -9,9 +9,9 @@ classifiers = [
     "Intended Audience :: Developers",
     "Framework :: Pytest",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Utilities",
     "Topic :: Software Development :: Testing",
     "License :: OSI Approved :: MIT License",
@@ -194,6 +194,9 @@ src = "pyproject.toml"
 
 [[tool.tbump.file]]
 src = "docs/source/conf.py"
+
+[[tool.tbump.file]]
+src = "tavern/BUILD.bazel"
 
 
 [[tool.tbump.before_commit]]
