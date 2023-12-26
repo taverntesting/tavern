@@ -1,13 +1,13 @@
 import dataclasses
 import logging
 import pathlib
-from typing import Optional, Tuple, Iterable
+from typing import Iterable, Optional, Tuple
 
 import pytest
 import yaml
 from _pytest._code.code import ExceptionInfo
 from _pytest.nodes import Node
-from pytest import MarkDecorator, Mark
+from pytest import Mark, MarkDecorator
 
 from tavern._core import exceptions
 from tavern._core.loader import error_on_empty_scalar
@@ -17,6 +17,7 @@ from tavern._core.pytest.error import ReprdError
 from tavern._core.report import attach_text
 from tavern._core.run import run_test
 from tavern._core.schema.files import verify_tests
+
 from .config import TestConfig
 from .util import load_global_cfg
 
