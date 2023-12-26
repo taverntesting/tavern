@@ -424,3 +424,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 #  2.5.0           Tinctures: a utility for running things before/after stages, able to be specified at test or stage level. (2023-10-22)
 
 #  2.6.0           fix verify_response_with with multiple MQTT responses (2023-11-18)
+
+#  2.7.0           update minimum version of jsonschema (2023-12-26)
