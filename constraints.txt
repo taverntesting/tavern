@@ -15,6 +15,7 @@ attrs==23.1.0
     #   allure-python-commons
     #   jsonschema
     #   pytest
+    #   referencing
 babel==2.12.1
     # via sphinx
 bleach==6.0.0
@@ -110,8 +111,10 @@ jinja2==3.1.2
     #   sphinx
 jmespath==1.0.1
     # via tavern (pyproject.toml)
-jsonschema==3.2.0
+jsonschema==4.20.0
     # via tavern (pyproject.toml)
+jsonschema-specifications==2023.12.1
+    # via jsonschema
 keyring==23.13.1
     # via twine
 markdown==3.4.4
@@ -180,8 +183,6 @@ pyproject-api==1.5.3
     # via tox
 pyproject-hooks==1.0.0
     # via build
-pyrsistent==0.19.3
-    # via jsonschema
 pytest==7.2.2
     # via
     #   allure-pytest
@@ -206,6 +207,10 @@ readme-renderer==37.3
     # via twine
 recommonmark==0.7.1
     # via tavern (pyproject.toml)
+referencing==0.32.0
+    # via
+    #   jsonschema
+    #   jsonschema-specifications
 requests==2.31.0
     # via
     #   flit
@@ -219,6 +224,10 @@ rfc3986==2.0.0
     # via twine
 rich==13.4.1
     # via twine
+rpds-py==0.15.2
+    # via
+    #   jsonschema
+    #   referencing
 ruamel-yaml==0.17.31
     # via pykwalify
 ruamel-yaml-clib==0.2.7
@@ -228,7 +237,6 @@ secretstorage==3.3.3
 six==1.16.0
     # via
     #   bleach
-    #   jsonschema
     #   python-dateutil
 snowballstemmer==2.2.0
     # via sphinx

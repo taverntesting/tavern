@@ -66,7 +66,7 @@ def is_object_or_sentinel(checker, instance):
     )
 
 
-def oneOf(validator, oneOf, instance, schema):
+def oneOf(validator: Draft7Validator, oneOf, instance, schema):
     """Patched version of 'oneof' that does not complain if something is matched by multiple branches"""
     subschemas = enumerate(oneOf)
     all_errors = []
