@@ -1,12 +1,13 @@
+import dataclasses
 import logging
 import pathlib
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Iterable
 
-import attr
 import pytest
 import yaml
 from _pytest._code.code import ExceptionInfo
 from _pytest.nodes import Node
+from pytest import MarkDecorator, Mark
 
 from tavern._core import exceptions
 from tavern._core.loader import error_on_empty_scalar
@@ -16,7 +17,6 @@ from tavern._core.pytest.error import ReprdError
 from tavern._core.report import attach_text
 from tavern._core.run import run_test
 from tavern._core.schema.files import verify_tests
-
 from .config import TestConfig
 from .util import load_global_cfg
 
@@ -108,7 +108,7 @@ class YamlItem(pytest.Item):
     def _obj(self):
         return self.obj
 
-    def add_markers(self, pytest_marks) -> None:
+    def add_markers(self, pytest_marks: Iterable[MarkDecorator]) -> None:
         for pm in pytest_marks:
             if pm.name == "usefixtures":
                 if (
@@ -124,9 +124,17 @@ class YamlItem(pytest.Item):
                 # usefixtures, which pytest then wraps in a tuple. we need to
                 # extract this tuple so pytest can use both fixtures.
                 if isinstance(pm.mark.args[0], (list, tuple)):
-                    new_mark = attr.evolve(pm.mark, args=pm.mark.args[0])
-                    pm = attr.evolve(pm, mark=new_mark)
-                elif isinstance(pm.mark.args[0], (dict)):
+                    new_mark = Mark(
+                        name=pm.mark.name,
+                        args=pm.mark.args[0],
+                        kwargs=pm.mark.kwargs,
+                        param_ids_from=pm.mark._param_ids_from,
+                        param_ids_generated=pm.mark._param_ids_generated,
+                        _ispytest=True,
+                    )
+
+                    pm = dataclasses.replace(pm, mark=new_mark, _ispytest=True)
+                elif isinstance(pm.mark.args[0], (dict,)):
                     # We could raise a TypeError here instead, but then it's a
                     # failure at collection time (which is a bit annoying to
                     # deal with). Instead just don't add the marker and it will

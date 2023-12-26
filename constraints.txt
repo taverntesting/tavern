@@ -14,7 +14,6 @@ attrs==23.2.0
     # via
     #   allure-python-commons
     #   jsonschema
-    #   pytest
     #   referencing
 babel==2.14.0
     # via sphinx
@@ -184,7 +183,7 @@ pyproject-api==1.6.1
     # via tox
 pyproject-hooks==1.0.0
     # via build
-pytest==7.2.2
+pytest==7.4.3
     # via
     #   allure-pytest
     #   pytest-cov
