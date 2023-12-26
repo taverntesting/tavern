@@ -42,7 +42,6 @@ def get_cached_db():
     return db
 
 
-@app.before_first_request
 def setup_logging():
     log_cfg = """
 version: 1
@@ -194,10 +193,9 @@ def _reset_db(db):
     with db:
 
         def attempt(query):
-            try:
+            with contextlib.suppress(Exception):
                 db.execute(query)
-            except:
-                pass
+
 
         attempt("DELETE FROM devices_table")
         attempt(
@@ -208,5 +206,6 @@ def _reset_db(db):
 
 
 if __name__ == "__main__":
+    setup_logging()
     db = get_db()
     _reset_db(db)

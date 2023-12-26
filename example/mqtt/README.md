@@ -13,6 +13,6 @@ The server queries this database when a `GET` request is made to
 `/get_device_state` and returns whether the lights are on or off.
 
 The tavern test file includes examples of how to test such a setup, using the
-keys `mqtt_publish` and `mqtt_response`. Run `docker-compose up --build` in one
+keys `mqtt_publish` and `mqtt_response`. Run `docker compose up --build` in one
 terminal and run `py.test` in another terminal, and output from the mosquitto
 MQTT broker, the server, and the listener will be shown inline.

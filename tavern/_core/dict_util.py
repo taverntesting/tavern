@@ -1,4 +1,5 @@
 import contextlib
+import functools
 import logging
 import os
 import re
@@ -91,20 +92,33 @@ def _attempt_find_include(to_format: str, box_vars: box.Box):
     return formatter.convert_field(would_replace, conversion)  # type: ignore
 
 
-def format_keys(val, variables: Mapping, no_double_format: bool = True):
+def format_keys(
+    val,
+    variables: Mapping,
+    *,
+    no_double_format: bool = True,
+    dangerously_ignore_string_format_errors: bool = False,
+):
     """recursively format a dictionary with the given values
 
     Args:
-        val (object): Input dictionary to format
-        variables (dict): Dictionary of keys to format it with
-        no_double_format (bool): Whether to use the 'inner formatted string' class to avoid double formatting
+        val: Input dictionary to format
+        variables: Dictionary of keys to format it with
+        no_double_format: Whether to use the 'inner formatted string' class to avoid double formatting
             This is required if passing something via pytest-xdist, such as markers:
             https://github.com/taverntesting/tavern/issues/431
+        dangerously_ignore_string_format_errors: whether to ignore any string formatting errors. This will result
+            in broken output, only use for debugging purposes.
 
     Returns:
-        str,int,list,dict: recursively formatted values
+        recursively formatted values
     """
     formatted = val
+
+    format_keys_ = functools.partial(
+        format_keys,
+        dangerously_ignore_string_format_errors=dangerously_ignore_string_format_errors,
+    )
 
     if not isinstance(variables, Box):
         box_vars = Box(variables)
@@ -115,22 +129,26 @@ def format_keys(val, variables: Mapping, no_double_format: bool = True):
         formatted = {}
         # formatted = {key: format_keys(val[key], box_vars) for key in val}
         for key in val:
-            formatted[key] = format_keys(val[key], box_vars)
+            formatted[key] = format_keys_(val[key], box_vars)
     elif isinstance(val, (list, tuple)):
-        formatted = [format_keys(item, box_vars) for item in val]
+        formatted = [format_keys_(item, box_vars) for item in val]  # type: ignore
     elif isinstance(formatted, FormattedString):
         logger.debug("Already formatted %s, not double-formatting", formatted)
     elif isinstance(val, str):
-        formatted = _check_and_format_values(val, box_vars)
+        try:
+            formatted = _check_and_format_values(val, box_vars)
+        except exceptions.MissingFormatError:
+            if not dangerously_ignore_string_format_errors:
+                raise
 
         if no_double_format:
-            formatted = FormattedString(formatted)
+            formatted = FormattedString(formatted)  # type: ignore
     elif isinstance(val, TypeConvertToken):
         logger.debug("Got type convert token '%s'", val)
         if isinstance(val, ForceIncludeToken):
             formatted = _attempt_find_include(val.value, box_vars)
         else:
-            value = format_keys(val.value, box_vars)
+            value = format_keys_(val.value, box_vars)
             formatted = val.constructor(value)
     else:
         logger.debug("Not formatting something of type '%s'", type(formatted))

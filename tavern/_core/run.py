@@ -1,15 +1,17 @@
 import copy
+import dataclasses
 import functools
 import logging
 import pathlib
 from contextlib import ExitStack
 from copy import deepcopy
-from typing import List, Mapping, MutableMapping
+from typing import Dict, List, Mapping, MutableMapping
 
 import box
 
 from tavern._core import exceptions
 from tavern._core.plugins import (
+    PluginHelperBase,
     get_expected,
     get_extra_sessions,
     get_request_type,
@@ -23,6 +25,7 @@ from .pytest.config import TestConfig
 from .report import attach_stage_content, wrap_step
 from .strtobool import strtobool
 from .testhelpers import delay, retry
+from .tincture import Tinctures, get_stage_tinctures
 
 logger = logging.getLogger(__name__)
 
@@ -134,7 +137,7 @@ def run_test(
     # Initialise test config for this test with the global configuration before
     # starting
     test_block_config = global_cfg.copy()
-    default_global_stricness = global_cfg.strict
+    default_global_strictness = global_cfg.strict
 
     tavern_box = get_tavern_box()
 
@@ -174,41 +177,34 @@ def run_test(
 
         has_only = any(getonly(stage) for stage in test_spec["stages"])
 
-        # Run tests in a path in order
-        for idx, stage in enumerate(test_spec["stages"]):
-            if stage.get("skip"):
-                continue
-            if has_only and not getonly(stage):
-                continue
+        runner = _TestRunner(
+            default_global_strictness, sessions, test_block_config, test_spec
+        )
 
-            test_block_config = test_block_config.with_strictness(
-                default_global_stricness
-            )
-            test_block_config = test_block_config.with_strictness(
-                _calculate_stage_strictness(stage, test_block_config, test_spec)
-            )
+        try:
+            # Run tests in a path in order
+            for idx, stage in enumerate(test_spec["stages"]):
+                if stage.get("skip"):
+                    continue
+                if has_only and not getonly(stage):
+                    continue
 
-            # Wrap run_stage with retry helper
-            run_stage_with_retries = retry(stage, test_block_config)(run_stage)
+                runner.run_stage(idx, stage)
 
-            partial = functools.partial(
-                run_stage_with_retries, sessions, stage, test_block_config
-            )
-
-            allure_name = "Stage {}: {}".format(
-                idx, format_keys(stage["name"], test_block_config.variables)
-            )
-            step = wrap_step(allure_name, partial)
-
-            try:
-                step()
-            except exceptions.TavernException as e:
-                e.stage = stage  # type: ignore
-                e.test_block_config = test_block_config  # type: ignore
-                raise
-
-            if getonly(stage):
-                break
+                if getonly(stage):
+                    break
+        finally:
+            finally_stages = test_spec.get("finally", [])
+            if not isinstance(finally_stages, list):
+                raise exceptions.BadSchemaError(
+                    f"finally block should be a list of dicts but was {type(finally_stages)}"
+                )
+            for idx, stage in enumerate(finally_stages):
+                if not isinstance(stage, dict):
+                    raise exceptions.BadSchemaError(
+                        f"finally block should be a dict but was {type(stage)}"
+                    )
+                runner.run_stage(idx, stage, is_final=True)
 
 
 def _calculate_stage_strictness(
@@ -273,49 +269,85 @@ def _calculate_stage_strictness(
     return new_strict
 
 
-def run_stage(
-    sessions: Mapping,
-    stage: Mapping,
-    test_block_config: TestConfig,
-) -> None:
-    """Run one stage from the test
+@dataclasses.dataclass(frozen=True)
+class _TestRunner:
+    default_global_strictness: StrictLevel
+    sessions: Dict[str, PluginHelperBase]
+    test_block_config: TestConfig
+    test_spec: Mapping
 
-    Args:
-        sessions: Dictionary of relevant 'session' objects used for this test
-        stage: specification of stage to be run
-        test_block_config: available variables for test
-    """
-    stage = copy.deepcopy(stage)
-    name = stage["name"]
+    def run_stage(self, idx: int, stage, *, is_final: bool = False):
+        tinctures = get_stage_tinctures(stage, self.test_spec)
 
-    attach_stage_content(stage)
+        stage_config = self.test_block_config.with_strictness(
+            self.default_global_strictness
+        )
+        stage_config = stage_config.with_strictness(
+            _calculate_stage_strictness(stage, stage_config, self.test_spec)
+        )
+        # Wrap run_stage with retry helper
+        run_stage_with_retries = retry(stage, stage_config)(self.wrapped_run_stage)
+        partial = functools.partial(
+            run_stage_with_retries, stage, stage_config, tinctures
+        )
+        allure_name = "Stage {}: {}".format(
+            idx, format_keys(stage["name"], stage_config.variables)
+        )
+        step = wrap_step(allure_name, partial)
 
-    r = get_request_type(stage, test_block_config, sessions)
+        try:
+            step()
+        except exceptions.TavernException as e:
+            e.stage = stage
+            e.test_block_config = stage_config
+            e.is_final = is_final
+            raise
 
-    tavern_box = test_block_config.variables["tavern"]
-    tavern_box.update(request_vars=r.request_vars)
+    def wrapped_run_stage(
+        self, stage: dict, stage_config: TestConfig, tinctures: Tinctures
+    ):
+        """Run one stage from the test
 
-    expected = get_expected(stage, test_block_config, sessions)
+        Args:
+            stage: specification of stage to be run
+            stage_config: available variables for test
+            tinctures: tinctures for this stage/test
+        """
+        stage = copy.deepcopy(stage)
+        name = stage["name"]
 
-    delay(stage, "before", test_block_config.variables)
+        attach_stage_content(stage)
 
-    logger.info("Running stage : %s", name)
+        r = get_request_type(stage, stage_config, self.sessions)
 
-    call_hook(
-        test_block_config,
-        "pytest_tavern_beta_before_every_request",
-        request_args=r.request_vars,
-    )
+        tavern_box = stage_config.variables["tavern"]
+        tavern_box.update(request_vars=r.request_vars)
 
-    verifiers = get_verifiers(stage, test_block_config, sessions, expected)
+        expected = get_expected(stage, stage_config, self.sessions)
 
-    response = r.run()
+        delay(stage, "before", stage_config.variables)
 
-    for response_type, response_verifiers in verifiers.items():
-        logger.debug("Running verifiers for %s", response_type)
-        for v in response_verifiers:
-            saved = v.verify(response)
-            test_block_config.variables.update(saved)
+        logger.info("Running stage : %s", name)
 
-    tavern_box.pop("request_vars")
-    delay(stage, "after", test_block_config.variables)
+        call_hook(
+            stage_config,
+            "pytest_tavern_beta_before_every_request",
+            request_args=r.request_vars,
+        )
+
+        verifiers = get_verifiers(stage, stage_config, self.sessions, expected)
+
+        tinctures.start_tinctures(stage)
+
+        response = r.run()
+
+        tinctures.end_tinctures(expected, response)
+
+        for response_type, response_verifiers in verifiers.items():
+            logger.debug("Running verifiers for %s", response_type)
+            for v in response_verifiers:
+                saved = v.verify(response)
+                stage_config.variables.update(saved)
+
+        tavern_box.pop("request_vars")
+        delay(stage, "after", stage_config.variables)

@@ -30,7 +30,7 @@ RUN pip3 install tavern
 
 Build with:
 
-```shell script
+```shell
 docker build --file tavern.Dockerfile --tag tavern:latest .
 ```
 
@@ -44,7 +44,7 @@ ARG TAVERNVER
 RUN pip3 install tavern==$TAVERNVER
 ```
 
-```shell script
+```shell
 export TAVERNVER=0.24.0
 docker build --build-arg TAVERNVER=$TAVERNVER --file tavern.Dockerfile --tag tavern:$TAVERNVER .
 ```
@@ -56,7 +56,7 @@ does not take an incredibly long time to start up - see the documentation
 for information on how to create one.
 
 This can be used by running it on the command line with `docker run`, but
-it is often easier to use it in a docker-compose file like this:
+it is often easier to use it in a docker compose file like this:
 
 ```yaml
 ---
