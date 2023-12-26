@@ -82,7 +82,9 @@ def oneOf(validator: Draft7Validator, oneOf, instance, schema):
             context=all_errors,
         )
 
-    more_valid = [s for i, s in subschemas if validator.is_valid(instance, s)]
+    more_valid = [
+        s for i, s in subschemas if validator.evolve(schema=s).is_valid(instance)
+    ]
     if more_valid:
         more_valid.append(first_valid)
         reprs = ", ".join(repr(schema) for schema in more_valid)
