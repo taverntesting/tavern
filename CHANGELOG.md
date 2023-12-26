@@ -422,3 +422,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 #  2.4.0           Allow using an ext function to create a URL (2023-09-18)
 
 #  2.5.0           Tinctures: a utility for running things before/after stages, able to be specified at test or stage level. (2023-10-22)
+
+#  2.6.0           fix verify_response_with with multiple MQTT responses (2023-11-18)
