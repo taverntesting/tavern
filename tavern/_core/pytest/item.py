@@ -127,7 +127,7 @@ class YamlItem(pytest.Item):
                 if isinstance(pm.mark.args[0], (list, tuple)):
                     new_mark = Mark(
                         name=pm.mark.name,
-                        args=pm.mark.args[0],
+                        args=tuple(pm.mark.args[0]),
                         kwargs=pm.mark.kwargs,
                         param_ids_from=pm.mark._param_ids_from,
                         param_ids_generated=pm.mark._param_ids_generated,
