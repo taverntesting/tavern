@@ -203,7 +203,9 @@ def get_request_type(
             f"Can only specify 1 request type but got {set(keys)}"
         )
     elif not list(set(keys) & set(stage)):
-        raise exceptions.MissingKeysError(f"Need to specify one of '{keys.keys()}'")
+        raise exceptions.MissingKeysError(
+            f"Need to specify one of '{set(keys.keys())}'"
+        )
 
     # We've validated that 1 and only 1 is there, so just loop until the first
     # one is found
