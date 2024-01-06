@@ -1,11 +1,20 @@
 repos:
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.6.26
+    hooks:
+      - id: actionlint
+        args: ["-shellcheck="]
+  - repo: https://github.com/hadialqattan/pycln
+    rev: v2.4.0
+    hooks:
+      - id: pycln
   - repo: https://github.com/ambv/black
-    rev: 23.7.0
+    rev: 23.12.1
     hooks:
       - id: black
         files: "(tavern|tests)"
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: "v0.0.280"
+    rev: "v0.1.11"
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
