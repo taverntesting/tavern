@@ -108,7 +108,11 @@ class _PluginCache:
 
         backends = ["http"]
 
-        if importlib.util.find_spec("paho.mqtt") is not None:
+        try:
+            importlib.util.find_spec("paho.mqtt")
+        except ModuleNotFoundError:
+            pass
+        else:
             backends.append("mqtt")
 
         for backend in backends:
