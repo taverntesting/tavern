@@ -1,6 +1,6 @@
 import copy
 import dataclasses
-import importlib
+from importlib.util import find_spec
 from typing import Any, List
 
 from tavern._core.strict_util import StrictLevel
@@ -52,9 +52,17 @@ class TestConfig:
     def backends() -> List[str]:
         available_backends = ["http"]
 
-        if importlib.util.find_spec("paho.mqtt"):
+        def has_module(module):
+            try:
+                find_spec(module)
+            except ModuleNotFoundError:
+                return False
+            else:
+                return True
+
+        if has_module("paho.mqtt"):
             available_backends.append("mqtt")
-        if importlib.util.find_spec("grpc"):
+        if has_module("grpc"):
             available_backends.append("grpc")
 
         return available_backends
