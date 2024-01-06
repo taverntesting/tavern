@@ -55,7 +55,7 @@ class TestConfig:
     def backends() -> List[str]:
         available_backends = ["http"]
 
-        def has_module(module):
+        def has_module(module: str) -> bool:
             try:
                 return find_spec(module) is not None
             except ModuleNotFoundError:
