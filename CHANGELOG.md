@@ -166,6 +166,8 @@ calling run() directly will now cause a pytest isntance to be run in the backgro
 
 #  0.18.0          Add 'timeout' parameter for http requests (2018-08-24)
 
+##  show            Bump version: 0.17.2 → 0.18.0 (2018-08-24)
+
 ##  0.18.1          Add content type/encoding to uploaded files (2018-09-05)
 
 ##  0.18.2          Fix formatting environment variables in command line global config files (2018-09-21)
@@ -418,3 +420,9 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  2.3.1           Fix error formatting when including files with curly braces (2023-09-18)
 
 #  2.4.0           Allow using an ext function to create a URL (2023-09-18)
+
+#  2.5.0           Tinctures: a utility for running things before/after stages, able to be specified at test or stage level. (2023-10-22)
+
+#  2.6.0           fix verify_response_with with multiple MQTT responses (2023-11-18)
+
+#  2.7.0           update minimum version of jsonschema (2023-12-26)
