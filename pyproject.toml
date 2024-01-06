@@ -27,7 +27,6 @@ dependencies = [
     "PyYAML>=6.0.1,<7",
     "jmespath>=1,<2",
     "jsonschema>=4,<5",
-    "paho-mqtt>=1.3.1,<=1.6.1",
     "pyjwt>=2.5.0,<3",
     "pykwalify>=1.8.0,<2",
     "pytest>=7,<7.3",
@@ -90,6 +89,9 @@ dev = [
     # "tbump@https://github.com/michaelboulton/tbump/archive/714ba8957a3c84b625608ceca39811ebe56229dc.zip",
 ]
 
+mqtt = [
+    "paho-mqtt>=1.3.1,<=1.6.1",
+]
 
 [project.scripts]
 

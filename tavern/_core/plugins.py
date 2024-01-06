@@ -4,6 +4,7 @@ This is here mainly to make MQTT easier, this will almost defintiely change
 significantly if/when a proper plugin system is implemented!
 """
 import dataclasses
+import importlib.util
 import logging
 from functools import partial
 from typing import Any, List, Mapping, Optional
@@ -105,7 +106,12 @@ class _PluginCache:
                 ext.name == test_block_config.tavern_internal.backends[current_backend]
             )
 
-        for backend in ["http", "mqtt"]:
+        backends = ["http"]
+
+        if importlib.util.find_spec("paho.mqtt") is not None:
+            backends.append("mqtt")
+
+        for backend in backends:
             namespace = "tavern_{}".format(backend)
 
             manager = stevedore.EnabledExtensionManager(
