@@ -56,7 +56,7 @@ def serve():
         else:
             port = 50051
 
-        server.add_insecure_port(f"[::]:{port:d}")
+        server.add_insecure_port(f"0.0.0.0:{port:d}")
         server.start()
 
     logging.info("Starting grpc server")

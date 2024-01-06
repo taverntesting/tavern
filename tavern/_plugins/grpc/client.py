@@ -340,7 +340,13 @@ class GRPCClient:
         timeout: Optional[int] = None,
     ) -> grpc.Future:
         if host is None:
+            if getattr(self, "default_host", None) is None:
+                raise exceptions.GRPCRequestException(
+                    "no host specified in request and no default host in settings"
+                )
+
             host = self.default_host
+
         if timeout is None:
             timeout = self.timeout
 

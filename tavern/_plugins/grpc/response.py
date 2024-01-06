@@ -52,6 +52,9 @@ class GRPCResponse(BaseResponse):
         self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
 
     def verify(self, response: Union[grpc.Call, grpc.Future]) -> Mapping:
+        logger.debug(f"grpc status code: {response.code()}")
+        logger.debug(f"grpc details: {response.details()}")
+
         # Get any keys to save
         saved = {}
         verify_status = [StatusCode.OK.name]
