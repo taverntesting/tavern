@@ -5,7 +5,6 @@ from typing import Iterable, Optional, Tuple
 
 import pytest
 import yaml
-from _pytest._code.code import ExceptionInfo
 from _pytest.nodes import Node
 from pytest import Mark, MarkDecorator
 
@@ -246,7 +245,7 @@ class YamlItem(pytest.Item):
             )
 
     def repr_failure(
-        self, excinfo: ExceptionInfo[BaseException], style: Optional[str] = None
+        self, excinfo: pytest.ExceptionInfo[BaseException], style: Optional[str] = None
     ):
         """called when self.runtest() raises an exception.
 
