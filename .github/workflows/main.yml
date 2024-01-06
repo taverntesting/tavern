@@ -125,6 +125,12 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Install Protoc
+        if: ${{ contains(matrix.TOXENV, 'grpc') }}
+        uses: arduino/setup-protoc@v2
+        with:
+          version: "23.x"
+
       - name: install deps
         run: |
           pip install tox -c constraints.txt
