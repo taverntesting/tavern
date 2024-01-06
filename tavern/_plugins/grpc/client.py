@@ -10,7 +10,7 @@ import tempfile
 import warnings
 from distutils.spawn import find_executable
 from importlib.machinery import ModuleSpec
-from typing import List, Mapping, Optional
+from typing import Any, List, Mapping, Optional, Tuple, Union
 
 import grpc
 import grpc_reflection
@@ -218,7 +218,6 @@ class GRPCClient:
         for file_descriptor_proto in service_proto.file_descriptor_proto:
             proto = descriptor_pb2.FileDescriptorProto()
             proto.ParseFromString(file_descriptor_proto)
-            logger.critical("ksdo")
             self.sym_db.pool.Add(proto)
 
     def _get_reflection_info(
@@ -237,8 +236,10 @@ class GRPCClient:
         for response in ref_response:
             self._register_file_descriptor(response.file_descriptor_response)
 
-    def _get_grpc_service(self, channel, service: str, method: str):
-        full_service_name = "{}.{}".format(service, method)
+    def _get_grpc_service(
+        self, channel: grpc.Channel, service: str, method: str
+    ) -> Union[Tuple[None, None], Tuple[Any, Any]]:
+        full_service_name = f"{service}.{method}"
         try:
             grpc_service = self.sym_db.pool.FindMethodByName(full_service_name)
             input_type = message_factory.GetMessageClass(grpc_service.input_type)  # type: ignore
@@ -248,7 +249,7 @@ class GRPCClient:
 
         logger.critical(f"reflected info for {service}: {full_service_name}")
 
-        service_url = "/{}/{}".format(service, method)
+        service_url = f"/{service}/{method}"
         grpc_method = channel.unary_unary(
             service_url,
             request_serializer=input_type.SerializeToString,
@@ -294,7 +295,7 @@ class GRPCClient:
                 "could not find service and gRPC reflection disabled, cannot continue"
             )
             raise exceptions.GRPCServiceException(
-                "Service {} was not registered for host {}".format(service, host)
+                f"Service {service} was not registered for host {host}"
             )
 
         logger.info("service not registered, doing reflection from server")
@@ -337,7 +338,7 @@ class GRPCClient:
         host: Optional[str] = None,
         body: Optional[Mapping] = None,
         timeout: Optional[int] = None,
-    ):
+    ) -> grpc.Future:
         if host is None:
             host = self.default_host
         if timeout is None:
@@ -346,7 +347,7 @@ class GRPCClient:
         grpc_call, grpc_request = self._make_call_request(host, service)
         if grpc_call is None or grpc_request is None:
             raise exceptions.GRPCServiceException(
-                "Service {} was not found on host {}".format(service, host)
+                f"Service {service} was not found on host {host}"
             )
 
         request = grpc_request()

@@ -1,6 +1,7 @@
 import logging
-from typing import Mapping
+from typing import Mapping, Union
 
+import grpc
 from google.protobuf import json_format
 from grpc import StatusCode
 
@@ -50,7 +51,7 @@ class GRPCResponse(BaseResponse):
         block_strictness = test_strictness.option_for(blockname)
         self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
 
-    def verify(self, response):
+    def verify(self, response: Union[grpc.Call, grpc.Future]) -> Mapping:
         # Get any keys to save
         saved = {}
         verify_status = [StatusCode.OK.name]
