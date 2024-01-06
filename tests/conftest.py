@@ -6,8 +6,7 @@ import stevedore
 import yaml
 
 import tavern
-
-# import tavern._plugins.mqtt.tavernhook as mqtt_plugin
+import tavern._plugins.mqtt.tavernhook as mqtt_plugin
 from tavern._plugins.rest.tavernhook import TavernRestPlugin as rest_plugin
 
 
@@ -29,8 +28,8 @@ def set_plugins():
             "requests",
             rest_plugin,
         ),
-        # extension(
-        #     "paho-mqtt",
-        #     mqtt_plugin,
-        # ),
+        extension(
+            "paho-mqtt",
+            mqtt_plugin,
+        ),
     ]
