@@ -56,9 +56,7 @@ def _generate_proto_import(source: str):
     """
 
     if not os.path.exists(source):
-        raise exceptions.ProtoCompilerException(
-            "Can't find required file: {}".format(source)
-        )
+        raise exceptions.ProtoCompilerException(f"Can't find required file: {source}")
 
     logger.info("Generating protos from %s...", source)
 
