@@ -9,9 +9,8 @@ classifiers = [
     "Intended Audience :: Developers",
     "Framework :: Pytest",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
     "Topic :: Utilities",
     "Topic :: Software Development :: Testing",
     "License :: OSI Approved :: MIT License",
@@ -36,7 +35,7 @@ dependencies = [
     "stevedore>=4,<5",
 ]
 
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 
 [[project.authors]]
 name = "Michael Boulton"
