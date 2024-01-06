@@ -90,7 +90,7 @@ def _generate_proto_import(source: str):
     protoc_command = [protoc, "-I" + source, "--python_out=" + output]
     protoc_command.extend(protos)
 
-    call = subprocess.run(protoc_command, capture_output=True)  # noqa: S603
+    call = subprocess.run(protoc_command, capture_output=True, check=False)  # noqa
     if call.returncode != 0:
         logger.error(f"Error calling '{protoc_command}'")
         raise exceptions.ProtoCompilerException(call.stderr.decode("utf8"))
@@ -177,7 +177,7 @@ class GRPCClient:
         check_expected_keys(expected_blocks["connect"], _connect_args)
 
         metadata = kwargs.pop("metadata", {})
-        self._metadata = [(key, value) for key, value in metadata.items()]
+        self._metadata = list(metadata.items())
 
         _proto_args = kwargs.pop("proto", {})
         check_expected_keys(expected_blocks["proto"], _proto_args)
