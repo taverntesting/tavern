@@ -3,6 +3,6 @@ name: test includes
 description: used for testing against local server
 
 variables:
-  grpc_host: "[::1]"
+  grpc_host: localhost
   grpc_port: 50051
   grpc_reflecting_port: 50052
