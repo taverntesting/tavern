@@ -157,7 +157,7 @@ def create_device():
 
     try:
         r["clean"]
-    except (TypeError):
+    except TypeError:
         return jsonify({"error": "checking for clean key"}), 500
     except KeyError:
         try:
@@ -195,7 +195,6 @@ def _reset_db(db):
         def attempt(query):
             with contextlib.suppress(Exception):
                 db.execute(query)
-
 
         attempt("DELETE FROM devices_table")
         attempt(

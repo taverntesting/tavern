@@ -179,6 +179,10 @@ target-version = "py38"
 [tool.ruff.isort]
 known-first-party = ["tavern"]
 
+[tool.ruff.format]
+exclude = ["*_pb2.py", "*_pb2_grpc.py", "*_pb2.pyi"]
+docstring-code-format = true
+
 [tool.tbump.version]
 current = "2.7.1"
 

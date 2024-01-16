@@ -7,6 +7,6 @@ services:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "50051:50051"
-      - "50052:50052"
+      - "127.0.0.1:50051:50051/tcp"
+      - "127.0.0.1:50052:50052/tcp"
     stop_grace_period: "1s"

@@ -3,7 +3,7 @@
 set -ex
 
 pre-commit run ruff --all-files
-pre-commit run black --all-files
+pre-commit run ruff-format --all-files
 
 # Separate as isort can interfere with other testenvs
 tox --parallel -c tox.ini        \

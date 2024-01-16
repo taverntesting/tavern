@@ -1,8 +1,6 @@
 syntax = "proto3";
 
-package helloworld;
-
-option py_generic_services = true;
+package helloworld.v3;
 
 message HelloRequest {
   string name = 1;

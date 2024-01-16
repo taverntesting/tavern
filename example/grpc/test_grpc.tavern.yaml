@@ -1,22 +1,170 @@
 ---
 
-test_name: Test grpc message echo
+test_name: Test grpc message echo importing a module instead of compiling from source
+
+includes:
+  - !include common.yaml
+
+grpc:
+  connect: &grpc_connect
+    host: "{grpc_host}"
+    port: !int "{grpc_port}"
+    timeout: 3
+  proto:
+    module: helloworld_v1_precompiled_pb2_grpc
+
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
+test_name: Test trying to connect using an invalid option
+
+includes:
+  - !include common.yaml
+
+grpc:
+  connect:
+    <<: *grpc_connect
+    options:
+      woah: cool
+  proto:
+    module: helloworld_v1_precompiled_pb2_grpc
+
+_xfail:
+  run: invalid grpc option 'woah'
+
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
+test_name: Test grpc message echo importing a module but its a path to a file
+
+includes:
+  - !include common.yaml
+
+_xfail: run
+
+grpc:
+  connect:
+    <<: *grpc_connect
+  proto:
+    module: helloworld_v1_precompiled_pb2_grpc.py
+
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
+test_name: Test grpc connection without the 'connect' block
+
+includes:
+  - !include common.yaml
+
+grpc:
+  proto:
+    module: helloworld_v1_precompiled_pb2_grpc
+
+stages:
+  - name: Echo text
+    grpc_request:
+      host: "{grpc_host}:{grpc_port}"
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
+test_name: Test grpc connection without the 'connect' block, with a bad message
+
+includes:
+  - !include common.yaml
+
+grpc:
+  proto:
+    module: helloworld_pb2_grpc
+
+_xfail: run
+
+stages:
+  - name: Echo text
+    grpc_request:
+      host: "{grpc_host}:{grpc_port}"
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        aarg: wooo
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
+test_name: Test grpc message echo compiling proto
 
 includes:
   - !include common.yaml
 
 grpc: &grpc_spec
   connect:
-    host: "{grpc_host}"
-    port: !int "{grpc_port}"
-    timeout: 3
+    <<: *grpc_connect
   proto:
-    source: .
+    source: "{single_compiled_proto_for_test}"
 
 stages:
   - name: Echo text
     grpc_request:
-      service: helloworld.Greeter/SayHello
+      service: helloworld.v2.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
+test_name: Test grpc message echo compiling folder with multiple protos
+
+includes:
+  - !include common.yaml
+
+grpc: *grpc_spec
+
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.v2.Greeter/SayHello
       body:
         name: "John"
     grpc_response:
@@ -40,16 +188,14 @@ _xfail:
 
 grpc:
   connect:
-    host: "{grpc_host}"
-    port: !int "{grpc_port}"
-    timeout: 3
+    <<: *grpc_connect
   proto:
     source: "{make_temp_dir}"
 
 stages:
   - name: Echo text
     grpc_request:
-      service: helloworld.Greeter/SayHello
+      service: helloworld.v2.Greeter/SayHello
       body:
         name: "John"
     grpc_response:
@@ -59,51 +205,22 @@ stages:
 
 ---
 
-test_name: Test grpc message echo importing a module instead of compiling from source
-
-includes:
-  - !include common.yaml
-
 grpc:
+  attempt_reflection: True
   connect:
     host: "{grpc_host}"
-    port: !int "{grpc_port}"
+    port: !int "{grpc_reflecting_port}"
     timeout: 3
-  proto:
-    module: server/helloworld_pb2_grpc
 
-stages:
-  - name: Echo text
-    grpc_request:
-      service: helloworld.Greeter/SayHello
-      body:
-        name: "John"
-    grpc_response:
-      status: "OK"
-      body:
-        message: "Hello, John!"
-
----
-
-test_name: Test grpc message echo importing a module but its a path to a file
+test_name: Test server reflection
 
 includes:
   - !include common.yaml
 
-_xfail: run
-
-grpc:
-  connect:
-    host: "{grpc_host}"
-    port: !int "{grpc_port}"
-    timeout: 3
-  proto:
-    module: server.helloworld_pb2_grpc.py
-
 stages:
   - name: Echo text
     grpc_request:
-      service: helloworld.Greeter/SayHello
+      service: helloworld.v3.Greeter/SayHello
       body:
         name: "John"
     grpc_response:
@@ -113,54 +230,8 @@ stages:
 
 ---
 
-test_name: Test grpc connection without the 'connect' block
-
-includes:
-  - !include common.yaml
-
 grpc:
-  proto:
-    module: server.helloworld_pb2_grpc
-
-stages:
-  - name: Echo text
-    grpc_request:
-      host: "{grpc_host}:{grpc_port}"
-      service: helloworld.Greeter/SayHello
-      body:
-        name: "John"
-    grpc_response:
-      status: "OK"
-      body:
-        message: "Hello, John!"
-
----
-
-test_name: Test grpc connection without the 'connect' block, with a bad message
-
-includes:
-  - !include common.yaml
-
-grpc:
-  proto:
-    module: server.helloworld_pb2_grpc
-
-_xfail: run
-
-stages:
-  - name: Echo text
-    grpc_request:
-      host: "{grpc_host}:{grpc_port}"
-      service: helloworld.Greeter/SayHello
-      body:
-        aarg: wooo
-        name: "John"
-    grpc_response:
-      status: "OK"
-      body:
-        message: "Hello, John!"
-
----
+  attempt_reflection: True
 
 test_name: Test grpc connection without the 'connect' block, using server reflection
 
@@ -171,7 +242,32 @@ stages:
   - name: Echo text
     grpc_request:
       host: "{grpc_host}:{grpc_reflecting_port}"
-      service: helloworld.Greeter/SayHello
+      service: helloworld.v3.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+
+---
+
+grpc:
+  attempt_reflection: True
+
+test_name: Tried to use grpc reflection but the service did not expose it
+
+_xfail:
+  run: "Service coolservice.v9/SayGoodbye was not found on host"
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Echo text
+    grpc_request:
+      host: "{grpc_host}:{grpc_reflecting_port}"
+      service: coolservice.v9/SayGoodbye
       body:
         name: "John"
     grpc_response:
@@ -186,13 +282,14 @@ test_name: Test grpc connection without the 'connect' block, using server reflec
 includes:
   - !include common.yaml
 
-_xfail: run
+_xfail:
+  run: error creating request from json body
 
 stages:
   - name: Echo text
     grpc_request:
       host: "{grpc_host}:{grpc_reflecting_port}"
-      service: helloworld.Greeter/SayHello
+      service: helloworld.v3.Greeter/SayHello
       body:
         aarg: wooo
         name: "John"
@@ -210,13 +307,14 @@ includes:
 
 grpc: *grpc_spec
 
-_xfail: run
+_xfail:
+  run: error creating request from json body
 
 stages:
   - name: Echo text
     grpc_request:
       host: "{grpc_host}:{grpc_port}"
-      service: helloworld.Greeter/SayHello
+      service: helloworld.v2.Greeter/SayHello
       body:
         name: "John"
         A: klk
@@ -234,9 +332,7 @@ includes:
 
 grpc:
   connect:
-    host: "{grpc_host}"
-    port: !int "{grpc_port}"
-    timeout: 3
+    <<: *grpc_connect
   proto:
     module: cool_grpc_server
 
@@ -245,7 +341,7 @@ _xfail: run
 stages:
   - name: Echo text
     grpc_request:
-      service: helloworld.Greeter/SayHello
+      service: helloworld.v1.Greeter/SayHello
       body:
         name: "John"
     grpc_response:
@@ -267,7 +363,7 @@ _xfail: verify
 stages:
   - name: Echo text
     grpc_request:
-      service: helloworld.Greeter/SayHello
+      service: helloworld.v1.Greeter/SayHello
       body:
         name: "Jim"
     grpc_response:

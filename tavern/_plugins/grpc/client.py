@@ -1,6 +1,6 @@
 import functools
 import hashlib
-import importlib
+import importlib.util
 import logging
 import os
 import string
@@ -10,7 +10,7 @@ import tempfile
 import warnings
 from distutils.spawn import find_executable
 from importlib.machinery import ModuleSpec
-from typing import Any, List, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
 
 import grpc
 import grpc_reflection
@@ -60,16 +60,29 @@ def _generate_proto_import(source: str):
 
     logger.info("Generating protos from %s...", source)
 
-    protos = [
-        os.path.join(source, child)
-        for child in os.listdir(source)
-        if (not os.path.isdir(child)) and child.endswith(".proto")
-    ]
+    if not os.path.isdir(source):
+        if not source.endswith(".proto"):
+            raise exceptions.ProtoCompilerException(
+                f"invalid proto source file {source}"
+            )
+        protos = [source]
+        include_path = os.path.dirname(source)
+    else:
+        protos = [
+            os.path.join(source, child)
+            for child in os.listdir(source)
+            if (not os.path.isdir(child)) and child.endswith(".proto")
+        ]
+        include_path = source
 
     if not protos:
         raise exceptions.ProtoCompilerException(
             f"No protos defined in {os.path.abspath(source)}"
         )
+
+    for p in protos:
+        if not os.path.exists(p):
+            raise exceptions.ProtoCompilerException(f"{p} does not exist")
 
     def sanitise(s):
         """Do basic sanitisation for"""
@@ -87,7 +100,7 @@ def _generate_proto_import(source: str):
 
     protoc = find_protoc()
 
-    protoc_command = [protoc, "-I" + source, "--python_out=" + output]
+    protoc_command = [protoc, "-I" + include_path, "--python_out=" + output]
     protoc_command.extend(protos)
 
     call = subprocess.run(protoc_command, capture_output=True, check=False)  # noqa
@@ -165,7 +178,7 @@ class GRPCClient:
     def __init__(self, **kwargs):
         logger.debug("Initialising GRPC client with %s", kwargs)
         expected_blocks = {
-            "connect": {"host", "port", "options", "compression", "timeout", "tls"},
+            "connect": {"host", "port", "options", "compression", "timeout", "secure"},
             "proto": {"source", "module"},
             "metadata": {},
             "attempt_reflection": {},
@@ -190,9 +203,17 @@ class GRPCClient:
                 self.default_host += ":{}".format(port)
 
         self.timeout = int(_connect_args.get("timeout", 5))
-        self.tls = bool(_connect_args.get("tls", False))
+        self.secure = bool(_connect_args.get("secure", False))
 
-        self.channels = {}
+        self._options: List[Tuple[str, Any]] = []
+        for key, value in _connect_args.pop("options", {}).items():
+            if not key.startswith("grpc."):
+                raise exceptions.GRPCServiceException(
+                    f"invalid grpc option '{key}' - must be in the form 'grpc.option_name'"
+                )
+            self._options.append((key, value))
+
+        self.channels: Dict[str, grpc.Channel] = {}
         # Using the default symbol database is a bit undesirable because it means that things being imported from
         # previous tests will affect later ones which can mask bugs. But there isn't a nice way to have a
         # self-contained symbol database, because then you need to transitively import all dependencies of protos and
@@ -271,17 +292,17 @@ class GRPCClient:
         )
 
         if host not in self.channels:
-            if self.tls:
+            if self.secure:
                 credentials = grpc.ssl_channel_credentials()
                 self.channels[host] = grpc.secure_channel(
                     host,
                     credentials,
-                    options=[("grpc.max_receive_message_length", 10 * 1024 * 1024)],
+                    options=self._options,
                 )
             else:
                 self.channels[host] = grpc.insecure_channel(
                     host,
-                    options=[("grpc.max_receive_message_length", 10 * 1024 * 1024)],
+                    options=self._options,
                 )
 
         channel = self.channels[host]
@@ -301,9 +322,7 @@ class GRPCClient:
         logger.info("service not registered, doing reflection from server")
         try:
             self._get_reflection_info(channel, service_name=service)
-        except (
-            grpc.RpcError
-        ) as rpc_error:  # Since this object is guaranteed to be a grpc.Call, might as well include that in its name.
+        except grpc.RpcError as rpc_error:  # Since this object is guaranteed to be a grpc.Call, might as well include that in its name.
             code = details = None
             try:
                 code = rpc_error.code()
@@ -371,3 +390,6 @@ class GRPCClient:
 
     def __exit__(self, *args):
         logger.debug("Disconnecting from GRPC")
+        for v in self.channels.values():
+            v.close()
+        self.channels = {}

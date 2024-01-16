@@ -1,20 +1,33 @@
-from concurrent import futures
 import logging
 import threading
-from typing import Callable, Any
+from concurrent import futures
+from typing import Any, Callable
 
 import grpc
-from grpc_interceptor import ServerInterceptor
+import helloworld_v1_precompiled_pb2 as helloworld_pb2_v1
+import helloworld_v1_precompiled_pb2_grpc as helloworld_pb2_grpc_v1
+import helloworld_v2_compiled_pb2 as helloworld_pb2_v2
+import helloworld_v2_compiled_pb2_grpc as helloworld_pb2_grpc_v2
+import helloworld_v3_reflected_pb2 as helloworld_pb2_v3
+import helloworld_v3_reflected_pb2_grpc as helloworld_pb2_grpc_v3
 from grpc_interceptor.exceptions import GrpcException
 from grpc_reflection.v1alpha import reflection
-
-import helloworld_pb2
-import helloworld_pb2_grpc
+from grpc_interceptor import ServerInterceptor
 
 
-class Greeter(helloworld_pb2_grpc.GreeterServicer):
+class GreeterV1(helloworld_pb2_grpc_v1.GreeterServicer):
     def SayHello(self, request, context):
-        return helloworld_pb2.HelloReply(message="Hello, %s!" % request.name)
+        return helloworld_pb2_v1.HelloReply(message="Hello, %s!" % request.name)
+
+
+class GreeterV2(helloworld_pb2_grpc_v2.GreeterServicer):
+    def SayHello(self, request, context):
+        return helloworld_pb2_v2.HelloReply(message="Hello, %s!" % request.name)
+
+
+class GreeterV3(helloworld_pb2_grpc_v3.GreeterServicer):
+    def SayHello(self, request, context):
+        return helloworld_pb2_v3.HelloReply(message="Hello, %s!" % request.name)
 
 
 class LoggingInterceptor(ServerInterceptor):
@@ -30,34 +43,38 @@ class LoggingInterceptor(ServerInterceptor):
         try:
             return method(request_or_iterator, context)
         except GrpcException as e:
-            logging.exception(f"error processing request")
+            logging.exception("error processing request")
             context.set_code(e.status_code)
             context.set_details(e.details)
             raise
 
 
 def serve():
+    interceptors = [LoggingInterceptor()]
     executor = futures.ThreadPoolExecutor(max_workers=10)
 
-    for reflect in [True, False]:
-        server = grpc.server(
-            executor,
-            interceptors=[LoggingInterceptor()],
-        )
-        helloworld_pb2_grpc.add_GreeterServicer_to_server(Greeter(), server)
+    server = grpc.server(
+        executor,
+        interceptors=interceptors,
+    )
+    helloworld_pb2_grpc_v1.add_GreeterServicer_to_server(GreeterV1(), server)
+    helloworld_pb2_grpc_v2.add_GreeterServicer_to_server(GreeterV2(), server)
 
-        if reflect:
-            service_names = (
-                helloworld_pb2.DESCRIPTOR.services_by_name["Greeter"].full_name,
-                reflection.SERVICE_NAME,
-            )
-            reflection.enable_server_reflection(service_names, server)
-            port = 50052
-        else:
-            port = 50051
+    server.add_insecure_port(f"0.0.0.0:50051")
+    server.start()
 
-        server.add_insecure_port(f"0.0.0.0:{port:d}")
-        server.start()
+    reflecting_server = grpc.server(
+        executor,
+        interceptors=interceptors,
+    )
+    helloworld_pb2_grpc_v3.add_GreeterServicer_to_server(GreeterV3(), reflecting_server)
+    service_names = (
+        helloworld_pb2_v3.DESCRIPTOR.services_by_name["Greeter"].full_name,
+        reflection.SERVICE_NAME,
+    )
+    reflection.enable_server_reflection(service_names, reflecting_server)
+    reflecting_server.add_insecure_port(f"0.0.0.0:50052")
+    reflecting_server.start()
 
     logging.info("Starting grpc server")
     event = threading.Event()
