@@ -1,5 +1,6 @@
 import logging
 import re
+from typing import Mapping
 
 import jsonschema
 from jsonschema import Draft7Validator, ValidationError
@@ -104,12 +105,12 @@ CustomValidator = extend(
 )
 
 
-def verify_jsonschema(to_verify, schema) -> None:
+def verify_jsonschema(to_verify: Mapping, schema: Mapping) -> None:
     """Verify a generic file against a given jsonschema
 
     Args:
-        to_verify (dict): Filename of source tests to check
-        schema (dict): Schema to verify against
+        to_verify: Filename of source tests to check
+        schema: Schema to verify against
 
     Raises:
         BadSchemaError: Schema did not match

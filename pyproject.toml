@@ -63,6 +63,7 @@ dev = [
     "fluent-logger",
     "itsdangerous",
     "mypy",
+    "ruff>=0.1.11",
     "mypy-extensions",
     "coverage[toml]",
     "flit >=3.2,<4",
@@ -102,9 +103,6 @@ tavern = "tavern._core.pytest"
 requests = "tavern._plugins.rest.tavernhook:TavernRestPlugin"
 [project.entry-points.tavern_mqtt]
 paho-mqtt = "tavern._plugins.mqtt.tavernhook"
-
-[tool.black]
-target-version = ['py37']
 
 [tool.mypy]
 python_version = 3.8
@@ -163,6 +161,9 @@ target-version = "py38"
 
 [tool.ruff.isort]
 known-first-party = ["tavern"]
+
+[tool.ruff.format]
+docstring-code-format = true
 
 [tool.tbump.version]
 current = "2.7.1"

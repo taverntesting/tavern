@@ -149,7 +149,7 @@ class TestTavernRepr:
 
     def _make_fake_exc_info(self, exc_type):
         # Copied from pytest tests
-        class FakeExcinfo(_pytest._code.ExceptionInfo):
+        class FakeExcinfo(_pytest._code.ExceptionInfo):  # type:ignore
             pass
 
         try:
