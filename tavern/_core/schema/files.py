@@ -3,7 +3,7 @@ import copy
 import logging
 import os
 import tempfile
-from typing import Dict
+from typing import Dict, Mapping
 
 import pykwalify
 import yaml
@@ -129,7 +129,7 @@ def wrapfile(to_wrap):
             os.remove(wrapped_tmp.name)
 
 
-def verify_tests(test_spec, with_plugins: bool = True) -> None:
+def verify_tests(test_spec: Mapping, with_plugins: bool = True) -> None:
     """Verify that a specific test block is correct
 
     Todo:

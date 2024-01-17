@@ -7,7 +7,12 @@ if TYPE_CHECKING:
 class TavernException(Exception):
     """Base exception
 
-    Fields are internal and might change in future
+    Fields are internal and might change in future without warning
+
+    Attributes:
+        is_final: whether this exception came from a 'finally' block
+        stage: stage that caused this issue
+        test_block_config: config for stage
     """
 
     stage: Optional[Dict]

@@ -162,9 +162,9 @@ def recurse_access_key(data, query: str):
 
     Example:
 
-        >>> recurse_access_key({'a': 'b'}, 'a')
+        >>> recurse_access_key({"a": "b"}, "a")
         'b'
-        >>> recurse_access_key({'a': {'b': ['c', 'd']}}, 'a.b[0]')
+        >>> recurse_access_key({"a": {"b": ["c", "d"]}}, "a.b[0]")
         'c'
 
     Args:
@@ -203,9 +203,9 @@ def _deprecated_recurse_access_key(current_val, keys):
 
     Example:
 
-        >>> _deprecated_recurse_access_key({'a': 'b'}, ['a'])
+        >>> _deprecated_recurse_access_key({"a": "b"}, ["a"])
         'b'
-        >>> _deprecated_recurse_access_key({'a': {'b': ['c', 'd']}}, ['a', 'b', '0'])
+        >>> _deprecated_recurse_access_key({"a": {"b": ["c", "d"]}}, ["a", "b", "0"])
         'c'
 
     Args:
@@ -351,7 +351,9 @@ def check_keys_match_recursive(
 
         >>> check_keys_match_recursive({"a": {"b": "c"}}, {"a": {"b": "c"}}, []) is None
         True
-        >>> check_keys_match_recursive({"a": {"b": "c"}}, {"a": {"b": "d"}}, []) # doctest: +IGNORE_EXCEPTION_DETAIL
+        >>> check_keys_match_recursive(
+        ...     {"a": {"b": "c"}}, {"a": {"b": "d"}}, []
+        ... )  # doctest: +IGNORE_EXCEPTION_DETAIL
         Traceback (most recent call last):
           File "/home/michael/code/tavern/tavern/tavern/_core.util/dict_util.py", line 223, in check_keys_match_recursive
         tavern._core.exceptions.KeyMismatchError: Key mismatch: (expected["a"]["b"] = 'c', actual["a"]["b"] = 'd')
