@@ -6,6 +6,7 @@ import re
 import uuid
 from abc import abstractmethod
 from itertools import chain
+from typing import List, Optional
 
 import pytest
 import yaml
@@ -120,7 +121,7 @@ class IncludeLoader(
         Resolver.__init__(self)
         SourceMappingConstructor.__init__(self)
 
-    env_path_list = None
+    env_path_list: Optional[List] = None
     env_var_name = "TAVERN_INCLUDE"
 
 
