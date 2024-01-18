@@ -42,6 +42,7 @@ def _generate_proto_import(source: str):
 
     logger.info("Generating protos from %s...", source)
 
+    # If its a dir, compile them all
     if not os.path.isdir(source):
         if not source.endswith(".proto"):
             raise exceptions.ProtoCompilerException(
@@ -67,9 +68,11 @@ def _generate_proto_import(source: str):
             raise exceptions.ProtoCompilerException(f"{p} does not exist")
 
     def sanitise(s):
-        """Do basic sanitisation for"""
+        """Do basic sanitisation for creating a temporary directory based on
+        the name of the input proto file"""
         return "".join(c for c in s if c in string.ascii_letters)
 
+    # Create a temporary directory to put the generated protobuf files in
     output = os.path.join(
         tempfile.gettempdir(),
         "tavern_proto",
@@ -133,6 +136,7 @@ def _import_grpc_module(python_module_name: str):
         ) is not None:
             import_specs.append(spec)
 
+    # If its a dir then load files in the dir instead
     if os.path.isdir(python_module_name):
         for s in os.listdir(python_module_name):
             s = os.path.join(python_module_name, s)
@@ -149,6 +153,7 @@ def _import_grpc_module(python_module_name: str):
             f"could not determine how to import {python_module_name}"
         )
 
+    # Actually import them to register them in the symbol db
     for spec in import_specs:
         mod = importlib.util.module_from_spec(spec)
         logger.debug(f"loading from {spec.name}")

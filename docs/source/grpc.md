@@ -17,6 +17,7 @@
 
   Which formats a field like `my_field_name` as `my_field_name` and not `myFieldName` which is what protojson in Go
   converts it to for example, need to provide a way to allow people to write tests using either one
+- protos are compiled into a folder based on `tempfile.gettempdir()`, this could be configurable
 
 ## Connection
 
