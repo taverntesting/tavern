@@ -181,7 +181,7 @@ def verify_jsonschema(to_verify: Mapping, schema: Mapping) -> None:
         logger.debug("original exception from jsonschema: %s", e)
 
         msg = "\n---\n" + "\n---\n".join([str(i) for i in real_context])
-        raise BadSchemaError(msg) from e
+        raise BadSchemaError(msg) from None
 
     extra_checks = {
         "stages[*].mqtt_publish.json[]": validate_request_json,
