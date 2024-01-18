@@ -3,10 +3,9 @@ import os.path
 import random
 import sys
 from concurrent import futures
-from typing import Mapping
+from typing import Any, Mapping
 
 import grpc
-import proto
 import pytest
 from _pytest.mark import MarkGenerator
 from google.protobuf import json_format
@@ -70,8 +69,10 @@ def grpc_client(service: int) -> GRPCClient:
 class GRPCTestSpec:
     test_name: str
     method: str
-    req: proto.message.Message
-    resp: proto.message.Message
+    req: Any
+    resp: Any
+
+    xfail: bool = False
     code: GRPCCode = grpc.StatusCode.OK.value[0]
     service: str = "tavern.tests.v1.DummyService"
 
@@ -100,11 +101,14 @@ def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTest
         includes,
     )
 
-    future = request.run()
-
     expected = {"body": test_spec.body(), "status": test_spec.code}
 
     resp = GRPCResponse(grpc_client, "test", expected, includes)
+
+    if test_spec.xfail:
+        pytest.xfail()
+
+    future = request.run()
 
     resp.verify(future)
 
@@ -123,10 +127,49 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                 code=0,
             ),
             GRPCTestSpec(
+                test_name="empty with wrong status code",
+                method="Empty",
+                req=Empty(),
+                resp=Empty(),
+                code="ABORTED",
+                xfail=True,
+            ),
+            GRPCTestSpec(
+                test_name="empty with the wrong request type",
+                method="Empty",
+                req=test_services_pb2.DummyRequest(),
+                resp=Empty(),
+                code=0,
+                xfail=True,
+            ),
+            GRPCTestSpec(
+                test_name="empty with the wrong response type",
+                method="Empty",
+                req=Empty(),
+                resp=test_services_pb2.DummyResponse(),
+                code=0,
+                xfail=True,
+            ),
+            GRPCTestSpec(
                 test_name="Simple service",
                 method="SimpleTest",
                 req=test_services_pb2.DummyRequest(request_id=2),
                 resp=test_services_pb2.DummyResponse(response_id=3),
             ),
+            GRPCTestSpec(
+                test_name="Simple service with wrong request type",
+                method="SimpleTest",
+                req=Empty(),
+                resp=test_services_pb2.DummyResponse(response_id=3),
+                xfail=True,
+            ),
+            GRPCTestSpec(
+                test_name="Simple service with wrong response type",
+                method="SimpleTest",
+                req=test_services_pb2.DummyRequest(request_id=2),
+                resp=Empty(),
+                xfail=True,
+            ),
         ]
+
         metafunc.parametrize("test_spec", tests, ids=[g.test_name for g in tests])

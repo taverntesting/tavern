@@ -10,9 +10,9 @@ import helloworld_v2_compiled_pb2 as helloworld_pb2_v2
 import helloworld_v2_compiled_pb2_grpc as helloworld_pb2_grpc_v2
 import helloworld_v3_reflected_pb2 as helloworld_pb2_v3
 import helloworld_v3_reflected_pb2_grpc as helloworld_pb2_grpc_v3
+from grpc_interceptor import ServerInterceptor
 from grpc_interceptor.exceptions import GrpcException
 from grpc_reflection.v1alpha import reflection
-from grpc_interceptor import ServerInterceptor
 
 
 class GreeterV1(helloworld_pb2_grpc_v1.GreeterServicer):
@@ -61,7 +61,7 @@ def serve():
     helloworld_pb2_grpc_v1.add_GreeterServicer_to_server(GreeterV1(), server)
     helloworld_pb2_grpc_v2.add_GreeterServicer_to_server(GreeterV2(), server)
 
-    server.add_insecure_port(f"0.0.0.0:50051")
+    server.add_insecure_port("0.0.0.0:50051")
     server.start()
 
     # One server which exposes the V3 API and has reflection turned on
@@ -75,7 +75,7 @@ def serve():
         reflection.SERVICE_NAME,
     )
     reflection.enable_server_reflection(service_names, reflecting_server)
-    reflecting_server.add_insecure_port(f"0.0.0.0:50052")
+    reflecting_server.add_insecure_port("0.0.0.0:50052")
     reflecting_server.start()
 
     logging.info("Starting grpc server")
