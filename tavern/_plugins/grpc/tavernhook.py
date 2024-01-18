@@ -4,6 +4,7 @@ from os.path import abspath, dirname, join
 import yaml
 
 from tavern._core.dict_util import format_keys
+from tavern._core.pytest.config import TestConfig
 
 from .client import GRPCClient
 from .request import GRPCRequest
@@ -18,8 +19,7 @@ request_type = GRPCRequest
 request_block_name = "grpc_request"
 
 
-def get_expected_from_request(response_block, test_block_config, session):
-    # format so we can subscribe to the right topic
+def get_expected_from_request(response_block, test_block_config: TestConfig, session):
     f_expected = format_keys(response_block, test_block_config.variables)
     expected = f_expected
 
