@@ -9,8 +9,8 @@ import grpc
 import proto
 import pytest
 from _pytest.mark import MarkGenerator
+from google.protobuf import json_format
 from google.protobuf.empty_pb2 import Empty
-from google.protobuf.json_format import MessageToDict
 from grpc_reflection.v1alpha import reflection
 
 from tavern._core.pytest.config import TestConfig
@@ -30,9 +30,9 @@ class ServiceImpl(test_services_pb2_grpc.DummyServiceServicer):
     def SimpleTest(
         self, request: test_services_pb2.DummyRequest, context: grpc.ServicerContext
     ) -> test_services_pb2.DummyResponse:
-        if request.id > 1000:
+        if request.request_id > 1000:
             context.abort(grpc.StatusCode.FAILED_PRECONDITION, "number too big!")
-        return test_services_pb2.DummyResponse(id=request.id)
+        return test_services_pb2.DummyResponse(response_id=request.request_id + 1)
 
 
 @pytest.fixture(scope="session")
@@ -68,6 +68,7 @@ def grpc_client(service: int) -> GRPCClient:
 
 @dataclasses.dataclass
 class GRPCTestSpec:
+    test_name: str
     method: str
     req: proto.message.Message
     resp: proto.message.Message
@@ -78,10 +79,18 @@ class GRPCTestSpec:
         return f"{self.service}/{self.method}"
 
     def request(self) -> Mapping:
-        return MessageToDict(self.req)
+        return json_format.MessageToDict(
+            self.req,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True,
+        )
 
     def body(self) -> Mapping:
-        return MessageToDict(self.resp)
+        return json_format.MessageToDict(
+            self.resp,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True,
+        )
 
 
 def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTestSpec):
@@ -103,12 +112,21 @@ def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTest
 def pytest_generate_tests(metafunc: MarkGenerator):
     if "test_spec" in metafunc.fixturenames:
         tests = [
-            GRPCTestSpec(method="Empty", req=Empty(), resp=Empty()),
             GRPCTestSpec(
-                method="SimpleTest",
-                req=test_services_pb2.DummyRequest(id=2),
-                resp=Empty(),
+                test_name="basic empty", method="Empty", req=Empty(), resp=Empty()
             ),
-            GRPCTestSpec(method="Empty", req=Empty(), resp=Empty(), code=0),
+            GRPCTestSpec(
+                test_name="empty with numeric status code",
+                method="Empty",
+                req=Empty(),
+                resp=Empty(),
+                code=0,
+            ),
+            GRPCTestSpec(
+                test_name="Simple service",
+                method="SimpleTest",
+                req=test_services_pb2.DummyRequest(request_id=2),
+                resp=test_services_pb2.DummyResponse(response_id=3),
+            ),
         ]
-        metafunc.parametrize("test_spec", tests)
+        metafunc.parametrize("test_spec", tests, ids=[g.test_name for g in tests])

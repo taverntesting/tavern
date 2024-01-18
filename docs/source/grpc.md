@@ -10,6 +10,13 @@
   multiple MQTT responses.
 - Much like the tavern-flask plugin it wouldn't be too difficult to write a plugin which started a Python gRPC server
   in-process and ran tests against that instead of having to use a remote server
+- Fix comparing results - currently it serialises with
+
+      including_default_value_fields=True,
+      preserving_proto_field_name=True,
+
+  Which formats a field like `my_field_name` as `my_field_name` and not `myFieldName` which is what protojson in Go
+  converts it to for example, need to provide a way to allow people to write tests using either one
 
 ## Connection
 

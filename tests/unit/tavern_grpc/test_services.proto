@@ -10,9 +10,9 @@ service DummyService {
 }
 
 message DummyRequest {
-  int32 id = 1;
+  int32 request_id = 1;
 }
 
 message DummyResponse {
-  int32 id = 1;
+  int32 response_id = 1;
 }

@@ -63,7 +63,7 @@ class GRPCResponse(BaseResponse):
             block: The actual part being checked
         """
         try:
-            expected_block = self.expected[blockname] or {}
+            expected_block = self.expected["body"] or {}
         except KeyError:
             expected_block = {}
 
@@ -111,13 +111,17 @@ class GRPCResponse(BaseResponse):
         if "body" in self.expected:
             _, output_type = self._client.get_method_types(response.service_name)
             expected_parsed = output_type()
-            json_format.ParseDict(self.expected["body"], expected_parsed)
+            try:
+                json_format.ParseDict(self.expected["body"], expected_parsed)
+            except json_format.ParseError as e:
+                self._adderr(f"response body was not in the right format: {e}", e=e)
 
             result: proto.message.Message = grpc_response.result()
 
             if not isinstance(result, output_type):
-                logger.warning("ijifdi")
-                raise Exception("k")
+                self._adderr(
+                    f"response from server ({type(response)}) was not the same type as expected from the registered definition ({output_type})"
+                )
 
             json_result = json_format.MessageToDict(
                 result,
