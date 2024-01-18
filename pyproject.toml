@@ -121,8 +121,8 @@ source = ["tavern"]
 [tool.coverage.paths]
 tavern = [
     "tavern/",
-    ".tox/py39-generic/lib/python3.9/site-packages/tavern/",
-    ".tox/py39-mqtt/lib/python3.9/site-packages/tavern",
+    ".tox/py311-generic/lib/python3.11/site-packages/tavern/",
+    ".tox/py311-mqtt/lib/python3.11/site-packages/tavern",
 ]
 
 [tool.pytest.ini_options]
