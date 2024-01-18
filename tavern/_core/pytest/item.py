@@ -133,7 +133,7 @@ class YamlItem(pytest.Item):
                         _ispytest=True,
                     )
 
-                    pm = dataclasses.replace(pm, mark=new_mark, _ispytest=True)
+                    pm = dataclasses.replace(pm, mark=new_mark, _ispytest=True)  # type:ignore
                 elif isinstance(pm.mark.args[0], (dict,)):
                     # We could raise a TypeError here instead, but then it's a
                     # failure at collection time (which is a bit annoying to
