@@ -13,6 +13,7 @@ from google.protobuf.empty_pb2 import Empty
 from grpc_reflection.v1alpha import reflection
 
 from tavern._core.pytest.config import TestConfig
+from tavern._core.schema.extensions import to_grpc_status
 from tavern._plugins.grpc.client import GRPCClient
 from tavern._plugins.grpc.request import GRPCRequest
 from tavern._plugins.grpc.response import GRPCCode, GRPCResponse
@@ -101,7 +102,9 @@ def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTest
         includes,
     )
 
-    expected = {"body": test_spec.body(), "status": test_spec.code}
+    expected = {"status": test_spec.code}
+    if to_grpc_status(test_spec.code) == "OK":
+        expected["body"] = test_spec.body()
 
     resp = GRPCResponse(grpc_client, "test", expected, includes)
 
@@ -155,6 +158,13 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                 method="SimpleTest",
                 req=test_services_pb2.DummyRequest(request_id=2),
                 resp=test_services_pb2.DummyResponse(response_id=3),
+            ),
+            GRPCTestSpec(
+                test_name="Simple service with error",
+                method="SimpleTest",
+                req=test_services_pb2.DummyRequest(request_id=10000),
+                resp=test_services_pb2.DummyResponse(response_id=3),
+                code="FAILED_PRECONDITION",
             ),
             GRPCTestSpec(
                 test_name="Simple service with wrong request type",

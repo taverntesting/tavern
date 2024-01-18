@@ -111,35 +111,40 @@ class GRPCResponse(BaseResponse):
                 )
 
         if "body" in self.expected:
-            _, output_type = self._client.get_method_types(response.service_name)
-            expected_parsed = output_type()
-            try:
-                json_format.ParseDict(self.expected["body"], expected_parsed)
-            except json_format.ParseError as e:
-                self._adderr(f"response body was not in the right format: {e}", e=e)
-
-            result: proto.message.Message = grpc_response.result()
-
-            if not isinstance(result, output_type):
+            if verify_status != ["OK"]:
                 self._adderr(
-                    f"response from server ({type(response)}) was not the same type as expected from the registered definition ({output_type})"
+                    "'body' was specified in response, but expected status code was not 'OK'"
+                )
+            else:
+                _, output_type = self._client.get_method_types(response.service_name)
+                expected_parsed = output_type()
+                try:
+                    json_format.ParseDict(self.expected["body"], expected_parsed)
+                except json_format.ParseError as e:
+                    self._adderr(f"response body was not in the right format: {e}", e=e)
+
+                result: proto.message.Message = grpc_response.result()
+
+                if not isinstance(result, output_type):
+                    self._adderr(
+                        f"response from server ({type(response)}) was not the same type as expected from the registered definition ({output_type})"
+                    )
+
+                json_result = json_format.MessageToDict(
+                    result,
+                    including_default_value_fields=True,
+                    preserving_proto_field_name=True,
                 )
 
-            json_result = json_format.MessageToDict(
-                result,
-                including_default_value_fields=True,
-                preserving_proto_field_name=True,
-            )
+                self._validate_block("json", json_result)
+                self._maybe_run_validate_functions(json_result)
 
-            self._validate_block("json", json_result)
-            self._maybe_run_validate_functions(json_result)
-
-            saved.update(
-                self.maybe_get_save_values_from_save_block("body", json_result)
-            )
-            saved.update(
-                self.maybe_get_save_values_from_ext(json_result, self.expected)
-            )
+                saved.update(
+                    self.maybe_get_save_values_from_save_block("body", json_result)
+                )
+                saved.update(
+                    self.maybe_get_save_values_from_ext(json_result, self.expected)
+                )
 
         if self.errors:
             raise TestFailError(
