@@ -53,6 +53,7 @@ def serve():
     interceptors = [LoggingInterceptor()]
     executor = futures.ThreadPoolExecutor(max_workers=10)
 
+    # One server which exposes these two
     server = grpc.server(
         executor,
         interceptors=interceptors,
@@ -63,6 +64,7 @@ def serve():
     server.add_insecure_port(f"0.0.0.0:50051")
     server.start()
 
+    # One server which exposes the V3 API and has reflection turned on
     reflecting_server = grpc.server(
         executor,
         interceptors=interceptors,
