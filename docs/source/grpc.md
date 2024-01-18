@@ -1,10 +1,52 @@
 # gRPC integration testing
 
+## Connection
+
+There are 2 ways of specifying the grpc connection, in the `grpc` block at the top of the test similarly to an mqtt
+connection block, or in the test stage itself.
+
+In the `grpc.connect` block:
+
+```yaml
+grpc:
+  connect:
+    host: localhost
+    port: 50052
+```
+
+In the test stage itself:
+
+```yaml
+stages:
+  - name: Do a thing
+    grpc_request:
+      host: "localhost: 50052"
+      service: my.cool.service/Waoh
+      body:
+        ...
+```
+
+## Requests
+
+The `grpc_request` block requires, at minimum, the name of the service to send the request to
+
+```yaml
+stages:
+  - name: Say hello
+    grpc_request:
+      service: helloworld.v3.Greeter/SayHello
+      body:
+        name: "John"
+```
+
+The 'body' block will be reflected into the protobuf message type expected for the service, if the schema is invalid
+then an exception will be raised.
+
 ## Responses
 
 The gRPC status code should be a string matching
 a [gRPC status code](https://grpc.github.io/grpc/core/md_doc_statuscodes.html), for
-example `OK`, `NOT_FOUND`, etc.
+example `OK`, `NOT_FOUND`, etc. or the numerical value of the code. It can also be a list of codes.
 
 ## Loading protobuf definitions
 
@@ -44,7 +86,13 @@ some compiled Python gRPC stubs in your repository.
 #### Server reflection
 
 This is obviously the least useful method. If you don't specify a proto source or module, the client
-will attempt to
+can attempt to
 use [gRPC reflection](https://github.com/grpc/grpc/blob/master/doc/server-reflection.md) to
 determine what is the appropriate message type for the message you're trying to send. This is not
-reliable as the server you're trying to talk to might not have reflection turned on. 
+reliable as the server you're trying to talk to might not have reflection turned on. This needs to be specified in
+the `grpc` block:
+
+```yaml
+grpc:
+  attempt_reflection: true
+```
