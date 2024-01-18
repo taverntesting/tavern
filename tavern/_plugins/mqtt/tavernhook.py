@@ -1,5 +1,6 @@
 import logging
 from os.path import abspath, dirname, join
+from typing import Dict, Optional
 
 import yaml
 
@@ -18,7 +19,7 @@ request_block_name = "mqtt_publish"
 
 
 def get_expected_from_request(response_block, test_block_config, session):
-    expected = None
+    expected: Optional[Dict] = None
 
     # mqtt response is not required
     if response_block:
