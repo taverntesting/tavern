@@ -1,10 +1,14 @@
+import dataclasses
 import os.path
 import random
 import sys
 from concurrent import futures
+from typing import Mapping
 
 import grpc
+import proto
 import pytest
+from _pytest.mark import MarkGenerator
 from google.protobuf.empty_pb2 import Empty
 from google.protobuf.json_format import MessageToDict
 from grpc_reflection.v1alpha import reflection
@@ -62,23 +66,40 @@ def grpc_client(service: int) -> GRPCClient:
     return GRPCClient(**opts)
 
 
-def wrap_make_request(
-    client: GRPCClient, service_name: str, req, resp, test_block_config: TestConfig
-):
+@dataclasses.dataclass
+class GRPCTestSpec:
+    method: str
+    req: proto.message.Message
+    resp: proto.message.Message
+    service: str = "tavern.tests.v1.DummyService"
+
+    def service_method(self):
+        return f"{self.service}/{self.method}"
+
+    def request(self) -> Mapping:
+        return MessageToDict(self.req)
+
+    def expected(self) -> Mapping:
+        return MessageToDict(self.resp)
+
+
+def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTestSpec):
     request = GRPCRequest(
-        client, {"service": service_name, "body": MessageToDict(req)}, test_block_config
+        grpc_client,
+        {"service": test_spec.service_method(), "body": test_spec.request()},
+        includes,
     )
 
     future = request.run()
 
-    resp_as_dict = MessageToDict(resp)
+    resp_as_dict = test_spec.expected()
 
-    resp = GRPCResponse(client, "test", resp_as_dict, test_block_config)
+    resp = GRPCResponse(grpc_client, "test", resp_as_dict, includes)
 
     resp.verify(future)
 
 
-def test_server_empty(grpc_client, includes):
-    wrap_make_request(
-        grpc_client, "tavern.tests.v1.DummyService/Empty", Empty(), Empty(), includes
-    )
+def pytest_generate_tests(metafunc: MarkGenerator):
+    if "test_spec" in metafunc.fixturenames:
+        tests = [GRPCTestSpec(method="Empty", req=Empty(), resp=Empty())]
+        metafunc.parametrize("test_spec", tests)
