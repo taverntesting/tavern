@@ -1,3 +1,4 @@
+import dataclasses
 import functools
 import hashlib
 import importlib.util
@@ -7,13 +8,15 @@ import string
 import subprocess
 import sys
 import tempfile
+import typing
 import warnings
 from distutils.spawn import find_executable
 from importlib.machinery import ModuleSpec
-from typing import Any, Dict, List, Mapping, Optional, Tuple, Union
+from typing import Any, Dict, List, Mapping, Optional, Tuple
 
 import grpc
 import grpc_reflection
+import proto.message
 from google.protobuf import (
     descriptor_pb2,
     json_format,
@@ -174,6 +177,13 @@ def _import_grpc_module(python_module_name: str):
             spec.loader.exec_module(mod)
 
 
+@dataclasses.dataclass
+class _ChannelVals:
+    channel: grpc.UnaryUnaryMultiCallable
+    input_type: typing.Type[proto.message.Message]
+    output_type: typing.Type[proto.message.Message]
+
+
 class GRPCClient:
     def __init__(self, **kwargs):
         logger.debug("Initialising GRPC client with %s", kwargs)
@@ -259,14 +269,14 @@ class GRPCClient:
 
     def _get_grpc_service(
         self, channel: grpc.Channel, service: str, method: str
-    ) -> Union[Tuple[None, None], Tuple[Any, Any]]:
+    ) -> Optional[_ChannelVals]:
         full_service_name = f"{service}.{method}"
         try:
             grpc_service = self.sym_db.pool.FindMethodByName(full_service_name)
             input_type = message_factory.GetMessageClass(grpc_service.input_type)  # type: ignore
             output_type = message_factory.GetMessageClass(grpc_service.output_type)  # type: ignore
         except KeyError:
-            return None, None
+            return None
 
         logger.critical(f"reflected info for {service}: {full_service_name}")
 
@@ -277,9 +287,9 @@ class GRPCClient:
             response_deserializer=output_type.FromString,
         )
 
-        return grpc_method, input_type
+        return _ChannelVals(grpc_method, input_type, output_type)
 
-    def _make_call_request(self, host: str, full_service: str):
+    def _make_call_request(self, host: str, full_service: str) -> _ChannelVals:
         full_service = full_service.replace("/", ".")
         service_method = full_service.rsplit(".", 1)
         if len(service_method) != 2:
@@ -309,9 +319,8 @@ class GRPCClient:
 
         channel = self.channels[host]
 
-        grpc_method, input_type = self._get_grpc_service(channel, service, method)
-        if grpc_method and input_type:
-            return grpc_method, input_type
+        if channel_vals := self._get_grpc_service(channel, service, method):
+            return channel_vals
 
         if not self._attempt_reflection:
             logger.error(
@@ -324,7 +333,7 @@ class GRPCClient:
         logger.info("service not registered, doing reflection from server")
         try:
             self._get_reflection_info(channel, service_name=service)
-        except grpc.RpcError as rpc_error:  # Since this object is guaranteed to be a grpc.Call, might as well include that in its name.
+        except grpc.RpcError as rpc_error:
             code = details = None
             try:
                 code = rpc_error.code()
@@ -371,13 +380,13 @@ class GRPCClient:
         if timeout is None:
             timeout = self.timeout
 
-        grpc_call, grpc_request = self._make_call_request(host, service)
-        if grpc_call is None or grpc_request is None:
+        channel_vals = self._make_call_request(host, service)
+        if _ChannelVals is None:
             raise exceptions.GRPCServiceException(
                 f"Service {service} was not found on host {host}"
             )
 
-        request = grpc_request()
+        request = channel_vals.input_type()
         if body is not None:
             try:
                 request = json_format.ParseDict(body, request)
@@ -388,7 +397,9 @@ class GRPCClient:
 
         logger.debug("Sending request %s", request)
 
-        return grpc_call.future(request, metadata=self._metadata, timeout=timeout)
+        return channel_vals.channel.future(
+            request, metadata=self._metadata, timeout=timeout
+        )
 
     def __exit__(self, *args):
         logger.debug("Disconnecting from GRPC")

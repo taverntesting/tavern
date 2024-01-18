@@ -104,6 +104,11 @@ def pytest_generate_tests(metafunc: MarkGenerator):
     if "test_spec" in metafunc.fixturenames:
         tests = [
             GRPCTestSpec(method="Empty", req=Empty(), resp=Empty()),
+            GRPCTestSpec(
+                method="SimpleTest",
+                req=test_services_pb2.DummyRequest(id=2),
+                resp=Empty(),
+            ),
             GRPCTestSpec(method="Empty", req=Empty(), resp=Empty(), code=0),
         ]
         metafunc.parametrize("test_spec", tests)
