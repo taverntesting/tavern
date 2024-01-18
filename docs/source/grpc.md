@@ -92,9 +92,22 @@ then an exception will be raised.
 
 ## Responses
 
-The gRPC status code should be a string matching
+If no response is specified, Tavern will assume that _any_ response with an `OK` status code to be successful.
+
+Other status codes are specified using the `status` key. The gRPC status code should be a string matching
 a [gRPC status code](https://grpc.github.io/grpc/core/md_doc_statuscodes.html), for
 example `OK`, `NOT_FOUND`, etc. or the numerical value of the code. It can also be a list of codes.
+
+```yaml
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"  # Also the default
+```
 
 ## Loading protobuf definitions
 

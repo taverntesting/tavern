@@ -1,6 +1,6 @@
 import os
 import re
-from typing import List, Union
+from typing import TYPE_CHECKING, Union
 
 from pykwalify.types import is_bool, is_float, is_int
 
@@ -14,6 +14,9 @@ from tavern._core.extfunctions import (
 from tavern._core.general import valid_http_methods
 from tavern._core.loader import ApproxScalar, BoolToken, FloatToken, IntToken
 from tavern._core.strict_util import StrictLevel
+
+if TYPE_CHECKING:
+    from tavern._plugins.grpc.response import GRPCCode
 
 
 # To extend pykwalify's type validation, extend its internal functions
@@ -133,9 +136,7 @@ def check_usefixtures(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_grpc_status_is_valid_or_list_of_names(
-    value: Union[List[str], str, int], rule_obj, path
-):
+def validate_grpc_status_is_valid_or_list_of_names(value: "GRPCCode", rule_obj, path):
     """Validate GRPC statuses https://github.com/grpc/grpc/blob/master/doc/statuscodes.md"""
     # pylint: disable=unused-argument
     err_msg = (
@@ -145,10 +146,10 @@ def validate_grpc_status_is_valid_or_list_of_names(
     )
 
     if isinstance(value, (str, int)):
-        if not is_grpc_status(value):
+        if not to_grpc_status(value):
             raise BadSchemaError(err_msg)
     elif isinstance(value, list):
-        if not all(is_grpc_status(i) for i in value):
+        if not all(to_grpc_status(i) for i in value):
             raise BadSchemaError(err_msg)
     else:
         raise BadSchemaError(err_msg)
@@ -156,20 +157,20 @@ def validate_grpc_status_is_valid_or_list_of_names(
     return True
 
 
-def is_grpc_status(value: Union[str, int]):
+def to_grpc_status(value: Union[str, int]):
     from grpc import StatusCode
 
     if isinstance(value, str):
         value = value.upper()
         for status in StatusCode:
             if status.name == value:
-                return True
+                return status.name
     elif isinstance(value, int):
         for status in StatusCode:
             if status.value[0] == value:
-                return True
+                return status.name
 
-    return False
+    return None
 
 
 def verify_oneof_id_name(value, rule_obj, path) -> bool:

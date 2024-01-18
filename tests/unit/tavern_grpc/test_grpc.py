@@ -16,7 +16,7 @@ from grpc_reflection.v1alpha import reflection
 from tavern._core.pytest.config import TestConfig
 from tavern._plugins.grpc.client import GRPCClient
 from tavern._plugins.grpc.request import GRPCRequest
-from tavern._plugins.grpc.response import GRPCResponse
+from tavern._plugins.grpc.response import GRPCCode, GRPCResponse
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -71,6 +71,7 @@ class GRPCTestSpec:
     method: str
     req: proto.message.Message
     resp: proto.message.Message
+    code: GRPCCode = grpc.StatusCode.OK.value[0]
     service: str = "tavern.tests.v1.DummyService"
 
     def service_method(self):
@@ -79,7 +80,7 @@ class GRPCTestSpec:
     def request(self) -> Mapping:
         return MessageToDict(self.req)
 
-    def expected(self) -> Mapping:
+    def body(self) -> Mapping:
         return MessageToDict(self.resp)
 
 
@@ -92,14 +93,17 @@ def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTest
 
     future = request.run()
 
-    resp_as_dict = test_spec.expected()
+    expected = {"body": test_spec.body(), "status": test_spec.code}
 
-    resp = GRPCResponse(grpc_client, "test", resp_as_dict, includes)
+    resp = GRPCResponse(grpc_client, "test", expected, includes)
 
     resp.verify(future)
 
 
 def pytest_generate_tests(metafunc: MarkGenerator):
     if "test_spec" in metafunc.fixturenames:
-        tests = [GRPCTestSpec(method="Empty", req=Empty(), resp=Empty())]
+        tests = [
+            GRPCTestSpec(method="Empty", req=Empty(), resp=Empty()),
+            GRPCTestSpec(method="Empty", req=Empty(), resp=Empty(), code=0),
+        ]
         metafunc.parametrize("test_spec", tests)

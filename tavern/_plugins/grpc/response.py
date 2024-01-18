@@ -1,16 +1,36 @@
 import logging
-from typing import Mapping, Union
+from typing import Any, List, Mapping, TypedDict, Union
 
 import grpc
 from google.protobuf import json_format
 from grpc import StatusCode
 
+from tavern._core.dict_util import check_expected_keys
 from tavern._core.exceptions import TestFailError
 from tavern._core.pytest.config import TestConfig
+from tavern._core.schema.extensions import to_grpc_status
 from tavern._plugins.grpc.client import GRPCClient
 from tavern.response import BaseResponse
 
 logger = logging.getLogger(__name__)
+
+
+GRPCCode = Union[str, int, List[str], List[int]]
+
+
+def _to_grpc_name(status: GRPCCode) -> Union[str, List[str]]:
+    if isinstance(status, list):
+        return [_to_grpc_name(s) for s in status]
+
+    return to_grpc_status(status).upper()
+
+
+class _GRPCExpected(TypedDict):
+    """What the 'expected' block for a grpc response should contain"""
+
+    status: GRPCCode
+    details: Any
+    body: Mapping
 
 
 class GRPCResponse(BaseResponse):
@@ -18,9 +38,10 @@ class GRPCResponse(BaseResponse):
         self,
         client: GRPCClient,
         name: str,
-        expected: Mapping,
+        expected: Union[_GRPCExpected | Mapping],
         test_block_config: TestConfig,
     ):
+        check_expected_keys({"body", "status", "details"}, expected)
         super(GRPCResponse, self).__init__(name, expected, test_block_config)
 
         self._client = client
@@ -63,12 +84,8 @@ class GRPCResponse(BaseResponse):
         # Get any keys to save
         saved = {}
         verify_status = [StatusCode.OK.name]
-        if "status" in self.expected:
-            status = self.expected["status"]
-            if isinstance(status, list):
-                verify_status = [name.upper() for name in status]
-            else:
-                verify_status = [status.upper()]
+        if status := self.expected.get("status", None):
+            verify_status = _to_grpc_name(status)
 
         if response.code().name not in verify_status:
             self._adderr(
@@ -86,7 +103,7 @@ class GRPCResponse(BaseResponse):
                     response.details(),
                 )
 
-        if "proto_body" in self.expected:
+        if "body" in self.expected:
             result = response.result()
 
             json_result = json_format.MessageToDict(
@@ -95,7 +112,7 @@ class GRPCResponse(BaseResponse):
                 preserving_proto_field_name=True,
             )
 
-            self._validate_block("body", json_result)
+            self._validate_block("json", json_result)
             self._maybe_run_validate_functions(json_result)
 
             saved.update(
@@ -107,7 +124,7 @@ class GRPCResponse(BaseResponse):
 
         if self.errors:
             raise TestFailError(
-                "Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()),
+                f"Test '{self.name:s}' failed:\n{self._str_errors():s}",
                 failures=self.errors,
             )
 
