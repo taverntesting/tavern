@@ -2,8 +2,14 @@
 
 ## Current limitations / future plans
 
-- Custom TLS like rest/mqtt
+- Should be able to specify channel credentials.
+- Currently there is no way of doing custom TLS options (like with rest/mqtt)
 - Better syntax around importing modules
+- Some way of representing streaming RPCs? This is pretty niche and Tavern is built around a core of only making 1
+  request which doesn't work well with streaming request RPCs, but streaming response RPCs could be handled like
+  multiple MQTT responses.
+- Much like the tavern-flask plugin it wouldn't be too difficult to write a plugin which started a Python gRPC server
+  in-process and ran tests against that instead of having to use a remote server
 
 ## Connection
 
