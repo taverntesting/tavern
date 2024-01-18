@@ -1,4 +1,3 @@
-import importlib
 import logging
 import re
 from typing import Mapping
@@ -19,6 +18,7 @@ from tavern._core.loader import (
     TypeConvertToken,
     TypeSentinel,
 )
+from tavern._core.pytest.config import has_module
 from tavern._core.schema.extensions import (
     check_parametrize_marks,
     check_strict_key,
@@ -121,9 +121,13 @@ def verify_jsonschema(to_verify: Mapping, schema: Mapping) -> None:
 
     validator = CustomValidator(schema)
 
-    if "grpc" in to_verify and not importlib.util.find_spec("grpc"):
+    if "grpc" in to_verify and not has_module("grpc"):
         raise exceptions.BadSchemaError(
             "Tried to use grpc connection string, but grpc was not installed. Reinstall Tavern with the grpc extra like `pip install tavern[grpc]`"
+        )
+    if "mqtt" in to_verify and not has_module("paho.mqtt"):
+        raise exceptions.BadSchemaError(
+            "Tried to use mqtt connection string, but mqtt was not installed. Reinstall Tavern with the mqtt extra like `pip install tavern[mqtt]`"
         )
 
     try:

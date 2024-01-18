@@ -55,12 +55,6 @@ class TestConfig:
     def backends() -> List[str]:
         available_backends = ["http"]
 
-        def has_module(module: str) -> bool:
-            try:
-                return find_spec(module) is not None
-            except ModuleNotFoundError:
-                return False
-
         if has_module("paho.mqtt"):
             available_backends.append("mqtt")
         if has_module("grpc"):
@@ -69,3 +63,10 @@ class TestConfig:
         logger.debug(f"available request backends: {available_backends}")
 
         return available_backends
+
+
+def has_module(module: str) -> bool:
+    try:
+        return find_spec(module) is not None
+    except ModuleNotFoundError:
+        return False
