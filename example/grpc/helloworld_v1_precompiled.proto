@@ -1,3 +1,5 @@
+// Pre compiled and checked into the repo so it can be imported by Tavern at runtime
+
 syntax = "proto3";
 
 package helloworld.v1;

@@ -1,3 +1,5 @@
+// Not compiled, but compiled at runtime by Tavern
+
 syntax = "proto3";
 
 package helloworld.v2;

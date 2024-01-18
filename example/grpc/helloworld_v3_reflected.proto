@@ -1,3 +1,5 @@
+// Not compiled, Tavern uses server side reflection to determine the schema
+
 syntax = "proto3";
 
 package helloworld.v3;
