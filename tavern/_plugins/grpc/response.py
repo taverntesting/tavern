@@ -1,7 +1,7 @@
 import logging
-from typing import Any, List, Mapping, TypedDict, Union
+from typing import TYPE_CHECKING, Any, List, Mapping, TypedDict, Union
 
-import grpc
+import proto.message
 from google.protobuf import json_format
 from grpc import StatusCode
 
@@ -11,6 +11,9 @@ from tavern._core.pytest.config import TestConfig
 from tavern._core.schema.extensions import to_grpc_status
 from tavern._plugins.grpc.client import GRPCClient
 from tavern.response import BaseResponse
+
+if TYPE_CHECKING:
+    from tavern._plugins.grpc.request import WrappedFuture
 
 logger = logging.getLogger(__name__)
 
@@ -77,9 +80,11 @@ class GRPCResponse(BaseResponse):
         block_strictness = test_strictness.option_for(blockname)
         self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
 
-    def verify(self, response: Union[grpc.Call, grpc.Future]) -> Mapping:
-        logger.debug(f"grpc status code: {response.code()}")
-        logger.debug(f"grpc details: {response.details()}")
+    def verify(self, response: "WrappedFuture") -> Mapping:
+        grpc_response = response.response
+
+        logger.debug(f"grpc status code: {grpc_response.code()}")
+        logger.debug(f"grpc details: {grpc_response.details()}")
 
         # Get any keys to save
         saved = {}
@@ -87,24 +92,32 @@ class GRPCResponse(BaseResponse):
         if status := self.expected.get("status", None):
             verify_status = _to_grpc_name(status)
 
-        if response.code().name not in verify_status:
+        if grpc_response.code().name not in verify_status:
             self._adderr(
                 "expected status %s, but the actual response '%s'",
                 verify_status,
-                response.code().name,
+                grpc_response.code().name,
             )
 
         if "details" in self.expected:
             verify_details = self.expected["details"]
-            if verify_details != response.details():
+            if verify_details != grpc_response.details():
                 self._adderr(
                     "expected details '%s', but the actual response '%s'",
                     verify_details,
-                    response.details(),
+                    grpc_response.details(),
                 )
 
         if "body" in self.expected:
-            result = response.result()
+            _, output_type = self._client.get_method_types(response.service_name)
+            expected_parsed = output_type()
+            json_format.ParseDict(self.expected["body"], expected_parsed)
+
+            result: proto.message.Message = grpc_response.result()
+
+            if not isinstance(result, output_type):
+                logger.warning("ijifdi")
+                raise Exception("k")
 
             json_result = json_format.MessageToDict(
                 result,

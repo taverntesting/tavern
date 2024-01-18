@@ -17,6 +17,7 @@ from typing import Any, Dict, List, Mapping, Optional, Tuple
 import grpc
 import grpc_reflection
 import proto.message
+from google._upb._message import DescriptorPool
 from google.protobuf import (
     descriptor_pb2,
     json_format,
@@ -177,11 +178,14 @@ def _import_grpc_module(python_module_name: str):
             spec.loader.exec_module(mod)
 
 
+_ProtoMessageType = typing.Type[proto.message.Message]
+
+
 @dataclasses.dataclass
 class _ChannelVals:
     channel: grpc.UnaryUnaryMultiCallable
-    input_type: typing.Type[proto.message.Message]
-    output_type: typing.Type[proto.message.Message]
+    input_type: _ProtoMessageType
+    output_type: _ProtoMessageType
 
 
 class GRPCClient:
@@ -270,24 +274,48 @@ class GRPCClient:
     def _get_grpc_service(
         self, channel: grpc.Channel, service: str, method: str
     ) -> Optional[_ChannelVals]:
-        full_service_name = f"{service}.{method}"
+        full_service_name = f"{service}/{method}"
         try:
-            grpc_service = self.sym_db.pool.FindMethodByName(full_service_name)
-            input_type = message_factory.GetMessageClass(grpc_service.input_type)  # type: ignore
-            output_type = message_factory.GetMessageClass(grpc_service.output_type)  # type: ignore
-        except KeyError:
+            input_type, output_type = self.get_method_types(full_service_name)
+        except KeyError as e:
+            logger.debug(f"could not find types: {e}")
             return None
 
-        logger.critical(f"reflected info for {service}: {full_service_name}")
+        logger.info(f"reflected info for {service}: {full_service_name}")
 
-        service_url = f"/{service}/{method}"
         grpc_method = channel.unary_unary(
-            service_url,
+            "/" + full_service_name,
             request_serializer=input_type.SerializeToString,
             response_deserializer=output_type.FromString,
         )
 
         return _ChannelVals(grpc_method, input_type, output_type)
+
+    def get_method_types(
+        self, full_method_name: str
+    ) -> Tuple[_ProtoMessageType, _ProtoMessageType]:
+        """Uses the builtin symbol pool to try and find the input and output types for the given method
+
+        Args:
+            full_method_name: full RPC name in the form 'pkg.ServiceName/Method'
+
+        Returns:
+            input and output types (class objects) for the RPC
+
+        Raises:
+            KeyError: If the types are not registered. Should ideally never happen?
+        """
+        logger.debug(f"looking up types for {full_method_name}")
+
+        service, method = full_method_name.split("/")
+
+        pool: DescriptorPool = self.sym_db.pool
+        grpc_service = pool.FindServiceByName(service)
+        method = grpc_service.FindMethodByName(method)
+        input_type = message_factory.GetMessageClass(method.input_type)  # type: ignore
+        output_type = message_factory.GetMessageClass(method.output_type)  # type: ignore
+
+        return input_type, output_type
 
     def _make_call_request(self, host: str, full_service: str) -> _ChannelVals:
         full_service = full_service.replace("/", ".")
@@ -381,7 +409,7 @@ class GRPCClient:
             timeout = self.timeout
 
         channel_vals = self._make_call_request(host, service)
-        if _ChannelVals is None:
+        if channel_vals is None:
             raise exceptions.GRPCServiceException(
                 f"Service {service} was not found on host {host}"
             )

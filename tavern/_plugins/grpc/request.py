@@ -1,8 +1,10 @@
+import dataclasses
 import functools
 import json
 import logging
-from typing import Mapping
+from typing import Mapping, Union
 
+import grpc
 from box import Box
 
 from tavern._core import exceptions
@@ -32,6 +34,12 @@ def get_grpc_args(rspec, test_block_config):
     return fspec
 
 
+@dataclasses.dataclass
+class WrappedFuture:
+    response: Union[grpc.Call, grpc.Future]
+    service_name: str
+
+
 class GRPCRequest(BaseRequest):
     """Wrapper for a single GRPC request on a client
 
@@ -49,6 +57,8 @@ class GRPCRequest(BaseRequest):
 
         self._prepared = functools.partial(client.call, **grpc_args)
 
+        self._service_name = grpc_args.get("service", None)
+
         # Need to do this here because get_publish_args will modify the original
         # input, which we might want to use to format. No error handling because
         # all the error handling is done in the previous call
@@ -56,9 +66,11 @@ class GRPCRequest(BaseRequest):
             request_spec, test_block_config.variables
         )
 
-    def run(self):
+    def run(self) -> WrappedFuture:
         try:
-            return self._prepared()
+            return WrappedFuture(
+                response=self._prepared(), service_name=self._service_name
+            )
         except ValueError as e:
             logger.exception("Error executing request")
             raise exceptions.GRPCRequestException from e

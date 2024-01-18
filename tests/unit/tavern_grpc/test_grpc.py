@@ -60,7 +60,7 @@ def service() -> int:
 def grpc_client(service: int) -> GRPCClient:
     opts = {
         "connect": {"host": "localhost", "port": service, "secure": False},
-        "attempt_reflection": True,
+        "attempt_reflection": False,
     }
 
     return GRPCClient(**opts)
