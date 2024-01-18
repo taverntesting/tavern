@@ -39,20 +39,22 @@ class GRPCRequest(BaseRequest):
     """
 
     def __init__(
-        self, client: GRPCClient, rspec: Mapping, test_block_config: TestConfig
+        self, client: GRPCClient, request_spec: Mapping, test_block_config: TestConfig
     ):
-        expected = {"host", "retain", "service", "body", "json"}
+        expected = {"host", "service", "body"}
 
-        check_expected_keys(expected, rspec)
+        check_expected_keys(expected, request_spec)
 
-        grpc_args = get_grpc_args(rspec, test_block_config)
+        grpc_args = get_grpc_args(request_spec, test_block_config)
 
         self._prepared = functools.partial(client.call, **grpc_args)
 
         # Need to do this here because get_publish_args will modify the original
         # input, which we might want to use to format. No error handling because
         # all the error handling is done in the previous call
-        self._original_publish_args = format_keys(rspec, test_block_config.variables)
+        self._original_request_vars = format_keys(
+            request_spec, test_block_config.variables
+        )
 
     def run(self):
         try:
@@ -63,4 +65,4 @@ class GRPCRequest(BaseRequest):
 
     @property
     def request_vars(self):
-        return Box(self._original_publish_args)
+        return Box(self._original_request_vars)

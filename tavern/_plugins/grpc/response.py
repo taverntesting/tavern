@@ -7,6 +7,7 @@ from grpc import StatusCode
 
 from tavern._core.exceptions import TestFailError
 from tavern._core.pytest.config import TestConfig
+from tavern._plugins.grpc.client import GRPCClient
 from tavern.response import BaseResponse
 
 logger = logging.getLogger(__name__)
@@ -14,7 +15,11 @@ logger = logging.getLogger(__name__)
 
 class GRPCResponse(BaseResponse):
     def __init__(
-        self, client, name: str, expected: Mapping, test_block_config: TestConfig
+        self,
+        client: GRPCClient,
+        name: str,
+        expected: Mapping,
+        test_block_config: TestConfig,
     ):
         super(GRPCResponse, self).__init__(name, expected, test_block_config)
 

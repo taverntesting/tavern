@@ -283,7 +283,9 @@ class GRPCClient:
         full_service = full_service.replace("/", ".")
         service_method = full_service.rsplit(".", 1)
         if len(service_method) != 2:
-            raise exceptions.GRPCRequestException("Could not find method name")
+            raise exceptions.GRPCRequestException(
+                f"Invalid service/method name {full_service}"
+            )
 
         service = service_method[0]
         method = service_method[1]
