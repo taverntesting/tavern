@@ -23,7 +23,7 @@ GRPCCode = Union[str, int, List[str], List[int]]
 
 def _to_grpc_name(status: GRPCCode) -> Union[str, List[str]]:
     if isinstance(status, list):
-        return [_to_grpc_name(s) for s in status]
+        return [_to_grpc_name(s) for s in status]  # type:ignore
 
     return to_grpc_status(status).upper()
 
@@ -41,7 +41,7 @@ class GRPCResponse(BaseResponse):
         self,
         client: GRPCClient,
         name: str,
-        expected: Union[_GRPCExpected | Mapping],
+        expected: Union[_GRPCExpected, Mapping],
         test_block_config: TestConfig,
     ):
         check_expected_keys({"body", "status", "details"}, expected)
@@ -90,7 +90,9 @@ class GRPCResponse(BaseResponse):
         saved = {}
         verify_status = [StatusCode.OK.name]
         if status := self.expected.get("status", None):
-            verify_status = _to_grpc_name(status)
+            verify_status = _to_grpc_name(status)  # type: ignore
+            if not isinstance(verify_status, list):
+                verify_status = [verify_status]
 
         if grpc_response.code().name not in verify_status:
             self._adderr(

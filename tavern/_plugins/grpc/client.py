@@ -317,7 +317,9 @@ class GRPCClient:
 
         return input_type, output_type
 
-    def _make_call_request(self, host: str, full_service: str) -> _ChannelVals:
+    def _make_call_request(
+        self, host: str, full_service: str
+    ) -> Optional[_ChannelVals]:
         full_service = full_service.replace("/", ".")
         service_method = full_service.rsplit(".", 1)
         if len(service_method) != 2:
