@@ -149,7 +149,6 @@ addopts = [
     "-p", "no:logging",
     "--tb=short",
     "--color=yes",
-    "--tavern-setup-init-logging",
 ]
 norecursedirs = [
     ".git",

@@ -1,6 +1,6 @@
 import os
 import re
-from typing import Union
+from typing import List, Union
 
 from pykwalify.types import is_bool, is_float, is_int
 
@@ -133,29 +133,42 @@ def check_usefixtures(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_grpc_status_is_valid_or_list_of_names(value, rule_obj, path):
+def validate_grpc_status_is_valid_or_list_of_names(
+    value: Union[List[str], str, int], rule_obj, path
+):
     """Validate GRPC statuses https://github.com/grpc/grpc/blob/master/doc/statuscodes.md"""
     # pylint: disable=unused-argument
-    err_msg = "status has to be an valid grpc status name (got {})".format(value)
+    err_msg = (
+        "status has to be an valid grpc status code, name, or list (got {})".format(
+            value
+        )
+    )
 
-    if not isinstance(value, list) and not is_grpc_status(value):
-        raise BadSchemaError(err_msg)
-
-    if isinstance(value, list):
+    if isinstance(value, (str, int)):
+        if not is_grpc_status(value):
+            raise BadSchemaError(err_msg)
+    elif isinstance(value, list):
         if not all(is_grpc_status(i) for i in value):
             raise BadSchemaError(err_msg)
+    else:
+        raise BadSchemaError(err_msg)
 
     return True
 
 
-def is_grpc_status(value):
-    value = value.upper()
-
+def is_grpc_status(value: Union[str, int]):
     from grpc import StatusCode
 
-    for status in StatusCode:
-        if status.name == value:
-            return True
+    if isinstance(value, str):
+        value = value.upper()
+        for status in StatusCode:
+            if status.name == value:
+                return True
+    elif isinstance(value, int):
+        for status in StatusCode:
+            if status.value[0] == value:
+                return True
+
     return False
 
 
