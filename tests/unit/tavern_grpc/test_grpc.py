@@ -123,6 +123,13 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                 test_name="basic empty", method="Empty", req=Empty(), resp=Empty()
             ),
             GRPCTestSpec(
+                test_name="nonexistent method",
+                method="Wek",
+                req=Empty(),
+                resp=Empty(),
+                xfail=True,
+            ),
+            GRPCTestSpec(
                 test_name="empty with numeric status code",
                 method="Empty",
                 req=Empty(),
