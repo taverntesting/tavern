@@ -1,5 +1,10 @@
 # gRPC integration testing
 
+## Current limitations / future plans
+
+- Custom TLS like rest/mqtt
+- Better syntax around importing modules
+
 ## Connection
 
 There are 2 ways of specifying the grpc connection, in the `grpc` block at the top of the test similarly to an mqtt
@@ -25,6 +30,43 @@ stages:
       body:
         ...
 ```
+
+The connection will be established at the beginning of the test and dropped when it finishes.
+
+### SSL connection
+
+Tavern currently _defaults to an insecure connection_ when connecting to grpc, to enable SSL connections add
+the `secure` key in the `connect` block:
+
+```yaml
+grpc:
+  connect:
+    secure: true
+```
+
+### Metadata
+
+Generic metadata can be passed on every message using the `metadata` key:
+
+```yaml
+grpc:
+  metadata:
+    my-extra-info: something
+```
+
+### Advanced: connection options
+
+Generic connection options can be passed as key:value pairs under the `options` block:
+
+```yaml
+grpc:
+  connect:
+    options:
+      grpc.max_send_message_length: 10000000
+```
+
+See [the gRPC documentation](https://grpc.github.io/grpc/core/group__grpc__arg__keys.html) for a list of possible
+options, note that some of these may not be implemented in Python.
 
 ## Requests
 
@@ -54,7 +96,7 @@ There are 3 different ways Tavern will try to load the appropriate proto definit
 
 #### Specifying the proto module to use
 
-Example:
+If you already have all the Python gRPC stubs in your repository. Example:
 
 ```yaml
 grpc:
@@ -62,7 +104,8 @@ grpc:
     module: server/helloworld_pb2_grpc
 ```
 
-This will attempt to import the given module and register all the protos in it.
+This will attempt to import the given module (it should not be a Python file, but the path to the module containing the
+existing stubs) and register all the protos in it.
 
 #### Specifying a folder with some protos in
 

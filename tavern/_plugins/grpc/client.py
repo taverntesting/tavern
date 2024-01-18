@@ -178,7 +178,7 @@ class GRPCClient:
     def __init__(self, **kwargs):
         logger.debug("Initialising GRPC client with %s", kwargs)
         expected_blocks = {
-            "connect": {"host", "port", "options", "compression", "timeout", "secure"},
+            "connect": {"host", "port", "options", "timeout", "secure"},
             "proto": {"source", "module"},
             "metadata": {},
             "attempt_reflection": {},
@@ -384,7 +384,7 @@ class GRPCClient:
                     "error creating request from json body"
                 ) from e
 
-        logger.debug("Send request %s", request)
+        logger.debug("Sending request %s", request)
 
         return grpc_call.future(request, metadata=self._metadata, timeout=timeout)
 
