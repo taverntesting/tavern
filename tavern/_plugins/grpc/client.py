@@ -101,9 +101,9 @@ class GRPCClient:
         service_proto: grpc_reflection.v1alpha.reflection_pb2.FileDescriptorResponse,
     ):
         for file_descriptor_proto in service_proto.file_descriptor_proto:
-            proto = descriptor_pb2.FileDescriptorProto()
-            proto.ParseFromString(file_descriptor_proto)
-            self.sym_db.pool.Add(proto)
+            descriptor = descriptor_pb2.FileDescriptorProto()
+            descriptor.ParseFromString(file_descriptor_proto)
+            self.sym_db.pool.Add(descriptor)
 
     def _get_reflection_info(
         self, channel, service_name: Optional[str] = None, file_by_filename=None

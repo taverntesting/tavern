@@ -5,6 +5,7 @@ import proto.message
 from google.protobuf import json_format
 from grpc import StatusCode
 
+from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys
 from tavern._core.exceptions import TestFailError
 from tavern._core.pytest.config import TestConfig
@@ -25,7 +26,11 @@ def _to_grpc_name(status: GRPCCode) -> Union[str, List[str]]:
     if isinstance(status, list):
         return [_to_grpc_name(s) for s in status]  # type:ignore
 
-    return to_grpc_status(status).upper()
+    if status_name := to_grpc_status(status):
+        return status_name.upper()
+
+    # This should have been verified before this
+    raise exceptions.GRPCServiceException(f"unknown status code '{status}'")
 
 
 class _GRPCExpected(TypedDict):
@@ -114,6 +119,10 @@ class GRPCResponse(BaseResponse):
             if verify_status != ["OK"]:
                 self._adderr(
                     "'body' was specified in response, but expected status code was not 'OK'"
+                )
+            elif grpc_response.code().name != "OK":
+                logger.info(
+                    f"skipping body checking due to {grpc_response.code()} response"
                 )
             else:
                 _, output_type = self._client.get_method_types(response.service_name)
