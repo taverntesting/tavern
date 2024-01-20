@@ -125,6 +125,53 @@ schema;stage:
             json:
               type: any
 
+    grpc_request:
+      type: map
+      required: false
+      mapping:
+        host:
+          type: str
+          required: false
+        service:
+          type: str
+          required: true
+        body:
+          include: any_json_with_ext
+        retain:
+          type: any
+          func: bool_variable
+          required: false
+
+    grpc_response:
+      type: map
+      required: false
+      mapping:
+        status:
+          type: any
+          func: validate_grpc_status_is_valid_or_list_of_names
+        details:
+          type: any
+          required: false
+        body:
+          type: any
+          required: false
+        json:
+          include: any_json_with_ext
+          required: false
+        timeout:
+          type: any
+          func: float_variable
+          required: false
+        verify_response_with:
+          func: validate_extensions
+          type: any
+
+        save:
+          include: any_json_with_ext
+          mapping:
+            json:
+              type: any
+
     request:
       type: map
       required: false

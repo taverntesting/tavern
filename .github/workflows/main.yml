@@ -89,6 +89,8 @@ jobs:
             TOXCFG: tox-integration.ini
           - TOXENV: py3-advanced
             TOXCFG: tox-integration.ini
+          - TOXENV: py3-grpc
+            TOXCFG: tox-integration.ini
 
     services:
       docker:
@@ -122,6 +124,12 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
+
+      - name: Install Protoc
+        if: ${{ contains(matrix.TOXENV, 'grpc') }}
+        uses: arduino/setup-protoc@v2
+        with:
+          version: "23.x"
 
       - name: install deps
         run: |

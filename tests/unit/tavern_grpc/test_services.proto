@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package tavern.tests.v1;
+
+import "google/protobuf/empty.proto";
+
+service DummyService {
+  rpc Empty(google.protobuf.Empty) returns (google.protobuf.Empty);
+  rpc SimpleTest(DummyRequest) returns (DummyResponse);
+}
+
+message DummyRequest {
+  int32 request_id = 1;
+}
+
+message DummyResponse {
+  int32 response_id = 1;
+}

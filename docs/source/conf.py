@@ -29,7 +29,6 @@
 # needs_sphinx = '1.0'
 
 import sphinx_rtd_theme
-import recommonmark
 from recommonmark.transform import AutoStructify
 
 # Add any Sphinx extension module names here, as strings. They can be
