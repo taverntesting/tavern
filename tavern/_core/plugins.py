@@ -98,8 +98,7 @@ class _PluginCache:
             return self.plugins
 
         if config:
-            # NOTE
-            # This is reloaded every time
+            # NOTE: This is reloaded every time
             self.plugins = self._load_plugins(config)
             return self.plugins
 
