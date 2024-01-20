@@ -64,7 +64,7 @@ class GRPCClient:
         if default_host := _connect_args.get("host"):
             self.default_host = default_host
             if port := _connect_args.get("port"):
-                self.default_host += ":{}".format(port)
+                self.default_host += f":{port}"
 
         self.timeout = int(_connect_args.get("timeout", 5))
         self.secure = bool(_connect_args.get("secure", False))

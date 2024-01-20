@@ -194,12 +194,12 @@ def expect_type():
         status = "Missing expected type or value"
         code = 400
 
-    if str(type(value)) != "<class '{}'>".format(dtype):
-        status = "Unexpected type: '{}'".format(str(type(value)))
+    if str(type(value)) != f"<class '{dtype}'>":
+        status = f"Unexpected type: '{str(type(value))}'"
         code = 400
 
     if value != dvalue:
-        status = "Unexpected value: '{}'".format(value)
+        status = f"Unexpected value: '{value}'"
         code = 400
 
     return jsonify({"status": status}), code
@@ -244,7 +244,7 @@ def expect_raw_data():
         response = {"status": "denied"}
         code = 401
     else:
-        response = {"status": "err: '{}'".format(raw_data)}
+        response = {"status": f"err: '{raw_data}'"}
         code = 400
 
     return jsonify(response), code
@@ -272,7 +272,7 @@ def expect_compressed_data():
         response = {"status": "ok"}
         code = 200
     else:
-        response = {"status": "err: '{}'".format(raw_data)}
+        response = {"status": f"err: '{raw_data}'"}
         code = 400
 
     return jsonify(response), code
@@ -323,7 +323,7 @@ def expect_cookie():
     cookie_name = _maybe_get_cookie_name()
     if cookie_name not in request.cookies:
         return (
-            jsonify({"error": "No cookie named {} in request".format(cookie_name)}),
+            jsonify({"error": f"No cookie named {cookie_name} in request"}),
             400,
         )
     else:

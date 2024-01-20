@@ -310,7 +310,7 @@ class TestFull:
 
         class FakeResponse:
             headers = example_response["headers"]
-            content = "test".encode("utf8")
+            content = b"test"
 
             def json(self):
                 return example_response["json"]
@@ -327,7 +327,7 @@ class TestFull:
 
         class FakeResponse:
             headers = example_response["headers"]
-            content = "test".encode("utf8")
+            content = b"test"
 
             def json(self):
                 return example_response["json"]
@@ -349,7 +349,7 @@ class TestFull:
 
         class FakeResponse:
             headers = nested_response["headers"]
-            content = "test".encode("utf8")
+            content = b"test"
 
             def json(self):
                 return nested_response["json"]
@@ -367,7 +367,7 @@ class TestFull:
 
         class FakeResponse:
             headers = example_response["headers"]
-            content = "test".encode("utf8")
+            content = b"test"
 
             def json(self):
                 return value

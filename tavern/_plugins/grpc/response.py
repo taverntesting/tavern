@@ -50,7 +50,7 @@ class GRPCResponse(BaseResponse):
         test_block_config: TestConfig,
     ):
         check_expected_keys({"body", "status", "details"}, expected)
-        super(GRPCResponse, self).__init__(name, expected, test_block_config)
+        super().__init__(name, expected, test_block_config)
 
         self._client = client
 

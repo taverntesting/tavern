@@ -194,7 +194,7 @@ class TypeSentinel(yaml.YAMLObject):
         return cls()
 
     def __str__(self):
-        return "<Tavern YAML sentinel for {}>".format(self.constructor)
+        return f"<Tavern YAML sentinel for {self.constructor}>"
 
     @classmethod
     def to_yaml(cls, dumper, data):
@@ -243,7 +243,7 @@ class RegexSentinel(TypeSentinel):
     compiled: re.Pattern
 
     def __str__(self):
-        return "<Tavern Regex sentinel for {}>".format(self.compiled.pattern)
+        return f"<Tavern Regex sentinel for {self.compiled.pattern}>"
 
     @property
     def yaml_tag(self):
@@ -444,7 +444,7 @@ def load_single_document_yaml(filename: os.PathLike) -> dict:
         UnexpectedDocumentsError: If more than one document was in the file
     """
 
-    with open(filename, "r", encoding="utf-8") as fileobj:
+    with open(filename, encoding="utf-8") as fileobj:
         try:
             contents = yaml.load(fileobj, Loader=IncludeLoader)  # type:ignore # noqa
         except yaml.composer.ComposerError as e:

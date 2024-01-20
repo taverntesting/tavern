@@ -1,4 +1,3 @@
-import io
 import logging
 
 logger = logging.getLogger(__name__)
@@ -21,7 +20,7 @@ def read_relevant_lines(yaml_block, first_line, last_line):
         logger.warning("unable to read yaml block")
         return
 
-    with io.open(filename, "r", encoding="utf8") as testfile:
+    with open(filename, encoding="utf8") as testfile:
         for idx, line in enumerate(testfile.readlines()):
             if first_line < idx < last_line:
                 yield line.split("#", 1)[0].rstrip()
