@@ -9,15 +9,13 @@ classifiers = [
     "Intended Audience :: Developers",
     "Framework :: Pytest",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Utilities",
     "Topic :: Software Development :: Testing",
     "License :: OSI Approved :: MIT License",
 ]
+requires-python = ">=3.11"
 
 keywords = ["testing", "pytest"]
 
@@ -36,8 +34,6 @@ dependencies = [
     "requests>=2.22.0,<3",
     "stevedore>=4,<5",
 ]
-
-requires-python = ">=3.10"
 
 [[project.authors]]
 name = "Michael Boulton"
@@ -122,7 +118,7 @@ paho-mqtt = "tavern._plugins.mqtt.tavernhook"
 grpc = "tavern._plugins.grpc.tavernhook"
 
 [tool.mypy]
-python_version = 3.8
+python_version = 3.11
 ignore_missing_imports = true
 
 [tool.coverage.run]
@@ -172,7 +168,7 @@ ignore = [
 ]
 select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL"]
 # Look at: UP
-target-version = "py38"
+target-version = "py311"
 extend-exclude = [
     "tests/unit/tavern_grpc/test_services_pb2.py",
     "tests/unit/tavern_grpc/test_services_pb2.pyi",
