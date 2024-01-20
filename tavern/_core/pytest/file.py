@@ -2,11 +2,12 @@ import copy
 import functools
 import itertools
 import logging
-from typing import Dict, Iterator, List, Mapping
+from typing import Any, Dict, Iterator, List, Mapping, Tuple
 
 import pytest
 import yaml
 from box import Box
+from pytest import MarkDecorator
 
 from tavern._core import exceptions
 from tavern._core.dict_util import deep_dict_merge, format_keys, get_tavern_box
@@ -22,15 +23,17 @@ logger = logging.getLogger(__name__)
 _format_without_inner = functools.partial(format_keys, no_double_format=False)
 
 
-def _format_test_marks(original_marks, fmt_vars, test_name):
+def _format_test_marks(
+    original_marks: List[Any], fmt_vars: Mapping, test_name: str
+) -> Tuple[List[MarkDecorator], Any]:
     """Given the 'raw' marks from the test and any available format variables,
     generate new  marks for this test
 
     Args:
-        original_marks (list): Raw string from test - should correspond to either a
+        original_marks: Raw string from test - should correspond to either a
             pytest builtin mark or a custom user mark
-        fmt_vars (dict): dictionary containing available format variables
-        test_name (str): Name of test (for error logging)
+        fmt_vars: dictionary containing available format variables
+        test_name: Name of test (for error logging)
 
     Returns:
         tuple: first element is normal pytest mark objects, second element is all
@@ -167,7 +170,7 @@ def _get_parametrized_items(
     parent: pytest.File,
     test_spec: Dict,
     parametrize_marks: List[Dict],
-    pytest_marks: List[pytest.Mark],
+    pytest_marks: List[MarkDecorator],
 ) -> Iterator[YamlItem]:
     """Return new items with new format values available based on the mark
 
