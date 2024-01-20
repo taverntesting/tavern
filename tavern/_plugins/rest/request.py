@@ -2,9 +2,10 @@ import contextlib
 import json
 import logging
 import warnings
+from collections.abc import Mapping, MutableMapping
 from contextlib import ExitStack
 from itertools import filterfalse, tee
-from typing import ClassVar, List, Mapping, MutableMapping, Optional
+from typing import ClassVar
 from urllib.parse import quote_plus
 
 import requests
@@ -21,7 +22,7 @@ from tavern._core.report import attach_yaml
 from tavern._plugins.rest.files import get_file_arguments, guess_filespec
 from tavern.request import BaseRequest
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def get_request_args(rspec: MutableMapping, test_block_config: TestConfig) -> dict:
@@ -263,7 +264,7 @@ def _check_allow_redirects(rspec: dict, test_block_config: TestConfig):
 
 def _read_expected_cookies(
     session: requests.Session, rspec: Mapping, test_block_config: TestConfig
-) -> Optional[dict]:
+) -> dict | None:
     """
     Read cookies to inject into request, ignoring others which are present
 
@@ -333,7 +334,7 @@ def _read_expected_cookies(
 
 
 class RestRequest(BaseRequest):
-    optional_in_file: ClassVar[List[str]] = [
+    optional_in_file: ClassVar[list[str]] = [
         "json",
         "data",
         "params",

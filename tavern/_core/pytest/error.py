@@ -1,11 +1,11 @@
 import json
 import logging
 import re
+from collections.abc import Mapping
 from io import StringIO
-from typing import List, Mapping, Optional
 
 import yaml
-from _pytest._code.code import FormattedExcinfo
+from _pytest._code.code import FormattedExcinfo, TerminalRepr
 from _pytest._io import TerminalWriter
 
 from tavern._core import exceptions
@@ -18,10 +18,10 @@ from tavern._core.stage_lines import (
     start_mark,
 )
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
-class ReprdError:
+class ReprdError(TerminalRepr):
     def __init__(self, exce, item) -> None:
         self.exce = exce
         self.item = item
@@ -44,8 +44,8 @@ class ReprdError:
         return keys
 
     def _print_format_variables(
-        self, tw: TerminalWriter, code_lines: List[str]
-    ) -> List[str]:
+        self, tw: TerminalWriter, code_lines: list[str]
+    ) -> list[str]:
         """Print a list of the format variables and their value at this stage
 
         If the format variable is not defined, print it in red as '???'
@@ -108,9 +108,9 @@ class ReprdError:
     def _print_test_stage(
         self,
         tw: TerminalWriter,
-        code_lines: List[str],
-        missing_format_vars: List[str],
-        line_start: Optional[int],
+        code_lines: list[str],
+        missing_format_vars: list[str],
+        line_start: int | None,
     ) -> None:
         """Print the direct source lines from this test stage
 

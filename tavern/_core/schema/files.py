@@ -3,7 +3,7 @@ import copy
 import logging
 import os
 import tempfile
-from typing import Dict, Mapping
+from collections.abc import Mapping
 
 import pykwalify
 import yaml
@@ -14,14 +14,14 @@ from tavern._core.loader import load_single_document_yaml
 from tavern._core.plugins import load_plugins
 from tavern._core.schema.jsonschema import verify_jsonschema
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class SchemaCache:
     """Caches loaded schemas"""
 
     def __init__(self) -> None:
-        self._loaded: Dict[str, dict] = {}
+        self._loaded: dict[str, dict] = {}
 
     def _load_base_schema(self, schema_filename):
         try:

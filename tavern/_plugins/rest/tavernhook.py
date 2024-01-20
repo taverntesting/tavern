@@ -9,7 +9,7 @@ from tavern._core.plugins import PluginHelperBase
 from .request import RestRequest
 from .response import RestResponse
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class TavernRestPlugin(PluginHelperBase):

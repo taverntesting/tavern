@@ -2,15 +2,16 @@ import dataclasses
 import os.path
 import random
 import sys
+from collections.abc import Mapping
 from concurrent import futures
-from typing import Any, Mapping, Optional
+from typing import Any
 
 import grpc
 import pytest
-from _pytest.mark import MarkGenerator
 from google.protobuf import json_format
 from google.protobuf.empty_pb2 import Empty
 from grpc_reflection.v1alpha import reflection
+from pytest import MarkGenerator
 
 from tavern._core.pytest.config import TestConfig
 from tavern._plugins.grpc.client import GRPCClient
@@ -71,7 +72,7 @@ class GRPCTestSpec:
     method: str
     req: Any
 
-    resp: Optional[Any] = None
+    resp: Any | None = None
     xfail: bool = False
     code: GRPCCode = grpc.StatusCode.OK.value[0]
     service: str = "tavern.tests.v1.DummyService"

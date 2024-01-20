@@ -1,10 +1,11 @@
 import dataclasses
 import logging
 import pathlib
-from typing import Iterable, MutableMapping, Optional, Tuple
+from collections.abc import Iterable, MutableMapping
 
 import pytest
 import yaml
+from _pytest._code.code import TerminalRepr
 from _pytest.nodes import Node
 from pytest import Mark, MarkDecorator
 
@@ -20,7 +21,7 @@ from tavern._core.schema.files import verify_tests
 from .config import TestConfig
 from .util import load_global_cfg
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class YamlItem(pytest.Item):
@@ -48,7 +49,7 @@ class YamlItem(pytest.Item):
         self.path = path
         self.spec = spec
 
-        self.global_cfg: Optional[TestConfig] = None
+        self.global_cfg: TestConfig | None = None
 
         if not YamlItem._patched_yaml:
             yaml.parser.Parser.process_empty_scalar = (  # type:ignore
@@ -260,8 +261,8 @@ class YamlItem(pytest.Item):
             )
 
     def repr_failure(
-        self, excinfo: pytest.ExceptionInfo[BaseException], style: Optional[str] = None
-    ):
+        self, excinfo: pytest.ExceptionInfo[BaseException], style: str | None = None
+    ) -> TerminalRepr | str:
         """called when self.runtest() raises an exception.
 
         By default, will raise a custom formatted traceback if it's a tavern error. if not, will use the default
@@ -283,7 +284,7 @@ class YamlItem(pytest.Item):
         attach_text(str(error), name="error_output")
         return error
 
-    def reportinfo(self) -> Tuple[pathlib.Path, int, str]:
+    def reportinfo(self) -> tuple[pathlib.Path, int, str]:
         return (
             self.path,
             0,

@@ -1,6 +1,6 @@
 import logging
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def pytest_tavern_beta_before_every_test_run(test_dict, variables) -> None:

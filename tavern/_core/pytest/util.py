@@ -1,6 +1,6 @@
 import logging
 from functools import lru_cache
-from typing import Any, Dict
+from typing import Any
 
 import pytest
 
@@ -9,7 +9,7 @@ from tavern._core.general import load_global_config
 from tavern._core.pytest.config import TavernInternalConfig, TestConfig
 from tavern._core.strict_util import StrictLevel
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
@@ -174,7 +174,7 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     return global_cfg
 
 
-def _load_global_backends(pytest_config: pytest.Config) -> Dict[str, Any]:
+def _load_global_backends(pytest_config: pytest.Config) -> dict[str, Any]:
     """Load which backend should be used"""
     backend_settings = {}
 

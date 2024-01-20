@@ -3,7 +3,7 @@ import traceback
 from abc import abstractmethod
 from collections.abc import Mapping
 from textwrap import indent
-from typing import Any, List, Optional
+from typing import Any
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
@@ -11,7 +11,7 @@ from tavern._core.extfunctions import get_wrapped_response_function
 from tavern._core.pytest.config import TestConfig
 from tavern._core.strict_util import StrictOption
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def indent_err_text(err: str) -> str:
@@ -26,16 +26,16 @@ class BaseResponse:
         self.name = name
 
         # all errors in this response
-        self.errors: List[str] = []
+        self.errors: list[str] = []
 
-        self.validate_functions: List = []
+        self.validate_functions: list = []
         self._check_for_validate_functions(expected)
 
         self.test_block_config = test_block_config
 
         self.expected = expected
 
-        self.response: Optional[Any] = None
+        self.response: Any | None = None
 
     def _str_errors(self) -> str:
         return "- " + "\n- ".join(self.errors)
@@ -58,7 +58,7 @@ class BaseResponse:
 
     def recurse_check_key_match(
         self,
-        expected_block: Optional[Mapping],
+        expected_block: Mapping | None,
         block: Mapping,
         blockname: str,
         strict: StrictOption,
@@ -224,9 +224,9 @@ class BaseResponse:
     def maybe_get_save_values_from_save_block(
         self,
         key: str,
-        save_from: Optional[Mapping],
+        save_from: Mapping | None,
         *,
-        outer_save_block: Optional[Mapping] = None,
+        outer_save_block: Mapping | None = None,
     ) -> dict:
         """Save a value from a specific block in the response.
 
@@ -252,7 +252,7 @@ class BaseResponse:
     def maybe_get_save_values_from_given_block(
         self,
         key: str,
-        save_from: Optional[Mapping],
+        save_from: Mapping | None,
         to_save: Mapping,
     ) -> dict:
         """Save a value from a specific block in the response.

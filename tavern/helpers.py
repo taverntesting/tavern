@@ -2,7 +2,6 @@ import importlib
 import json
 import logging
 import re
-from typing import Dict, List, Optional
 
 import jmespath
 import jwt
@@ -14,7 +13,7 @@ from tavern._core.dict_util import check_keys_match_recursive, recurse_access_ke
 from tavern._core.jmesutils import actual_validation, validate_comparison
 from tavern._core.schema.files import verify_pykwalify
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def check_exception_raised(
@@ -68,7 +67,7 @@ def check_exception_raised(
         ) from e
 
 
-def validate_jwt(response, jwt_key, **kwargs) -> Dict[str, Box]:
+def validate_jwt(response, jwt_key, **kwargs) -> dict[str, Box]:
     """Make sure a jwt is valid
 
     This uses the pyjwt library to decode the jwt, so any keyword args needed
@@ -118,9 +117,9 @@ def validate_regex(
     response: requests.Response,
     expression: str,
     *,
-    header: Optional[str] = None,
-    in_jmespath: Optional[str] = None,
-) -> Dict[str, Box]:
+    header: str | None = None,
+    in_jmespath: str | None = None,
+) -> dict[str, Box]:
     """Make sure the response matches a regex expression
 
     Args:
@@ -171,7 +170,7 @@ def validate_regex(
     return {"regex": Box(match.groupdict())}
 
 
-def validate_content(response: requests.Response, comparisons: List[str]) -> None:
+def validate_content(response: requests.Response, comparisons: list[str]) -> None:
     """Asserts expected value with actual value using JMES path expression
 
     Args:
@@ -197,7 +196,7 @@ def validate_content(response: requests.Response, comparisons: List[str]) -> Non
             raise exceptions.JMESError("Error validating JMES") from e
 
 
-def check_jmespath_match(parsed_response, query: str, expected: Optional[str] = None):
+def check_jmespath_match(parsed_response, query: str, expected: str | None = None):
     """
     Check that the JMES path given in 'query' is present in the given response
 

@@ -1,7 +1,8 @@
 import functools
 import importlib
 import logging
-from typing import Any, List, Mapping, Optional
+from collections.abc import Mapping
+from typing import Any
 
 from tavern._core import exceptions
 
@@ -21,7 +22,7 @@ def is_ext_function(block: Any) -> bool:
     return isinstance(block, dict) and block.get("$ext", None) is not None
 
 
-def get_pykwalify_logger(module: Optional[str]) -> logging.Logger:
+def get_pykwalify_logger(module: str | None) -> logging.Logger:
     """Get logger for this module
 
     Have to do it like this because the way that pykwalify load extension
@@ -140,7 +141,7 @@ def _get_ext_values(ext: Mapping):
     return func, args, kwargs
 
 
-def update_from_ext(request_args: dict, keys_to_check: List[str]) -> None:
+def update_from_ext(request_args: dict, keys_to_check: list[str]) -> None:
     """
     Updates the request_args dict with any values from external functions
 

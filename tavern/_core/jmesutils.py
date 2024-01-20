@@ -1,6 +1,7 @@
 import operator
 import re
-from typing import Any, Dict, List, Sized
+from collections.abc import Sized
+from typing import Any
 
 from tavern._core import exceptions
 
@@ -37,7 +38,7 @@ COMPARATORS = {
     "regex": lambda x, y: regex_compare(str(x), str(y)),
     "type": test_type,
 }
-TYPES: Dict[str, List[Any]] = {
+TYPES: dict[str, list[Any]] = {
     "none": [type(None)],
     "number": [int, float],
     "int": [int],

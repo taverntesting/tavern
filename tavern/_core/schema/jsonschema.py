@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Mapping
+from collections.abc import Mapping
 
 import jsonschema
 from jsonschema import Draft7Validator, ValidationError
@@ -35,7 +35,7 @@ from tavern._core.stage_lines import (
     read_relevant_lines,
 )
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def is_str_or_bytes_or_token(checker, instance):

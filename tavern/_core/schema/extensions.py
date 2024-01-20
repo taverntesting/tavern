@@ -1,6 +1,6 @@
 import os
 import re
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from pykwalify.types import is_bool, is_float, is_int
 
@@ -132,7 +132,9 @@ def check_usefixtures(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_grpc_status_is_valid_or_list_of_names(value: "GRPCCode", rule_obj, path):
+def validate_grpc_status_is_valid_or_list_of_names(
+    value: "GRPCCode", rule_obj, path
+) -> bool:
     """Validate GRPC statuses https://github.com/grpc/grpc/blob/master/doc/statuscodes.md"""
     # pylint: disable=unused-argument
     err_msg = (
@@ -153,7 +155,7 @@ def validate_grpc_status_is_valid_or_list_of_names(value: "GRPCCode", rule_obj, 
     return True
 
 
-def to_grpc_status(value: Union[str, int]):
+def to_grpc_status(value: str | int):
     from grpc import StatusCode
 
     if isinstance(value, str):
@@ -365,7 +367,7 @@ def validate_timeout_tuple_or_float(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_verify_bool_or_str(value: Union[bool, str], rule_obj, path) -> bool:
+def validate_verify_bool_or_str(value: bool | str, rule_obj, path) -> bool:
     """Make sure the 'verify' key is either a bool or a str"""
 
     if not isinstance(value, (bool, str)) and not is_bool_like(value):
