@@ -262,7 +262,7 @@ class YamlItem(pytest.Item):
 
     def repr_failure(
         self, excinfo: pytest.ExceptionInfo[BaseException], style: str | None = None
-    ) -> TerminalRepr | str | ReprdError:
+    ) -> TerminalRepr | str:
         """called when self.runtest() raises an exception.
 
         By default, will raise a custom formatted traceback if it's a tavern error. if not, will use the default

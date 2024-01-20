@@ -32,12 +32,15 @@ def makeuuid(loader, node) -> str:
 class RememberComposer(Composer):
     """A composer that doesn't forget anchors across documents"""
 
+    def get_event(self) -> None:
+        ...
+
     def compose_document(self) -> Node | None:
         # Drop the DOCUMENT-START event.
         self.get_event()
 
         # Compose the root node.
-        node = self.compose_node(None, None)
+        node = self.compose_node(None, None)  # type:ignore
 
         # Drop the DOCUMENT-END event.
         self.get_event()
@@ -358,7 +361,7 @@ class FloatToken(TypeConvertToken):
 class StrToBoolConstructor:
     """Using `bool` as a constructor directly will evaluate all strings to `True`."""
 
-    def __new__(cls, s: str) -> bool:
+    def __new__(cls, s: str) -> bool:  # type:ignore
         return strtobool(s)
 
 
@@ -370,7 +373,7 @@ class BoolToken(TypeConvertToken):
 class StrToRawConstructor:
     """Used when we want to ignore brace formatting syntax"""
 
-    def __new__(cls, s):
+    def __new__(cls, s) -> str:  # type:ignore
         return str(s.replace("{", "{{").replace("}", "}}"))
 
 

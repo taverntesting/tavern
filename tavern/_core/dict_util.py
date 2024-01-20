@@ -182,7 +182,7 @@ def recurse_access_key(data: dict | list[str] | Mapping, query: str):
         logger.error("Error parsing JMES query")
 
         try:
-            _deprecated_recurse_access_key(data, query.split("."))
+            _deprecated_recurse_access_key(data, query.split("."))  # type:ignore
         except (IndexError, KeyError):
             logger.debug("Nothing found searching using old method")
         else:
