@@ -65,14 +65,14 @@ def import_ext_function(entrypoint: str):
     try:
         imported = importlib.import_module(module)
     except ImportError as e:
-        msg = "Error importing module {}".format(module)
+        msg = f"Error importing module {module}"
         logger.exception(msg)
         raise exceptions.InvalidExtFunctionError(msg) from e
 
     try:
         function = getattr(imported, funcname)
     except AttributeError as e:
-        msg = "No function named {} in {}".format(funcname, module)
+        msg = f"No function named {funcname} in {module}"
         logger.exception(msg)
         raise exceptions.InvalidExtFunctionError(msg) from e
 
@@ -125,7 +125,7 @@ def get_wrapped_create_function(ext: Mapping):
 def _get_ext_values(ext: Mapping):
     if not isinstance(ext, Mapping):
         raise exceptions.InvalidExtFunctionError(
-            "ext block should be a dict, but it was a {}".format(type(ext))
+            f"ext block should be a dict, but it was a {type(ext)}"
         )
 
     args = ext.get("extra_args") or ()

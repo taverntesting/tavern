@@ -72,14 +72,14 @@ def _attempt_find_include(to_format: str, box_vars: box.Box):
 
     if field_name is None:
         raise exceptions.InvalidFormattedJsonError(
-            "Invalid string used for {}".format(yaml_tag)
+            f"Invalid string used for {yaml_tag}"
         )
 
     pattern = r"{" + field_name + r".*}"
 
     if not re.match(pattern, to_format):
         raise exceptions.InvalidFormattedJsonError(
-            "Invalid format specifier '{}' for {}".format(to_format, yaml_tag)
+            f"Invalid format specifier '{to_format}' for {yaml_tag}"
         )
 
     if format_spec:
@@ -284,7 +284,7 @@ def check_expected_keys(expected, actual) -> None:
 
         logger.debug("Valid keys = %s, actual keys = %s", expected, keyset)
 
-        msg = "Unexpected keys {}".format(unexpected)
+        msg = f"Unexpected keys {unexpected}"
         logger.error(msg)
         raise exceptions.UnexpectedKeysError(msg)
 
@@ -383,7 +383,7 @@ def check_keys_match_recursive(
         """
 
         def _format_err(which):
-            return "{}{}".format(which, "".join('["{}"]'.format(key) for key in keys))
+            return "{}{}".format(which, "".join(f'["{key}"]' for key in keys))
 
         e_formatted = _format_err("expected")
         a_formatted = _format_err("actual")
@@ -452,7 +452,7 @@ def check_keys_match_recursive(
 
                 msg = ""
                 if extra_actual_keys:
-                    msg += " - Extra keys in response: {}".format(extra_actual_keys)
+                    msg += f" - Extra keys in response: {extra_actual_keys}"
                 if extra_expected_keys:
                     msg += " - Keys missing from response: {}".format(
                         extra_expected_keys
@@ -531,7 +531,7 @@ def check_keys_match_recursive(
                             break
 
                 if missing:
-                    msg = "List item(s) not present in response: {}".format(missing)
+                    msg = f"List item(s) not present in response: {missing}"
                     raise exceptions.KeyMismatchError(msg) from e
 
                 logger.debug("All expected list items present")
@@ -557,7 +557,7 @@ def check_keys_match_recursive(
             if isinstance(expected_val, RegexSentinel):
                 if not expected_val.passes(actual_val):
                     raise exceptions.KeyMismatchError(
-                        "Regex mismatch: ({})".format(full_err())
+                        f"Regex mismatch: ({full_err()})"
                     ) from e
 
             logger.debug(
@@ -566,9 +566,7 @@ def check_keys_match_recursive(
                 expected_val.constructor,
             )
         else:
-            raise exceptions.KeyMismatchError(
-                "Key mismatch: ({})".format(full_err())
-            ) from e
+            raise exceptions.KeyMismatchError(f"Key mismatch: ({full_err()})") from e
 
 
 def get_tavern_box() -> box.Box:

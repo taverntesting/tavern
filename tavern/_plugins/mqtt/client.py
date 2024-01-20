@@ -49,12 +49,10 @@ class _Subscription:
 
 def check_file_exists(key, filename) -> None:
     try:
-        with open(filename, "r", encoding="utf-8"):
+        with open(filename, encoding="utf-8"):
             pass
-    except IOError as e:
-        raise exceptions.MQTTTLSError(
-            "Couldn't load '{}' from '{}'".format(key, filename)
-        ) from e
+    except OSError as e:
+        raise exceptions.MQTTTLSError(f"Couldn't load '{key}' from '{filename}'") from e
 
 
 def _handle_tls_args(
@@ -307,7 +305,7 @@ class MQTTClient:
                     break
             else:
                 raise exceptions.MQTTTopicException(
-                    "Message received on unregistered topic: {}".format(message.topic)
+                    f"Message received on unregistered topic: {message.topic}"
                 )
         except Full:
             logger.exception("message queue full")
@@ -368,9 +366,7 @@ class MQTTClient:
             with self._subscribe_lock:
                 queue = self._subscribed[self._subscription_mappings[topic]].queue
         except KeyError as e:
-            raise exceptions.MQTTTopicException(
-                "Unregistered topic: {}".format(topic)
-            ) from e
+            raise exceptions.MQTTTopicException(f"Unregistered topic: {topic}") from e
 
         try:
             msg = queue.get(block=True, timeout=timeout)
@@ -455,7 +451,7 @@ class MQTTClient:
                 self._subscribed[mid] = _Subscription(topic)
         else:
             raise exceptions.MQTTError(
-                "Error subscribing to '{}' (err code {})".format(topic, status)
+                f"Error subscribing to '{topic}' (err code {status})"
             )
 
     def unsubscribe_all(self) -> None:

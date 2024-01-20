@@ -100,7 +100,7 @@ class YamlItem(pytest.Item):
                 name = stage["name"]
             elif "id" in stage:
                 name = stage["id"]
-            stages.append("{:d}: {:s}".format(i + 1, name))
+            stages.append(f"{i + 1:d}: {name:s}")
 
         # This needs to be a function or skipif breaks
         def fakefun():
@@ -242,7 +242,7 @@ class YamlItem(pytest.Item):
             raise
         else:
             if xfail:
-                raise Exception("internal: xfail test did not fail '{}'".format(xfail))
+                raise Exception(f"internal: xfail test did not fail '{xfail}'")
         finally:
             call_hook(
                 self.global_cfg,
