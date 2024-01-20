@@ -93,16 +93,17 @@ class _Plugin:
 class _PluginCache:
     plugins: list[_Plugin] = dataclasses.field(default_factory=list)
 
-    def __call__(self, config: TestConfig | None = None):
-        if not config and not self.plugins:
-            raise exceptions.PluginLoadError("No config to load plugins from")
-        elif self.plugins:
+    def __call__(self, config: TestConfig | None = None) -> list[_Plugin]:
+        if self.plugins:
             return self.plugins
-        elif not self.plugins and config:
+
+        if config:
             # NOTE
             # This is reloaded every time
             self.plugins = self._load_plugins(config)
             return self.plugins
+
+        raise exceptions.PluginLoadError("No config to load plugins from")
 
     def _load_plugins(self, test_block_config: TestConfig) -> list[_Plugin]:
         """Load plugins from the 'tavern' entrypoint namespace

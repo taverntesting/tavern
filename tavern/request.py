@@ -1,12 +1,21 @@
 import logging
 from abc import abstractmethod
+from typing import Any
 
 import box
+
+from tavern._core.pytest.config import TestConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
 class BaseRequest:
+    @abstractmethod
+    def __init__(
+        self, session: Any, rspec: dict, test_block_config: TestConfig
+    ) -> None:
+        ...
+
     @property
     @abstractmethod
     def request_vars(self) -> box.Box:
