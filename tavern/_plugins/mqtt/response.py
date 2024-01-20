@@ -8,6 +8,7 @@ import time
 from dataclasses import dataclass
 from typing import Dict, List, Mapping, Optional, Tuple, Union
 
+import requests
 from paho.mqtt.client import MQTTMessage
 
 from tavern._core import exceptions
@@ -18,6 +19,7 @@ from tavern._core.report import attach_yaml
 from tavern._core.strict_util import StrictSetting
 from tavern.response import BaseResponse
 
+from ..._core.pytest.config import TestConfig
 from .client import MQTTClient
 
 logger = logging.getLogger(__name__)
@@ -26,7 +28,9 @@ _default_timeout = 1
 
 
 class MQTTResponse(BaseResponse):
-    def __init__(self, client: MQTTClient, name, expected, test_block_config) -> None:
+    def __init__(
+        self, client: MQTTClient, name: str, expected, test_block_config: TestConfig
+    ) -> None:
         super().__init__(name, expected, test_block_config)
 
         self._client = client
@@ -39,7 +43,7 @@ class MQTTResponse(BaseResponse):
         else:
             return "<Not run yet>"
 
-    def verify(self, response) -> dict:
+    def verify(self, response: requests.Response) -> Mapping:
         """Ensure mqtt message has arrived
 
         Args:
@@ -53,11 +57,11 @@ class MQTTResponse(BaseResponse):
         finally:
             self._client.unsubscribe_all()
 
-    def _await_response(self) -> dict:
+    def _await_response(self) -> Mapping:
         """Actually wait for response
 
         Returns:
-            dict: things to save to variables for the rest of this test
+            things to save to variables for the rest of this test
         """
 
         # Get into class with metadata attached
@@ -145,7 +149,7 @@ class MQTTResponse(BaseResponse):
             expected: expected response for this block
 
         Returns:
-            tuple(msg, list): The correct message (if any) and warnings from processing the message
+            The correct message (if any) and warnings from processing the message
         """
 
         timeout = max(m.get("timeout", _default_timeout) for m in expected)

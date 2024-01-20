@@ -5,7 +5,7 @@ import ssl
 import threading
 import time
 from queue import Empty, Full, Queue
-from typing import Dict, List, Mapping, MutableMapping, Optional
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional
 
 import paho.mqtt.client as paho
 
@@ -289,7 +289,9 @@ class MQTTClient:
         self._client.user_data_set(self._userdata)
 
     @staticmethod
-    def _on_message(client, userdata, message) -> None:
+    def _on_message(
+        client, userdata: Mapping[str, Any], message: paho.MQTTMessage
+    ) -> None:
         """Add any messages received to the queue
 
         Todo:
@@ -311,7 +313,7 @@ class MQTTClient:
             logger.exception("message queue full")
 
     @staticmethod
-    def _on_connect(client, userdata, flags, rc) -> None:
+    def _on_connect(client, userdata, flags, rc: int) -> None:
         logger.debug(
             "Client '%s' connected to the broker with result code '%s'",
             client._client_id.decode(),
@@ -319,7 +321,7 @@ class MQTTClient:
         )
 
     @staticmethod
-    def _on_disconnect(client, userdata, rc) -> None:
+    def _on_disconnect(client, userdata, rc: int) -> None:
         if rc == paho.CONNACK_ACCEPTED:
             logger.debug(
                 "Client '%s' successfully disconnected from the broker with result code '%s'",
@@ -351,8 +353,8 @@ class MQTTClient:
         """Check that a message is in the message queue
 
         Args:
-            topic (str): topic to fetch message for
-            timeout (int): How long to wait before signalling that the message
+            topic: topic to fetch message for
+            timeout: How long to wait before signalling that the message
                 was not received.
 
         Returns:
@@ -376,7 +378,13 @@ class MQTTClient:
 
         return msg
 
-    def publish(self, topic, payload=None, qos=None, retain=None):
+    def publish(
+        self,
+        topic: str,
+        payload: Any,
+        qos: Optional[int],
+        retain: Optional[bool] = False,
+    ):
         """publish message using paho library"""
         self._wait_for_subscriptions()
 

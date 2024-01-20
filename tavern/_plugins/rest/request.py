@@ -355,7 +355,7 @@ class RestRequest(BaseRequest):
         Args:
             session: existing session
             rspec: test spec
-            test_block_config   : Any configuration for this the block of
+            test_block_config: Any configuration for this the block of
                 tests
 
         Raises:
@@ -394,7 +394,7 @@ class RestRequest(BaseRequest):
         )
 
         # Used further down, but pop it asap to avoid unwanted side effects
-        file_body = request_args.pop("file_body", None)
+        file_body: Optional[str] = request_args.pop("file_body", None)
 
         # If there was a 'cookies' key, set it in the request
         expected_cookies = _read_expected_cookies(session, rspec, test_block_config)
@@ -441,14 +441,11 @@ class RestRequest(BaseRequest):
 
         self._prepared = prepared_request
 
-    def run(self):
+    def run(self) -> requests.Response:
         """Runs the prepared request and times it
 
-        Todo:
-            time it
-
         Returns:
-            requests.Response: response object
+            response object
         """
 
         attach_yaml(
