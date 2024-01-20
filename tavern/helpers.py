@@ -209,7 +209,7 @@ def check_jmespath_match(parsed_response, query: str, expected: Optional[str] = 
     """
     actual = jmespath.search(query, parsed_response)
 
-    msg = "JMES path '{}' not found in response".format(query)
+    msg = f"JMES path '{query}' not found in response"
 
     if actual is None:
         raise exceptions.JMESError(msg)

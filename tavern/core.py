@@ -33,7 +33,7 @@ def _get_or_wrap_global_cfg(
     if isinstance(tavern_global_cfg, str):
         if not os.path.exists(tavern_global_cfg):
             raise exceptions.InvalidSettingsError(
-                "global config file '{}' does not exist".format(tavern_global_cfg)
+                f"global config file '{tavern_global_cfg}' does not exist"
             )
         global_filename = tavern_global_cfg
     elif isinstance(tavern_global_cfg, dict):

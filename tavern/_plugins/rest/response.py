@@ -55,12 +55,12 @@ class RestResponse(BaseResponse):
 
                 if isinstance(block, list):
                     for v in block:
-                        to_log += "\n  - {}".format(v)
+                        to_log += f"\n  - {v}"
                 elif isinstance(block, dict):
                     for k, v in block.items():
-                        to_log += "\n  {}: {}".format(k, v)
+                        to_log += f"\n  {k}: {v}"
                 else:
-                    to_log += "\n {}".format(block)
+                    to_log += f"\n {block}"
                 logger.debug(to_log)
 
         log_dict_block(response.headers, "Headers")
@@ -71,7 +71,7 @@ class RestResponse(BaseResponse):
         redirect_query_params = self._get_redirect_query_params(response)
         if redirect_query_params:
             parsed_url = urlparse(response.headers["location"])
-            to_path = "{0}://{1}{2}".format(*parsed_url)
+            to_path = "{}://{}{}".format(*parsed_url)
             logger.debug("Redirect location: %s", to_path)
             log_dict_block(redirect_query_params, "Redirect URL query parameters")
 
@@ -195,7 +195,7 @@ class RestResponse(BaseResponse):
 
         if self.errors:
             raise exceptions.TestFailError(
-                "Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()),
+                f"Test '{self.name:s}' failed:\n{self._str_errors():s}",
                 failures=self.errors,
             )
 

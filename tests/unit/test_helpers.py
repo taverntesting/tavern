@@ -118,16 +118,14 @@ class TestRunAlone:
 
 class TestOptionParsing:
     valid = [
-        "{0:s}:{1:s}".format(section, setting)
+        f"{section:s}:{setting:s}"
         for section in ("json", "headers", "redirect_params")
         for setting in ("on", "off")
     ]
 
     @pytest.mark.parametrize("optval", valid)
     def test_strictness_parsing_good(self, pytestconfig, optval):
-        args = pytestconfig._parser.parse_known_args(
-            ["--tavern-strict={}".format(optval)]
-        )
+        args = pytestconfig._parser.parse_known_args([f"--tavern-strict={optval}"])
         assert "tavern_strict" in args
         assert args.tavern_strict == [optval]
 
@@ -369,7 +367,7 @@ class TestStrictUtils:
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     @pytest.mark.parametrize("setting", ["on", "off"])
     def test_parse_option(self, section, setting):
-        option = "{}:{}".format(section, setting)
+        option = f"{section}:{setting}"
         match = validate_and_parse_option(option)
 
         assert match.section == section
@@ -391,7 +389,7 @@ class TestStrictUtils:
     @pytest.mark.parametrize("setting", ["true", "1", "hi", ""])
     def test_fails_bad_setting(self, setting):
         with pytest.raises(exceptions.InvalidConfigurationException):
-            validate_and_parse_option("json:{}".format(setting))
+            validate_and_parse_option(f"json:{setting}")
 
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     def test_defaults_good(self, section):

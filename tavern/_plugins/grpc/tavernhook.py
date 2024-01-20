@@ -30,5 +30,5 @@ verifier_type = GRPCResponse
 response_block_name = "grpc_response"
 
 schema_path = join(abspath(dirname(__file__)), "jsonschema.yaml")
-with open(schema_path, "r") as schema_file:
+with open(schema_path) as schema_file:
     schema = yaml.load(schema_file, Loader=yaml.SafeLoader)

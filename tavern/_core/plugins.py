@@ -24,7 +24,7 @@ class PluginHelperBase:
 
 def plugin_load_error(mgr, entry_point, err):
     """Handle import errors"""
-    msg = "Error loading plugin {} - {}".format(entry_point, err)
+    msg = f"Error loading plugin {entry_point} - {err}"
     raise exceptions.PluginLoadError(msg) from err
 
 
@@ -107,7 +107,7 @@ class _PluginCache:
         for backend in test_block_config.backends():
             logger.debug("loading backend for %s", backend)
 
-            namespace = "tavern_{}".format(backend)
+            namespace = f"tavern_{backend}"
 
             manager = stevedore.EnabledExtensionManager(
                 namespace=namespace,
