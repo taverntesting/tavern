@@ -2,6 +2,7 @@ import dataclasses
 import functools
 import json
 import logging
+import warnings
 from typing import Mapping, Union
 
 import grpc
@@ -46,9 +47,19 @@ class GRPCRequest(BaseRequest):
     Similar to RestRequest, publishes a single message.
     """
 
+    _warned = False
+
     def __init__(
         self, client: GRPCClient, request_spec: Mapping, test_block_config: TestConfig
     ):
+        if not self._warned:
+            warnings.warn(
+                "Tavern gRPC support is experimental and will be updated in a future release.",
+                RuntimeWarning,
+                stacklevel=0,
+            )
+            GRPCRequest._warned = True
+
         expected = {"host", "service", "body"}
 
         check_expected_keys(expected, request_spec)
