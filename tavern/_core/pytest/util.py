@@ -128,7 +128,7 @@ def load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     return _load_global_cfg(pytest_config).with_new_variables()
 
 
-@lru_cache()
+@lru_cache
 def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     """Load globally included config files from cmdline/cfg file arguments
 
@@ -180,7 +180,7 @@ def _load_global_backends(pytest_config: pytest.Config) -> dict[str, Any]:
 
     for b in TestConfig.backends():
         backend_settings[b] = get_option_generic(
-            pytest_config, "tavern-{}-backend".format(b), None
+            pytest_config, f"tavern-{b}-backend", None
         )
 
     return backend_settings

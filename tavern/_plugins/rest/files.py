@@ -3,7 +3,7 @@ import logging
 import mimetypes
 import os
 from contextlib import ExitStack
-from typing import Any, Optional, Union
+from typing import Any
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -17,12 +17,12 @@ class _Filespec:
     """A description of a file for a file upload, possibly as part of a multi part upload"""
 
     path: str
-    content_type: Optional[str] = None
-    content_encoding: Optional[str] = None
-    form_field_name: Optional[str] = None
+    content_type: str | None = None
+    content_encoding: str | None = None
+    form_field_name: str | None = None
 
 
-def _parse_filespec(filespec: Union[str, dict]) -> _Filespec:
+def _parse_filespec(filespec: str | dict) -> _Filespec:
     """
     Get configuration for uploading file
 
@@ -63,8 +63,8 @@ def _parse_filespec(filespec: Union[str, dict]) -> _Filespec:
 
 
 def guess_filespec(
-    filespec: Union[str, dict], stack: ExitStack, test_block_config: TestConfig
-) -> tuple[list, Optional[str]]:
+    filespec: str | dict, stack: ExitStack, test_block_config: TestConfig
+) -> tuple[list, str | None]:
     """tries to guess the content type and encoding from a file.
 
     Args:
@@ -170,7 +170,7 @@ def get_file_arguments(
         mapping of 'files' block to pass directly to requests
     """
 
-    files_to_send: Optional[Union[dict, list]] = None
+    files_to_send: dict | list | None = None
 
     file_args = request_args.get("files")
 

@@ -1,7 +1,7 @@
 import logging
 import time
+from collections.abc import Mapping
 from functools import wraps
-from typing import Mapping
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -20,7 +20,7 @@ def delay(stage: Mapping, when: str, variables: Mapping) -> None:
     """
 
     try:
-        length = format_keys(stage["delay_{}".format(when)], variables)
+        length = format_keys(stage[f"delay_{when}"], variables)
     except KeyError:
         pass
     else:
@@ -111,7 +111,7 @@ def maybe_format_max_retries(max_retries, test_block_config: TestConfig) -> int:
     # Could auto convert here as well, but keep it consistent and just fail
     if not isinstance(max_retries, int):
         raise exceptions.InvalidRetryException(
-            "Invalid type for max_retries - was {}".format(type(max_retries))
+            f"Invalid type for max_retries - was {type(max_retries)}"
         )
 
     if max_retries < 0:

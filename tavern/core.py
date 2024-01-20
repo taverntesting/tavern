@@ -1,6 +1,5 @@
 import os
 from contextlib import ExitStack
-from typing import Union
 
 import pytest
 from pytest import ExitCode
@@ -9,9 +8,7 @@ from tavern._core import exceptions
 from tavern._core.schema.files import wrapfile
 
 
-def _get_or_wrap_global_cfg(
-    stack: ExitStack, tavern_global_cfg: Union[dict, str]
-) -> str:
+def _get_or_wrap_global_cfg(stack: ExitStack, tavern_global_cfg: dict | str) -> str:
     """
     Try to parse global configuration from given argument.
 
@@ -34,7 +31,7 @@ def _get_or_wrap_global_cfg(
     if isinstance(tavern_global_cfg, str):
         if not os.path.exists(tavern_global_cfg):
             raise exceptions.InvalidSettingsError(
-                "global config file '{}' does not exist".format(tavern_global_cfg)
+                f"global config file '{tavern_global_cfg}' does not exist"
             )
         global_filename = tavern_global_cfg
     elif isinstance(tavern_global_cfg, dict):
@@ -57,7 +54,7 @@ def run(
     tavern_grpc_backend=None,
     tavern_strict=None,
     pytest_args=None,
-) -> Union[ExitCode, int]:
+) -> ExitCode | int:
     """Run all tests contained in a file using pytest.main()
 
     Args:

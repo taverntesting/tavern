@@ -1,7 +1,7 @@
 import dataclasses
 import logging
 import pathlib
-from typing import Iterable, MutableMapping, Optional, Union
+from collections.abc import Iterable, MutableMapping
 
 import pytest
 import yaml
@@ -49,7 +49,7 @@ class YamlItem(pytest.Item):
         self.path = path
         self.spec = spec
 
-        self.global_cfg: Optional[TestConfig] = None
+        self.global_cfg: TestConfig | None = None
 
         if not YamlItem._patched_yaml:
             yaml.parser.Parser.process_empty_scalar = (  # type:ignore
@@ -101,7 +101,7 @@ class YamlItem(pytest.Item):
                 name = stage["name"]
             elif "id" in stage:
                 name = stage["id"]
-            stages.append("{:d}: {:s}".format(i + 1, name))
+            stages.append(f"{i + 1:d}: {name:s}")
 
         # This needs to be a function or skipif breaks
         def fakefun():
@@ -251,7 +251,7 @@ class YamlItem(pytest.Item):
             raise
         else:
             if xfail:
-                raise Exception("internal: xfail test did not fail '{}'".format(xfail))
+                raise Exception(f"internal: xfail test did not fail '{xfail}'")
         finally:
             call_hook(
                 self.global_cfg,
@@ -261,8 +261,8 @@ class YamlItem(pytest.Item):
             )
 
     def repr_failure(
-        self, excinfo: pytest.ExceptionInfo[BaseException], style: Optional[str] = None
-    ) -> Union[TerminalRepr, str, ReprdError]:
+        self, excinfo: pytest.ExceptionInfo[BaseException], style: str | None = None
+    ) -> TerminalRepr | str | ReprdError:
         """called when self.runtest() raises an exception.
 
         By default, will raise a custom formatted traceback if it's a tavern error. if not, will use the default

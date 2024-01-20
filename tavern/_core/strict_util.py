@@ -2,7 +2,7 @@ import dataclasses
 import enum
 import logging
 import re
-from typing import Optional, Union
+from typing import Union
 
 from tavern._core import exceptions
 from tavern._core.strtobool import strtobool
@@ -24,7 +24,7 @@ valid_keys = ["json", "headers", "redirect_query_params"]
 valid_switches = ["on", "off", "list_any_order"]
 
 
-def strict_setting_factory(str_setting: Optional[str]) -> StrictSetting:
+def strict_setting_factory(str_setting: str | None) -> StrictSetting:
     """Converts from cmdline/setting file to an enum"""
     if str_setting is None:
         return StrictSetting.UNSET
@@ -69,7 +69,7 @@ def validate_and_parse_option(key: str) -> StrictOption:
     if not match:
         raise exceptions.InvalidConfigurationException(
             "Invalid value for 'strict' given - expected one of {}, got '{}'".format(
-                ["{}[:on/off]".format(key) for key in valid_keys], key
+                [f"{key}[:on/off]" for key in valid_keys], key
             )
         )
 
@@ -100,7 +100,7 @@ class StrictLevel:
     )
 
     @classmethod
-    def from_options(cls, options: Union[list[str], str]) -> "StrictLevel":
+    def from_options(cls, options: list[str] | str) -> "StrictLevel":
         if isinstance(options, str):
             options = [options]
         elif not isinstance(options, list):
@@ -120,7 +120,7 @@ class StrictLevel:
             return getattr(self, section)
         except AttributeError as e:
             raise exceptions.InvalidConfigurationException(
-                "No setting for '{}'".format(section)
+                f"No setting for '{section}'"
             ) from e
 
     @classmethod

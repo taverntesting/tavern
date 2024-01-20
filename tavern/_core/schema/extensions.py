@@ -1,6 +1,6 @@
 import os
 import re
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
 from pykwalify.types import is_bool, is_float, is_int
 
@@ -57,7 +57,7 @@ def _validate_one_extension(input_value) -> None:
     extra = set(input_value) - expected_keys
 
     if extra:
-        raise BadSchemaError("Unexpected keys passed to $ext: {}".format(extra))
+        raise BadSchemaError(f"Unexpected keys passed to $ext: {extra}")
 
     if "function" not in input_value:
         raise BadSchemaError("No function specified for validation")
@@ -71,14 +71,10 @@ def _validate_one_extension(input_value) -> None:
     extra_kwargs = input_value.get("extra_kwargs")
 
     if extra_args and not isinstance(extra_args, list):
-        raise BadSchemaError(
-            "Expected a list of extra_args, got {}".format(type(extra_args))
-        )
+        raise BadSchemaError(f"Expected a list of extra_args, got {type(extra_args)}")
 
     if extra_kwargs and not isinstance(extra_kwargs, dict):
-        raise BadSchemaError(
-            "Expected a dict of extra_kwargs, got {}".format(type(extra_args))
-        )
+        raise BadSchemaError(f"Expected a dict of extra_kwargs, got {type(extra_args)}")
 
 
 def validate_extensions(value, rule_obj, path) -> bool:
@@ -159,7 +155,7 @@ def validate_grpc_status_is_valid_or_list_of_names(
     return True
 
 
-def to_grpc_status(value: Union[str, int]):
+def to_grpc_status(value: str | int):
     from grpc import StatusCode
 
     if isinstance(value, str):
@@ -270,9 +266,7 @@ def validate_data_key(value, rule_obj, path) -> bool:
         # Also fine - might want to do checking on this for encoding etc?
         pass
     elif isinstance(value, list):
-        raise BadSchemaError(
-            "Error at {} - expected a dict, str, or !!binary".format(path)
-        )
+        raise BadSchemaError(f"Error at {path} - expected a dict, str, or !!binary")
 
         # invalid = []
 
@@ -286,9 +280,7 @@ def validate_data_key(value, rule_obj, path) -> bool:
         # if invalid:
         #     raise BadSchemaError("Error at {} - when passing a list to the 'data' key, all items must be 2-tuples (invalid values: {})".format(path, invalid))
     else:
-        raise BadSchemaError(
-            "Error at {} - expected a dict, str, or !!binary".format(path)
-        )
+        raise BadSchemaError(f"Error at {path} - expected a dict, str, or !!binary")
 
     return True
 
@@ -302,8 +294,7 @@ def validate_request_json(value, rule_obj, path) -> bool:
         if isinstance(d, dict):
             for v in d.values():
                 if isinstance(v, dict):
-                    for v_s in v.values():
-                        yield v_s
+                    yield from v.values()
                 else:
                     yield v
         else:
@@ -330,7 +321,7 @@ def validate_json_with_ext(value, rule_obj, path) -> bool:
         if isinstance(maybe_ext_val, dict):
             validate_extensions(maybe_ext_val, rule_obj, path)
         elif maybe_ext_val is not None:
-            raise BadSchemaError("Unexpected $ext key in block at {}".format(path))
+            raise BadSchemaError(f"Unexpected $ext key in block at {path}")
 
     return True
 
@@ -376,7 +367,7 @@ def validate_timeout_tuple_or_float(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_verify_bool_or_str(value: Union[bool, str], rule_obj, path) -> bool:
+def validate_verify_bool_or_str(value: bool | str, rule_obj, path) -> bool:
     """Make sure the 'verify' key is either a bool or a str"""
 
     if not isinstance(value, (bool, str)) and not is_bool_like(value):
@@ -432,7 +423,7 @@ def validate_file_spec(value, rule_obj, path) -> bool:
             extra = set(filespec.keys()) - valid
             if extra:
                 raise BadSchemaError(
-                    "Invalid extra keys passed to file upload block: {}".format(extra)
+                    f"Invalid extra keys passed to file upload block: {extra}"
                 )
 
             try:
@@ -453,7 +444,7 @@ def validate_file_spec(value, rule_obj, path) -> bool:
                 )
             else:
                 raise BadSchemaError(
-                    "Path to file to upload '{}' was not found".format(file_path)
+                    f"Path to file to upload '{file_path}' was not found"
                 )
 
     return True

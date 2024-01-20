@@ -2,7 +2,7 @@ import dataclasses
 import functools
 import json
 import logging
-from typing import Mapping, Union
+from collections.abc import Mapping
 
 import grpc
 from box import Box
@@ -36,7 +36,7 @@ def get_grpc_args(rspec, test_block_config):
 
 @dataclasses.dataclass
 class WrappedFuture:
-    response: Union[grpc.Call, grpc.Future]
+    response: grpc.Call | grpc.Future
     service_name: str
 
 

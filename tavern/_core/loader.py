@@ -6,7 +6,6 @@ import re
 import uuid
 from abc import abstractmethod
 from itertools import chain
-from typing import Optional
 
 import pytest
 import yaml
@@ -33,7 +32,7 @@ def makeuuid(loader, node) -> str:
 class RememberComposer(Composer):
     """A composer that doesn't forget anchors across documents"""
 
-    def compose_document(self) -> Optional[Node]:
+    def compose_document(self) -> Node | None:
         # Drop the DOCUMENT-START event.
         self.get_event()
 
@@ -123,7 +122,7 @@ class IncludeLoader(
         Resolver.__init__(self)
         SourceMappingConstructor.__init__(self)
 
-    env_path_list: Optional[list] = None
+    env_path_list: list | None = None
     env_var_name = "TAVERN_INCLUDE"
 
 
@@ -196,7 +195,7 @@ class TypeSentinel(yaml.YAMLObject):
         return cls()
 
     def __str__(self) -> str:
-        return "<Tavern YAML sentinel for {}>".format(self.constructor)
+        return f"<Tavern YAML sentinel for {self.constructor}>"
 
     @classmethod
     def to_yaml(cls, dumper, data) -> ScalarNode:
@@ -245,7 +244,7 @@ class RegexSentinel(TypeSentinel):
     compiled: re.Pattern
 
     def __str__(self) -> str:
-        return "<Tavern Regex sentinel for {}>".format(self.compiled.pattern)
+        return f"<Tavern Regex sentinel for {self.compiled.pattern}>"
 
     @property
     def yaml_tag(self):
@@ -446,7 +445,7 @@ def load_single_document_yaml(filename: str | os.PathLike) -> dict:
         UnexpectedDocumentsError: If more than one document was in the file
     """
 
-    with open(filename, "r", encoding="utf-8") as fileobj:
+    with open(filename, encoding="utf-8") as fileobj:
         try:
             contents = yaml.load(fileobj, Loader=IncludeLoader)  # type:ignore # noqa
         except yaml.composer.ComposerError as e:

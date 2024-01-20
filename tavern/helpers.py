@@ -2,7 +2,6 @@ import importlib
 import json
 import logging
 import re
-from typing import Optional
 
 import jmespath
 import jwt
@@ -118,8 +117,8 @@ def validate_regex(
     response: requests.Response,
     expression: str,
     *,
-    header: Optional[str] = None,
-    in_jmespath: Optional[str] = None,
+    header: str | None = None,
+    in_jmespath: str | None = None,
 ) -> dict[str, Box]:
     """Make sure the response matches a regex expression
 
@@ -197,7 +196,7 @@ def validate_content(response: requests.Response, comparisons: list[str]) -> Non
             raise exceptions.JMESError("Error validating JMES") from e
 
 
-def check_jmespath_match(parsed_response, query: str, expected: Optional[str] = None):
+def check_jmespath_match(parsed_response, query: str, expected: str | None = None):
     """
     Check that the JMES path given in 'query' is present in the given response
 
@@ -209,7 +208,7 @@ def check_jmespath_match(parsed_response, query: str, expected: Optional[str] = 
     """
     actual = jmespath.search(query, parsed_response)
 
-    msg = "JMES path '{}' not found in response".format(query)
+    msg = f"JMES path '{query}' not found in response"
 
     if actual is None:
         raise exceptions.JMESError(msg)

@@ -1,8 +1,8 @@
 import json
 import logging
 import re
+from collections.abc import Mapping
 from io import StringIO
-from typing import Mapping, Optional
 
 import yaml
 from _pytest._code.code import FormattedExcinfo
@@ -100,7 +100,7 @@ class ReprdError:
                 white = True
                 red = False
 
-            line = "  {} = '{}'".format(var[1:-1], value_at_call)
+            line = f"  {var[1:-1]} = '{value_at_call}'"
             tw.line(line, white=white, red=red)  # pragma: no cover
 
         return missing
@@ -110,7 +110,7 @@ class ReprdError:
         tw: TerminalWriter,
         code_lines: list[str],
         missing_format_vars: list[str],
-        line_start: Optional[int],
+        line_start: int | None,
     ) -> None:
         """Print the direct source lines from this test stage
 
@@ -127,9 +127,7 @@ class ReprdError:
             line_start: Source line of this stage
         """
         if line_start:
-            tw.line(
-                "Source test stage (line {}):".format(line_start), white=True, bold=True
-            )
+            tw.line(f"Source test stage (line {line_start}):", white=True, bold=True)
         else:
             tw.line("Source test stages:", white=True, bold=True)
 
@@ -167,7 +165,7 @@ class ReprdError:
         for line in formatted_lines:
             if not line:
                 continue
-            tw.line("  {}".format(line), white=True)
+            tw.line(f"  {line}", white=True)
 
     def _print_errors(self, tw: TerminalWriter) -> None:
         """Print any errors in the 'normal' Pytest style

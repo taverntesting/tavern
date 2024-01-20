@@ -5,8 +5,8 @@ import itertools
 import json
 import logging
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Mapping, Optional, Union
 
 from paho.mqtt.client import MQTTMessage
 
@@ -101,7 +101,7 @@ class MQTTResponse(BaseResponse):
                 self._adderr("\n".join(warnings))
 
             raise exceptions.TestFailError(
-                "Test '{:s}' failed:\n{:s}".format(self.name, self._str_errors()),
+                f"Test '{self.name:s}' failed:\n{self._str_errors():s}",
                 failures=self.errors,
             )
 
@@ -321,7 +321,7 @@ class _MessageVerifier:
         return False
 
     @staticmethod
-    def _get_payload_vals(expected: Mapping) -> tuple[Optional[Union[str, dict]], bool]:
+    def _get_payload_vals(expected: Mapping) -> tuple[str | dict | None, bool]:
         """Gets the payload from the 'expected' block
 
         Returns:

@@ -3,7 +3,7 @@ import traceback
 from abc import abstractmethod
 from collections.abc import Mapping
 from textwrap import indent
-from typing import Any, Optional
+from typing import Any
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
@@ -35,7 +35,7 @@ class BaseResponse:
 
         self.expected = expected
 
-        self.response: Optional[Any] = None
+        self.response: Any | None = None
 
     def _str_errors(self) -> str:
         return "- " + "\n- ".join(self.errors)
@@ -58,7 +58,7 @@ class BaseResponse:
 
     def recurse_check_key_match(
         self,
-        expected_block: Optional[Mapping],
+        expected_block: Mapping | None,
         block: Mapping,
         blockname: str,
         strict: StrictOption,
@@ -224,9 +224,9 @@ class BaseResponse:
     def maybe_get_save_values_from_save_block(
         self,
         key: str,
-        save_from: Optional[Mapping],
+        save_from: Mapping | None,
         *,
-        outer_save_block: Optional[Mapping] = None,
+        outer_save_block: Mapping | None = None,
     ) -> dict:
         """Save a value from a specific block in the response.
 
@@ -252,7 +252,7 @@ class BaseResponse:
     def maybe_get_save_values_from_given_block(
         self,
         key: str,
-        save_from: Optional[Mapping],
+        save_from: Mapping | None,
         to_save: Mapping,
     ) -> dict:
         """Save a value from a specific block in the response.

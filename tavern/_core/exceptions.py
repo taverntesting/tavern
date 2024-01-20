@@ -15,7 +15,7 @@ class TavernException(Exception):
         test_block_config: config for stage
     """
 
-    stage: Optional[dict]
+    stage: dict | None
     test_block_config: Optional["TestConfig"]
     is_final: bool = False
 

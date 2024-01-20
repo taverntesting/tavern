@@ -1,6 +1,5 @@
 import logging
 from os.path import abspath, dirname, join
-from typing import Optional
 
 import yaml
 
@@ -19,7 +18,7 @@ request_block_name = "mqtt_publish"
 
 
 def get_expected_from_request(response_block, test_block_config, session):
-    expected: Optional[dict] = None
+    expected: dict | None = None
 
     # mqtt response is not required
     if response_block:
@@ -41,5 +40,5 @@ verifier_type = MQTTResponse
 response_block_name = "mqtt_response"
 
 schema_path: str = join(abspath(dirname(__file__)), "jsonschema.yaml")
-with open(schema_path, "r", encoding="utf-8") as schema_file:
+with open(schema_path, encoding="utf-8") as schema_file:
     schema = yaml.load(schema_file, Loader=yaml.SafeLoader)

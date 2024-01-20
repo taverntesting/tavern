@@ -5,8 +5,9 @@ significantly if/when a proper plugin system is implemented!
 """
 import dataclasses
 import logging
+from collections.abc import Mapping
 from functools import partial
-from typing import Any, Mapping, Optional
+from typing import Any
 
 import stevedore
 
@@ -24,7 +25,7 @@ class PluginHelperBase:
 
 def plugin_load_error(mgr, entry_point, err):
     """Handle import errors"""
-    msg = "Error loading plugin {} - {}".format(entry_point, err)
+    msg = f"Error loading plugin {entry_point} - {err}"
     raise exceptions.PluginLoadError(msg) from err
 
 
@@ -66,7 +67,7 @@ def is_valid_reqresp_plugin(ext: Any) -> bool:
 class _PluginCache:
     plugins: list[Any] = dataclasses.field(default_factory=list)
 
-    def __call__(self, config: Optional[TestConfig] = None):
+    def __call__(self, config: TestConfig | None = None):
         if not config and not self.plugins:
             raise exceptions.PluginLoadError("No config to load plugins from")
         elif self.plugins:
@@ -107,7 +108,7 @@ class _PluginCache:
         for backend in test_block_config.backends():
             logger.debug("loading backend for %s", backend)
 
-            namespace = "tavern_{}".format(backend)
+            namespace = f"tavern_{backend}"
 
             manager = stevedore.EnabledExtensionManager(
                 namespace=namespace,

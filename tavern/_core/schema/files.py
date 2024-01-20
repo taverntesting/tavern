@@ -3,7 +3,7 @@ import copy
 import logging
 import os
 import tempfile
-from typing import Mapping
+from collections.abc import Mapping
 
 import pykwalify
 import yaml
@@ -34,7 +34,7 @@ class SchemaCache:
             return self._loaded[schema_filename]
 
     def _load_schema_with_plugins(self, schema_filename):
-        mangled = "{}-plugins".format(schema_filename)
+        mangled = f"{schema_filename}-plugins"
 
         try:
             return self._loaded[mangled]

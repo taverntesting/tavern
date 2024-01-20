@@ -3,9 +3,9 @@ import dataclasses
 import functools
 import logging
 import pathlib
+from collections.abc import Mapping, MutableMapping
 from contextlib import ExitStack
 from copy import deepcopy
-from typing import Mapping, MutableMapping
 
 import box
 
@@ -46,7 +46,7 @@ def _resolve_test_stages(test_spec: Mapping, available_stages: Mapping):
                 else:
                     logger.error("Bad stage: unknown stage referenced: %s", ref_id)
                     raise exceptions.InvalidStageReferenceError(
-                        "Unknown stage reference: {}".format(ref_id)
+                        f"Unknown stage reference: {ref_id}"
                     )
             else:
                 logger.error("Bad stage: 'ref' type must specify 'id'")
@@ -251,7 +251,7 @@ def _calculate_stage_strictness(
                     )
         else:
             raise exceptions.BadSchemaError(
-                "mqtt_response was invalid type {}".format(type(mqtt_response))
+                f"mqtt_response was invalid type {type(mqtt_response)}"
             )
 
     if stage_options is not None:

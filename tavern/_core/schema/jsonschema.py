@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Mapping
+from collections.abc import Mapping
 
 import jsonschema
 from jsonschema import Draft7Validator, ValidationError
@@ -82,7 +82,7 @@ def oneOf(validator: Draft7Validator, oneOf, instance, schema):
         all_errors.extend(errs)
     else:
         yield ValidationError(
-            "%r is not valid under any of the given schemas" % (instance,),
+            "{!r} is not valid under any of the given schemas".format(instance),
             context=all_errors,
         )
 
@@ -149,7 +149,7 @@ def verify_jsonschema(to_verify: Mapping, schema: Mapping) -> None:
                 filename = get_stage_filename(instance)
 
             if filename:
-                with open(filename, "r", encoding="utf-8") as infile:
+                with open(filename, encoding="utf-8") as infile:
                     n_lines = len(infile.readlines())
 
                 first_line, last_line, _ = get_stage_lines(instance)
