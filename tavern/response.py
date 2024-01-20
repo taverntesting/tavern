@@ -3,7 +3,7 @@ import traceback
 from abc import abstractmethod
 from collections.abc import Mapping
 from textwrap import indent
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
@@ -11,7 +11,7 @@ from tavern._core.extfunctions import get_wrapped_response_function
 from tavern._core.pytest.config import TestConfig
 from tavern._core.strict_util import StrictOption
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def indent_err_text(err: str) -> str:
@@ -26,9 +26,9 @@ class BaseResponse:
         self.name = name
 
         # all errors in this response
-        self.errors: List[str] = []
+        self.errors: list[str] = []
 
-        self.validate_functions: List = []
+        self.validate_functions: list = []
         self._check_for_validate_functions(expected)
 
         self.test_block_config = test_block_config

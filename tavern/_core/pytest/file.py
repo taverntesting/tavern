@@ -2,7 +2,7 @@ import copy
 import functools
 import itertools
 import logging
-from typing import Any, Dict, Iterator, List, Mapping, Tuple
+from typing import Any, Iterator, Mapping, Tuple
 
 import pytest
 import yaml
@@ -18,14 +18,14 @@ from tavern._core.schema.files import verify_tests
 from .item import YamlItem
 from .util import load_global_cfg
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 _format_without_inner = functools.partial(format_keys, no_double_format=False)
 
 
 def _format_test_marks(
-    original_marks: List[Any], fmt_vars: Mapping, test_name: str
-) -> Tuple[List[MarkDecorator], Any]:
+    original_marks: list[Any], fmt_vars: Mapping, test_name: str
+) -> Tuple[list[MarkDecorator], Any]:
     """Given the 'raw' marks from the test and any available format variables,
     generate new  marks for this test
 
@@ -89,7 +89,7 @@ def _format_test_marks(
     return pytest_marks, formatted_marks
 
 
-def _generate_parametrized_test_items(keys: List, vals_combination):
+def _generate_parametrized_test_items(keys: list, vals_combination):
     """Generate test name from given key(s)/value(s) combination
 
     Args:
@@ -168,9 +168,9 @@ def _generate_parametrized_test_items(keys: List, vals_combination):
 
 def _get_parametrized_items(
     parent: pytest.File,
-    test_spec: Dict,
-    parametrize_marks: List[Dict],
-    pytest_marks: List[MarkDecorator],
+    test_spec: dict,
+    parametrize_marks: list[dict],
+    pytest_marks: list[MarkDecorator],
 ) -> Iterator[YamlItem]:
     """Return new items with new format values available based on the mark
 
@@ -272,7 +272,7 @@ class YamlFile(pytest.File):
         # skipif: {my_integer} > 2
         # skipif: 'https' in '{hostname}'
         # skipif: '{hostname}'.contains('ignoreme')
-        fmt_vars: Dict = {}
+        fmt_vars: dict = {}
 
         global_cfg = load_global_cfg(self.config)
         fmt_vars.update(**global_cfg.variables)
@@ -297,7 +297,7 @@ class YamlFile(pytest.File):
         tavern_box.merge_update(**fmt_vars)
         return tavern_box
 
-    def _generate_items(self, test_spec: Dict) -> Iterator[YamlItem]:
+    def _generate_items(self, test_spec: dict) -> Iterator[YamlItem]:
         """Modify or generate tests based on test spec
 
         If there are any 'parametrize' marks, this will generate extra tests

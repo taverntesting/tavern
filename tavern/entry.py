@@ -2,7 +2,6 @@ import argparse
 import logging.config
 from argparse import ArgumentParser
 from textwrap import dedent
-from typing import Dict
 
 from .core import run
 
@@ -49,7 +48,7 @@ def main():
         log_level = "INFO"
 
     # Basic logging config that will print out useful information
-    log_cfg: Dict = {
+    log_cfg: dict = {
         "version": 1,
         "formatters": {
             "default": {

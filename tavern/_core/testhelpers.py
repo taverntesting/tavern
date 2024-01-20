@@ -7,7 +7,7 @@ from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
 from tavern._core.pytest.config import TestConfig
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def delay(stage: Mapping, when: str, variables: Mapping) -> None:

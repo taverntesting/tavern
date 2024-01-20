@@ -1,10 +1,11 @@
 import dataclasses
 import logging
 import pathlib
-from typing import Iterable, MutableMapping, Optional, Tuple
+from typing import Iterable, MutableMapping, Optional, Tuple, Union
 
 import pytest
 import yaml
+from _pytest._code.code import TerminalRepr
 from _pytest.nodes import Node
 from pytest import Mark, MarkDecorator
 
@@ -20,7 +21,7 @@ from tavern._core.schema.files import verify_tests
 from .config import TestConfig
 from .util import load_global_cfg
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class YamlItem(pytest.Item):
@@ -261,7 +262,7 @@ class YamlItem(pytest.Item):
 
     def repr_failure(
         self, excinfo: pytest.ExceptionInfo[BaseException], style: Optional[str] = None
-    ):
+    ) -> Union[TerminalRepr, str, ReprdError]:
         """called when self.runtest() raises an exception.
 
         By default, will raise a custom formatted traceback if it's a tavern error. if not, will use the default

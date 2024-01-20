@@ -2,12 +2,12 @@ import dataclasses
 import enum
 import logging
 import re
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
 from tavern._core import exceptions
 from tavern._core.strtobool import strtobool
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class StrictSetting(enum.Enum):
@@ -100,7 +100,7 @@ class StrictLevel:
     )
 
     @classmethod
-    def from_options(cls, options: Union[List[str], str]) -> "StrictLevel":
+    def from_options(cls, options: Union[list[str], str]) -> "StrictLevel":
         if isinstance(options, str):
             options = [options]
         elif not isinstance(options, list):

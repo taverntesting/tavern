@@ -5,9 +5,10 @@ import ssl
 import threading
 import time
 from queue import Empty, Full, Queue
-from typing import Dict, List, Mapping, MutableMapping, Optional
+from typing import Mapping, MutableMapping, Optional, Union
 
 import paho.mqtt.client as paho
+from paho.mqtt.client import MQTTMessageInfo
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys
@@ -33,7 +34,7 @@ _err_vals = {
     15: "MQTT_ERR_QUEUE_SIZE",
 }
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass
@@ -89,8 +90,8 @@ def _handle_ssl_context_args(
 
 
 def _check_and_update_common_tls_args(
-    tls_args: MutableMapping, check_file_keys: List[str]
-):
+    tls_args: MutableMapping, check_file_keys: list[str]
+) -> None:
     """Checks common args between ssl/tls args"""
 
     # could be moved to schema validation stage
@@ -276,14 +277,14 @@ class MQTTClient:
                 self._client.tls_insecure_set(True)
 
         # Topics to subscribe to - mapping of subscription message id to subscription object
-        self._subscribed: Dict[int, _Subscription] = {}
+        self._subscribed: dict[int, _Subscription] = {}
         # Lock to ensure there is no race condition when subscribing
         self._subscribe_lock = threading.RLock()
         # callback
         self._client.on_subscribe = self._on_subscribe
 
         # Mapping of topic -> subscription id, for indexing into self._subscribed
-        self._subscription_mappings: Dict[str, int] = {}
+        self._subscription_mappings: dict[str, int] = {}
         self._userdata = {
             "_subscription_mappings": self._subscription_mappings,
             "_subscribed": self._subscribed,
@@ -313,7 +314,7 @@ class MQTTClient:
             logger.exception("message queue full")
 
     @staticmethod
-    def _on_connect(client, userdata, flags, rc) -> None:
+    def _on_connect(client, userdata, flags, rc: int) -> None:
         logger.debug(
             "Client '%s' connected to the broker with result code '%s'",
             client._client_id.decode(),
@@ -321,7 +322,7 @@ class MQTTClient:
         )
 
     @staticmethod
-    def _on_disconnect(client, userdata, rc) -> None:
+    def _on_disconnect(client, userdata, rc: int) -> None:
         if rc == paho.CONNACK_ACCEPTED:
             logger.debug(
                 "Client '%s' successfully disconnected from the broker with result code '%s'",
@@ -380,7 +381,13 @@ class MQTTClient:
 
         return msg
 
-    def publish(self, topic, payload=None, qos=None, retain=None):
+    def publish(
+        self,
+        topic: str,
+        payload: Union[None, bytearray, bytes, float, str] = None,
+        qos=None,
+        retain=None,
+    ) -> MQTTMessageInfo:
         """publish message using paho library"""
         self._wait_for_subscriptions()
 

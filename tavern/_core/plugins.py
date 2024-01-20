@@ -6,7 +6,7 @@ significantly if/when a proper plugin system is implemented!
 import dataclasses
 import logging
 from functools import partial
-from typing import Any, List, Mapping, Optional
+from typing import Any, Mapping, Optional
 
 import stevedore
 
@@ -15,7 +15,7 @@ from tavern._core.dict_util import format_keys
 from tavern._core.pytest.config import TestConfig
 from tavern.request import BaseRequest
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PluginHelperBase:
@@ -64,7 +64,7 @@ def is_valid_reqresp_plugin(ext: Any) -> bool:
 
 @dataclasses.dataclass
 class _PluginCache:
-    plugins: List[Any] = dataclasses.field(default_factory=list)
+    plugins: list[Any] = dataclasses.field(default_factory=list)
 
     def __call__(self, config: Optional[TestConfig] = None):
         if not config and not self.plugins:
@@ -77,7 +77,7 @@ class _PluginCache:
             self.plugins = self._load_plugins(config)
             return self.plugins
 
-    def _load_plugins(self, test_block_config: TestConfig) -> List[Any]:
+    def _load_plugins(self, test_block_config: TestConfig) -> list[Any]:
         """Load plugins from the 'tavern' entrypoint namespace
 
         This can be a module or a class as long as it defines the right things

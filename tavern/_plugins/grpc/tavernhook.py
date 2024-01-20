@@ -10,7 +10,7 @@ from .client import GRPCClient
 from .request import GRPCRequest
 from .response import GRPCResponse
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 session_type = GRPCClient
@@ -29,6 +29,6 @@ def get_expected_from_request(response_block, test_block_config: TestConfig, ses
 verifier_type = GRPCResponse
 response_block_name = "grpc_response"
 
-schema_path = join(abspath(dirname(__file__)), "jsonschema.yaml")
+schema_path: str = join(abspath(dirname(__file__)), "jsonschema.yaml")
 with open(schema_path, "r") as schema_file:
     schema = yaml.load(schema_file, Loader=yaml.SafeLoader)

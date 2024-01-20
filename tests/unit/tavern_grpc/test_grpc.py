@@ -7,10 +7,10 @@ from typing import Any, Mapping, Optional
 
 import grpc
 import pytest
-from _pytest.mark import MarkGenerator
 from google.protobuf import json_format
 from google.protobuf.empty_pb2 import Empty
 from grpc_reflection.v1alpha import reflection
+from pytest import MarkGenerator
 
 from tavern._core.pytest.config import TestConfig
 from tavern._plugins.grpc.client import GRPCClient

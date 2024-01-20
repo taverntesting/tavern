@@ -3,6 +3,7 @@ from contextlib import ExitStack
 from typing import Union
 
 import pytest
+from pytest import ExitCode
 
 from tavern._core import exceptions
 from tavern._core.schema.files import wrapfile
@@ -56,7 +57,7 @@ def run(
     tavern_grpc_backend=None,
     tavern_strict=None,
     pytest_args=None,
-):
+) -> Union[ExitCode, int]:
     """Run all tests contained in a file using pytest.main()
 
     Args:

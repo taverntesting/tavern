@@ -1,20 +1,20 @@
 import collections.abc
 import inspect
 import logging
-from typing import Any, List
+from typing import Any
 
 from tavern._core import exceptions
 from tavern._core.extfunctions import get_wrapped_response_function
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class Tinctures:
-    def __init__(self, tinctures: List[Any]):
+    def __init__(self, tinctures: list[Any]) -> None:
         self._tinctures = tinctures
-        self._needs_response: List[Any] = []
+        self._needs_response: list[Any] = []
 
-    def start_tinctures(self, stage: collections.abc.Mapping):
+    def start_tinctures(self, stage: collections.abc.Mapping) -> None:
         results = [t(stage) for t in self._tinctures]
         self._needs_response = []
 

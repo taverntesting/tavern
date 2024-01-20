@@ -2,7 +2,7 @@ import dataclasses
 import logging
 import typing
 import warnings
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from typing import Any, Mapping, Optional, Tuple
 
 import grpc
 import grpc_reflection
@@ -22,7 +22,7 @@ from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys
 from tavern._plugins.grpc.protos import _generate_proto_import, _import_grpc_module
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
@@ -39,7 +39,7 @@ class _ChannelVals:
 
 
 class GRPCClient:
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         logger.debug("Initialising GRPC client with %s", kwargs)
         expected_blocks = {
             "connect": {"host", "port", "options", "timeout", "secure"},
@@ -69,7 +69,7 @@ class GRPCClient:
         self.timeout = int(_connect_args.get("timeout", 5))
         self.secure = bool(_connect_args.get("secure", False))
 
-        self._options: List[Tuple[str, Any]] = []
+        self._options: list[Tuple[str, Any]] = []
         for key, value in _connect_args.pop("options", {}).items():
             if not key.startswith("grpc."):
                 raise exceptions.GRPCServiceException(
@@ -77,7 +77,7 @@ class GRPCClient:
                 )
             self._options.append((key, value))
 
-        self.channels: Dict[str, grpc.Channel] = {}
+        self.channels: dict[str, grpc.Channel] = {}
         # Using the default symbol database is a bit undesirable because it means that things being imported from
         # previous tests will affect later ones which can mask bugs. But there isn't a nice way to have a
         # self-contained symbol database, because then you need to transitively import all dependencies of protos and
@@ -99,7 +99,7 @@ class GRPCClient:
     def _register_file_descriptor(
         self,
         service_proto: grpc_reflection.v1alpha.reflection_pb2.FileDescriptorResponse,
-    ):
+    ) -> None:
         for file_descriptor_proto in service_proto.file_descriptor_proto:
             descriptor = descriptor_pb2.FileDescriptorProto()
             descriptor.ParseFromString(file_descriptor_proto)
@@ -107,7 +107,7 @@ class GRPCClient:
 
     def _get_reflection_info(
         self, channel, service_name: Optional[str] = None, file_by_filename=None
-    ):
+    ) -> None:
         logger.debug(
             "Getting GRPC protobuf for service %s from reflection", service_name
         )
@@ -239,7 +239,7 @@ class GRPCClient:
 
         return self._get_grpc_service(channel, service, method)
 
-    def __enter__(self):
+    def __enter__(self) -> None:
         logger.debug("Connecting to GRPC")
 
     def call(
@@ -282,7 +282,7 @@ class GRPCClient:
             request, metadata=self._metadata, timeout=timeout
         )
 
-    def __exit__(self, *args):
+    def __exit__(self, *args) -> None:
         logger.debug("Disconnecting from GRPC")
         for v in self.channels.values():
             v.close()

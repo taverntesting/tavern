@@ -1,7 +1,7 @@
 import functools
 import importlib
 import logging
-from typing import Any, List, Mapping, Optional
+from typing import Any, Mapping, Optional
 
 from tavern._core import exceptions
 
@@ -140,7 +140,7 @@ def _get_ext_values(ext: Mapping):
     return func, args, kwargs
 
 
-def update_from_ext(request_args: dict, keys_to_check: List[str]) -> None:
+def update_from_ext(request_args: dict, keys_to_check: list[str]) -> None:
     """
     Updates the request_args dict with any values from external functions
 

@@ -4,7 +4,7 @@ import logging
 import os
 import re
 import string
-from typing import Any, Dict, List, Mapping, Union
+from typing import Any, Mapping, Union
 
 import box
 import jmespath
@@ -22,7 +22,7 @@ from tavern._core.loader import (
 from .formatted_str import FormattedString
 from .strict_util import StrictSetting, StrictSettingKinds, extract_strict_setting
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def _check_and_format_values(to_format, box_vars: Mapping[str, Any]) -> str:
@@ -241,7 +241,7 @@ def _deprecated_recurse_access_key(current_val, keys):
             raise
 
 
-def deep_dict_merge(initial_dct: Dict, merge_dct: Mapping) -> dict:
+def deep_dict_merge(initial_dct: dict, merge_dct: Mapping) -> dict:
     """Recursive dict merge. Instead of updating only top-level keys,
     dict_merge recurses down into dicts nested to an arbitrary depth
     and returns the merged dict. Keys values present in merge_dct take
@@ -339,7 +339,7 @@ def yield_keyvals(block):
 def check_keys_match_recursive(
     expected_val: Any,
     actual_val: Any,
-    keys: List[Union[str, int]],
+    keys: list[Union[str, int]],
     strict: StrictSettingKinds = True,
 ) -> None:
     """Utility to recursively check response values

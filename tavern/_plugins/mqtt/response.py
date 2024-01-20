@@ -6,13 +6,14 @@ import json
 import logging
 import time
 from dataclasses import dataclass
-from typing import Dict, List, Mapping, Optional, Tuple, Union
+from typing import Mapping, Optional, Tuple, Union
 
 from paho.mqtt.client import MQTTMessage
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive
 from tavern._core.loader import ANYTHING
+from tavern._core.pytest.config import TestConfig
 from tavern._core.pytest.newhooks import call_hook
 from tavern._core.report import attach_yaml
 from tavern._core.strict_util import StrictSetting
@@ -20,13 +21,15 @@ from tavern.response import BaseResponse
 
 from .client import MQTTClient
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 _default_timeout = 1
 
 
 class MQTTResponse(BaseResponse):
-    def __init__(self, client: MQTTClient, name, expected, test_block_config) -> None:
+    def __init__(
+        self, client: MQTTClient, name: str, expected, test_block_config: TestConfig
+    ) -> None:
         super().__init__(name, expected, test_block_config)
 
         self._client = client
@@ -67,8 +70,8 @@ class MQTTResponse(BaseResponse):
             m: list(v) for m, v in itertools.groupby(expected, lambda x: x["topic"])
         }
 
-        correct_messages: List["_ReturnedMessage"] = []
-        warnings: List[str] = []
+        correct_messages: list["_ReturnedMessage"] = []
+        warnings: list[str] = []
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = []
@@ -135,8 +138,8 @@ class MQTTResponse(BaseResponse):
         return saved
 
     def _await_messages_on_topic(
-        self, topic: str, expected: List[Dict]
-    ) -> Tuple[List["_ReturnedMessage"], List[str]]:
+        self, topic: str, expected: list[dict]
+    ) -> Tuple[list["_ReturnedMessage"], list[str]]:
         """
         Waits for the specific message
 
@@ -189,7 +192,7 @@ class MQTTResponse(BaseResponse):
                 name="rest_response",
             )
 
-            found: List[int] = []
+            found: list[int] = []
             for i, v in enumerate(verifiers):
                 if v.is_valid(msg):
                     correct_messages.append(_ReturnedMessage(v.expected, msg))
@@ -246,7 +249,7 @@ class _MessageVerifier:
 
         # Any warnings to do with the request
         # eg, if a message was received but it didn't match, message had payload, etc.
-        self.warnings: List[str] = []
+        self.warnings: list[str] = []
 
     def is_valid(self, msg: MQTTMessage) -> bool:
         if time.time() > self.expires:
@@ -348,7 +351,7 @@ class _MessageVerifier:
 
         return payload, json_payload
 
-    def popwarnings(self) -> List[str]:
+    def popwarnings(self) -> list[str]:
         popped = []
         while self.warnings:
             popped.append(self.warnings.pop(0))

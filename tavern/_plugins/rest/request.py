@@ -4,7 +4,7 @@ import logging
 import warnings
 from contextlib import ExitStack
 from itertools import filterfalse, tee
-from typing import ClassVar, List, Mapping, MutableMapping, Optional
+from typing import ClassVar, Mapping, MutableMapping, Optional
 from urllib.parse import quote_plus
 
 import requests
@@ -21,7 +21,7 @@ from tavern._core.report import attach_yaml
 from tavern._plugins.rest.files import get_file_arguments, guess_filespec
 from tavern.request import BaseRequest
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def get_request_args(rspec: MutableMapping, test_block_config: TestConfig) -> dict:
@@ -333,7 +333,7 @@ def _read_expected_cookies(
 
 
 class RestRequest(BaseRequest):
-    optional_in_file: ClassVar[List[str]] = [
+    optional_in_file: ClassVar[list[str]] = [
         "json",
         "data",
         "params",
