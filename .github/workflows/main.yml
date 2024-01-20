@@ -9,7 +9,7 @@ on:
   pull_request:
     branches:
       - master
-      - feature-2.0
+      - feat/3.0-release
 
 jobs:
   simple-checks:
