@@ -4,6 +4,7 @@ from os.path import abspath, dirname, join
 import yaml
 
 from tavern._core.dict_util import format_keys
+from tavern._core.pytest.config import TestConfig
 
 from .client import MQTTClient
 from .request import MQTTRequest
@@ -17,7 +18,9 @@ request_type = MQTTRequest
 request_block_name = "mqtt_publish"
 
 
-def get_expected_from_request(response_block, test_block_config, session):
+def get_expected_from_request(
+    response_block, test_block_config: TestConfig, session: MQTTClient
+):
     expected: dict | None = None
 
     # mqtt response is not required

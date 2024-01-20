@@ -5,12 +5,11 @@ set -ex
 pre-commit run ruff --all-files
 pre-commit run ruff-format --all-files
 
-# Separate as isort can interfere with other testenvs
 tox --parallel -c tox.ini        \
-  -e py3check
+  -e py3mypy
 
 tox --parallel -c tox.ini        \
-  -e py3,py3mypy
+  -e py3
 
 tox -c tox-integration.ini  \
   -e py3-generic,py3-grpc,py3-mqtt

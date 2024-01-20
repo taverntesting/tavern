@@ -4,8 +4,8 @@ import logging
 import os
 import re
 import string
-from collections.abc import Mapping
-from typing import Any
+from collections.abc import Collection, Iterable, Mapping, Sequence
+from typing import Any, TypeVar
 
 import box
 import jmespath
@@ -26,7 +26,7 @@ from .strict_util import StrictSetting, StrictSettingKinds, extract_strict_setti
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def _check_and_format_values(to_format, box_vars: Mapping[str, Any]) -> str:
+def _check_and_format_values(to_format: str, box_vars: Mapping[str, Any]) -> str:
     formatter = string.Formatter()
     would_format = formatter.parse(to_format)
 
@@ -94,8 +94,8 @@ def _attempt_find_include(to_format: str, box_vars: box.Box):
 
 
 def format_keys(
-    val,
-    variables: Mapping,
+    val: TypeConvertToken | str | dict | list | tuple | Mapping | set,
+    variables: Mapping | Box,
     *,
     no_double_format: bool = True,
     dangerously_ignore_string_format_errors: bool = False,
@@ -103,7 +103,7 @@ def format_keys(
     """recursively format a dictionary with the given values
 
     Args:
-        val: Input dictionary to format
+        val: Input to format
         variables: Dictionary of keys to format it with
         no_double_format: Whether to use the 'inner formatted string' class to avoid double formatting
             This is required if passing something via pytest-xdist, such as markers:
@@ -131,7 +131,7 @@ def format_keys(
         # formatted = {key: format_keys(val[key], box_vars) for key in val}
         for key in val:
             formatted[key] = format_keys_(val[key], box_vars)
-    elif isinstance(val, (list, tuple)):
+    elif isinstance(val, (list, tuple, set)):
         formatted = [format_keys_(item, box_vars) for item in val]  # type: ignore
     elif isinstance(formatted, FormattedString):
         logger.debug("Already formatted %s, not double-formatting", formatted)
@@ -157,7 +157,7 @@ def format_keys(
     return formatted
 
 
-def recurse_access_key(data, query: str):
+def recurse_access_key(data: dict | list[str] | Mapping, query: str):
     """
     Search for something in the given data using the given query.
 
@@ -169,8 +169,8 @@ def recurse_access_key(data, query: str):
         'c'
 
     Args:
-        data (dict, list): Data to search in
-        query (str): Query to run
+        data: Data to search in
+        query: Query to run
 
     Returns:
         object: Whatever was found by the search
@@ -196,7 +196,7 @@ def recurse_access_key(data, query: str):
     return from_jmespath
 
 
-def _deprecated_recurse_access_key(current_val, keys):
+def _deprecated_recurse_access_key(current_val: dict, keys: list[str]):
     """Given a list of keys and a dictionary, recursively access the dicionary
     using the keys until we find the key its looking for
 
@@ -210,8 +210,8 @@ def _deprecated_recurse_access_key(current_val, keys):
         'c'
 
     Args:
-        current_val (dict): current dictionary we have recursed into
-        keys (list): list of str/int of subkeys
+        current_val: current dictionary we have recursed into
+        keys: list of str/int of subkeys
 
     Raises:
         IndexError: list index not found in data
@@ -225,7 +225,7 @@ def _deprecated_recurse_access_key(current_val, keys):
     if not keys:
         return current_val
     else:
-        current_key = keys.pop(0)
+        current_key: str | int = keys.pop(0)
 
         with contextlib.suppress(ValueError):
             current_key = int(current_key)
@@ -267,12 +267,15 @@ def deep_dict_merge(initial_dct: dict, merge_dct: Mapping) -> dict:
     return dct
 
 
-def check_expected_keys(expected, actual) -> None:
+_CanCheck = Sequence | Mapping | set | Collection
+
+
+def check_expected_keys(expected: _CanCheck, actual: _CanCheck) -> None:
     """Check that a set of expected keys is a superset of the actual keys
 
     Args:
-        expected (list, set, dict): keys we expect
-        actual (list, set, dict): keys we have got from the input
+        expected: keys we expect
+        actual: keys we have got from the input
 
     Raises:
         UnexpectedKeysError: If not actual <= expected
@@ -290,7 +293,7 @@ def check_expected_keys(expected, actual) -> None:
         raise exceptions.UnexpectedKeysError(msg)
 
 
-def yield_keyvals(block):
+def yield_keyvals(block: _CanCheck) -> Iterable[tuple[list[str], str, str]]:
     """Return indexes, keys and expected values for matching recursive keys
 
     Given a list or dict, return a 3-tuple of the 'split' key (key split on
@@ -322,10 +325,10 @@ def yield_keyvals(block):
         (['2'], '2', 'c')
 
     Args:
-        block (dict, list): input matches
+        block: input matches
 
     Yields:
-        (list, str, str): key split on dots, key, expected value
+        key split on dots, key, expected value
     """
     if isinstance(block, dict):
         for joined_key, expected_val in block.items():
@@ -337,9 +340,12 @@ def yield_keyvals(block):
             yield [sidx], sidx, val
 
 
+T = TypeVar("T", Mapping, set, Sequence, Collection)
+
+
 def check_keys_match_recursive(
-    expected_val: Any,
-    actual_val: Any,
+    expected_val: T,
+    actual_val: T,
     keys: list[str | int],
     strict: StrictSettingKinds = True,
 ) -> None:
@@ -444,7 +450,7 @@ def check_keys_match_recursive(
                 raise exceptions.KeyMismatchError(msg) from e
 
         if isinstance(expected_val, dict):
-            akeys = set(actual_val.keys())
+            akeys = set(actual_val.keys())  # type:ignore
             ekeys = set(expected_val.keys())
 
             if akeys != ekeys:
@@ -482,7 +488,10 @@ def check_keys_match_recursive(
             for key in to_recurse:
                 try:
                     check_keys_match_recursive(
-                        expected_val[key], actual_val[key], keys + [key], strict
+                        expected_val[key],
+                        actual_val[key],  # type:ignore
+                        keys + [key],
+                        strict,
                     )
                 except KeyError:
                     logger.debug(

@@ -82,7 +82,7 @@ def oneOf(validator: Draft7Validator, oneOf, instance, schema):
         all_errors.extend(errs)
     else:
         yield ValidationError(
-            "{!r} is not valid under any of the given schemas".format(instance),
+            f"{instance!r} is not valid under any of the given schemas",
             context=all_errors,
         )
 

@@ -2,8 +2,9 @@ import dataclasses
 import os.path
 import random
 import sys
+from collections.abc import Mapping
 from concurrent import futures
-from typing import Any, Mapping, Optional
+from typing import Any
 
 import grpc
 import pytest
@@ -71,7 +72,7 @@ class GRPCTestSpec:
     method: str
     req: Any
 
-    resp: Optional[Any] = None
+    resp: Any | None = None
     xfail: bool = False
     code: GRPCCode = grpc.StatusCode.OK.value[0]
     service: str = "tavern.tests.v1.DummyService"
