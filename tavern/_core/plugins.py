@@ -4,7 +4,6 @@ This is here mainly to make MQTT easier, this will almost defintiely change
 significantly if/when a proper plugin system is implemented!
 """
 import dataclasses
-import importlib.util
 import logging
 from functools import partial
 from typing import Any, List, Mapping, Optional
@@ -25,7 +24,6 @@ class PluginHelperBase:
 
 def plugin_load_error(mgr, entry_point, err):
     """Handle import errors"""
-    logger.exception("f")
     msg = "Error loading plugin {} - {}".format(entry_point, err)
     raise exceptions.PluginLoadError(msg) from err
 
@@ -49,13 +47,13 @@ def is_valid_reqresp_plugin(ext: Any) -> bool:
         "session_type",
         # RestRequest, MQTTRequest
         "request_type",
-        # request, mqtt_publish
+        # request, mqtt_publish, grpc_request
         "request_block_name",
         # Some function that returns a dict
         "get_expected_from_request",
         # MQTTResponse, RestResponse
         "verifier_type",
-        # response, mqtt_response
+        # response, mqtt_response, grpc_request
         "response_block_name",
         # dictionary with pykwalify schema
         "schema",
@@ -79,7 +77,7 @@ class _PluginCache:
             self.plugins = self._load_plugins(config)
             return self.plugins
 
-    def _load_plugins(self, test_block_config):
+    def _load_plugins(self, test_block_config: TestConfig) -> List[Any]:
         """Load plugins from the 'tavern' entrypoint namespace
 
         This can be a module or a class as long as it defines the right things
@@ -90,13 +88,13 @@ class _PluginCache:
             - Different plugin names
 
         Args:
-            test_block_config (tavern.pytesthook.config.TestConfig): available config for test
+            test_block_config: available config for test
 
         Raises:
-            exceptions.MissingSettingsError: Description
+            exceptions.MissingSettingsError: invalid entry points set
 
         Returns:
-            list: Loaded plugins, can be a class or a module
+            Loaded plugins, can be a class or a module
         """
 
         plugins = []
@@ -106,16 +104,9 @@ class _PluginCache:
                 ext.name == test_block_config.tavern_internal.backends[current_backend]
             )
 
-        backends = ["http"]
+        for backend in test_block_config.backends():
+            logger.debug("loading backend for %s", backend)
 
-        try:
-            importlib.util.find_spec("paho.mqtt")
-        except ModuleNotFoundError:
-            pass
-        else:
-            backends.append("mqtt")
-
-        for backend in backends:
             namespace = "tavern_{}".format(backend)
 
             manager = stevedore.EnabledExtensionManager(

@@ -13,4 +13,4 @@ tox --parallel -c tox.ini        \
   -e py3,py3mypy
 
 tox -c tox-integration.ini  \
-  -e py3-generic,py3-mqtt
+  -e py3-generic,py3-grpc,py3-mqtt

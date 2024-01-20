@@ -6,6 +6,7 @@ import jsonschema
 from jsonschema import Draft7Validator, ValidationError
 from jsonschema.validators import extend
 
+from tavern._core import exceptions
 from tavern._core.dict_util import recurse_access_key
 from tavern._core.exceptions import BadSchemaError
 from tavern._core.loader import (
@@ -17,11 +18,13 @@ from tavern._core.loader import (
     TypeConvertToken,
     TypeSentinel,
 )
+from tavern._core.pytest.config import has_module
 from tavern._core.schema.extensions import (
     check_parametrize_marks,
     check_strict_key,
     retry_variable,
     validate_file_spec,
+    validate_grpc_status_is_valid_or_list_of_names,
     validate_http_method,
     validate_json_with_ext,
     validate_request_json,
@@ -118,6 +121,15 @@ def verify_jsonschema(to_verify: Mapping, schema: Mapping) -> None:
 
     validator = CustomValidator(schema)
 
+    if "grpc" in to_verify and not has_module("grpc"):
+        raise exceptions.BadSchemaError(
+            "Tried to use grpc connection string, but grpc was not installed. Reinstall Tavern with the grpc extra like `pip install tavern[grpc]`"
+        )
+    if "mqtt" in to_verify and not has_module("paho.mqtt"):
+        raise exceptions.BadSchemaError(
+            "Tried to use mqtt connection string, but mqtt was not installed. Reinstall Tavern with the mqtt extra like `pip install tavern[mqtt]`"
+        )
+
     try:
         validator.validate(to_verify)
     except jsonschema.ValidationError as e:
@@ -178,6 +190,7 @@ def verify_jsonschema(to_verify: Mapping, schema: Mapping) -> None:
         "stages[*].request.data[]": validate_request_json,
         "stages[*].request.params[]": validate_request_json,
         "stages[*].request.headers[]": validate_request_json,
+        "stages[*].grpc_response.status[]": validate_grpc_status_is_valid_or_list_of_names,
         "stages[*].request.method[]": validate_http_method,
         "stages[*].request.save[]": validate_json_with_ext,
         "stages[*].request.files[]": validate_file_spec,

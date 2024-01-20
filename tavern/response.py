@@ -22,6 +22,7 @@ def indent_err_text(err: str) -> str:
 
 class BaseResponse:
     def __init__(self, name: str, expected, test_block_config: TestConfig) -> None:
+        # Stage name
         self.name = name
 
         # all errors in this response

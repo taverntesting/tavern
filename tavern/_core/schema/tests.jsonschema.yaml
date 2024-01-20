@@ -251,6 +251,50 @@ definitions:
         type: object
         description: Which objects to save from the response
 
+  grpc_request:
+    type: object
+    required:
+      - service
+    properties:
+      host:
+        type: string
+
+      service:
+        type: string
+
+      body:
+        type: object
+
+      json:
+        type: object
+
+      retain:
+        type: boolean
+
+  grpc_response:
+    type: object
+    properties:
+      status:
+        oneOf:
+          - type: string
+          - type: integer
+
+      details:
+        type: object
+
+      proto_body:
+        type: object
+
+      timeout:
+        type: number
+
+      verify_response_with:
+        oneOf:
+          - $ref: "#/definitions/verify_block"
+          - type: array
+            items:
+              $ref: "#/definitions/verify_block"
+
   http_response:
     type: object
     additionalProperties: false
@@ -375,6 +419,12 @@ definitions:
       response:
         $ref: "#/definitions/http_response"
 
+      grpc_request:
+        $ref: "#/definitions/grpc_request"
+
+      grpc_response:
+        $ref: "#/definitions/grpc_response"
+
 ###
 
 type: object
@@ -389,11 +439,18 @@ properties:
     description: Name of test
 
   _xfail:
-    type: string
-    enum:
-      - verify
-      - run
-      - finally
+    oneOf:
+      - type: string
+        enum:
+          - verify
+          - run
+          - finally
+      - type: object
+        properties:
+          verify:
+            type: string
+          run:
+            type: string
 
   marks:
     type: array
