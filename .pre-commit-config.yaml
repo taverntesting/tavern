@@ -5,7 +5,7 @@ repos:
       - id: pyupgrade
         args:
           - --py38-plus
-        files: "(tavern/.*|tests/.*)"
+        files: "tavern/.*"
   - repo: https://github.com/rhysd/actionlint
     rev: v1.6.26
     hooks:
