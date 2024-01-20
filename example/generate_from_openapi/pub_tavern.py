@@ -1,6 +1,7 @@
 import sys
 from urllib.parse import urlparse
 
+import yaml
 from coreapi import Client
 
 
@@ -38,6 +39,7 @@ def output_yaml(links, prefix=""):
 
         test_dict["stages"] = [inner_dict]
         # print(test_dict)
+        print(yaml.dump(test_dict, explicit_start=True, default_flow_style=False))
 
 
 def get_request_placeholders(fields):
@@ -63,6 +65,10 @@ def get_name(prefix, test_name, action, url):
 
 
 def display_help():
+    print("pub_tavern.py <url to openapi.json>")
+    print(
+        "eg: pub_tavern.py https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-simple.json"
+    )
     sys.exit(-1)
 
 
