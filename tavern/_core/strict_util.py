@@ -2,7 +2,7 @@ import dataclasses
 import enum
 import logging
 import re
-from typing import Optional, Tuple, Union
+from typing import Optional, Union
 
 from tavern._core import exceptions
 from tavern._core.strtobool import strtobool
@@ -135,7 +135,7 @@ class StrictLevel:
 StrictSettingKinds = Union[None, bool, StrictSetting, StrictOption]
 
 
-def extract_strict_setting(strict: StrictSettingKinds) -> Tuple[bool, StrictSetting]:
+def extract_strict_setting(strict: StrictSettingKinds) -> tuple[bool, StrictSetting]:
     """Takes either a bool, StrictOption, or a StrictSetting and return the bool representation
     and StrictSetting representation"""
 

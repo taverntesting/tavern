@@ -6,7 +6,7 @@ import json
 import logging
 import time
 from dataclasses import dataclass
-from typing import Mapping, Optional, Tuple, Union
+from typing import Mapping, Optional, Union
 
 from paho.mqtt.client import MQTTMessage
 
@@ -139,7 +139,7 @@ class MQTTResponse(BaseResponse):
 
     def _await_messages_on_topic(
         self, topic: str, expected: list[dict]
-    ) -> Tuple[list["_ReturnedMessage"], list[str]]:
+    ) -> tuple[list["_ReturnedMessage"], list[str]]:
         """
         Waits for the specific message
 
@@ -321,7 +321,7 @@ class _MessageVerifier:
         return False
 
     @staticmethod
-    def _get_payload_vals(expected: Mapping) -> Tuple[Optional[Union[str, dict]], bool]:
+    def _get_payload_vals(expected: Mapping) -> tuple[Optional[Union[str, dict]], bool]:
         """Gets the payload from the 'expected' block
 
         Returns:

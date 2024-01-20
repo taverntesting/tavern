@@ -1,7 +1,7 @@
 import dataclasses
 import logging
 import pathlib
-from typing import Iterable, MutableMapping, Optional, Tuple, Union
+from typing import Iterable, MutableMapping, Optional, Union
 
 import pytest
 import yaml
@@ -284,7 +284,7 @@ class YamlItem(pytest.Item):
         attach_text(str(error), name="error_output")
         return error
 
-    def reportinfo(self) -> Tuple[pathlib.Path, int, str]:
+    def reportinfo(self) -> tuple[pathlib.Path, int, str]:
         return (
             self.path,
             0,

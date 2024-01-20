@@ -2,7 +2,7 @@ import copy
 import functools
 import itertools
 import logging
-from typing import Any, Iterator, Mapping, Tuple
+from typing import Any, Iterator, Mapping
 
 import pytest
 import yaml
@@ -25,7 +25,7 @@ _format_without_inner = functools.partial(format_keys, no_double_format=False)
 
 def _format_test_marks(
     original_marks: list[Any], fmt_vars: Mapping, test_name: str
-) -> Tuple[list[MarkDecorator], Any]:
+) -> tuple[list[MarkDecorator], Any]:
     """Given the 'raw' marks from the test and any available format variables,
     generate new  marks for this test
 

@@ -2,7 +2,7 @@ import dataclasses
 import logging
 import typing
 import warnings
-from typing import Any, Mapping, Optional, Tuple
+from typing import Any, Mapping, Optional
 
 import grpc
 import grpc_reflection
@@ -69,7 +69,7 @@ class GRPCClient:
         self.timeout = int(_connect_args.get("timeout", 5))
         self.secure = bool(_connect_args.get("secure", False))
 
-        self._options: list[Tuple[str, Any]] = []
+        self._options: list[tuple[str, Any]] = []
         for key, value in _connect_args.pop("options", {}).items():
             if not key.startswith("grpc."):
                 raise exceptions.GRPCServiceException(
@@ -143,7 +143,7 @@ class GRPCClient:
 
     def get_method_types(
         self, full_method_name: str
-    ) -> Tuple[_ProtoMessageType, _ProtoMessageType]:
+    ) -> tuple[_ProtoMessageType, _ProtoMessageType]:
         """Uses the builtin symbol pool to try and find the input and output types for the given method
 
         Args:

@@ -3,7 +3,7 @@ import logging
 import mimetypes
 import os
 from contextlib import ExitStack
-from typing import Any, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -64,7 +64,7 @@ def _parse_filespec(filespec: Union[str, dict]) -> _Filespec:
 
 def guess_filespec(
     filespec: Union[str, dict], stack: ExitStack, test_block_config: TestConfig
-) -> Tuple[list, Optional[str]]:
+) -> tuple[list, Optional[str]]:
     """tries to guess the content type and encoding from a file.
 
     Args:
