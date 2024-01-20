@@ -1,0 +1,12 @@
+---
+version: '2'
+
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "127.0.0.1:50051:50051/tcp"
+      - "127.0.0.1:50052:50052/tcp"
+    stop_grace_period: "1s"

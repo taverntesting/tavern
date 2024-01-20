@@ -1,7 +1,7 @@
 import dataclasses
 import logging
 import pathlib
-from typing import Iterable, Optional, Tuple
+from typing import Iterable, MutableMapping, Optional, Tuple
 
 import pytest
 import yaml
@@ -39,8 +39,11 @@ class YamlItem(pytest.Item):
     _patched_yaml = False
 
     def __init__(
-        self, *, name: str, parent, spec, path: pathlib.Path, **kwargs
+        self, *, name: str, parent, spec: MutableMapping, path: pathlib.Path, **kwargs
     ) -> None:
+        if "grpc" in spec:
+            logger.warning("Tavern grpc support is in an experimental stage")
+
         super().__init__(name, parent, **kwargs)
         self.path = path
         self.spec = spec
@@ -63,7 +66,9 @@ class YamlItem(pytest.Item):
 
         # _get_direct_parametrize_args checks parametrize arguments in Python
         # functions, but we don't care about that in Tavern.
-        self.session._fixturemanager._get_direct_parametrize_args = lambda _: []  # type: ignore
+        self.session._fixturemanager._get_direct_parametrize_args = (  # type: ignore
+            lambda _: []  # type: ignore
+        )  # type: ignore
 
         fixtureinfo = self.session._fixturemanager.getfixtureinfo(
             self, self.obj, type(self), funcargs=False
@@ -225,7 +230,17 @@ class YamlItem(pytest.Item):
                 self.add_marker(pytest.mark.xfail, True)
             raise
         except exceptions.TavernException as e:
-            if xfail == "run" and not e.is_final:
+            if isinstance(xfail, dict):
+                if msg := xfail.get("run"):
+                    if msg not in str(e):
+                        raise Exception(
+                            f"error message did not match: expected '{msg}', got '{e!s}'"
+                        ) from e
+                    logger.info("xfailing test when running")
+                    self.add_marker(pytest.mark.xfail, True)
+                else:
+                    logger.warning("internal error checking 'xfail'")
+            elif xfail == "run" and not e.is_final:
                 logger.info("xfailing test when running")
                 self.add_marker(pytest.mark.xfail, True)
             elif xfail == "finally" and e.is_final:

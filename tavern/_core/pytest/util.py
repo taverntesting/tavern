@@ -35,6 +35,11 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
         default="paho-mqtt" if with_defaults else None,
     )
     parser_addoption(
+        "--tavern-grpc-backend",
+        help="Which grpc backend to use",
+        default="grpc" if with_defaults else None,
+    )
+    parser_addoption(
         "--tavern-strict",
         help="Default response matching strictness",
         default=None,
@@ -59,6 +64,12 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
         action="store",
         nargs=1,
     )
+    parser_addoption(
+        "--tavern-setup-init-logging",
+        help="Set up a simple logger for tavern initialisation. Only for internal use and debugging, may be removed in future with no warning.",
+        default=False,
+        action="store_true",
+    )
 
 
 def add_ini_options(parser: pytest.Parser) -> None:
@@ -77,6 +88,9 @@ def add_ini_options(parser: pytest.Parser) -> None:
     )
     parser.addini(
         "tavern-mqtt-backend", help="Which mqtt backend to use", default="paho-mqtt"
+    )
+    parser.addini(
+        "tavern-grpc-backend", help="Which grpc backend to use", default="grpc"
     )
     parser.addini(
         "tavern-strict",
@@ -101,6 +115,12 @@ def add_ini_options(parser: pytest.Parser) -> None:
         help="Regex to search for Tavern YAML test files",
         default=r".+\.tavern\.ya?ml$",
         type="args",
+    )
+    parser.addini(
+        "tavern-setup-init-logging",
+        help="Set up a simple logger for tavern initialisation. Only for internal use and debugging, may be removed in future with no warning.",
+        type="bool",
+        default=False,
     )
 
 
@@ -158,8 +178,7 @@ def _load_global_backends(pytest_config: pytest.Config) -> Dict[str, Any]:
     """Load which backend should be used"""
     backend_settings = {}
 
-    backends = ["http", "mqtt"]
-    for b in backends:
+    for b in TestConfig.backends():
         backend_settings[b] = get_option_generic(
             pytest_config, "tavern-{}-backend".format(b), None
         )

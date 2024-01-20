@@ -1,3 +1,4 @@
 include tavern/_core/schema/tests.jsonschema.yaml
 include tavern/_plugins/mqtt/jsonschema.yaml
+include tavern/_plugins/grpc/schema.yaml
 include LICENSE

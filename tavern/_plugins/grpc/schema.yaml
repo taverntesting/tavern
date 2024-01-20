@@ -1,0 +1,45 @@
+---
+name: GRPC schemas
+desc: pykwalify schemas for 'grpc' plugin block, grpc_request, and grpc_response
+
+initialisation:
+  grpc:
+    required: false
+    type: map
+    mapping:
+      connect:
+        required: true
+        type: map
+        mapping:
+          host:
+            required: false
+            type: any
+          port:
+            required: false
+            type: any
+            func: int_variable
+          keepalive:
+            required: false
+            type: float
+          timeout:
+            required: false
+            type: float
+          tls:
+            required: false
+            type: any
+            func: bool_variable
+
+      metadata:
+        required: false
+        type: any
+
+      proto:
+        required: false
+        type: map
+        mapping:
+          source:
+            required: false
+            type: str
+          module:
+            required: false
+            type: str

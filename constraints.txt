@@ -24,7 +24,9 @@ build==1.0.3
 bump2version==1.0.1
     # via tavern (pyproject.toml)
 cachetools==5.3.2
-    # via tox
+    # via
+    #   google-auth
+    #   tox
 certifi==2023.11.17
     # via requests
 cffi==1.16.0
@@ -67,13 +69,13 @@ docutils==0.20.1
     #   tavern (pyproject.toml)
 execnet==2.0.2
     # via pytest-xdist
-faker==22.2.0
+faker==22.4.0
     # via tavern (pyproject.toml)
 filelock==3.13.1
     # via
     #   tox
     #   virtualenv
-flask==3.0.0
+flask==3.0.1
     # via tavern (pyproject.toml)
 flit==3.9.0
     # via tavern (pyproject.toml)
@@ -81,6 +83,40 @@ flit-core==3.9.0
     # via flit
 fluent-logger==0.10.0
     # via tavern (pyproject.toml)
+google-api-core==2.15.0
+    # via google-api-python-client
+google-api-python-client==2.114.0
+    # via tavern (pyproject.toml)
+google-auth==2.26.2
+    # via
+    #   google-api-core
+    #   google-api-python-client
+    #   google-auth-httplib2
+google-auth-httplib2==0.2.0
+    # via google-api-python-client
+googleapis-common-protos==1.62.0
+    # via
+    #   google-api-core
+    #   grpcio-status
+grpc-interceptor==0.15.4
+    # via tavern (pyproject.toml)
+grpcio==1.60.0
+    # via
+    #   grpc-interceptor
+    #   grpcio-reflection
+    #   grpcio-status
+    #   grpcio-tools
+    #   tavern (pyproject.toml)
+grpcio-reflection==1.60.0
+    # via tavern (pyproject.toml)
+grpcio-status==1.60.0
+    # via tavern (pyproject.toml)
+grpcio-tools==1.60.0
+    # via tavern (pyproject.toml)
+httplib2==0.22.0
+    # via
+    #   google-api-python-client
+    #   google-auth-httplib2
 identify==2.5.33
     # via pre-commit
 idna==3.6
@@ -109,7 +145,7 @@ jinja2==3.1.3
     #   sphinx
 jmespath==1.0.1
     # via tavern (pyproject.toml)
-jsonschema==4.21.0
+jsonschema==4.21.1
     # via tavern (pyproject.toml)
 jsonschema-specifications==2023.12.1
     # via jsonschema
@@ -119,7 +155,7 @@ markdown==3.5.2
     # via sphinx-markdown-tables
 markdown-it-py==3.0.0
     # via rich
-markupsafe==2.1.3
+markupsafe==2.1.4
     # via
     #   jinja2
     #   werkzeug
@@ -165,8 +201,25 @@ pluggy==1.3.0
     #   tox
 pre-commit==3.6.0
     # via tavern (pyproject.toml)
+proto-plus==1.23.0
+    # via tavern (pyproject.toml)
+protobuf==4.25.2
+    # via
+    #   google-api-core
+    #   googleapis-common-protos
+    #   grpcio-reflection
+    #   grpcio-status
+    #   grpcio-tools
+    #   proto-plus
+    #   tavern (pyproject.toml)
 py==1.11.0
     # via tavern (pyproject.toml)
+pyasn1==0.5.1
+    # via
+    #   pyasn1-modules
+    #   rsa
+pyasn1-modules==0.3.0
+    # via google-auth
 pycparser==2.21
     # via cffi
 pygments==2.17.2
@@ -179,6 +232,8 @@ pyjwt==2.8.0
     # via tavern (pyproject.toml)
 pykwalify==1.8.0
     # via tavern (pyproject.toml)
+pyparsing==3.1.1
+    # via httplib2
 pyproject-api==1.6.1
     # via tox
 pyproject-hooks==1.0.0
@@ -214,6 +269,7 @@ referencing==0.32.1
 requests==2.31.0
     # via
     #   flit
+    #   google-api-core
     #   requests-toolbelt
     #   sphinx
     #   tavern (pyproject.toml)
@@ -228,11 +284,13 @@ rpds-py==0.17.1
     # via
     #   jsonschema
     #   referencing
+rsa==4.9
+    # via google-auth
 ruamel-yaml==0.18.5
     # via pykwalify
 ruamel-yaml-clib==0.2.8
     # via ruamel-yaml
-ruff==0.1.13
+ruff==0.1.14
     # via tavern (pyproject.toml)
 secretstorage==3.3.3
     # via keyring
@@ -280,6 +338,8 @@ types-setuptools==69.0.0.20240115
     # via tavern (pyproject.toml)
 typing-extensions==4.9.0
     # via mypy
+uritemplate==4.1.1
+    # via google-api-python-client
 urllib3==2.1.0
     # via
     #   requests
