@@ -23,7 +23,7 @@ keywords = ["testing", "pytest"]
 
 name = "tavern"
 description = "Simple testing of RESTful APIs"
-version = "3.0.0a1"
+version = "3.0.0a2"
 
 dependencies = [
     "PyYAML>=6.0.1,<7",
@@ -191,7 +191,7 @@ exclude = ["*_pb2.py", "*_pb2_grpc.py", "*_pb2.pyi"]
 docstring-code-format = true
 
 [tool.tbump.version]
-current = "3.0.0a1"
+current = "3.0.0a2"
 
 regex = '''
   (?P<major>\d+)
