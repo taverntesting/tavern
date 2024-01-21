@@ -60,8 +60,8 @@ def _format_test_marks(
 
     """
 
-    pytest_marks = []
-    formatted_marks = []
+    pytest_marks: List[Mark] = []
+    formatted_marks: List[Mapping] = []
 
     for m in original_marks:
         if isinstance(m, str):
@@ -107,7 +107,7 @@ def _generate_parametrized_test_items(
         tuple of the variables for the stage and the generated stage name
     """
     flattened_values = []
-    variables = {}
+    variables: Dict[str, Any] = {}
 
     # combination of keys and the values they correspond to
     for pair in zip(keys, vals_combination):
@@ -116,7 +116,7 @@ def _generate_parametrized_test_items(
         # very weird looking
         if isinstance(key, str):
             variables[key] = value
-            flattened_values += [value]
+            flattened_values.append(value)
         else:
             if not isinstance(value, (list, tuple)):
                 value = [value]
@@ -130,7 +130,7 @@ def _generate_parametrized_test_items(
 
             for subkey, subvalue in zip(key, value):
                 variables[subkey] = subvalue
-                flattened_values += [subvalue]
+                flattened_values.append(subvalue)
 
     def maybe_load_ext(v):
         key, value = v

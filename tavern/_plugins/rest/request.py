@@ -4,7 +4,7 @@ import logging
 import warnings
 from contextlib import ExitStack
 from itertools import filterfalse, tee
-from typing import ClassVar, List, Mapping, MutableMapping, Optional
+from typing import ClassVar, Dict, List, Mapping, Optional
 from urllib.parse import quote_plus
 
 import requests
@@ -24,7 +24,7 @@ from tavern.request import BaseRequest
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def get_request_args(rspec: MutableMapping, test_block_config: TestConfig) -> dict:
+def get_request_args(rspec: Dict, test_block_config: TestConfig) -> dict:
     """Format the test spec given values inthe global config
 
     Todo:

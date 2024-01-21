@@ -152,11 +152,11 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
     global_cfg_dict = load_global_config(all_paths)
 
+    variables: Dict = {}
     try:
         loaded_variables = global_cfg_dict["variables"]
     except KeyError:
         logger.debug("Nothing to format in global config files")
-        variables = {}
     else:
         tavern_box = get_tavern_box()
         variables = format_keys(loaded_variables, tavern_box)
@@ -195,7 +195,7 @@ def _load_global_strictness(pytest_config: pytest.Config) -> StrictLevel:
     return StrictLevel.from_options(options)
 
 
-def _load_global_follow_redirects(pytest_config: pytest.Config):
+def _load_global_follow_redirects(pytest_config: pytest.Config) -> bool:
     """Load the global 'follow redirects' setting"""
     return get_option_generic(pytest_config, "tavern-always-follow-redirects", False)
 

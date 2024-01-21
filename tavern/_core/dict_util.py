@@ -5,7 +5,7 @@ import os
 import re
 import string
 import typing
-from typing import Any, Dict, List, Mapping, Union
+from typing import Any, Dict, List, Mapping, Tuple, Union
 
 import box
 import jmespath
@@ -93,7 +93,7 @@ def _attempt_find_include(to_format: str, box_vars: box.Box):
     return formatter.convert_field(would_replace, conversion)  # type: ignore
 
 
-T = typing.TypeVar("T")
+T = typing.TypeVar("T", str, Dict, List, Tuple)
 
 
 def format_keys(
@@ -106,7 +106,7 @@ def format_keys(
     """recursively format a dictionary with the given values
 
     Args:
-        val: Input dictionary to format
+        val: Input thing to format
         variables: Dictionary of keys to format it with
         no_double_format: Whether to use the 'inner formatted string' class to avoid double formatting
             This is required if passing something via pytest-xdist, such as markers:
@@ -130,14 +130,9 @@ def format_keys(
         box_vars = variables
 
     if isinstance(val, dict):
-        formatted = {}
-        # formatted = {key: format_keys(val[key], box_vars) for key in val}
-        for key in val:
-            formatted[key] = format_keys_(val[key], box_vars)
-
-        return formatted
+        return {key: format_keys_(val[key], box_vars) for key in formatted}
     elif isinstance(val, (list, tuple)):
-        return [format_keys_(item, box_vars) for item in val]  # type: ignore
+        return [format_keys_(item, box_vars) for item in val]
     elif isinstance(formatted, FormattedString):
         logger.debug("Already formatted %s, not double-formatting", formatted)
     elif isinstance(val, str):

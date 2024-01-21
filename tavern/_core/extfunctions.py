@@ -93,7 +93,7 @@ def get_wrapped_response_function(ext: Mapping) -> Callable:
             extra_kwargs to pass
 
     Returns:
-        function: Wrapped function
+        Wrapped function
     """
 
     func, args, kwargs = _get_ext_values(ext)

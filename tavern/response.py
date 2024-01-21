@@ -24,8 +24,8 @@ def indent_err_text(err: str) -> str:
 @dataclasses.dataclass(repr=True)
 class BaseResponse:
     name: str
-    test_block_config: TestConfig
     expected: Any
+    test_block_config: TestConfig
 
     validate_functions: List[Any] = dataclasses.field(init=False, default_factory=list)
     response: Optional[Any] = None

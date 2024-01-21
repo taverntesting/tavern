@@ -1,7 +1,7 @@
 import logging
 import time
 from functools import wraps
-from typing import Callable, Mapping
+from typing import Callable, Mapping, Union
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -101,11 +101,13 @@ def retry(stage: Mapping, test_block_config: TestConfig) -> Callable:
         return retry_wrapper
 
 
-def maybe_format_max_retries(max_retries: int, test_block_config: TestConfig) -> int:
+def maybe_format_max_retries(
+    max_retries: Union[str, int], test_block_config: TestConfig
+) -> int:
     """Possibly handle max_retries validation"""
 
     # Probably a format variable, or just invalid (in which case it will fail further down)
-    max_retries = format_keys(max_retries, test_block_config.variables)
+    max_retries = format_keys(str(max_retries), test_block_config.variables)
 
     # Missing type token will mean that max_retries is still a string and will fail here
     # Could auto convert here as well, but keep it consistent and just fail

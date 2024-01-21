@@ -45,7 +45,7 @@ def prepare_yaml(val: Union[Dict, Set, List, Tuple, str]) -> Union[Dict, List, s
     return val
 
 
-def attach_stage_content(stage) -> None:
+def attach_stage_content(stage: Dict) -> None:
     first_line, last_line, _ = get_stage_lines(stage)
 
     code_lines = list(read_relevant_lines(stage, first_line, last_line))
