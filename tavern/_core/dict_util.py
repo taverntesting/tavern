@@ -117,8 +117,6 @@ def format_keys(
     Returns:
         recursively formatted values
     """
-    formatted = val
-
     format_keys_ = functools.partial(
         format_keys,
         dangerously_ignore_string_format_errors=dangerously_ignore_string_format_errors,
@@ -130,14 +128,15 @@ def format_keys(
         box_vars = variables
 
     if isinstance(val, dict):
-        return {key: format_keys_(val[key], box_vars) for key in formatted}
-    elif isinstance(val, (tuple)):
+        return {key: format_keys_(val[key], box_vars) for key in val}
+    elif isinstance(val, tuple):
         return tuple(format_keys_(item, box_vars) for item in val)
-    elif isinstance(val, (list)):
+    elif isinstance(val, list):
         return [format_keys_(item, box_vars) for item in val]
-    elif isinstance(formatted, FormattedString):
-        logger.debug("Already formatted %s, not double-formatting", formatted)
+    elif isinstance(val, FormattedString):
+        logger.debug("Already formatted %s, not double-formatting", val)
     elif isinstance(val, str):
+        formatted = val
         try:
             formatted = _check_and_format_values(val, box_vars)
         except exceptions.MissingFormatError:
@@ -146,17 +145,19 @@ def format_keys(
 
         if no_double_format:
             formatted = FormattedString(formatted)  # type: ignore
+
+        return formatted
     elif isinstance(val, TypeConvertToken):
         logger.debug("Got type convert token '%s'", val)
         if isinstance(val, ForceIncludeToken):
-            formatted = _attempt_find_include(val.value, box_vars)
+            return _attempt_find_include(val.value, box_vars)
         else:
             value = format_keys_(val.value, box_vars)
-            formatted = val.constructor(value)
+            return val.constructor(value)
     else:
-        logger.debug("Not formatting something of type '%s'", type(formatted))
+        logger.debug("Not formatting something of type '%s'", type(val))
 
-    return formatted
+    return val
 
 
 def recurse_access_key(data, query: str):

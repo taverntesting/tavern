@@ -384,7 +384,7 @@ class MQTTClient:
     def publish(
         self,
         topic: str,
-        payload: Any,
+        payload: Optional[Any] = None,
         qos: Optional[int] = None,
         retain: Optional[bool] = False,
     ) -> MQTTMessageInfo:
@@ -400,7 +400,7 @@ class MQTTClient:
             kwargs["retain"] = retain
         msg = self._client.publish(topic, payload, **kwargs)
 
-        if not msg.is_published:
+        if not msg.is_published():
             raise exceptions.MQTTError(
                 "err {:s}: {:s}".format(
                     _err_vals.get(msg.rc, "unknown"), paho.error_string(msg.rc)
