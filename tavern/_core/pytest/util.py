@@ -1,7 +1,7 @@
 import logging
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, Optional, TypeVar, Union
+from typing import Any, Dict, List, Optional, TypeVar, Union
 
 import pytest
 
@@ -200,7 +200,7 @@ def _load_global_follow_redirects(pytest_config: pytest.Config):
     return get_option_generic(pytest_config, "tavern-always-follow-redirects", False)
 
 
-T = TypeVar("T", bound=Optional[Union[str, list, list[Path], list[str], bool]])
+T = TypeVar("T", bound=Optional[Union[str, List, List[Path], List[str], bool]])
 
 
 def get_option_generic(

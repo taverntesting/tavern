@@ -6,7 +6,7 @@ import re
 import uuid
 from abc import abstractmethod
 from itertools import chain
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import pytest
 import yaml
@@ -432,7 +432,7 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):  # type:ignore
 yaml.dumper.Dumper.add_representer(ApproxScalar, ApproxSentinel.to_yaml)
 
 
-def load_single_document_yaml(filename: os.PathLike) -> dict:
+def load_single_document_yaml(filename: Union[str, os.PathLike]) -> dict:
     """
     Load a yaml file and expect only one document
 
