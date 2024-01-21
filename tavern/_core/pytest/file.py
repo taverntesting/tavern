@@ -2,11 +2,12 @@ import copy
 import functools
 import itertools
 import logging
-from typing import Dict, Iterator, List, Mapping
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Tuple, Union
 
 import pytest
 import yaml
 from box import Box
+from pytest import Mark
 
 from tavern._core import exceptions
 from tavern._core.dict_util import deep_dict_merge, format_keys, get_tavern_box
@@ -17,20 +18,24 @@ from tavern._core.schema.files import verify_tests
 from .item import YamlItem
 from .util import load_global_cfg
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
-_format_without_inner = functools.partial(format_keys, no_double_format=False)
+_format_without_inner: Callable[[Any, Mapping], Any] = functools.partial(
+    format_keys, no_double_format=False
+)
 
 
-def _format_test_marks(original_marks, fmt_vars, test_name):
+def _format_test_marks(
+    original_marks: Iterable[Union[str, dict]], fmt_vars: Mapping, test_name: str
+) -> Tuple[List[Mark], List[Mapping]]:
     """Given the 'raw' marks from the test and any available format variables,
     generate new  marks for this test
 
     Args:
-        original_marks (list): Raw string from test - should correspond to either a
+        original_marks: Raw string from test - should correspond to either a
             pytest builtin mark or a custom user mark
-        fmt_vars (dict): dictionary containing available format variables
-        test_name (str): Name of test (for error logging)
+        fmt_vars: dictionary containing available format variables
+        test_name: Name of test (for error logging)
 
     Returns:
         tuple: first element is normal pytest mark objects, second element is all
@@ -86,12 +91,17 @@ def _format_test_marks(original_marks, fmt_vars, test_name):
     return pytest_marks, formatted_marks
 
 
-def _generate_parametrized_test_items(keys: List, vals_combination):
+def _generate_parametrized_test_items(
+    keys: Iterable[Union[str, List, Tuple]], vals_combination: Iterable[Tuple[str, str]]
+) -> Tuple[Mapping[str, Any], str]:
     """Generate test name from given key(s)/value(s) combination
 
     Args:
         keys: list of keys to format name with
-        vals_combination (tuple(str)): this combination of values for the key
+        vals_combination this combination of values for the key
+
+    Returns:
+        tuple of the variables for the stage and the generated stage name
     """
     flattened_values = []
     variables = {}
@@ -205,7 +215,7 @@ def _get_parametrized_items(
             "Invalid match between numbers of keys and number of values in parametrize mark"
         ) from e
 
-    keys = [i["parametrize"]["key"] for i in parametrize_marks]
+    keys: List[str] = [i["parametrize"]["key"] for i in parametrize_marks]
 
     for vals_combination in combined:
         logger.debug("Generating test for %s/%s", keys, vals_combination)
@@ -346,7 +356,7 @@ class YamlFile(pytest.File):
 
         try:
             # Convert to a list so we can catch parser exceptions
-            all_tests = list(
+            all_tests: Iterable[dict] = list(
                 yaml.load_all(
                     self.path.open(encoding="utf-8"),
                     Loader=IncludeLoader,  # type:ignore

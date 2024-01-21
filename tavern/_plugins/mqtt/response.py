@@ -14,22 +14,26 @@ from paho.mqtt.client import MQTTMessage
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive
 from tavern._core.loader import ANYTHING
+from tavern._core.pytest.config import TestConfig
 from tavern._core.pytest.newhooks import call_hook
 from tavern._core.report import attach_yaml
 from tavern._core.strict_util import StrictSetting
 from tavern.response import BaseResponse
 
-from ..._core.pytest.config import TestConfig
 from .client import MQTTClient
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 _default_timeout = 1
 
 
 class MQTTResponse(BaseResponse):
     def __init__(
-        self, client: MQTTClient, name: str, expected, test_block_config: TestConfig
+        self,
+        client: MQTTClient,
+        name: str,
+        expected: TestConfig,
+        test_block_config: TestConfig,
     ) -> None:
         super().__init__(name, expected, test_block_config)
 
@@ -326,7 +330,7 @@ class _MessageVerifier:
         """Gets the payload from the 'expected' block
 
         Returns:
-            tuple: First element is the expected payload, second element is whether it's
+            First element is the expected payload, second element is whether it's
                 expected to be json or not
         """
         # TODO move this check to initialisation/schema checking

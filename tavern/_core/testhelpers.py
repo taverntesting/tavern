@@ -1,13 +1,13 @@
 import logging
 import time
 from functools import wraps
-from typing import Mapping
+from typing import Callable, Mapping
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
 from tavern._core.pytest.config import TestConfig
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def delay(stage: Mapping, when: str, variables: Mapping) -> None:
@@ -28,7 +28,7 @@ def delay(stage: Mapping, when: str, variables: Mapping) -> None:
         time.sleep(length)
 
 
-def retry(stage: Mapping, test_block_config: TestConfig):
+def retry(stage: Mapping, test_block_config: TestConfig) -> Callable:
     """Look for retry and try to repeat the stage `retry` times.
 
     Args:
@@ -101,7 +101,7 @@ def retry(stage: Mapping, test_block_config: TestConfig):
         return retry_wrapper
 
 
-def maybe_format_max_retries(max_retries, test_block_config: TestConfig) -> int:
+def maybe_format_max_retries(max_retries: int, test_block_config: TestConfig) -> int:
     """Possibly handle max_retries validation"""
 
     # Probably a format variable, or just invalid (in which case it will fail further down)

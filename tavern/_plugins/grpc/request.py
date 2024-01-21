@@ -3,7 +3,7 @@ import functools
 import json
 import logging
 import warnings
-from typing import Mapping, Union
+from typing import Dict, Mapping, Union
 
 import grpc
 from box import Box
@@ -14,10 +14,10 @@ from tavern._core.pytest.config import TestConfig
 from tavern._plugins.grpc.client import GRPCClient
 from tavern.request import BaseRequest
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
-def get_grpc_args(rspec, test_block_config):
+def get_grpc_args(rspec: Dict, test_block_config: TestConfig) -> Dict:
     """Format GRPC request args"""
 
     fspec = format_keys(rspec, test_block_config.variables)
@@ -51,7 +51,7 @@ class GRPCRequest(BaseRequest):
 
     def __init__(
         self, client: GRPCClient, request_spec: Mapping, test_block_config: TestConfig
-    ):
+    ) -> None:
         if not self._warned:
             warnings.warn(
                 "Tavern gRPC support is experimental and will be updated in a future release.",
@@ -87,5 +87,5 @@ class GRPCRequest(BaseRequest):
             raise exceptions.GRPCRequestException from e
 
     @property
-    def request_vars(self):
+    def request_vars(self) -> Box:
         return Box(self._original_request_vars)

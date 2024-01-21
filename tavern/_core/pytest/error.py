@@ -5,7 +5,7 @@ from io import StringIO
 from typing import List, Mapping, Optional
 
 import yaml
-from _pytest._code.code import FormattedExcinfo
+from _pytest._code.code import FormattedExcinfo, TerminalRepr
 from _pytest._io import TerminalWriter
 
 from tavern._core import exceptions
@@ -18,10 +18,10 @@ from tavern._core.stage_lines import (
     start_mark,
 )
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
-class ReprdError:
+class ReprdError(TerminalRepr):
     def __init__(self, exce, item) -> None:
         self.exce = exce
         self.item = item

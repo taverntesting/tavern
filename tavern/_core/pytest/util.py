@@ -1,6 +1,7 @@
 import logging
 from functools import lru_cache
-from typing import Any, Dict
+from pathlib import Path
+from typing import Any, Dict, Optional, TypeVar, Union
 
 import pytest
 
@@ -9,7 +10,7 @@ from tavern._core.general import load_global_config
 from tavern._core.pytest.config import TavernInternalConfig, TestConfig
 from tavern._core.strict_util import StrictLevel
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
@@ -199,7 +200,14 @@ def _load_global_follow_redirects(pytest_config: pytest.Config):
     return get_option_generic(pytest_config, "tavern-always-follow-redirects", False)
 
 
-def get_option_generic(pytest_config: pytest.Config, flag: str, default):
+T = TypeVar("T", bound=Optional[Union[str, list, list[Path], list[str], bool]])
+
+
+def get_option_generic(
+    pytest_config: pytest.Config,
+    flag: str,
+    default: T,
+) -> T:
     """Get a configuration option or return the default
 
     Priority order is cmdline, then ini, then default"""

@@ -21,7 +21,7 @@ from tavern._core.report import attach_yaml
 from tavern._plugins.rest.files import get_file_arguments, guess_filespec
 from tavern.request import BaseRequest
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def get_request_args(rspec: MutableMapping, test_block_config: TestConfig) -> dict:

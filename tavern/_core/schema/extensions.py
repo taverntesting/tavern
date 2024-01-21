@@ -132,7 +132,9 @@ def check_usefixtures(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_grpc_status_is_valid_or_list_of_names(value: "GRPCCode", rule_obj, path):
+def validate_grpc_status_is_valid_or_list_of_names(
+    value: "GRPCCode", rule_obj, path
+) -> bool:
     """Validate GRPC statuses https://github.com/grpc/grpc/blob/master/doc/statuscodes.md"""
     # pylint: disable=unused-argument
     err_msg = (

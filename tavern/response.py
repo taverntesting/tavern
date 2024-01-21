@@ -12,7 +12,7 @@ from tavern._core.extfunctions import get_wrapped_response_function
 from tavern._core.pytest.config import TestConfig
 from tavern._core.strict_util import StrictOption
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def indent_err_text(err: str) -> str:
@@ -31,7 +31,7 @@ class BaseResponse:
     response: Optional[Any] = None
     errors: List[str] = dataclasses.field(init=False, default_factory=list)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         self._check_for_validate_functions(self.expected)
 
     def _str_errors(self) -> str:

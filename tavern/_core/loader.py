@@ -10,8 +10,10 @@ from typing import List, Optional
 
 import pytest
 import yaml
+from _pytest.python_api import ApproxBase
 from yaml.composer import Composer
 from yaml.constructor import SafeConstructor
+from yaml.nodes import Node, ScalarNode
 from yaml.parser import Parser
 from yaml.reader import Reader
 from yaml.resolver import Resolver
@@ -21,17 +23,17 @@ from tavern._core import exceptions
 from tavern._core.exceptions import BadSchemaError
 from tavern._core.strtobool import strtobool
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
-def makeuuid(loader, node):
+def makeuuid(loader, node) -> str:
     return str(uuid.uuid4())
 
 
 class RememberComposer(Composer):
     """A composer that doesn't forget anchors across documents"""
 
-    def compose_document(self):
+    def compose_document(self) -> Optional[Node]:
         # Drop the DOCUMENT-START event.
         self.get_event()
 
@@ -140,7 +142,7 @@ def _get_include_dirs(loader):
     return chain(loader_list, IncludeLoader.env_path_list)
 
 
-def find_include(loader, node):
+def find_include(loader, node) -> str:
     """Locate an include file and return the abs path."""
     for directory in _get_include_dirs(loader):
         filename = os.path.abspath(
@@ -190,14 +192,14 @@ class TypeSentinel(yaml.YAMLObject):
         raise NotImplementedError
 
     @classmethod
-    def from_yaml(cls, loader, node):
+    def from_yaml(cls, loader, node) -> "TypeSentinel":
         return cls()
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<Tavern YAML sentinel for {self.constructor}>"
 
     @classmethod
-    def to_yaml(cls, dumper, data):
+    def to_yaml(cls, dumper, data) -> ScalarNode:
         node = yaml.nodes.ScalarNode(cls.yaml_tag, "", style=cls.yaml_flow_style)
         return node
 
@@ -242,7 +244,7 @@ class RegexSentinel(TypeSentinel):
     constructor = str
     compiled: re.Pattern
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"<Tavern Regex sentinel for {self.compiled.pattern}>"
 
     @property
@@ -254,28 +256,28 @@ class RegexSentinel(TypeSentinel):
         raise NotImplementedError
 
     @classmethod
-    def from_yaml(cls, loader, node):
+    def from_yaml(cls, loader, node) -> "RegexSentinel":
         return cls(re.compile(node.value))
 
 
 class _RegexMatchSentinel(RegexSentinel):
     yaml_tag = "!re_match"
 
-    def passes(self, string):
+    def passes(self, string) -> bool:
         return self.compiled.match(string) is not None
 
 
 class _RegexFullMatchSentinel(RegexSentinel):
     yaml_tag = "!re_fullmatch"
 
-    def passes(self, string):
+    def passes(self, string) -> bool:
         return self.compiled.fullmatch(string) is not None
 
 
 class _RegexSearchSentinel(RegexSentinel):
     yaml_tag = "!re_search"
 
-    def passes(self, string):
+    def passes(self, string) -> bool:
         return self.compiled.search(string) is not None
 
 
@@ -321,7 +323,7 @@ class TypeConvertToken(yaml.YAMLObject):
     def constructor(_):
         raise NotImplementedError
 
-    def __init__(self, value):
+    def __init__(self, value) -> None:
         self.value = value
 
     @classmethod
@@ -338,7 +340,7 @@ class TypeConvertToken(yaml.YAMLObject):
             return converted
 
     @classmethod
-    def to_yaml(cls, dumper, data):
+    def to_yaml(cls, dumper, data) -> ScalarNode:
         return yaml.nodes.ScalarNode(
             cls.yaml_tag, data.value, style=cls.yaml_flow_style
         )
@@ -357,7 +359,7 @@ class FloatToken(TypeConvertToken):
 class StrToBoolConstructor:
     """Using `bool` as a constructor directly will evaluate all strings to `True`."""
 
-    def __new__(cls, s):
+    def __new__(cls, s: str) -> bool:
         return strtobool(s)
 
 
@@ -407,7 +409,7 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):  # type:ignore
     yaml_loader = IncludeLoader
 
     @classmethod
-    def from_yaml(cls, loader, node):
+    def from_yaml(cls, loader, node) -> ApproxBase:
         try:
             val = float(node.value)
         except (ValueError, TypeError) as e:
@@ -420,7 +422,7 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):  # type:ignore
             return pytest.approx(val)
 
     @classmethod
-    def to_yaml(cls, dumper, data):
+    def to_yaml(cls, dumper, data) -> ScalarNode:
         return yaml.nodes.ScalarNode(
             "!approx", str(data.expected), style=cls.yaml_flow_style
         )

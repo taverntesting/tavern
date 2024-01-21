@@ -8,6 +8,7 @@ from queue import Empty, Full, Queue
 from typing import Any, Dict, List, Mapping, MutableMapping, Optional
 
 import paho.mqtt.client as paho
+from paho.mqtt.client import MQTTMessageInfo
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys
@@ -33,7 +34,7 @@ _err_vals = {
     15: "MQTT_ERR_QUEUE_SIZE",
 }
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass
@@ -88,7 +89,7 @@ def _handle_ssl_context_args(
 
 def _check_and_update_common_tls_args(
     tls_args: MutableMapping, check_file_keys: List[str]
-):
+) -> None:
     """Checks common args between ssl/tls args"""
 
     # could be moved to schema validation stage
@@ -349,7 +350,9 @@ class MQTTClient:
     def _on_socket_close(client, userdata, socket) -> None:
         logger.debug("MQTT socket closed")
 
-    def message_received(self, topic: str, timeout: int = 1):
+    def message_received(
+        self, topic: str, timeout: int = 1
+    ) -> Optional[paho.MQTTMessage]:
         """Check that a message is in the message queue
 
         Args:
@@ -358,7 +361,7 @@ class MQTTClient:
                 was not received.
 
         Returns:
-            paho.MQTTMessage: whether the message was received within the timeout
+            the message, if one was received, otherwise None
 
         Todo:
             Allow regexes for topic names? Better validation for mqtt payloads
@@ -384,7 +387,7 @@ class MQTTClient:
         payload: Any,
         qos: Optional[int],
         retain: Optional[bool] = False,
-    ):
+    ) -> MQTTMessageInfo:
         """publish message using paho library"""
         self._wait_for_subscriptions()
 

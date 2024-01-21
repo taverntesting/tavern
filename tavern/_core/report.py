@@ -1,5 +1,6 @@
 import logging
 from textwrap import dedent
+from typing import Dict, Iterable, TypeVar, Union
 
 import yaml
 
@@ -24,10 +25,13 @@ except ImportError:
 from tavern._core.formatted_str import FormattedString
 from tavern._core.stage_lines import get_stage_lines, read_relevant_lines
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
-def prepare_yaml(val):
+T = TypeVar("T", bound=Union[Dict, Iterable, str])
+
+
+def prepare_yaml(val: T) -> T:
     """Sanitises the formatted string into a format safe for dumping"""
     formatted = val
 
@@ -54,7 +58,7 @@ def attach_stage_content(stage) -> None:
     attach_text(joined, "stage_yaml", yaml_type)
 
 
-def attach_yaml(payload, name):
+def attach_yaml(payload, name) -> None:
     prepared = prepare_yaml(payload)
     dumped = yaml.safe_dump(prepared)
     return attach_text(dumped, name, yaml_type)

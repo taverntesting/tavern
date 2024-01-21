@@ -16,7 +16,7 @@ from tavern._core.pytest.config import TestConfig
 from tavern.request import BaseRequest
 from tavern.response import BaseResponse
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PluginHelperBase:

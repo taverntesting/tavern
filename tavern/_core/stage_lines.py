@@ -1,9 +1,20 @@
 import logging
+from typing import Optional, Protocol
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
-def get_stage_lines(stage):
+class EmptyBlock:
+    line: int = 0
+    name: Optional[str] = None
+
+
+class _WithMarks(Protocol):
+    start_mark: EmptyBlock
+    end_mark: EmptyBlock
+
+
+def get_stage_lines(stage: _WithMarks):
     first_line = start_mark(stage).line - 1
     last_line = end_mark(stage).line
     line_start = first_line + 1
@@ -11,7 +22,7 @@ def get_stage_lines(stage):
     return first_line, last_line, line_start
 
 
-def read_relevant_lines(yaml_block, first_line, last_line):
+def read_relevant_lines(yaml_block: _WithMarks, first_line: int, last_line: int):
     """Get lines between start and end mark"""
 
     filename = get_stage_filename(yaml_block)
@@ -26,23 +37,18 @@ def read_relevant_lines(yaml_block, first_line, last_line):
                 yield line.split("#", 1)[0].rstrip()
 
 
-def get_stage_filename(yaml_block):
+def get_stage_filename(yaml_block: _WithMarks) -> str:
     return start_mark(yaml_block).name
 
 
-class EmptyBlock:
-    line = 0
-    name = None
-
-
-def start_mark(yaml_block):
+def start_mark(yaml_block: _WithMarks):
     try:
         return yaml_block.start_mark
     except AttributeError:
         return EmptyBlock
 
 
-def end_mark(yaml_block):
+def end_mark(yaml_block: _WithMarks):
     try:
         return yaml_block.end_mark
     except AttributeError:

@@ -1,4 +1,5 @@
 import logging
+from typing import Mapping
 
 import requests
 
@@ -6,10 +7,11 @@ from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
 from tavern._core.plugins import PluginHelperBase
 
+from ..._core.pytest.config import TestConfig
 from .request import RestRequest
 from .response import RestResponse
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class TavernRestPlugin(PluginHelperBase):
@@ -19,7 +21,9 @@ class TavernRestPlugin(PluginHelperBase):
     request_block_name = "request"
 
     @staticmethod
-    def get_expected_from_request(response_block, test_block_config, session):
+    def get_expected_from_request(
+        response_block: Mapping, test_block_config: TestConfig, session
+    ):
         if response_block is None:
             raise exceptions.MissingSettingsError(
                 "no response block specified for HTTP test stage"

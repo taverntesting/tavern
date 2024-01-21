@@ -4,6 +4,7 @@ import logging
 import os
 import re
 import string
+import typing
 from typing import Any, Dict, List, Mapping, Union
 
 import box
@@ -22,7 +23,7 @@ from tavern._core.loader import (
 from .formatted_str import FormattedString
 from .strict_util import StrictSetting, StrictSettingKinds, extract_strict_setting
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def _check_and_format_values(to_format, box_vars: Mapping[str, Any]) -> str:
@@ -92,13 +93,16 @@ def _attempt_find_include(to_format: str, box_vars: box.Box):
     return formatter.convert_field(would_replace, conversion)  # type: ignore
 
 
+T = typing.TypeVar("T")
+
+
 def format_keys(
-    val,
+    val: T,
     variables: Mapping,
     *,
     no_double_format: bool = True,
     dangerously_ignore_string_format_errors: bool = False,
-):
+) -> T:
     """recursively format a dictionary with the given values
 
     Args:
