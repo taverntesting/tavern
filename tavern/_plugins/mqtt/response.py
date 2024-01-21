@@ -110,7 +110,7 @@ class MQTTResponse(BaseResponse):
                 failures=self.errors,
             )
 
-        saved = {}
+        saved: Dict = {}
 
         for msg in correct_messages:
             # Check saving things from the payload and from json
