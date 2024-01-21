@@ -35,13 +35,13 @@ class RememberComposer(Composer):
 
     def compose_document(self) -> Optional[Node]:
         # Drop the DOCUMENT-START event.
-        self.get_event()
+        self.get_event()  # type:ignore
 
         # Compose the root node.
-        node = self.compose_node(None, None)
+        node = self.compose_node(None, None)  # type:ignore
 
         # Drop the DOCUMENT-END event.
-        self.get_event()
+        self.get_event()  # type:ignore
 
         # If we don't drop the anchors here, then we can keep anchors across
         # documents.
@@ -359,7 +359,7 @@ class FloatToken(TypeConvertToken):
 class StrToBoolConstructor:
     """Using `bool` as a constructor directly will evaluate all strings to `True`."""
 
-    def __new__(cls, s: str) -> bool:
+    def __new__(cls, s: str) -> bool:  # type:ignore
         return strtobool(s)
 
 

@@ -16,7 +16,7 @@ class _WithMarks(Protocol):
     end_mark: EmptyBlock
 
 
-PyYamlDict = Union[Dict, _WithMarks]
+PyYamlDict = Union[_WithMarks, Dict]
 
 
 def get_stage_lines(stage: PyYamlDict):
@@ -48,13 +48,13 @@ def get_stage_filename(yaml_block: PyYamlDict) -> Optional[str]:
 
 def start_mark(yaml_block: PyYamlDict) -> Union[Type[EmptyBlock], EmptyBlock]:
     try:
-        return yaml_block.start_mark
+        return yaml_block.start_mark  # type:ignore
     except AttributeError:
         return EmptyBlock
 
 
 def end_mark(yaml_block: PyYamlDict) -> Union[Type[EmptyBlock], EmptyBlock]:
     try:
-        return yaml_block.end_mark
+        return yaml_block.end_mark  # type:ignore
     except AttributeError:
         return EmptyBlock

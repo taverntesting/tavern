@@ -177,20 +177,16 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
 
 def _load_global_backends(pytest_config: pytest.Config) -> Dict[str, Any]:
     """Load which backend should be used"""
-    backend_settings = {}
-
-    for b in TestConfig.backends():
-        backend_settings[b] = get_option_generic(
-            pytest_config, f"tavern-{b}-backend", None
-        )
-
-    return backend_settings
+    return {
+        b: get_option_generic(pytest_config, f"tavern-{b}-backend", None)
+        for b in TestConfig.backends()
+    }
 
 
 def _load_global_strictness(pytest_config: pytest.Config) -> StrictLevel:
     """Load the global 'strictness' setting"""
 
-    options = get_option_generic(pytest_config, "tavern-strict", [])
+    options: List = get_option_generic(pytest_config, "tavern-strict", [])
 
     return StrictLevel.from_options(options)
 

@@ -200,7 +200,7 @@ class BaseResponse:
         except Exception as e:
             self._adderr(
                 "Error calling save function '%s':\n%s",
-                wrapped.func,
+                wrapped.func,  # type:ignore
                 indent_err_text(traceback.format_exc()),
                 e=e,
             )

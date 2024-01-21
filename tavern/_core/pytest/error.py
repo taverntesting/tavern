@@ -2,7 +2,7 @@ import json
 import logging
 import re
 from io import StringIO
-from typing import List, Mapping, Optional
+from typing import Dict, List, Optional
 
 import yaml
 from _pytest._code.code import FormattedExcinfo, TerminalRepr
@@ -137,7 +137,7 @@ class ReprdError(TerminalRepr):
             else:
                 tw.line(line, white=True)
 
-    def _print_formatted_stage(self, tw: TerminalWriter, stage: Mapping) -> None:
+    def _print_formatted_stage(self, tw: TerminalWriter, stage: Dict) -> None:
         """Print the 'formatted' stage that Tavern will actually use to send the
         request/process the response
 
@@ -155,10 +155,10 @@ class ReprdError(TerminalRepr):
         )
 
         # Replace formatted strings with strings for dumping
-        formatted_stage = prepare_yaml(formatted_stage)
+        prepared_stage = prepare_yaml(formatted_stage)
 
         # Dump formatted stage to YAML format
-        formatted_lines = yaml.dump(formatted_stage, default_flow_style=False).split(
+        formatted_lines = yaml.dump(prepared_stage, default_flow_style=False).split(
             "\n"
         )
 

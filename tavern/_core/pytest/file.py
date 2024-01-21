@@ -94,6 +94,40 @@ def _format_test_marks(
     return pytest_marks, formatted_marks
 
 
+def _maybe_load_ext(pair):
+    """Try to load ext values"""
+    key, value = pair
+
+    if is_ext_function(value):
+        # If it is an ext function, load the new (or supplemental) value[s]
+        ext = value.pop("$ext")
+        f = get_wrapped_create_function(ext)
+        new_value = f()
+
+        if len(value) == 0:
+            # Use only this new value
+            return key, new_value
+        elif isinstance(new_value, dict):
+            # Merge with some existing data. At this point 'value' is known to be a dict.
+            return key, deep_dict_merge(value, f())
+        else:
+            # For example, if it's defined like
+            #
+            # - testkey: testval
+            #   $ext:
+            #     function: mod:func
+            #
+            # and 'mod:func' returns a string, it's impossible to 'merge' with the existing data.
+            logger.error("Values still in 'val': %s", value)
+            raise exceptions.BadSchemaError(
+                "There were extra key/value pairs in the 'val' for this parametrize mark, but the ext function {} returned '{}' (of type {}) that was not a dictionary. It is impossible to merge these values.".format(
+                    ext, new_value, type(new_value)
+                )
+            )
+
+    return key, value
+
+
 def _generate_parametrized_test_items(
     keys: Iterable[Union[str, List, Tuple]], vals_combination: Iterable[Tuple[str, str]]
 ) -> Tuple[Mapping[str, Any], str]:
@@ -106,7 +140,7 @@ def _generate_parametrized_test_items(
     Returns:
         tuple of the variables for the stage and the generated stage name
     """
-    flattened_values = []
+    flattened_values: List[Iterable[str]] = []
     variables: Dict[str, Any] = {}
 
     # combination of keys and the values they correspond to
@@ -124,7 +158,7 @@ def _generate_parametrized_test_items(
             if len(value) != len(key):
                 raise exceptions.BadSchemaError(
                     "Invalid match between numbers of keys and number of values in parametrize mark ({} keys, {} values)".format(
-                        (key), (value)
+                        key, value
                     )
                 )
 
@@ -132,39 +166,7 @@ def _generate_parametrized_test_items(
                 variables[subkey] = subvalue
                 flattened_values.append(subvalue)
 
-    def maybe_load_ext(v):
-        key, value = v
-
-        if is_ext_function(value):
-            # If it is an ext function, load the new (or supplemental) value[s]
-            ext = value.pop("$ext")
-            f = get_wrapped_create_function(ext)
-            new_value = f()
-
-            if len(value) == 0:
-                # Use only this new value
-                return key, new_value
-            elif isinstance(new_value, dict):
-                # Merge with some existing data. At this point 'value' is known to be a dict.
-                return key, deep_dict_merge(value, f())
-            else:
-                # For example, if it's defined like
-                #
-                # - testkey: testval
-                #   $ext:
-                #     function: mod:func
-                #
-                # and 'mod:func' returns a string, it's impossible to 'merge' with the existing data.
-                logger.error("Values still in 'val': %s", value)
-                raise exceptions.BadSchemaError(
-                    "There were extra key/value pairs in the 'val' for this parametrize mark, but the ext function {} returned '{}' (of type {}) that was not a dictionary. It is impossible to merge these values.".format(
-                        ext, new_value, type(new_value)
-                    )
-                )
-
-        return key, value
-
-    variables = dict(map(maybe_load_ext, variables.items()))
+    variables = dict(map(_maybe_load_ext, variables.items()))
 
     logger.debug("Variables for this combination: %s", variables)
     logger.debug("Values for this combination: %s", flattened_values)

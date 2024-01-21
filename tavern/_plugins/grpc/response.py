@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING, Any, List, Mapping, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, TypedDict, Union
 
 import proto.message
 from google.protobuf import json_format
@@ -92,7 +92,7 @@ class GRPCResponse(BaseResponse):
         logger.debug(f"grpc details: {grpc_response.details()}")
 
         # Get any keys to save
-        saved = {}
+        saved: Dict[str, Any] = {}
         verify_status = [StatusCode.OK.name]
         if status := self.expected.get("status", None):
             verify_status = _to_grpc_name(status)  # type: ignore

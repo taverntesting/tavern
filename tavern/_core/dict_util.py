@@ -131,7 +131,9 @@ def format_keys(
 
     if isinstance(val, dict):
         return {key: format_keys_(val[key], box_vars) for key in formatted}
-    elif isinstance(val, (list, tuple)):
+    elif isinstance(val, (tuple)):
+        return tuple(format_keys_(item, box_vars) for item in val)
+    elif isinstance(val, (list)):
         return [format_keys_(item, box_vars) for item in val]
     elif isinstance(formatted, FormattedString):
         logger.debug("Already formatted %s, not double-formatting", formatted)

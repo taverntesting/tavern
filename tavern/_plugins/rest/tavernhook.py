@@ -1,5 +1,5 @@
 import logging
-from typing import Mapping
+from typing import Dict
 
 import requests
 
@@ -22,7 +22,7 @@ class TavernRestPlugin(PluginHelperBase):
 
     @staticmethod
     def get_expected_from_request(
-        response_block: Mapping, test_block_config: TestConfig, session
+        response_block: Dict, test_block_config: TestConfig, session
     ):
         if response_block is None:
             raise exceptions.MissingSettingsError(

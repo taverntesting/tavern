@@ -177,7 +177,7 @@ class RestResponse(BaseResponse):
         self._maybe_run_validate_functions(response)
 
         # Get any keys to save
-        saved = {}
+        saved: Dict = {}
 
         saved.update(self.maybe_get_save_values_from_save_block("json", body))
         saved.update(
