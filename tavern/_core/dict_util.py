@@ -134,8 +134,10 @@ def format_keys(
         # formatted = {key: format_keys(val[key], box_vars) for key in val}
         for key in val:
             formatted[key] = format_keys_(val[key], box_vars)
+
+        return formatted
     elif isinstance(val, (list, tuple)):
-        formatted = [format_keys_(item, box_vars) for item in val]  # type: ignore
+        return [format_keys_(item, box_vars) for item in val]  # type: ignore
     elif isinstance(formatted, FormattedString):
         logger.debug("Already formatted %s, not double-formatting", formatted)
     elif isinstance(val, str):

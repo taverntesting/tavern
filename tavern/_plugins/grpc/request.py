@@ -3,7 +3,7 @@ import functools
 import json
 import logging
 import warnings
-from typing import Dict, Mapping, Union
+from typing import Dict, Union
 
 import grpc
 from box import Box
@@ -50,7 +50,7 @@ class GRPCRequest(BaseRequest):
     _warned = False
 
     def __init__(
-        self, client: GRPCClient, request_spec: Mapping, test_block_config: TestConfig
+        self, client: GRPCClient, request_spec: Dict, test_block_config: TestConfig
     ) -> None:
         if not self._warned:
             warnings.warn(

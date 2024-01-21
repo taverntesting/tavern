@@ -1,6 +1,6 @@
 import logging
 from textwrap import dedent
-from typing import Dict, Iterable, TypeVar, Union
+from typing import Dict, List, Set, Tuple, Union
 
 import yaml
 
@@ -28,13 +28,8 @@ from tavern._core.stage_lines import get_stage_lines, read_relevant_lines
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-T = TypeVar("T", bound=Union[Dict, Iterable, str])
-
-
-def prepare_yaml(val: T) -> T:
+def prepare_yaml(val: Union[Dict, Set, List, Tuple, str]) -> Union[Dict, List, str]:
     """Sanitises the formatted string into a format safe for dumping"""
-    formatted = val
-
     if isinstance(val, dict):
         formatted = {}
         # formatted = {key: format_keys(val[key], box_vars) for key in val}
@@ -43,11 +38,11 @@ def prepare_yaml(val: T) -> T:
                 key = str(key)
             formatted[key] = prepare_yaml(val[key])
     elif isinstance(val, (list, tuple, set)):
-        formatted = [prepare_yaml(item) for item in val]
-    elif isinstance(formatted, FormattedString):
-        return str(formatted)
+        return [prepare_yaml(item) for item in val]
+    elif isinstance(val, FormattedString):
+        return str(val)
 
-    return formatted
+    return val
 
 
 def attach_stage_content(stage) -> None:

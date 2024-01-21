@@ -2,6 +2,7 @@ import copy
 import functools
 import itertools
 import logging
+import typing
 from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Tuple, Union
 
 import pytest
@@ -20,7 +21,9 @@ from .util import load_global_cfg
 
 logger: logging.Logger = logging.getLogger(__name__)
 
-_format_without_inner: Callable[[Any, Mapping], Any] = functools.partial(
+T = typing.TypeVar("T")
+
+_format_without_inner: Callable[[T, Mapping], T] = functools.partial(
     format_keys, no_double_format=False
 )
 
