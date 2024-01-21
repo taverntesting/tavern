@@ -71,7 +71,7 @@ class TestClient:
             with fake_client as x:
                 assert fake_client == x
 
-    def test_assert_message_published(self, fake_client):
+    def test_assert_message_published(self, fake_client: MQTTClient):
         """If it couldn't immediately publish the message, error out"""
 
         class FakeMessage:

@@ -31,12 +31,14 @@ logger: logging.Logger = logging.getLogger(__name__)
 def prepare_yaml(val: Union[Dict, Set, List, Tuple, str]) -> Union[Dict, List, str]:
     """Sanitises the formatted string into a format safe for dumping"""
     if isinstance(val, dict):
-        formatted = {}
+        prepared = {}
         # formatted = {key: format_keys(val[key], box_vars) for key in val}
         for key in val:
             if isinstance(key, FormattedString):
                 key = str(key)
-            formatted[key] = prepare_yaml(val[key])
+            prepared[key] = prepare_yaml(val[key])
+
+        return prepared
     elif isinstance(val, (list, tuple, set)):
         return [prepare_yaml(item) for item in val]
     elif isinstance(val, FormattedString):
@@ -53,15 +55,15 @@ def attach_stage_content(stage: Dict) -> None:
     attach_text(joined, "stage_yaml", yaml_type)
 
 
-def attach_yaml(payload, name) -> None:
+def attach_yaml(payload, name: str) -> None:
     prepared = prepare_yaml(payload)
     dumped = yaml.safe_dump(prepared)
     return attach_text(dumped, name, yaml_type)
 
 
-def attach_text(payload, name, attachment_type=None) -> None:
+def attach_text(payload, name: str, attachment_type=None) -> None:
     return attach(payload, name=name, attachment_type=attachment_type)
 
 
-def wrap_step(allure_name, partial):
+def wrap_step(allure_name: str, partial):
     return step(allure_name)(partial)

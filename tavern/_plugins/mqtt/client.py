@@ -385,7 +385,7 @@ class MQTTClient:
         self,
         topic: str,
         payload: Any,
-        qos: Optional[int],
+        qos: Optional[int] = None,
         retain: Optional[bool] = False,
     ) -> MQTTMessageInfo:
         """publish message using paho library"""

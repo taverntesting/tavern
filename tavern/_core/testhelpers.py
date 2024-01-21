@@ -105,7 +105,7 @@ def maybe_format_max_retries(
     """Possibly handle max_retries validation"""
 
     # Probably a format variable, or just invalid (in which case it will fail further down)
-    max_retries = format_keys(str(max_retries), test_block_config.variables)
+    max_retries = int(format_keys(str(max_retries), test_block_config.variables))
 
     # Missing type token will mean that max_retries is still a string and will fail here
     # Could auto convert here as well, but keep it consistent and just fail
