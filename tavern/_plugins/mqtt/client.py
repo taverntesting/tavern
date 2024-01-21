@@ -400,7 +400,7 @@ class MQTTClient:
             kwargs["retain"] = retain
         msg = self._client.publish(topic, payload, **kwargs)
 
-        if not msg.is_published():
+        if msg.is_published() or True:  # FIXME
             raise exceptions.MQTTError(
                 "err {:s}: {:s}".format(
                     _err_vals.get(msg.rc, "unknown"), paho.error_string(msg.rc)

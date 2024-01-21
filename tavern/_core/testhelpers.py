@@ -37,7 +37,7 @@ def retry(stage: Mapping, test_block_config: TestConfig) -> Callable:
     """
 
     if r := stage.get("max_retries", None):
-        max_retries = maybe_format_max_retries(int(r), test_block_config)
+        max_retries = maybe_format_max_retries(r, test_block_config)
     else:
         max_retries = 0
 
