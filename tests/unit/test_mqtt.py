@@ -1,3 +1,4 @@
+import time
 from typing import Dict
 from unittest.mock import MagicMock, Mock, patch
 
@@ -71,28 +72,67 @@ class TestClient:
             with fake_client as x:
                 assert fake_client == x
 
-    def test_assert_message_published(self, fake_client):
-        """If it couldn't immediately publish the message, error out"""
+    def test_assert_message_published_error(self, fake_client):
+        """Error waiting for it to publish"""
 
-        class FakeMessage:
-            is_published = False
+        class FakeMessage(paho.MQTTMessageInfo):
+            def wait_for_publish(self, timeout=None):
+                raise RuntimeError
+
             rc = 1
 
         with patch.object(fake_client._client, "subscribe"), patch.object(
-            fake_client._client, "publish", return_value=FakeMessage()
+            fake_client._client, "publish", return_value=FakeMessage(10)
         ):
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")
 
+    def test_assert_message_published_failure(self, fake_client):
+        """If it couldn't publish the message, error out"""
+
+        class FakeMessage(paho.MQTTMessageInfo):
+            def wait_for_publish(self, timeout=None):
+                return
+
+            def is_published(self):
+                return False
+
+            rc = 1
+
+        with patch.object(fake_client._client, "subscribe"), patch.object(
+            fake_client._client, "publish", return_value=FakeMessage(10)
+        ):
+            with pytest.raises(exceptions.MQTTError):
+                fake_client.publish("abc", "123")
+
+    def test_assert_message_published_delay(self, fake_client):
+        """Published but only after a small delay"""
+
+        class FakeMessage(paho.MQTTMessageInfo):
+            def wait_for_publish(self, timeout=None):
+                time.sleep(0.5)
+
+            def is_published(self):
+                return True
+
+            rc = 1
+
+        with patch.object(fake_client._client, "subscribe"), patch.object(
+            fake_client._client, "publish", return_value=FakeMessage(10)
+        ):
+            fake_client.publish("abc", "123")
+
     def test_assert_message_published_unknown_err(self, fake_client):
         """Same, but with an unknown error code"""
 
-        class FakeMessage:
-            is_published = False
+        class FakeMessage(paho.MQTTMessageInfo):
+            def is_published(self):
+                return False
+
             rc = 2342423
 
         with patch.object(fake_client._client, "subscribe"), patch.object(
-            fake_client._client, "publish", return_value=FakeMessage()
+            fake_client._client, "publish", return_value=FakeMessage(10)
         ):
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")
