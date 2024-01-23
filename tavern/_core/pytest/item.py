@@ -33,10 +33,13 @@ class YamlItem(pytest.Item):
     Attributes:
         path: filename that this test came from
         spec: The whole dictionary of the test
+        global_cfg: configuration for test
     """
 
     # See https://github.com/taverntesting/tavern/issues/825
     _patched_yaml = False
+
+    global_cfg: TestConfig
 
     def __init__(
         self, *, name: str, parent, spec: MutableMapping, path: pathlib.Path, **kwargs
@@ -47,8 +50,6 @@ class YamlItem(pytest.Item):
         super().__init__(name, parent, **kwargs)
         self.path = path
         self.spec = spec
-
-        self.global_cfg: Optional[TestConfig] = None
 
         if not YamlItem._patched_yaml:
             yaml.parser.Parser.process_empty_scalar = (  # type:ignore

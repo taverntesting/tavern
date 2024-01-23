@@ -41,7 +41,7 @@ def _format_test_marks(
         test_name: Name of test (for error logging)
 
     Returns:
-        tuple: first element is normal pytest mark objects, second element is all
+        first element is normal pytest mark objects, second element is all
             marks which were formatted (no matter their content)
 
     Todo:

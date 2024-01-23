@@ -1,6 +1,14 @@
 import dataclasses
 import logging
-from typing import Dict, Iterable, Optional, Protocol, Tuple, Type, Union
+from typing import (
+    Iterable,
+    Mapping,
+    Optional,
+    Protocol,
+    Tuple,
+    Type,
+    Union,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -20,7 +28,7 @@ class _WithMarks(Protocol):
     end_mark: YamlMark
 
 
-PyYamlDict = Union[_WithMarks, Dict]
+PyYamlDict = Union[_WithMarks, Mapping]
 
 
 def get_stage_lines(stage: PyYamlDict) -> Tuple[int, int, int]:
