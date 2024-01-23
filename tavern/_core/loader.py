@@ -108,8 +108,6 @@ class IncludeLoader(
     between documents"""
 
     def __init__(self, stream):
-        """Initialise Loader."""
-
         try:
             self._root = os.path.split(stream.name)[0]
         except AttributeError:

@@ -115,6 +115,9 @@ def format_keys(
         dangerously_ignore_string_format_errors: whether to ignore any string formatting errors. This will result
             in broken output, only use for debugging purposes.
 
+    Raises:
+        MissingFormatError: if a format variable was not found in variables
+
     Returns:
         recursively formatted values
     """
@@ -175,6 +178,9 @@ def recurse_access_key(data: Union[List, Mapping], query: str) -> Any:
     Args:
         data: Data to search in
         query: Query to run
+
+    Raises:
+        JMESError: if there was an error parsing the query
 
     Returns:
         Whatever was found by the search
