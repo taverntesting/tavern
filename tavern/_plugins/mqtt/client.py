@@ -400,7 +400,14 @@ class MQTTClient:
             kwargs["retain"] = retain
         msg = self._client.publish(topic, payload, **kwargs)
 
-        if msg.is_published() or True:  # FIXME
+        # Wait for 2*connect timeout which should be plenty to publish the message even with qos 2
+        # TODO: configurable
+        try:
+            msg.wait_for_publish(self._connect_timeout * 2)
+        except (RuntimeError, ValueError) as e:
+            raise exceptions.MQTTError("could not publish message") from e
+
+        if not msg.is_published():
             raise exceptions.MQTTError(
                 "err {:s}: {:s}".format(
                     _err_vals.get(msg.rc, "unknown"), paho.error_string(msg.rc)
