@@ -5,7 +5,8 @@ import os
 import re
 import string
 import typing
-from typing import Any, Dict, List, Mapping, Tuple, Union
+from collections.abc import Collection
+from typing import Any, Dict, Iterator, List, Mapping, Tuple, Union
 
 import box
 import jmespath
@@ -160,7 +161,7 @@ def format_keys(
     return val
 
 
-def recurse_access_key(data, query: str):
+def recurse_access_key(data: Union[List, Mapping], query: str) -> Any:
     """
     Search for something in the given data using the given query.
 
@@ -172,11 +173,11 @@ def recurse_access_key(data, query: str):
         'c'
 
     Args:
-        data (dict, list): Data to search in
-        query (str): Query to run
+        data: Data to search in
+        query: Query to run
 
     Returns:
-        object: Whatever was found by the search
+        Whatever was found by the search
     """
 
     try:
@@ -199,7 +200,9 @@ def recurse_access_key(data, query: str):
     return from_jmespath
 
 
-def _deprecated_recurse_access_key(current_val, keys):
+def _deprecated_recurse_access_key(
+    current_val: Union[List, Mapping], keys: List
+) -> Any:
     """Given a list of keys and a dictionary, recursively access the dicionary
     using the keys until we find the key its looking for
 
@@ -213,15 +216,15 @@ def _deprecated_recurse_access_key(current_val, keys):
         'c'
 
     Args:
-        current_val (dict): current dictionary we have recursed into
-        keys (list): list of str/int of subkeys
+        current_val: current dictionary we have recursed into
+        keys: list of str/int of subkeys
 
     Raises:
         IndexError: list index not found in data
         KeyError: dict key not found in data
 
     Returns:
-        str or dict: value of subkey in dict
+        value of subkey in dict
     """
     logger.debug("Recursively searching for '%s' in '%s'", keys, current_val)
 
@@ -270,12 +273,12 @@ def deep_dict_merge(initial_dct: Dict, merge_dct: Mapping) -> dict:
     return dct
 
 
-def check_expected_keys(expected, actual) -> None:
+def check_expected_keys(expected: Collection, actual: Collection) -> None:
     """Check that a set of expected keys is a superset of the actual keys
 
     Args:
-        expected (list, set, dict): keys we expect
-        actual (list, set, dict): keys we have got from the input
+        expected: keys we expect
+        actual: keys we have got from the input
 
     Raises:
         UnexpectedKeysError: If not actual <= expected
@@ -293,7 +296,7 @@ def check_expected_keys(expected, actual) -> None:
         raise exceptions.UnexpectedKeysError(msg)
 
 
-def yield_keyvals(block):
+def yield_keyvals(block: Union[List, Dict]) -> Iterator[Tuple[List, str, str]]:
     """Return indexes, keys and expected values for matching recursive keys
 
     Given a list or dict, return a 3-tuple of the 'split' key (key split on
@@ -325,10 +328,10 @@ def yield_keyvals(block):
         (['2'], '2', 'c')
 
     Args:
-        block (dict, list): input matches
+        block: input matches
 
     Yields:
-        (list, str, str): key split on dots, key, expected value
+        iterable of (key split on dots, key, expected value)
     """
     if isinstance(block, dict):
         for joined_key, expected_val in block.items():
@@ -340,9 +343,12 @@ def yield_keyvals(block):
             yield [sidx], sidx, val
 
 
+Checked = typing.TypeVar("Checked", Dict, Collection, str)
+
+
 def check_keys_match_recursive(
-    expected_val: Any,
-    actual_val: Any,
+    expected_val: Checked,
+    actual_val: Checked,
     keys: List[Union[str, int]],
     strict: StrictSettingKinds = True,
 ) -> None:
@@ -447,8 +453,8 @@ def check_keys_match_recursive(
                 raise exceptions.KeyMismatchError(msg) from e
 
         if isinstance(expected_val, dict):
-            akeys = set(actual_val.keys())
             ekeys = set(expected_val.keys())
+            akeys = set(actual_val.keys())  # type:ignore
 
             if akeys != ekeys:
                 extra_actual_keys = akeys - ekeys
@@ -485,7 +491,10 @@ def check_keys_match_recursive(
             for key in to_recurse:
                 try:
                     check_keys_match_recursive(
-                        expected_val[key], actual_val[key], keys + [key], strict
+                        expected_val[key],
+                        actual_val[key],  # type:ignore
+                        keys + [key],
+                        strict,
                     )
                 except KeyError:
                     logger.debug(
