@@ -376,7 +376,9 @@ class MQTTClient:
 
         return msg
 
-    def publish(self, topic, payload=None, qos=None, retain=None):
+    def publish(
+        self, topic: str, payload=None, qos=None, retain=None
+    ) -> paho.MQTTMessageInfo:
         """publish message using paho library"""
         self._wait_for_subscriptions()
 
@@ -389,7 +391,14 @@ class MQTTClient:
             kwargs["retain"] = retain
         msg = self._client.publish(topic, payload, **kwargs)
 
-        if not msg.is_published:
+        # Wait for 2*connect timeout which should be plenty to publish the message even with qos 2
+        # TODO: configurable
+        try:
+            msg.wait_for_publish(self._connect_timeout * 2)
+        except (RuntimeError, ValueError) as e:
+            raise exceptions.MQTTError("could not publish message") from e
+
+        if not msg.is_published():
             raise exceptions.MQTTError(
                 "err {:s}: {:s}".format(
                     _err_vals.get(msg.rc, "unknown"), paho.error_string(msg.rc)
