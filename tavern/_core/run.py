@@ -67,10 +67,10 @@ def _get_included_stages(
     for use in this test
 
     Args:
-        available_stages: List of stages which already exist
         tavern_box: Available parameters for fomatting at this point
         test_block_config: Current test config dictionary
         test_spec: Specification for current test
+        available_stages: List of stages which already exist
 
     Returns:
         Fully resolved stages

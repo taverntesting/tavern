@@ -8,7 +8,6 @@ import time
 from dataclasses import dataclass
 from typing import Dict, List, Mapping, Optional, Tuple, Union
 
-import requests
 from paho.mqtt.client import MQTTMessage
 
 from tavern._core import exceptions
@@ -17,7 +16,7 @@ from tavern._core.loader import ANYTHING
 from tavern._core.pytest.config import TestConfig
 from tavern._core.pytest.newhooks import call_hook
 from tavern._core.report import attach_yaml
-from tavern._core.strict_util import StrictSetting
+from tavern._core.strict_util import StrictOption
 from tavern.response import BaseResponse
 
 from .client import MQTTClient
@@ -28,6 +27,8 @@ _default_timeout = 1
 
 
 class MQTTResponse(BaseResponse):
+    response: MQTTMessage
+
     def __init__(
         self,
         client: MQTTClient,
@@ -39,15 +40,15 @@ class MQTTResponse(BaseResponse):
 
         self._client = client
 
-        self.received_messages = []  # type: ignore
+        self.received_messages: List = []
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.response:
-            return self.response.payload
+            return self.response.payload.decode("utf-8")
         else:
             return "<Not run yet>"
 
-    def verify(self, response: requests.Response) -> Mapping:
+    def verify(self, response: MQTTMessage) -> Mapping:
         """Ensure mqtt message has arrived
 
         Args:
@@ -236,12 +237,12 @@ class MQTTResponse(BaseResponse):
 class _ReturnedMessage:
     """An actual message returned from the API and it's matching 'expected' block."""
 
-    expected: dict
+    expected: Mapping
     msg: MQTTMessage
 
 
 class _MessageVerifier:
-    def __init__(self, test_block_config, expected) -> None:
+    def __init__(self, test_block_config: TestConfig, expected: Mapping) -> None:
         self.expires = time.time() + expected.get("timeout", _default_timeout)
 
         self.expected = expected
@@ -250,7 +251,7 @@ class _MessageVerifier:
         )
 
         test_strictness = test_block_config.strict
-        self.block_strictness: StrictSetting = test_strictness.option_for("json")
+        self.block_strictness: StrictOption = test_strictness.option_for("json")
 
         # Any warnings to do with the request
         # eg, if a message was received but it didn't match, message had payload, etc.

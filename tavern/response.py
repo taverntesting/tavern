@@ -21,14 +21,14 @@ def indent_err_text(err: str) -> str:
     return indent(err, " " * 4)
 
 
-@dataclasses.dataclass(repr=True)
+@dataclasses.dataclass
 class BaseResponse:
     name: str
     expected: Any
     test_block_config: TestConfig
+    response: Optional[Any] = None
 
     validate_functions: List[Any] = dataclasses.field(init=False, default_factory=list)
-    response: Optional[Any] = None
     errors: List[str] = dataclasses.field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
@@ -66,10 +66,10 @@ class BaseResponse:
             Optionally use a validation library too
 
         Args:
-            strict: strictness setting for this block
             expected_block: expected data
             block: actual data
             blockname: 'name' of this block (params, mqtt, etc) for error messages
+            strict: strictness setting for this block
         """
 
         if expected_block is None:

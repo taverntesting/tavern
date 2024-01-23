@@ -5,7 +5,7 @@ import ssl
 import threading
 import time
 from queue import Empty, Full, Queue
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Union
 
 import paho.mqtt.client as paho
 from paho.mqtt.client import MQTTMessageInfo
@@ -351,7 +351,7 @@ class MQTTClient:
         logger.debug("MQTT socket closed")
 
     def message_received(
-        self, topic: str, timeout: int = 1
+        self, topic: str, timeout: Union[float, int] = 1
     ) -> Optional[paho.MQTTMessage]:
         """Check that a message is in the message queue
 

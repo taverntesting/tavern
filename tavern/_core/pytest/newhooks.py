@@ -34,7 +34,7 @@ def pytest_tavern_beta_after_every_test_run(test_dict: Dict, variables: Dict) ->
     """
 
 
-def pytest_tavern_beta_after_every_response(expected: Any, response: Dict) -> None:
+def pytest_tavern_beta_after_every_response(expected: Any, response: Any) -> None:
     """Called after every _response_ - including MQTT/HTTP/etc
 
     Note:
@@ -42,8 +42,8 @@ def pytest_tavern_beta_after_every_response(expected: Any, response: Dict) -> No
         - MQTT responses will call this hook multiple times if multiple messages are received
 
     Args:
-        response: Response object.
         expected: Response block in stage
+        response: Response object.
     """
 
 
