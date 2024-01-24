@@ -6,7 +6,7 @@ import re
 import string
 import typing
 from collections.abc import Collection
-from typing import Any, Dict, Iterator, List, Mapping, Tuple, Union
+from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple, Union
 
 import box
 import jmespath
@@ -27,7 +27,7 @@ from .strict_util import StrictSetting, StrictSettingKinds, extract_strict_setti
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def _check_and_format_values(to_format, box_vars: Mapping[str, Any]) -> str:
+def _check_and_format_values(to_format: str, box_vars: Mapping[str, Any]) -> str:
     formatter = string.Formatter()
     would_format = formatter.parse(to_format)
 
@@ -57,7 +57,7 @@ def _check_and_format_values(to_format, box_vars: Mapping[str, Any]) -> str:
     return to_format.format(**box_vars)
 
 
-def _attempt_find_include(to_format: str, box_vars: box.Box):
+def _attempt_find_include(to_format: str, box_vars: box.Box) -> Optional[str]:
     formatter = string.Formatter()
     would_format = list(formatter.parse(to_format))
 
@@ -91,7 +91,10 @@ def _attempt_find_include(to_format: str, box_vars: box.Box):
 
     would_replace = formatter.get_field(field_name, [], box_vars)[0]
 
-    return formatter.convert_field(would_replace, conversion)  # type: ignore
+    if conversion is None:
+        return would_replace
+
+    return formatter.convert_field(would_replace, conversion)
 
 
 T = typing.TypeVar("T", str, Dict, List, Tuple)
@@ -99,7 +102,7 @@ T = typing.TypeVar("T", str, Dict, List, Tuple)
 
 def format_keys(
     val: T,
-    variables: Mapping,
+    variables: Union[Mapping, Box],
     *,
     no_double_format: bool = True,
     dangerously_ignore_string_format_errors: bool = False,
