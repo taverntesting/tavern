@@ -1,6 +1,6 @@
 import os
 import re
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Tuple, Type, Union
 
 from pykwalify.types import is_bool, is_float, is_int
 
@@ -12,7 +12,13 @@ from tavern._core.extfunctions import (
     is_ext_function,
 )
 from tavern._core.general import valid_http_methods
-from tavern._core.loader import ApproxScalar, BoolToken, FloatToken, IntToken
+from tavern._core.loader import (
+    ApproxScalar,
+    BoolToken,
+    FloatToken,
+    IntToken,
+    TypeConvertToken,
+)
 from tavern._core.strict_util import StrictLevel
 
 if TYPE_CHECKING:
@@ -21,7 +27,9 @@ if TYPE_CHECKING:
 
 # To extend pykwalify's type validation, extend its internal functions
 # These return boolean values
-def validate_type_and_token(validate_type, token):
+def validate_type_and_token(
+    validate_type: Callable[[Any], bool], token: Type[TypeConvertToken]
+):
     def validate(value):
         return validate_type(value) or isinstance(value, token)
 
@@ -34,7 +42,7 @@ is_bool_like = validate_type_and_token(is_bool, BoolToken)
 
 
 # These plug into the pykwalify extension function API
-def validator_like(validate, description):
+def validator_like(validate: Callable[[Any], bool], description: str):
     def validator(value, rule_obj, path):
         if validate(value):
             return True
@@ -52,7 +60,7 @@ float_variable = validator_like(is_float_like, "float-like")
 bool_variable = validator_like(is_bool_like, "bool-like")
 
 
-def _validate_one_extension(input_value) -> None:
+def _validate_one_extension(input_value: Mapping) -> None:
     expected_keys = {"function", "extra_args", "extra_kwargs"}
     extra = set(input_value) - expected_keys
 
@@ -105,7 +113,7 @@ def validate_extensions(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path) -> bool:
+def validate_status_code_is_int_or_list_of_ints(value: Mapping, rule_obj, path) -> bool:
     err_msg = "status_code has to be an integer or a list of integers (got {})".format(
         value
     )
@@ -120,7 +128,7 @@ def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path) -> bool:
     return True
 
 
-def check_usefixtures(value, rule_obj, path) -> bool:
+def check_usefixtures(value: Mapping, rule_obj, path) -> bool:
     err_msg = "'usefixtures' has to be a list with at least one item"
 
     if not isinstance(value, (list, tuple)):
@@ -171,11 +179,10 @@ def to_grpc_status(value: Union[str, int]):
     return None
 
 
-def verify_oneof_id_name(value, rule_obj, path) -> bool:
+def verify_oneof_id_name(value: Mapping, rule_obj, path) -> bool:
     """Checks that if 'name' is not present, 'id' is"""
 
-    name = value.get("name")
-    if not name:
+    if not (name := value.get("name")):
         if name == "":
             raise BadSchemaError("Name cannot be empty")
 
@@ -246,7 +253,7 @@ def check_parametrize_marks(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_data_key(value, rule_obj, path) -> bool:
+def validate_data_key(value, rule_obj, path: str) -> bool:
     """Validate the 'data' key in a http request
 
     From requests docs:
@@ -326,7 +333,7 @@ def validate_json_with_ext(value, rule_obj, path) -> bool:
     return True
 
 
-def check_strict_key(value, rule_obj, path) -> bool:
+def check_strict_key(value: Union[List, bool], rule_obj, path) -> bool:
     """Make sure the 'strict' key is either a bool or a list"""
 
     if not isinstance(value, list) and not is_bool_like(value):
@@ -343,7 +350,7 @@ def check_strict_key(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_timeout_tuple_or_float(value, rule_obj, path) -> bool:
+def validate_timeout_tuple_or_float(value: Union[List, Tuple], rule_obj, path) -> bool:
     """Make sure timeout is a float/int or a tuple of floats/ints"""
 
     err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{}' (type {})".format(
@@ -398,7 +405,7 @@ def validate_cert_tuple_or_str(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_file_spec(value, rule_obj, path) -> bool:
+def validate_file_spec(value: Dict, rule_obj, path) -> bool:
     """Validate file upload arguments"""
 
     logger = get_pykwalify_logger("tavern.schema.extensions")

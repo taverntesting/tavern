@@ -23,7 +23,7 @@ def get_expected_from_request(
     response_block: Union[Dict, Iterable[Dict]],
     test_block_config: TestConfig,
     session: MQTTClient,
-):
+) -> Optional[Dict]:
     expected: Optional[Dict] = None
 
     # mqtt response is not required
