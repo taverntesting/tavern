@@ -16,7 +16,7 @@ from tavern._core.pytest.config import TestConfig
 from tavern.request import BaseRequest
 from tavern.response import BaseResponse
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PluginHelperBase:
@@ -57,7 +57,7 @@ def is_valid_reqresp_plugin(ext: stevedore.extension.Extension) -> bool:
         ext: class or module plugin object
 
     Returns:
-        bool: Whether the plugin has everything we need to use it
+        Whether the plugin has everything we need to use it
     """
     required = [
         # MQTTClient, requests.Session

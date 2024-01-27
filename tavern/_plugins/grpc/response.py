@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING, Any, List, Mapping, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, TypedDict, Union
 
 import proto.message
 from google.protobuf import json_format
@@ -16,7 +16,7 @@ from tavern.response import BaseResponse
 if TYPE_CHECKING:
     from tavern._plugins.grpc.request import WrappedFuture
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 GRPCCode = Union[str, int, List[str], List[int]]
@@ -48,7 +48,7 @@ class GRPCResponse(BaseResponse):
         name: str,
         expected: Union[_GRPCExpected, Mapping],
         test_block_config: TestConfig,
-    ):
+    ) -> None:
         check_expected_keys({"body", "status", "details"}, expected)
         super().__init__(name, expected, test_block_config)
 
@@ -60,7 +60,7 @@ class GRPCResponse(BaseResponse):
         else:
             return "<Not run yet>"
 
-    def _validate_block(self, blockname: str, block: Mapping):
+    def _validate_block(self, blockname: str, block: Mapping) -> None:
         """Validate a block of the response
 
         Args:
@@ -92,7 +92,7 @@ class GRPCResponse(BaseResponse):
         logger.debug(f"grpc details: {grpc_response.details()}")
 
         # Get any keys to save
-        saved = {}
+        saved: Dict[str, Any] = {}
         verify_status = [StatusCode.OK.name]
         if status := self.expected.get("status", None):
             verify_status = _to_grpc_name(status)  # type: ignore

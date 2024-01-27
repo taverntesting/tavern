@@ -13,7 +13,7 @@ from typing import List
 
 from tavern._core import exceptions
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @functools.lru_cache
@@ -31,7 +31,7 @@ def find_protoc() -> str:
 
 
 @functools.lru_cache
-def _generate_proto_import(source: str):
+def _generate_proto_import(source: str) -> None:
     """Invokes the Protocol Compiler to generate a _pb2.py from the given
     .proto file.  Does nothing if the output already exists and is newer than
     the input.
@@ -101,7 +101,7 @@ def _generate_proto_import(source: str):
     _import_grpc_module(output)
 
 
-def _import_grpc_module(python_module_name: str):
+def _import_grpc_module(python_module_name: str) -> None:
     """takes an expected python module name and tries to import the relevant
     file, adding service to the symbol database.
     """

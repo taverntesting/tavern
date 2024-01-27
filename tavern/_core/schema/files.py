@@ -14,7 +14,7 @@ from tavern._core.loader import load_single_document_yaml
 from tavern._core.plugins import load_plugins
 from tavern._core.schema.jsonschema import verify_jsonschema
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class SchemaCache:
@@ -66,7 +66,7 @@ class SchemaCache:
             with_plugins (bool): Whether to load plugin schema into this schema as well
 
         Returns:
-            dict: loaded schema
+            loaded schema
         """
 
         if with_plugins:

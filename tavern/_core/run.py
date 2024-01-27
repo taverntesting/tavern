@@ -27,7 +27,7 @@ from .strtobool import strtobool
 from .testhelpers import delay, retry
 from .tincture import Tinctures, get_stage_tinctures
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def _resolve_test_stages(test_spec: Mapping, available_stages: Mapping):
@@ -67,10 +67,10 @@ def _get_included_stages(
     for use in this test
 
     Args:
-        available_stages: List of stages which already exist
         tavern_box: Available parameters for fomatting at this point
         test_block_config: Current test config dictionary
         test_spec: Specification for current test
+        available_stages: List of stages which already exist
 
     Returns:
         Fully resolved stages
@@ -276,7 +276,7 @@ class _TestRunner:
     test_block_config: TestConfig
     test_spec: Mapping
 
-    def run_stage(self, idx: int, stage, *, is_final: bool = False):
+    def run_stage(self, idx: int, stage, *, is_final: bool = False) -> None:
         tinctures = get_stage_tinctures(stage, self.test_spec)
 
         stage_config = self.test_block_config.with_strictness(
@@ -305,7 +305,7 @@ class _TestRunner:
 
     def wrapped_run_stage(
         self, stage: dict, stage_config: TestConfig, tinctures: Tinctures
-    ):
+    ) -> None:
         """Run one stage from the test
 
         Args:

@@ -13,33 +13,42 @@ from paho.mqtt.client import MQTTMessage
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive
 from tavern._core.loader import ANYTHING
+from tavern._core.pytest.config import TestConfig
 from tavern._core.pytest.newhooks import call_hook
 from tavern._core.report import attach_yaml
-from tavern._core.strict_util import StrictSetting
+from tavern._core.strict_util import StrictOption
 from tavern.response import BaseResponse
 
 from .client import MQTTClient
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 _default_timeout = 1
 
 
 class MQTTResponse(BaseResponse):
-    def __init__(self, client: MQTTClient, name, expected, test_block_config) -> None:
+    response: MQTTMessage
+
+    def __init__(
+        self,
+        client: MQTTClient,
+        name: str,
+        expected: TestConfig,
+        test_block_config: TestConfig,
+    ) -> None:
         super().__init__(name, expected, test_block_config)
 
         self._client = client
 
-        self.received_messages = []  # type: ignore
+        self.received_messages: List = []
 
-    def __str__(self):
+    def __str__(self) -> str:
         if self.response:
-            return self.response.payload
+            return self.response.payload.decode("utf-8")
         else:
             return "<Not run yet>"
 
-    def verify(self, response) -> dict:
+    def verify(self, response: MQTTMessage) -> Mapping:
         """Ensure mqtt message has arrived
 
         Args:
@@ -53,11 +62,11 @@ class MQTTResponse(BaseResponse):
         finally:
             self._client.unsubscribe_all()
 
-    def _await_response(self) -> dict:
+    def _await_response(self) -> Mapping:
         """Actually wait for response
 
         Returns:
-            dict: things to save to variables for the rest of this test
+            things to save to variables for the rest of this test
         """
 
         # Get into class with metadata attached
@@ -102,7 +111,7 @@ class MQTTResponse(BaseResponse):
                 failures=self.errors,
             )
 
-        saved = {}
+        saved: Dict = {}
 
         for msg in correct_messages:
             # Check saving things from the payload and from json
@@ -145,7 +154,7 @@ class MQTTResponse(BaseResponse):
             expected: expected response for this block
 
         Returns:
-            tuple(msg, list): The correct message (if any) and warnings from processing the message
+            The correct message (if any) and warnings from processing the message
         """
 
         timeout = max(m.get("timeout", _default_timeout) for m in expected)
@@ -228,12 +237,12 @@ class MQTTResponse(BaseResponse):
 class _ReturnedMessage:
     """An actual message returned from the API and it's matching 'expected' block."""
 
-    expected: dict
+    expected: Mapping
     msg: MQTTMessage
 
 
 class _MessageVerifier:
-    def __init__(self, test_block_config, expected) -> None:
+    def __init__(self, test_block_config: TestConfig, expected: Mapping) -> None:
         self.expires = time.time() + expected.get("timeout", _default_timeout)
 
         self.expected = expected
@@ -242,7 +251,7 @@ class _MessageVerifier:
         )
 
         test_strictness = test_block_config.strict
-        self.block_strictness: StrictSetting = test_strictness.option_for("json")
+        self.block_strictness: StrictOption = test_strictness.option_for("json")
 
         # Any warnings to do with the request
         # eg, if a message was received but it didn't match, message had payload, etc.
@@ -322,7 +331,7 @@ class _MessageVerifier:
         """Gets the payload from the 'expected' block
 
         Returns:
-            tuple: First element is the expected payload, second element is whether it's
+            First element is the expected payload, second element is whether it's
                 expected to be json or not
         """
         # TODO move this check to initialisation/schema checking

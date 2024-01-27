@@ -1,15 +1,21 @@
+import dataclasses
 import json
 import logging
 import re
+import typing
 from io import StringIO
-from typing import List, Mapping, Optional
+from typing import Any, Dict, List, Optional
 
 import yaml
-from _pytest._code.code import FormattedExcinfo
+from _pytest._code.code import FormattedExcinfo, TerminalRepr
 from _pytest._io import TerminalWriter
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
+
+if typing.TYPE_CHECKING:
+    from tavern._core.pytest.item import YamlItem
+
 from tavern._core.report import prepare_yaml
 from tavern._core.stage_lines import (
     end_mark,
@@ -18,22 +24,22 @@ from tavern._core.stage_lines import (
     start_mark,
 )
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
-class ReprdError:
-    def __init__(self, exce, item) -> None:
-        self.exce = exce
-        self.item = item
+@dataclasses.dataclass
+class ReprdError(TerminalRepr):
+    exce: Any
+    item: "YamlItem"
 
-    def _get_available_format_keys(self):
+    def _get_available_format_keys(self) -> Dict:
         """Try to get the format variables for the stage
 
         If we can't get the variable for this specific stage, just return the
         global config which will at least have some format variables
 
         Returns:
-            dict: variables for formatting test
+            variables for formatting test
         """
         try:
             keys = self.exce._excinfo[1].test_block_config.variables
@@ -137,7 +143,7 @@ class ReprdError:
             else:
                 tw.line(line, white=True)
 
-    def _print_formatted_stage(self, tw: TerminalWriter, stage: Mapping) -> None:
+    def _print_formatted_stage(self, tw: TerminalWriter, stage: Dict) -> None:
         """Print the 'formatted' stage that Tavern will actually use to send the
         request/process the response
 
@@ -155,10 +161,10 @@ class ReprdError:
         )
 
         # Replace formatted strings with strings for dumping
-        formatted_stage = prepare_yaml(formatted_stage)
+        prepared_stage = prepare_yaml(formatted_stage)
 
         # Dump formatted stage to YAML format
-        formatted_lines = yaml.dump(formatted_stage, default_flow_style=False).split(
+        formatted_lines = yaml.dump(prepared_stage, default_flow_style=False).split(
             "\n"
         )
 

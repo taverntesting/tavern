@@ -1,13 +1,13 @@
 import logging
 import time
 from functools import wraps
-from typing import Mapping
+from typing import Callable, Mapping, Union
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
 from tavern._core.pytest.config import TestConfig
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def delay(stage: Mapping, when: str, variables: Mapping) -> None:
@@ -28,7 +28,7 @@ def delay(stage: Mapping, when: str, variables: Mapping) -> None:
         time.sleep(length)
 
 
-def retry(stage: Mapping, test_block_config: TestConfig):
+def retry(stage: Mapping, test_block_config: TestConfig) -> Callable:
     """Look for retry and try to repeat the stage `retry` times.
 
     Args:
@@ -36,10 +36,8 @@ def retry(stage: Mapping, test_block_config: TestConfig):
         test_block_config: Configuration for current test
     """
 
-    if "max_retries" in stage:
-        max_retries = maybe_format_max_retries(
-            stage.get("max_retries"), test_block_config
-        )
+    if r := stage.get("max_retries", None):
+        max_retries = maybe_format_max_retries(r, test_block_config)
     else:
         max_retries = 0
 
@@ -101,11 +99,13 @@ def retry(stage: Mapping, test_block_config: TestConfig):
         return retry_wrapper
 
 
-def maybe_format_max_retries(max_retries, test_block_config: TestConfig) -> int:
+def maybe_format_max_retries(
+    max_retries: Union[str, int], test_block_config: TestConfig
+) -> int:
     """Possibly handle max_retries validation"""
 
     # Probably a format variable, or just invalid (in which case it will fail further down)
-    max_retries = format_keys(max_retries, test_block_config.variables)
+    max_retries = int(format_keys(max_retries, test_block_config.variables))  # type:ignore
 
     # Missing type token will mean that max_retries is still a string and will fail here
     # Could auto convert here as well, but keep it consistent and just fail

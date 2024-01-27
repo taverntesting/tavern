@@ -5,9 +5,10 @@ import ssl
 import threading
 import time
 from queue import Empty, Full, Queue
-from typing import Dict, List, Mapping, MutableMapping, Optional
+from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Union
 
 import paho.mqtt.client as paho
+from paho.mqtt.client import MQTTMessageInfo
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys
@@ -33,7 +34,7 @@ _err_vals = {
     15: "MQTT_ERR_QUEUE_SIZE",
 }
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass
@@ -88,7 +89,7 @@ def _handle_ssl_context_args(
 
 def _check_and_update_common_tls_args(
     tls_args: MutableMapping, check_file_keys: List[str]
-):
+) -> None:
     """Checks common args between ssl/tls args"""
 
     # could be moved to schema validation stage
@@ -289,7 +290,9 @@ class MQTTClient:
         self._client.user_data_set(self._userdata)
 
     @staticmethod
-    def _on_message(client, userdata, message) -> None:
+    def _on_message(
+        client, userdata: Mapping[str, Any], message: paho.MQTTMessage
+    ) -> None:
         """Add any messages received to the queue
 
         Todo:
@@ -311,7 +314,7 @@ class MQTTClient:
             logger.exception("message queue full")
 
     @staticmethod
-    def _on_connect(client, userdata, flags, rc) -> None:
+    def _on_connect(client, userdata, flags, rc: int) -> None:
         logger.debug(
             "Client '%s' connected to the broker with result code '%s'",
             client._client_id.decode(),
@@ -319,7 +322,7 @@ class MQTTClient:
         )
 
     @staticmethod
-    def _on_disconnect(client, userdata, rc) -> None:
+    def _on_disconnect(client, userdata, rc: int) -> None:
         if rc == paho.CONNACK_ACCEPTED:
             logger.debug(
                 "Client '%s' successfully disconnected from the broker with result code '%s'",
@@ -347,16 +350,18 @@ class MQTTClient:
     def _on_socket_close(client, userdata, socket) -> None:
         logger.debug("MQTT socket closed")
 
-    def message_received(self, topic: str, timeout: int = 1):
+    def message_received(
+        self, topic: str, timeout: Union[float, int] = 1
+    ) -> Optional[paho.MQTTMessage]:
         """Check that a message is in the message queue
 
         Args:
-            topic (str): topic to fetch message for
-            timeout (int): How long to wait before signalling that the message
+            topic: topic to fetch message for
+            timeout: How long to wait before signalling that the message
                 was not received.
 
         Returns:
-            paho.MQTTMessage: whether the message was received within the timeout
+            the message, if one was received, otherwise None
 
         Todo:
             Allow regexes for topic names? Better validation for mqtt payloads
@@ -377,8 +382,12 @@ class MQTTClient:
         return msg
 
     def publish(
-        self, topic: str, payload=None, qos=None, retain=None
-    ) -> paho.MQTTMessageInfo:
+        self,
+        topic: str,
+        payload: Optional[Any] = None,
+        qos: Optional[int] = None,
+        retain: Optional[bool] = False,
+    ) -> MQTTMessageInfo:
         """publish message using paho library"""
         self._wait_for_subscriptions()
 

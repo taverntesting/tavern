@@ -1,7 +1,7 @@
 import functools
 import importlib
 import logging
-from typing import Any, List, Mapping, Optional
+from typing import Any, Callable, Iterable, List, Mapping, Optional, Tuple
 
 from tavern._core import exceptions
 
@@ -16,7 +16,7 @@ def is_ext_function(block: Any) -> bool:
         block: Any object
 
     Returns:
-        bool: If it is an ext function style dict
+        If it is an ext function style dict
     """
     return isinstance(block, dict) and block.get("$ext", None) is not None
 
@@ -29,17 +29,20 @@ def get_pykwalify_logger(module: Optional[str]) -> logging.Logger:
     trying to get the root logger which won't log correctly
 
     Args:
-        module (string): name of module to get logger for
+        module: name of module to get logger for
 
+    Returns:
+        logger for given module
     """
     return logging.getLogger(module)
 
 
 def _getlogger() -> logging.Logger:
+    """Get logger for this module"""
     return get_pykwalify_logger("tavern._core.extfunctions")
 
 
-def import_ext_function(entrypoint: str):
+def import_ext_function(entrypoint: str) -> Callable:
     """Given a function name in the form of a setuptools entry point, try to
     dynamically load and return it
 
@@ -48,7 +51,7 @@ def import_ext_function(entrypoint: str):
             module.submodule:function
 
     Returns:
-        function: function loaded from entrypoint
+        function loaded from entrypoint
 
     Raises:
         InvalidExtFunctionError: If the module or function did not exist
@@ -79,7 +82,7 @@ def import_ext_function(entrypoint: str):
     return function
 
 
-def get_wrapped_response_function(ext: Mapping):
+def get_wrapped_response_function(ext: Mapping) -> Callable:
     """Wraps a ext function with arguments given in the test file
 
     This is similar to functools.wrap, but this makes sure that 'response' is
@@ -90,7 +93,7 @@ def get_wrapped_response_function(ext: Mapping):
             extra_kwargs to pass
 
     Returns:
-        function: Wrapped function
+        Wrapped function
     """
 
     func, args, kwargs = _get_ext_values(ext)
@@ -106,7 +109,7 @@ def get_wrapped_response_function(ext: Mapping):
     return inner
 
 
-def get_wrapped_create_function(ext: Mapping):
+def get_wrapped_create_function(ext: Mapping) -> Callable:
     """Same as get_wrapped_response_function, but don't require a response"""
 
     func, args, kwargs = _get_ext_values(ext)
@@ -122,7 +125,7 @@ def get_wrapped_create_function(ext: Mapping):
     return inner
 
 
-def _get_ext_values(ext: Mapping):
+def _get_ext_values(ext: Mapping) -> Tuple[Callable, Iterable, Mapping]:
     if not isinstance(ext, Mapping):
         raise exceptions.InvalidExtFunctionError(
             f"ext block should be a dict, but it was a {type(ext)}"

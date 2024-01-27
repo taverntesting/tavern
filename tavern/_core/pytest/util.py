@@ -1,6 +1,7 @@
 import logging
 from functools import lru_cache
-from typing import Any, Dict
+from pathlib import Path
+from typing import Any, Dict, List, Optional, TypeVar, Union
 
 import pytest
 
@@ -9,7 +10,7 @@ from tavern._core.general import load_global_config
 from tavern._core.pytest.config import TavernInternalConfig, TestConfig
 from tavern._core.strict_util import StrictLevel
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
@@ -151,11 +152,11 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
     global_cfg_dict = load_global_config(all_paths)
 
+    variables: Dict = {}
     try:
         loaded_variables = global_cfg_dict["variables"]
     except KeyError:
         logger.debug("Nothing to format in global config files")
-        variables = {}
     else:
         tavern_box = get_tavern_box()
         variables = format_keys(loaded_variables, tavern_box)
@@ -176,30 +177,33 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
 
 def _load_global_backends(pytest_config: pytest.Config) -> Dict[str, Any]:
     """Load which backend should be used"""
-    backend_settings = {}
-
-    for b in TestConfig.backends():
-        backend_settings[b] = get_option_generic(
-            pytest_config, f"tavern-{b}-backend", None
-        )
-
-    return backend_settings
+    return {
+        b: get_option_generic(pytest_config, f"tavern-{b}-backend", None)
+        for b in TestConfig.backends()
+    }
 
 
 def _load_global_strictness(pytest_config: pytest.Config) -> StrictLevel:
     """Load the global 'strictness' setting"""
 
-    options = get_option_generic(pytest_config, "tavern-strict", [])
+    options: List = get_option_generic(pytest_config, "tavern-strict", [])
 
     return StrictLevel.from_options(options)
 
 
-def _load_global_follow_redirects(pytest_config: pytest.Config):
+def _load_global_follow_redirects(pytest_config: pytest.Config) -> bool:
     """Load the global 'follow redirects' setting"""
     return get_option_generic(pytest_config, "tavern-always-follow-redirects", False)
 
 
-def get_option_generic(pytest_config: pytest.Config, flag: str, default):
+T = TypeVar("T", bound=Optional[Union[str, List, List[Path], List[str], bool]])
+
+
+def get_option_generic(
+    pytest_config: pytest.Config,
+    flag: str,
+    default: T,
+) -> T:
     """Get a configuration option or return the default
 
     Priority order is cmdline, then ini, then default"""

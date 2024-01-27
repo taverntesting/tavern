@@ -22,7 +22,7 @@ from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys
 from tavern._plugins.grpc.protos import _generate_proto_import, _import_grpc_module
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
@@ -39,7 +39,7 @@ class _ChannelVals:
 
 
 class GRPCClient:
-    def __init__(self, **kwargs):
+    def __init__(self, **kwargs) -> None:
         logger.debug("Initialising GRPC client with %s", kwargs)
         expected_blocks = {
             "connect": {"host", "port", "options", "timeout", "secure"},
@@ -99,7 +99,7 @@ class GRPCClient:
     def _register_file_descriptor(
         self,
         service_proto: grpc_reflection.v1alpha.reflection_pb2.FileDescriptorResponse,
-    ):
+    ) -> None:
         for file_descriptor_proto in service_proto.file_descriptor_proto:
             descriptor = descriptor_pb2.FileDescriptorProto()
             descriptor.ParseFromString(file_descriptor_proto)
@@ -107,7 +107,7 @@ class GRPCClient:
 
     def _get_reflection_info(
         self, channel, service_name: Optional[str] = None, file_by_filename=None
-    ):
+    ) -> None:
         logger.debug(
             "Getting GRPC protobuf for service %s from reflection", service_name
         )
@@ -239,8 +239,9 @@ class GRPCClient:
 
         return self._get_grpc_service(channel, service, method)
 
-    def __enter__(self):
+    def __enter__(self) -> "GRPCClient":
         logger.debug("Connecting to GRPC")
+        return self
 
     def call(
         self,
@@ -282,7 +283,7 @@ class GRPCClient:
             request, metadata=self._metadata, timeout=timeout
         )
 
-    def __exit__(self, *args):
+    def __exit__(self, *args) -> None:
         logger.debug("Disconnecting from GRPC")
         for v in self.channels.values():
             v.close()

@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple, Union
 from tavern._core import exceptions
 from tavern._core.strtobool import strtobool
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class StrictSetting(enum.Enum):

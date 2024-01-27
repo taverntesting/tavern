@@ -2,11 +2,13 @@ import copy
 import functools
 import itertools
 import logging
-from typing import Dict, Iterator, List, Mapping
+import typing
+from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Tuple, Union
 
 import pytest
 import yaml
 from box import Box
+from pytest import Mark
 
 from tavern._core import exceptions
 from tavern._core.dict_util import deep_dict_merge, format_keys, get_tavern_box
@@ -17,23 +19,29 @@ from tavern._core.schema.files import verify_tests
 from .item import YamlItem
 from .util import load_global_cfg
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
-_format_without_inner = functools.partial(format_keys, no_double_format=False)
+T = typing.TypeVar("T")
+
+_format_without_inner: Callable[[T, Mapping], T] = functools.partial(
+    format_keys, no_double_format=False
+)
 
 
-def _format_test_marks(original_marks, fmt_vars, test_name):
+def _format_test_marks(
+    original_marks: Iterable[Union[str, dict]], fmt_vars: Mapping, test_name: str
+) -> Tuple[List[Mark], List[Mapping]]:
     """Given the 'raw' marks from the test and any available format variables,
     generate new  marks for this test
 
     Args:
-        original_marks (list): Raw string from test - should correspond to either a
+        original_marks: Raw string from test - should correspond to either a
             pytest builtin mark or a custom user mark
-        fmt_vars (dict): dictionary containing available format variables
-        test_name (str): Name of test (for error logging)
+        fmt_vars: dictionary containing available format variables
+        test_name: Name of test (for error logging)
 
     Returns:
-        tuple: first element is normal pytest mark objects, second element is all
+        first element is normal pytest mark objects, second element is all
             marks which were formatted (no matter their content)
 
     Todo:
@@ -52,8 +60,8 @@ def _format_test_marks(original_marks, fmt_vars, test_name):
 
     """
 
-    pytest_marks = []
-    formatted_marks = []
+    pytest_marks: List[Mark] = []
+    formatted_marks: List[Mapping] = []
 
     for m in original_marks:
         if isinstance(m, str):
@@ -86,15 +94,54 @@ def _format_test_marks(original_marks, fmt_vars, test_name):
     return pytest_marks, formatted_marks
 
 
-def _generate_parametrized_test_items(keys: List, vals_combination):
+def _maybe_load_ext(pair):
+    """Try to load ext values"""
+    key, value = pair
+
+    if is_ext_function(value):
+        # If it is an ext function, load the new (or supplemental) value[s]
+        ext = value.pop("$ext")
+        f = get_wrapped_create_function(ext)
+        new_value = f()
+
+        if len(value) == 0:
+            # Use only this new value
+            return key, new_value
+        elif isinstance(new_value, dict):
+            # Merge with some existing data. At this point 'value' is known to be a dict.
+            return key, deep_dict_merge(value, f())
+        else:
+            # For example, if it's defined like
+            #
+            # - testkey: testval
+            #   $ext:
+            #     function: mod:func
+            #
+            # and 'mod:func' returns a string, it's impossible to 'merge' with the existing data.
+            logger.error("Values still in 'val': %s", value)
+            raise exceptions.BadSchemaError(
+                "There were extra key/value pairs in the 'val' for this parametrize mark, but the ext function {} returned '{}' (of type {}) that was not a dictionary. It is impossible to merge these values.".format(
+                    ext, new_value, type(new_value)
+                )
+            )
+
+    return key, value
+
+
+def _generate_parametrized_test_items(
+    keys: Iterable[Union[str, List, Tuple]], vals_combination: Iterable[Tuple[str, str]]
+) -> Tuple[Mapping[str, Any], str]:
     """Generate test name from given key(s)/value(s) combination
 
     Args:
         keys: list of keys to format name with
-        vals_combination (tuple(str)): this combination of values for the key
+        vals_combination this combination of values for the key
+
+    Returns:
+        tuple of the variables for the stage and the generated stage name
     """
-    flattened_values = []
-    variables = {}
+    flattened_values: List[Iterable[str]] = []
+    variables: Dict[str, Any] = {}
 
     # combination of keys and the values they correspond to
     for pair in zip(keys, vals_combination):
@@ -103,7 +150,7 @@ def _generate_parametrized_test_items(keys: List, vals_combination):
         # very weird looking
         if isinstance(key, str):
             variables[key] = value
-            flattened_values += [value]
+            flattened_values.append(value)
         else:
             if not isinstance(value, (list, tuple)):
                 value = [value]
@@ -111,47 +158,15 @@ def _generate_parametrized_test_items(keys: List, vals_combination):
             if len(value) != len(key):
                 raise exceptions.BadSchemaError(
                     "Invalid match between numbers of keys and number of values in parametrize mark ({} keys, {} values)".format(
-                        (key), (value)
+                        key, value
                     )
                 )
 
             for subkey, subvalue in zip(key, value):
                 variables[subkey] = subvalue
-                flattened_values += [subvalue]
+                flattened_values.append(subvalue)
 
-    def maybe_load_ext(v):
-        key, value = v
-
-        if is_ext_function(value):
-            # If it is an ext function, load the new (or supplemental) value[s]
-            ext = value.pop("$ext")
-            f = get_wrapped_create_function(ext)
-            new_value = f()
-
-            if len(value) == 0:
-                # Use only this new value
-                return key, new_value
-            elif isinstance(new_value, dict):
-                # Merge with some existing data. At this point 'value' is known to be a dict.
-                return key, deep_dict_merge(value, f())
-            else:
-                # For example, if it's defined like
-                #
-                # - testkey: testval
-                #   $ext:
-                #     function: mod:func
-                #
-                # and 'mod:func' returns a string, it's impossible to 'merge' with the existing data.
-                logger.error("Values still in 'val': %s", value)
-                raise exceptions.BadSchemaError(
-                    "There were extra key/value pairs in the 'val' for this parametrize mark, but the ext function {} returned '{}' (of type {}) that was not a dictionary. It is impossible to merge these values.".format(
-                        ext, new_value, type(new_value)
-                    )
-                )
-
-        return key, value
-
-    variables = dict(map(maybe_load_ext, variables.items()))
+    variables = dict(map(_maybe_load_ext, variables.items()))
 
     logger.debug("Variables for this combination: %s", variables)
     logger.debug("Values for this combination: %s", flattened_values)
@@ -205,7 +220,7 @@ def _get_parametrized_items(
             "Invalid match between numbers of keys and number of values in parametrize mark"
         ) from e
 
-    keys = [i["parametrize"]["key"] for i in parametrize_marks]
+    keys: List[str] = [i["parametrize"]["key"] for i in parametrize_marks]
 
     for vals_combination in combined:
         logger.debug("Generating test for %s/%s", keys, vals_combination)
@@ -346,7 +361,7 @@ class YamlFile(pytest.File):
 
         try:
             # Convert to a list so we can catch parser exceptions
-            all_tests = list(
+            all_tests: Iterable[dict] = list(
                 yaml.load_all(
                     self.path.open(encoding="utf-8"),
                     Loader=IncludeLoader,  # type:ignore

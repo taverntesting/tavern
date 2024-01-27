@@ -6,7 +6,7 @@ from typing import Any, List
 
 from tavern._core.strict_util import StrictLevel
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass(frozen=True)

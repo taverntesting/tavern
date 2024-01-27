@@ -22,7 +22,7 @@ def test_host_required():
 
 @pytest.fixture(name="fake_client")
 def fix_fake_client():
-    args = {"connect": {"host": "localhost"}}
+    args = {"connect": {"host": "localhost", "timeout": 0.6}}
 
     mqtt_client = MQTTClient(**args)
 
@@ -87,7 +87,7 @@ class TestClient:
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")
 
-    def test_assert_message_published_failure(self, fake_client):
+    def test_assert_message_published_failure(self, fake_client: MQTTClient):
         """If it couldn't publish the message, error out"""
 
         class FakeMessage(paho.MQTTMessageInfo):

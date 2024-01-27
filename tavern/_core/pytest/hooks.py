@@ -3,7 +3,13 @@ import logging.config
 import os
 import pathlib
 import re
+import typing
 from textwrap import dedent
+from typing import Optional
+
+if typing.TYPE_CHECKING:
+    from .file import YamlFile
+
 
 import pytest
 import yaml
@@ -18,7 +24,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     add_ini_options(parser)
 
 
-def pytest_collect_file(parent, path: os.PathLike):
+def pytest_collect_file(parent, path: os.PathLike) -> Optional["YamlFile"]:
     """On collecting files, get any files that end in .tavern.yaml or .tavern.yml as tavern
     test files
     """

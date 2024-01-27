@@ -61,7 +61,7 @@ def safe_length(var: Sized) -> int:
         return -1
 
 
-def validate_comparison(each_comparison):
+def validate_comparison(each_comparison: Dict[Any, Any]):
     if extra := set(each_comparison.keys()) - {"jmespath", "operator", "expected"}:
         raise exceptions.BadSchemaError(
             "Invalid keys given to JMES validation function (got extra keys: {})".format(
