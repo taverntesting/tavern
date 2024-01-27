@@ -2,6 +2,9 @@ import contextlib
 import json
 import logging
 from collections.abc import Mapping
+from typing import (
+    Any,
+)
 from urllib.parse import parse_qs, urlparse
 
 import requests
@@ -18,14 +21,14 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class RestResponse(BaseResponse):
+    response: requests.Response
+
     def __init__(
         self, session, name: str, expected, test_block_config: TestConfig
     ) -> None:
         defaults = {"status_code": 200}
 
         super().__init__(name, deep_dict_merge(defaults, expected), test_block_config)
-
-        self.status_code: int | None = None
 
         def check_code(code: int) -> None:
             if int(code) not in _codes:
@@ -47,7 +50,7 @@ class RestResponse(BaseResponse):
         else:
             return "<Not run yet>"
 
-    def _verbose_log_response(self, response) -> None:
+    def _verbose_log_response(self, response: requests.Response) -> None:
         """Verbosely log the response object, with query params etc."""
 
         logger.info("Response: '%s'", response)
@@ -78,7 +81,7 @@ class RestResponse(BaseResponse):
             logger.debug("Redirect location: %s", to_path)
             log_dict_block(redirect_query_params, "Redirect URL query parameters")
 
-    def _get_redirect_query_params(self, response) -> dict[str, str]:
+    def _get_redirect_query_params(self, response: requests.Response) -> dict[str, str]:
         """If there was a redirect header, get any query parameters from it"""
 
         try:
@@ -98,7 +101,7 @@ class RestResponse(BaseResponse):
 
         return redirect_query_params
 
-    def _check_status_code(self, status_code, body) -> None:
+    def _check_status_code(self, status_code: int | list[int], body: Any) -> None:
         expected_code = self.expected["status_code"]
 
         if (isinstance(expected_code, int) and status_code == expected_code) or (
@@ -108,7 +111,7 @@ class RestResponse(BaseResponse):
                 "Status code '%s' matched expected '%s'", status_code, expected_code
             )
             return
-        elif 400 <= status_code < 500:
+        elif isinstance(status_code, int) and 400 <= status_code < 500:
             # special case if there was a bad request. This assumes that the
             # response would contain some kind of information as to why this
             # request was rejected.
@@ -147,7 +150,6 @@ class RestResponse(BaseResponse):
         )
 
         self.response = response
-        self.status_code = response.status_code
 
         # Get things to use from the response
         try:
@@ -177,7 +179,7 @@ class RestResponse(BaseResponse):
         self._maybe_run_validate_functions(response)
 
         # Get any keys to save
-        saved = {}
+        saved: dict = {}
 
         saved.update(self.maybe_get_save_values_from_save_block("json", body))
         saved.update(

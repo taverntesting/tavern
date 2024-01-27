@@ -5,6 +5,7 @@ import requests
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
 from tavern._core.plugins import PluginHelperBase
+from tavern._core.pytest.config import TestConfig
 
 from .request import RestRequest
 from .response import RestResponse
@@ -19,7 +20,9 @@ class TavernRestPlugin(PluginHelperBase):
     request_block_name = "request"
 
     @staticmethod
-    def get_expected_from_request(response_block, test_block_config, session):
+    def get_expected_from_request(
+        response_block: dict, test_block_config: TestConfig, session
+    ):
         if response_block is None:
             raise exceptions.MissingSettingsError(
                 "no response block specified for HTTP test stage"

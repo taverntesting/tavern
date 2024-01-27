@@ -58,7 +58,7 @@ def is_valid_reqresp_plugin(ext: stevedore.extension.Extension) -> bool:
         ext: class or module plugin object
 
     Returns:
-        bool: Whether the plugin has everything we need to use it
+        Whether the plugin has everything we need to use it
     """
     required = [
         # MQTTClient, requests.Session

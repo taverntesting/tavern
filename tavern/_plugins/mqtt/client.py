@@ -6,6 +6,7 @@ import threading
 import time
 from collections.abc import Mapping, MutableMapping
 from queue import Empty, Full, Queue
+from typing import Any
 
 import paho.mqtt.client as paho
 from paho.mqtt.client import MQTTMessageInfo
@@ -290,7 +291,9 @@ class MQTTClient:
         self._client.user_data_set(self._userdata)
 
     @staticmethod
-    def _on_message(client, userdata, message) -> None:
+    def _on_message(
+        client, userdata: Mapping[str, Any], message: paho.MQTTMessage
+    ) -> None:
         """Add any messages received to the queue
 
         Todo:
@@ -348,16 +351,18 @@ class MQTTClient:
     def _on_socket_close(client, userdata, socket) -> None:
         logger.debug("MQTT socket closed")
 
-    def message_received(self, topic: str, timeout: int = 1):
+    def message_received(
+        self, topic: str, timeout: float | int = 1
+    ) -> paho.MQTTMessage | None:
         """Check that a message is in the message queue
 
         Args:
-            topic (str): topic to fetch message for
-            timeout (int): How long to wait before signalling that the message
+            topic: topic to fetch message for
+            timeout: How long to wait before signalling that the message
                 was not received.
 
         Returns:
-            paho.MQTTMessage: whether the message was received within the timeout
+            the message, if one was received, otherwise None
 
         Todo:
             Allow regexes for topic names? Better validation for mqtt payloads
@@ -381,8 +386,8 @@ class MQTTClient:
         self,
         topic: str,
         payload: None | bytearray | bytes | float | str = None,
-        qos=None,
-        retain=None,
+        qos: int | None = None,
+        retain: bool | None = None,
     ) -> MQTTMessageInfo:
         """publish message using paho library"""
         self._wait_for_subscriptions()
@@ -396,7 +401,14 @@ class MQTTClient:
             kwargs["retain"] = retain
         msg = self._client.publish(topic, payload, **kwargs)
 
-        if not msg.is_published:
+        # Wait for 2*connect timeout which should be plenty to publish the message even with qos 2
+        # TODO: configurable
+        try:
+            msg.wait_for_publish(self._connect_timeout * 2)
+        except (RuntimeError, ValueError) as e:
+            raise exceptions.MQTTError("could not publish message") from e
+
+        if not msg.is_published():
             raise exceptions.MQTTError(
                 "err {:s}: {:s}".format(
                     _err_vals.get(msg.rc, "unknown"), paho.error_string(msg.rc)

@@ -22,9 +22,6 @@ def _get_or_wrap_global_cfg(stack: ExitStack, tavern_global_cfg: dict | str) -> 
     Raises:
         InvalidSettingsError: If global config was not of the right type or a given path
             does not exist
-
-    Todo:
-        Once python 2 is dropped, allow this to take a 'path like object'
     """
 
     if isinstance(tavern_global_cfg, str):

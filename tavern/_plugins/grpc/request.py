@@ -2,7 +2,6 @@ import dataclasses
 import functools
 import json
 import logging
-from collections.abc import Mapping
 
 import grpc
 from box import Box
@@ -16,7 +15,7 @@ from tavern.request import BaseRequest
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def get_grpc_args(rspec, test_block_config):
+def get_grpc_args(rspec: dict, test_block_config: TestConfig) -> dict:
     """Format GRPC request args"""
 
     fspec = format_keys(rspec, test_block_config.variables)
@@ -47,7 +46,7 @@ class GRPCRequest(BaseRequest):
     """
 
     def __init__(
-        self, client: GRPCClient, request_spec: Mapping, test_block_config: TestConfig
+        self, client: GRPCClient, request_spec: dict, test_block_config: TestConfig
     ) -> None:
         expected = {"host", "service", "body"}
 

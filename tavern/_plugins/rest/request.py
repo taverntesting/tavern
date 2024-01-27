@@ -2,10 +2,12 @@ import contextlib
 import json
 import logging
 import warnings
-from collections.abc import Mapping, MutableMapping
+from collections.abc import Callable, Mapping
 from contextlib import ExitStack
 from itertools import filterfalse, tee
-from typing import ClassVar
+from typing import (
+    ClassVar,
+)
 from urllib.parse import quote_plus
 
 import requests
@@ -25,7 +27,7 @@ from tavern.request import BaseRequest
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def get_request_args(rspec: MutableMapping, test_block_config: TestConfig) -> dict:
+def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
     """Format the test spec given values inthe global config
 
     Todo:
@@ -236,7 +238,7 @@ def _check_allow_redirects(rspec: dict, test_block_config: TestConfig):
         test_block_config: config available for test
 
     Returns:
-        bool: Whether to allow redirects for this stage or not
+        Whether to allow redirects for this stage or not
     """
     # By default, don't follow redirects
     allow_redirects = False
@@ -356,7 +358,7 @@ class RestRequest(BaseRequest):
         Args:
             session: existing session
             rspec: test spec
-            test_block_config   : Any configuration for this the block of
+            test_block_config: Any configuration for this the block of
                 tests
 
         Raises:
@@ -395,7 +397,7 @@ class RestRequest(BaseRequest):
         )
 
         # Used further down, but pop it asap to avoid unwanted side effects
-        file_body = request_args.pop("file_body", None)
+        file_body: str | None = request_args.pop("file_body", None)
 
         # If there was a 'cookies' key, set it in the request
         expected_cookies = _read_expected_cookies(session, rspec, test_block_config)
@@ -440,16 +442,13 @@ class RestRequest(BaseRequest):
 
                 return session.request(**self._request_args)
 
-        self._prepared = prepared_request
+        self._prepared: Callable[[], requests.Response] = prepared_request
 
-    def run(self):
+    def run(self) -> requests.Response:
         """Runs the prepared request and times it
 
-        Todo:
-            time it
-
         Returns:
-            requests.Response: response object
+            response object
         """
 
         attach_yaml(

@@ -1,6 +1,8 @@
 import collections.abc
+import dataclasses
 import inspect
 import logging
+from collections.abc import Generator
 from typing import Any
 
 from tavern._core import exceptions
@@ -9,19 +11,18 @@ from tavern._core.extfunctions import get_wrapped_response_function
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@dataclasses.dataclass
 class Tinctures:
-    def __init__(self, tinctures: list[Any]) -> None:
-        self._tinctures = tinctures
-        self._needs_response: list[Any] = []
+    tinctures: list[Any]
+    needs_response: list[Generator] = dataclasses.field(default_factory=list)
 
     def start_tinctures(self, stage: collections.abc.Mapping) -> None:
-        results = [t(stage) for t in self._tinctures]
-        self._needs_response = []
+        results = [t(stage) for t in self.tinctures]
 
         for r in results:
             if inspect.isgenerator(r):
                 # Store generator and start it
-                self._needs_response.append(r)
+                self.needs_response.append(r)
                 next(r)
 
     def end_tinctures(self, expected: collections.abc.Mapping, response) -> None:
@@ -29,14 +30,15 @@ class Tinctures:
         Send the response object to any tinctures that want it
 
         Args:
-            response: The response from 'run' for the stage
+            expected: 'expected' from initial test - type varies depending on backend
+            response: The response from 'run' for the stage - type varies depending on backend
         """
-        if self._needs_response is None:
+        if self.needs_response is None:
             raise RuntimeError(
                 "should not be called before accumulating tinctures which need a response"
             )
 
-        for n in self._needs_response:
+        for n in self.needs_response:
             try:
                 n.send((expected, response))
             except StopIteration:

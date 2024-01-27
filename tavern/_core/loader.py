@@ -37,13 +37,13 @@ class RememberComposer(Composer):
 
     def compose_document(self) -> Node | None:
         # Drop the DOCUMENT-START event.
-        self.get_event()
+        self.get_event()  # type:ignore
 
         # Compose the root node.
         node = self.compose_node(None, None)  # type:ignore
 
         # Drop the DOCUMENT-END event.
-        self.get_event()
+        self.get_event()  # type:ignore
 
         # If we don't drop the anchors here, then we can keep anchors across
         # documents.
@@ -110,8 +110,6 @@ class IncludeLoader(
     between documents"""
 
     def __init__(self, stream):
-        """Initialise Loader."""
-
         try:
             self._root = os.path.split(stream.name)[0]
         except AttributeError:

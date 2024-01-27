@@ -19,7 +19,9 @@ request_type = GRPCRequest
 request_block_name = "grpc_request"
 
 
-def get_expected_from_request(response_block, test_block_config: TestConfig, session):
+def get_expected_from_request(
+    response_block, test_block_config: TestConfig, session: GRPCClient
+):
     f_expected = format_keys(response_block, test_block_config.variables)
     expected = f_expected
 

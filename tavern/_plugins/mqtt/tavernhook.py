@@ -1,4 +1,5 @@
 import logging
+from collections.abc import Iterable
 from os.path import abspath, dirname, join
 
 import yaml
@@ -19,8 +20,10 @@ request_block_name = "mqtt_publish"
 
 
 def get_expected_from_request(
-    response_block, test_block_config: TestConfig, session: MQTTClient
-):
+    response_block: dict | Iterable[dict],
+    test_block_config: TestConfig,
+    session: MQTTClient,
+) -> dict | None:
     expected: dict | None = None
 
     # mqtt response is not required

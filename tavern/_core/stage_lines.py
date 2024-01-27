@@ -1,9 +1,33 @@
+import dataclasses
 import logging
+from collections.abc import Iterable, Mapping
+from typing import (
+    Protocol,
+    Union,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def get_stage_lines(stage):
+@dataclasses.dataclass
+class YamlMark:
+    """A pyyaml mark"""
+
+    line: int = 0
+    name: str | None = None
+
+
+class _WithMarks(Protocol):
+    """Things loaded by pyyaml have these"""
+
+    start_mark: YamlMark
+    end_mark: YamlMark
+
+
+PyYamlDict = Union[_WithMarks, Mapping]
+
+
+def get_stage_lines(stage: PyYamlDict) -> tuple[int, int, int]:
     first_line = start_mark(stage).line - 1
     last_line = end_mark(stage).line
     line_start = first_line + 1
@@ -11,7 +35,9 @@ def get_stage_lines(stage):
     return first_line, last_line, line_start
 
 
-def read_relevant_lines(yaml_block, first_line, last_line):
+def read_relevant_lines(
+    yaml_block: PyYamlDict, first_line: int, last_line: int
+) -> Iterable[str]:
     """Get lines between start and end mark"""
 
     filename = get_stage_filename(yaml_block)
@@ -26,24 +52,19 @@ def read_relevant_lines(yaml_block, first_line, last_line):
                 yield line.split("#", 1)[0].rstrip()
 
 
-def get_stage_filename(yaml_block):
+def get_stage_filename(yaml_block: PyYamlDict) -> str | None:
     return start_mark(yaml_block).name
 
 
-class EmptyBlock:
-    line = 0
-    name = None
-
-
-def start_mark(yaml_block):
+def start_mark(yaml_block: PyYamlDict) -> type[YamlMark] | YamlMark:
     try:
-        return yaml_block.start_mark
+        return yaml_block.start_mark  # type:ignore
     except AttributeError:
-        return EmptyBlock
+        return YamlMark()
 
 
-def end_mark(yaml_block):
+def end_mark(yaml_block: PyYamlDict) -> type[YamlMark] | YamlMark:
     try:
-        return yaml_block.end_mark
+        return yaml_block.end_mark  # type:ignore
     except AttributeError:
-        return EmptyBlock
+        return YamlMark()

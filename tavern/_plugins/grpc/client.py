@@ -237,8 +237,9 @@ class GRPCClient:
 
         return self._get_grpc_service(channel, service, method)
 
-    def __enter__(self) -> None:
+    def __enter__(self) -> "GRPCClient":
         logger.debug("Connecting to GRPC")
+        return self
 
     def call(
         self,

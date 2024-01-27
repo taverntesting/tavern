@@ -4,8 +4,11 @@ import logging
 import os
 import re
 import string
+import typing
 from collections.abc import Collection, Iterable, Mapping, Sequence
-from typing import Any, TypeVar
+from typing import (
+    Any,
+)
 
 import box
 import jmespath
@@ -56,7 +59,7 @@ def _check_and_format_values(to_format: str, box_vars: Mapping[str, Any]) -> str
     return to_format.format(**box_vars)
 
 
-def _attempt_find_include(to_format: str, box_vars: box.Box):
+def _attempt_find_include(to_format: str, box_vars: box.Box) -> str | None:
     formatter = string.Formatter()
     would_format = list(formatter.parse(to_format))
 
@@ -90,20 +93,26 @@ def _attempt_find_include(to_format: str, box_vars: box.Box):
 
     would_replace = formatter.get_field(field_name, [], box_vars)[0]
 
-    return formatter.convert_field(would_replace, conversion)  # type: ignore
+    if conversion is None:
+        return would_replace
+
+    return formatter.convert_field(would_replace, conversion)
+
+
+T = typing.TypeVar("T", str, dict, list, tuple)
 
 
 def format_keys(
-    val: TypeConvertToken | str | dict | list | tuple | Mapping | set,
+    val: T,
     variables: Mapping | Box,
     *,
     no_double_format: bool = True,
     dangerously_ignore_string_format_errors: bool = False,
-):
+) -> T:
     """recursively format a dictionary with the given values
 
     Args:
-        val: Input to format
+        val: Input thing to format
         variables: Dictionary of keys to format it with
         no_double_format: Whether to use the 'inner formatted string' class to avoid double formatting
             This is required if passing something via pytest-xdist, such as markers:
@@ -111,11 +120,12 @@ def format_keys(
         dangerously_ignore_string_format_errors: whether to ignore any string formatting errors. This will result
             in broken output, only use for debugging purposes.
 
+    Raises:
+        MissingFormatError: if a format variable was not found in variables
+
     Returns:
         recursively formatted values
     """
-    formatted = val
-
     format_keys_ = functools.partial(
         format_keys,
         dangerously_ignore_string_format_errors=dangerously_ignore_string_format_errors,
@@ -127,15 +137,15 @@ def format_keys(
         box_vars = variables
 
     if isinstance(val, dict):
-        formatted = {}
-        # formatted = {key: format_keys(val[key], box_vars) for key in val}
-        for key in val:
-            formatted[key] = format_keys_(val[key], box_vars)
-    elif isinstance(val, (list, tuple, set)):
-        formatted = [format_keys_(item, box_vars) for item in val]  # type: ignore
-    elif isinstance(formatted, FormattedString):
-        logger.debug("Already formatted %s, not double-formatting", formatted)
+        return {key: format_keys_(val[key], box_vars) for key in val}
+    elif isinstance(val, tuple):
+        return tuple(format_keys_(item, box_vars) for item in val)
+    elif isinstance(val, list):
+        return [format_keys_(item, box_vars) for item in val]
+    elif isinstance(val, FormattedString):
+        logger.debug("Already formatted %s, not double-formatting", val)
     elif isinstance(val, str):
+        formatted = val
         try:
             formatted = _check_and_format_values(val, box_vars)
         except exceptions.MissingFormatError:
@@ -144,17 +154,19 @@ def format_keys(
 
         if no_double_format:
             formatted = FormattedString(formatted)  # type: ignore
+
+        return formatted
     elif isinstance(val, TypeConvertToken):
         logger.debug("Got type convert token '%s'", val)
         if isinstance(val, ForceIncludeToken):
-            formatted = _attempt_find_include(val.value, box_vars)
+            return _attempt_find_include(val.value, box_vars)
         else:
             value = format_keys_(val.value, box_vars)
-            formatted = val.constructor(value)
+            return val.constructor(value)
     else:
-        logger.debug("Not formatting something of type '%s'", type(formatted))
+        logger.debug("Not formatting something of type '%s'", type(val))
 
-    return formatted
+    return val
 
 
 def recurse_access_key(data: dict | list[str] | Mapping, query: str):
@@ -172,8 +184,11 @@ def recurse_access_key(data: dict | list[str] | Mapping, query: str):
         data: Data to search in
         query: Query to run
 
+    Raises:
+        JMESError: if there was an error parsing the query
+
     Returns:
-        object: Whatever was found by the search
+        Whatever was found by the search
     """
 
     try:
@@ -196,7 +211,7 @@ def recurse_access_key(data: dict | list[str] | Mapping, query: str):
     return from_jmespath
 
 
-def _deprecated_recurse_access_key(current_val: dict, keys: list[str]):
+def _deprecated_recurse_access_key(current_val: Mapping | list, keys: list[str]):
     """Given a list of keys and a dictionary, recursively access the dicionary
     using the keys until we find the key its looking for
 
@@ -218,7 +233,7 @@ def _deprecated_recurse_access_key(current_val: dict, keys: list[str]):
         KeyError: dict key not found in data
 
     Returns:
-        str or dict: value of subkey in dict
+        value of subkey in dict
     """
     logger.debug("Recursively searching for '%s' in '%s'", keys, current_val)
 
@@ -231,7 +246,10 @@ def _deprecated_recurse_access_key(current_val: dict, keys: list[str]):
             current_key = int(current_key)
 
         try:
-            return _deprecated_recurse_access_key(current_val[current_key], keys)
+            return _deprecated_recurse_access_key(
+                current_val[current_key],  # type:ignore
+                keys,
+            )
         except (IndexError, KeyError, TypeError) as e:
             logger.error(
                 "%s accessing data - looking for '%s' in '%s'",
@@ -328,7 +346,7 @@ def yield_keyvals(block: _CanCheck) -> Iterable[tuple[list[str], str, str]]:
         block: input matches
 
     Yields:
-        key split on dots, key, expected value
+        iterable of (key split on dots, key, expected value)
     """
     if isinstance(block, dict):
         for joined_key, expected_val in block.items():
@@ -340,12 +358,12 @@ def yield_keyvals(block: _CanCheck) -> Iterable[tuple[list[str], str, str]]:
             yield [sidx], sidx, val
 
 
-T = TypeVar("T", Mapping, set, Sequence, Collection)
+Checked = typing.TypeVar("Checked", dict, Collection, str)
 
 
 def check_keys_match_recursive(
-    expected_val: T,
-    actual_val: T,
+    expected_val: Checked,
+    actual_val: Checked,
     keys: list[str | int],
     strict: StrictSettingKinds = True,
 ) -> None:
@@ -450,8 +468,8 @@ def check_keys_match_recursive(
                 raise exceptions.KeyMismatchError(msg) from e
 
         if isinstance(expected_val, dict):
-            akeys = set(actual_val.keys())  # type:ignore
             ekeys = set(expected_val.keys())
+            akeys = set(actual_val.keys())  # type:ignore
 
             if akeys != ekeys:
                 extra_actual_keys = akeys - ekeys

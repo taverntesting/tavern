@@ -1,9 +1,12 @@
+import dataclasses
 import logging
 import traceback
 from abc import abstractmethod
 from collections.abc import Mapping
 from textwrap import indent
-from typing import Any
+from typing import (
+    Any,
+)
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
@@ -20,27 +23,23 @@ def indent_err_text(err: str) -> str:
     return indent(err, " " * 4)
 
 
+@dataclasses.dataclass
 class BaseResponse:
-    def __init__(self, name: str, expected, test_block_config: TestConfig) -> None:
-        # Stage name
-        self.name = name
+    name: str
+    expected: Any
+    test_block_config: TestConfig
+    response: Any | None = None
 
-        # all errors in this response
-        self.errors: list[str] = []
+    validate_functions: list[Any] = dataclasses.field(init=False, default_factory=list)
+    errors: list[str] = dataclasses.field(init=False, default_factory=list)
 
-        self.validate_functions: list = []
-        self._check_for_validate_functions(expected)
-
-        self.test_block_config = test_block_config
-
-        self.expected = expected
-
-        self.response: Any | None = None
+    def __post_init__(self) -> None:
+        self._check_for_validate_functions(self.expected)
 
     def _str_errors(self) -> str:
         return "- " + "\n- ".join(self.errors)
 
-    def _adderr(self, msg, *args, e=None) -> None:
+    def _adderr(self, msg: str, *args, e=None) -> None:
         if e:
             logger.exception(msg, *args)
         else:
@@ -69,10 +68,10 @@ class BaseResponse:
             Optionally use a validation library too
 
         Args:
-            strict: strictness setting for this block
             expected_block: expected data
             block: actual data
             blockname: 'name' of this block (params, mqtt, etc) for error messages
+            strict: strictness setting for this block
         """
 
         if expected_block is None:
@@ -151,14 +150,14 @@ class BaseResponse:
         # Could put in an isinstance check here
         check_deprecated_validate("json")
 
-    def _maybe_run_validate_functions(self, response) -> None:
+    def _maybe_run_validate_functions(self, response: Any) -> None:
         """Run validation functions if available
 
         Note:
              'response' will be different depending on where this is called from
 
         Args:
-            response (object): Response type. This could be whatever the response type/plugin uses.
+            response: Response type. This could be whatever the response type/plugin uses.
         """
         logger.debug(
             "Calling ext function from '%s' with response '%s'", type(self), response
@@ -177,7 +176,7 @@ class BaseResponse:
 
     def maybe_get_save_values_from_ext(
         self, response: Any, read_save_from: Mapping
-    ) -> dict:
+    ) -> Mapping:
         """If there is an $ext function in the save block, call it and save the response
 
         Args:
@@ -203,7 +202,7 @@ class BaseResponse:
         except Exception as e:
             self._adderr(
                 "Error calling save function '%s':\n%s",
-                wrapped.func,
+                wrapped.func,  # type:ignore
                 indent_err_text(traceback.format_exc()),
                 e=e,
             )
@@ -227,12 +226,14 @@ class BaseResponse:
         save_from: Mapping | None,
         *,
         outer_save_block: Mapping | None = None,
-    ) -> dict:
+    ) -> Mapping:
         """Save a value from a specific block in the response.
 
         See docs for maybe_get_save_values_from_given_block for more info
 
-        Keyword Args:
+        Args:
+            key: Name of key being used to save, for debugging
+            save_from: An element of the response from which values are being saved
             outer_save_block: Read things to save from this block instead of self.expected
         """
 
@@ -254,7 +255,7 @@ class BaseResponse:
         key: str,
         save_from: Mapping | None,
         to_save: Mapping,
-    ) -> dict:
+    ) -> Mapping:
         """Save a value from a specific block in the response.
 
         This is different from maybe_get_save_values_from_ext - depends on the kind of response
@@ -265,7 +266,7 @@ class BaseResponse:
             to_save: block containing information about things to save
 
         Returns:
-            dict: dictionary of save_name: value, where save_name is the key we
+            mapping of save_name: value, where save_name is the key we
                 wanted to save this value as
         """
 

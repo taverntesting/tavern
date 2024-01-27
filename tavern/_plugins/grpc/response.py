@@ -93,7 +93,7 @@ class GRPCResponse(BaseResponse):
         logger.debug(f"grpc details: {grpc_response.details()}")
 
         # Get any keys to save
-        saved = {}
+        saved: dict[str, Any] = {}
         verify_status = [StatusCode.OK.name]
         if status := self.expected.get("status", None):
             verify_status = _to_grpc_name(status)  # type: ignore

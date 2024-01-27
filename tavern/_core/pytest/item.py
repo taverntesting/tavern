@@ -5,7 +5,7 @@ from collections.abc import Iterable, MutableMapping
 
 import pytest
 import yaml
-from _pytest._code.code import TerminalRepr
+from _pytest._code.code import ExceptionInfo, TerminalRepr
 from _pytest.nodes import Node
 from pytest import Mark, MarkDecorator
 
@@ -34,10 +34,13 @@ class YamlItem(pytest.Item):
     Attributes:
         path: filename that this test came from
         spec: The whole dictionary of the test
+        global_cfg: configuration for test
     """
 
     # See https://github.com/taverntesting/tavern/issues/825
     _patched_yaml = False
+
+    global_cfg: TestConfig
 
     def __init__(
         self, *, name: str, parent, spec: MutableMapping, path: pathlib.Path, **kwargs
@@ -48,8 +51,6 @@ class YamlItem(pytest.Item):
         super().__init__(name, parent, **kwargs)
         self.path = path
         self.spec = spec
-
-        self.global_cfg: TestConfig | None = None
 
         if not YamlItem._patched_yaml:
             yaml.parser.Parser.process_empty_scalar = (  # type:ignore
@@ -261,8 +262,8 @@ class YamlItem(pytest.Item):
             )
 
     def repr_failure(
-        self, excinfo: pytest.ExceptionInfo[BaseException], style: str | None = None
-    ) -> TerminalRepr | str:
+        self, excinfo: ExceptionInfo[BaseException], style: str | None = None
+    ) -> TerminalRepr | str | ReprdError:
         """called when self.runtest() raises an exception.
 
         By default, will raise a custom formatted traceback if it's a tavern error. if not, will use the default
