@@ -4,7 +4,7 @@ import logging
 import warnings
 from contextlib import ExitStack
 from itertools import filterfalse, tee
-from typing import ClassVar, Dict, List, Mapping, Optional
+from typing import Callable, ClassVar, Dict, List, Mapping, Optional
 from urllib.parse import quote_plus
 
 import requests
@@ -235,7 +235,7 @@ def _check_allow_redirects(rspec: dict, test_block_config: TestConfig):
         test_block_config: config available for test
 
     Returns:
-        bool: Whether to allow redirects for this stage or not
+        Whether to allow redirects for this stage or not
     """
     # By default, don't follow redirects
     allow_redirects = False
@@ -439,7 +439,7 @@ class RestRequest(BaseRequest):
 
                 return session.request(**self._request_args)
 
-        self._prepared = prepared_request
+        self._prepared: Callable[[], requests.Response] = prepared_request
 
     def run(self) -> requests.Response:
         """Runs the prepared request and times it

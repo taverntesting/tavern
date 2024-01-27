@@ -51,7 +51,7 @@ def import_ext_function(entrypoint: str) -> Callable:
             module.submodule:function
 
     Returns:
-        function: function loaded from entrypoint
+        function loaded from entrypoint
 
     Raises:
         InvalidExtFunctionError: If the module or function did not exist

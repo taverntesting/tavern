@@ -66,7 +66,7 @@ class SchemaCache:
             with_plugins (bool): Whether to load plugin schema into this schema as well
 
         Returns:
-            dict: loaded schema
+            loaded schema
         """
 
         if with_plugins:
