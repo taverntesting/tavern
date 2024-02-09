@@ -1,5 +1,6 @@
 import logging
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, TypedDict, Union
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, TypedDict, Union
 
 import proto.message
 from google.protobuf import json_format
@@ -19,10 +20,10 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-GRPCCode = Union[str, int, List[str], List[int]]
+GRPCCode = Union[str, int, list[str], list[int]]
 
 
-def _to_grpc_name(status: GRPCCode) -> Union[str, List[str]]:
+def _to_grpc_name(status: GRPCCode) -> str | list[str]:
     if isinstance(status, list):
         return [_to_grpc_name(s) for s in status]  # type:ignore
 
@@ -46,7 +47,7 @@ class GRPCResponse(BaseResponse):
         self,
         client: GRPCClient,
         name: str,
-        expected: Union[_GRPCExpected, Mapping],
+        expected: _GRPCExpected | Mapping,
         test_block_config: TestConfig,
     ) -> None:
         check_expected_keys({"body", "status", "details"}, expected)
@@ -92,7 +93,7 @@ class GRPCResponse(BaseResponse):
         logger.debug(f"grpc details: {grpc_response.details()}")
 
         # Get any keys to save
-        saved: Dict[str, Any] = {}
+        saved: dict[str, Any] = {}
         verify_status = [StatusCode.OK.name]
         if status := self.expected.get("status", None):
             verify_status = _to_grpc_name(status)  # type: ignore

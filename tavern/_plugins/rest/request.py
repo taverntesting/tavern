@@ -2,9 +2,12 @@ import contextlib
 import json
 import logging
 import warnings
+from collections.abc import Callable, Mapping
 from contextlib import ExitStack
 from itertools import filterfalse, tee
-from typing import Callable, ClassVar, Dict, List, Mapping, Optional
+from typing import (
+    ClassVar,
+)
 from urllib.parse import quote_plus
 
 import requests
@@ -24,7 +27,7 @@ from tavern.request import BaseRequest
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def get_request_args(rspec: Dict, test_block_config: TestConfig) -> dict:
+def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
     """Format the test spec given values inthe global config
 
     Todo:
@@ -263,7 +266,7 @@ def _check_allow_redirects(rspec: dict, test_block_config: TestConfig):
 
 def _read_expected_cookies(
     session: requests.Session, rspec: Mapping, test_block_config: TestConfig
-) -> Optional[dict]:
+) -> dict | None:
     """
     Read cookies to inject into request, ignoring others which are present
 
@@ -333,7 +336,7 @@ def _read_expected_cookies(
 
 
 class RestRequest(BaseRequest):
-    optional_in_file: ClassVar[List[str]] = [
+    optional_in_file: ClassVar[list[str]] = [
         "json",
         "data",
         "params",
@@ -394,7 +397,7 @@ class RestRequest(BaseRequest):
         )
 
         # Used further down, but pop it asap to avoid unwanted side effects
-        file_body: Optional[str] = request_args.pop("file_body", None)
+        file_body: str | None = request_args.pop("file_body", None)
 
         # If there was a 'cookies' key, set it in the request
         expected_cookies = _read_expected_cookies(session, rspec, test_block_config)

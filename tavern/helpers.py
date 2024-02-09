@@ -2,7 +2,7 @@ import importlib
 import json
 import logging
 import re
-from typing import Dict, Iterable, Mapping, Optional
+from collections.abc import Iterable, Mapping
 
 import jmespath
 import jwt
@@ -98,7 +98,7 @@ def validate_jwt(
     return {"jwt": Box(decoded)}
 
 
-def validate_pykwalify(response: requests.Response, schema: Dict) -> None:
+def validate_pykwalify(response: requests.Response, schema: dict) -> None:
     """Make sure the response matches a given schema
 
     Args:
@@ -120,9 +120,9 @@ def validate_regex(
     response: requests.Response,
     expression: str,
     *,
-    header: Optional[str] = None,
-    in_jmespath: Optional[str] = None,
-) -> Dict[str, Box]:
+    header: str | None = None,
+    in_jmespath: str | None = None,
+) -> dict[str, Box]:
     """Make sure the response matches a regex expression
 
     Args:
@@ -173,7 +173,7 @@ def validate_regex(
     return {"regex": Box(match.groupdict())}
 
 
-def validate_content(response: requests.Response, comparisons: Iterable[Dict]) -> None:
+def validate_content(response: requests.Response, comparisons: Iterable[dict]) -> None:
     """Asserts expected value with actual value using JMES path expression
 
     Args:
@@ -199,7 +199,7 @@ def validate_content(response: requests.Response, comparisons: Iterable[Dict]) -
             raise exceptions.JMESError("Error validating JMES") from e
 
 
-def check_jmespath_match(parsed_response, query: str, expected: Optional[str] = None):
+def check_jmespath_match(parsed_response, query: str, expected: str | None = None):
     """
     Check that the JMES path given in 'query' is present in the given response
 

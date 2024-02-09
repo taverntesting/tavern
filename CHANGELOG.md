@@ -430,3 +430,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 #  2.8.0           Initial gRPC support (2024-01-20)
 
 #  2.9.0           Fix mqtt implementation checking for message publication correctly (2024-01-23)
+
+##  2.9.1           internal cleanup (2024-01-27)
