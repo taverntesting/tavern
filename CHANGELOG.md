@@ -166,6 +166,8 @@ calling run() directly will now cause a pytest isntance to be run in the backgro
 
 #  0.18.0          Add 'timeout' parameter for http requests (2018-08-24)
 
+##  show            Bump version: 0.17.2 → 0.18.0 (2018-08-24)
+
 ##  0.18.1          Add content type/encoding to uploaded files (2018-09-05)
 
 ##  0.18.2          Fix formatting environment variables in command line global config files (2018-09-21)
@@ -430,3 +432,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 #  2.8.0           Initial gRPC support (2024-01-20)
 
 #  2.9.0           Fix mqtt implementation checking for message publication correctly (2024-01-23)
+
+##  2.9.1           internal cleanup (2024-01-27)
