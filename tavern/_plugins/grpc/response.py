@@ -49,7 +49,7 @@ class GRPCResponse(BaseResponse):
         expected: Union[_GRPCExpected, Mapping],
         test_block_config: TestConfig,
     ) -> None:
-        check_expected_keys({"body", "status", "details"}, expected)
+        check_expected_keys({"body", "status", "details", "save"}, expected)
         super().__init__(name, expected, test_block_config)
 
         self._client = client
