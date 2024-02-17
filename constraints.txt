@@ -54,7 +54,7 @@ coverage==7.4.0
     # via
     #   pytest-cov
     #   tavern (pyproject.toml)
-cryptography==42.0.0
+cryptography==42.0.2
     # via secretstorage
 distlib==0.3.8
     # via virtualenv
