@@ -1,6 +1,7 @@
 import logging
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, TypedDict, Union
 
+import grpc
 import proto.message
 from google.protobuf import json_format
 from grpc import StatusCode
@@ -91,8 +92,6 @@ class GRPCResponse(BaseResponse):
         logger.debug(f"grpc status code: {grpc_response.code()}")
         logger.debug(f"grpc details: {grpc_response.details()}")
 
-        # Get any keys to save
-        saved: Dict[str, Any] = {}
         verify_status = [StatusCode.OK.name]
         if status := self.expected.get("status", None):
             verify_status = _to_grpc_name(status)  # type: ignore
@@ -115,50 +114,63 @@ class GRPCResponse(BaseResponse):
                     grpc_response.details(),
                 )
 
-        if "body" in self.expected:
-            if verify_status != ["OK"]:
-                self._adderr(
-                    "'body' was specified in response, but expected status code was not 'OK'"
-                )
-            elif grpc_response.code().name != "OK":
-                logger.info(
-                    f"skipping body checking due to {grpc_response.code()} response"
-                )
-            else:
-                _, output_type = self._client.get_method_types(response.service_name)
-                expected_parsed = output_type()
-                try:
-                    json_format.ParseDict(self.expected["body"], expected_parsed)
-                except json_format.ParseError as e:
-                    self._adderr(f"response body was not in the right format: {e}", e=e)
-
-                result: proto.message.Message = grpc_response.result()
-
-                if not isinstance(result, output_type):
-                    self._adderr(
-                        f"response from server ({type(response)}) was not the same type as expected from the registered definition ({output_type})"
-                    )
-
-                json_result = json_format.MessageToDict(
-                    result,
-                    including_default_value_fields=True,
-                    preserving_proto_field_name=True,
-                )
-
-                self._validate_block("json", json_result)
-                self._maybe_run_validate_functions(json_result)
-
-                saved.update(
-                    self.maybe_get_save_values_from_save_block("body", json_result)
-                )
-                saved.update(
-                    self.maybe_get_save_values_from_ext(json_result, self.expected)
-                )
+        saved = self._handle_grpc_response(grpc_response, response, verify_status) or {}
 
         if self.errors:
             raise TestFailError(
                 f"Test '{self.name:s}' failed:\n{self._str_errors():s}",
                 failures=self.errors,
             )
+
+        return saved
+
+    def _handle_grpc_response(
+        self,
+        grpc_response: Union[grpc.Call, grpc.Future],
+        response: "WrappedFuture",
+        verify_status: List[str],
+    ) -> Optional[Dict[str, Any]]:
+        if grpc_response.code().name != "OK":
+            # TODO: Should allow checking grpc RPC error details etc.
+            logger.info(
+                f"skipping body checking due to {grpc_response.code()} response"
+            )
+            return None
+
+        if "body" in self.expected and verify_status != ["OK"]:
+            self._adderr(
+                "'body' was specified in response, but expected status code was not 'OK'"
+            )
+            return None
+
+        _, output_type = self._client.get_method_types(response.service_name)
+        result: proto.message.Message = grpc_response.result()
+
+        if not isinstance(result, output_type):
+            # Note: This is probably unexpected in some cases
+            self._adderr(
+                f"response from server ({type(response)}) was not the same type as expected from the registered definition ({output_type})"
+            )
+            return None
+
+        json_result = json_format.MessageToDict(
+            result,
+            including_default_value_fields=True,
+            preserving_proto_field_name=True,
+        )
+
+        if "body" in self.expected:
+            expected_parsed = output_type()
+            try:
+                json_format.ParseDict(self.expected["body"], expected_parsed)
+            except json_format.ParseError as e:
+                self._adderr(f"response body was not in the right format: {e}", e=e)
+
+            self._validate_block("json", json_result)
+            self._maybe_run_validate_functions(json_result)
+
+        saved: Dict[str, Any] = {}
+        saved.update(self.maybe_get_save_values_from_save_block("body", json_result))
+        saved.update(self.maybe_get_save_values_from_ext(json_result, self.expected))
 
         return saved
