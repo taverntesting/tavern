@@ -30,7 +30,8 @@ repos:
     rev: v1.9.0
     hooks:
       - id: mypy
-        additional_dependencies: [types-requests, types-protobuf, types-PyYAML]
+        additional_dependencies:
+          [types-requests, types-protobuf, types-PyYAML, mypy-extensions]
         exclude: tests
 
 exclude: (docs/|example/)
