@@ -60,7 +60,7 @@ flit==3.9.0
 flit-core==3.9.0
     # via flit
 fluent-logger==0.11.0
-google-api-core==2.8.0
+google-api-core==2.18.0
     # via google-api-python-client
 google-api-python-client==2.123.0
 google-auth==2.29.0
@@ -70,7 +70,7 @@ google-auth==2.29.0
     #   google-auth-httplib2
 google-auth-httplib2==0.2.0
     # via google-api-python-client
-googleapis-common-protos==1.56.1
+googleapis-common-protos==1.63.0
     # via
     #   google-api-core
     #   grpcio-status
@@ -133,8 +133,9 @@ pluggy==1.4.0
     #   pytest
     #   tox
 pre-commit==3.7.0
-proto-plus==1.20.4
-protobuf==5.26.0
+proto-plus==1.23.0
+    # via google-api-core
+protobuf==4.25.3
     # via
     #   google-api-core
     #   googleapis-common-protos

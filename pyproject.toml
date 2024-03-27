@@ -61,7 +61,7 @@ grpc = [
     "grpcio-reflection",
     "grpcio-status",
     "google-api-python-client",
-    "protobuf",
+    "protobuf>=4,<5",
     "proto-plus",
 ]
 
