@@ -46,6 +46,8 @@ docutils==0.20.1
     #   recommonmark
     #   sphinx
     #   sphinx-rtd-theme
+exceptiongroup==1.2.0
+    # via pytest
 execnet==2.0.2
     # via pytest-xdist
 faker==24.4.0
@@ -78,10 +80,8 @@ grpcio==1.62.1
     #   grpc-interceptor
     #   grpcio-reflection
     #   grpcio-status
-    #   grpcio-tools
 grpcio-reflection==1.62.1
 grpcio-status==1.62.1
-grpcio-tools==1.30.0
 httplib2==0.22.0
     # via
     #   google-api-python-client
@@ -140,7 +140,6 @@ protobuf==5.26.0
     #   googleapis-common-protos
     #   grpcio-reflection
     #   grpcio-status
-    #   grpcio-tools
     #   proto-plus
 py==1.11.0
 pyasn1==0.6.0
@@ -220,6 +219,12 @@ sphinxcontrib-qthelp==1.0.7
 sphinxcontrib-serializinghtml==1.1.10
     # via sphinx
 stevedore==4.1.1
+tomli==2.0.1
+    # via
+    #   coverage
+    #   pyproject-api
+    #   pytest
+    #   tox
 tomli-w==1.0.0
     # via flit
 tox==4.14.2

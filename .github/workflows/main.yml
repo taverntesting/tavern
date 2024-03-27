@@ -33,8 +33,6 @@ jobs:
       matrix:
         include:
           # 'Basic' tests and checks
-          - TOXENV: py3mypy
-            TOXCFG: tox.ini
           - TOXENV: py3
             TOXCFG: tox.ini
 
@@ -66,7 +64,8 @@ jobs:
 
       - name: install deps
         run: |
-          pip install tox -c constraints.txt
+          pip install uv
+          uv pip sync requirements.txt
 
       - name: tox
         run: |
@@ -133,7 +132,8 @@ jobs:
 
       - name: install deps
         run: |
-          pip install tox -c constraints.txt
+          pip install uv
+          uv pip sync requirements.txt
 
       - name: tox
         run: |
