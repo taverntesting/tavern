@@ -436,3 +436,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  2.9.1           internal cleanup (2024-01-27)
 
 ##  2.9.2           Fix saving in gRPC (2024-02-10)
+
+##  2.9.3           Fix saving in gRPC without checking the response (2024-02-17)
