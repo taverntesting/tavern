@@ -65,7 +65,7 @@ jobs:
       - name: install deps
         run: |
           pip install uv
-          uv pip sync requirements.txt
+          uv pip install -r requirements.txt
 
       - name: tox
         run: |
@@ -133,7 +133,7 @@ jobs:
       - name: install deps
         run: |
           pip install uv
-          uv pip sync requirements.txt
+          uv pip install -r requirements.txt
 
       - name: tox
         run: |
