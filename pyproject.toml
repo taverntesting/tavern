@@ -119,7 +119,15 @@ grpc = "tavern._plugins.grpc.tavernhook"
 
 [tool.mypy]
 python_version = 3.8
-ignore_missing_imports = true
+
+# See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
+explicit_package_bases = true
+
+exclude = [
+    '_pb2.pyi?$', # generated proto files
+    'bazel-*',
+    'venv/',
+]
 
 [tool.coverage.run]
 branch = false
