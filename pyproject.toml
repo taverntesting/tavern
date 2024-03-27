@@ -80,6 +80,7 @@ dev = [
     "pytest-xdist",
     "py",
     "tox>=4,<5",
+    "ruff>=0.3.4",
     "uv",
     "types-PyYAML",
     "types-protobuf",

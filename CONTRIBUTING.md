@@ -46,7 +46,7 @@ Run every so often to update the pre-commit hooks
 
 ### Fixing Python formatting issue
 
-    black tavern/ tests/
+    ruff format tavern/ tests/
     ruff --fix tavern/ tests/
 
 ### Fix yaml formatting issues
