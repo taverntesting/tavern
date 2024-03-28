@@ -1,3 +1,4 @@
+import warnings
 from unittest.mock import patch
 
 import pytest
@@ -35,7 +36,7 @@ class TestBasicRun:
     )
     def test_doesnt_warn_about_expected_kwargs(self, expected_kwarg):
         kw = {expected_kwarg: 123}
-        with pytest.warns(None) as warn_rec:
+        with warnings.catch_warnings(record=True) as warn_rec:
             run("", **kw)
 
         assert not len(warn_rec)
