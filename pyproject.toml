@@ -156,6 +156,7 @@ addopts = [
     "--tb=short",
     "--color=yes",
 ]
+beartype_packages = "tavern"
 norecursedirs = [
     ".git",
     ".tox",
