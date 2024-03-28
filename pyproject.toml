@@ -67,6 +67,7 @@ grpc = [
 
 dev = [
     "Faker",
+    "pytest-beartype",
     "allure-pytest",
     "colorlog",
     "flask>=2.2.3",

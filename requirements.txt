@@ -23,6 +23,10 @@ babel==2.14.0 \
     --hash=sha256:6919867db036398ba21eb5c7a0f6b28ab8cbc3ae7a73a44ebe34ae74a4e7d363 \
     --hash=sha256:efb1a25b7118e67ce3a259bed20545c29cb68be8ad2c784c83689981b7a57287
     # via sphinx
+beartype==0.17.2 \
+    --hash=sha256:c22b21e1f785cfcf5c4d3d13070f532b6243a3ad67e68d2298ff08d539847dce \
+    --hash=sha256:e911e1ae7de4bccd15745f7643609d8732f64de5c2fb844e89cbbed1c5a8d495
+    # via pytest-beartype
 blinker==1.7.0 \
     --hash=sha256:c3f865d4d54db7abc53758a01601cf343fe55b84c1de4e3fa910e420b438d5b9 \
     --hash=sha256:e6820ff6fa4e4d1d8e2747c2283749c3f547e4fee112b98555cdcdae32996182
@@ -603,8 +607,12 @@ pytest==7.2.2 \
     --hash=sha256:c99ab0c73aceb050f68929bc93af19ab6db0558791c6a0715723abe9d0ade9d4
     # via
     #   allure-pytest
+    #   pytest-beartype
     #   pytest-cov
     #   pytest-xdist
+pytest-beartype==0.0.2 \
+    --hash=sha256:3203bc75e04b3d166623aaf5b58c766b3cecc0e0b7082013de9400c7a184605b \
+    --hash=sha256:73238bc000da6fe42e44565763d89c109edd7bec876bef9dbacfc88a16229e6f
 pytest-cov==5.0.0 \
     --hash=sha256:4f0764a1219df53214206bf1feea4633c3b558a2925c8b59f144f682861ce652 \
     --hash=sha256:5837b58e9f6ebd335b0f8060eecce69b662415b16dc503883a02f45dfeb14857
