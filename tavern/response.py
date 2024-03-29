@@ -1,18 +1,22 @@
 import dataclasses
 import logging
 import traceback
+import typing
 from abc import abstractmethod
 from collections.abc import Mapping
 from textwrap import indent
 from typing import Any, List, Optional
 
-from tavern._core import exceptions
+from tavern._core import exceptions, types
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
 from tavern._core.extfunctions import get_wrapped_response_function
 from tavern._core.pytest.config import TestConfig
 from tavern._core.strict_util import StrictOption
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+T = typing.TypeVar("T", types.Json, typing.Dict, typing.MutableMapping, typing.Tuple)
 
 
 def indent_err_text(err: str) -> str:
@@ -55,8 +59,8 @@ class BaseResponse:
 
     def recurse_check_key_match(
         self,
-        expected_block: Optional[Mapping],
-        block: Mapping,
+        expected_block: Optional[T],
+        block: types.Json,
         blockname: str,
         strict: StrictOption,
     ) -> None:
@@ -221,7 +225,7 @@ class BaseResponse:
     def maybe_get_save_values_from_save_block(
         self,
         key: str,
-        save_from: Optional[Mapping],
+        save_from: Optional[T],
         *,
         outer_save_block: Optional[Mapping] = None,
     ) -> Mapping:
@@ -251,7 +255,7 @@ class BaseResponse:
     def maybe_get_save_values_from_given_block(
         self,
         key: str,
-        save_from: Optional[Mapping],
+        save_from: Optional[types.Json],
         to_save: Mapping,
     ) -> Mapping:
         """Save a value from a specific block in the response.

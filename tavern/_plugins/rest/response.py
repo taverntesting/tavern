@@ -1,13 +1,13 @@
 import contextlib
 import json
 import logging
-from typing import Any, Dict, List, Mapping, Union
+from typing import Any, Dict, List, Union
 from urllib.parse import parse_qs, urlparse
 
 import requests
 from requests.status_codes import _codes  # type:ignore
 
-from tavern._core import exceptions
+from tavern._core import exceptions, types
 from tavern._core.dict_util import deep_dict_merge
 from tavern._core.pytest.config import TestConfig
 from tavern._core.pytest.newhooks import call_hook
@@ -203,7 +203,7 @@ class RestResponse(BaseResponse):
 
         return saved
 
-    def _validate_block(self, blockname: str, block: Mapping) -> None:
+    def _validate_block(self, blockname: str, block: types.Json) -> None:
         """Validate a block of the response
 
         Args:

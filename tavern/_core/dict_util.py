@@ -12,7 +12,7 @@ import box
 import jmespath
 from box.box import Box
 
-from tavern._core import exceptions
+from tavern._core import exceptions, types
 from tavern._core.loader import (
     ANYTHING,
     ForceIncludeToken,
@@ -28,6 +28,15 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 def _check_and_format_values(to_format: str, box_vars: Mapping[str, Any]) -> str:
+    """Attempts to format the given string with the given format variables
+
+    Args:
+        to_format: string to format
+        box_vars: format variables
+
+    Returns:
+        formatted string, or other type - see docs for _attempt_find_include
+    """
     formatter = string.Formatter()
     would_format = formatter.parse(to_format)
 
@@ -57,7 +66,12 @@ def _check_and_format_values(to_format: str, box_vars: Mapping[str, Any]) -> str
     return to_format.format(**box_vars)
 
 
-def _attempt_find_include(to_format: str, box_vars: box.Box) -> Optional[str]:
+def _attempt_find_include(to_format: str, box_vars: box.Box) -> Optional[types.Json]:
+    """Returns the outcome of formatting the string with the given variables
+
+    Normally this should return a string, but if the variable to be formatted is a 'TypeConvertToken' it will return
+    whatever that converts it to (which might be a dict, list, Box, etc.)
+    """
     formatter = string.Formatter()
     would_format = list(formatter.parse(to_format))
 
@@ -90,14 +104,13 @@ def _attempt_find_include(to_format: str, box_vars: box.Box) -> Optional[str]:
         )
 
     would_replace = formatter.get_field(field_name, [], box_vars)[0]
-
     if conversion is None:
         return would_replace
 
     return formatter.convert_field(would_replace, conversion)
 
 
-T = typing.TypeVar("T", str, Dict, List, Tuple, int, float)
+T = typing.TypeVar("T", types.Json, Tuple, bytes, ForceIncludeToken)
 
 
 def format_keys(
@@ -167,7 +180,7 @@ def format_keys(
     return val
 
 
-def recurse_access_key(data: Union[List, Mapping], query: str) -> Any:
+def recurse_access_key(data: types.Json, query: str) -> Any:
     """
     Search for something in the given data using the given query.
 

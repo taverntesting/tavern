@@ -6,6 +6,7 @@ significantly if/when a proper plugin system is implemented!
 
 import dataclasses
 import logging
+import typing
 from functools import partial
 from typing import Any, Callable, Dict, List, Mapping, Optional, Protocol, Type
 
@@ -81,8 +82,8 @@ def is_valid_reqresp_plugin(ext: stevedore.extension.Extension) -> bool:
     return all(hasattr(plugin, i) for i in required)
 
 
-class _Plugin:
-    """Wrapped tavern plugin for convenience"""
+class _Plugin(typing.Protocol):
+    """Protocol defining the plugin (really a stevedore extension)"""
 
     name: str
     plugin: _TavernPlugin
@@ -92,9 +93,7 @@ class _Plugin:
 class _PluginCache:
     plugins: List[_Plugin] = dataclasses.field(default_factory=list)
 
-    def __call__(
-        self, config: Optional[TestConfig] = None
-    ) -> List[stevedore.extension.Extension]:
+    def __call__(self, config: Optional[TestConfig] = None) -> List[_Plugin]:
         if self.plugins:
             return self.plugins
 
@@ -105,9 +104,7 @@ class _PluginCache:
 
         raise exceptions.PluginLoadError("No config to load plugins from")
 
-    def _load_plugins(
-        self, test_block_config: TestConfig
-    ) -> List[stevedore.extension.Extension]:
+    def _load_plugins(self, test_block_config: TestConfig) -> List[_Plugin]:
         """Load plugins from the 'tavern' entrypoint namespace
 
         This can be a module or a class as long as it defines the right things
