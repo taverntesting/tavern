@@ -92,7 +92,9 @@ class _Plugin:
 class _PluginCache:
     plugins: List[_Plugin] = dataclasses.field(default_factory=list)
 
-    def __call__(self, config: Optional[TestConfig] = None) -> List[_Plugin]:
+    def __call__(
+        self, config: Optional[TestConfig] = None
+    ) -> List[stevedore.extension.Extension]:
         if self.plugins:
             return self.plugins
 
@@ -103,7 +105,9 @@ class _PluginCache:
 
         raise exceptions.PluginLoadError("No config to load plugins from")
 
-    def _load_plugins(self, test_block_config: TestConfig) -> List[_Plugin]:
+    def _load_plugins(
+        self, test_block_config: TestConfig
+    ) -> List[stevedore.extension.Extension]:
         """Load plugins from the 'tavern' entrypoint namespace
 
         This can be a module or a class as long as it defines the right things

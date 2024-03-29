@@ -36,6 +36,7 @@ dependencies = [
     "python-box>=6,<7",
     "requests>=2.22.0,<3",
     "stevedore>=4,<5",
+    "beartype"
 ]
 
 requires-python = ">=3.8"
@@ -67,7 +68,7 @@ grpc = [
 
 dev = [
     "Faker",
-    "pytest-beartype",
+    "beartype",
     "allure-pytest",
     "colorlog",
     "flask>=2.2.3",

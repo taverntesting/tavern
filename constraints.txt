@@ -14,7 +14,6 @@ attrs==23.2.0
 babel==2.14.0
     # via sphinx
 beartype==0.17.2
-    # via pytest-beartype
 blinker==1.7.0
     # via flask
 cachetools==5.3.3
@@ -64,7 +63,7 @@ flit-core==3.9.0
 fluent-logger==0.11.0
 google-api-core==2.18.0
     # via google-api-python-client
-google-api-python-client==2.123.0
+google-api-python-client==2.124.0
 google-auth==2.29.0
     # via
     #   google-api-core
@@ -162,10 +161,8 @@ pyproject-api==1.6.1
 pytest==7.2.2
     # via
     #   allure-pytest
-    #   pytest-beartype
     #   pytest-cov
     #   pytest-xdist
-pytest-beartype==0.0.2
 pytest-cov==5.0.0
 pytest-xdist==3.5.0
 python-box==6.1.0
@@ -242,7 +239,7 @@ urllib3==2.2.1
     # via
     #   requests
     #   types-requests
-uv==0.1.24
+uv==0.1.26
 virtualenv==20.25.1
     # via
     #   pre-commit

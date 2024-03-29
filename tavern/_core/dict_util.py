@@ -97,7 +97,7 @@ def _attempt_find_include(to_format: str, box_vars: box.Box) -> Optional[str]:
     return formatter.convert_field(would_replace, conversion)
 
 
-T = typing.TypeVar("T", str, Dict, List, Tuple)
+T = typing.TypeVar("T", str, Dict, List, Tuple, int, float)
 
 
 def format_keys(
