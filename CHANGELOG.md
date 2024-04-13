@@ -440,3 +440,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  2.9.3           Fix saving in gRPC without checking the response (2024-02-17)
 
 #  2.10.0          Lock protobuf version to <5 (2024-03-27)
+
+##  2.10.1          minor changes to fix tavern_flask plugin (2024-03-27)
