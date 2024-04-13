@@ -9,3 +9,12 @@ variables:
 
   retry_max: 4
   negative_int: -2
+
+stages:
+  - id: finally-nothing-check
+    name: finally nothing check
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "123"

@@ -30,10 +30,3 @@ stages:
     response:
       status_code: 200
       json: !anything
-  - id: finally-nothing-check
-    name: finally nothing check
-    request:
-      url: "{global_host}/echo"
-      method: POST
-      json:
-        value: "123"

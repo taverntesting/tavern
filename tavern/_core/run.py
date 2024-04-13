@@ -210,16 +210,22 @@ def run_test(
                 if getonly(stage):
                     break
         finally:
-            if not isinstance(finally_stages, list):
-                raise exceptions.BadSchemaError(
-                    f"finally block should be a list of dicts but was {type(finally_stages)}"
+            if finally_stages:
+                logger.info(
+                    "Running finally stages: %s", [s["name"] for s in finally_stages]
                 )
-            for idx, stage in enumerate(finally_stages):
-                if not isinstance(stage, dict):
+                if not isinstance(finally_stages, list):
                     raise exceptions.BadSchemaError(
-                        f"finally block should be a dict but was {type(stage)}"
+                        f"finally block should be a list of dicts but was {type(finally_stages)}"
                     )
-                runner.run_stage(idx, stage, is_final=True)
+                for idx, stage in enumerate(finally_stages):
+                    if not isinstance(stage, dict):
+                        raise exceptions.BadSchemaError(
+                            f"finally block should be a dict but was {type(stage)}"
+                        )
+                    runner.run_stage(idx, stage, is_final=True)
+            else:
+                logger.debug("no 'finally' stages to run")
 
 
 def _calculate_stage_strictness(

@@ -512,4 +512,6 @@ properties:
     description: Stages to run after test finishes
 
     items:
-      $ref: "#/definitions/stage"
+      oneOf:
+        - $ref: "#/definitions/stage"
+        - $ref: "#/definitions/stage_ref"
