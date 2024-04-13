@@ -30,7 +30,18 @@ from .tincture import Tinctures, get_stage_tinctures
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def _resolve_test_stages(stages: List[Mapping], available_stages: Mapping):
+def _resolve_test_stages(
+    stages: List[Mapping], available_stages: Mapping
+) -> List[Mapping]:
+    """Looks for 'ref' stages in the given stages and returns any resolved stages
+
+    Args:
+        stages: list of stages to possibly replace
+        available_stages: included stages to possibly use in replacement
+
+    Returns:
+        list of stages that were included, if any
+    """
     # Need to get a final list of stages in the tests (resolving refs)
     test_stages = []
 
