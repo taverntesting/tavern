@@ -28,6 +28,15 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 def _check_and_format_values(to_format: str, box_vars: Mapping[str, Any]) -> str:
+    """Attempts to format the given string with the given format variables
+
+    Args:
+        to_format: string to format
+        box_vars: format variables
+
+    Returns:
+        formatted string, or other type - see docs for _attempt_find_include
+    """
     formatter = string.Formatter()
     would_format = formatter.parse(to_format)
 

@@ -1,6 +1,7 @@
 import logging
 import re
-from typing import Mapping
+import typing
+from typing import List, Mapping, Optional
 
 import jsonschema
 from jsonschema import Draft7Validator, ValidationError
@@ -70,16 +71,27 @@ def is_object_or_sentinel(checker, instance):
     )
 
 
-def oneOf(validator: Draft7Validator, oneOf, instance, schema):
+class _Validator(jsonschema.protocols.Validator, typing.Protocol):
+    def descend(
+        self,
+        instance,
+        schema,
+        path=None,
+        schema_path=None,
+        resolver=None,
+    ) -> Optional[List[ValidationError]]: ...
+
+
+def oneOf(validator: _Validator, oneOf, instance, schema):
     """Patched version of 'oneof' that does not complain if something is matched by multiple branches"""
     subschemas = enumerate(oneOf)
     all_errors = []
     for index, subschema in subschemas:
-        errs = list(validator.descend(instance, subschema, schema_path=index))
+        errs = list(validator.descend(instance, subschema, schema_path=index) or ())
         if not errs:
             first_valid = subschema
             break
-        all_errors.extend(errs)
+        all_errors.extend(list(errs))
     else:
         yield ValidationError(
             f"{instance!r} is not valid under any of the given schemas",

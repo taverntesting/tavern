@@ -6,6 +6,7 @@ significantly if/when a proper plugin system is implemented!
 
 import dataclasses
 import logging
+import typing
 from functools import partial
 from typing import Any, Callable, Dict, List, Mapping, Optional, Protocol, Type
 
@@ -81,8 +82,8 @@ def is_valid_reqresp_plugin(ext: stevedore.extension.Extension) -> bool:
     return all(hasattr(plugin, i) for i in required)
 
 
-class _Plugin:
-    """Wrapped tavern plugin for convenience"""
+class _Plugin(typing.Protocol):
+    """Protocol defining the plugin (really a stevedore extension)"""
 
     name: str
     plugin: _TavernPlugin
