@@ -30,10 +30,25 @@ from .tincture import Tinctures, get_stage_tinctures
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def _resolve_test_stages(test_spec: Mapping, available_stages: Mapping):
+def _resolve_test_stages(
+    stages: List[Mapping], available_stages: Mapping
+) -> List[Mapping]:
+    """Looks for 'ref' stages in the given stages and returns any resolved stages
+
+    Args:
+        stages: list of stages to possibly replace
+        available_stages: included stages to possibly use in replacement
+
+    Returns:
+        list of stages that were included, if any
+    """
     # Need to get a final list of stages in the tests (resolving refs)
     test_stages = []
-    for raw_stage in test_spec["stages"]:
+
+    if not isinstance(stages, list):
+        raise exceptions.BadSchemaError("stages should have been a list")
+
+    for raw_stage in stages:
         stage = raw_stage
         if stage.get("type") == "ref":
             if "id" in stage:
@@ -67,7 +82,7 @@ def _get_included_stages(
     for use in this test
 
     Args:
-        tavern_box: Available parameters for fomatting at this point
+        tavern_box: Available parameters for formatting at this point
         test_block_config: Current test config dictionary
         test_spec: Specification for current test
         available_stages: List of stages which already exist
@@ -151,7 +166,8 @@ def run_test(
         tavern_box, test_block_config, test_spec, available_stages
     )
     all_stages = {s["id"]: s for s in available_stages + included_stages}
-    test_spec["stages"] = _resolve_test_stages(test_spec, all_stages)
+    test_spec["stages"] = _resolve_test_stages(test_spec["stages"], all_stages)
+    finally_stages = _resolve_test_stages(test_spec.get("finally", []), all_stages)
 
     test_block_config.variables["tavern"] = tavern_box["tavern"]
 
@@ -194,17 +210,22 @@ def run_test(
                 if getonly(stage):
                     break
         finally:
-            finally_stages = test_spec.get("finally", [])
-            if not isinstance(finally_stages, list):
-                raise exceptions.BadSchemaError(
-                    f"finally block should be a list of dicts but was {type(finally_stages)}"
+            if finally_stages:
+                logger.info(
+                    "Running finally stages: %s", [s["name"] for s in finally_stages]
                 )
-            for idx, stage in enumerate(finally_stages):
-                if not isinstance(stage, dict):
+                if not isinstance(finally_stages, list):
                     raise exceptions.BadSchemaError(
-                        f"finally block should be a dict but was {type(stage)}"
+                        f"finally block should be a list of dicts but was {type(finally_stages)}"
                     )
-                runner.run_stage(idx, stage, is_final=True)
+                for idx, stage in enumerate(finally_stages):
+                    if not isinstance(stage, dict):
+                        raise exceptions.BadSchemaError(
+                            f"finally block should be a dict but was {type(stage)}"
+                        )
+                    runner.run_stage(idx, stage, is_final=True)
+            else:
+                logger.debug("no 'finally' stages to run")
 
 
 def _calculate_stage_strictness(
