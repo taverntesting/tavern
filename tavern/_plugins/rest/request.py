@@ -153,8 +153,6 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
     # Ones that are required and are enforced to be present by the schema
     required_in_file = ["method", "url"]
 
-    optional_with_default = {"verify": True, "stream": False}
-
     add_request_args(["file_body"], True)
     add_request_args(required_in_file, False)
     add_request_args(RestRequest.optional_in_file, True)
@@ -187,8 +185,11 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
         if isinstance(value, dict):
             request_args["params"][key] = quote_plus(json.dumps(value))
 
-    for key, val in optional_with_default.items():
-        request_args[key] = fspec.get(key, val)
+    optional = {"verify", "stream"}
+
+    for key in optional:
+        if key in fspec:
+            request_args[key] = fspec[key]
 
     # TODO
     # requests takes all of these - we need to parse the input to get them

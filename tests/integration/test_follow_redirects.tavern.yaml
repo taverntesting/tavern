@@ -40,3 +40,15 @@ stages:
       status_code: 200
       json:
         status: successful redirect
+
+---
+test_name: Checking for redirect_query_params
+
+stages:
+  - name: Check for a complex value in redirect query params
+    request:
+      url: "{global_host}/redirect/source"
+    response:
+      status_code: 302
+      redirect_query_params:
+        test_value: lorem ipsum?

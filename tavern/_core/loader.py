@@ -32,8 +32,7 @@ def makeuuid(loader, node) -> str:
 class RememberComposer(Composer):
     """A composer that doesn't forget anchors across documents"""
 
-    def get_event(self) -> None:
-        ...
+    def get_event(self) -> None: ...
 
     def compose_document(self) -> Node | None:
         # Drop the DOCUMENT-START event.

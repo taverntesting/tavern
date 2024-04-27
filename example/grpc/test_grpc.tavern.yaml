@@ -26,6 +26,77 @@ stages:
 
 ---
 
+test_name: Test grpc saving
+
+includes:
+  - !include common.yaml
+
+grpc:
+  connect:
+    <<: *grpc_connect
+  proto:
+    module: helloworld_v1_precompiled_pb2_grpc
+
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+      save:
+        body:
+          received_message: message
+
+  - name: Echo text
+    grpc_request:
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: "{received_message}"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, Hello, John!!"
+
+---
+
+test_name: Test grpc saving without expected code or response
+
+includes:
+  - !include common.yaml
+
+grpc:
+  connect:
+    <<: *grpc_connect
+  proto:
+    module: helloworld_v1_precompiled_pb2_grpc
+
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      save:
+        body:
+          received_message: message
+
+  - name: Echo text
+    grpc_request:
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: "{received_message}"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, Hello, John!!"
+
+---
+
 test_name: Test trying to connect using an invalid option
 
 includes:

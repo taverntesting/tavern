@@ -13,8 +13,7 @@ class BaseRequest:
     @abstractmethod
     def __init__(
         self, session: Any, rspec: dict, test_block_config: TestConfig
-    ) -> None:
-        ...
+    ) -> None: ...
 
     @property
     @abstractmethod

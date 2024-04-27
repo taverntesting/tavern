@@ -56,34 +56,29 @@ grpc = [
     "grpcio-reflection",
     "grpcio-status",
     "google-api-python-client",
-    "protobuf",
+    "protobuf>=4,<5",
     "proto-plus",
 ]
 
 dev = [
     "Faker",
     "allure-pytest",
-    "bump2version",
     "colorlog",
     "flask>=2.2.3",
     "fluent-logger",
     "itsdangerous",
-    "mypy",
-    "ruff>=0.1.11",
-    "mypy-extensions",
     "coverage[toml]",
     "flit >=3.2,<4",
-    "pip-tools",
+    "wheel",
     "pre-commit",
-    "pygments",
     "pytest-cov",
     "pytest-xdist",
     "py",
     "tox>=4,<5",
-    "twine",
-    "wheel",
+    "ruff>=0.3.4",
+    "uv",
     "types-PyYAML",
-    "types-setuptools",
+    "types-protobuf>=4,<5",
     "types-requests",
     "sphinx>=7,<8",
     "sphinx_rtd_theme",
@@ -92,7 +87,7 @@ dev = [
     "docutils",
     "pygments",
     "sphinx-markdown-tables",
-    "grpcio-tools",
+#    "grpcio-tools",
     "grpc-interceptor",
     # This has to be installed separately, otherwise you can't upload to pypi
     # "tbump@https://github.com/michaelboulton/tbump/archive/714ba8957a3c84b625608ceca39811ebe56229dc.zip",
@@ -119,7 +114,15 @@ grpc = "tavern._plugins.grpc.tavernhook"
 
 [tool.mypy]
 python_version = 3.11
-ignore_missing_imports = true
+
+# See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
+explicit_package_bases = true
+
+exclude = [
+    '_pb2.pyi?$', # generated proto files
+    'bazel-*',
+    'venv/',
+]
 
 [tool.coverage.run]
 branch = false
@@ -158,6 +161,14 @@ norecursedirs = [
 ]
 
 [tool.ruff]
+target-version = "py311"
+extend-exclude = [
+    "tests/unit/tavern_grpc/test_services_pb2.py",
+    "tests/unit/tavern_grpc/test_services_pb2.pyi",
+    "tests/unit/tavern_grpc/test_services_pb2_grpc.py",
+]
+
+[tool.ruff.lint]
 ignore = [
     "E501", # line length
     "RUF005", # union types only valid from 3.10+
@@ -168,18 +179,12 @@ ignore = [
 ]
 select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL"]
 # Look at: UP
-target-version = "py311"
-extend-exclude = [
-    "tests/unit/tavern_grpc/test_services_pb2.py",
-    "tests/unit/tavern_grpc/test_services_pb2.pyi",
-    "tests/unit/tavern_grpc/test_services_pb2_grpc.py",
-]
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint.per-file-ignores]
 "tests/*" = ["S", "RUF"]
 "tests/unit/tavern_grpc/test_grpc.py" = ["E402"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["tavern"]
 
 [tool.ruff.format]

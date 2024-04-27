@@ -3,6 +3,7 @@
 This is here mainly to make MQTT easier, this will almost defintiely change
 significantly if/when a proper plugin system is implemented!
 """
+
 import dataclasses
 import logging
 from collections.abc import Callable, Mapping
@@ -42,8 +43,7 @@ class _TavernPlugin(Protocol):
 
     def get_expected_from_request(
         self, response_block: BaseResponse, test_block_config: TestConfig, session: Any
-    ) -> Any:
-        ...
+    ) -> Any: ...
 
 
 def is_valid_reqresp_plugin(ext: stevedore.extension.Extension) -> bool:

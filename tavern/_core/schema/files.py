@@ -33,37 +33,37 @@ class SchemaCache:
 
             return self._loaded[schema_filename]
 
-    def _load_schema_with_plugins(self, schema_filename):
+    def _load_schema_with_plugins(self, schema_filename: str) -> dict:
         mangled = f"{schema_filename}-plugins"
 
         try:
             return self._loaded[mangled]
         except KeyError:
-            plugins = load_plugins()
-            base_schema = copy.deepcopy(self._load_base_schema(schema_filename))
+            pass
 
-            logger.debug("Adding plugins to schema: %s", plugins)
+        plugins = load_plugins()
+        base_schema = copy.deepcopy(self._load_base_schema(schema_filename))
 
-            for p in plugins:
-                try:
-                    plugin_schema = p.plugin.schema
-                except AttributeError:
-                    # Don't require a schema
-                    logger.debug("No schema defined for %s", p.name)
-                else:
-                    base_schema["properties"].update(
-                        plugin_schema.get("properties", {})
-                    )
+        logger.debug("Adding plugins to schema: %s", [p.name for p in plugins])
 
-            self._loaded[mangled] = base_schema
-            return self._loaded[mangled]
+        for p in plugins:
+            try:
+                plugin_schema = p.plugin.schema
+            except AttributeError:
+                # Don't require a schema
+                logger.debug("No schema defined for %s", p.name)
+            else:
+                base_schema["properties"].update(plugin_schema.get("properties", {}))
 
-    def __call__(self, schema_filename, with_plugins):
+        self._loaded[mangled] = base_schema
+        return self._loaded[mangled]
+
+    def __call__(self, schema_filename: str, with_plugins: bool):
         """Load the schema file and cache it for future use
 
         Args:
-            schema_filename (str): filename of schema
-            with_plugins (bool): Whether to load plugin schema into this schema as well
+            schema_filename: filename of schema
+            with_plugins: Whether to load plugin schema into this schema as well
 
         Returns:
             loaded schema
@@ -83,8 +83,8 @@ load_schema_file = SchemaCache()
 def verify_pykwalify(to_verify, schema) -> None:
     """Verify a generic file against a given pykwalify schema
     Args:
-        to_verify (dict): Filename of source tests to check
-        schema (dict): Schema to verify against
+        to_verify: Filename of source tests to check
+        schema: Schema to verify against
     Raises:
         BadSchemaError: Schema did not match
     """
@@ -111,7 +111,7 @@ def wrapfile(to_wrap):
     """Wrap a dictionary into a temporary yaml file
 
     Args:
-        to_wrap (dict): Dictionary to write to temporary file
+        to_wrap: Dictionary to write to temporary file
 
     Yields:
         filename: name of temporary file object that will be destroyed at the end of the
@@ -136,7 +136,8 @@ def verify_tests(test_spec: Mapping, with_plugins: bool = True) -> None:
         Load schema file once. Requires some caching of the file
 
     Args:
-        test_spec (dict): Test in dictionary form
+        test_spec: Test in dictionary form
+        with_plugins: Whether to load plugin schema into this schema as well
 
     Raises:
         BadSchemaError: Schema did not match

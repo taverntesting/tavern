@@ -166,6 +166,8 @@ calling run() directly will now cause a pytest isntance to be run in the backgro
 
 #  0.18.0          Add 'timeout' parameter for http requests (2018-08-24)
 
+##  show            Bump version: 0.17.2 → 0.18.0 (2018-08-24)
+
 ##  0.18.1          Add content type/encoding to uploaded files (2018-09-05)
 
 ##  0.18.2          Fix formatting environment variables in command line global config files (2018-09-21)
@@ -432,3 +434,13 @@ This is technically not a operational change but I'm adding a new tag so it can 
 #  2.9.0           Fix mqtt implementation checking for message publication correctly (2024-01-23)
 
 ##  2.9.1           internal cleanup (2024-01-27)
+
+##  2.9.2           Fix saving in gRPC (2024-02-10)
+
+##  2.9.3           Fix saving in gRPC without checking the response (2024-02-17)
+
+#  2.10.0          Lock protobuf version to <5 (2024-03-27)
+
+##  2.10.1          minor changes to fix tavern_flask plugin (2024-03-27)
+
+##  2.10.2          Fix missing schema check for redirect query params (2024-04-13)
