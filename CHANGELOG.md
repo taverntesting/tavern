@@ -444,3 +444,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  2.10.1          minor changes to fix tavern_flask plugin (2024-03-27)
 
 ##  2.10.2          Fix missing schema check for redirect query params (2024-04-13)
+
+##  2.10.3          Allow using referenced 'finally' stages (2024-04-13)
