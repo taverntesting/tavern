@@ -83,7 +83,7 @@ dev = [
     "ruff>=0.3.4",
     "uv",
     "types-PyYAML",
-    "types-protobuf",
+    "types-protobuf>=4,<5",
     "types-requests",
     "sphinx>=7,<8",
     "sphinx_rtd_theme",

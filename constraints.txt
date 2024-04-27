@@ -230,7 +230,7 @@ tomli==2.0.1
 tomli-w==1.0.0
     # via flit
 tox==4.15.0
-types-protobuf==5.26.0.20240422
+types-protobuf==4.25.0.20240417
 types-pyyaml==6.0.12.20240311
 types-requests==2.31.0.20240406
 uritemplate==4.1.1
