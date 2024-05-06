@@ -244,6 +244,6 @@ virtualenv==20.26.0
     # via
     #   pre-commit
     #   tox
-werkzeug==3.0.2
+werkzeug==3.0.3
     # via flask
 wheel==0.43.0
