@@ -28,24 +28,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: simple-checks
 
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          # 'Basic' tests and checks
-          - TOXENV: py3
-            TOXCFG: tox.ini
-
     env:
-      TOXENV: ${{ matrix.TOXENV }}
-      TOXCFG: ${{ matrix.TOXCFG }}
+      TOXENV: py3
+      TOXCFG: tox.ini
 
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/cache@v4
         env:
-          cache-name: cache-${{ matrix.TOXENV }}
+          cache-name: cache-${TOXENV}
         with:
           path: .tox
           key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml', 'requirements.in') }}
@@ -126,7 +118,7 @@ jobs:
 
       - name: Install Protoc
         if: ${{ contains(matrix.TOXENV, 'grpc') }}
-        uses: arduino/setup-protoc@v2
+        uses: arduino/setup-protoc@v3
         with:
           version: "23.x"
 
