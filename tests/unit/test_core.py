@@ -162,6 +162,25 @@ class TestIncludeStages:
 
         self.check_mocks_called(pmock)
 
+    def test_included_finally_stage(self, fulltest, mockargs, includes, fake_stages):
+        """Load stage from includes"""
+        mock_response = Mock(**mockargs)
+
+        stage_includes = [{"stages": fake_stages}]
+
+        newtest = deepcopy(fulltest)
+        newtest["includes"] = stage_includes
+        newtest["finally"] = [{"type": "ref", "id": "my_external_stage"}]
+
+        with patch(
+            "tavern._plugins.rest.request.requests.Session.request",
+            return_value=mock_response,
+        ) as pmock:
+            run_test("bloo", newtest, includes)
+
+        pmock.call_args_list = list(reversed(pmock.call_args_list))
+        self.check_mocks_called(pmock)
+
     def test_global_stage(self, fulltest, mockargs, includes, fake_stages):
         """Load stage from global config"""
         mock_response = Mock(**mockargs)

@@ -9,7 +9,7 @@ import time
 import uuid
 from datetime import datetime, timedelta
 from hashlib import sha512
-from urllib.parse import unquote_plus
+from urllib.parse import unquote_plus, urlencode
 
 import jwt
 from flask import Flask, Response, jsonify, make_response, redirect, request, session
@@ -332,7 +332,13 @@ def expect_cookie():
 
 @app.route("/redirect/source", methods=["GET"])
 def redirect_to_other_endpoint():
-    return redirect("/redirect/destination", 302)
+    query_params = urlencode(
+        {
+            "test_value": "lorem ipsum?",
+        }
+    )
+
+    return redirect(f"/redirect/destination?{query_params}", 302)
 
 
 @app.route("/redirect/loop", methods=["GET"])

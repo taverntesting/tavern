@@ -323,6 +323,10 @@ definitions:
         description: Expected JSON response
         $ref: "#/definitions/any_json"
 
+      redirect_query_params:
+        description: Query parameters parsed from the 'location' of a redirect
+        type: object
+
       verify_response_with:
         oneOf:
           - $ref: "#/definitions/verify_block"
@@ -505,4 +509,6 @@ properties:
     description: Stages to run after test finishes
 
     items:
-      $ref: "#/definitions/stage"
+      oneOf:
+        - $ref: "#/definitions/stage"
+        - $ref: "#/definitions/stage_ref"
