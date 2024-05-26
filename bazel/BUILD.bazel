@@ -4,7 +4,7 @@ load("@tavern_pip//:requirements.bzl", "requirement")
 
 oci_image(
     name = "py3_base_image",
-    base = "@py3_debug_image_base//image",
+    base = "@python_image_base_debug",
     env = {
         "PYTHONUNBUFFERED": "0",
         "FLASK_DEBUG": "1",
@@ -32,7 +32,6 @@ py_library(
         "//tests:__subpackages__",
     ],
     deps = [
-        requirement("docker"),
         requirement("pytest"),
     ],
 )
@@ -45,6 +44,5 @@ py_binary(
     srcs = [":load_image.py"],
     visibility = ["//:__subpackages__"],
     deps = [
-        requirement("docker"),
     ],
 )

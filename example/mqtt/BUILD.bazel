@@ -101,7 +101,7 @@ tar(
 
 oci_image(
     name = "mosquitto",
-    base = "@mosquitto//image",
+    base = "@mosquitto",
     tars = [":mosquitto_conf_tar"],
     visibility = ["//:__subpackages__"],
 )
@@ -120,7 +120,7 @@ tar(
 
 oci_image(
     name = "fluentd",
-    base = "@fluentd//image",
+    base = "@fluentd",
     tars = [":fluentd_conf_tar"],
     visibility = ["//:__subpackages__"],
 )

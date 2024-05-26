@@ -87,6 +87,7 @@ def py_oci_image(*, srcs, name, main, base, deps = [], data = [], tars = [], **k
 
     oci_image(
         name = name,
+        base = base,
         tars = tars + py_layers(name, "{}_binary".format(name)),
         **kwargs
     )

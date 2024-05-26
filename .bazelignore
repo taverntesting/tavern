@@ -31,3 +31,5 @@ tavern/util/__pycache__/
 .mypy_cache
 .ruff_cache
 venv
+.pyre
+.venv

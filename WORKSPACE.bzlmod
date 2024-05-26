@@ -1,0 +1,34 @@
+workspace(name = "tavern")
+
+load("@rules_oci//oci:pull.bzl", "oci_pull")
+
+oci_pull(
+    name = "mosquitto",
+    # 1.15-1
+    digest = "sha256:bb177e7bd81746fc59b919ccb84b6ffffbe1ec1f7f933fa68c3aca4b4be364b6",
+    platforms = [
+        "linux/amd64",
+    ],
+    registry = "mirror.gcr.io",
+    repository = "eclipse-mosquitto",
+)
+
+oci_pull(
+    name = "fluentd",
+    # v1.17.0
+    digest = "sha256:d53167957bab75c4273121198b2435d21845c62c4be3377e766c412b662a2f72",
+    platforms = [
+        "linux/amd64",
+    ],
+    registry = "mirror.gcr.io",
+    repository = "fluent/fluentd",
+)
+
+oci_pull(
+    name = "python_image_base_debug",
+    digest = "sha256:5d96ce9a6824e781557e148e864097167b280213bf9215463d7f4277fe03df72",
+    image = "gcr.io/distroless/python3-debian12",
+    platforms = [
+        "linux/amd64",
+    ],
+)
