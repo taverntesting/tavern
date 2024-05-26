@@ -1,4 +1,6 @@
 load("@rules_python//python:defs.bzl", "py_library")
+load("@tavern_pip//:requirements.bzl", "requirement")
+load("@aspect_bazel_lib//lib:tar.bzl", "tar")
 
 py_library(
     name = "conftest",
@@ -6,7 +8,7 @@ py_library(
         ":conftest.py",
     ],
     deps = [
-        "@tavern_pip_fluent_logger//:pkg",
+        requirement("fluent_logger"),
     ],
 )
 
@@ -55,49 +57,70 @@ tavern_test(
     tags = ["exclusive"],
 )
 
-load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
+load("//bazel:images.bzl", "py_oci_image")
+load("@rules_oci//oci:defs.bzl", "oci_image")
 
-py3_image(
+py_oci_image(
     name = "server_image",
     srcs = [":server.py"],
     base = "//bazel:py3_base_image",
     main = ":server.py",
     visibility = ["//:__subpackages__"],
     deps = [
-        "@tavern_pip_flask//:pkg",
-        "@tavern_pip_fluent_logger//:pkg",
-        "@tavern_pip_paho_mqtt//:pkg",
-        "@tavern_pip_pyyaml//:pkg",
+        requirement("flask"),
+        requirement("fluent_logger"),
+        requirement("paho_mqtt"),
+        requirement("pyyaml"),
     ],
 )
 
-py3_image(
+py_oci_image(
     name = "listener_image",
     srcs = [":listener.py"],
     base = "//bazel:py3_base_image",
     main = ":listener.py",
     visibility = ["//:__subpackages__"],
     deps = [
-        "@tavern_pip_fluent_logger//:pkg",
-        "@tavern_pip_paho_mqtt//:pkg",
-        "@tavern_pip_pyyaml//:pkg",
+        requirement("fluent_logger"),
+        requirement("paho_mqtt"),
+        requirement("pyyaml"),
     ],
 )
 
-load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+tar(
+    name = "mosquitto_conf_tar",
+    srcs = [
+        ":mosquitto.conf",
+    ],
+    mtree = [
+        "mosquitto/config uid=0 gid=0 mode=0755 type=dir",
+        "mosquitto/config/mosquitto.conf uid=0 gid=0 mode=0755 type=file content={}/mosquitto.conf".format(package_name()),
+    ],
+    visibility = ["//visibility:public"],
+)
 
-container_image(
+oci_image(
     name = "mosquitto",
     base = "@mosquitto//image",
-    directory = "/mosquitto/config",
-    files = [":mosquitto.conf"],
+    tars = [":mosquitto_conf_tar"],
     visibility = ["//:__subpackages__"],
 )
 
-container_image(
+tar(
+    name = "fluentd_conf_tar",
+    srcs = [
+        ":fluent.conf",
+    ],
+    mtree = [
+        "fluentd/etc uid=0 gid=0 mode=0755 type=dir",
+        "fluentd/etc/fluent.conf uid=0 gid=0 mode=0755 type=file content={}/fluent.conf".format(package_name()),
+    ],
+    visibility = ["//visibility:public"],
+)
+
+oci_image(
     name = "fluentd",
     base = "@fluentd//image",
-    directory = "/fluentd/etc",
-    files = [":fluent.conf"],
+    tars = [":fluentd_conf_tar"],
     visibility = ["//:__subpackages__"],
 )

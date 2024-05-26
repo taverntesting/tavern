@@ -1,5 +1,6 @@
 load("@rules_python//python:defs.bzl", "py_test")
 load("@bazel_skylib//rules:run_binary.bzl", "run_binary")
+load("@tavern_pip//:requirements.bzl", "requirement")
 
 def tavern_test(filename, images, extra_data = [], extra_deps = [], extra_args = [], tags = [], **kwargs):
     """
@@ -19,7 +20,7 @@ def tavern_test(filename, images, extra_data = [], extra_deps = [], extra_args =
         "//tavern/_plugins/rest",
         "@rules_python//python/runfiles",
         "//tavern/_core/pytest",
-        "@tavern_pip_colorlog//:pkg",
+        requirement("colorlog"),
     ]
 
     base_args = [

@@ -1,3 +1,5 @@
+load("@tavern_pip//:requirements.bzl", "requirement")
+
 LintOutputInfo = provider(
     fields = {
         "lint_out": "lint output",
@@ -61,11 +63,11 @@ file_count_aspect = aspect(
     attrs = {
         "_flake8": attr.label(
             allow_files = True,
-            default = "@tavern_pip_flake8//:rules_python_wheel_entry_point_flake8",
+            default = requirement("flake8"),
         ),
         "_black": attr.label(
             allow_files = True,
-            default = "@tavern_pip_black//:rules_python_wheel_entry_point_black",
+            default = requirement("black"),
         ),
         "_flake8_config": attr.label(
             allow_single_file = True,

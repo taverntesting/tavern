@@ -1,4 +1,5 @@
 load("@rules_python//python:defs.bzl", "py_library")
+load("@tavern_pip//:requirements.bzl", "requirement")
 
 py_library(
     name = "rest",
@@ -16,7 +17,7 @@ py_library(
         "//tavern/_core",
         "//tavern/_core/pytest",
         "//tavern/bazelutil",
-        "@tavern_pip//python_box",
-        "@tavern_pip//requests",
+        requirement("python_box"),
+        requirement("requests"),
     ],
 )

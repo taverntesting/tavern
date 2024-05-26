@@ -1,4 +1,5 @@
 load("@rules_python//python:defs.bzl", "py_library")
+load("@tavern_pip//:requirements.bzl", "requirement")
 
 py_library(
     name = "_core",
@@ -25,12 +26,12 @@ py_library(
     deps = [
         # FIXME: This keeps getting added - why?
         # "//tavern",
-        "@tavern_pip//allure_python_commons",
-        "@tavern_pip//jmespath",
-        "@tavern_pip//pytest",
-        "@tavern_pip//python_box",
-        "@tavern_pip//pyyaml",
-        "@tavern_pip//stevedore",
+        requirement("allure_python_commons"),
+        requirement("jmespath"),
+        requirement("pytest"),
+        requirement("python_box"),
+        requirement("pyyaml"),
+        requirement("stevedore"),
     ],
 )
 

@@ -43,7 +43,7 @@ py_wheel(
         "python-box>4,<6",
         "stevedore>=3.5.2,<4",
     ],
-    version = "2.6.0",
+    version = "2.11.0",
     visibility = ["//visibility:public"],
     deps = [
         "//tavern",
@@ -113,11 +113,6 @@ gazelle(
     name = "gazelle",
     data = GAZELLE_PYTHON_RUNTIME_DEPS,
     gazelle = "@rules_python_gazelle_plugin//python:gazelle_binary",
-)
-
-alias(
-    name = "black",
-    actual = "@tavern_pip_black//:rules_python_wheel_entry_point_black",
 )
 
 load("//bazel:lint.bzl", "file_count_rule")

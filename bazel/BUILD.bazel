@@ -1,7 +1,8 @@
 load("@rules_python//python:defs.bzl", "py_binary", "py_library")
-load("@io_bazel_rules_docker//container:image.bzl", "container_image")
+load("@rules_oci//oci:defs.bzl", "oci_image")
+load("@tavern_pip//:requirements.bzl", "requirement")
 
-container_image(
+oci_image(
     name = "py3_base_image",
     base = "@py3_debug_image_base//image",
     env = {
@@ -31,8 +32,8 @@ py_library(
         "//tests:__subpackages__",
     ],
     deps = [
-        "@tavern_pip//docker",
-        "@tavern_pip//pytest",
+        requirement("docker"),
+        requirement("pytest"),
     ],
 )
 
@@ -44,6 +45,6 @@ py_binary(
     srcs = [":load_image.py"],
     visibility = ["//:__subpackages__"],
     deps = [
-        "@tavern_pip_docker//:pkg",
+        requirement("docker"),
     ],
 )

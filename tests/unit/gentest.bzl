@@ -1,4 +1,5 @@
 load("//bazel:tavern_test.bzl", "pytest_test")
+load("@tavern_pip//:requirements.bzl", "requirement")
 
 def gentest(filename):
     pytest_test(
@@ -13,7 +14,7 @@ def gentest(filename):
         data = ["//:pyproject.toml"],
         deps = [
             ":conftest",
-            "@tavern_pip_faker//:pkg",
-            "@tavern_pip_colorlog//:pkg",
+            requirement("faker"),
+            requirement("colorlog"),
         ],
     )

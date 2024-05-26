@@ -1,5 +1,6 @@
 package(default_visibility = ["//:__subpackages__"])
 
+load("@tavern_pip//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_library")
 
 # gazelle:ignore
@@ -20,12 +21,12 @@ py_library(
         "//tavern/_plugins/mqtt",
         "//tavern/_plugins/rest",
         "//tests:conftest",  # keep
-        "@tavern_pip_faker//:pkg",
-        "@tavern_pip_paho_mqtt//:pkg",
-        "@tavern_pip_py//:pkg",
-        "@tavern_pip_pytest//:pkg",
-        "@tavern_pip_pyyaml//:pkg",
-        "@tavern_pip_requests//:pkg",
+        requirement("faker"),
+        requirement("paho_mqtt"),
+        requirement("py"),
+        requirement("pytest"),
+        requirement("pyyaml"),
+        requirement("requests"),
     ],
 )
 

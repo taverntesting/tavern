@@ -1,4 +1,5 @@
 load("@rules_python//python:defs.bzl", "py_library")
+load("@tavern_pip//:requirements.bzl", "requirement")
 
 py_library(
     name = "conftest",
@@ -11,9 +12,9 @@ py_library(
         "//tavern",
         "//tavern/_plugins/mqtt",
         "//tavern/_plugins/rest",
-        "@tavern_pip//pytest",
-        "@tavern_pip//pyyaml",
-        "@tavern_pip//stevedore",
+        requirement("pytest"),
+        requirement("pyyaml"),
+        requirement("stevedore"),
     ],
 )
 
@@ -36,20 +37,20 @@ pytest_test(
     ],
 )
 
-load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
-
-container_bundle(
-    name = "test_image_bundle",
-    images = {
-        "bazel/example/advanced:server_image": "//example/advanced:server_image",
-        "bazel/example/components:server_image": "//example/components:server_image",
-        "bazel/example/cookies:server_image": "//example/cookies:server_image",
-        "bazel/example/hooks:server_image": "//example/hooks:server_image",
-        "bazel/example/simple:server_image": "//example/simple:server_image",
-        "bazel/example/mqtt:server_image": "//example/mqtt:server_image",
-        "bazel/example/mqtt:listener_image": "//example/mqtt:listener_image",
-        "bazel/example/mqtt:fluentd": "//example/mqtt:fluentd",
-        "bazel/example/mqtt:mosquitto": "//example/mqtt:mosquitto",
-        "bazel/tests/integration:server_image": "//tests/integration:server_image",
-    },
-)
+#load("@io_bazel_rules_docker//container:bundle.bzl", "container_bundle")
+#
+#container_bundle(
+#    name = "test_image_bundle",
+#    images = {
+#        "bazel/example/advanced:server_image": "//example/advanced:server_image",
+#        "bazel/example/components:server_image": "//example/components:server_image",
+#        "bazel/example/cookies:server_image": "//example/cookies:server_image",
+#        "bazel/example/hooks:server_image": "//example/hooks:server_image",
+#        "bazel/example/simple:server_image": "//example/simple:server_image",
+#        "bazel/example/mqtt:server_image": "//example/mqtt:server_image",
+#        "bazel/example/mqtt:listener_image": "//example/mqtt:listener_image",
+#        "bazel/example/mqtt:fluentd": "//example/mqtt:fluentd",
+#        "bazel/example/mqtt:mosquitto": "//example/mqtt:mosquitto",
+#        "bazel/tests/integration:server_image": "//tests/integration:server_image",
+#    },
+#)

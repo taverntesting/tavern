@@ -1,4 +1,5 @@
 load("@rules_python//python:defs.bzl", "py_library")
+load("@tavern_pip//:requirements.bzl", "requirement")
 
 py_library(
     name = "mqtt",
@@ -19,8 +20,8 @@ py_library(
         "//tavern",
         "//tavern/_core",
         "//tavern/_core/pytest",
-        "@tavern_pip//paho_mqtt",
-        "@tavern_pip//python_box",
-        "@tavern_pip//pyyaml",
+        requirement("paho_mqtt"),
+        requirement("python_box"),
+        requirement("pyyaml"),
     ],
 )

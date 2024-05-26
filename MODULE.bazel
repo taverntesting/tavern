@@ -13,6 +13,8 @@ module(
 
 bazel_dep(name = "gazelle", version = "0.35.0", dev_dependency = True, repo_name = "bazel_gazelle")
 
+bazel_dep(name = "aspect_bazel_lib", version = "2.7.6")
+bazel_dep(name = "rules_oci", version = "1.7.5")
 bazel_dep(name = "bazel_skylib", version = "1.5.0")
 bazel_dep(name = "rules_python", version = "0.32.2")
 bazel_dep(name = "rules_python_gazelle_plugin", version = "0.32.2")

@@ -1,4 +1,5 @@
 load("@rules_python//python:defs.bzl", "py_library")
+load("@tavern_pip//:requirements.bzl", "requirement")
 
 py_library(
     name = "tavern",
@@ -16,10 +17,10 @@ py_library(
         "//tavern/_core",
         "//tavern/_core/pytest",
         "//tavern/_core/schema",
-        "@tavern_pip//jmespath",
-        "@tavern_pip//pyjwt",
-        "@tavern_pip//pytest",
-        "@tavern_pip//python_box",
-        "@tavern_pip//requests",
+        requirement("jmespath"),
+        requirement("pyjwt"),
+        requirement("pytest"),
+        requirement("python_box"),
+        requirement("requests"),
     ],
 )

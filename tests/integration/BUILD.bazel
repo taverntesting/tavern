@@ -1,5 +1,6 @@
 package(default_visibility = ["//:__subpackages__"])
 
+load("@tavern_pip//:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_library", "py_test")
 
 py_library(
@@ -8,7 +9,7 @@ py_library(
     srcs = ["conftest.py"],
     imports = ["../.."],
     visibility = ["//:__subpackages__"],
-    deps = ["@tavern_pip//pytest"],
+    deps = [requirement("pytest")],
 )
 
 load(":gentest.bzl", "gentest")
@@ -18,17 +19,17 @@ load(":gentest.bzl", "gentest")
     for f in glob(["test_*.tavern.yaml"])
 ]
 
-load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
+load("//bazel:images.bzl", "py_oci_image")
 
-py3_image(
+py_oci_image(
     name = "server_image",
     srcs = [":server.py"],
     base = "//bazel:py3_base_image",
     main = ":server.py",
     visibility = ["//:__subpackages__"],
     deps = [
-        "@tavern_pip_flask//:pkg",
-        "@tavern_pip_pyjwt//:pkg",
+        requirement("flask"),
+        requirement("pyjwt"),
     ],
 )
 
@@ -40,9 +41,9 @@ py_library(
     ],
     visibility = ["//:__subpackages__"],
     deps = [
-        "@tavern_pip//flask",
-        "@tavern_pip//itsdangerous",
-        "@tavern_pip//pyjwt",
+        requirement("flask"),
+        requirement("itsdangerous"),
+        requirement("pyjwt"),
     ],
 )
 

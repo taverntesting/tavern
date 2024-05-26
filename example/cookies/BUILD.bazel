@@ -1,4 +1,5 @@
 load("//bazel:tavern_test.bzl", "tavern_test")
+load("@tavern_pip//:requirements.bzl", "requirement")
 
 tavern_test(
     "test_server.tavern.yaml",
@@ -8,15 +9,15 @@ tavern_test(
     images = {"example-cookies": ":server_image.tar"},
 )
 
-load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
+load("//bazel:images.bzl", "py_oci_image")
 
-py3_image(
+py_oci_image(
     name = "server_image",
     srcs = [":server.py"],
     base = "//bazel:py3_base_image",
     main = ":server.py",
     visibility = ["//:__subpackages__"],
     deps = [
-        "@tavern_pip_flask//:pkg",
+        requirement("flask"),
     ],
 )

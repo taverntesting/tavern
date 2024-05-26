@@ -1,4 +1,5 @@
 load("@rules_python//python:defs.bzl", "py_library")
+load("@tavern_pip//:requirements.bzl", "requirement")
 
 py_library(
     name = "testing_utils",
@@ -6,8 +7,8 @@ py_library(
         ":testing_utils.py",
     ],
     deps = [
-        "@tavern_pip_flask//:pkg",
-        "@tavern_pip_pyjwt//:pkg",
+        requirement("flask"),
+        requirement("pyjwt"),
     ],
 )
 
@@ -24,16 +25,16 @@ tavern_test(
     images = {"example-advanced": ":server_image.tar"},
 )
 
-load("@io_bazel_rules_docker//python3:image.bzl", "py3_image")
+load("//bazel:images.bzl", "py_oci_image")
 
-py3_image(
+py_oci_image(
     name = "server_image",
     srcs = [":server.py"],
     base = "//bazel:py3_base_image",
     main = ":server.py",
     visibility = ["//:__subpackages__"],
     deps = [
-        "@tavern_pip_flask//:pkg",
-        "@tavern_pip_pyjwt//:pkg",
+        requirement("flask"),
+        requirement("pyjwt"),
     ],
 )
