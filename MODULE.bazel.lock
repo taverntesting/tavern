@@ -3933,7 +3933,7 @@
         "bzlTransitiveDigest": "R2ooW31NljC6PSIhrjrYTfHwkvAxmkC4pn2Sv92Vvek=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements.txt": "8ced1e640eab3ee44298590e5ad88cd612f5bf96245af1981709f7a8884a982b",
-          "@@//requirements.txt": "be1c74eaffefe132ed6ae951aa01923d993d16726e4df41bced2ab63d75902e0"
+          "@@//requirements.txt": "6acc70d6eac78938c3ecf7480ab845b843a09079653621cd6fef3d3308ce6d9f"
         },
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -4819,6 +4819,7 @@
                 "commonmark": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_commonmark\",\"version\":\"3.11\"}]",
                 "coverage": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_coverage\",\"version\":\"3.11\"}]",
                 "distlib": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_distlib\",\"version\":\"3.11\"}]",
+                "docker": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_docker\",\"version\":\"3.11\"}]",
                 "docopt": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_docopt\",\"version\":\"3.11\"}]",
                 "docutils": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_docutils\",\"version\":\"3.11\"}]",
                 "exceptiongroup": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_exceptiongroup\",\"version\":\"3.11\"}]",
@@ -5960,6 +5961,19 @@
               "quiet": true,
               "repo": "tavern_pip_311",
               "requirement": "flit==3.9.0     --hash=sha256:076c3aaba5ac24cf0ad3251f910900d95a08218e6bcb26f21fef1036cc4679ca     --hash=sha256:d75edf5eb324da20d53570a6a6f87f51e606eee8384925cd66a90611140844c7",
+              "timeout": 600
+            }
+          },
+          "tavern_pip_311_docker": {
+            "bzlFile": "@@rules_python~//python/pip_install:pip_repository.bzl",
+            "ruleClassName": "whl_library",
+            "attributes": {
+              "dep_template": "@tavern_pip//{name}:{target}",
+              "isolated": true,
+              "python_interpreter_target": "@@rules_python~~python2~python_3_11_host//:python",
+              "quiet": true,
+              "repo": "tavern_pip_311",
+              "requirement": "docker==7.1.0     --hash=sha256:ad8c70e6e3f8926cb8a92619b832b4ea5299e2831c14284663184e200546fa6c     --hash=sha256:c96b93b7f0a746f9e77d325bcfb87422a3d8bd4f03136ae8a85b37f1898d5fc0",
               "timeout": 600
             }
           },

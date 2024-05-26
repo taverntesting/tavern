@@ -6,7 +6,7 @@ tavern_test(
     extra_data = [
         ":common.yaml",
     ],
-    images = {"example-cookies": ":server_image.tar"},
+    images = {"example-cookies": ":server_image"},
 )
 
 load("//bazel:images.bzl", "py_oci_image")

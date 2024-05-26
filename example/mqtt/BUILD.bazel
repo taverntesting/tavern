@@ -31,10 +31,10 @@ tavern_test(
         ":testing_utils",
     ],
     images = {
-        "example-mqtt-server": ":server_image.tar",
-        "example-mqtt-listener": ":listener_image.tar",
-        "broker": ":mosquitto.tar",
-        "fluent": ":fluentd.tar",
+        "example-mqtt-server": ":server_image",
+        "example-mqtt-listener": ":listener_image",
+        "broker": ":mosquitto",
+        "fluent": ":fluentd",
     },
 )
 
@@ -48,10 +48,10 @@ tavern_test(
         ":testing_utils",
     ],
     images = {
-        "example-mqtt-server": ":server_image.tar",
-        "example-mqtt-listener": ":listener_image.tar",
-        "broker": ":mosquitto.tar",
-        "fluent": ":fluentd.tar",
+        "example-mqtt-server": ":server_image",
+        "example-mqtt-listener": ":listener_image",
+        "broker": ":mosquitto",
+        "fluent": ":fluentd",
     },
     # Make sure it's not run at the same time as the above
     tags = ["exclusive"],

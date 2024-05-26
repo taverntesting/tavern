@@ -9,7 +9,7 @@ load("@tavern_pip//:requirements.bzl", "requirement")
             ":common.yaml",
             "//example/components/components:auth_stage.yaml",
         ],
-        images = {"example-components": ":server_image.tar"},
+        images = {"example-components": ":server_image"},
     )
     for filename in [
         "test_ping.tavern.yaml",

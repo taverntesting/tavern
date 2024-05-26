@@ -64,6 +64,7 @@ grpc = [
 ]
 
 dev = [
+    "docker",
     "Faker",
     "allure-pytest",
     "colorlog",

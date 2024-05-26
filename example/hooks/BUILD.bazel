@@ -14,7 +14,7 @@ load("//bazel:tavern_test.bzl", "tavern_test")
 #    "test_server.tavern.yaml",
 #    extra_data = [
 #        # Minor hack to make it so the tests are rerun when the server changes
-#        ":server_image.tar",
+#        ":server_image",
 #    ],
 #    extra_deps = [
 #        ":conftest",

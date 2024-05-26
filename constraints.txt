@@ -38,6 +38,7 @@ coverage==7.5.2
     # via pytest-cov
 distlib==0.3.8
     # via virtualenv
+docker==7.1.0
 docopt==0.6.2
     # via pykwalify
 docutils==0.20.1
@@ -178,6 +179,7 @@ referencing==0.35.1
     #   jsonschema-specifications
 requests==2.32.2
     # via
+    #   docker
     #   flit
     #   google-api-core
     #   sphinx
@@ -237,6 +239,7 @@ uritemplate==4.1.1
     # via google-api-python-client
 urllib3==2.2.1
     # via
+    #   docker
     #   requests
     #   types-requests
 uv==0.2.3

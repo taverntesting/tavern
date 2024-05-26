@@ -32,6 +32,7 @@ py_library(
         "//tests:__subpackages__",
     ],
     deps = [
+        requirement("docker"),
         requirement("pytest"),
     ],
 )
@@ -44,5 +45,6 @@ py_binary(
     srcs = [":load_image.py"],
     visibility = ["//:__subpackages__"],
     deps = [
+        requirement("docker"),
     ],
 )

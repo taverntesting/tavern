@@ -1,5 +1,8 @@
 import json
+import os
 import sys
+import tempfile
+import zipfile
 
 import docker
 
@@ -8,12 +11,13 @@ if __name__ == "__main__":
 
     client = docker.from_env()
     for image_name in sys.argv[2:]:
-        with open(
-            image_name,
-            "rb",
-        ) as docker_image_tar:
-            images = client.images.load(docker_image_tar)
-            repo_tags += [image.attrs["RepoTags"] for image in images]
+        with tempfile.NamedTemporaryFile(suffix=".tar") as tmp_file:
+            with zipfile.ZipFile(tmp_file, mode="w") as zip_file:
+                for root, _, files in os.walk(image_name):
+                    for file in files:
+                        zip_file.write(os.path.join(root, file))
+        images = client.images.load(tmp_file.name)
+        repo_tags += [image.attrs["RepoTags"] for image in images]
 
     with open(sys.argv[1], "w") as image_names_output:
         json.dump(repo_tags, image_names_output)

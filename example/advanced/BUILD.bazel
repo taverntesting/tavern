@@ -22,7 +22,7 @@ tavern_test(
     extra_deps = [
         ":testing_utils",
     ],
-    images = {"example-advanced": ":server_image.tar"},
+    images = {"example-advanced": ":server_image"},
 )
 
 load("//bazel:images.bzl", "py_oci_image")
