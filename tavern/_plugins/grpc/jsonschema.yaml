@@ -1,0 +1,52 @@
+---
+$schema: "http://json-schema.org/draft-07/schema#"
+
+title: gRPC schema
+description: Schema for Python gRPC connection
+
+type: object
+additionalProperties: false
+required:
+  - grpc
+
+properties:
+  grpc:
+    type: object
+    properties:
+      connect:
+        type: object
+        properties:
+          host:
+            type: string
+          port:
+            type: integer
+          timeout:
+            type: number
+          keepalive:
+            type: integer
+          secure:
+            type: boolean
+            description: use a secure channel using the system default ssl certs
+          options:
+            description: connection options, in map format
+            type: object
+
+      # TODO
+      # tls: ...
+
+      attempt_reflection:
+        description: If a gRPC definition could not be found for a service, try to use server reflection to create the gRPC call instead. This can be useful if you do not have the compiled proto definition on hand but you know what the schema is.
+        type: boolean
+
+      metadata:
+        description: gRPC metadata to send to the server
+        type: object
+
+      proto:
+        type: object
+        properties:
+          source:
+            description: path to a folder containing proto definitions
+            type: string
+          module:
+            type: string

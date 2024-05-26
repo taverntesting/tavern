@@ -1,11 +1,11 @@
 import logging
 import pathlib
-from typing import Optional, Tuple
+from typing import MutableMapping, Optional, Tuple, Union
 
 import attr
 import pytest
 import yaml
-from _pytest._code.code import ExceptionInfo
+from _pytest._code.code import ExceptionInfo, TerminalRepr
 from _pytest.nodes import Node
 
 from tavern._core import exceptions
@@ -20,7 +20,7 @@ from tavern._core.schema.files import verify_tests
 from .config import TestConfig
 from .util import load_global_cfg
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class YamlItem(pytest.Item):
@@ -33,19 +33,23 @@ class YamlItem(pytest.Item):
     Attributes:
         path: filename that this test came from
         spec: The whole dictionary of the test
+        global_cfg: configuration for test
     """
 
     # See https://github.com/taverntesting/tavern/issues/825
     _patched_yaml = False
 
+    global_cfg: TestConfig
+
     def __init__(
-        self, *, name: str, parent, spec, path: pathlib.Path, **kwargs
+        self, *, name: str, parent, spec: MutableMapping, path: pathlib.Path, **kwargs
     ) -> None:
+        if "grpc" in spec:
+            logger.warning("Tavern grpc support is in an experimental stage")
+
         super().__init__(name, parent, **kwargs)
         self.path = path
         self.spec = spec
-
-        self.global_cfg: Optional[TestConfig] = None
 
         if not YamlItem._patched_yaml:
             yaml.parser.Parser.process_empty_scalar = (  # type:ignore
@@ -63,7 +67,9 @@ class YamlItem(pytest.Item):
 
         # _get_direct_parametrize_args checks parametrize arguments in Python
         # functions, but we don't care about that in Tavern.
-        self.session._fixturemanager._get_direct_parametrize_args = lambda _: []  # type: ignore
+        self.session._fixturemanager._get_direct_parametrize_args = (  # type: ignore
+            lambda _: []  # type: ignore
+        )  # type: ignore
 
         fixtureinfo = self.session._fixturemanager.getfixtureinfo(
             self, self.obj, type(self), funcargs=False
@@ -95,7 +101,7 @@ class YamlItem(pytest.Item):
                 name = stage["name"]
             elif "id" in stage:
                 name = stage["id"]
-            stages.append("{:d}: {:s}".format(i + 1, name))
+            stages.append(f"{i + 1:d}: {name:s}")
 
         # This needs to be a function or skipif breaks
         def fakefun():
@@ -168,12 +174,12 @@ class YamlItem(pytest.Item):
             values.update(mark_values)
 
         # Use autouse fixtures as well
-        for m in self.fixturenames:
-            if m in values:
-                logger.debug("%s already explicitly used", m)
+        for name in self.fixturenames:
+            if name in values:
+                logger.debug("%s already explicitly used", name)
                 continue
 
-            mark_values = {m: self.funcargs[m]}
+            mark_values = {name: self.funcargs[name]}
             values.update(mark_values)
 
         return values
@@ -217,7 +223,17 @@ class YamlItem(pytest.Item):
                 self.add_marker(pytest.mark.xfail, True)
             raise
         except exceptions.TavernException as e:
-            if xfail == "run" and not e.is_final:
+            if isinstance(xfail, dict):
+                if msg := xfail.get("run"):
+                    if msg not in str(e):
+                        raise Exception(
+                            f"error message did not match: expected '{msg}', got '{e!s}'"
+                        ) from e
+                    logger.info("xfailing test when running")
+                    self.add_marker(pytest.mark.xfail, True)
+                else:
+                    logger.warning("internal error checking 'xfail'")
+            elif xfail == "run" and not e.is_final:
                 logger.info("xfailing test when running")
                 self.add_marker(pytest.mark.xfail, True)
             elif xfail == "finally" and e.is_final:
@@ -227,7 +243,7 @@ class YamlItem(pytest.Item):
             raise
         else:
             if xfail:
-                raise Exception("internal: xfail test did not fail '{}'".format(xfail))
+                raise Exception(f"internal: xfail test did not fail '{xfail}'")
         finally:
             call_hook(
                 self.global_cfg,
@@ -238,7 +254,7 @@ class YamlItem(pytest.Item):
 
     def repr_failure(
         self, excinfo: ExceptionInfo[BaseException], style: Optional[str] = None
-    ):
+    ) -> Union[TerminalRepr, str, ReprdError]:
         """called when self.runtest() raises an exception.
 
         By default, will raise a custom formatted traceback if it's a tavern error. if not, will use the default

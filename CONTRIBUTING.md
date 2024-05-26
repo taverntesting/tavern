@@ -21,10 +21,12 @@ If on Windows, you should be able to just run the 'tox' commands in that file.
 
 1. Add or update the dependency in [pyproject.toml](/pyproject.toml)
 
-1. Update requirements files (BOTH of them)
+1. Update constraints and requirements file
 
-       pip-compile --all-extras --resolver=backtracking pyproject.toml --output-file requirements.txt --reuse-hashes --generate-hashes
-       pip-compile --all-extras --resolver=backtracking pyproject.toml --output-file constraints.txt --strip-extras
+```shell
+uv pip compile --all-extras pyproject.toml --output-file constraints.txt -U
+uv pip compile --all-extras pyproject.toml --output-file requirements.txt -U --generate-hashes
+```
 
 1. Run tests as above
 
@@ -44,7 +46,7 @@ Run every so often to update the pre-commit hooks
 
 ### Fixing Python formatting issue
 
-    black tavern/ tests/
+    ruff format tavern/ tests/
     ruff --fix tavern/ tests/
 
 ### Fix yaml formatting issues

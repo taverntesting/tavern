@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple, Union
 from tavern._core import exceptions
 from tavern._core.strtobool import strtobool
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class StrictSetting(enum.Enum):
@@ -69,7 +69,7 @@ def validate_and_parse_option(key: str) -> StrictOption:
     if not match:
         raise exceptions.InvalidConfigurationException(
             "Invalid value for 'strict' given - expected one of {}, got '{}'".format(
-                ["{}[:on/off]".format(key) for key in valid_keys], key
+                [f"{key}[:on/off]" for key in valid_keys], key
             )
         )
 
@@ -120,7 +120,7 @@ class StrictLevel:
             return getattr(self, section)
         except AttributeError as e:
             raise exceptions.InvalidConfigurationException(
-                "No setting for '{}'".format(section)
+                f"No setting for '{section}'"
             ) from e
 
     @classmethod

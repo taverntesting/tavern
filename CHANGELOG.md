@@ -422,3 +422,27 @@ This is technically not a operational change but I'm adding a new tag so it can 
 #  2.4.0           Allow using an ext function to create a URL (2023-09-18)
 
 #  2.5.0           Tinctures: a utility for running things before/after stages, able to be specified at test or stage level. (2023-10-22)
+
+#  2.6.0           fix verify_response_with with multiple MQTT responses (2023-11-18)
+
+#  2.7.0           update minimum version of jsonschema (2023-12-26)
+
+##  2.7.1           Fix jsonschema warnings (2023-12-26)
+
+#  2.8.0           Initial gRPC support (2024-01-20)
+
+#  2.9.0           Fix mqtt implementation checking for message publication correctly (2024-01-23)
+
+##  2.9.1           internal cleanup (2024-01-27)
+
+##  2.9.2           Fix saving in gRPC (2024-02-10)
+
+##  2.9.3           Fix saving in gRPC without checking the response (2024-02-17)
+
+#  2.10.0          Lock protobuf version to <5 (2024-03-27)
+
+##  2.10.1          minor changes to fix tavern_flask plugin (2024-03-27)
+
+##  2.10.2          Fix missing schema check for redirect query params (2024-04-13)
+
+##  2.10.3          Allow using referenced 'finally' stages (2024-04-13)

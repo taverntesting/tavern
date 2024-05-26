@@ -23,7 +23,6 @@ def get_db():
                     "CREATE TABLE numbers_table (name TEXT NOT NULL, number INTEGER NOT NULL)"
                 )
 
-
     return db
 
 

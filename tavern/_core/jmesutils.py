@@ -10,7 +10,7 @@ def test_type(val, mytype) -> bool:
     typelist = TYPES.get(str(mytype).lower())
     if typelist is None:
         raise TypeError(
-            "Type {0} is not a valid type to test against!".format(str(mytype).lower())
+            f"Type {str(mytype).lower()} is not a valid type to test against!"
         )
     try:
         for testtype in typelist:
@@ -61,7 +61,7 @@ def safe_length(var: Sized) -> int:
         return -1
 
 
-def validate_comparison(each_comparison):
+def validate_comparison(each_comparison: Dict[Any, Any]):
     if extra := set(each_comparison.keys()) - {"jmespath", "operator", "expected"}:
         raise exceptions.BadSchemaError(
             "Invalid keys given to JMES validation function (got extra keys: {})".format(
@@ -87,6 +87,4 @@ def actual_validation(
     _operator: str, _actual, expected, _expression, expression
 ) -> None:
     if not COMPARATORS[_operator](_actual, expected):
-        raise exceptions.JMESError(
-            "Validation '{}' ({}) failed!".format(expression, _expression)
-        )
+        raise exceptions.JMESError(f"Validation '{expression}' ({_expression}) failed!")

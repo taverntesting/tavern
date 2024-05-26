@@ -10,7 +10,6 @@ __pycache__/
 .Python
 env/
 build/
-BUILD.bazel/
 develop-eggs/
 dist/
 downloads/
@@ -130,6 +129,7 @@ bazel-testlogs
 /.pids
 /.pants.workdir.file_lock*
 
+example/grpc/proto
 
 .run
 .bazelrc.user

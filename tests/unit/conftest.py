@@ -19,7 +19,7 @@ _includes = TestConfig(
     strict=StrictLevel.all_on(),
     tavern_internal=TavernInternalConfig(
         pytest_hook_caller=Mock(),
-        backends={"mqtt": "paho-mqtt", "http": "requests"},
+        backends={"mqtt": "paho-mqtt", "http": "requests", "grpc": "grpc"},
     ),
     follow_redirects=False,
     stages=[],

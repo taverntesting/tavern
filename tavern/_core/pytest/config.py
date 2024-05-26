@@ -1,8 +1,12 @@
 import copy
 import dataclasses
-from typing import Any
+import logging
+from importlib.util import find_spec
+from typing import Any, List
 
 from tavern._core.strict_util import StrictLevel
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -46,3 +50,23 @@ class TestConfig:
     def with_strictness(self, new_strict: StrictLevel) -> "TestConfig":
         """Create a copy of the config but with a new strictness setting"""
         return dataclasses.replace(self, strict=new_strict)
+
+    @staticmethod
+    def backends() -> List[str]:
+        available_backends = ["http"]
+
+        if has_module("paho.mqtt"):
+            available_backends.append("mqtt")
+        if has_module("grpc"):
+            available_backends.append("grpc")
+
+        logger.debug(f"available request backends: {available_backends}")
+
+        return available_backends
+
+
+def has_module(module: str) -> bool:
+    try:
+        return find_spec(module) is not None
+    except ModuleNotFoundError:
+        return False

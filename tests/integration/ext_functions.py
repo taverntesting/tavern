@@ -14,7 +14,7 @@ def return_list_vals():
 
 
 def gen_echo_url(host):
-    return "{0}/echo".format(host)
+    return f"{host}/echo"
 
 
 def time_request(_):

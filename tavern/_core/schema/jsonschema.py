@@ -1,10 +1,12 @@
 import logging
 import re
+from typing import Mapping
 
 import jsonschema
 from jsonschema import Draft7Validator, ValidationError
 from jsonschema.validators import extend
 
+from tavern._core import exceptions
 from tavern._core.dict_util import recurse_access_key
 from tavern._core.exceptions import BadSchemaError
 from tavern._core.loader import (
@@ -16,11 +18,13 @@ from tavern._core.loader import (
     TypeConvertToken,
     TypeSentinel,
 )
+from tavern._core.pytest.config import has_module
 from tavern._core.schema.extensions import (
     check_parametrize_marks,
     check_strict_key,
     retry_variable,
     validate_file_spec,
+    validate_grpc_status_is_valid_or_list_of_names,
     validate_http_method,
     validate_json_with_ext,
     validate_request_json,
@@ -31,7 +35,7 @@ from tavern._core.stage_lines import (
     read_relevant_lines,
 )
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def is_str_or_bytes_or_token(checker, instance):
@@ -66,7 +70,7 @@ def is_object_or_sentinel(checker, instance):
     )
 
 
-def oneOf(validator, oneOf, instance, schema):
+def oneOf(validator: Draft7Validator, oneOf, instance, schema):
     """Patched version of 'oneof' that does not complain if something is matched by multiple branches"""
     subschemas = enumerate(oneOf)
     all_errors = []
@@ -78,11 +82,13 @@ def oneOf(validator, oneOf, instance, schema):
         all_errors.extend(errs)
     else:
         yield ValidationError(
-            "%r is not valid under any of the given schemas" % (instance,),
+            f"{instance!r} is not valid under any of the given schemas",
             context=all_errors,
         )
 
-    more_valid = [s for i, s in subschemas if validator.is_valid(instance, s)]
+    more_valid = [
+        s for i, s in subschemas if validator.evolve(schema=s).is_valid(instance)
+    ]
     if more_valid:
         more_valid.append(first_valid)
         reprs = ", ".join(repr(schema) for schema in more_valid)
@@ -102,18 +108,27 @@ CustomValidator = extend(
 )
 
 
-def verify_jsonschema(to_verify, schema) -> None:
+def verify_jsonschema(to_verify: Mapping, schema: Mapping) -> None:
     """Verify a generic file against a given jsonschema
 
     Args:
-        to_verify (dict): Filename of source tests to check
-        schema (dict): Schema to verify against
+        to_verify: Filename of source tests to check
+        schema: Schema to verify against
 
     Raises:
         BadSchemaError: Schema did not match
     """
 
     validator = CustomValidator(schema)
+
+    if "grpc" in to_verify and not has_module("grpc"):
+        raise exceptions.BadSchemaError(
+            "Tried to use grpc connection string, but grpc was not installed. Reinstall Tavern with the grpc extra like `pip install tavern[grpc]`"
+        )
+    if "mqtt" in to_verify and not has_module("paho.mqtt"):
+        raise exceptions.BadSchemaError(
+            "Tried to use mqtt connection string, but mqtt was not installed. Reinstall Tavern with the mqtt extra like `pip install tavern[mqtt]`"
+        )
 
     try:
         validator.validate(to_verify)
@@ -134,7 +149,7 @@ def verify_jsonschema(to_verify, schema) -> None:
                 filename = get_stage_filename(instance)
 
             if filename:
-                with open(filename, "r", encoding="utf-8") as infile:
+                with open(filename, encoding="utf-8") as infile:
                     n_lines = len(infile.readlines())
 
                 first_line, last_line, _ = get_stage_lines(instance)
@@ -175,6 +190,7 @@ def verify_jsonschema(to_verify, schema) -> None:
         "stages[*].request.data[]": validate_request_json,
         "stages[*].request.params[]": validate_request_json,
         "stages[*].request.headers[]": validate_request_json,
+        "stages[*].grpc_response.status[]": validate_grpc_status_is_valid_or_list_of_names,
         "stages[*].request.method[]": validate_http_method,
         "stages[*].request.save[]": validate_json_with_ext,
         "stages[*].request.files[]": validate_file_spec,

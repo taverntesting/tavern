@@ -3,6 +3,7 @@ from contextlib import ExitStack
 from typing import Union
 
 import pytest
+from _pytest.config import ExitCode
 
 from tavern._core import exceptions
 from tavern._core.schema.files import wrapfile
@@ -16,8 +17,7 @@ def _get_or_wrap_global_cfg(
 
     Args:
         stack: context stack for wrapping file if a dictionary is given
-        tavern_global_cfg: Dictionary or string. It should be a
-            path to a file or a dictionary with configuration.
+        tavern_global_cfg: path to a file or a dictionary with configuration.
 
     Returns:
         path to global config file
@@ -25,15 +25,12 @@ def _get_or_wrap_global_cfg(
     Raises:
         InvalidSettingsError: If global config was not of the right type or a given path
             does not exist
-
-    Todo:
-        Once python 2 is dropped, allow this to take a 'path like object'
     """
 
     if isinstance(tavern_global_cfg, str):
         if not os.path.exists(tavern_global_cfg):
             raise exceptions.InvalidSettingsError(
-                "global config file '{}' does not exist".format(tavern_global_cfg)
+                f"global config file '{tavern_global_cfg}' does not exist"
             )
         global_filename = tavern_global_cfg
     elif isinstance(tavern_global_cfg, dict):
@@ -48,26 +45,29 @@ def _get_or_wrap_global_cfg(
     return global_filename
 
 
-def run(
+def run(  # type:ignore
     in_file: str,
-    tavern_global_cfg=None,
-    tavern_mqtt_backend=None,
-    tavern_http_backend=None,
-    tavern_strict=None,
-    pytest_args=None,
-):
+    tavern_global_cfg: Union[dict, str, None] = None,
+    tavern_mqtt_backend: Union[str, None] = None,
+    tavern_http_backend: Union[str, None] = None,
+    tavern_grpc_backend: Union[str, None] = None,
+    tavern_strict: Union[bool, None] = None,
+    pytest_args: Union[list, None] = None,
+) -> Union[ExitCode, int]:
     """Run all tests contained in a file using pytest.main()
 
     Args:
         in_file: file to run tests on
-        tavern_global_cfg (str, dict): Extra global config
-        tavern_mqtt_backend (str, optional): name of MQTT plugin to use. If not
+        tavern_global_cfg: Extra global config
+        tavern_mqtt_backend: name of MQTT plugin to use. If not
             specified, uses tavern-mqtt
-        tavern_http_backend (str, optional): name of HTTP plugin to use. If not
+        tavern_http_backend: name of HTTP plugin to use. If not
             specified, use tavern-http
-        tavern_strict (bool, optional): Strictness of checking for responses.
+        tavern_grpc_backend: name of GRPC plugin to use. If not
+            specified, use tavern-grpc
+        tavern_strict: Strictness of checking for responses.
             See documentation for details
-        pytest_args (list, optional): List of extra arguments to pass directly
+        pytest_args: List of extra arguments to pass directly
             to Pytest as if they were command line arguments
 
     Returns:
@@ -81,6 +81,8 @@ def run(
         pytest_args += ["--tavern-mqtt-backend", tavern_mqtt_backend]
     if tavern_http_backend:
         pytest_args += ["--tavern-http-backend", tavern_http_backend]
+    if tavern_grpc_backend:
+        pytest_args += ["--tavern-grpc-backend", tavern_grpc_backend]
     if tavern_strict:
         pytest_args += ["--tavern-strict", tavern_strict]
 

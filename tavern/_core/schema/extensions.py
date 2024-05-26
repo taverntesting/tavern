@@ -1,6 +1,6 @@
 import os
 import re
-from typing import Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Tuple, Type, Union
 
 from pykwalify.types import is_bool, is_float, is_int
 
@@ -12,13 +12,24 @@ from tavern._core.extfunctions import (
     is_ext_function,
 )
 from tavern._core.general import valid_http_methods
-from tavern._core.loader import ApproxScalar, BoolToken, FloatToken, IntToken
+from tavern._core.loader import (
+    ApproxScalar,
+    BoolToken,
+    FloatToken,
+    IntToken,
+    TypeConvertToken,
+)
 from tavern._core.strict_util import StrictLevel
+
+if TYPE_CHECKING:
+    from tavern._plugins.grpc.response import GRPCCode
 
 
 # To extend pykwalify's type validation, extend its internal functions
 # These return boolean values
-def validate_type_and_token(validate_type, token):
+def validate_type_and_token(
+    validate_type: Callable[[Any], bool], token: Type[TypeConvertToken]
+):
     def validate(value):
         return validate_type(value) or isinstance(value, token)
 
@@ -31,7 +42,7 @@ is_bool_like = validate_type_and_token(is_bool, BoolToken)
 
 
 # These plug into the pykwalify extension function API
-def validator_like(validate, description):
+def validator_like(validate: Callable[[Any], bool], description: str):
     def validator(value, rule_obj, path):
         if validate(value):
             return True
@@ -49,12 +60,12 @@ float_variable = validator_like(is_float_like, "float-like")
 bool_variable = validator_like(is_bool_like, "bool-like")
 
 
-def _validate_one_extension(input_value) -> None:
+def _validate_one_extension(input_value: Mapping) -> None:
     expected_keys = {"function", "extra_args", "extra_kwargs"}
     extra = set(input_value) - expected_keys
 
     if extra:
-        raise BadSchemaError("Unexpected keys passed to $ext: {}".format(extra))
+        raise BadSchemaError(f"Unexpected keys passed to $ext: {extra}")
 
     if "function" not in input_value:
         raise BadSchemaError("No function specified for validation")
@@ -68,14 +79,10 @@ def _validate_one_extension(input_value) -> None:
     extra_kwargs = input_value.get("extra_kwargs")
 
     if extra_args and not isinstance(extra_args, list):
-        raise BadSchemaError(
-            "Expected a list of extra_args, got {}".format(type(extra_args))
-        )
+        raise BadSchemaError(f"Expected a list of extra_args, got {type(extra_args)}")
 
     if extra_kwargs and not isinstance(extra_kwargs, dict):
-        raise BadSchemaError(
-            "Expected a dict of extra_kwargs, got {}".format(type(extra_args))
-        )
+        raise BadSchemaError(f"Expected a dict of extra_kwargs, got {type(extra_args)}")
 
 
 def validate_extensions(value, rule_obj, path) -> bool:
@@ -106,7 +113,7 @@ def validate_extensions(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path) -> bool:
+def validate_status_code_is_int_or_list_of_ints(value: Mapping, rule_obj, path) -> bool:
     err_msg = "status_code has to be an integer or a list of integers (got {})".format(
         value
     )
@@ -121,7 +128,7 @@ def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path) -> bool:
     return True
 
 
-def check_usefixtures(value, rule_obj, path) -> bool:
+def check_usefixtures(value: Mapping, rule_obj, path) -> bool:
     err_msg = "'usefixtures' has to be a list with at least one item"
 
     if not isinstance(value, (list, tuple)):
@@ -133,11 +140,49 @@ def check_usefixtures(value, rule_obj, path) -> bool:
     return True
 
 
-def verify_oneof_id_name(value, rule_obj, path) -> bool:
+def validate_grpc_status_is_valid_or_list_of_names(
+    value: "GRPCCode", rule_obj, path
+) -> bool:
+    """Validate GRPC statuses https://github.com/grpc/grpc/blob/master/doc/statuscodes.md"""
+    # pylint: disable=unused-argument
+    err_msg = (
+        "status has to be an valid grpc status code, name, or list (got {})".format(
+            value
+        )
+    )
+
+    if isinstance(value, (str, int)):
+        if not to_grpc_status(value):
+            raise BadSchemaError(err_msg)
+    elif isinstance(value, list):
+        if not all(to_grpc_status(i) for i in value):
+            raise BadSchemaError(err_msg)
+    else:
+        raise BadSchemaError(err_msg)
+
+    return True
+
+
+def to_grpc_status(value: Union[str, int]):
+    from grpc import StatusCode
+
+    if isinstance(value, str):
+        value = value.upper()
+        for status in StatusCode:
+            if status.name == value:
+                return status.name
+    elif isinstance(value, int):
+        for status in StatusCode:
+            if status.value[0] == value:
+                return status.name
+
+    return None
+
+
+def verify_oneof_id_name(value: Mapping, rule_obj, path) -> bool:
     """Checks that if 'name' is not present, 'id' is"""
 
-    name = value.get("name")
-    if not name:
+    if not (name := value.get("name")):
         if name == "":
             raise BadSchemaError("Name cannot be empty")
 
@@ -208,7 +253,7 @@ def check_parametrize_marks(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_data_key(value, rule_obj, path) -> bool:
+def validate_data_key(value, rule_obj, path: str) -> bool:
     """Validate the 'data' key in a http request
 
     From requests docs:
@@ -228,9 +273,7 @@ def validate_data_key(value, rule_obj, path) -> bool:
         # Also fine - might want to do checking on this for encoding etc?
         pass
     elif isinstance(value, list):
-        raise BadSchemaError(
-            "Error at {} - expected a dict, str, or !!binary".format(path)
-        )
+        raise BadSchemaError(f"Error at {path} - expected a dict, str, or !!binary")
 
         # invalid = []
 
@@ -244,9 +287,7 @@ def validate_data_key(value, rule_obj, path) -> bool:
         # if invalid:
         #     raise BadSchemaError("Error at {} - when passing a list to the 'data' key, all items must be 2-tuples (invalid values: {})".format(path, invalid))
     else:
-        raise BadSchemaError(
-            "Error at {} - expected a dict, str, or !!binary".format(path)
-        )
+        raise BadSchemaError(f"Error at {path} - expected a dict, str, or !!binary")
 
     return True
 
@@ -260,8 +301,7 @@ def validate_request_json(value, rule_obj, path) -> bool:
         if isinstance(d, dict):
             for v in d.values():
                 if isinstance(v, dict):
-                    for v_s in v.values():
-                        yield v_s
+                    yield from v.values()
                 else:
                     yield v
         else:
@@ -288,12 +328,12 @@ def validate_json_with_ext(value, rule_obj, path) -> bool:
         if isinstance(maybe_ext_val, dict):
             validate_extensions(maybe_ext_val, rule_obj, path)
         elif maybe_ext_val is not None:
-            raise BadSchemaError("Unexpected $ext key in block at {}".format(path))
+            raise BadSchemaError(f"Unexpected $ext key in block at {path}")
 
     return True
 
 
-def check_strict_key(value, rule_obj, path) -> bool:
+def check_strict_key(value: Union[List, bool], rule_obj, path) -> bool:
     """Make sure the 'strict' key is either a bool or a list"""
 
     if not isinstance(value, list) and not is_bool_like(value):
@@ -310,7 +350,7 @@ def check_strict_key(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_timeout_tuple_or_float(value, rule_obj, path) -> bool:
+def validate_timeout_tuple_or_float(value: Union[List, Tuple], rule_obj, path) -> bool:
     """Make sure timeout is a float/int or a tuple of floats/ints"""
 
     err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{}' (type {})".format(
@@ -365,7 +405,7 @@ def validate_cert_tuple_or_str(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_file_spec(value, rule_obj, path) -> bool:
+def validate_file_spec(value: Dict, rule_obj, path) -> bool:
     """Validate file upload arguments"""
 
     logger = get_pykwalify_logger("tavern.schema.extensions")
@@ -390,7 +430,7 @@ def validate_file_spec(value, rule_obj, path) -> bool:
             extra = set(filespec.keys()) - valid
             if extra:
                 raise BadSchemaError(
-                    "Invalid extra keys passed to file upload block: {}".format(extra)
+                    f"Invalid extra keys passed to file upload block: {extra}"
                 )
 
             try:
@@ -416,7 +456,7 @@ def validate_file_spec(value, rule_obj, path) -> bool:
                 )
             else:
                 raise BadSchemaError(
-                    "Path to file to upload '{}' was not found".format(file_path)
+                    f"Path to file to upload '{file_path}' was not found"
                 )
 
     return True

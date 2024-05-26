@@ -3,10 +3,11 @@
 This is here mainly to make MQTT easier, this will almost defintiely change
 significantly if/when a proper plugin system is implemented!
 """
+
 import dataclasses
 import logging
 from functools import partial
-from typing import Any, List, Mapping, Optional
+from typing import Any, Callable, Dict, List, Mapping, Optional, Protocol, Type
 
 import stevedore
 
@@ -14,8 +15,9 @@ from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
 from tavern._core.pytest.config import TestConfig
 from tavern.request import BaseRequest
+from tavern.response import BaseResponse
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class PluginHelperBase:
@@ -24,12 +26,26 @@ class PluginHelperBase:
 
 def plugin_load_error(mgr, entry_point, err):
     """Handle import errors"""
-    logger.exception("f")
-    msg = "Error loading plugin {} - {}".format(entry_point, err)
+    msg = f"Error loading plugin {entry_point} - {err}"
     raise exceptions.PluginLoadError(msg) from err
 
 
-def is_valid_reqresp_plugin(ext: Any) -> bool:
+class _TavernPlugin(Protocol):
+    """A tavern plugin"""
+
+    session_type: Type[Any]
+    request_type: Type[BaseRequest]
+    verifier_type: Type[BaseResponse]
+    response_block_name: str
+    request_block_name: str
+    schema: Mapping
+
+    def get_expected_from_request(
+        self, response_block: BaseResponse, test_block_config: TestConfig, session: Any
+    ) -> Any: ...
+
+
+def is_valid_reqresp_plugin(ext: stevedore.extension.Extension) -> bool:
     """Whether this is a valid 'reqresp' plugin
 
     Requires certain functions/variables to be present
@@ -41,44 +57,53 @@ def is_valid_reqresp_plugin(ext: Any) -> bool:
         ext: class or module plugin object
 
     Returns:
-        bool: Whether the plugin has everything we need to use it
+        Whether the plugin has everything we need to use it
     """
     required = [
         # MQTTClient, requests.Session
         "session_type",
         # RestRequest, MQTTRequest
         "request_type",
-        # request, mqtt_publish
+        # request, mqtt_publish, grpc_request
         "request_block_name",
         # Some function that returns a dict
         "get_expected_from_request",
         # MQTTResponse, RestResponse
         "verifier_type",
-        # response, mqtt_response
+        # response, mqtt_response, grpc_request
         "response_block_name",
         # dictionary with pykwalify schema
         "schema",
     ]
 
-    return all(hasattr(ext.plugin, i) for i in required)
+    plugin: _TavernPlugin = ext.plugin
+
+    return all(hasattr(plugin, i) for i in required)
+
+
+class _Plugin:
+    """Wrapped tavern plugin for convenience"""
+
+    name: str
+    plugin: _TavernPlugin
 
 
 @dataclasses.dataclass
 class _PluginCache:
-    plugins: List[Any] = dataclasses.field(default_factory=list)
+    plugins: List[_Plugin] = dataclasses.field(default_factory=list)
 
-    def __call__(self, config: Optional[TestConfig] = None):
-        if not config and not self.plugins:
-            raise exceptions.PluginLoadError("No config to load plugins from")
-        elif self.plugins:
+    def __call__(self, config: Optional[TestConfig] = None) -> List[_Plugin]:
+        if self.plugins:
             return self.plugins
-        elif not self.plugins and config:
-            # NOTE
-            # This is reloaded every time
+
+        if config:
+            # NOTE: This is reloaded every time
             self.plugins = self._load_plugins(config)
             return self.plugins
 
-    def _load_plugins(self, test_block_config):
+        raise exceptions.PluginLoadError("No config to load plugins from")
+
+    def _load_plugins(self, test_block_config: TestConfig) -> List[_Plugin]:
         """Load plugins from the 'tavern' entrypoint namespace
 
         This can be a module or a class as long as it defines the right things
@@ -89,13 +114,13 @@ class _PluginCache:
             - Different plugin names
 
         Args:
-            test_block_config (tavern.pytesthook.config.TestConfig): available config for test
+            test_block_config: available config for test
 
         Raises:
-            exceptions.MissingSettingsError: Description
+            exceptions.MissingSettingsError: invalid entry points set
 
         Returns:
-            list: Loaded plugins, can be a class or a module
+            Loaded plugins, can be a class or a module
         """
 
         plugins = []
@@ -105,8 +130,10 @@ class _PluginCache:
                 ext.name == test_block_config.tavern_internal.backends[current_backend]
             )
 
-        for backend in ["http", "mqtt"]:
-            namespace = "tavern_{}".format(backend)
+        for backend in test_block_config.backends():
+            logger.debug("loading backend for %s", backend)
+
+            namespace = f"tavern_{backend}"
 
             manager = stevedore.EnabledExtensionManager(
                 namespace=namespace,
@@ -193,11 +220,13 @@ def get_request_type(
         keys[p.plugin.request_block_name] = p.plugin.request_type
 
     if len(set(keys) & set(stage)) > 1:
-        logger.error("Can only specify 1 request type")
-        raise exceptions.DuplicateKeysError
+        raise exceptions.DuplicateKeysError(
+            f"Can only specify 1 request type but got {set(keys)}"
+        )
     elif not list(set(keys) & set(stage)):
-        logger.error("Need to specify one of '%s'", keys.keys())
-        raise exceptions.MissingKeysError
+        raise exceptions.MissingKeysError(
+            f"Need to specify one of valid request types: '{set(keys.keys())}'"
+        )
 
     # We've validated that 1 and only 1 is there, so just loop until the first
     # one is found
@@ -223,13 +252,17 @@ class ResponseVerifier(dict):
     plugin_name: str
 
 
-def _foreach_response(stage: Mapping, test_block_config: TestConfig, action):
+def _foreach_response(
+    stage: Mapping,
+    test_block_config: TestConfig,
+    action: Callable[[_Plugin, str], dict],
+) -> Dict[str, dict]:
     """Do something for each response
 
     Args:
         stage: Stage of test
         test_block_config: Config for test
-        action ((p: {plugin, name}, response_block: dict) -> Any): function that takes (plugin, response block)
+        action: function that takes (plugin, response block)
 
     Returns:
         mapping of plugin name to list of expected (normally length 1)

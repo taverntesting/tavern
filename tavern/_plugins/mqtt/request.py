@@ -13,7 +13,7 @@ from tavern._core.report import attach_yaml
 from tavern._plugins.mqtt.client import MQTTClient
 from tavern.request import BaseRequest
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def get_publish_args(rspec: Dict, test_block_config: TestConfig) -> dict:

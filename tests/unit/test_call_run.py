@@ -1,3 +1,4 @@
+import warnings
 from unittest.mock import patch
 
 import pytest
@@ -26,11 +27,16 @@ class TestBasicRun:
 
     @pytest.mark.parametrize(
         "expected_kwarg",
-        ("tavern_mqtt_backend", "tavern_http_backend", "tavern_strict"),
+        (
+            "tavern_mqtt_backend",
+            "tavern_http_backend",
+            "tavern_grpc_backend",
+            "tavern_strict",
+        ),
     )
     def test_doesnt_warn_about_expected_kwargs(self, expected_kwarg):
         kw = {expected_kwarg: 123}
-        with pytest.warns(None) as warn_rec:
+        with warnings.catch_warnings(record=True) as warn_rec:
             run("", **kw)
 
         assert not len(warn_rec)
