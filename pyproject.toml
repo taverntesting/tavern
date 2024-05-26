@@ -223,6 +223,9 @@ src = "docs/source/conf.py"
 [[tool.tbump.file]]
 src = "tavern/BUILD.bazel"
 
+[[tool.tbump.file]]
+src = "MODULE.bazel"
+
 
 [[tool.tbump.before_commit]]
 name = "Update changelog"

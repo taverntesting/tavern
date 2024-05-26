@@ -1,0 +1,33 @@
+###############################################################################
+# Bazel now uses Bzlmod by default to manage external dependencies.
+# Please consider migrating your external dependencies from WORKSPACE to MODULE.bazel.
+#
+# For more details, please check https://github.com/bazelbuild/bazel/issues/18958
+###############################################################################
+
+module(
+    name = "tavern",
+    version = "2.11.0",
+    compatibility_level = 0,
+)
+
+bazel_dep(name = "gazelle", version = "0.35.0", dev_dependency = True, repo_name = "bazel_gazelle")
+
+bazel_dep(name = "bazel_skylib", version = "1.5.0")
+bazel_dep(name = "rules_python", version = "0.32.2")
+bazel_dep(name = "rules_python_gazelle_plugin", version = "0.32.2")
+bazel_dep(name = "aspect_rules_py", version = "0.7.3")
+
+python = use_extension("@rules_python//extensions:python.bzl", "python")
+python.toolchain(
+    is_default = True,
+    python_version = "3.11",
+)
+
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "tavern_pip",
+    python_version = "3.11",
+    requirements_lock = "//:requirements.txt",
+)
+use_repo(pip, "tavern_pip")

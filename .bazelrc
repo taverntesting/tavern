@@ -1,43 +1,15 @@
-test --test_output=errors
-
-test --flaky_test_attempts=1
-
 test --test_env=TEST_HOST=http://localhost:5003
 test --test_env=SECOND_URL_PART=again
 
+common --enable_bzlmod
 
-build --sandbox_default_allow_network=false
-common --incompatible_allow_tags_propagation
-test --incompatible_exclusive_test_sandboxed
-build --incompatible_strict_action_env
-build --modify_execution_info=PackageTar=+no-remote
-build --incompatible_default_to_explicit_init_py
-build --noexperimental_check_output_files
-build --experimental_reuse_sandbox_directories
-build --nolegacy_external_runfiles
-
-build:release --workspace_status_command=tools/workspace_status.sh --stamp
 build --incompatible_strict_action_env
 
 startup --host_jvm_args=-DBAZEL_TRACK_SOURCE_DIRECTORIES=1
 
-build --remote_download_minimal
-build --experimental_guard_against_concurrent_changes
-build --experimental_remote_cache_async
-build --experimental_remote_merkle_tree_cache
-build --incompatible_remote_results_ignore_disk
-build --experimental_remote_cache_compression
-build --experimental_inprocess_symlink_creation
-build --experimental_remotable_source_manifests
-test --test_output=errors
-test --test_keep_going
-test --build_tests_only
-
-
 # Enable sky query https://bazel.build/query/language#sky-query
 query --infer_universe_scope --order_output=no
 
-# Required for some C++ dependencies
 build --cxxopt='-std=c++17'
 build --host_cxxopt='-std=c++17'
 
