@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_binary", "py_library")
+load("@aspect_rules_py//py:defs.bzl", "py_binary", "py_library")
 load("@rules_oci//oci:defs.bzl", "oci_image")
 load("@tavern_pip//:requirements.bzl", "requirement")
 
@@ -32,8 +32,8 @@ py_library(
         "//tests:__subpackages__",
     ],
     deps = [
-        requirement("docker"),
-        requirement("pytest"),
+        "@tavern_pip//docker",
+        "@tavern_pip//pytest",
     ],
 )
 
@@ -42,9 +42,9 @@ py_library(
 
 py_binary(
     name = "load_image",
-    srcs = [":load_image.py"],
+    srcs = ["pytest_main.py"],
     visibility = ["//:__subpackages__"],
     deps = [
-        requirement("docker"),
+        "@tavern_pip//pytest",
     ],
 )

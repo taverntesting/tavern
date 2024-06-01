@@ -1,5 +1,7 @@
 load("@rules_python//python:defs.bzl", "py_library")
 load("@tavern_pip//:requirements.bzl", "requirement")
+load("//bazel:images.bzl", "py_oci_image")
+load("//bazel:tavern_test.bzl", "tavern_test")
 
 py_library(
     name = "testing_utils",
@@ -12,8 +14,6 @@ py_library(
     ],
 )
 
-load("//bazel:tavern_test.bzl", "tavern_test")
-
 tavern_test(
     "test_server.tavern.yaml",
     extra_data = [
@@ -24,8 +24,6 @@ tavern_test(
     ],
     images = {"example-advanced": ":server_image"},
 )
-
-load("//bazel:images.bzl", "py_oci_image")
 
 py_oci_image(
     name = "server_image",

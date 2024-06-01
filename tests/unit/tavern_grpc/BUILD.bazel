@@ -1,0 +1,37 @@
+load("@aspect_rules_py//py:defs.bzl", "py_library", "py_test")
+
+py_library(
+    name = "tavern_grpc",
+    srcs = ["__init__.py"],
+    visibility = ["//:__subpackages__"],
+)
+
+py_test(
+    name = "test_grpc",
+    srcs = ["test_grpc.py"],
+    deps = [
+        "//tavern/_core/pytest",
+        "//tavern/_plugins/grpc",
+        "@tavern_pip//grpcio_reflection",
+        "@tavern_pip//protobuf",
+        "@tavern_pip//pytest",
+        "@tavern_pip_grpcio//:pkg",
+        "@tavern_pip_pytest//:pkg",
+    ],
+)
+
+py_test(
+    name = "test_services_pb2",
+    srcs = ["test_services_pb2.py"],
+    deps = ["@tavern_pip//protobuf"],
+)
+
+py_test(
+    name = "test_services_pb2_grpc",
+    srcs = ["test_services_pb2_grpc.py"],
+    deps = [
+        ":test_services_pb2",
+        "@tavern_pip//protobuf",
+        "@tavern_pip_grpcio//:pkg",
+    ],
+)

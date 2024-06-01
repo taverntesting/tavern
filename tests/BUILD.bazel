@@ -1,5 +1,6 @@
-load("@rules_python//python:defs.bzl", "py_library")
+load("@aspect_rules_py//py:defs.bzl", "py_library")
 load("@tavern_pip//:requirements.bzl", "requirement")
+load("//bazel:tavern_test.bzl", "pytest_test")
 
 py_library(
     name = "conftest",
@@ -12,13 +13,11 @@ py_library(
         "//tavern",
         "//tavern/_plugins/mqtt",
         "//tavern/_plugins/rest",
-        requirement("pytest"),
-        requirement("pyyaml"),
-        requirement("stevedore"),
+        "@tavern_pip//pytest",
+        "@tavern_pip//pyyaml",
+        "@tavern_pip//stevedore",
     ],
 )
-
-load("//bazel:tavern_test.bzl", "pytest_test")
 
 pytest_test(
     name = "test_doctest",

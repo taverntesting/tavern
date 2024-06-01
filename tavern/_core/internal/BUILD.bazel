@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_library")
+load("@aspect_rules_py//py:defs.bzl", "py_library")
 load("@tavern_pip//:requirements.bzl", "requirement")
 
 py_library(
@@ -12,7 +12,7 @@ py_library(
     deps = [
         "//tavern/_plugins/mqtt",
         "//tavern/_plugins/rest",
-        requirement("stevedore"),
+        "@tavern_pip//stevedore",
     ],
 )
 

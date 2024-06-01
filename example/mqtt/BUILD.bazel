@@ -1,6 +1,9 @@
+load("@aspect_bazel_lib//lib:tar.bzl", "tar")
+load("@rules_oci//oci:defs.bzl", "oci_image")
 load("@rules_python//python:defs.bzl", "py_library")
 load("@tavern_pip//:requirements.bzl", "requirement")
-load("@aspect_bazel_lib//lib:tar.bzl", "tar")
+load("//bazel:images.bzl", "py_oci_image")
+load("//bazel:tavern_test.bzl", "tavern_test")
 
 py_library(
     name = "conftest",
@@ -18,8 +21,6 @@ py_library(
         ":testing_utils.py",
     ],
 )
-
-load("//bazel:tavern_test.bzl", "tavern_test")
 
 tavern_test(
     "test_mqtt.tavern.yaml",
@@ -56,9 +57,6 @@ tavern_test(
     # Make sure it's not run at the same time as the above
     tags = ["exclusive"],
 )
-
-load("//bazel:images.bzl", "py_oci_image")
-load("@rules_oci//oci:defs.bzl", "oci_image")
 
 py_oci_image(
     name = "server_image",

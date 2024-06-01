@@ -89,6 +89,10 @@ py_wheel(
 # gazelle:resolve py proto @tavern_pip_protobuf//:pkg
 # gazelle:resolve py grpc_reflection @tavern_pip_grpcio_reflection//:pkg
 
+# gazelle:map_kind py_library py_library @aspect_rules_py//py:defs.bzl
+# gazelle:map_kind py_binary py_binary @aspect_rules_py//py:defs.bzl
+# gazelle:map_kind py_test py_test @aspect_rules_py//py:defs.bzl
+
 compile_pip_requirements(
     name = "requirements",
     src = "//:pyproject.toml",

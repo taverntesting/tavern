@@ -1,27 +1,29 @@
 load("@aspect_rules_py//py:defs.bzl", "py_library")
-load("@tavern_pip//:requirements.bzl", "requirement")
 
 py_library(
-    name = "mqtt",
+    name = "grpc",
     srcs = [
         "__init__.py",
         "client.py",
+        "protos.py",
         "request.py",
         "response.py",
         "tavernhook.py",
     ],
-    data = [
-        ":jsonschema.yaml",
-        ":schema.yaml",
-    ],
-    imports = ["../../.."],
     visibility = ["//:__subpackages__"],
     deps = [
         "//tavern",
         "//tavern/_core",
         "//tavern/_core/pytest",
-        "@tavern_pip//paho_mqtt",
+        "//tavern/_core/schema",
+        "@tavern_pip//grpcio_reflection",
+        "@tavern_pip//grpcio_status",
+        "@tavern_pip//proto_plus",
+        "@tavern_pip//protobuf",
         "@tavern_pip//python_box",
         "@tavern_pip//pyyaml",
+        "@tavern_pip_grpcio//:pkg",
+        "@tavern_pip_grpcio_reflection//:pkg",
+        "@tavern_pip_protobuf//:pkg",
     ],
 )

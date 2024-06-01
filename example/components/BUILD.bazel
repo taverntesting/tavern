@@ -1,6 +1,7 @@
 load("@rules_python//python:defs.bzl", "py_library")
-load("//bazel:tavern_test.bzl", "tavern_test")
 load("@tavern_pip//:requirements.bzl", "requirement")
+load("//bazel:images.bzl", "py_oci_image")
+load("//bazel:tavern_test.bzl", "tavern_test")
 
 [
     tavern_test(
@@ -16,8 +17,6 @@ load("@tavern_pip//:requirements.bzl", "requirement")
         "test_hello.tavern.yaml",
     ]
 ]
-
-load("//bazel:images.bzl", "py_oci_image")
 
 py_oci_image(
     name = "server_image",

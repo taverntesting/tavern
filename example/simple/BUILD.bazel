@@ -1,5 +1,5 @@
-load("//bazel:tavern_test.bzl", "tavern_test")
 load("@tavern_pip//:requirements.bzl", "requirement")
+load("//bazel:tavern_test.bzl", "tavern_test")
 
 #tavern_test(
 #    "test_server.tavern.yaml",

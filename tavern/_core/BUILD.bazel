@@ -1,4 +1,4 @@
-load("@rules_python//python:defs.bzl", "py_library")
+load("@aspect_rules_py//py:defs.bzl", "py_library")
 load("@tavern_pip//:requirements.bzl", "requirement")
 
 py_library(
@@ -24,14 +24,14 @@ py_library(
     imports = ["../.."],
     visibility = ["//:__subpackages__"],
     deps = [
-        # FIXME: This keeps getting added - why?
-        # "//tavern",
-        requirement("allure_python_commons"),
-        requirement("jmespath"),
-        requirement("pytest"),
-        requirement("python_box"),
-        requirement("pyyaml"),
-        requirement("stevedore"),
+        "//tavern",
+        "@tavern_pip//allure_python_commons",
+        "@tavern_pip//jmespath",
+        "@tavern_pip//pytest",
+        "@tavern_pip//python_box",
+        "@tavern_pip//pyyaml",
+        "@tavern_pip//stevedore",
+        "@tavern_pip_pytest//:pkg",
     ],
 )
 

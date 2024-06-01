@@ -1,5 +1,6 @@
-load("//bazel:tavern_test.bzl", "tavern_test")
 load("@tavern_pip//:requirements.bzl", "requirement")
+load("//bazel:images.bzl", "py_oci_image")
+load("//bazel:tavern_test.bzl", "tavern_test")
 
 tavern_test(
     "test_server.tavern.yaml",
@@ -8,8 +9,6 @@ tavern_test(
     ],
     images = {"example-cookies": ":server_image"},
 )
-
-load("//bazel:images.bzl", "py_oci_image")
 
 py_oci_image(
     name = "server_image",

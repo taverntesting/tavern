@@ -1,7 +1,9 @@
-package(default_visibility = ["//:__subpackages__"])
-
+load("@aspect_rules_py//py:defs.bzl", "py_binary", "py_library", "py_test")
 load("@tavern_pip//:requirements.bzl", "requirement")
-load("@rules_python//python:defs.bzl", "py_library", "py_test")
+load("//bazel:images.bzl", "py_oci_image")
+load(":gentest.bzl", "gentest")
+
+package(default_visibility = ["//:__subpackages__"])
 
 py_library(
     name = "conftest",
@@ -9,17 +11,13 @@ py_library(
     srcs = ["conftest.py"],
     imports = ["../.."],
     visibility = ["//:__subpackages__"],
-    deps = [requirement("pytest")],
+    deps = ["@tavern_pip//pytest"],
 )
-
-load(":gentest.bzl", "gentest")
 
 [
     gentest(f)
     for f in glob(["test_*.tavern.yaml"])
 ]
-
-load("//bazel:images.bzl", "py_oci_image")
 
 py_oci_image(
     name = "server_image",
@@ -41,9 +39,9 @@ py_library(
     ],
     visibility = ["//:__subpackages__"],
     deps = [
-        requirement("flask"),
-        requirement("itsdangerous"),
-        requirement("pyjwt"),
+        "@tavern_pip//flask",
+        "@tavern_pip//itsdangerous",
+        "@tavern_pip//pyjwt",
     ],
 )
 
@@ -51,4 +49,15 @@ py_test(
     name = "test_dummy",
     srcs = ["test_dummy.py"],
     deps = [":conftest"],
+)
+
+py_binary(
+    name = "server",
+    srcs = ["server.py"],
+    visibility = ["//:__subpackages__"],
+    deps = [
+        "@tavern_pip//flask",
+        "@tavern_pip//itsdangerous",
+        "@tavern_pip//pyjwt",
+    ],
 )
