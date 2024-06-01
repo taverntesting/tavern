@@ -82,12 +82,12 @@ py_wheel(
 # gazelle:exclude .tox
 # gazelle:exclude docs/
 
-# gazelle:resolve py _pytest @tavern_pip_pytest//:pkg
-# gazelle:resolve py grpc @tavern_pip_grpcio//:pkg
-# gazelle:resolve py grpc_status @tavern_pip_grpcio_status//:pkg
-# gazelle:resolve py google @tavern_pip_protobuf//:pkg
-# gazelle:resolve py proto @tavern_pip_protobuf//:pkg
-# gazelle:resolve py grpc_reflection @tavern_pip_grpcio_reflection//:pkg
+# gazelle:resolve py _pytest @tavern_pip//pytest
+# gazelle:resolve py grpc @tavern_pip//grpcio
+# gazelle:resolve py grpc_status @tavern_pip//grpcio_status
+# gazelle:resolve py google @tavern_pip//protobuf
+# gazelle:resolve py proto @tavern_pip//protobuf
+# gazelle:resolve py grpc_reflection @tavern_pip//grpcio_reflection
 
 # gazelle:map_kind py_library py_library @aspect_rules_py//py:defs.bzl
 # gazelle:map_kind py_binary py_binary @aspect_rules_py//py:defs.bzl

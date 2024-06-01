@@ -21,6 +21,5 @@ py_library(
         "@tavern_pip//pytest",
         "@tavern_pip//python_box",
         "@tavern_pip//pyyaml",
-        "@tavern_pip_pytest//:pkg",
     ],
 )

@@ -18,9 +18,9 @@ py_library(
     deps = [
         "//tavern/_core",
         "//tavern/_plugins/grpc",
+        "@tavern_pip//grpcio",
         "@tavern_pip//jsonschema",
         "@tavern_pip//pykwalify",
         "@tavern_pip//pyyaml",
-        "@tavern_pip_grpcio//:pkg",
     ],
 )

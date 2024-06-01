@@ -12,11 +12,10 @@ py_test(
     deps = [
         "//tavern/_core/pytest",
         "//tavern/_plugins/grpc",
+        "@tavern_pip//grpcio",
         "@tavern_pip//grpcio_reflection",
         "@tavern_pip//protobuf",
         "@tavern_pip//pytest",
-        "@tavern_pip_grpcio//:pkg",
-        "@tavern_pip_pytest//:pkg",
     ],
 )
 
@@ -31,7 +30,7 @@ py_test(
     srcs = ["test_services_pb2_grpc.py"],
     deps = [
         ":test_services_pb2",
+        "@tavern_pip//grpcio",
         "@tavern_pip//protobuf",
-        "@tavern_pip_grpcio//:pkg",
     ],
 )

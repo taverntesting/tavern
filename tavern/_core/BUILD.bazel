@@ -31,7 +31,6 @@ py_library(
         "@tavern_pip//python_box",
         "@tavern_pip//pyyaml",
         "@tavern_pip//stevedore",
-        "@tavern_pip_pytest//:pkg",
     ],
 )
 
