@@ -33,8 +33,7 @@ if __name__ == "__main__":
 
     try:
         raise SystemExit(
-            pytest.main([test_file_location_] + sys.argv[2:],
-                        plugins=[pytesthook])
+            pytest.main([test_file_location_] + sys.argv[2:], plugins=[pytesthook])
         )
     finally:
         # Keep them alive

@@ -1,6 +1,7 @@
 exports_files([
     "pyproject.toml",
     ".flake8",
+    "MODULE.bazel.lock"
 ])
 
 load("@rules_python//python:packaging.bzl", "py_wheel")

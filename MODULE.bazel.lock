@@ -3933,7 +3933,7 @@
         "bzlTransitiveDigest": "R2ooW31NljC6PSIhrjrYTfHwkvAxmkC4pn2Sv92Vvek=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements.txt": "8ced1e640eab3ee44298590e5ad88cd612f5bf96245af1981709f7a8884a982b",
-          "@@//requirements.txt": "6acc70d6eac78938c3ecf7480ab845b843a09079653621cd6fef3d3308ce6d9f"
+          "@@//requirements.txt": "63284c209a755ede27c00e86730a3afb1ddd960419d73769bc9ee3dbcb368bde"
         },
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -4765,19 +4765,6 @@
               "timeout": 600
             }
           },
-          "tavern_pip_311_exceptiongroup": {
-            "bzlFile": "@@rules_python~//python/pip_install:pip_repository.bzl",
-            "ruleClassName": "whl_library",
-            "attributes": {
-              "dep_template": "@tavern_pip//{name}:{target}",
-              "isolated": true,
-              "python_interpreter_target": "@@rules_python~~python2~python_3_11_host//:python",
-              "quiet": true,
-              "repo": "tavern_pip_311",
-              "requirement": "exceptiongroup==1.2.1     --hash=sha256:5258b9ed329c5bbdd31a309f53cbfb0b155341807f6ff7606a1e801a891b29ad     --hash=sha256:a4785e48b045528f5bfe627b6ad554ff32def154f42372786903b7abcfe1aa16",
-              "timeout": 600
-            }
-          },
           "rules_python_publish_deps_311_twine": {
             "bzlFile": "@@rules_python~//python/pip_install:pip_repository.bzl",
             "ruleClassName": "whl_library",
@@ -4822,7 +4809,6 @@
                 "docker": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_docker\",\"version\":\"3.11\"}]",
                 "docopt": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_docopt\",\"version\":\"3.11\"}]",
                 "docutils": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_docutils\",\"version\":\"3.11\"}]",
-                "exceptiongroup": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_exceptiongroup\",\"version\":\"3.11\"}]",
                 "execnet": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_execnet\",\"version\":\"3.11\"}]",
                 "faker": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_faker\",\"version\":\"3.11\"}]",
                 "filelock": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_filelock\",\"version\":\"3.11\"}]",
@@ -4897,7 +4883,6 @@
                 "sphinxcontrib_qthelp": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_sphinxcontrib_qthelp\",\"version\":\"3.11\"}]",
                 "sphinxcontrib_serializinghtml": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_sphinxcontrib_serializinghtml\",\"version\":\"3.11\"}]",
                 "stevedore": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_stevedore\",\"version\":\"3.11\"}]",
-                "tomli": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_tomli\",\"version\":\"3.11\"}]",
                 "tomli_w": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_tomli_w\",\"version\":\"3.11\"}]",
                 "tox": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_tox\",\"version\":\"3.11\"}]",
                 "types_protobuf": "[{\"config_setting\":\"@@rules_python~//python/config_settings:is_python_3.11\",\"extra_targets\":[],\"repo\":\"tavern_pip_311_types_protobuf\",\"version\":\"3.11\"}]",
@@ -5339,19 +5324,6 @@
               "quiet": true,
               "repo": "tavern_pip_311",
               "requirement": "jmespath==1.0.1     --hash=sha256:02e2e4cc71b5bcab88332eebf907519190dd9e6e82107fa7f83b1003a6252980     --hash=sha256:90261b206d6defd58fdd5e85f478bf633a2901798906be2ad389150c5c60edbe",
-              "timeout": 600
-            }
-          },
-          "tavern_pip_311_tomli": {
-            "bzlFile": "@@rules_python~//python/pip_install:pip_repository.bzl",
-            "ruleClassName": "whl_library",
-            "attributes": {
-              "dep_template": "@tavern_pip//{name}:{target}",
-              "isolated": true,
-              "python_interpreter_target": "@@rules_python~~python2~python_3_11_host//:python",
-              "quiet": true,
-              "repo": "tavern_pip_311",
-              "requirement": "tomli==2.0.1     --hash=sha256:939de3e7a6161af0c887ef91b7d41a53e7c5a1ca976325f429cb46ea9bc30ecc     --hash=sha256:de526c12914f0c550d15924c62d72abc48d6fe7364aa87328337a31007fe8a4f",
               "timeout": 600
             }
           },
