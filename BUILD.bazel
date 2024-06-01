@@ -1,10 +1,17 @@
+load("@bazel_gazelle//:def.bzl", "gazelle")
+load("@rules_python//python:packaging.bzl", "py_wheel")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+load("@rules_python_gazelle_plugin//:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
+load("@rules_python_gazelle_plugin//manifest:defs.bzl", "gazelle_python_manifest")
+load("@rules_python_gazelle_plugin//modules_mapping:def.bzl", "modules_mapping")
+load("@tavern_pip//:requirements.bzl", "all_whl_requirements")
+load("//bazel:lint.bzl", "file_count_rule")
+
 exports_files([
     "pyproject.toml",
     ".flake8",
-    "MODULE.bazel.lock"
+    "MODULE.bazel.lock",
 ])
-
-load("@rules_python//python:packaging.bzl", "py_wheel")
 
 py_wheel(
     name = "tavern_wheel",
@@ -76,8 +83,11 @@ py_wheel(
 # gazelle:exclude docs/
 
 # gazelle:resolve py _pytest @tavern_pip_pytest//:pkg
-
-load("@rules_python//python:pip.bzl", "compile_pip_requirements")
+# gazelle:resolve py grpc @tavern_pip_grpcio//:pkg
+# gazelle:resolve py grpc_status @tavern_pip_grpcio_status//:pkg
+# gazelle:resolve py google @tavern_pip_protobuf//:pkg
+# gazelle:resolve py proto @tavern_pip_protobuf//:pkg
+# gazelle:resolve py grpc_reflection @tavern_pip_grpcio_reflection//:pkg
 
 compile_pip_requirements(
     name = "requirements",
@@ -89,10 +99,6 @@ compile_pip_requirements(
     ],
     tags = ["requires-network"],
 )
-
-load("@tavern_pip//:requirements.bzl", "all_whl_requirements")
-load("@rules_python_gazelle_plugin//manifest:defs.bzl", "gazelle_python_manifest")
-load("@rules_python_gazelle_plugin//modules_mapping:def.bzl", "modules_mapping")
 
 modules_mapping(
     name = "modules_map",
@@ -107,16 +113,11 @@ gazelle_python_manifest(
     requirements = "//:requirements.txt",
 )
 
-load("@bazel_gazelle//:def.bzl", "gazelle")
-load("@rules_python_gazelle_plugin//:def.bzl", "GAZELLE_PYTHON_RUNTIME_DEPS")
-
 gazelle(
     name = "gazelle",
     data = GAZELLE_PYTHON_RUNTIME_DEPS,
     gazelle = "@rules_python_gazelle_plugin//python:gazelle_binary",
 )
-
-load("//bazel:lint.bzl", "file_count_rule")
 
 #file_count_rule(
 #    name = "file_count",
