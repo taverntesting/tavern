@@ -1,4 +1,13 @@
 repos:
+  - repo: https://github.com/keith/pre-commit-buildifier
+    rev: 6.4.0
+    hooks:
+      - id: buildifier
+        args: &args
+          # Keep this argument in sync with .bazelci/presubmit.yaml
+          - --warnings=all
+      - id: buildifier-lint
+        args: *args
   - repo: https://github.com/asottile/pyupgrade
     rev: v3.15.2
     hooks:
