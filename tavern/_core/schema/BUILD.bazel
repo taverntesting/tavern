@@ -16,11 +16,22 @@ py_library(
     imports = ["../.."],
     visibility = ["//:__subpackages__"],
     deps = [
-        "//tavern/_core",
-        "//tavern/_plugins/grpc",
         "@tavern_pip//grpcio",
         "@tavern_pip//jsonschema",
         "@tavern_pip//pykwalify",
         "@tavern_pip//pyyaml",
     ],
 )
+
+# gazelle:python_ignore_dependencies tavern._plugins.grpc.response
+# gazelle:python_ignore_dependencies tavern._core
+# gazelle:python_ignore_dependencies tavern._core.exceptions
+# gazelle:python_ignore_dependencies tavern._core.extfunctions
+# gazelle:python_ignore_dependencies tavern._core.general
+# gazelle:python_ignore_dependencies tavern._core.loader
+# gazelle:python_ignore_dependencies tavern._core.strict_util
+# gazelle:python_ignore_dependencies tavern._core.dict_util
+# gazelle:python_ignore_dependencies tavern._core.stage_lines
+# gazelle:python_ignore_dependencies tavern._core.pytest.config
+# gazelle:python_ignore_dependencies tavern._core.pytest
+# gazelle:python_ignore_dependencies tavern._core.plugins

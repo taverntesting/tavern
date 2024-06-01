@@ -16,10 +16,26 @@ py_library(
     imports = ["../../.."],
     visibility = ["//:__subpackages__"],
     deps = [
-        "//tavern/_core",
         "@tavern_pip//attrs",
         "@tavern_pip//pytest",
         "@tavern_pip//python_box",
         "@tavern_pip//pyyaml",
     ],
 )
+
+# gazelle:python_ignore_dependencies tavern._core
+# gazelle:python_ignore_dependencies tavern._core.exceptions
+# gazelle:python_ignore_dependencies tavern._core.extfunctions
+# gazelle:python_ignore_dependencies tavern._core.general
+# gazelle:python_ignore_dependencies tavern._core.loader
+# gazelle:python_ignore_dependencies tavern._core.strict_util
+# gazelle:python_ignore_dependencies tavern._core.dict_util
+# gazelle:python_ignore_dependencies tavern._core.stage_lines
+# gazelle:python_ignore_dependencies tavern._core.pytest.config
+# gazelle:python_ignore_dependencies tavern._core.pytest.item
+# gazelle:python_ignore_dependencies tavern._core.pytest
+# gazelle:python_ignore_dependencies tavern._core.report
+# gazelle:python_ignore_dependencies tavern._core.schema.files
+# gazelle:python_ignore_dependencies tavern._core.pytest
+# gazelle:python_ignore_dependencies tavern._core.plugins
+# gazelle:python_ignore_dependencies tavern._core.run
