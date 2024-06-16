@@ -27,7 +27,7 @@ from .strict_util import StrictSetting, StrictSettingKinds, extract_strict_setti
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def _check_and_format_values(to_format: str, box_vars: Mapping[str, Any]) -> str:
+def _check_and_format_values(to_format: str, box_vars: Box) -> str:
     formatter = string.Formatter()
     would_format = formatter.parse(to_format)
 
