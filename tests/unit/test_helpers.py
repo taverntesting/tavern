@@ -8,6 +8,7 @@ from unittest.mock import Mock, patch
 import _pytest
 import pytest
 import yaml
+from box import Box
 
 from tavern._core import exceptions
 from tavern._core.dict_util import _check_and_format_values, format_keys
@@ -291,12 +292,10 @@ class TestPykwalifyExtension:
 
 
 class TestCheckParseValues:
-    @pytest.mark.parametrize(
-        "item", [[134], {"a": 2}, yaml, yaml.load, yaml.SafeLoader]
-    )
+    @pytest.mark.parametrize("item", [yaml, yaml.load, yaml.SafeLoader])
     def test_warns_bad_type(self, item):
         with patch("tavern._core.dict_util.logger.warning") as wmock:
-            _check_and_format_values("{fd}", {"fd": item})
+            _check_and_format_values("{fd}", Box({"fd": item}))
 
         wmock.assert_called_with(
             "Formatting '%s' will result in it being coerced to a string (it is a %s)",
@@ -304,12 +303,44 @@ class TestCheckParseValues:
             type(item),
         )
 
+    @pytest.mark.parametrize(
+        "item",
+        [
+            [134],
+            {"a": 2},
+        ],
+    )
+    def test_warns_bad_type_box(self, item):
+        box = Box({"fd": item})
+        with patch("tavern._core.dict_util.logger.warning") as wmock:
+            _check_and_format_values("{fd}", box)
+
+        wmock.assert_called_with(
+            "Formatting '%s' will result in it being coerced to a string (it is a %s)",
+            "fd",
+            type(box["fd"]),
+        )
+
     @pytest.mark.parametrize("item", [1, "a", 1.3, format_keys("{s}", {"s": 2})])
     def test_no_warn_good_type(self, item):
         with patch("tavern._core.dict_util.logger.warning") as wmock:
-            _check_and_format_values("{fd}", {"fd": item})
+            _check_and_format_values("{fd}", Box({"fd": item}))
 
         assert not wmock.called
+
+    def test_format_with_array_access(self):
+        """Test accessing using array indexing format"""
+
+        assert "hello" == _check_and_format_values(
+            "{a.b.c[0].d}", Box({"a": {"b": {"c": [{"d": "hello"}]}}})
+        )
+
+    def test_format_with_dict_access(self):
+        """Test accessing using dict indexing format"""
+
+        assert "hello" == _check_and_format_values(
+            "{a[b].c[0].d}", Box({"a": {"b": {"c": [{"d": "hello"}]}}})
+        )
 
 
 class TestFormatWithJson:

@@ -5,9 +5,6 @@ import re
 import string
 import typing
 from collections.abc import Collection, Iterable, Mapping, Sequence
-from typing import (
-    Any,
-)
 
 import box
 import jmespath
@@ -28,7 +25,7 @@ from .strict_util import StrictSetting, StrictSettingKinds, extract_strict_setti
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def _check_and_format_values(to_format: str, box_vars: Mapping[str, Any]) -> str:
+def _check_and_format_values(to_format: str, box_vars: Box) -> str:
     formatter = string.Formatter()
     would_format = formatter.parse(to_format)
 

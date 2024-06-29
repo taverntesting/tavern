@@ -12,6 +12,7 @@ from hashlib import sha512
 from urllib.parse import unquote_plus, urlencode
 
 import jwt
+from box import Box
 from flask import Flask, Response, jsonify, make_response, redirect, request, session
 from itsdangerous import URLSafeTimedSerializer
 
@@ -469,6 +470,14 @@ def get_606_list():
 @app.route("/606-regression-dict", methods=["GET"])
 def get_606_dict():
     return jsonify({})
+
+
+@app.route("/sub-path-query", methods=["POST"])
+def sub_path_query():
+    r = request.get_json(force=True)
+    sub_path = r["sub_path"]
+
+    return jsonify({"result": Box(r, box_dots=True)[sub_path]})
 
 
 @app.route("/magic-multi-method", methods=["GET", "POST", "DELETE"])
