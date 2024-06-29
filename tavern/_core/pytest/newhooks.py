@@ -1,12 +1,13 @@
 import logging
-from typing import Any, Dict, MutableMapping
+from collections.abc import MutableMapping
+from typing import Any
 
 from tavern._core.pytest.config import TestConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def pytest_tavern_beta_before_every_test_run(test_dict: Dict, variables: Dict) -> None:
+def pytest_tavern_beta_before_every_test_run(test_dict: dict, variables: dict) -> None:
     """Called:
 
     - directly after fixtures are loaded for a test
@@ -23,7 +24,7 @@ def pytest_tavern_beta_before_every_test_run(test_dict: Dict, variables: Dict) -
     """
 
 
-def pytest_tavern_beta_after_every_test_run(test_dict: Dict, variables: Dict) -> None:
+def pytest_tavern_beta_after_every_test_run(test_dict: dict, variables: dict) -> None:
     """Called:
 
     - After test run

@@ -2,8 +2,6 @@ import dataclasses
 import functools
 import json
 import logging
-import warnings
-from typing import Dict, Union
 
 import grpc
 from box import Box
@@ -17,7 +15,7 @@ from tavern.request import BaseRequest
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def get_grpc_args(rspec: Dict, test_block_config: TestConfig) -> Dict:
+def get_grpc_args(rspec: dict, test_block_config: TestConfig) -> dict:
     """Format GRPC request args"""
 
     fspec = format_keys(rspec, test_block_config.variables)
@@ -37,7 +35,7 @@ def get_grpc_args(rspec: Dict, test_block_config: TestConfig) -> Dict:
 
 @dataclasses.dataclass
 class WrappedFuture:
-    response: Union[grpc.Call, grpc.Future]
+    response: grpc.Call | grpc.Future
     service_name: str
 
 
@@ -47,19 +45,9 @@ class GRPCRequest(BaseRequest):
     Similar to RestRequest, publishes a single message.
     """
 
-    _warned = False
-
     def __init__(
-        self, client: GRPCClient, request_spec: Dict, test_block_config: TestConfig
+        self, client: GRPCClient, request_spec: dict, test_block_config: TestConfig
     ) -> None:
-        if not self._warned:
-            warnings.warn(
-                "Tavern gRPC support is experimental and will be updated in a future release.",
-                RuntimeWarning,
-                stacklevel=0,
-            )
-            GRPCRequest._warned = True
-
         expected = {"host", "service", "body"}
 
         check_expected_keys(expected, request_spec)

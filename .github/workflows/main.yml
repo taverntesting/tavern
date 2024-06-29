@@ -9,7 +9,7 @@ on:
   pull_request:
     branches:
       - master
-      - feature-2.0
+      - feat/3.0-release
 
 jobs:
   simple-checks:
@@ -40,12 +40,12 @@ jobs:
           cache-name: cache-${TOXENV}
         with:
           path: .tox
-          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml', 'constraints.txt') }}
 
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'constraints.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
@@ -102,12 +102,12 @@ jobs:
           cache-name: cache-${{ matrix.TOXENV }}
         with:
           path: .tox
-          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml', 'constraints.txt') }}
 
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'constraints.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 

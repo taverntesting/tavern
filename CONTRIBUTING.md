@@ -59,7 +59,9 @@ Run every so often to update the pre-commit hooks
 
 1. Install the correct version of tbump
 
-       pip install tbump@https://github.com/michaelboulton/tbump/archive/714ba8957a3c84b625608ceca39811ebe56229dc.zip
+```shell
+uv pip install tbump@https://github.com/michaelboulton/tbump/archive/714ba8957a3c84b625608ceca39811ebe56229dc.zip
+```
 
 1. Tag and push to git with `tbump <new-tag> --tag-message "<tag-message>"`
 

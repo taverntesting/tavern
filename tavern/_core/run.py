@@ -3,9 +3,9 @@ import dataclasses
 import functools
 import logging
 import pathlib
+from collections.abc import Mapping, MutableMapping
 from contextlib import ExitStack
 from copy import deepcopy
-from typing import Dict, List, Mapping, MutableMapping
 
 import box
 
@@ -31,8 +31,8 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 def _resolve_test_stages(
-    stages: List[Mapping], available_stages: Mapping
-) -> List[Mapping]:
+    stages: list[Mapping], available_stages: Mapping
+) -> list[Mapping]:
     """Looks for 'ref' stages in the given stages and returns any resolved stages
 
     Args:
@@ -75,8 +75,8 @@ def _get_included_stages(
     tavern_box: box.Box,
     test_block_config: TestConfig,
     test_spec: Mapping,
-    available_stages: List[dict],
-) -> List[dict]:
+    available_stages: list[dict],
+) -> list[dict]:
     """
     Get any stages which were included via config files which will be available
     for use in this test
@@ -293,7 +293,7 @@ def _calculate_stage_strictness(
 @dataclasses.dataclass(frozen=True)
 class _TestRunner:
     default_global_strictness: StrictLevel
-    sessions: Dict[str, PluginHelperBase]
+    sessions: dict[str, PluginHelperBase]
     test_block_config: TestConfig
     test_spec: Mapping
 

@@ -4,7 +4,7 @@ import logging
 import re
 import typing
 from io import StringIO
-from typing import Any, Dict, List, Optional
+from typing import Any
 
 import yaml
 from _pytest._code.code import FormattedExcinfo, TerminalRepr
@@ -32,7 +32,7 @@ class ReprdError(TerminalRepr):
     exce: Any
     item: "YamlItem"
 
-    def _get_available_format_keys(self) -> Dict:
+    def _get_available_format_keys(self) -> dict:
         """Try to get the format variables for the stage
 
         If we can't get the variable for this specific stage, just return the
@@ -50,8 +50,8 @@ class ReprdError(TerminalRepr):
         return keys
 
     def _print_format_variables(
-        self, tw: TerminalWriter, code_lines: List[str]
-    ) -> List[str]:
+        self, tw: TerminalWriter, code_lines: list[str]
+    ) -> list[str]:
         """Print a list of the format variables and their value at this stage
 
         If the format variable is not defined, print it in red as '???'
@@ -114,9 +114,9 @@ class ReprdError(TerminalRepr):
     def _print_test_stage(
         self,
         tw: TerminalWriter,
-        code_lines: List[str],
-        missing_format_vars: List[str],
-        line_start: Optional[int],
+        code_lines: list[str],
+        missing_format_vars: list[str],
+        line_start: int | None,
     ) -> None:
         """Print the direct source lines from this test stage
 
@@ -143,7 +143,7 @@ class ReprdError(TerminalRepr):
             else:
                 tw.line(line, white=True)
 
-    def _print_formatted_stage(self, tw: TerminalWriter, stage: Dict) -> None:
+    def _print_formatted_stage(self, tw: TerminalWriter, stage: dict) -> None:
         """Print the 'formatted' stage that Tavern will actually use to send the
         request/process the response
 

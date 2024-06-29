@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from tavern._core.pytest.config import TestConfig
@@ -15,7 +15,7 @@ class TavernException(Exception):
         test_block_config: config for stage
     """
 
-    stage: Optional[Dict]
+    stage: dict | None
     test_block_config: Optional["TestConfig"]
     is_final: bool = False
 

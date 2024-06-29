@@ -9,7 +9,6 @@ import sys
 import tempfile
 from distutils.spawn import find_executable
 from importlib.machinery import ModuleSpec
-from typing import List
 
 from tavern._core import exceptions
 
@@ -118,7 +117,7 @@ def _import_grpc_module(python_module_name: str) -> None:
             f"relative imports for Python grpc modules not allowed (got {python_module_name})"
         )
 
-    import_specs: List[ModuleSpec] = []
+    import_specs: list[ModuleSpec] = []
 
     # Check if its already on the python path
     if (spec := importlib.util.find_spec(python_module_name)) is not None:

@@ -1,12 +1,10 @@
-import contextlib
 import functools
 import logging
 import os
 import re
 import string
 import typing
-from collections.abc import Collection
-from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple, Union
+from collections.abc import Collection, Iterable, Mapping, Sequence
 
 import box
 import jmespath
@@ -57,7 +55,7 @@ def _check_and_format_values(to_format: str, box_vars: Box) -> str:
     return to_format.format(**box_vars)
 
 
-def _attempt_find_include(to_format: str, box_vars: box.Box) -> Optional[str]:
+def _attempt_find_include(to_format: str, box_vars: box.Box) -> str | None:
     formatter = string.Formatter()
     would_format = list(formatter.parse(to_format))
 
@@ -97,12 +95,12 @@ def _attempt_find_include(to_format: str, box_vars: box.Box) -> Optional[str]:
     return formatter.convert_field(would_replace, conversion)
 
 
-T = typing.TypeVar("T", str, Dict, List, Tuple)
+T = typing.TypeVar("T", str, dict, list, tuple)
 
 
 def format_keys(
     val: T,
-    variables: Union[Mapping, Box],
+    variables: Mapping | Box,
     *,
     no_double_format: bool = True,
     dangerously_ignore_string_format_errors: bool = False,
@@ -167,7 +165,7 @@ def format_keys(
     return val
 
 
-def recurse_access_key(data: Union[List, Mapping], query: str) -> Any:
+def recurse_access_key(data: dict | list[str] | Mapping, query: str):
     """
     Search for something in the given data using the given query.
 
@@ -192,72 +190,12 @@ def recurse_access_key(data: Union[List, Mapping], query: str) -> Any:
     try:
         from_jmespath = jmespath.search(query, data)
     except jmespath.exceptions.ParseError as e:
-        logger.error("Error parsing JMES query")
-
-        try:
-            _deprecated_recurse_access_key(data, query.split("."))
-        except (IndexError, KeyError):
-            logger.debug("Nothing found searching using old method")
-        else:
-            # If we found a key using 'old' style searching
-            logger.warning(
-                "Something was found using 'old style' searching in the response - please change the query to use jmespath instead - see http://jmespath.org/ for more information"
-            )
-
         raise exceptions.JMESError("Invalid JMES query") from e
 
     return from_jmespath
 
 
-def _deprecated_recurse_access_key(
-    current_val: Union[List, Mapping], keys: List
-) -> Any:
-    """Given a list of keys and a dictionary, recursively access the dicionary
-    using the keys until we find the key its looking for
-
-    If a key is an integer, it will convert it and use it as a list index
-
-    Example:
-
-        >>> _deprecated_recurse_access_key({"a": "b"}, ["a"])
-        'b'
-        >>> _deprecated_recurse_access_key({"a": {"b": ["c", "d"]}}, ["a", "b", "0"])
-        'c'
-
-    Args:
-        current_val: current dictionary we have recursed into
-        keys: list of str/int of subkeys
-
-    Raises:
-        IndexError: list index not found in data
-        KeyError: dict key not found in data
-
-    Returns:
-        value of subkey in dict
-    """
-    logger.debug("Recursively searching for '%s' in '%s'", keys, current_val)
-
-    if not keys:
-        return current_val
-    else:
-        current_key = keys.pop(0)
-
-        with contextlib.suppress(ValueError):
-            current_key = int(current_key)
-
-        try:
-            return _deprecated_recurse_access_key(current_val[current_key], keys)
-        except (IndexError, KeyError, TypeError) as e:
-            logger.error(
-                "%s accessing data - looking for '%s' in '%s'",
-                type(e).__name__,
-                current_key,
-                current_val,
-            )
-            raise
-
-
-def deep_dict_merge(initial_dct: Dict, merge_dct: Mapping) -> dict:
+def deep_dict_merge(initial_dct: dict, merge_dct: Mapping) -> dict:
     """Recursive dict merge. Instead of updating only top-level keys,
     dict_merge recurses down into dicts nested to an arbitrary depth
     and returns the merged dict. Keys values present in merge_dct take
@@ -282,7 +220,10 @@ def deep_dict_merge(initial_dct: Dict, merge_dct: Mapping) -> dict:
     return dct
 
 
-def check_expected_keys(expected: Collection, actual: Collection) -> None:
+_CanCheck = Sequence | Mapping | set | Collection
+
+
+def check_expected_keys(expected: _CanCheck, actual: _CanCheck) -> None:
     """Check that a set of expected keys is a superset of the actual keys
 
     Args:
@@ -305,7 +246,7 @@ def check_expected_keys(expected: Collection, actual: Collection) -> None:
         raise exceptions.UnexpectedKeysError(msg)
 
 
-def yield_keyvals(block: Union[List, Dict]) -> Iterator[Tuple[List, str, str]]:
+def yield_keyvals(block: _CanCheck) -> Iterable[tuple[list[str], str, str]]:
     """Return indexes, keys and expected values for matching recursive keys
 
     Given a list or dict, return a 3-tuple of the 'split' key (key split on
@@ -352,13 +293,13 @@ def yield_keyvals(block: Union[List, Dict]) -> Iterator[Tuple[List, str, str]]:
             yield [sidx], sidx, val
 
 
-Checked = typing.TypeVar("Checked", Dict, Collection, str)
+Checked = typing.TypeVar("Checked", dict, Collection, str)
 
 
 def check_keys_match_recursive(
     expected_val: Checked,
     actual_val: Checked,
-    keys: List[Union[str, int]],
+    keys: list[str | int],
     strict: StrictSettingKinds = True,
 ) -> None:
     """Utility to recursively check response values

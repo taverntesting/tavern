@@ -6,7 +6,6 @@ import re
 import uuid
 from abc import abstractmethod
 from itertools import chain
-from typing import List, Optional, Union
 
 import pytest
 import yaml
@@ -33,7 +32,9 @@ def makeuuid(loader, node) -> str:
 class RememberComposer(Composer):
     """A composer that doesn't forget anchors across documents"""
 
-    def compose_document(self) -> Optional[Node]:
+    def get_event(self) -> None: ...
+
+    def compose_document(self) -> Node | None:
         # Drop the DOCUMENT-START event.
         self.get_event()  # type:ignore
 
@@ -121,7 +122,7 @@ class IncludeLoader(
         Resolver.__init__(self)
         SourceMappingConstructor.__init__(self)
 
-    env_path_list: Optional[List] = None
+    env_path_list: list | None = None
     env_var_name = "TAVERN_INCLUDE"
 
 
@@ -369,7 +370,7 @@ class BoolToken(TypeConvertToken):
 class StrToRawConstructor:
     """Used when we want to ignore brace formatting syntax"""
 
-    def __new__(cls, s):
+    def __new__(cls, s) -> str:  # type:ignore
         return str(s.replace("{", "{{").replace("}", "}}"))
 
 
@@ -430,7 +431,7 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):  # type:ignore
 yaml.dumper.Dumper.add_representer(ApproxScalar, ApproxSentinel.to_yaml)
 
 
-def load_single_document_yaml(filename: Union[str, os.PathLike]) -> dict:
+def load_single_document_yaml(filename: str | os.PathLike) -> dict:
     """
     Load a yaml file and expect only one document
 

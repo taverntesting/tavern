@@ -1,7 +1,10 @@
 import contextlib
 import json
 import logging
-from typing import Any, Dict, List, Mapping, Union
+from collections.abc import Mapping
+from typing import (
+    Any,
+)
 from urllib.parse import parse_qs, urlparse
 
 import requests
@@ -78,7 +81,7 @@ class RestResponse(BaseResponse):
             logger.debug("Redirect location: %s", to_path)
             log_dict_block(redirect_query_params, "Redirect URL query parameters")
 
-    def _get_redirect_query_params(self, response: requests.Response) -> Dict[str, str]:
+    def _get_redirect_query_params(self, response: requests.Response) -> dict[str, str]:
         """If there was a redirect header, get any query parameters from it"""
 
         try:
@@ -98,7 +101,7 @@ class RestResponse(BaseResponse):
 
         return redirect_query_params
 
-    def _check_status_code(self, status_code: Union[int, List[int]], body: Any) -> None:
+    def _check_status_code(self, status_code: int | list[int], body: Any) -> None:
         expected_code = self.expected["status_code"]
 
         if (isinstance(expected_code, int) and status_code == expected_code) or (
@@ -176,7 +179,7 @@ class RestResponse(BaseResponse):
         self._maybe_run_validate_functions(response)
 
         # Get any keys to save
-        saved: Dict = {}
+        saved: dict = {}
 
         saved.update(self.maybe_get_save_values_from_save_block("json", body))
         saved.update(
