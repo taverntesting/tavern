@@ -192,7 +192,7 @@ ruamel-yaml==0.18.6
 ruamel-yaml-clib==0.2.8
     # via ruamel-yaml
 ruff==0.4.4
-setuptools==69.5.1
+setuptools==70.0.0
     # via nodeenv
 six==1.16.0
     # via python-dateutil
