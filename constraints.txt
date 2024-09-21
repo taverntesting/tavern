@@ -110,6 +110,11 @@ idna==3.10
     # via requests
 imagesize==1.4.1
     # via sphinx
+importlib-metadata==8.5.0
+    # via
+    #   flask
+    #   markdown
+    #   sphinx
 iniconfig==2.0.0
     # via pytest
 itsdangerous==2.2.0
@@ -275,6 +280,10 @@ tomli-w==1.0.0
     # via flit
 tox==4.20.0
     # via tavern (pyproject.toml)
+types-jmespath==1.0.2.20240106
+    # via tavern (pyproject.toml)
+types-paho-mqtt==1.6.0.20240321
+    # via tavern (pyproject.toml)
 types-protobuf==4.25.0.20240417
     # via tavern (pyproject.toml)
 types-pyyaml==6.0.12.20240917
@@ -297,3 +306,5 @@ werkzeug==3.0.4
     # via flask
 wheel==0.44.0
     # via tavern (pyproject.toml)
+zipp==3.20.2
+    # via importlib-metadata
