@@ -14,7 +14,9 @@ logger: logging.Logger = logging.getLogger(__name__)
 @dataclasses.dataclass
 class Tinctures:
     tinctures: list[Any]
-    needs_response: list[Generator] = dataclasses.field(default_factory=list)
+    needs_response: list[Generator[None, tuple[Any, Any], None]] = dataclasses.field(
+        default_factory=list
+    )
 
     def start_tinctures(self, stage: collections.abc.Mapping) -> None:
         results = [t(stage) for t in self.tinctures]

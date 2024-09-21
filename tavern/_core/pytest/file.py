@@ -24,7 +24,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 T = typing.TypeVar("T")
 
-_format_without_inner: Callable[[T, Mapping], T] = functools.partial(
+_format_without_inner: Callable[[T, Mapping], T] = functools.partial(  # type:ignore
     format_keys, no_double_format=False
 )
 
