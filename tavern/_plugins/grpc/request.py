@@ -3,7 +3,7 @@ import functools
 import json
 import logging
 import warnings
-from typing import Dict, Union
+from typing import Union
 
 import grpc
 from box import Box
@@ -17,7 +17,7 @@ from tavern.request import BaseRequest
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def get_grpc_args(rspec: Dict, test_block_config: TestConfig) -> Dict:
+def get_grpc_args(rspec: dict, test_block_config: TestConfig) -> dict:
     """Format GRPC request args"""
 
     fspec = format_keys(rspec, test_block_config.variables)
@@ -50,7 +50,7 @@ class GRPCRequest(BaseRequest):
     _warned = False
 
     def __init__(
-        self, client: GRPCClient, request_spec: Dict, test_block_config: TestConfig
+        self, client: GRPCClient, request_spec: dict, test_block_config: TestConfig
     ) -> None:
         if not self._warned:
             warnings.warn(

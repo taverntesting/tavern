@@ -1,12 +1,9 @@
 import dataclasses
 import logging
+from collections.abc import Iterable, Mapping
 from typing import (
-    Iterable,
-    Mapping,
     Optional,
     Protocol,
-    Tuple,
-    Type,
     Union,
 )
 
@@ -31,7 +28,7 @@ class _WithMarks(Protocol):
 PyYamlDict = Union[_WithMarks, Mapping]
 
 
-def get_stage_lines(stage: PyYamlDict) -> Tuple[int, int, int]:
+def get_stage_lines(stage: PyYamlDict) -> tuple[int, int, int]:
     first_line = start_mark(stage).line - 1
     last_line = end_mark(stage).line
     line_start = first_line + 1
@@ -60,14 +57,14 @@ def get_stage_filename(yaml_block: PyYamlDict) -> Optional[str]:
     return start_mark(yaml_block).name
 
 
-def start_mark(yaml_block: PyYamlDict) -> Union[Type[YamlMark], YamlMark]:
+def start_mark(yaml_block: PyYamlDict) -> Union[type[YamlMark], YamlMark]:
     try:
         return yaml_block.start_mark  # type:ignore
     except AttributeError:
         return YamlMark()
 
 
-def end_mark(yaml_block: PyYamlDict) -> Union[Type[YamlMark], YamlMark]:
+def end_mark(yaml_block: PyYamlDict) -> Union[type[YamlMark], YamlMark]:
     try:
         return yaml_block.end_mark  # type:ignore
     except AttributeError:

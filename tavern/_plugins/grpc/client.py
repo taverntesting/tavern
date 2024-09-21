@@ -1,8 +1,8 @@
 import dataclasses
 import logging
-import typing
 import warnings
-from typing import Any, Dict, List, Mapping, Optional, Tuple
+from collections.abc import Mapping
+from typing import Any, Optional
 
 import grpc
 import grpc_reflection
@@ -28,7 +28,7 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     warnings.warn("deprecated", DeprecationWarning)  # noqa: B028
 
-_ProtoMessageType = typing.Type[proto.message.Message]
+_ProtoMessageType = type[proto.message.Message]
 
 
 @dataclasses.dataclass
@@ -69,7 +69,7 @@ class GRPCClient:
         self.timeout = int(_connect_args.get("timeout", 5))
         self.secure = bool(_connect_args.get("secure", False))
 
-        self._options: List[Tuple[str, Any]] = []
+        self._options: list[tuple[str, Any]] = []
         for key, value in _connect_args.pop("options", {}).items():
             if not key.startswith("grpc."):
                 raise exceptions.GRPCServiceException(
@@ -77,7 +77,7 @@ class GRPCClient:
                 )
             self._options.append((key, value))
 
-        self.channels: Dict[str, grpc.Channel] = {}
+        self.channels: dict[str, grpc.Channel] = {}
         # Using the default symbol database is a bit undesirable because it means that things being imported from
         # previous tests will affect later ones which can mask bugs. But there isn't a nice way to have a
         # self-contained symbol database, because then you need to transitively import all dependencies of protos and
@@ -143,7 +143,7 @@ class GRPCClient:
 
     def get_method_types(
         self, full_method_name: str
-    ) -> Tuple[_ProtoMessageType, _ProtoMessageType]:
+    ) -> tuple[_ProtoMessageType, _ProtoMessageType]:
         """Uses the builtin symbol pool to try and find the input and output types for the given method
 
         Args:

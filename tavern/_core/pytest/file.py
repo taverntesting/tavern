@@ -3,7 +3,8 @@ import functools
 import itertools
 import logging
 import typing
-from typing import Any, Callable, Dict, Iterable, Iterator, List, Mapping, Tuple, Union
+from collections.abc import Iterable, Iterator, Mapping
+from typing import Any, Callable, Union
 
 import pytest
 import yaml
@@ -30,7 +31,7 @@ _format_without_inner: Callable[[T, Mapping], T] = functools.partial(
 
 def _format_test_marks(
     original_marks: Iterable[Union[str, dict]], fmt_vars: Mapping, test_name: str
-) -> Tuple[List[Mark], List[Mapping]]:
+) -> tuple[list[Mark], list[Mapping]]:
     """Given the 'raw' marks from the test and any available format variables,
     generate new  marks for this test
 
@@ -60,8 +61,8 @@ def _format_test_marks(
 
     """
 
-    pytest_marks: List[Mark] = []
-    formatted_marks: List[Mapping] = []
+    pytest_marks: list[Mark] = []
+    formatted_marks: list[Mapping] = []
 
     for m in original_marks:
         if isinstance(m, str):
@@ -129,8 +130,8 @@ def _maybe_load_ext(pair):
 
 
 def _generate_parametrized_test_items(
-    keys: Iterable[Union[str, List, Tuple]], vals_combination: Iterable[Tuple[str, str]]
-) -> Tuple[Mapping[str, Any], str]:
+    keys: Iterable[Union[str, list, tuple]], vals_combination: Iterable[tuple[str, str]]
+) -> tuple[Mapping[str, Any], str]:
     """Generate test name from given key(s)/value(s) combination
 
     Args:
@@ -140,8 +141,8 @@ def _generate_parametrized_test_items(
     Returns:
         tuple of the variables for the stage and the generated stage name
     """
-    flattened_values: List[Iterable[str]] = []
-    variables: Dict[str, Any] = {}
+    flattened_values: list[Iterable[str]] = []
+    variables: dict[str, Any] = {}
 
     # combination of keys and the values they correspond to
     for pair in zip(keys, vals_combination):
@@ -180,9 +181,9 @@ def _generate_parametrized_test_items(
 
 def _get_parametrized_items(
     parent: pytest.File,
-    test_spec: Dict,
-    parametrize_marks: List[Dict],
-    pytest_marks: List[pytest.Mark],
+    test_spec: dict,
+    parametrize_marks: list[dict],
+    pytest_marks: list[pytest.Mark],
 ) -> Iterator[YamlItem]:
     """Return new items with new format values available based on the mark
 
@@ -220,7 +221,7 @@ def _get_parametrized_items(
             "Invalid match between numbers of keys and number of values in parametrize mark"
         ) from e
 
-    keys: List[str] = [i["parametrize"]["key"] for i in parametrize_marks]
+    keys: list[str] = [i["parametrize"]["key"] for i in parametrize_marks]
 
     for vals_combination in combined:
         logger.debug("Generating test for %s/%s", keys, vals_combination)
@@ -284,7 +285,7 @@ class YamlFile(pytest.File):
         # skipif: {my_integer} > 2
         # skipif: 'https' in '{hostname}'
         # skipif: '{hostname}'.contains('ignoreme')
-        fmt_vars: Dict = {}
+        fmt_vars: dict = {}
 
         global_cfg = load_global_cfg(self.config)
         fmt_vars.update(**global_cfg.variables)
@@ -309,7 +310,7 @@ class YamlFile(pytest.File):
         tavern_box.merge_update(**fmt_vars)
         return tavern_box
 
-    def _generate_items(self, test_spec: Dict) -> Iterator[YamlItem]:
+    def _generate_items(self, test_spec: dict) -> Iterator[YamlItem]:
         """Modify or generate tests based on test spec
 
         If there are any 'parametrize' marks, this will generate extra tests

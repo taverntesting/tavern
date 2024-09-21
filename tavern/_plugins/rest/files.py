@@ -3,7 +3,7 @@ import logging
 import mimetypes
 import os
 from contextlib import ExitStack
-from typing import Any, List, Optional, Tuple, Union
+from typing import Any, Optional, Union
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -64,7 +64,7 @@ def _parse_filespec(filespec: Union[str, dict]) -> _Filespec:
 
 def guess_filespec(
     filespec: Union[str, dict], stack: ExitStack, test_block_config: TestConfig
-) -> Tuple[List, Optional[str]]:
+) -> tuple[list, Optional[str]]:
     """tries to guess the content type and encoding from a file.
 
     Args:
@@ -133,9 +133,9 @@ def _parse_file_mapping(file_args, stack, test_block_config) -> dict:
     return files_to_send
 
 
-def _parse_file_list(file_args, stack, test_block_config) -> List:
+def _parse_file_list(file_args, stack, test_block_config) -> list:
     """Parses a case where there may be multiple files uploaded as part of one form field"""
-    files_to_send: List[Any] = []
+    files_to_send: list[Any] = []
     for filespec in file_args:
         file_spec, form_field_name = guess_filespec(filespec, stack, test_block_config)
 
@@ -170,7 +170,7 @@ def get_file_arguments(
         mapping of 'files' block to pass directly to requests
     """
 
-    files_to_send: Optional[Union[dict, List]] = None
+    files_to_send: Optional[Union[dict, list]] = None
 
     file_args = request_args.get("files")
 

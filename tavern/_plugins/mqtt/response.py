@@ -5,8 +5,9 @@ import itertools
 import json
 import logging
 import time
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Dict, List, Mapping, Optional, Tuple, Union
+from typing import Optional, Union
 
 from paho.mqtt.client import MQTTMessage
 
@@ -40,7 +41,7 @@ class MQTTResponse(BaseResponse):
 
         self._client = client
 
-        self.received_messages: List = []
+        self.received_messages: list = []
 
     def __str__(self) -> str:
         if self.response:
@@ -76,8 +77,8 @@ class MQTTResponse(BaseResponse):
             m: list(v) for m, v in itertools.groupby(expected, lambda x: x["topic"])
         }
 
-        correct_messages: List["_ReturnedMessage"] = []
-        warnings: List[str] = []
+        correct_messages: list["_ReturnedMessage"] = []
+        warnings: list[str] = []
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
             futures = []
@@ -111,7 +112,7 @@ class MQTTResponse(BaseResponse):
                 failures=self.errors,
             )
 
-        saved: Dict = {}
+        saved: dict = {}
 
         for msg in correct_messages:
             # Check saving things from the payload and from json
@@ -144,8 +145,8 @@ class MQTTResponse(BaseResponse):
         return saved
 
     def _await_messages_on_topic(
-        self, topic: str, expected: List[Dict]
-    ) -> Tuple[List["_ReturnedMessage"], List[str]]:
+        self, topic: str, expected: list[dict]
+    ) -> tuple[list["_ReturnedMessage"], list[str]]:
         """
         Waits for the specific message
 
@@ -198,7 +199,7 @@ class MQTTResponse(BaseResponse):
                 name="rest_response",
             )
 
-            found: List[int] = []
+            found: list[int] = []
             for i, v in enumerate(verifiers):
                 if v.is_valid(msg):
                     correct_messages.append(_ReturnedMessage(v.expected, msg))
@@ -255,7 +256,7 @@ class _MessageVerifier:
 
         # Any warnings to do with the request
         # eg, if a message was received but it didn't match, message had payload, etc.
-        self.warnings: List[str] = []
+        self.warnings: list[str] = []
 
     def is_valid(self, msg: MQTTMessage) -> bool:
         if time.time() > self.expires:
@@ -327,7 +328,7 @@ class _MessageVerifier:
         return False
 
     @staticmethod
-    def _get_payload_vals(expected: Mapping) -> Tuple[Optional[Union[str, dict]], bool]:
+    def _get_payload_vals(expected: Mapping) -> tuple[Optional[Union[str, dict]], bool]:
         """Gets the payload from the 'expected' block
 
         Returns:
@@ -357,7 +358,7 @@ class _MessageVerifier:
 
         return payload, json_payload
 
-    def popwarnings(self) -> List[str]:
+    def popwarnings(self) -> list[str]:
         popped = []
         while self.warnings:
             popped.append(self.warnings.pop(0))

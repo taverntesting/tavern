@@ -2,7 +2,8 @@ import importlib
 import json
 import logging
 import re
-from typing import Dict, Iterable, Mapping, Optional
+from collections.abc import Iterable, Mapping
+from typing import Optional
 
 import jmespath
 import jwt
@@ -98,7 +99,7 @@ def validate_jwt(
     return {"jwt": Box(decoded)}
 
 
-def validate_pykwalify(response: requests.Response, schema: Dict) -> None:
+def validate_pykwalify(response: requests.Response, schema: dict) -> None:
     """Make sure the response matches a given schema
 
     Args:
@@ -122,7 +123,7 @@ def validate_regex(
     *,
     header: Optional[str] = None,
     in_jmespath: Optional[str] = None,
-) -> Dict[str, Box]:
+) -> dict[str, Box]:
     """Make sure the response matches a regex expression
 
     Args:
@@ -173,7 +174,7 @@ def validate_regex(
     return {"regex": Box(match.groupdict())}
 
 
-def validate_content(response: requests.Response, comparisons: Iterable[Dict]) -> None:
+def validate_content(response: requests.Response, comparisons: Iterable[dict]) -> None:
     """Asserts expected value with actual value using JMES path expression
 
     Args:

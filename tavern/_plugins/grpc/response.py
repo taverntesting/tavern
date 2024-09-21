@@ -1,5 +1,6 @@
 import logging
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, TypedDict, Union
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, Optional, TypedDict, Union
 
 import grpc
 import proto.message
@@ -20,10 +21,10 @@ if TYPE_CHECKING:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-GRPCCode = Union[str, int, List[str], List[int]]
+GRPCCode = Union[str, int, list[str], list[int]]
 
 
-def _to_grpc_name(status: GRPCCode) -> Union[str, List[str]]:
+def _to_grpc_name(status: GRPCCode) -> Union[str, list[str]]:
     if isinstance(status, list):
         return [_to_grpc_name(s) for s in status]  # type:ignore
 
@@ -128,8 +129,8 @@ class GRPCResponse(BaseResponse):
         self,
         grpc_response: Union[grpc.Call, grpc.Future],
         response: "WrappedFuture",
-        verify_status: List[str],
-    ) -> Optional[Dict[str, Any]]:
+        verify_status: list[str],
+    ) -> Optional[dict[str, Any]]:
         if grpc_response.code().name != "OK":
             # TODO: Should allow checking grpc RPC error details etc.
             logger.info(
@@ -169,7 +170,7 @@ class GRPCResponse(BaseResponse):
             self._validate_block("json", json_result)
             self._maybe_run_validate_functions(json_result)
 
-        saved: Dict[str, Any] = {}
+        saved: dict[str, Any] = {}
         saved.update(self.maybe_get_save_values_from_save_block("body", json_result))
         saved.update(self.maybe_get_save_values_from_ext(json_result, self.expected))
 

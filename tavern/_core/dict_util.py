@@ -5,8 +5,8 @@ import os
 import re
 import string
 import typing
-from collections.abc import Collection
-from typing import Any, Dict, Iterator, List, Mapping, Optional, Tuple, Union
+from collections.abc import Collection, Iterator, Mapping
+from typing import Any, Optional, Union
 
 import box
 import jmespath
@@ -97,7 +97,7 @@ def _attempt_find_include(to_format: str, box_vars: box.Box) -> Optional[str]:
     return formatter.convert_field(would_replace, conversion)
 
 
-T = typing.TypeVar("T", str, Dict, List, Tuple)
+T = typing.TypeVar("T", str, dict, list, tuple)
 
 
 def format_keys(
@@ -167,7 +167,7 @@ def format_keys(
     return val
 
 
-def recurse_access_key(data: Union[List, Mapping], query: str) -> Any:
+def recurse_access_key(data: Union[list, Mapping], query: str) -> Any:
     """
     Search for something in the given data using the given query.
 
@@ -210,7 +210,7 @@ def recurse_access_key(data: Union[List, Mapping], query: str) -> Any:
 
 
 def _deprecated_recurse_access_key(
-    current_val: Union[List, Mapping], keys: List
+    current_val: Union[list, Mapping], keys: list
 ) -> Any:
     """Given a list of keys and a dictionary, recursively access the dicionary
     using the keys until we find the key its looking for
@@ -257,7 +257,7 @@ def _deprecated_recurse_access_key(
             raise
 
 
-def deep_dict_merge(initial_dct: Dict, merge_dct: Mapping) -> dict:
+def deep_dict_merge(initial_dct: dict, merge_dct: Mapping) -> dict:
     """Recursive dict merge. Instead of updating only top-level keys,
     dict_merge recurses down into dicts nested to an arbitrary depth
     and returns the merged dict. Keys values present in merge_dct take
@@ -305,7 +305,7 @@ def check_expected_keys(expected: Collection, actual: Collection) -> None:
         raise exceptions.UnexpectedKeysError(msg)
 
 
-def yield_keyvals(block: Union[List, Dict]) -> Iterator[Tuple[List, str, str]]:
+def yield_keyvals(block: Union[list, dict]) -> Iterator[tuple[list, str, str]]:
     """Return indexes, keys and expected values for matching recursive keys
 
     Given a list or dict, return a 3-tuple of the 'split' key (key split on
@@ -352,13 +352,13 @@ def yield_keyvals(block: Union[List, Dict]) -> Iterator[Tuple[List, str, str]]:
             yield [sidx], sidx, val
 
 
-Checked = typing.TypeVar("Checked", Dict, Collection, str)
+Checked = typing.TypeVar("Checked", dict, Collection, str)
 
 
 def check_keys_match_recursive(
     expected_val: Checked,
     actual_val: Checked,
-    keys: List[Union[str, int]],
+    keys: list[Union[str, int]],
     strict: StrictSettingKinds = True,
 ) -> None:
     """Utility to recursively check response values

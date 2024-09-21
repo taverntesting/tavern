@@ -1,7 +1,8 @@
 import functools
 import importlib
 import logging
-from typing import Any, Callable, Iterable, List, Mapping, Optional, Tuple
+from collections.abc import Iterable, Mapping
+from typing import Any, Callable, Optional
 
 from tavern._core import exceptions
 
@@ -125,7 +126,7 @@ def get_wrapped_create_function(ext: Mapping) -> Callable:
     return inner
 
 
-def _get_ext_values(ext: Mapping) -> Tuple[Callable, Iterable, Mapping]:
+def _get_ext_values(ext: Mapping) -> tuple[Callable, Iterable, Mapping]:
     if not isinstance(ext, Mapping):
         raise exceptions.InvalidExtFunctionError(
             f"ext block should be a dict, but it was a {type(ext)}"
@@ -143,7 +144,7 @@ def _get_ext_values(ext: Mapping) -> Tuple[Callable, Iterable, Mapping]:
     return func, args, kwargs
 
 
-def update_from_ext(request_args: dict, keys_to_check: List[str]) -> None:
+def update_from_ext(request_args: dict, keys_to_check: list[str]) -> None:
     """
     Updates the request_args dict with any values from external functions
 
