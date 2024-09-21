@@ -84,6 +84,7 @@ dev = [
     "types-PyYAML",
     "types-protobuf>=4,<5",
     "types-requests",
+    "types-jsonschema",
     "types-paho-mqtt",
     "types-jmespath",
     "sphinx>=7,<8",

@@ -220,6 +220,7 @@ referencing==0.35.1
     # via
     #   jsonschema
     #   jsonschema-specifications
+    #   types-jsonschema
 requests==2.32.3
     # via
     #   tavern (pyproject.toml)
@@ -281,6 +282,8 @@ tomli-w==1.0.0
 tox==4.20.0
     # via tavern (pyproject.toml)
 types-jmespath==1.0.2.20240106
+    # via tavern (pyproject.toml)
+types-jsonschema==4.23.0.20240813
     # via tavern (pyproject.toml)
 types-paho-mqtt==1.6.0.20240321
     # via tavern (pyproject.toml)

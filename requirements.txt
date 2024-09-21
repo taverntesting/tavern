@@ -765,6 +765,7 @@ referencing==0.35.1 \
     # via
     #   jsonschema
     #   jsonschema-specifications
+    #   types-jsonschema
 requests==2.32.3 \
     --hash=sha256:55365417734eb18255590a9ff9eb97e9e1da868d4ccd6402399eaf68af20a760 \
     --hash=sha256:70761cfe03c773ceb22aa2f671b4757976145175cdfca038c02654d061d6dcc6
@@ -1037,6 +1038,10 @@ tox==4.20.0 \
 types-jmespath==1.0.2.20240106 \
     --hash=sha256:b4a65a116bfc1c700a4fd9d24e2e397f4a431122e0320a77b7f1989a6b5d819e \
     --hash=sha256:c3e715fcaae9e5f8d74e14328fdedc4f2b3f0e18df17f3e457ae0a18e245bde0
+    # via tavern (pyproject.toml)
+types-jsonschema==4.23.0.20240813 \
+    --hash=sha256:be283e23f0b87547316c2ee6b0fd36d95ea30e921db06478029e10b5b6aa6ac3 \
+    --hash=sha256:c93f48206f209a5bc4608d295ac39f172fb98b9e24159ce577dbd25ddb79a1c0
     # via tavern (pyproject.toml)
 types-paho-mqtt==1.6.0.20240321 \
     --hash=sha256:694eec160340f2a2b151237dcc3f107a63e1c4e5b8f9fcda0ba392049af9cbec \
