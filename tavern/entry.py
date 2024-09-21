@@ -38,7 +38,7 @@ class TavernArgParser(ArgumentParser):
         )
 
 
-def main():
+def main() -> None:
     args, remaining = TavernArgParser().parse_known_args()
     vargs = vars(args)
 
