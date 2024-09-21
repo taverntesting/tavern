@@ -2,7 +2,8 @@ import collections.abc
 import dataclasses
 import inspect
 import logging
-from typing import Any, Generator, List
+from collections.abc import Generator
+from typing import Any
 
 from tavern._core import exceptions
 from tavern._core.extfunctions import get_wrapped_response_function
@@ -12,8 +13,10 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @dataclasses.dataclass
 class Tinctures:
-    tinctures: List[Any]
-    needs_response: List[Generator] = dataclasses.field(default_factory=list)
+    tinctures: list[Any]
+    needs_response: list[Generator[None, tuple[Any, Any], None]] = dataclasses.field(
+        default_factory=list
+    )
 
     def start_tinctures(self, stage: collections.abc.Mapping) -> None:
         results = [t(stage) for t in self.tinctures]

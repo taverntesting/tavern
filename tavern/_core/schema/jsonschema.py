@@ -1,6 +1,6 @@
 import logging
 import re
-from typing import Mapping
+from collections.abc import Mapping
 
 import jsonschema
 from jsonschema import Draft7Validator, ValidationError

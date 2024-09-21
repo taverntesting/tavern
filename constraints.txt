@@ -3,23 +3,24 @@
 alabaster==0.7.16
     # via sphinx
 allure-pytest==2.13.5
+    # via tavern (pyproject.toml)
 allure-python-commons==2.13.5
     # via allure-pytest
-attrs==23.2.0
+attrs==24.2.0
     # via
     #   allure-python-commons
     #   jsonschema
     #   pytest
     #   referencing
-babel==2.15.0
+babel==2.16.0
     # via sphinx
 blinker==1.8.2
     # via flask
-cachetools==5.3.3
+cachetools==5.5.0
     # via
     #   google-auth
     #   tox
-certifi==2024.2.2
+certifi==2024.8.30
     # via requests
 cfgv==3.4.0
     # via pre-commit
@@ -32,98 +33,125 @@ click==8.1.7
 colorama==0.4.6
     # via tox
 colorlog==6.8.2
+    # via tavern (pyproject.toml)
 commonmark==0.9.1
-    # via recommonmark
-coverage==7.5.1
-    # via pytest-cov
+    # via
+    #   tavern (pyproject.toml)
+    #   recommonmark
+coverage==7.6.1
+    # via
+    #   tavern (pyproject.toml)
+    #   pytest-cov
 distlib==0.3.8
     # via virtualenv
 docopt==0.6.2
     # via pykwalify
 docutils==0.20.1
     # via
+    #   tavern (pyproject.toml)
     #   flit
     #   recommonmark
     #   sphinx
     #   sphinx-rtd-theme
-exceptiongroup==1.2.1
-    # via pytest
+exceptiongroup==1.2.2
+    # via
+    #   tavern (pyproject.toml)
+    #   pytest
 execnet==2.1.1
     # via pytest-xdist
-faker==25.1.0
-filelock==3.14.0
+faker==29.0.0
+    # via tavern (pyproject.toml)
+filelock==3.16.1
     # via
     #   tox
     #   virtualenv
 flask==3.0.3
+    # via tavern (pyproject.toml)
 flit==3.9.0
+    # via tavern (pyproject.toml)
 flit-core==3.9.0
     # via flit
-fluent-logger==0.11.0
-google-api-core==2.19.0
+fluent-logger==0.11.1
+    # via tavern (pyproject.toml)
+google-api-core==2.20.0
     # via google-api-python-client
-google-api-python-client==2.129.0
-google-auth==2.29.0
+google-api-python-client==2.146.0
+    # via tavern (pyproject.toml)
+google-auth==2.35.0
     # via
     #   google-api-core
     #   google-api-python-client
     #   google-auth-httplib2
 google-auth-httplib2==0.2.0
     # via google-api-python-client
-googleapis-common-protos==1.63.0
+googleapis-common-protos==1.65.0
     # via
     #   google-api-core
     #   grpcio-status
 grpc-interceptor==0.15.4
-grpcio==1.63.0
+    # via tavern (pyproject.toml)
+grpcio==1.66.1
     # via
+    #   tavern (pyproject.toml)
     #   grpc-interceptor
     #   grpcio-reflection
     #   grpcio-status
-grpcio-reflection==1.62.2
-grpcio-status==1.62.2
+grpcio-reflection==1.62.3
+    # via tavern (pyproject.toml)
+grpcio-status==1.62.3
+    # via tavern (pyproject.toml)
 httplib2==0.22.0
     # via
     #   google-api-python-client
     #   google-auth-httplib2
-identify==2.5.36
+identify==2.6.1
     # via pre-commit
-idna==3.7
+idna==3.10
     # via requests
 imagesize==1.4.1
     # via sphinx
+importlib-metadata==8.5.0
+    # via
+    #   flask
+    #   markdown
+    #   sphinx
 iniconfig==2.0.0
     # via pytest
 itsdangerous==2.2.0
-    # via flask
+    # via
+    #   tavern (pyproject.toml)
+    #   flask
 jinja2==3.1.4
     # via
     #   flask
     #   sphinx
 jmespath==1.0.1
-jsonschema==4.22.0
+    # via tavern (pyproject.toml)
+jsonschema==4.23.0
+    # via tavern (pyproject.toml)
 jsonschema-specifications==2023.12.1
     # via jsonschema
-markdown==3.6
+markdown==3.7
     # via sphinx-markdown-tables
 markupsafe==2.1.5
     # via
     #   jinja2
     #   werkzeug
-msgpack==1.0.8
+msgpack==1.1.0
     # via fluent-logger
-nodeenv==1.8.0
+nodeenv==1.9.1
     # via pre-commit
-packaging==24.0
+packaging==24.1
     # via
     #   pyproject-api
     #   pytest
     #   sphinx
     #   tox
 paho-mqtt==1.6.1
-pbr==6.0.0
+    # via tavern (pyproject.toml)
+pbr==6.1.0
     # via stevedore
-platformdirs==4.2.1
+platformdirs==4.3.6
     # via
     #   tox
     #   virtualenv
@@ -132,56 +160,74 @@ pluggy==1.5.0
     #   allure-python-commons
     #   pytest
     #   tox
-pre-commit==3.7.1
-proto-plus==1.23.0
-    # via google-api-core
-protobuf==4.25.3
+pre-commit==3.8.0
+    # via tavern (pyproject.toml)
+proto-plus==1.24.0
     # via
+    #   tavern (pyproject.toml)
+    #   google-api-core
+protobuf==4.25.5
+    # via
+    #   tavern (pyproject.toml)
     #   google-api-core
     #   googleapis-common-protos
     #   grpcio-reflection
     #   grpcio-status
     #   proto-plus
 py==1.11.0
-pyasn1==0.6.0
+    # via tavern (pyproject.toml)
+pyasn1==0.6.1
     # via
     #   pyasn1-modules
     #   rsa
-pyasn1-modules==0.4.0
+pyasn1-modules==0.4.1
     # via google-auth
 pygments==2.18.0
-    # via sphinx
-pyjwt==2.8.0
+    # via
+    #   tavern (pyproject.toml)
+    #   sphinx
+pyjwt==2.9.0
+    # via tavern (pyproject.toml)
 pykwalify==1.8.0
-pyparsing==3.1.2
+    # via tavern (pyproject.toml)
+pyparsing==3.1.4
     # via httplib2
-pyproject-api==1.6.1
+pyproject-api==1.8.0
     # via tox
 pytest==7.2.2
     # via
+    #   tavern (pyproject.toml)
     #   allure-pytest
     #   pytest-cov
     #   pytest-xdist
 pytest-cov==5.0.0
+    # via tavern (pyproject.toml)
 pytest-xdist==3.6.1
+    # via tavern (pyproject.toml)
 python-box==6.1.0
+    # via tavern (pyproject.toml)
 python-dateutil==2.9.0.post0
     # via
     #   faker
     #   pykwalify
-pyyaml==6.0.1
-    # via pre-commit
+pyyaml==6.0.2
+    # via
+    #   tavern (pyproject.toml)
+    #   pre-commit
 recommonmark==0.7.1
+    # via tavern (pyproject.toml)
 referencing==0.35.1
     # via
     #   jsonschema
     #   jsonschema-specifications
-requests==2.31.0
+    #   types-jsonschema
+requests==2.32.3
     # via
+    #   tavern (pyproject.toml)
     #   flit
     #   google-api-core
     #   sphinx
-rpds-py==0.18.1
+rpds-py==0.20.0
     # via
     #   jsonschema
     #   referencing
@@ -191,37 +237,41 @@ ruamel-yaml==0.18.6
     # via pykwalify
 ruamel-yaml-clib==0.2.8
     # via ruamel-yaml
-ruff==0.4.4
-setuptools==69.5.1
-    # via nodeenv
+ruff==0.6.6
+    # via tavern (pyproject.toml)
 six==1.16.0
     # via python-dateutil
 snowballstemmer==2.2.0
     # via sphinx
-sphinx==7.3.7
+sphinx==7.4.7
     # via
+    #   tavern (pyproject.toml)
     #   recommonmark
     #   sphinx-rtd-theme
     #   sphinxcontrib-jquery
 sphinx-markdown-tables==0.0.17
+    # via tavern (pyproject.toml)
 sphinx-rtd-theme==2.0.0
-sphinxcontrib-applehelp==1.0.8
+    # via tavern (pyproject.toml)
+sphinxcontrib-applehelp==2.0.0
     # via sphinx
-sphinxcontrib-devhelp==1.0.6
+sphinxcontrib-devhelp==2.0.0
     # via sphinx
-sphinxcontrib-htmlhelp==2.0.5
+sphinxcontrib-htmlhelp==2.1.0
     # via sphinx
 sphinxcontrib-jquery==4.1
     # via sphinx-rtd-theme
 sphinxcontrib-jsmath==1.0.1
     # via sphinx
-sphinxcontrib-qthelp==1.0.7
+sphinxcontrib-qthelp==2.0.0
     # via sphinx
-sphinxcontrib-serializinghtml==1.1.10
+sphinxcontrib-serializinghtml==2.0.0
     # via sphinx
 stevedore==4.1.1
+    # via tavern (pyproject.toml)
 tomli==2.0.1
     # via
+    #   tavern (pyproject.toml)
     #   coverage
     #   pyproject-api
     #   pytest
@@ -229,21 +279,35 @@ tomli==2.0.1
     #   tox
 tomli-w==1.0.0
     # via flit
-tox==4.15.0
+tox==4.20.0
+    # via tavern (pyproject.toml)
+types-jmespath==1.0.2.20240106
+    # via tavern (pyproject.toml)
+types-jsonschema==4.23.0.20240813
+    # via tavern (pyproject.toml)
+types-paho-mqtt==1.6.0.20240321
+    # via tavern (pyproject.toml)
 types-protobuf==4.25.0.20240417
-types-pyyaml==6.0.12.20240311
-types-requests==2.31.0.20240406
+    # via tavern (pyproject.toml)
+types-pyyaml==6.0.12.20240917
+    # via tavern (pyproject.toml)
+types-requests==2.32.0.20240914
+    # via tavern (pyproject.toml)
 uritemplate==4.1.1
     # via google-api-python-client
-urllib3==2.2.1
+urllib3==2.2.3
     # via
     #   requests
     #   types-requests
-uv==0.1.42
-virtualenv==20.26.1
+uv==0.4.15
+    # via tavern (pyproject.toml)
+virtualenv==20.26.5
     # via
     #   pre-commit
     #   tox
-werkzeug==3.0.3
+werkzeug==3.0.4
     # via flask
-wheel==0.43.0
+wheel==0.44.0
+    # via tavern (pyproject.toml)
+zipp==3.20.2
+    # via importlib-metadata

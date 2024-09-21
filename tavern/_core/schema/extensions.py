@@ -1,6 +1,7 @@
 import os
 import re
-from typing import TYPE_CHECKING, Any, Callable, Dict, List, Mapping, Tuple, Type, Union
+from collections.abc import Mapping
+from typing import TYPE_CHECKING, Any, Callable, Union
 
 from pykwalify.types import is_bool, is_float, is_int
 
@@ -28,7 +29,7 @@ if TYPE_CHECKING:
 # To extend pykwalify's type validation, extend its internal functions
 # These return boolean values
 def validate_type_and_token(
-    validate_type: Callable[[Any], bool], token: Type[TypeConvertToken]
+    validate_type: Callable[[Any], bool], token: type[TypeConvertToken]
 ):
     def validate(value):
         return validate_type(value) or isinstance(value, token)
@@ -333,7 +334,7 @@ def validate_json_with_ext(value, rule_obj, path) -> bool:
     return True
 
 
-def check_strict_key(value: Union[List, bool], rule_obj, path) -> bool:
+def check_strict_key(value: Union[list, bool], rule_obj, path) -> bool:
     """Make sure the 'strict' key is either a bool or a list"""
 
     if not isinstance(value, list) and not is_bool_like(value):
@@ -350,7 +351,7 @@ def check_strict_key(value: Union[List, bool], rule_obj, path) -> bool:
     return True
 
 
-def validate_timeout_tuple_or_float(value: Union[List, Tuple], rule_obj, path) -> bool:
+def validate_timeout_tuple_or_float(value: Union[list, tuple], rule_obj, path) -> bool:
     """Make sure timeout is a float/int or a tuple of floats/ints"""
 
     err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{}' (type {})".format(
@@ -405,7 +406,7 @@ def validate_cert_tuple_or_str(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_file_spec(value: Dict, rule_obj, path) -> bool:
+def validate_file_spec(value: dict, rule_obj, path) -> bool:
     """Validate file upload arguments"""
 
     logger = get_pykwalify_logger("tavern.schema.extensions")

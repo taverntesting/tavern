@@ -4,8 +4,9 @@ import logging
 import ssl
 import threading
 import time
+from collections.abc import Mapping, MutableMapping
 from queue import Empty, Full, Queue
-from typing import Any, Dict, List, Mapping, MutableMapping, Optional, Union
+from typing import Any, Optional, Union
 
 import paho.mqtt.client as paho
 from paho.mqtt.client import MQTTMessageInfo
@@ -88,7 +89,7 @@ def _handle_ssl_context_args(
 
 
 def _check_and_update_common_tls_args(
-    tls_args: MutableMapping, check_file_keys: List[str]
+    tls_args: MutableMapping, check_file_keys: list[str]
 ) -> None:
     """Checks common args between ssl/tls args"""
 
@@ -275,14 +276,14 @@ class MQTTClient:
                 self._client.tls_insecure_set(True)
 
         # Topics to subscribe to - mapping of subscription message id to subscription object
-        self._subscribed: Dict[int, _Subscription] = {}
+        self._subscribed: dict[int, _Subscription] = {}
         # Lock to ensure there is no race condition when subscribing
         self._subscribe_lock = threading.RLock()
         # callback
         self._client.on_subscribe = self._on_subscribe
 
         # Mapping of topic -> subscription id, for indexing into self._subscribed
-        self._subscription_mappings: Dict[str, int] = {}
+        self._subscription_mappings: dict[str, int] = {}
         self._userdata = {
             "_subscription_mappings": self._subscription_mappings,
             "_subscribed": self._subscribed,

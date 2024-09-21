@@ -1,6 +1,7 @@
 import operator
 import re
-from typing import Any, Dict, List, Sized
+from collections.abc import Sized
+from typing import Any
 
 from tavern._core import exceptions
 
@@ -37,7 +38,7 @@ COMPARATORS = {
     "regex": lambda x, y: regex_compare(str(x), str(y)),
     "type": test_type,
 }
-TYPES: Dict[str, List[Any]] = {
+TYPES: dict[str, list[Any]] = {
     "none": [type(None)],
     "number": [int, float],
     "int": [int],
@@ -61,7 +62,7 @@ def safe_length(var: Sized) -> int:
         return -1
 
 
-def validate_comparison(each_comparison: Dict[Any, Any]):
+def validate_comparison(each_comparison: dict[Any, Any]):
     if extra := set(each_comparison.keys()) - {"jmespath", "operator", "expected"}:
         raise exceptions.BadSchemaError(
             "Invalid keys given to JMES validation function (got extra keys: {})".format(

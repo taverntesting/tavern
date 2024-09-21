@@ -2,7 +2,7 @@ import copy
 import dataclasses
 import logging
 from importlib.util import find_spec
-from typing import Any, List
+from typing import Any
 
 from tavern._core.strict_util import StrictLevel
 
@@ -52,7 +52,7 @@ class TestConfig:
         return dataclasses.replace(self, strict=new_strict)
 
     @staticmethod
-    def backends() -> List[str]:
+    def backends() -> list[str]:
         available_backends = ["http"]
 
         if has_module("paho.mqtt"):

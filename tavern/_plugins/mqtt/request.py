@@ -1,7 +1,6 @@
 import functools
 import json
 import logging
-from typing import Dict
 
 from box.box import Box
 
@@ -16,7 +15,7 @@ from tavern.request import BaseRequest
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def get_publish_args(rspec: Dict, test_block_config: TestConfig) -> dict:
+def get_publish_args(rspec: dict, test_block_config: TestConfig) -> dict:
     """Format mqtt request args and update using ext functions"""
 
     fspec = format_keys(rspec, test_block_config.variables)
@@ -41,7 +40,7 @@ class MQTTRequest(BaseRequest):
     """
 
     def __init__(
-        self, client: MQTTClient, rspec: Dict, test_block_config: TestConfig
+        self, client: MQTTClient, rspec: dict, test_block_config: TestConfig
     ) -> None:
         expected = {"topic", "payload", "json", "qos", "retain"}
 

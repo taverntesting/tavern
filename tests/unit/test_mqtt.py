@@ -65,8 +65,9 @@ class TestClient:
     def test_context_connection_success(self, fake_client):
         """returns self on success"""
 
-        with patch.object(fake_client._client, "loop_start"), patch.object(
-            fake_client._client, "connect_async"
+        with (
+            patch.object(fake_client._client, "loop_start"),
+            patch.object(fake_client._client, "connect_async"),
         ):
             fake_client._client._state = paho.mqtt_cs_connected
             with fake_client as x:
@@ -81,8 +82,9 @@ class TestClient:
 
             rc = 1
 
-        with patch.object(fake_client._client, "subscribe"), patch.object(
-            fake_client._client, "publish", return_value=FakeMessage(10)
+        with (
+            patch.object(fake_client._client, "subscribe"),
+            patch.object(fake_client._client, "publish", return_value=FakeMessage(10)),
         ):
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")
@@ -99,8 +101,9 @@ class TestClient:
 
             rc = 1
 
-        with patch.object(fake_client._client, "subscribe"), patch.object(
-            fake_client._client, "publish", return_value=FakeMessage(10)
+        with (
+            patch.object(fake_client._client, "subscribe"),
+            patch.object(fake_client._client, "publish", return_value=FakeMessage(10)),
         ):
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")
@@ -117,8 +120,9 @@ class TestClient:
 
             rc = 1
 
-        with patch.object(fake_client._client, "subscribe"), patch.object(
-            fake_client._client, "publish", return_value=FakeMessage(10)
+        with (
+            patch.object(fake_client._client, "subscribe"),
+            patch.object(fake_client._client, "publish", return_value=FakeMessage(10)),
         ):
             fake_client.publish("abc", "123")
 
@@ -131,8 +135,9 @@ class TestClient:
 
             rc = 2342423
 
-        with patch.object(fake_client._client, "subscribe"), patch.object(
-            fake_client._client, "publish", return_value=FakeMessage(10)
+        with (
+            patch.object(fake_client._client, "subscribe"),
+            patch.object(fake_client._client, "publish", return_value=FakeMessage(10)),
         ):
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")

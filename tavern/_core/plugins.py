@@ -6,8 +6,9 @@ significantly if/when a proper plugin system is implemented!
 
 import dataclasses
 import logging
+from collections.abc import Mapping
 from functools import partial
-from typing import Any, Callable, Dict, List, Mapping, Optional, Protocol, Type
+from typing import Any, Callable, Optional, Protocol
 
 import stevedore
 
@@ -33,9 +34,9 @@ def plugin_load_error(mgr, entry_point, err):
 class _TavernPlugin(Protocol):
     """A tavern plugin"""
 
-    session_type: Type[Any]
-    request_type: Type[BaseRequest]
-    verifier_type: Type[BaseResponse]
+    session_type: type[Any]
+    request_type: type[BaseRequest]
+    verifier_type: type[BaseResponse]
     response_block_name: str
     request_block_name: str
     schema: Mapping
@@ -90,9 +91,9 @@ class _Plugin:
 
 @dataclasses.dataclass
 class _PluginCache:
-    plugins: List[_Plugin] = dataclasses.field(default_factory=list)
+    plugins: list[_Plugin] = dataclasses.field(default_factory=list)
 
-    def __call__(self, config: Optional[TestConfig] = None) -> List[_Plugin]:
+    def __call__(self, config: Optional[TestConfig] = None) -> list[_Plugin]:
         if self.plugins:
             return self.plugins
 
@@ -103,7 +104,7 @@ class _PluginCache:
 
         raise exceptions.PluginLoadError("No config to load plugins from")
 
-    def _load_plugins(self, test_block_config: TestConfig) -> List[_Plugin]:
+    def _load_plugins(self, test_block_config: TestConfig) -> list[_Plugin]:
         """Load plugins from the 'tavern' entrypoint namespace
 
         This can be a module or a class as long as it defines the right things
@@ -256,7 +257,7 @@ def _foreach_response(
     stage: Mapping,
     test_block_config: TestConfig,
     action: Callable[[_Plugin, str], dict],
-) -> Dict[str, dict]:
+) -> dict[str, dict]:
     """Do something for each response
 
     Args:

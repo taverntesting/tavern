@@ -1,7 +1,8 @@
 import logging
 import time
+from collections.abc import Mapping
 from functools import wraps
-from typing import Callable, Mapping, Union
+from typing import Callable, Union
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys

@@ -402,11 +402,14 @@ class TestFormatRequestVars:
 
         mock_response = Mock(**mockargs)
 
-        with patch(
-            "tavern._plugins.rest.request.requests.Session.request",
-            return_value=mock_response,
-        ) as pmock, patch(
-            "tavern._plugins.rest.request.valid_http_methods", ["POST", sent_value]
+        with (
+            patch(
+                "tavern._plugins.rest.request.requests.Session.request",
+                return_value=mock_response,
+            ) as pmock,
+            patch(
+                "tavern._plugins.rest.request.valid_http_methods", ["POST", sent_value]
+            ),
         ):
             run_test("heif", fulltest, includes)
 
@@ -639,12 +642,15 @@ class TestTinctures:
 
         tincture_func_mock = Mock()
 
-        with patch(
-            "tavern._plugins.rest.request.requests.Session.request",
-            return_value=mock_response,
-        ) as pmock, patch(
-            "tavern._core.tincture.get_wrapped_response_function",
-            return_value=tincture_func_mock,
+        with (
+            patch(
+                "tavern._plugins.rest.request.requests.Session.request",
+                return_value=mock_response,
+            ) as pmock,
+            patch(
+                "tavern._core.tincture.get_wrapped_response_function",
+                return_value=tincture_func_mock,
+            ),
         ):
             run_test("heif", fulltest, includes)
 

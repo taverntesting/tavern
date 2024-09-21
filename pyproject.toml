@@ -9,7 +9,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "Framework :: Pytest",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
@@ -38,7 +37,7 @@ dependencies = [
     "stevedore>=4,<5",
 ]
 
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 
 [[project.authors]]
 name = "Michael Boulton"
@@ -85,6 +84,9 @@ dev = [
     "types-PyYAML",
     "types-protobuf>=4,<5",
     "types-requests",
+    "types-jsonschema",
+    "types-paho-mqtt",
+    "types-jmespath",
     "sphinx>=7,<8",
     "sphinx_rtd_theme",
     "recommonmark",
@@ -92,8 +94,10 @@ dev = [
     "docutils",
     "pygments",
     "sphinx-markdown-tables",
-#    "grpcio-tools",
     "grpc-interceptor",
+    # for pytest
+    "exceptiongroup",
+    "tomli"
     # This has to be installed separately, otherwise you can't upload to pypi
     # "tbump@https://github.com/michaelboulton/tbump/archive/714ba8957a3c84b625608ceca39811ebe56229dc.zip",
 ]
@@ -115,7 +119,7 @@ paho-mqtt = "tavern._plugins.mqtt.tavernhook"
 grpc = "tavern._plugins.grpc.tavernhook"
 
 [tool.mypy]
-python_version = 3.8
+python_version = 3.9
 
 # See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
 explicit_package_bases = true
@@ -163,7 +167,7 @@ norecursedirs = [
 ]
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py39"
 extend-exclude = [
     "tests/unit/tavern_grpc/test_services_pb2.py",
     "tests/unit/tavern_grpc/test_services_pb2.pyi",

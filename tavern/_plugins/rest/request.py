@@ -2,9 +2,10 @@ import contextlib
 import json
 import logging
 import warnings
+from collections.abc import Mapping
 from contextlib import ExitStack
 from itertools import filterfalse, tee
-from typing import Callable, ClassVar, Dict, List, Mapping, Optional
+from typing import Callable, ClassVar, Optional
 from urllib.parse import quote_plus
 
 import requests
@@ -24,7 +25,7 @@ from tavern.request import BaseRequest
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def get_request_args(rspec: Dict, test_block_config: TestConfig) -> Dict:
+def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
     """Format the test spec given values inthe global config
 
     Todo:
@@ -334,7 +335,7 @@ def _read_expected_cookies(
 
 
 class RestRequest(BaseRequest):
-    optional_in_file: ClassVar[List[str]] = [
+    optional_in_file: ClassVar[list[str]] = [
         "json",
         "data",
         "params",

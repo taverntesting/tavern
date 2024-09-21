@@ -4,7 +4,7 @@ import traceback
 from abc import abstractmethod
 from collections.abc import Mapping
 from textwrap import indent
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
@@ -28,8 +28,8 @@ class BaseResponse:
     test_block_config: TestConfig
     response: Optional[Any] = None
 
-    validate_functions: List[Any] = dataclasses.field(init=False, default_factory=list)
-    errors: List[str] = dataclasses.field(init=False, default_factory=list)
+    validate_functions: list[Any] = dataclasses.field(init=False, default_factory=list)
+    errors: list[str] = dataclasses.field(init=False, default_factory=list)
 
     def __post_init__(self) -> None:
         self._check_for_validate_functions(self.expected)

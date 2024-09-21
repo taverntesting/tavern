@@ -1,7 +1,7 @@
 import logging
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TypeVar, Union
+from typing import Any, Optional, TypeVar, Union
 
 import pytest
 
@@ -152,7 +152,7 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
     global_cfg_dict = load_global_config(all_paths)
 
-    variables: Dict = {}
+    variables: dict = {}
     try:
         loaded_variables = global_cfg_dict["variables"]
     except KeyError:
@@ -175,7 +175,7 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     return global_cfg
 
 
-def _load_global_backends(pytest_config: pytest.Config) -> Dict[str, Any]:
+def _load_global_backends(pytest_config: pytest.Config) -> dict[str, Any]:
     """Load which backend should be used"""
     return {
         b: get_option_generic(pytest_config, f"tavern-{b}-backend", None)
@@ -186,7 +186,7 @@ def _load_global_backends(pytest_config: pytest.Config) -> Dict[str, Any]:
 def _load_global_strictness(pytest_config: pytest.Config) -> StrictLevel:
     """Load the global 'strictness' setting"""
 
-    options: List = get_option_generic(pytest_config, "tavern-strict", [])
+    options: list = get_option_generic(pytest_config, "tavern-strict", [])
 
     return StrictLevel.from_options(options)
 
@@ -196,7 +196,7 @@ def _load_global_follow_redirects(pytest_config: pytest.Config) -> bool:
     return get_option_generic(pytest_config, "tavern-always-follow-redirects", False)
 
 
-T = TypeVar("T", bound=Optional[Union[str, List, List[Path], List[str], bool]])
+T = TypeVar("T", bound=Optional[Union[str, list, list[Path], list[str], bool]])
 
 
 def get_option_generic(

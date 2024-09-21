@@ -3,7 +3,7 @@ import copy
 import logging
 import os
 import tempfile
-from typing import Dict, Mapping
+from collections.abc import Mapping
 
 import pykwalify
 import yaml
@@ -21,7 +21,7 @@ class SchemaCache:
     """Caches loaded schemas"""
 
     def __init__(self) -> None:
-        self._loaded: Dict[str, Dict] = {}
+        self._loaded: dict[str, dict] = {}
 
     def _load_base_schema(self, schema_filename):
         try:
@@ -33,7 +33,7 @@ class SchemaCache:
 
             return self._loaded[schema_filename]
 
-    def _load_schema_with_plugins(self, schema_filename: str) -> Dict:
+    def _load_schema_with_plugins(self, schema_filename: str) -> dict:
         mangled = f"{schema_filename}-plugins"
 
         try:
