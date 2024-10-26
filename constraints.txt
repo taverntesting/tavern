@@ -305,7 +305,7 @@ virtualenv==20.26.5
     # via
     #   pre-commit
     #   tox
-werkzeug==3.0.4
+werkzeug==3.0.6
     # via flask
 wheel==0.44.0
     # via tavern (pyproject.toml)
