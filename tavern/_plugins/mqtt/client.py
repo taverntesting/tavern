@@ -257,7 +257,7 @@ class MQTTClient:
             else:
                 context.load_default_certs()
 
-            ciphers = self._ssl_context_args.get("cipthers")
+            ciphers = self._ssl_context_args.get("ciphers")
             if ciphers is not None:
                 context.set_ciphers(ciphers)
 
