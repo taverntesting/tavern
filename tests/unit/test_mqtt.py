@@ -269,6 +269,8 @@ class TestExtFunctions:
 
         assert "payload" in m._publish_args
         assert m._publish_args["payload"] == "3"
+
+
 class TestSSLContext:
     def test_ciphers_set_correctly(self):
         """Test that ciphers are set correctly in SSL context"""
@@ -277,15 +279,21 @@ class TestSSLContext:
             "ssl_context": {
                 "certfile": "/path/to/certfile",
                 "keyfile": "/path/to/keyfile",
-                "cafile": "/path/to/cafile",
                 "ciphers": "ECDHE-RSA-AES256-GCM-SHA384",
             },
         }
 
-        with patch("tavern._plugins.mqtt.client.ssl.create_default_context") as mock_create_context:
+        with (
+            patch(
+                "tavern._plugins.mqtt.client.ssl.create_default_context"
+            ) as mock_create_context,
+            patch("tavern._plugins.mqtt.client.check_file_exists"),
+        ):
             mock_context = MagicMock()
             mock_create_context.return_value = mock_context
 
-            mqtt_client = MQTTClient(**args)
+            _ = MQTTClient(**args)
 
-            mock_context.set_ciphers.assert_called_once_with("ECDHE-RSA-AES256-GCM-SHA384")
+            mock_context.set_ciphers.assert_called_once_with(
+                "ECDHE-RSA-AES256-GCM-SHA384"
+            )
