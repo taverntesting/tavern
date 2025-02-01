@@ -12,7 +12,7 @@ attrs==25.1.0
     #   jsonschema
     #   pytest
     #   referencing
-babel==2.16.0
+babel==2.17.0
     # via sphinx
 blinker==1.9.0
     # via flask
@@ -20,7 +20,7 @@ cachetools==5.5.1
     # via
     #   google-auth
     #   tox
-certifi==2024.12.14
+certifi==2025.1.31
     # via requests
 cfgv==3.4.0
     # via pre-commit
@@ -59,7 +59,7 @@ exceptiongroup==1.2.2
     #   pytest
 execnet==2.1.1
     # via pytest-xdist
-faker==35.0.0
+faker==35.2.0
     # via tavern (pyproject.toml)
 filelock==3.17.0
     # via
@@ -234,7 +234,7 @@ ruamel-yaml==0.18.10
     # via pykwalify
 ruamel-yaml-clib==0.2.12
     # via ruamel-yaml
-ruff==0.9.3
+ruff==0.9.4
     # via tavern (pyproject.toml)
 six==1.17.0
     # via python-dateutil
@@ -301,7 +301,7 @@ urllib3==2.3.0
     # via
     #   requests
     #   types-requests
-uv==0.5.25
+uv==0.5.26
     # via tavern (pyproject.toml)
 virtualenv==20.29.1
     # via
