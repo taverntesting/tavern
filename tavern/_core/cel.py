@@ -1,5 +1,4 @@
 import logging
-import re
 
 import celpy
 
@@ -40,6 +39,10 @@ def run_cel(content: str, test_block_config: TestConfig) -> bool:
         variables = celpy.json_to_cel(test_block_config.variables)
     except ValueError as e:
         raise exceptions.CELError("unable to convert variables to CEL variables") from e
+
+    # Is there a better way to do this?
+    variables["True"] = celpy.json_to_cel(True)
+    variables["False"] = celpy.json_to_cel(False)
 
     try:
         result = env.program(ast).evaluate(variables)
