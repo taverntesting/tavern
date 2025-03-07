@@ -39,7 +39,7 @@ def prepare_yaml(val: Union[dict, set, list, tuple, str]) -> Union[dict, list, s
             prepared[key] = prepare_yaml(val[key])
 
         return prepared
-    elif isinstance(val, (list, tuple, set)):
+    elif isinstance(val, list | tuple | set):
         return [prepare_yaml(item) for item in val]
     elif isinstance(val, FormattedString):
         return str(val)

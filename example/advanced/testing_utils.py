@@ -26,4 +26,4 @@ def create_bearer_token():
 
     token = jwt.encode(payload, SECRET, algorithm="HS256")
 
-    return {"Authorization": "Bearer {}".format(token)}
+    return {"Authorization": f"Bearer {token}"}

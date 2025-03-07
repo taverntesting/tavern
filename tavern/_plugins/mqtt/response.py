@@ -77,7 +77,7 @@ class MQTTResponse(BaseResponse):
             m: list(v) for m, v in itertools.groupby(expected, lambda x: x["topic"])
         }
 
-        correct_messages: list["_ReturnedMessage"] = []
+        correct_messages: list[_ReturnedMessage] = []
         warnings: list[str] = []
 
         with concurrent.futures.ThreadPoolExecutor() as executor:
@@ -136,9 +136,7 @@ class MQTTResponse(BaseResponse):
         # Trying to save might have introduced errors, so check again
         if self.errors:
             raise exceptions.TestFailError(
-                "Saving results from test '{:s}' failed:\n{:s}".format(
-                    self.name, self._str_errors()
-                ),
+                f"Saving results from test '{self.name:s}' failed:\n{self._str_errors():s}",
                 failures=self.errors,
             )
 

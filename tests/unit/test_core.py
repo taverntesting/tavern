@@ -326,7 +326,7 @@ class TestTavernMetaFormat:
         env_key = "SPECIAL_CI_MAGIC_COMMIT_TAG"
 
         fulltest["stages"][0]["request"]["params"] = {
-            "a_format_key": "{tavern.env_vars.%s}" % env_key
+            "a_format_key": f"{{tavern.env_vars.{env_key}}}"
         }
 
         mock_response = Mock(**mockargs)
@@ -346,7 +346,7 @@ class TestTavernMetaFormat:
         env_key = "SPECIAL_CI_MAGIC_COMMIT_TAG"
 
         fulltest["stages"][0]["request"]["params"] = {
-            "a_format_key": "{tavern.env_vars.%s}" % env_key
+            "a_format_key": f"{{tavern.env_vars.{env_key}}}"
         }
 
         with pytest.raises(exceptions.MissingFormatError):
@@ -371,7 +371,7 @@ class TestFormatRequestVars:
             mockargs[request_key] = {"returned": sent_value}
 
         fulltest["stages"][0]["response"][resp_key] = {
-            "returned": "{tavern.request_vars.%s.a_format_key:s}" % request_key
+            "returned": f"{{tavern.request_vars.{request_key}.a_format_key:s}}"
         }
 
         mock_response = Mock(**mockargs)
@@ -397,7 +397,7 @@ class TestFormatRequestVars:
         mockargs[request_key] = {"returned": sent_value}
 
         fulltest["stages"][0]["response"][resp_key] = {
-            "returned": "{tavern.request_vars.%s:s}" % request_key
+            "returned": f"{{tavern.request_vars.{request_key}:s}}"
         }
 
         mock_response = Mock(**mockargs)

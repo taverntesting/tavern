@@ -118,10 +118,7 @@ class YamlItem(pytest.Item):
     def add_markers(self, pytest_marks) -> None:
         for pm in pytest_marks:
             if pm.name == "usefixtures":
-                if (
-                    not isinstance(pm.mark.args, (list, tuple))
-                    or len(pm.mark.args) == 0
-                ):
+                if not isinstance(pm.mark.args, list | tuple) or len(pm.mark.args) == 0:
                     logger.error(
                         "'usefixtures' was an invalid type (should"
                         " be a list of fixture names)"
@@ -130,7 +127,7 @@ class YamlItem(pytest.Item):
                 # Need to do this here because we expect a list of markers from
                 # usefixtures, which pytest then wraps in a tuple. we need to
                 # extract this tuple so pytest can use both fixtures.
-                if isinstance(pm.mark.args[0], (list, tuple)):
+                if isinstance(pm.mark.args[0], list | tuple):
                     new_mark = attr.evolve(pm.mark, args=pm.mark.args[0])
                     pm = attr.evolve(pm, mark=new_mark)
                 elif isinstance(pm.mark.args[0], (dict)):
@@ -152,7 +149,7 @@ class YamlItem(pytest.Item):
         values = {}
 
         for m in fixture_markers:
-            if isinstance(m.args, (list, tuple)):
+            if isinstance(m.args, list | tuple):
                 mark_values = {f: self.funcargs[f] for f in m.args}
             elif isinstance(m.args, str):
                 # Not sure if this can happen if validation is working
@@ -161,12 +158,10 @@ class YamlItem(pytest.Item):
                 mark_values = {m.args: self.funcargs[m.args]}
             else:
                 raise exceptions.BadSchemaError(
-                    (
-                        "Can't handle 'usefixtures' spec of '{}'."
-                        " There appears to be a bug in pykwalify so verification of"
-                        " 'usefixtures' is broken - it should be a list of fixture"
-                        " names"
-                    ).format(m.args)
+                    f"Can't handle 'usefixtures' spec of '{m.args}'."
+                    " There appears to be a bug in pykwalify so verification of"
+                    " 'usefixtures' is broken - it should be a list of fixture"
+                    " names"
                 )
 
             if any(mv in values for mv in mark_values):
@@ -281,5 +276,5 @@ class YamlItem(pytest.Item):
         return (
             self.path,
             0,
-            "{s.path}::{s.name:s}".format(s=self),
+            f"{self.path}::{self.name:s}",
         )

@@ -1,5 +1,4 @@
 import time
-from typing import Dict
 from unittest.mock import MagicMock, Mock, patch
 
 import paho.mqtt.client as paho
@@ -243,7 +242,7 @@ class TestSubscription:
 
 class TestExtFunctions:
     @pytest.fixture()
-    def basic_mqtt_request_args(self) -> Dict:
+    def basic_mqtt_request_args(self) -> dict:
         return {
             "topic": "/a/b/c",
         }

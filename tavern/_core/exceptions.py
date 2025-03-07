@@ -153,9 +153,7 @@ class MisplacedExtBlockException(TavernException):
 
     def __init__(self, block) -> None:
         super().__init__(
-            "$ext function found in block {} - this has been moved to verify_response_with block - see documentation".format(
-                block
-            )
+            f"$ext function found in block {block} - this has been moved to verify_response_with block - see documentation"
         )
 
 

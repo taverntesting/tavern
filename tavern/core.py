@@ -37,9 +37,7 @@ def _get_or_wrap_global_cfg(
         global_filename = stack.enter_context(wrapfile(tavern_global_cfg))
     else:
         raise exceptions.InvalidSettingsError(
-            "Invalid format for global settings - must be dict or path to settings file, was {}".format(
-                type(tavern_global_cfg)
-            )
+            f"Invalid format for global settings - must be dict or path to settings file, was {type(tavern_global_cfg)}"
         )
 
     return global_filename

@@ -69,7 +69,7 @@ def assert_device_exists(device_id):
     try:
         next(row)
     except:
-        raise Exception("Device {} is not registered".format(device_id))
+        raise Exception(f"Device {device_id} is not registered")
 
 
 def handle_lights_topic(message):
@@ -114,7 +114,7 @@ def publish_device_status(client, device_id):
         logging.exception("Error getting status for device '%s'", device_id)
     else:
         client.publish(
-            "/device/{}/status/response".format(device_id),
+            f"/device/{device_id}/status/response",
             json.dumps({"lights": status}),
         )
 
@@ -135,14 +135,14 @@ def handle_ping_topic(client, message):
     device_id = message.topic.split("/")[-2]
     assert_device_exists(device_id)
 
-    client.publish("/device/{}/pong".format(device_id))
+    client.publish(f"/device/{device_id}/pong")
 
 
 def handle_echo_topic(client, message):
     device_id = message.topic.split("/")[-2]
     assert_device_exists(device_id)
 
-    client.publish("/device/{}/echo/response".format(device_id), message.payload)
+    client.publish(f"/device/{device_id}/echo/response", message.payload)
 
 
 def on_message_callback(client, userdata, message):
@@ -162,7 +162,7 @@ def on_message_callback(client, userdata, message):
         else:
             logging.warning("Got unexpected MQTT topic '%s'", message.topic)
     except Exception as e:
-        logging.exception("error handling message: {}".format(e))
+        logging.exception(f"error handling message: {e}")
 
 
 def wait_for_messages():
@@ -174,7 +174,7 @@ def wait_for_messages():
     topics = ["lights", "ping", "echo", "status"]
 
     for t in topics:
-        device_topic = "/device/+/{}".format(t)
+        device_topic = f"/device/+/{t}"
         logging.debug("Subscribing to '%s'", device_topic)
         mqtt_client.subscribe(device_topic)
 

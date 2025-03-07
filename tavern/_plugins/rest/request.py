@@ -2,10 +2,10 @@ import contextlib
 import json
 import logging
 import warnings
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from contextlib import ExitStack
 from itertools import filterfalse, tee
-from typing import Callable, ClassVar, Optional
+from typing import ClassVar, Optional
 from urllib.parse import quote_plus
 
 import requests
@@ -305,9 +305,7 @@ def _read_expected_cookies(
     if missing:
         logger.error("Missing cookies")
         raise exceptions.MissingCookieError(
-            "Tried to use cookies '{}' in request but only had '{}' available".format(
-                expected, existing_cookies
-            )
+            f"Tried to use cookies '{expected}' in request but only had '{existing_cookies}' available"
         )
 
     # 'extra' should be a list of dictionaries - merge them into one here
@@ -324,9 +322,7 @@ def _read_expected_cookies(
     if overwritten:
         logger.error("Duplicate cookies found in request")
         raise exceptions.DuplicateCookieError(
-            "Asked to use cookie {} from previous request but also redefined it as {}".format(
-                overwritten, from_extra
-            )
+            f"Asked to use cookie {overwritten} from previous request but also redefined it as {from_extra}"
         )
 
     from_cookiejar = {c: existing_cookies.get(c) for c in expected}

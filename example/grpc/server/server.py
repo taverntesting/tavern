@@ -1,7 +1,8 @@
 import logging
 import threading
+from collections.abc import Callable
 from concurrent import futures
-from typing import Any, Callable
+from typing import Any
 
 import grpc
 import helloworld_v1_precompiled_pb2 as helloworld_pb2_v1
@@ -17,17 +18,17 @@ from grpc_reflection.v1alpha import reflection
 
 class GreeterV1(helloworld_pb2_grpc_v1.GreeterServicer):
     def SayHello(self, request, context):
-        return helloworld_pb2_v1.HelloReply(message="Hello, %s!" % request.name)
+        return helloworld_pb2_v1.HelloReply(message=f"Hello, {request.name}!")
 
 
 class GreeterV2(helloworld_pb2_grpc_v2.GreeterServicer):
     def SayHello(self, request, context):
-        return helloworld_pb2_v2.HelloReply(message="Hello, %s!" % request.name)
+        return helloworld_pb2_v2.HelloReply(message=f"Hello, {request.name}!")
 
 
 class GreeterV3(helloworld_pb2_grpc_v3.GreeterServicer):
     def SayHello(self, request, context):
-        return helloworld_pb2_v3.HelloReply(message="Hello, %s!" % request.name)
+        return helloworld_pb2_v3.HelloReply(message=f"Hello, {request.name}!")
 
 
 class LoggingInterceptor(ServerInterceptor):

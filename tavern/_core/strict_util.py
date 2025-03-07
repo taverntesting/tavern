@@ -154,9 +154,7 @@ def extract_strict_setting(strict: StrictSettingKinds) -> tuple[bool, StrictSett
         strict_setting = strict_setting_factory("false")
     else:
         raise exceptions.InvalidConfigurationException(
-            "Unable to parse strict setting '{}' of type '{}'".format(
-                strict, type(strict)
-            )
+            f"Unable to parse strict setting '{strict}' of type '{type(strict)}'"
         )
 
     logger.debug("Got strict as '%s', setting as '%s'", strict, strict_setting)
