@@ -1875,6 +1875,25 @@ stages:
         n_queries: 10000
 ```
 
+##### Skipping stages with simpleeval expressions
+
+Stages can be skipped by using a `skip` key that contains a [simpleeval](https://pypi.org/project/simpleeval/) expression. 
+This allows for more complex conditional logic to determine if a stage should be skipped.
+
+Example:
+```yaml
+stages:
+  - name: Skip based on variable value
+    skip: "{v_int} > 50"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+```
+
+In this example, the stage will be skipped if `v_int` is greater than 50. Any valid simpleeval expression can be used.
+
 #### skipif
 
 Sometimes you just want to skip some tests, perhaps based on which server you're
