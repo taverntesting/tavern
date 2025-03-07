@@ -59,13 +59,13 @@ class TestSkipStage:
     def test_skip_cel_true(self, stage, test_block_config, run_mock):
         """Skip stage when CEL expression evaluates to True"""
 
-        stage["skip"] = "true"
+        stage["skip"] = "True"
         assert _run_test(stage, test_block_config, run_mock) is False
 
     def test_skip_cel_false(self, stage, test_block_config, run_mock):
         """Don't skip stage when CEL expression evaluates to False"""
 
-        stage["skip"] = "false"
+        stage["skip"] = "False"
         assert _run_test(stage, test_block_config, run_mock) is True
 
     def test_skip_env_var_true(self, stage, test_block_config, run_mock):
