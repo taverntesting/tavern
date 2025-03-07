@@ -220,7 +220,7 @@ def run_test(
 
                     formatted = format_keys(content, test_block_config.variables)
 
-                    result = run_cel(content, formatted, test_block_config)
+                    result = run_cel(formatted, test_block_config)
 
                     if result:
                         continue

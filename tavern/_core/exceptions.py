@@ -24,6 +24,10 @@ class BadSchemaError(TavernException):
     """Schema mismatch"""
 
 
+class CELError(TavernException):
+    """Error parsing or running a CEL program"""
+
+
 class TestFailError(TavernException):
     """Test failed somehow"""
 
