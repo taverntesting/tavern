@@ -202,27 +202,54 @@ def run_test(
             # Run tests in a path in order
             for idx, stage in enumerate(test_spec["stages"]):
                 if content := stage.get("skip"):
-                    if isinstance(content, bool) and content:
+                    if content is True:
+                        # If it's a literal boolean true or false
                         continue
-                    env = celpy.Environment()
+
+                    if not isinstance(content, str):
+                        raise exceptions.BadSchemaError(
+                            f"Unexpected '{type(content)}' in skip key"
+                        )
+
+                    # See if it's a basic string like "true" or "no" first
                     try:
-                        ast = env.compile(content)
+                        if strtobool(content):
+                            continue
+                    except ValueError:
+                        pass
+
+                    formatted = format_keys(content, test_block_config.variables)
+
+                    env = celpy.Environment()
+
+                    try:
+                        ast = env.compile(formatted)
                     except celpy.CELParseError:
                         logger.warning(
                             "unable to parse as CEL, continuing: %s", content
                         )
                         continue
 
-                    prgm = env.program(ast)
-                    activation = test_block_config.variables
-                    result = prgm.evaluate(activation)
-                    if not isinstance(result, bool):
+                    try:
+                        variables = celpy.json_to_cel(test_block_config.variables)
+                    except ValueError as e:
                         raise exceptions.BadSchemaError(
-                            "'skip' spec did not evaluate to True/False (got %s of type %s)",
-                            result,
-                            type(result),
+                            "unable to convert variables to CEL variables"
+                        ) from e
+
+                    try:
+                        result = env.program(ast).evaluate(variables)
+                    except celpy.CELEvalError as e:
+                        raise exceptions.BadSchemaError(
+                            "Error evaluating CEL program (missing variables?)"
+                        ) from e
+
+                    if not isinstance(result, celpy.celtypes.BoolType):
+                        raise exceptions.BadSchemaError(
+                            f"'skip' CEL program did not evaluate to True/False (got {result} of type {type(result)})",
                         )
-                    elif isinstance(result, bool) and result:
+
+                    if result:
                         continue
 
                 if has_only and not getonly(stage):
