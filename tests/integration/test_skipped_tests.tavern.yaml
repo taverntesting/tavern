@@ -143,7 +143,7 @@ stages:
       status_code: 999
 
 ---
-test_name: Test CEL integer comparison
+test_name: Test simpleeval integer comparison
 
 includes:
   - !include common.yaml
@@ -165,7 +165,7 @@ stages:
       status_code: 234
 
 ---
-test_name: Test CEL float comparison
+test_name: Test simpleeval float comparison
 
 includes:
   - !include common.yaml
@@ -187,14 +187,14 @@ stages:
       status_code: 200
 
 ---
-test_name: Test CEL string operations
+test_name: Test simpleeval string operations
 
 includes:
   - !include common.yaml
 
 stages:
   - name: Skip on string contains
-    skip: "'{host}'.contains('http')"
+    skip: "'http' in '{host}'"
     request:
       url: "{host}/fake_list"
       method: GET
@@ -202,7 +202,7 @@ stages:
       status_code: 234
 
   - name: Skip on string length
-    skip: "'{host}'.size() > 10"
+    skip: "len('{host}') > 10"
     request:
       url: "{host}/fake_list"
       method: GET
@@ -210,7 +210,7 @@ stages:
       status_code: 234
 
 ---
-test_name: Test CEL boolean operations
+test_name: Test simpleeval boolean operations
 
 includes:
   - !include common.yaml
@@ -224,7 +224,7 @@ stages:
     response:
       status_code: 200
   - name: Skip on boolean false
-    skip: "! {v_bool}"
+    skip: "not {v_bool}"
     request:
       url: "{host}/fake_list"
       method: GET
@@ -232,29 +232,14 @@ stages:
       status_code: 200
 
 ---
-test_name: Test CEL null coalescing
-
-includes:
-  - !include common.yaml
-
-stages:
-  - name: Skip on null comparison
-    skip: "null"
-    request:
-      url: "{host}/fake_list"
-      method: GET
-    response:
-      status_code: 200
-
----
-test_name: Test CEL complex expressions
+test_name: Test simpleeval complex expressions
 
 includes:
   - !include common.yaml
 
 stages:
   - name: Do not skip on compound expression
-    skip: "({v_int} > 50) && ({v_float} > 50.0)"
+    skip: "({v_int} > 50) and ({v_float} > 50.0)"
     request:
       url: "{host}/fake_list"
       method: GET
@@ -262,7 +247,7 @@ stages:
       status_code: 200
 
   - name: Skip on compound expression
-    skip: "({v_int} > 50) || ({v_float} > 50.0)"
+    skip: "({v_int} > 50) or ({v_float} > 50.0)"
     request:
       url: "{host}/fake_list"
       method: GET

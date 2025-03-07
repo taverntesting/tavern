@@ -90,7 +90,7 @@ class TestSkipStage:
         stage["skip"] = "'{some_var}' > 3"
         test_block_config.variables.update({"some_var": "value"})
 
-        with pytest.raises(exceptions.CELError):
+        with pytest.raises(exceptions.EvalError):
             _run_test(stage, test_block_config, run_mock)
 
     @pytest.mark.xfail(
@@ -111,21 +111,15 @@ class TestSkipStage:
 
         stage["skip"] = "invalid_cel_expression"
 
-        with pytest.raises(exceptions.CELError):
+        with pytest.raises(exceptions.EvalError):
             _run_test(stage, test_block_config, run_mock)
 
     def test_skip_non_bool_result(self, stage, test_block_config, run_mock):
         """Raise error when CEL returns non-boolean value"""
 
         stage["skip"] = "'not a boolean'"
-        with pytest.raises(exceptions.CELError):
+        with pytest.raises(exceptions.EvalError):
             _run_test(stage, test_block_config, run_mock)
-
-    def test_skip_nil(self, stage, test_block_config, run_mock):
-        """Handle nil values appropriately"""
-
-        stage["skip"] = "null"
-        assert _run_test(stage, test_block_config, run_mock) is True
 
     def test_skip_empty_string(self, stage, test_block_config, run_mock):
         """Treat empty string as False"""

@@ -7,6 +7,9 @@ from tavern._core.pytest.config import TestConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+functions = simpleeval.DEFAULT_FUNCTIONS.copy()
+functions["len"] = len
+
 
 def eval_skip(content: str, test_block_config: TestConfig) -> bool:
     """Run a simpleeval expression to determine if a test should be skipped.
@@ -27,9 +30,17 @@ def eval_skip(content: str, test_block_config: TestConfig) -> bool:
 
     logger.debug("simpleeval expression to evaluate: %s", formatted)
 
-    result = simpleeval.simple_eval(formatted, names=test_block_config.variables)
-    if not isinstance(result, (bool, None)):
-        raise exceptions.BadSchemaError(
+    try:
+        result = simpleeval.simple_eval(
+            formatted, names=test_block_config.variables, functions=functions
+        )
+    except simpleeval.NameNotDefined as e:
+        raise exceptions.EvalError(f"Undefined variable used in program") from e
+    except TypeError as e:
+        raise exceptions.EvalError("Error running program") from e
+
+    if not isinstance(result, (bool, type(None))):
+        raise exceptions.EvalError(
             f"'skip' program did not evaluate to True/False (got {result} of type {type(result)})",
         )
 
