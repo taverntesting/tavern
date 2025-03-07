@@ -8,7 +8,6 @@ from contextlib import ExitStack
 from copy import deepcopy
 
 import box
-import celpy
 
 from tavern._core import exceptions
 from tavern._core.plugins import (
@@ -19,6 +18,7 @@ from tavern._core.plugins import (
     get_verifiers,
 )
 from tavern._core.strict_util import StrictLevel
+from .cel import run_cel
 
 from .dict_util import format_keys, get_tavern_box
 from .pytest import call_hook
@@ -220,34 +220,7 @@ def run_test(
 
                     formatted = format_keys(content, test_block_config.variables)
 
-                    env = celpy.Environment()
-
-                    try:
-                        ast = env.compile(formatted)
-                    except celpy.CELParseError:
-                        logger.warning(
-                            "unable to parse as CEL, continuing: %s", content
-                        )
-                        continue
-
-                    try:
-                        variables = celpy.json_to_cel(test_block_config.variables)
-                    except ValueError as e:
-                        raise exceptions.BadSchemaError(
-                            "unable to convert variables to CEL variables"
-                        ) from e
-
-                    try:
-                        result = env.program(ast).evaluate(variables)
-                    except celpy.CELEvalError as e:
-                        raise exceptions.BadSchemaError(
-                            "Error evaluating CEL program (missing variables?)"
-                        ) from e
-
-                    if not isinstance(result, (celpy.celtypes.BoolType, type(None))):
-                        raise exceptions.BadSchemaError(
-                            f"'skip' CEL program did not evaluate to True/False (got {result} of type {type(result)})",
-                        )
+                    result = run_cel(content, formatted, test_block_config)
 
                     if result:
                         continue
