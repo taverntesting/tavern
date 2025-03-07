@@ -17,7 +17,7 @@ variables:
   verify_false: "False"
   delay_before_0_1: 0.1
 
-  formatted-cookie-name: tavern-cookie-2
+  formatted_cookie_name: tavern-cookie-2
 
   file_body_ref: "OK.txt"
 
