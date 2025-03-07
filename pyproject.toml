@@ -175,7 +175,7 @@ extend-exclude = [
 
 [tool.ruff.lint]
 ignore = [
-    "UP045", # Optional
+    "UP045", "UP007", # Optional/Union
     "E501", # line length
     "RUF005", # union types only valid from 3.10+
     "B905", # zip(..., strict=True) only valid from 3.10+
