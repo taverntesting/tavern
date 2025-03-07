@@ -244,7 +244,7 @@ def run_test(
                             "Error evaluating CEL program (missing variables?)"
                         ) from e
 
-                    if not isinstance(result, celpy.celtypes.BoolType):
+                    if not isinstance(result, (celpy.celtypes.BoolType, type(None))):
                         raise exceptions.BadSchemaError(
                             f"'skip' CEL program did not evaluate to True/False (got {result} of type {type(result)})",
                         )

@@ -125,8 +125,7 @@ class TestSkipStage:
         """Handle nil values appropriately"""
 
         stage["skip"] = "null"
-        with pytest.raises(exceptions.BadSchemaError):
-            _run_test(stage, test_block_config, run_mock)
+        assert _run_test(stage, test_block_config, run_mock) is True
 
     def test_skip_empty_string(self, stage, test_block_config, run_mock):
         """Treat empty string as False"""
