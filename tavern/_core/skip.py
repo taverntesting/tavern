@@ -13,7 +13,7 @@ def eval_skip(content: str, test_block_config: TestConfig) -> bool:
 
     Args:
         content: The unformatted simpleeval string to evaluate
-        test_block_config: Configuration containing variables to use in CEL evaluation
+        test_block_config: Configuration containing variables to use in simpleeval evaluation
 
     Returns:
         Result of simpleeval evaluation

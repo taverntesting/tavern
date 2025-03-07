@@ -56,14 +56,14 @@ class TestSkipStage:
         stage["skip"] = False
         assert _run_test(stage, test_block_config, run_mock) is True
 
-    def test_skip_cel_true(self, stage, test_block_config, run_mock):
-        """Skip stage when CEL expression evaluates to True"""
+    def test_skip_simpleeval_true(self, stage, test_block_config, run_mock):
+        """Skip stage when simpleeval expression evaluates to True"""
 
         stage["skip"] = "True"
         assert _run_test(stage, test_block_config, run_mock) is False
 
-    def test_skip_cel_false(self, stage, test_block_config, run_mock):
-        """Don't skip stage when CEL expression evaluates to False"""
+    def test_skip_simpleeval_false(self, stage, test_block_config, run_mock):
+        """Don't skip stage when simpleeval expression evaluates to False"""
 
         stage["skip"] = "False"
         assert _run_test(stage, test_block_config, run_mock) is True
@@ -106,7 +106,7 @@ class TestSkipStage:
 
         assert "unable to parse as simpleeval" in caplog.text
 
-    def test_error_valid_cel_missing_var(self, stage, test_block_config, run_mock):
+    def test_error_valid_simpleeval_missing_var(self, stage, test_block_config, run_mock):
         """Handle missing variable"""
 
         stage["skip"] = "invalid_cel_expression"
