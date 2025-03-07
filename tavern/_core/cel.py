@@ -8,7 +8,20 @@ from tavern._core.pytest.config import TestConfig
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def run_cel(content: str, formatted: str, test_block_config: TestConfig):
+def run_cel(content: str, formatted: str, test_block_config: TestConfig) -> bool | None:
+    """Run a CEL (Common Expression Language) program to determine if a test should be skipped.
+
+    Args:
+        content: The raw CEL content before formatting
+        formatted: The formatted CEL string to evaluate
+        test_block_config: Configuration containing variables to use in CEL evaluation
+
+    Returns:
+        bool | None: Result of CEL evaluation. If result is False, test will be skipped.
+
+    Raises:
+        BadSchemaError: If CEL program is invalid, or variables cannot be converted to CEL types
+    """
     logger.debug("CEL program to evalute: %s", formatted)
 
     env = celpy.Environment()
