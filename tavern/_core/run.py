@@ -8,6 +8,7 @@ from contextlib import ExitStack
 from copy import deepcopy
 
 import box
+import celpy
 
 from tavern._core import exceptions
 from tavern._core.plugins import (
@@ -200,8 +201,30 @@ def run_test(
         try:
             # Run tests in a path in order
             for idx, stage in enumerate(test_spec["stages"]):
-                if stage.get("skip"):
-                    continue
+                if content := stage.get("skip"):
+                    if isinstance(content, bool) and content:
+                        continue
+                    env = celpy.Environment()
+                    try:
+                        ast = env.compile(content)
+                    except celpy.CELParseError:
+                        logger.warning(
+                            "unable to parse as CEL, continuing: %s", content
+                        )
+                        continue
+
+                    prgm = env.program(ast)
+                    activation = test_block_config.variables
+                    result = prgm.evaluate(activation)
+                    if not isinstance(result, bool):
+                        raise exceptions.BadSchemaError(
+                            "'skip' spec did not evaluate to True/False (got %s of type %s)",
+                            result,
+                            type(result),
+                        )
+                    elif isinstance(result, bool) and result:
+                        continue
+
                 if has_only and not getonly(stage):
                     continue
 
