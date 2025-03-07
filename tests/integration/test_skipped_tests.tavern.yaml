@@ -141,3 +141,138 @@ stages:
       method: GET
     response:
       status_code: 999
+
+---
+test_name: Test CEL integer comparison
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Do not skip on integer equality
+    skip: "{v_int} == 456"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+  - name: Skip on integer inequality
+    skip: "{v_int} == 123"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 234
+
+---
+test_name: Test CEL float comparison
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Do not skip on float comparison
+    skip: "{v_float} <= 100.5"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+  - name: Skip on float comparison
+    skip: "{v_float} >= 100.5"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+
+---
+test_name: Test CEL string operations
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Skip on string contains
+    skip: "'{host}'.contains('http')"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 234
+
+  - name: Skip on string length
+    skip: "'{host}'.size() > 10"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 234
+
+---
+test_name: Test CEL boolean operations
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Skip on boolean true
+    skip: "{v_bool}"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+  - name: Skip on boolean false
+    skip: "! {v_bool}"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+
+---
+test_name: Test CEL null coalescing
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Skip on null comparison
+    skip: "null"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+
+---
+test_name: Test CEL complex expressions
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Do not skip on compound expression
+    skip: "({v_int} > 50) && ({v_float} > 50.0)"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+
+  - name: Skip on compound expression
+    skip: "({v_int} > 50) || ({v_float} > 50.0)"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 234
+
+  - name: Skip on parentheticals
+    skip: "({v_int} + {v_int}) == 200"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
