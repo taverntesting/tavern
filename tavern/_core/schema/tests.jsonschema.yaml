@@ -383,9 +383,13 @@ definitions:
         default: 0
 
       skip:
-        type: boolean
-        description: Whether to skip this stage
-        default: false
+        oneOf:
+          - type: boolean
+            description: Whether to skip this stage
+            default: false
+
+          - type: string
+            description: CEL expression saying whether to skip this stage
 
       only:
         type: boolean

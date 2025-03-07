@@ -24,6 +24,10 @@ class BadSchemaError(TavernException):
     """Schema mismatch"""
 
 
+class EvalError(TavernException):
+    """Error parsing or running a simpleeval program"""
+
+
 class TestFailError(TavernException):
     """Test failed somehow"""
 

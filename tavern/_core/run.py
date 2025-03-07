@@ -23,6 +23,7 @@ from .dict_util import format_keys, get_tavern_box
 from .pytest import call_hook
 from .pytest.config import TestConfig
 from .report import attach_stage_content, wrap_step
+from .skip import eval_skip
 from .strtobool import strtobool
 from .testhelpers import delay, retry
 from .tincture import Tinctures, get_stage_tinctures
@@ -200,8 +201,26 @@ def run_test(
         try:
             # Run tests in a path in order
             for idx, stage in enumerate(test_spec["stages"]):
-                if stage.get("skip"):
-                    continue
+                if content := stage.get("skip"):
+                    if content is True:
+                        # If it's a literal boolean true or false
+                        continue
+
+                    if not isinstance(content, str):
+                        raise exceptions.BadSchemaError(
+                            f"Unexpected '{type(content)}' in skip key"
+                        )
+
+                    # See if it's a basic string like "true" or "no" first
+                    try:
+                        if strtobool(content):
+                            continue
+                    except ValueError:
+                        pass
+
+                    if eval_skip(content, test_block_config):
+                        continue
+
                 if has_only and not getonly(stage):
                     continue
 

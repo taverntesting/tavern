@@ -153,6 +153,10 @@ This has a few drawbacks, especially that if it can't find the protoc compiler a
 fail, but it might be useful if you're talking to a Java/Go/other server and you don't want to keep
 some compiled Python gRPC stubs in your repository.
 
+The main downside to this is that Tavern currently depends on `protobuf>=4,<5`. If the version of 
+`protoc` you are using generates outputs that are incompatible with this, it will fail at runtime. 
+Consider using this only as a last resort!
+
 #### Server reflection
 
 This is obviously the least useful method. If you don't specify a proto source or module, the client
