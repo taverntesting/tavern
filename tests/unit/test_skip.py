@@ -96,15 +96,15 @@ class TestSkipStage:
     @pytest.mark.xfail(
         reason="'KeyError: <_pytest.stash.StashKey object at 0x7fa6ac4852c0' ?????"
     )
-    def test_skip_invalid_cel(self, stage, test_block_config, caplog, run_mock):
-        """Handle invalid CEL expressions gracefully"""
+    def test_skip_invalid_simpleeval(self, stage, test_block_config, caplog, run_mock):
+        """Handle invalid simpleeval expressions gracefully"""
 
         stage["skip"] = "hello i am a test <<<"
 
         with caplog.at_level(logging.WARNING):
             _run_test(stage, test_block_config, run_mock)
 
-        assert "unable to parse as CEL" in caplog.text
+        assert "unable to parse as simpleeval" in caplog.text
 
     def test_error_valid_cel_missing_var(self, stage, test_block_config, run_mock):
         """Handle missing variable"""
