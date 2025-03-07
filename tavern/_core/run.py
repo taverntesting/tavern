@@ -218,11 +218,9 @@ def run_test(
                     except ValueError:
                         pass
 
-                    formatted = format_keys(content, test_block_config.variables)
 
-                    result = run_cel(formatted, test_block_config)
 
-                    if result:
+                    if run_cel(content, test_block_config):
                         continue
 
                 if has_only and not getonly(stage):

@@ -1,18 +1,20 @@
 import logging
+import re
 
 import celpy
 
 from tavern._core import exceptions
+from tavern._core.dict_util import format_keys
 from tavern._core.pytest.config import TestConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def run_cel(formatted: str, test_block_config: TestConfig) -> bool:
+def run_cel(content: str, test_block_config: TestConfig) -> bool:
     """Run a CEL (Common Expression Language) program to determine if a test should be skipped.
 
     Args:
-        formatted: The formatted CEL string to evaluate
+        content: The unformatted CEL string to evaluate
         test_block_config: Configuration containing variables to use in CEL evaluation
 
     Returns:
@@ -21,6 +23,9 @@ def run_cel(formatted: str, test_block_config: TestConfig) -> bool:
     Raises:
         CELError: If CEL program is invalid, or variables cannot be converted to CEL types
     """
+
+    formatted = format_keys(content, test_block_config.variables)
+
     logger.debug("CEL program to evalute: %s", formatted)
 
     env = celpy.Environment()
