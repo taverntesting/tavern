@@ -106,7 +106,9 @@ class TestSkipStage:
 
         assert "unable to parse as simpleeval" in caplog.text
 
-    def test_error_valid_simpleeval_missing_var(self, stage, test_block_config, run_mock):
+    def test_error_valid_simpleeval_missing_var(
+        self, stage, test_block_config, run_mock
+    ):
         """Handle missing variable"""
 
         stage["skip"] = "invalid_cel_expression"

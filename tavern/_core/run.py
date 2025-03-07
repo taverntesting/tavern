@@ -19,11 +19,11 @@ from tavern._core.plugins import (
 )
 from tavern._core.strict_util import StrictLevel
 
-from .skip import eval_skip
 from .dict_util import format_keys, get_tavern_box
 from .pytest import call_hook
 from .pytest.config import TestConfig
 from .report import attach_stage_content, wrap_step
+from .skip import eval_skip
 from .strtobool import strtobool
 from .testhelpers import delay, retry
 from .tincture import Tinctures, get_stage_tinctures
@@ -217,8 +217,6 @@ def run_test(
                             continue
                     except ValueError:
                         pass
-
-
 
                     if eval_skip(content, test_block_config):
                         continue

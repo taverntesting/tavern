@@ -1,4 +1,5 @@
 import logging
+
 import simpleeval
 
 from tavern._core import exceptions
@@ -35,7 +36,7 @@ def eval_skip(content: str, test_block_config: TestConfig) -> bool:
             formatted, names=test_block_config.variables, functions=functions
         )
     except simpleeval.NameNotDefined as e:
-        raise exceptions.EvalError(f"Undefined variable used in program") from e
+        raise exceptions.EvalError("Undefined variable used in program") from e
     except TypeError as e:
         raise exceptions.EvalError("Error running program") from e
 
