@@ -19,7 +19,7 @@ from tavern._core.plugins import (
 )
 from tavern._core.strict_util import StrictLevel
 
-from .cel import run_cel
+from .skip import eval_skip
 from .dict_util import format_keys, get_tavern_box
 from .pytest import call_hook
 from .pytest.config import TestConfig
@@ -220,7 +220,7 @@ def run_test(
 
 
 
-                    if run_cel(content, test_block_config):
+                    if eval_skip(content, test_block_config):
                         continue
 
                 if has_only and not getonly(stage):
