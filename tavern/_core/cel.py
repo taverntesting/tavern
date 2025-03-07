@@ -48,4 +48,4 @@ def run_cel(formatted: str, test_block_config: TestConfig) -> bool:
             f"'skip' CEL program did not evaluate to True/False (got {result} of type {type(result)})",
         )
 
-    return result
+    return bool(result)
