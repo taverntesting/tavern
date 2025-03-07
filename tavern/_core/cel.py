@@ -3,11 +3,12 @@ import logging
 import celpy
 
 from tavern._core import exceptions
+from tavern._core.pytest.config import TestConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def run_cel(content, formatted, test_block_config):
+def run_cel(content: str, formatted: str, test_block_config: TestConfig):
     logger.debug("CEL program to evalute: %s", formatted)
 
     env = celpy.Environment()
