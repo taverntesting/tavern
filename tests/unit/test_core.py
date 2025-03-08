@@ -666,3 +666,34 @@ def test_copy_config(pytestconfig):
     cfg_2 = load_global_cfg(pytestconfig)
 
     assert cfg_2.variables.get("test1") is None
+
+
+class TestHooks:
+    def test_before_every_request_hook_called(self, fulltest, mockargs, includes):
+        """Verify that the before_every_request hook is called"""
+        mock_response = Mock(**mockargs)
+
+        def call_func(request_args):
+            request_args["headers"] = {"foo": "myzclqkptpk"}
+
+        # Mock the hook caller
+        hook_mock = Mock(side_effect=call_func)
+        includes.tavern_internal.pytest_hook_caller.pytest_tavern_beta_before_every_request = hook_mock
+
+        with patch(
+            "tavern._plugins.rest.request.requests.Session.request",
+            return_value=mock_response,
+        ):
+            run_test("test_file_name", fulltest, includes)
+
+        # Verify the hook was called with the request arguments
+        hook_mock.assert_called_once()
+
+        # Verify the request args passed to hook contain the expected values
+        request_args = hook_mock.call_args[1]["request_args"]
+        assert "url" in request_args
+        assert "method" in request_args
+        assert request_args["method"] == "GET"
+        assert "http://www.google.com" in request_args["url"]
+
+        assert request_args["headers"] == {"foo": "myzclqkptpk"}
