@@ -446,3 +446,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  2.10.3          Allow using referenced 'finally' stages (2024-04-13)
 
 #  2.11.0          Remove requirement for 'name' in variable files (2024-05-11)
+
+#  2.12.0          Add dynamic skipping of stages based on simpleeval (2025-03-07)
