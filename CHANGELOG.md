@@ -448,3 +448,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 #  2.11.0          Remove requirement for 'name' in variable files (2024-05-11)
 
 #  2.12.0          Add dynamic skipping of stages based on simpleeval (2025-03-07)
+
+#  2.13.0          Update minimum python version to 3.10 (2025-03-08)
