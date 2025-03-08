@@ -1,0 +1,14 @@
+---
+includes:
+  - !include common.yaml
+---
+test_name: Test redirecting loops
+
+stages:
+  - name: Expect a 302 without setting the flag
+    max_retries: 2
+    request:
+      follow_redirects: true
+      url: "{host}/redirect/loop"
+    response:
+      status_code: 200
