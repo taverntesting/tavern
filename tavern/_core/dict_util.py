@@ -237,7 +237,6 @@ def deep_dict_merge(initial_dct: dict, merge_dct: Mapping) -> dict:
     dict_merge recurses down into dicts nested to an arbitrary depth
     and returns the merged dict. Keys values present in merge_dct take
     precedence over values in initial_dct.
-    Modified from: https://gist.github.com/angstwad/bf22d1822c38a92ec0a9
 
     Params:
         initial_dct: dict onto which the merge is executed
@@ -246,15 +245,9 @@ def deep_dict_merge(initial_dct: dict, merge_dct: Mapping) -> dict:
     Returns:
         recursively merged dict
     """
-    dct = initial_dct.copy()
-
-    for k in merge_dct:
-        if k in dct and isinstance(dct[k], dict) and isinstance(merge_dct[k], Mapping):
-            dct[k] = deep_dict_merge(dct[k], merge_dct[k])
-        else:
-            dct[k] = merge_dct[k]
-
-    return dct
+    initial_box = Box(initial_dct)
+    initial_box.merge_update(merge_dct)
+    return dict(initial_box)
 
 
 _CanCheck = Sequence | Mapping | set | Collection
