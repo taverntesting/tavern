@@ -6,9 +6,9 @@ significantly if/when a proper plugin system is implemented!
 
 import dataclasses
 import logging
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from functools import partial
-from typing import Any, Callable, Optional, Protocol
+from typing import Any, Optional, Protocol
 
 import stevedore
 
@@ -148,9 +148,7 @@ class _PluginCache:
 
             if len(manager.extensions) != 1:
                 raise exceptions.MissingSettingsError(
-                    "Expected exactly one entrypoint in 'tavern-{}' namespace but got {}".format(
-                        backend, len(manager.extensions)
-                    )
+                    f"Expected exactly one entrypoint in 'tavern-{backend}' namespace but got {len(manager.extensions)}"
                 )
 
             plugins.extend(manager.extensions)

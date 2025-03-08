@@ -33,7 +33,7 @@ def after_check_result():
             name = tfile.name
             yield
 
-            with open(tfile.name, "r") as opened:
+            with open(tfile.name) as opened:
                 contents = opened.readlines()
                 assert len(contents) == 2
                 assert all(i.strip() == "abc" for i in contents)

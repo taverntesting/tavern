@@ -1,4 +1,4 @@
-FROM python:3.9-alpine
+FROM python:3.10-alpine
 
 RUN pip3 install 'pyjwt>=2.4.0,<3' 'flask>=2.2.3' "python-box>=6,<7"
 

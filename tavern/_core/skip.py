@@ -40,7 +40,7 @@ def eval_skip(content: str, test_block_config: TestConfig) -> bool:
     except TypeError as e:
         raise exceptions.EvalError("Error running program") from e
 
-    if not isinstance(result, (bool, type(None))):
+    if not isinstance(result, bool | type(None)):
         raise exceptions.EvalError(
             f"'skip' program did not evaluate to True/False (got {result} of type {type(result)})",
         )

@@ -1,7 +1,7 @@
 import os
 import re
-from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, Callable, Union
+from collections.abc import Callable, Mapping
+from typing import TYPE_CHECKING, Any, Union
 
 from pykwalify.types import is_bool, is_float, is_int
 
@@ -48,9 +48,7 @@ def validator_like(validate: Callable[[Any], bool], description: str):
         if validate(value):
             return True
         else:
-            err_msg = "expected '{}' type at '{}', got '{}'".format(
-                description, path, value
-            )
+            err_msg = f"expected '{description}' type at '{path}', got '{value}'"
             raise BadSchemaError(err_msg)
 
     return validator
@@ -115,9 +113,7 @@ def validate_extensions(value, rule_obj, path) -> bool:
 
 
 def validate_status_code_is_int_or_list_of_ints(value: Mapping, rule_obj, path) -> bool:
-    err_msg = "status_code has to be an integer or a list of integers (got {})".format(
-        value
-    )
+    err_msg = f"status_code has to be an integer or a list of integers (got {value})"
 
     if not isinstance(value, list) and not is_int_like(value):
         raise BadSchemaError(err_msg)
@@ -132,7 +128,7 @@ def validate_status_code_is_int_or_list_of_ints(value: Mapping, rule_obj, path) 
 def check_usefixtures(value: Mapping, rule_obj, path) -> bool:
     err_msg = "'usefixtures' has to be a list with at least one item"
 
-    if not isinstance(value, (list, tuple)):
+    if not isinstance(value, list | tuple):
         raise BadSchemaError(err_msg)
 
     if not value:
@@ -146,13 +142,9 @@ def validate_grpc_status_is_valid_or_list_of_names(
 ) -> bool:
     """Validate GRPC statuses https://github.com/grpc/grpc/blob/master/doc/statuscodes.md"""
     # pylint: disable=unused-argument
-    err_msg = (
-        "status has to be an valid grpc status code, name, or list (got {})".format(
-            value
-        )
-    )
+    err_msg = f"status has to be an valid grpc status code, name, or list (got {value})"
 
-    if isinstance(value, (str, int)):
+    if isinstance(value, str | int):
         if not to_grpc_status(value):
             raise BadSchemaError(err_msg)
     elif isinstance(value, list):
@@ -270,7 +262,7 @@ def validate_data_key(value, rule_obj, path: str) -> bool:
     if isinstance(value, dict):
         # Fine
         pass
-    elif isinstance(value, (str, bytes)):
+    elif isinstance(value, str | bytes):
         # Also fine - might want to do checking on this for encoding etc?
         pass
     elif isinstance(value, list):
@@ -312,9 +304,7 @@ def validate_request_json(value, rule_obj, path) -> bool:
         # If this is a request data block
         if not re.search(r"^/stages/\d/(response/json|mqtt_response/json)", path):
             raise BadSchemaError(
-                "Error at {} - Cannot use a '!approx' in anything other than an expected http response body or mqtt response json".format(
-                    path
-                )
+                f"Error at {path} - Cannot use a '!approx' in anything other than an expected http response body or mqtt response json"
             )
 
     return True
@@ -354,9 +344,7 @@ def check_strict_key(value: Union[list, bool], rule_obj, path) -> bool:
 def validate_timeout_tuple_or_float(value: Union[list, tuple], rule_obj, path) -> bool:
     """Make sure timeout is a float/int or a tuple of floats/ints"""
 
-    err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{}' (type {})".format(
-        value, type(value)
-    )
+    err_msg = f"'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{value}' (type {type(value)})"
     logger = get_pykwalify_logger("tavern.schemas.extensions")
 
     def check_is_timeout_val(v):
@@ -364,7 +352,7 @@ def validate_timeout_tuple_or_float(value: Union[list, tuple], rule_obj, path) -
             logger.debug("'timeout' value not a float/int")
             raise BadSchemaError(err_msg)
 
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, list | tuple):
         if len(value) != 2:
             raise BadSchemaError(err_msg)
         for v in value:
@@ -378,7 +366,7 @@ def validate_timeout_tuple_or_float(value: Union[list, tuple], rule_obj, path) -
 def validate_verify_bool_or_str(value: Union[bool, str], rule_obj, path) -> bool:
     """Make sure the 'verify' key is either a bool or a str"""
 
-    if not isinstance(value, (bool, str)) and not is_bool_like(value):
+    if not isinstance(value, bool | str) and not is_bool_like(value):
         raise BadSchemaError(
             "'verify' has to be either a boolean or the path to a CA_BUNDLE file or directory with certificates of trusted CAs"
         )
@@ -394,10 +382,10 @@ def validate_cert_tuple_or_str(value, rule_obj, path) -> bool:
         "or as a tuple of both files"
     )
 
-    if not isinstance(value, (str, tuple, list)):
+    if not isinstance(value, str | tuple | list):
         raise BadSchemaError(err_msg)
 
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, list | tuple):
         if len(value) != 2:
             raise BadSchemaError(err_msg)
         elif not all(isinstance(i, str) for i in value):
@@ -413,9 +401,7 @@ def validate_file_spec(value: dict, rule_obj, path) -> bool:
 
     if not isinstance(value, dict):
         raise BadSchemaError(
-            "File specification must be a mapping of file names to file specs, got {}".format(
-                value
-            )
+            f"File specification must be a mapping of file names to file specs, got {value}"
         )
 
     if value.get("file_path"):

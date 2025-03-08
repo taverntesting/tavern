@@ -94,7 +94,7 @@ def reset_devices():
 
 @pytest.fixture
 def get_publish_topic(random_device_id):
-    return "/device/{}/echo".format(random_device_id)
+    return f"/device/{random_device_id}/echo"
 
 
 @pytest.fixture

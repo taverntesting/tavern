@@ -3,8 +3,8 @@ import functools
 import itertools
 import logging
 import typing
-from collections.abc import Iterable, Iterator, Mapping
-from typing import Any, Callable, Union
+from collections.abc import Callable, Iterable, Iterator, Mapping
+from typing import Any, Union
 
 import pytest
 import yaml
@@ -78,9 +78,7 @@ def _format_test_marks(
                 try:
                     extra_arg = _format_without_inner(extra_arg, fmt_vars)
                 except exceptions.MissingFormatError as e:
-                    msg = "Tried to use mark '{}' (with value '{}') in test '{}' but one or more format variables was not in any configuration file used by the test".format(
-                        markname, extra_arg, test_name
-                    )
+                    msg = f"Tried to use mark '{markname}' (with value '{extra_arg}') in test '{test_name}' but one or more format variables was not in any configuration file used by the test"
                     # NOTE
                     # we could continue and let it fail in the test, but
                     # this gives a better indication of what actually
@@ -121,9 +119,7 @@ def _maybe_load_ext(pair):
             # and 'mod:func' returns a string, it's impossible to 'merge' with the existing data.
             logger.error("Values still in 'val': %s", value)
             raise exceptions.BadSchemaError(
-                "There were extra key/value pairs in the 'val' for this parametrize mark, but the ext function {} returned '{}' (of type {}) that was not a dictionary. It is impossible to merge these values.".format(
-                    ext, new_value, type(new_value)
-                )
+                f"There were extra key/value pairs in the 'val' for this parametrize mark, but the ext function {ext} returned '{new_value}' (of type {type(new_value)}) that was not a dictionary. It is impossible to merge these values."
             )
 
     return key, value
@@ -153,14 +149,12 @@ def _generate_parametrized_test_items(
             variables[key] = value
             flattened_values.append(value)
         else:
-            if not isinstance(value, (list, tuple)):
+            if not isinstance(value, list | tuple):
                 value = [value]
 
             if len(value) != len(key):
                 raise exceptions.BadSchemaError(
-                    "Invalid match between numbers of keys and number of values in parametrize mark ({} keys, {} values)".format(
-                        key, value
-                    )
+                    f"Invalid match between numbers of keys and number of values in parametrize mark ({key} keys, {value} values)"
                 )
 
             for subkey, subvalue in zip(key, value):

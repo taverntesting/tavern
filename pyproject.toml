@@ -9,7 +9,6 @@ classifiers = [
     "Intended Audience :: Developers",
     "Framework :: Pytest",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -38,7 +37,7 @@ dependencies = [
     "stevedore>=4,<5",
 ]
 
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 
 [[project.authors]]
 name = "Michael Boulton"
@@ -120,7 +119,7 @@ paho-mqtt = "tavern._plugins.mqtt.tavernhook"
 grpc = "tavern._plugins.grpc.tavernhook"
 
 [tool.mypy]
-python_version = 3.9
+python_version = 3.10
 
 # See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
 explicit_package_bases = true
@@ -145,8 +144,8 @@ source = ["tavern"]
 [tool.coverage.paths]
 tavern = [
     "tavern/",
-    ".tox/py39-generic/lib/python3.9/site-packages/tavern/",
-    ".tox/py39-mqtt/lib/python3.9/site-packages/tavern",
+    ".tox/py310-generic/lib/python3.10/site-packages/tavern/",
+    ".tox/py310-mqtt/lib/python3.10/site-packages/tavern",
 ]
 
 [tool.pytest.ini_options]
@@ -168,15 +167,15 @@ norecursedirs = [
 ]
 
 [tool.ruff]
-target-version = "py39"
+target-version = "py310"
 extend-exclude = [
-    "tests/unit/tavern_grpc/test_services_pb2.py",
-    "tests/unit/tavern_grpc/test_services_pb2.pyi",
-    "tests/unit/tavern_grpc/test_services_pb2_grpc.py",
+    "tests/unit/tavern_grpc/test_services_pb2*",
+    "example/grpc/helloworld_v1_precompiled_pb2*"
 ]
 
 [tool.ruff.lint]
 ignore = [
+    "UP045", "UP007", # Optional/Union
     "E501", # line length
     "RUF005", # union types only valid from 3.10+
     "B905", # zip(..., strict=True) only valid from 3.10+
@@ -184,8 +183,7 @@ ignore = [
     "PLR2004", # 'magic numbers'
     "PLW2901", # Loop variable overridden
 ]
-select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL"]
-# Look at: UP
+select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL", "U"]
 
 [tool.ruff.lint.per-file-ignores]
 "example/*" = ["S", "RUF", "T", "E", "PLW", "B"]

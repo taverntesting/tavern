@@ -1,8 +1,8 @@
 import functools
 import importlib
 import logging
-from collections.abc import Iterable, Mapping
-from typing import Any, Callable, Optional
+from collections.abc import Callable, Iterable, Mapping
+from typing import Any, Optional
 
 from tavern._core import exceptions
 
