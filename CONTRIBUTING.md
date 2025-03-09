@@ -24,8 +24,8 @@ If on Windows, you should be able to just run the 'tox' commands in that file.
 1. Update constraints and requirements file
 
 ```shell
-uv pip compile --all-extras pyproject.toml --output-file constraints.txt -U
-uv pip compile --all-extras pyproject.toml --output-file requirements.txt -U --generate-hashes
+uv pip compile --universal --all-extras pyproject.toml --output-file constraints.txt -U
+uv pip compile --universal --all-extras pyproject.toml --output-file requirements.txt -U --generate-hashes
 ```
 
 1. Run tests as above
@@ -56,10 +56,6 @@ Run every so often to update the pre-commit hooks
 ## Creating a new release
 
 1. Setup `~/.pypirc`
-
-1. Install the correct version of tbump
-
-       pip install tbump@https://github.com/michaelboulton/tbump/archive/714ba8957a3c84b625608ceca39811ebe56229dc.zip
 
 1. Tag and push to git with `tbump <new-tag> --tag-message "<tag-message>"`
 
