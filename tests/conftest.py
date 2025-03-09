@@ -6,7 +6,6 @@ import stevedore
 import yaml
 
 import tavern
-import tavern._plugins.mqtt.tavernhook as mqtt_plugin
 from tavern._plugins.rest.tavernhook import TavernRestPlugin as rest_plugin
 
 
@@ -23,13 +22,23 @@ def set_plugins():
     def extension(name, point):
         return stevedore.extension.Extension(name, point, point, point)
 
-    tavern._core.plugins.load_plugins.plugins = [
+    plugins = [
         extension(
             "requests",
             rest_plugin,
         ),
-        extension(
-            "paho-mqtt",
-            mqtt_plugin,
-        ),
     ]
+
+    try:
+        import tavern._plugins.mqtt.tavernhook as mqtt_plugin
+    except ImportError:
+        pass
+    else:
+        plugins.append(
+            extension(
+                "paho-mqtt",
+                mqtt_plugin,
+            )
+        )
+
+    tavern._core.plugins.load_plugins.plugins = plugins
