@@ -79,7 +79,7 @@ dev = [
     "pytest-xdist",
     "py",
     "tox>=4,<5",
-    "ruff>=0.3.4",
+    "ruff~=0.9.10",
     "uv",
     "types-PyYAML",
     "types-protobuf>=4,<5",
@@ -98,7 +98,7 @@ dev = [
     # for pytest
     "exceptiongroup",
     "tomli",
-    "tbump>=v6.10.0"
+    "tbump>=6.10.0"
 ]
 
 
