@@ -25,6 +25,7 @@ from tavern._core.pytest.error import ReprdError
 from tavern._core.report import attach_text
 from tavern._core.run import run_test
 from tavern._core.schema.files import verify_tests
+from tavern._core.stage_lines import start_mark
 
 from .config import TestConfig
 from .util import load_global_cfg
@@ -130,7 +131,7 @@ class YamlItem(pytest.Item):
     def location(self):
         """get location in file"""
         location = super().location
-        location = (location[0], self.spec.start_mark.line, location[2])
+        location = (location[0], start_mark(self.spec).line, location[2])
         return location
 
     #     Hack to stop issue with pytest-rerunfailures
