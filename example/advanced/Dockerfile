@@ -1,4 +1,4 @@
-FROM python:3.10-alpine
+FROM python:3.11-alpine
 
 RUN pip3 install 'pyjwt>=2.4.0,<3' 'flask>=2.2.3'
 
