@@ -97,9 +97,8 @@ dev = [
     "grpc-interceptor",
     # for pytest
     "exceptiongroup",
-    "tomli"
-    # This has to be installed separately, otherwise you can't upload to pypi
-    # "tbump@https://github.com/michaelboulton/tbump/archive/714ba8957a3c84b625608ceca39811ebe56229dc.zip",
+    "tomli",
+    "tbump>=v6.10.0"
 ]
 
 
