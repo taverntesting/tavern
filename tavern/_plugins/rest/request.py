@@ -5,9 +5,7 @@ import warnings
 from collections.abc import Callable, Mapping
 from contextlib import ExitStack
 from itertools import filterfalse, tee
-from typing import (
-    ClassVar,
-)
+from typing import ClassVar
 from urllib.parse import quote_plus
 
 import requests
@@ -307,9 +305,7 @@ def _read_expected_cookies(
     if missing:
         logger.error("Missing cookies")
         raise exceptions.MissingCookieError(
-            "Tried to use cookies '{}' in request but only had '{}' available".format(
-                expected, existing_cookies
-            )
+            f"Tried to use cookies '{expected}' in request but only had '{existing_cookies}' available"
         )
 
     # 'extra' should be a list of dictionaries - merge them into one here
@@ -326,9 +322,7 @@ def _read_expected_cookies(
     if overwritten:
         logger.error("Duplicate cookies found in request")
         raise exceptions.DuplicateCookieError(
-            "Asked to use cookie {} from previous request but also redefined it as {}".format(
-                overwritten, from_extra
-            )
+            f"Asked to use cookie {overwritten} from previous request but also redefined it as {from_extra}"
         )
 
     from_cookiejar = {c: existing_cookies.get(c) for c in expected}
@@ -350,6 +344,8 @@ class RestRequest(BaseRequest):
         # it further down
         # "auth"
     ]
+
+    _request_args: Box
 
     def __init__(
         self, session: requests.Session, rspec: dict, test_block_config: TestConfig
@@ -413,7 +409,7 @@ class RestRequest(BaseRequest):
 
         logger.debug("Request args: %s", request_args)
 
-        self._request_args = request_args
+        self._request_args = Box(request_args)
 
         # There is no way using requests to make a prepared request that will
         # not follow redirects, so instead we have to do this. This also means
@@ -430,9 +426,11 @@ class RestRequest(BaseRequest):
                 if file_body:
                     # Any headers will have been set in the above function
                     file = stack.enter_context(open(file_body, "rb"))
-                    request_args.update(data=file)
+                    self._request_args.update(data=file)
                 else:
-                    files = get_file_arguments(request_args, stack, test_block_config)
+                    files = get_file_arguments(
+                        self._request_args, stack, test_block_config
+                    )
                     if files:
                         logger.debug("Sending %d files in request", len(files["files"]))
                         self._request_args.update(files)
@@ -465,4 +463,4 @@ class RestRequest(BaseRequest):
 
     @property
     def request_vars(self) -> Box:
-        return Box(self._request_args)
+        return self._request_args

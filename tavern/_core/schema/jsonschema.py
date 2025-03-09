@@ -40,32 +40,32 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 def is_str_or_bytes_or_token(checker, instance):
     return Draft7Validator.TYPE_CHECKER.is_type(instance, "string") or isinstance(
-        instance, (bytes, RawStrToken, AnythingSentinel)
+        instance, bytes | RawStrToken | AnythingSentinel
     )
 
 
 def is_number_or_token(checker, instance):
     return Draft7Validator.TYPE_CHECKER.is_type(instance, "number") or isinstance(
-        instance, (IntToken, FloatToken, AnythingSentinel)
+        instance, IntToken | FloatToken | AnythingSentinel
     )
 
 
 def is_integer_or_token(checker, instance):
     return Draft7Validator.TYPE_CHECKER.is_type(instance, "integer") or isinstance(
-        instance, (IntToken, AnythingSentinel)
+        instance, IntToken | AnythingSentinel
     )
 
 
 def is_boolean_or_token(checker, instance):
     return Draft7Validator.TYPE_CHECKER.is_type(instance, "boolean") or isinstance(
-        instance, (BoolToken, AnythingSentinel)
+        instance, BoolToken | AnythingSentinel
     )
 
 
 def is_object_or_sentinel(checker, instance):
     return (
         Draft7Validator.TYPE_CHECKER.is_type(instance, "object")
-        or isinstance(instance, (TypeSentinel, TypeConvertToken))
+        or isinstance(instance, TypeSentinel | TypeConvertToken)
         or instance is None
     )
 

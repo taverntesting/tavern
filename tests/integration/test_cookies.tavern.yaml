@@ -321,7 +321,7 @@ stages:
       url: "{host}/expect_cookie"
       method: GET
       json:
-        cookie_name: "{formatted-cookie-name}"
+        cookie_name: "{formatted_cookie_name}"
       cookies:
         - tavern-cookie-2: abc
     response:

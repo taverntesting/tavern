@@ -2,9 +2,7 @@ import contextlib
 import json
 import logging
 from collections.abc import Mapping
-from typing import (
-    Any,
-)
+from typing import Any, Union
 from urllib.parse import parse_qs, urlparse
 
 import requests
@@ -101,7 +99,7 @@ class RestResponse(BaseResponse):
 
         return redirect_query_params
 
-    def _check_status_code(self, status_code: int | list[int], body: Any) -> None:
+    def _check_status_code(self, status_code: Union[int, list[int]], body: Any) -> None:
         expected_code = self.expected["status_code"]
 
         if (isinstance(expected_code, int) and status_code == expected_code) or (

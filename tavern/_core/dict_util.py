@@ -4,7 +4,8 @@ import os
 import re
 import string
 import typing
-from collections.abc import Collection, Iterable, Mapping, Sequence
+from collections.abc import Collection, Iterator, Mapping, Sequence
+from typing import Any, Union
 
 import box
 import jmespath
@@ -45,7 +46,7 @@ def _check_and_format_values(to_format: str, box_vars: Box) -> str:
             logger.error("Empty format values are invalid")
             raise exceptions.MissingFormatError(field_name) from e
         else:
-            if not isinstance(would_replace, (str, int, float)):
+            if not isinstance(would_replace, str | int | float):
                 logger.warning(
                     "Formatting '%s' will result in it being coerced to a string (it is a %s)",
                     field_name,
@@ -63,9 +64,7 @@ def _attempt_find_include(to_format: str, box_vars: box.Box) -> str | None:
 
     if len(would_format) != 1:
         raise exceptions.InvalidFormattedJsonError(
-            "When using {}, there can only be one exactly format value, but got {}".format(
-                yaml_tag, len(would_format)
-            )
+            f"When using {yaml_tag}, there can only be one exactly format value, but got {len(would_format)}"
         )
 
     (_, field_name, format_spec, conversion) = would_format[0]
@@ -165,7 +164,7 @@ def format_keys(
     return val
 
 
-def recurse_access_key(data: dict | list[str] | Mapping, query: str):
+def recurse_access_key(data: Union[list, Mapping], query: str) -> Any:
     """
     Search for something in the given data using the given query.
 
@@ -246,7 +245,7 @@ def check_expected_keys(expected: _CanCheck, actual: _CanCheck) -> None:
         raise exceptions.UnexpectedKeysError(msg)
 
 
-def yield_keyvals(block: _CanCheck) -> Iterable[tuple[list[str], str, str]]:
+def yield_keyvals(block: Union[list, dict]) -> Iterator[tuple[list, str, str]]:
     """Return indexes, keys and expected values for matching recursive keys
 
     Given a list or dict, return a 3-tuple of the 'split' key (key split on
@@ -299,7 +298,7 @@ Checked = typing.TypeVar("Checked", dict, Collection, str)
 def check_keys_match_recursive(
     expected_val: Checked,
     actual_val: Checked,
-    keys: list[str | int],
+    keys: list[Union[str, int]],
     strict: StrictSettingKinds = True,
 ) -> None:
     """Utility to recursively check response values
@@ -347,14 +346,7 @@ def check_keys_match_recursive(
 
         e_formatted = _format_err("expected")
         a_formatted = _format_err("actual")
-        return "{} = '{}' (type = {}), {} = '{}' (type = {})".format(
-            e_formatted,
-            expected_val,
-            type(expected_val),
-            a_formatted,
-            actual_val,
-            type(actual_val),
-        )
+        return f"{e_formatted} = '{expected_val}' (type = {type(expected_val)}), {a_formatted} = '{actual_val}' (type = {type(actual_val)})"
 
     actual_type = type(actual_val)
 
@@ -390,15 +382,9 @@ def check_keys_match_recursive(
         if expected_val is not ANYTHING:
             if not expected_matches:
                 if isinstance(expected_val, RegexSentinel):
-                    msg = "Expected a string to match regex '{}' ({})".format(
-                        expected_val.compiled, full_err()
-                    )
+                    msg = f"Expected a string to match regex '{expected_val.compiled}' ({full_err()})"
                 else:
-                    msg = (
-                        "Type of returned data was different than expected ({})".format(
-                            full_err()
-                        )
-                    )
+                    msg = f"Type of returned data was different than expected ({full_err()})"
 
                 raise exceptions.KeyMismatchError(msg) from e
 
@@ -414,13 +400,9 @@ def check_keys_match_recursive(
                 if extra_actual_keys:
                     msg += f" - Extra keys in response: {extra_actual_keys}"
                 if extra_expected_keys:
-                    msg += " - Keys missing from response: {}".format(
-                        extra_expected_keys
-                    )
+                    msg += f" - Keys missing from response: {extra_expected_keys}"
 
-                full_msg = "Structure of returned data was different than expected {} ({})".format(
-                    msg, full_err()
-                )
+                full_msg = f"Structure of returned data was different than expected {msg} ({full_err()})"
 
                 # If there are more keys in 'expected' compared to 'actual',
                 # this is still a hard error and we shouldn't continue
@@ -501,9 +483,7 @@ def check_keys_match_recursive(
             else:
                 if len(expected_val) != len(actual_val):
                     raise exceptions.KeyMismatchError(
-                        "Length of returned list was different than expected - expected {} items from got {} ({}".format(
-                            len(expected_val), len(actual_val), full_err()
-                        )
+                        f"Length of returned list was different than expected - expected {len(expected_val)} items from got {len(actual_val)} ({full_err()}"
                     ) from e
 
                 for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):

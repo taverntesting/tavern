@@ -15,13 +15,17 @@ class TavernException(Exception):
         test_block_config: config for stage
     """
 
-    stage: dict | None
+    stage: Optional[dict]
     test_block_config: Optional["TestConfig"]
     is_final: bool = False
 
 
 class BadSchemaError(TavernException):
     """Schema mismatch"""
+
+
+class EvalError(TavernException):
+    """Error parsing or running a simpleeval program"""
 
 
 class TestFailError(TavernException):
@@ -149,9 +153,7 @@ class MisplacedExtBlockException(TavernException):
 
     def __init__(self, block) -> None:
         super().__init__(
-            "$ext function found in block {} - this has been moved to verify_response_with block - see documentation".format(
-                block
-            )
+            f"$ext function found in block {block} - this has been moved to verify_response_with block - see documentation"
         )
 
 

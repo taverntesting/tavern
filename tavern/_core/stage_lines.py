@@ -56,14 +56,14 @@ def get_stage_filename(yaml_block: PyYamlDict) -> str | None:
     return start_mark(yaml_block).name
 
 
-def start_mark(yaml_block: PyYamlDict) -> type[YamlMark] | YamlMark:
+def start_mark(yaml_block: PyYamlDict) -> Union[type[YamlMark], YamlMark]:
     try:
         return yaml_block.start_mark  # type:ignore
     except AttributeError:
         return YamlMark()
 
 
-def end_mark(yaml_block: PyYamlDict) -> type[YamlMark] | YamlMark:
+def end_mark(yaml_block: PyYamlDict) -> Union[type[YamlMark], YamlMark]:
     try:
         return yaml_block.end_mark  # type:ignore
     except AttributeError:

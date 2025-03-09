@@ -166,8 +166,6 @@ calling run() directly will now cause a pytest isntance to be run in the backgro
 
 #  0.18.0          Add 'timeout' parameter for http requests (2018-08-24)
 
-##  show            Bump version: 0.17.2 → 0.18.0 (2018-08-24)
-
 ##  0.18.1          Add content type/encoding to uploaded files (2018-09-05)
 
 ##  0.18.2          Fix formatting environment variables in command line global config files (2018-09-21)
@@ -446,3 +444,9 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  2.10.2          Fix missing schema check for redirect query params (2024-04-13)
 
 ##  2.10.3          Allow using referenced 'finally' stages (2024-04-13)
+
+#  2.11.0          Remove requirement for 'name' in variable files (2024-05-11)
+
+#  2.12.0          Add dynamic skipping of stages based on simpleeval (2025-03-07)
+
+#  2.13.0          Update minimum python version to 3.10 (2025-03-08)

@@ -8,7 +8,7 @@ import dataclasses
 import logging
 from collections.abc import Callable, Mapping
 from functools import partial
-from typing import Any, Protocol
+from typing import Any, Optional, Protocol
 
 import stevedore
 
@@ -93,7 +93,7 @@ class _Plugin:
 class _PluginCache:
     plugins: list[_Plugin] = dataclasses.field(default_factory=list)
 
-    def __call__(self, config: TestConfig | None = None) -> list[_Plugin]:
+    def __call__(self, config: Optional[TestConfig] = None) -> list[_Plugin]:
         if self.plugins:
             return self.plugins
 
@@ -148,9 +148,7 @@ class _PluginCache:
 
             if len(manager.extensions) != 1:
                 raise exceptions.MissingSettingsError(
-                    "Expected exactly one entrypoint in 'tavern-{}' namespace but got {}".format(
-                        backend, len(manager.extensions)
-                    )
+                    f"Expected exactly one entrypoint in 'tavern-{backend}' namespace but got {len(manager.extensions)}"
                 )
 
             plugins.extend(manager.extensions)

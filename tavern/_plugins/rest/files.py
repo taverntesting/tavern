@@ -3,7 +3,7 @@ import logging
 import mimetypes
 import os
 from contextlib import ExitStack
-from typing import Any
+from typing import Any, Optional, Union
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -63,8 +63,8 @@ def _parse_filespec(filespec: str | dict) -> _Filespec:
 
 
 def guess_filespec(
-    filespec: str | dict, stack: ExitStack, test_block_config: TestConfig
-) -> tuple[list, str | None]:
+    filespec: Union[str, dict], stack: ExitStack, test_block_config: TestConfig
+) -> tuple[list, Optional[str]]:
     """tries to guess the content type and encoding from a file.
 
     Args:
@@ -170,7 +170,7 @@ def get_file_arguments(
         mapping of 'files' block to pass directly to requests
     """
 
-    files_to_send: dict | list | None = None
+    files_to_send: Optional[Union[dict, list]] = None
 
     file_args = request_args.get("files")
 

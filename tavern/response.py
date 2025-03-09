@@ -4,9 +4,7 @@ import traceback
 from abc import abstractmethod
 from collections.abc import Mapping
 from textwrap import indent
-from typing import (
-    Any,
-)
+from typing import Any
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key

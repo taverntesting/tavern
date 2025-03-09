@@ -6,6 +6,7 @@ import re
 import uuid
 from abc import abstractmethod
 from itertools import chain
+from typing import Optional
 
 import pytest
 import yaml
@@ -61,7 +62,7 @@ def create_node_class(cls):
         # def __new__(self, x, start_mark, end_mark):
         #     return cls.__new__(self, x)
 
-    node_class.__name__ = "%s_node" % cls.__name__
+    node_class.__name__ = f"{cls.__name__}_node"
     return node_class
 
 
@@ -122,7 +123,7 @@ class IncludeLoader(
         Resolver.__init__(self)
         SourceMappingConstructor.__init__(self)
 
-    env_path_list: list | None = None
+    env_path_list: Optional[list] = None
     env_var_name = "TAVERN_INCLUDE"
 
 
@@ -151,9 +152,7 @@ def find_include(loader, node) -> str:
             return filename
 
     raise BadSchemaError(
-        "{} not found in include path: {}".format(
-            loader.construct_scalar(node), [str(d) for d in _get_include_dirs(loader)]
-        )
+        f"{loader.construct_scalar(node)} not found in include path: {[str(d) for d in _get_include_dirs(loader)]}"
     )
 
 
@@ -165,9 +164,7 @@ def construct_include(loader, node):
 
     if extension not in ("yaml", "yml", "json"):
         raise BadSchemaError(
-            "Unknown filetype '{}' (included files must be in YAML format and end with .yaml or .yml)".format(
-                filename
-            )
+            f"Unknown filetype '{filename}' (included files must be in YAML format and end with .yaml or .yml)"
         )
 
     return load_single_document_yaml(filename)
@@ -456,9 +453,7 @@ def load_single_document_yaml(filename: str | os.PathLike) -> dict:
 
 
 def error_on_empty_scalar(self, mark):
-    location = "{mark.name:s}:{mark.line:d} - column {mark.column:d}".format(mark=mark)
-    error = "Error at {} - cannot define an empty value in test - either give it a value or explicitly set it to None".format(
-        location
-    )
+    location = f"{mark.name:s}:{mark.line:d} - column {mark.column:d}"
+    error = f"Error at {location} - cannot define an empty value in test - either give it a value or explicitly set it to None"
 
     raise exceptions.BadSchemaError(error)

@@ -1,5 +1,6 @@
 import logging
 from textwrap import dedent
+from typing import Union
 
 import yaml
 
@@ -27,7 +28,7 @@ from tavern._core.stage_lines import get_stage_lines, read_relevant_lines
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def prepare_yaml(val: dict | set | list | tuple | str) -> dict | list | str:
+def prepare_yaml(val: Union[dict, set, list, tuple, str]) -> Union[dict, list, str]:
     """Sanitises the formatted string into a format safe for dumping"""
     if isinstance(val, dict):
         prepared = {}
@@ -38,7 +39,7 @@ def prepare_yaml(val: dict | set | list | tuple | str) -> dict | list | str:
             prepared[key] = prepare_yaml(val[key])
 
         return prepared
-    elif isinstance(val, (list, tuple, set)):
+    elif isinstance(val, list | tuple | set):
         return [prepare_yaml(item) for item in val]
     elif isinstance(val, FormattedString):
         return str(val)

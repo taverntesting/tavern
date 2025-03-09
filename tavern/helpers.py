@@ -159,9 +159,7 @@ def validate_regex(
         content = recurse_access_key(decoded, in_jmespath)
         if not isinstance(content, str):
             raise exceptions.RegexAccessError(
-                "Successfully accessed {} from response, but it was a {} and not a string".format(
-                    in_jmespath, type(content)
-                )
+                f"Successfully accessed {in_jmespath} from response, but it was a {type(content)} and not a string"
             )
 
     logger.debug("Matching %s with %s", content, expression)

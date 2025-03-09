@@ -9,13 +9,13 @@ classifiers = [
     "Intended Audience :: Developers",
     "Framework :: Pytest",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Utilities",
     "Topic :: Software Development :: Testing",
     "License :: OSI Approved :: MIT License",
 ]
-requires-python = ">=3.11"
 
 keywords = ["testing", "pytest"]
 
@@ -32,8 +32,11 @@ dependencies = [
     "pytest>=7.4,<8",
     "python-box>=6,<7",
     "requests>=2.22.0,<3",
+    "simpleeval>=1.0.3",
     "stevedore>=4,<5",
 ]
+
+requires-python = ">=3.11"
 
 [[project.authors]]
 name = "Michael Boulton"
@@ -75,11 +78,14 @@ dev = [
     "pytest-xdist",
     "py",
     "tox>=4,<5",
-    "ruff>=0.3.4",
+    "ruff~=0.9.10",
     "uv",
     "types-PyYAML",
     "types-protobuf>=4,<5",
     "types-requests",
+    "types-jsonschema",
+    "types-paho-mqtt",
+    "types-jmespath",
     "sphinx>=7,<8",
     "sphinx_rtd_theme",
     "recommonmark",
@@ -87,10 +93,11 @@ dev = [
     "docutils",
     "pygments",
     "sphinx-markdown-tables",
-#    "grpcio-tools",
     "grpc-interceptor",
-    # This has to be installed separately, otherwise you can't upload to pypi
-    # "tbump@https://github.com/michaelboulton/tbump/archive/714ba8957a3c84b625608ceca39811ebe56229dc.zip",
+    # for pytest
+    "exceptiongroup",
+    "tomli",
+    "tbump>=6.10.0"
 ]
 
 mqtt = [
@@ -163,13 +170,13 @@ norecursedirs = [
 [tool.ruff]
 target-version = "py311"
 extend-exclude = [
-    "tests/unit/tavern_grpc/test_services_pb2.py",
-    "tests/unit/tavern_grpc/test_services_pb2.pyi",
-    "tests/unit/tavern_grpc/test_services_pb2_grpc.py",
+    "tests/unit/tavern_grpc/test_services_pb2*",
+    "example/grpc/helloworld_v1_precompiled_pb2*"
 ]
 
 [tool.ruff.lint]
 ignore = [
+    "UP045", "UP007", # Optional/Union
     "E501", # line length
     "RUF005", # union types only valid from 3.10+
     "B905", # zip(..., strict=True) only valid from 3.10+
@@ -177,10 +184,10 @@ ignore = [
     "PLR2004", # 'magic numbers'
     "PLW2901", # Loop variable overridden
 ]
-select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL"]
-# Look at: UP
+select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL", "U"]
 
 [tool.ruff.lint.per-file-ignores]
+"example/*" = ["S", "RUF", "T", "E", "PLW", "B"]
 "tests/*" = ["S", "RUF"]
 "tests/unit/tavern_grpc/test_grpc.py" = ["E402"]
 

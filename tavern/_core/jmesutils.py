@@ -1,9 +1,7 @@
 import operator
 import re
 from collections.abc import Sized
-from typing import (
-    Any,
-)
+from typing import Any
 
 from tavern._core import exceptions
 
@@ -67,9 +65,7 @@ def safe_length(var: Sized) -> int:
 def validate_comparison(each_comparison: dict[Any, Any]):
     if extra := set(each_comparison.keys()) - {"jmespath", "operator", "expected"}:
         raise exceptions.BadSchemaError(
-            "Invalid keys given to JMES validation function (got extra keys: {})".format(
-                extra
-            )
+            f"Invalid keys given to JMES validation function (got extra keys: {extra})"
         )
 
     jmespath, _operator, expected = (

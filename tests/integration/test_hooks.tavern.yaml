@@ -1,0 +1,34 @@
+---
+test_name: Test hook adding data
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: do something
+    request:
+      method: POST
+      url: "{host}/echo"
+      json: "PLEASE ADD DATA HERE"
+    response:
+      status_code: 200
+      json:
+        value: 123
+
+---
+test_name: Test hook causing a failure
+
+_xfail:
+  run: I was asked to fail this test
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: do something
+    request:
+      method: POST
+      url: "{host}/echo"
+      json: "PLEASE FAIL THIS TEST"
+    response:
+      status_code: 500

@@ -1,4 +1,10 @@
+import logging
+from collections.abc import Iterable
+
 import pytest
+from box import Box
+
+from tavern._core import exceptions
 
 
 @pytest.fixture
@@ -31,3 +37,16 @@ def fixture_echo_url():
 @pytest.fixture(scope="session", autouse=True, name="autouse_thing_named")
 def second(autouse_thing):
     return autouse_thing
+
+
+def pytest_tavern_beta_before_every_request(request_args: Box):
+    logging.info("Making request: %s", request_args)
+
+    if not isinstance(request_args.get("json"), Iterable):
+        return
+
+    if "PLEASE ADD DATA HERE" in request_args["json"]:
+        request_args["json"] = {"value": 123}
+
+    if "PLEASE FAIL THIS TEST" in request_args["json"]:
+        raise exceptions.TestFailError("I was asked to fail this test")

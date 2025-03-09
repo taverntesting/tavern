@@ -1,5 +1,6 @@
 import logging
 import os
+from typing import Union
 
 from tavern._core.loader import load_single_document_yaml
 
@@ -8,7 +9,7 @@ from .dict_util import deep_dict_merge
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def load_global_config(global_cfg_paths: list[str | os.PathLike]) -> dict:
+def load_global_config(global_cfg_paths: list[Union[str, os.PathLike]]) -> dict:
     """Given a list of file paths to global config files, load each of them and
     return the joined dictionary.
 

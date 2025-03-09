@@ -141,3 +141,123 @@ stages:
       method: GET
     response:
       status_code: 999
+
+---
+test_name: Test simpleeval integer comparison
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Do not skip on integer equality
+    skip: "{v_int} == 456"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+  - name: Skip on integer inequality
+    skip: "{v_int} == 123"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 234
+
+---
+test_name: Test simpleeval float comparison
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Do not skip on float comparison
+    skip: "{v_float} <= 100.5"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+  - name: Skip on float comparison
+    skip: "{v_float} >= 100.5"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+
+---
+test_name: Test simpleeval string operations
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Skip on string contains
+    skip: "'http' in '{host}'"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 234
+
+  - name: Skip on string length
+    skip: "len('{host}') > 10"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 234
+
+---
+test_name: Test simpleeval boolean operations
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Skip on boolean true
+    skip: "{v_bool}"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+  - name: Skip on boolean false
+    skip: "not {v_bool}"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+
+---
+test_name: Test simpleeval complex expressions
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Do not skip on compound expression
+    skip: "({v_int} > 50) and ({v_float} > 50.0)"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+
+  - name: Skip on compound expression
+    skip: "({v_int} > 50) or ({v_float} > 50.0)"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 234
+
+  - name: Skip on parentheticals
+    skip: "({v_int} + {v_int}) == 200"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
