@@ -5,6 +5,7 @@
 #     doubly:
 #       inner: value
 # an_integer: 123
+# a_float: 1.23
 # a_string: abc
 # a_bool: true
 
@@ -91,6 +92,7 @@ stages:
             doubly:
               inner: value
         an_integer: 123
+        a_float: 1.23
         a_string: abc
         # missing
         # a_bool: true
@@ -119,6 +121,7 @@ stages:
         #     doubly:
         #       inner: value
         an_integer: 123
+        a_float: 1.23
         a_string: abc
         a_bool: true
 
@@ -145,6 +148,7 @@ stages:
         #     doubly:
         #       inner: value
         an_integer: 123
+        a_float: 1.23
         a_string: abc
         a_bool: true
 
@@ -172,6 +176,7 @@ stages:
             doubly:
               inner: value
         an_integer: 123
+        a_float: 1.23
         a_string: abc
         # missing
         # a_bool: true
@@ -198,6 +203,7 @@ stages:
             doubly:
               inner: value
         an_integer: 123
+        a_float: 1.23
         a_string: abc
         a_bool: true
 
@@ -223,6 +229,7 @@ stages:
             doubly:
               inner: value
         an_integer: 123
+        a_float: 1.23
         a_string: abc
         a_bool: true
 
@@ -248,6 +255,7 @@ stages:
             doubly:
               inner: value
         an_integer: 123
+        a_float: 1.23
         a_string: abc
         # a_bool: true
 
@@ -265,6 +273,7 @@ stages:
             doubly:
               inner: value
         an_integer: 123
+        a_float: 1.23
         a_string: abc
         a_bool: true
 
@@ -280,6 +289,7 @@ stages:
             doubly:
               inner: value
         # an_integer: 123
+        a_float: 1.23
         a_string: abc
         a_bool: true
 

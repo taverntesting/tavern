@@ -1,5 +1,9 @@
 # Changelog
 
+# UNRELEASED
+
+- Add !anynumber type sentinel for matching both integers and floats in responses
+
 ##  0.1.2           Allow sending/validation of JSON lists (2017-11-21)
 
 ##  0.1.3           Fix global configuration loading via pytest command line (2017-12-05)

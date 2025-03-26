@@ -23,6 +23,7 @@ from tavern._core.loader import (
     IncludeLoader,
     IntSentinel,
     ListSentinel,
+    NumberSentinel,
     StrSentinel,
     construct_include,
     load_single_document_yaml,
@@ -205,6 +206,8 @@ class TestMatchRecursive:
             (DictSentinel(), {2: 2}),
             (FloatSentinel(), 4.5),
             (StrSentinel(), "dood"),
+            (NumberSentinel(), 2),
+            (NumberSentinel(), 2.5),
         ],
     )
     def test_type_token_matches(self, token, response):
@@ -219,6 +222,10 @@ class TestMatchRecursive:
             (DictSentinel(), [4, 5, 6]),
             (FloatSentinel(), "4"),
             (StrSentinel(), {"a": 2}),
+            (NumberSentinel(), "2"),
+            (NumberSentinel(), [1]),
+            (NumberSentinel(), {"val": 1}),
+            (NumberSentinel(), True),
         ],
     )
     def test_type_token_no_match_errors(self, token, response):

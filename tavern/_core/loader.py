@@ -198,6 +198,11 @@ class TypeSentinel(yaml.YAMLObject):
         return node
 
 
+class NumberSentinel(TypeSentinel):
+    yaml_tag = "!anynumber"
+    constructor = (int, float)  # Tuple of allowed types
+
+
 class IntSentinel(TypeSentinel):
     yaml_tag = "!anyint"
     constructor = int
