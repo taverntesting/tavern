@@ -1490,6 +1490,7 @@ but will be removed in a future release, and should raise a warning.
 If you want to make sure that the key returned is of a specific type, you can
 use one of the following markers instead:
 
+- `!anynumber`: Matches any number (integer or float)
 - `!anyint`: Matches any integer
 - `!anyfloat`: Matches any float (note that this will NOT match integers!)
 - `!anystr`: Matches any string
