@@ -164,7 +164,7 @@ class RestResponse(BaseResponse):
         self._validate_block("json", body)
         self._validate_block("headers", response.headers)
         self._validate_block("redirect_query_params", redirect_query_params)
-        self._validate_block("text", response.text)
+        self._validate_text(response.text)
 
         attach_yaml(
             {
@@ -209,6 +209,24 @@ class RestResponse(BaseResponse):
             )
 
         return saved
+
+    def _validate_text(self, text: str) -> None:
+        """Validate the raw text response
+        
+        Args:
+            text: The raw text response to validate
+        """
+        try:
+            expected_text = self.expected["text"]
+        except KeyError:
+            return
+
+        logger.debug("Validating response text against %s", expected_text)
+        logger.debug("Response text: %s", text)
+
+        test_strictness = self.test_block_config.strict
+        block_strictness = test_strictness.option_for("text")
+        self.recurse_check_key_match(expected_text, text, "text", block_strictness)
 
     def _validate_block(self, blockname: str, block: Mapping) -> None:
         """Validate a block of the response

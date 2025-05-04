@@ -59,19 +59,19 @@ class TestTextValidate:
     def test_simple_validate_text(self, text_response, includes):
         """Make sure a simple text comparison works"""
         r = RestResponse(Mock(), "Test 1", text_response, includes)
-        r._validate_block("text", text_response["text"])
+        r._validate_text(text_response["text"])
         assert not r.errors
 
     def test_validate_text_mismatch(self, text_response, includes):
         """Text that doesn't match should error"""
         r = RestResponse(Mock(), "Test 1", text_response, includes)
-        r._validate_block("text", "Different text")
+        r._validate_text("Different text")
         assert r.errors
 
     def test_validate_missing_text_block(self, text_response, includes):
         """Missing text block should error if expected"""
         r = RestResponse(Mock(), "Test 1", text_response, includes)
-        r._validate_block("text", None)
+        r._validate_text(None)
         assert r.errors
 
     def test_validate_text_with_json(self, example_response, includes):
