@@ -2,6 +2,34 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+
+class FakeResponse:
+    def __init__(self, headers, content, json_data, status_code):
+        self._headers = headers
+        self._content = content
+        self._json_data = json_data
+        self._status_code = status_code
+
+    @property
+    def headers(self):
+        return self._headers
+
+    @property
+    def content(self):
+        return self._content
+
+    @property
+    def text(self):
+        return self._content.decode("utf-8")
+
+    def json(self):
+        return self._json_data
+
+    @property
+    def status_code(self):
+        return self._status_code
+
+
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
 from tavern._core.loader import ANYTHING
@@ -377,16 +405,14 @@ class TestFull:
         example_response["save"] = {"json": {"test_code": "code"}}
         r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        class FakeResponse:
-            headers = example_response["headers"]
-            content = b"test"
+        response = FakeResponse(
+            headers=example_response["headers"],
+            content=b"test",
+            json_data=example_response["json"],
+            status_code=example_response["status_code"],
+        )
 
-            def json(self):
-                return example_response["json"]
-
-            status_code = example_response["status_code"]
-
-        saved = r.verify(FakeResponse())
+        saved = r.verify(response)
 
         assert saved == {"test_code": example_response["json"]["code"]}
 
@@ -394,17 +420,15 @@ class TestFull:
         """Test full verification + return saved values"""
         r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        class FakeResponse:
-            headers = example_response["headers"]
-            content = b"test"
-
-            def json(self):
-                return example_response["json"]
-
-            status_code = 400
+        response = FakeResponse(
+            headers=example_response["headers"],
+            content=b"test",
+            json_data=example_response["json"],
+            status_code=400,
+        )
 
         with pytest.raises(exceptions.TestFailError):
-            r.verify(FakeResponse())
+            r.verify(response)
 
         assert r.errors
 
@@ -416,16 +440,14 @@ class TestFull:
             includes,
         )
 
-        class FakeResponse:
-            headers = nested_response["headers"]
-            content = b"test"
+        response = FakeResponse(
+            headers=nested_response["headers"],
+            content=b"test",
+            json_data=nested_response["json"],
+            status_code=nested_response["status_code"],
+        )
 
-            def json(self):
-                return nested_response["json"]
-
-            status_code = nested_response["status_code"]
-
-        r.verify(FakeResponse())
+        r.verify(response)
 
     @pytest.mark.parametrize("value", [1, "some", False, None])
     def test_validate_single_value_response(self, example_response, includes, value):
@@ -434,16 +456,14 @@ class TestFull:
 
         r = RestResponse(Mock(), "Test 1", example_response, includes)
 
-        class FakeResponse:
-            headers = example_response["headers"]
-            content = b"test"
+        response = FakeResponse(
+            headers=example_response["headers"],
+            content=b"test",
+            json_data=value,
+            status_code=example_response["status_code"],
+        )
 
-            def json(self):
-                return value
-
-            status_code = example_response["status_code"]
-
-        r.verify(FakeResponse())
+        r.verify(response)
 
 
 def test_status_code_warns(example_response, includes):
