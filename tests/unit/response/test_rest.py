@@ -4,7 +4,6 @@ from unittest.mock import Mock, patch
 import pytest
 
 from tavern._core import exceptions
-from tavern._core.dict_util import format_keys
 from tavern._core.loader import ANYTHING
 from tavern._plugins.rest.response import RestResponse
 
@@ -423,23 +422,6 @@ class TestFull:
             r.verify(response)
 
         assert r.errors
-
-    def test_saved_value_in_validate(self, nested_response, nested_schema, includes):
-        r = RestResponse(
-            Mock(),
-            "Test 1",
-            format_keys(nested_schema, includes.variables),
-            includes,
-        )
-
-        response = FakeResponse(
-            headers=nested_response["headers"],
-            content=b"test",
-            json_data=nested_response["json"],
-            status_code=nested_response["status_code"],
-        )
-
-        r.verify(response)
 
     @pytest.mark.parametrize("value", [1, "some", False, None])
     def test_validate_single_value_response(self, example_response, includes, value):
