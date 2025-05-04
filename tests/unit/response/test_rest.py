@@ -439,6 +439,39 @@ class TestFull:
 
         r.verify(response)
 
+    def test_text_validation_and_saving(self, text_response, includes):
+        """End-to-end test for text field validation and saving"""
+        text_response["save"] = {"text": "saved_text"}
+        r = RestResponse(Mock(), "Text Test", text_response, includes)
+
+        response = FakeResponse(
+            headers={},
+            content=text_response["text"].encode("utf-8"),
+            json_data={},
+            status_code=text_response["status_code"],
+        )
+
+        saved = r.verify(response)
+
+        assert not r.errors
+        assert saved == {"saved_text": text_response["text"]}
+
+    def test_text_validation_failure(self, text_response, includes):
+        """Test text validation failure scenario"""
+        r = RestResponse(Mock(), "Text Test", text_response, includes)
+
+        response = FakeResponse(
+            headers={},
+            content="Different text content".encode("utf-8"),
+            json_data={},
+            status_code=text_response["status_code"],
+        )
+
+        with pytest.raises(exceptions.TestFailError):
+            r.verify(response)
+
+        assert any("Text mismatch" in str(e) for e in r.errors)
+
 
 def test_status_code_warns(example_response, includes):
     """Should continue if the status code is nonexistent"""
