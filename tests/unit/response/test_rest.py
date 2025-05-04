@@ -376,9 +376,9 @@ class FakeResponse:
     """Mocked REST response object for testing verification and saving logic mocking requests.Response"""
 
     headers: dict
-    content: bytes
     json_data: dict
     status_code: int
+    content: bytes = b""
 
     @property
     def text(self) -> str:
@@ -398,7 +398,6 @@ class TestFull:
 
         response = FakeResponse(
             headers=example_response["headers"],
-            content=b"test",
             json_data=example_response["json"],
             status_code=example_response["status_code"],
         )
@@ -413,7 +412,6 @@ class TestFull:
 
         response = FakeResponse(
             headers=example_response["headers"],
-            content=b"test",
             json_data=example_response["json"],
             status_code=400,
         )
@@ -432,7 +430,6 @@ class TestFull:
 
         response = FakeResponse(
             headers=example_response["headers"],
-            content=b"test",
             json_data=value,
             status_code=example_response["status_code"],
         )
