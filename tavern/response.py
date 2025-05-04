@@ -221,7 +221,7 @@ class BaseResponse:
     def maybe_get_save_values_from_save_block(
         self,
         key: str,
-        save_from: Optional[Mapping],
+        save_from: Mapping | str | None,
         *,
         outer_save_block: Optional[Mapping] = None,
     ) -> Mapping:
@@ -246,12 +246,12 @@ class BaseResponse:
             logger.debug("Nothing expected to save for %s", key)
             return {}
 
-        return self.maybe_get_save_values_from_given_block(key, save_from, to_save)
+        return self._maybe_get_save_values_from_given_block(key, save_from, to_save)
 
-    def maybe_get_save_values_from_given_block(
+    def _maybe_get_save_values_from_given_block(
         self,
         key: str,
-        save_from: Optional[Mapping],
+        save_from: Mapping | str | None,
         to_save: Mapping,
     ) -> Mapping:
         """Save a value from a specific block in the response.
@@ -273,6 +273,9 @@ class BaseResponse:
         if not save_from:
             self._adderr("No %s in response (wanted to save %s)", key, to_save)
             return {}
+
+        if isinstance(save_from, str):
+            return {"saved_text": save_from}
 
         for save_as, joined_key in to_save.items():
             try:

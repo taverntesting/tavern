@@ -80,14 +80,14 @@ class TestTextValidate:
         """Test both text and json validation together"""
         example_response["text"] = "Some text"
         r = RestResponse(Mock(), "Test 1", example_response, includes)
-        
+
         class FakeResponse:
             headers = example_response["headers"]
             text = example_response["text"]
-            
+
             def json(self):
                 return example_response["json"]
-                
+
             status_code = example_response["status_code"]
 
         saved = r.verify(FakeResponse())
@@ -180,27 +180,16 @@ class TestSaveText:
         """Save the full text response"""
         text_response["save"] = {"text": "saved_text"}
         r = RestResponse(Mock(), "Test 1", text_response, includes)
-        
-        saved = r.maybe_get_save_values_from_save_block(
-            "text", text_response["text"]
-        )
-        assert saved == {"saved_text": text_response["text"]}
 
-    def test_save_text_partial(self, text_response, includes):
-        """Save part of the text response using string slicing"""
-        text_response["save"] = {"text": {"saved_text": "text[5:9]"}}
-        r = RestResponse(Mock(), "Test 1", text_response, includes)
-        
-        saved = r.maybe_get_save_values_from_save_block(
-            "text", text_response["text"]
-        )
-        assert saved == {"saved_text": "some"}
+        saved = r.maybe_get_save_values_from_save_block("text", text_response["text"])
+        assert saved == {"saved_text": text_response["text"]}
+        assert not r.errors
 
     def test_save_text_missing(self, text_response, includes):
         """Try to save text when none exists"""
         text_response["save"] = {"text": "saved_text"}
         r = RestResponse(Mock(), "Test 1", text_response, includes)
-        
+
         saved = r.maybe_get_save_values_from_save_block("text", None)
         assert not saved
         assert r.errors

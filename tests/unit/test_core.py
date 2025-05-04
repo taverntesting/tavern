@@ -47,6 +47,7 @@ def fix_mock_response_args(fulltest):
         "status_code": response["status_code"],
         "json": lambda: content,
         "headers": response["headers"],
+        "text": json.dumps(content),
     }
 
     return args

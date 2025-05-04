@@ -192,9 +192,7 @@ class RestResponse(BaseResponse):
             )
         )
 
-        saved.update(
-            self.maybe_get_save_values_from_save_block("text", response.text)
-        )
+        saved.update(self.maybe_get_save_values_from_save_block("text", response.text))
         saved.update(self.maybe_get_save_values_from_ext(response, self.expected))
 
         # Check cookies
@@ -212,7 +210,7 @@ class RestResponse(BaseResponse):
 
     def _validate_text(self, text: str) -> None:
         """Validate the raw text response
-        
+
         Args:
             text: The raw text response to validate
         """
