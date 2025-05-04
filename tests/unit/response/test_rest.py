@@ -374,7 +374,7 @@ class TestNestedValidate:
 
 @dataclass
 class FakeResponse:
-    """Mocked REST response object for testing verification and saving logic"""
+    """Mocked REST response object for testing verification and saving logic mocking requests.Response"""
 
     headers: dict
     content: bytes
