@@ -9,21 +9,6 @@ from tavern._core.loader import ANYTHING
 from tavern._plugins.rest.response import RestResponse
 
 
-@dataclass
-class FakeResponse:
-    headers: dict
-    content: bytes
-    json_data: dict
-    status_code: int
-
-    @property
-    def text(self) -> str:
-        return self.content.decode("utf-8")
-
-    def json(self):
-        return self.json_data
-
-
 @pytest.fixture(name="example_response")
 def fix_example_response():
     spec = {
@@ -385,6 +370,21 @@ class TestNestedValidate:
         r._validate_block("json", expected)
 
         assert not r.errors
+
+
+@dataclass
+class FakeResponse:
+    headers: dict
+    content: bytes
+    json_data: dict
+    status_code: int
+
+    @property
+    def text(self) -> str:
+        return self.content.decode("utf-8")
+
+    def json(self):
+        return self.json_data
 
 
 class TestFull:
