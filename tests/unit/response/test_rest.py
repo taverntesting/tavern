@@ -459,7 +459,7 @@ class TestFull:
 
         response = FakeResponse(
             headers={},
-            content="Different text content".encode("utf-8"),
+            content=b"Different text content",
             json_data={},
             status_code=text_response["status_code"],
         )
