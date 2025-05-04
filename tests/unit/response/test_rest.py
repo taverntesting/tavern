@@ -374,6 +374,8 @@ class TestNestedValidate:
 
 @dataclass
 class FakeResponse:
+    """Mocked REST response object for testing verification and saving logic"""
+
     headers: dict
     content: bytes
     json_data: dict
@@ -388,6 +390,7 @@ class FakeResponse:
 
 
 class TestFull:
+    """End-to-end tests for REST response verification and value saving"""
     def test_validate_and_save(self, example_response, includes):
         """Test full verification + return saved values"""
         example_response["save"] = {"json": {"test_code": "code"}}
