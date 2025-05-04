@@ -70,9 +70,8 @@ class TestTextValidate:
 
     def test_validate_missing_text_block(self, text_response, includes):
         """Missing text block should error if expected"""
-        del text_response["text"]
         r = RestResponse(Mock(), "Test 1", text_response, includes)
-        r._validate_block("text", "Expected text")
+        r._validate_block("text", None)
         assert r.errors
 
     def test_validate_text_with_json(self, example_response, includes):
@@ -91,6 +90,7 @@ class TestTextValidate:
 
         saved = r.verify(FakeResponse())
         assert not r.errors
+        assert not saved
 
 
 class TestSave:
