@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from unittest.mock import Mock, patch
 
 import pytest
@@ -8,31 +9,19 @@ from tavern._core.loader import ANYTHING
 from tavern._plugins.rest.response import RestResponse
 
 
+@dataclass
 class FakeResponse:
-    def __init__(self, headers, content, json_data, status_code):
-        self._headers = headers
-        self._content = content
-        self._json_data = json_data
-        self._status_code = status_code
+    headers: dict
+    content: bytes
+    json_data: dict
+    status_code: int
 
     @property
-    def headers(self):
-        return self._headers
-
-    @property
-    def content(self):
-        return self._content
-
-    @property
-    def text(self):
-        return self._content.decode("utf-8")
+    def text(self) -> str:
+        return self.content.decode("utf-8")
 
     def json(self):
-        return self._json_data
-
-    @property
-    def status_code(self):
-        return self._status_code
+        return self.json_data
 
 
 @pytest.fixture(name="example_response")
