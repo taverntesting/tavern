@@ -152,7 +152,8 @@ class RestResponse(BaseResponse):
         # Get things to use from the response
         try:
             body = response.json()
-        except ValueError:
+        except ValueError as e:
+            logger.debug("Could not get json from response: %s", e)
             body = None
 
         redirect_query_params = self._get_redirect_query_params(response)
