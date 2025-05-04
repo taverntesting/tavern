@@ -161,9 +161,15 @@ response:
 This will save `{"nested": [1, 2, 3, 4]}` into the `nested_thing` variable. See the documentation for
 the `force_format_include` tag for how this can be used.
 
-**NOTE**: The behaviour of these queries used to be different and indexing into
-an array was done like `thing.nested.0`. This will be deprecated in the
-1.0 release.
+`text` responses can be saved, but only one top level key is allowed. For example:
+
+```yaml
+response:
+  save:
+    text: saved_text
+```
+
+This will save the entire raw text response as the variable `saved_text`. 
 
 It is also possible to save data using function calls, [explained below](#saving-data-from-a-response).
 

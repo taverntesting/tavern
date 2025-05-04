@@ -275,6 +275,7 @@ class BaseResponse:
             return {}
 
         if isinstance(save_from, str):
+            # TODO: In future it might be useful to allow slicing, etc.
             return {"saved_text": save_from}
 
         for save_as, joined_key in to_save.items():
