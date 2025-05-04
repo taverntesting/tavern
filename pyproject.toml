@@ -118,7 +118,7 @@ paho-mqtt = "tavern._plugins.mqtt.tavernhook"
 grpc = "tavern._plugins.grpc.tavernhook"
 
 [tool.mypy]
-python_version = 3.10
+python_version = "3.10"
 
 # See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
 explicit_package_bases = true
