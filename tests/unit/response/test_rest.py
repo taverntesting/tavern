@@ -2,6 +2,11 @@ from unittest.mock import Mock, patch
 
 import pytest
 
+from tavern._core import exceptions
+from tavern._core.dict_util import format_keys
+from tavern._core.loader import ANYTHING
+from tavern._plugins.rest.response import RestResponse
+
 
 class FakeResponse:
     def __init__(self, headers, content, json_data, status_code):
@@ -28,12 +33,6 @@ class FakeResponse:
     @property
     def status_code(self):
         return self._status_code
-
-
-from tavern._core import exceptions
-from tavern._core.dict_util import format_keys
-from tavern._core.loader import ANYTHING
-from tavern._plugins.rest.response import RestResponse
 
 
 @pytest.fixture(name="example_response")
