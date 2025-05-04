@@ -164,12 +164,14 @@ class RestResponse(BaseResponse):
         self._validate_block("json", body)
         self._validate_block("headers", response.headers)
         self._validate_block("redirect_query_params", redirect_query_params)
+        self._validate_block("text", response.text)
 
         attach_yaml(
             {
                 "status_code": response.status_code,
                 "headers": dict(response.headers),
                 "body": body,
+                "text": response.text,
                 "redirect_query_params": redirect_query_params,
             },
             name="rest_response",
@@ -190,6 +192,9 @@ class RestResponse(BaseResponse):
             )
         )
 
+        saved.update(
+            self.maybe_get_save_values_from_save_block("text", response.text)
+        )
         saved.update(self.maybe_get_save_values_from_ext(response, self.expected))
 
         # Check cookies
@@ -230,6 +235,8 @@ class RestResponse(BaseResponse):
             expected_block = {i.lower(): j for i, j in expected_block.items()}
 
         logger.debug("Validating response %s against %s", blockname, expected_block)
+        if blockname == "text":
+            logger.debug("Response text: %s", block)
 
         test_strictness = self.test_block_config.strict
         block_strictness = test_strictness.option_for(blockname)
