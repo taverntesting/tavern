@@ -67,12 +67,14 @@ class TestTextValidate:
         r = RestResponse(Mock(), "Test 1", text_response, includes)
         r._validate_text("Different text")
         assert r.errors
+        assert "Text mismatch" in str(r.errors[0])
 
     def test_validate_missing_text_block(self, text_response, includes):
         """Missing text block should error if expected"""
         r = RestResponse(Mock(), "Test 1", text_response, includes)
         r._validate_text(None)
         assert r.errors
+        assert "Text mismatch" in str(r.errors[0])
 
     def test_validate_text_with_json(self, example_response, includes):
         """Test both text and json validation together"""

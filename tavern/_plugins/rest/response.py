@@ -224,9 +224,8 @@ class RestResponse(BaseResponse):
         logger.debug("Validating response text against %s", expected_text)
         logger.debug("Response text: %s", text)
 
-        test_strictness = self.test_block_config.strict
-        block_strictness = test_strictness.option_for("text")
-        self.recurse_check_key_match(expected_text, text, "text", block_strictness)
+        if text != expected_text:
+            self._adderr("Text mismatch - expected '%s', got '%s'", expected_text, text)
 
     def _validate_block(self, blockname: str, block: Mapping) -> None:
         """Validate a block of the response
