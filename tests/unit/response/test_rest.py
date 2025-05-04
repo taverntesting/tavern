@@ -46,6 +46,53 @@ def fix_nested_schema():
     return spec.copy()
 
 
+@pytest.fixture(name="text_response")
+def fix_text_response():
+    spec = {
+        "status_code": 200,
+        "text": "This is some response text",
+    }
+    return spec.copy()
+
+
+class TestTextValidate:
+    def test_simple_validate_text(self, text_response, includes):
+        """Make sure a simple text comparison works"""
+        r = RestResponse(Mock(), "Test 1", text_response, includes)
+        r._validate_block("text", text_response["text"])
+        assert not r.errors
+
+    def test_validate_text_mismatch(self, text_response, includes):
+        """Text that doesn't match should error"""
+        r = RestResponse(Mock(), "Test 1", text_response, includes)
+        r._validate_block("text", "Different text")
+        assert r.errors
+
+    def test_validate_missing_text_block(self, text_response, includes):
+        """Missing text block should error if expected"""
+        del text_response["text"]
+        r = RestResponse(Mock(), "Test 1", text_response, includes)
+        r._validate_block("text", "Expected text")
+        assert r.errors
+
+    def test_validate_text_with_json(self, example_response, includes):
+        """Test both text and json validation together"""
+        example_response["text"] = "Some text"
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+        
+        class FakeResponse:
+            headers = example_response["headers"]
+            text = example_response["text"]
+            
+            def json(self):
+                return example_response["json"]
+                
+            status_code = example_response["status_code"]
+
+        saved = r.verify(FakeResponse())
+        assert not r.errors
+
+
 class TestSave:
     def test_save_body(self, example_response, includes):
         """Save a key from the body into the right name"""
@@ -123,6 +170,37 @@ class TestSave:
 
         assert not saved
 
+        assert r.errors
+
+
+class TestSaveText:
+    def test_save_text(self, text_response, includes):
+        """Save the full text response"""
+        text_response["save"] = {"text": "saved_text"}
+        r = RestResponse(Mock(), "Test 1", text_response, includes)
+        
+        saved = r.maybe_get_save_values_from_save_block(
+            "text", text_response["text"]
+        )
+        assert saved == {"saved_text": text_response["text"]}
+
+    def test_save_text_partial(self, text_response, includes):
+        """Save part of the text response using string slicing"""
+        text_response["save"] = {"text": {"saved_text": "text[5:9]"}}
+        r = RestResponse(Mock(), "Test 1", text_response, includes)
+        
+        saved = r.maybe_get_save_values_from_save_block(
+            "text", text_response["text"]
+        )
+        assert saved == {"saved_text": "some"}
+
+    def test_save_text_missing(self, text_response, includes):
+        """Try to save text when none exists"""
+        text_response["save"] = {"text": "saved_text"}
+        r = RestResponse(Mock(), "Test 1", text_response, includes)
+        
+        saved = r.maybe_get_save_values_from_save_block("text", None)
+        assert not saved
         assert r.errors
 
 
