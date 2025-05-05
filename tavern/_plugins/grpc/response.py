@@ -161,6 +161,15 @@ class GRPCResponse(BaseResponse):
         )
 
         if "body" in self.expected:
+            # First verify response can be parsed back to protobuf type
+            try:
+                parsed_response = output_type()
+                json_format.ParseDict(json_result, parsed_response)
+            except json_format.ParseError as e:
+                self._adderr(f"Response body could not be parsed to {output_type.__name__}: {e}")
+                return None
+
+            # Then verify expected body format
             expected_parsed = output_type()
             try:
                 json_format.ParseDict(self.expected["body"], expected_parsed)
