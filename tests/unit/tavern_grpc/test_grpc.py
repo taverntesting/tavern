@@ -8,7 +8,6 @@ from typing import Any, Optional
 
 import grpc
 import pytest
-from _pytest.mark import MarkGenerator
 from google.protobuf import json_format
 from google.protobuf.empty_pb2 import Empty
 from grpc_reflection.v1alpha import reflection
@@ -96,9 +95,7 @@ class GRPCTestSpec:
 
 
 TESTS = [
-    GRPCTestSpec(
-        test_name="basic empty", method="Empty", req=Empty(), resp=Empty()
-    ),
+    GRPCTestSpec(test_name="basic empty", method="Empty", req=Empty(), resp=Empty()),
     GRPCTestSpec(
         test_name="nonexistent method",
         method="Wek",
@@ -173,6 +170,7 @@ TESTS = [
     ),
 ]
 
+
 @pytest.mark.parametrize(
     "test_spec",
     TESTS,
@@ -197,5 +195,3 @@ def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTest
     future = request.run()
 
     resp.verify(future)
-
-
