@@ -101,7 +101,7 @@ TESTS = [
         method="Wek",
         req=Empty(),
         resp=Empty(),
-        xfail="has no attribute 'Wek'",
+        xfail="Service tavern.tests.v1.DummyService was not registered for host",
     ),
     GRPCTestSpec(
         test_name="empty with numeric status code",
@@ -116,7 +116,7 @@ TESTS = [
         req=Empty(),
         resp=Empty(),
         code="ABORTED",
-        xfail="Expected status ABORTED but got OK",
+        xfail="expected status ['ABORTED'], but the actual response 'OK'",
     ),
     GRPCTestSpec(
         test_name="empty with the wrong request type",
@@ -124,7 +124,7 @@ TESTS = [
         req=test_services_pb2.DummyRequest(),
         resp=Empty(),
         code=0,
-        xfail="has no field named 'request_id'",
+        xfail='has no field named "request_id"',
     ),
     GRPCTestSpec(
         test_name="empty with the wrong response type",
@@ -132,7 +132,7 @@ TESTS = [
         req=Empty(),
         resp=test_services_pb2.DummyResponse(),
         code=0,
-        xfail="has no field named 'response_id'",
+        xfail='has no field named "response_id"',
     ),
     GRPCTestSpec(
         test_name="Simple service",
@@ -152,21 +152,21 @@ TESTS = [
         req=test_services_pb2.DummyRequest(request_id=10000),
         resp=test_services_pb2.DummyResponse(response_id=3),
         code="FAILED_PRECONDITION",
-        xfail="No response returned",
+        xfail="'body' was specified in response, but expected status code was not 'OK'",
     ),
     GRPCTestSpec(
         test_name="Simple service with wrong request type",
         method="SimpleTest",
         req=Empty(),
         resp=test_services_pb2.DummyResponse(response_id=3),
-        xfail="Missing required field 'request_id'",
+        xfail="Missing required field 'request_id'",  # FIXME: This fails because the grpc client doesn't theck that it can reflect into the grpc type properly
     ),
     GRPCTestSpec(
         test_name="Simple service with wrong response type",
         method="SimpleTest",
         req=test_services_pb2.DummyRequest(request_id=2),
         resp=Empty(),
-        xfail="has no field named 'response_id'",
+        xfail="has no field named 'response_id'",  # FIXME: This fails because the grpc client doesn't theck that it can reflect into the grpc type properly
     ),
 ]
 
@@ -193,7 +193,8 @@ def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTest
         with pytest.raises(Exception) as exc_info:
             future = request.run()
             resp.verify(future)
-        assert test_spec.xfail in str(exc_info.value)
+
+        assert test_spec.xfail in str(exc_info.getrepr(style="short"))
     else:
         future = request.run()
         resp.verify(future)

@@ -131,16 +131,16 @@ class GRPCResponse(BaseResponse):
         response: "WrappedFuture",
         verify_status: list[str],
     ) -> Optional[dict[str, Any]]:
+        if "body" in self.expected and verify_status != ["OK"]:
+            self._adderr(
+                "'body' was specified in response, but expected status code was not 'OK'"
+            )
+            return None
+
         if grpc_response.code().name != "OK":
             # TODO: Should allow checking grpc RPC error details etc.
             logger.info(
                 f"skipping body checking due to {grpc_response.code()} response"
-            )
-            return None
-
-        if "body" in self.expected and verify_status != ["OK"]:
-            self._adderr(
-                "'body' was specified in response, but expected status code was not 'OK'"
             )
             return None
 
