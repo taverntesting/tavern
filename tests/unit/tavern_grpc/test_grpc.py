@@ -159,14 +159,14 @@ TESTS = [
         method="SimpleTest",
         req=Empty(),
         resp=test_services_pb2.DummyResponse(response_id=3),
-        xfail="Missing required field 'request_id'",  # FIXME: This fails because the grpc client doesn't theck that it can reflect into the grpc type properly
+        xfail="Missing required field 'request_id'",  # FIXME: This fails because the grpc client can't check the request body type because its passed in as a dict
     ),
     GRPCTestSpec(
         test_name="Simple service with wrong response type",
         method="SimpleTest",
         req=test_services_pb2.DummyRequest(request_id=2),
         resp=Empty(),
-        xfail="has no field named 'response_id'",  # FIXME: This fails because the grpc client doesn't theck that it can reflect into the grpc type properly
+        xfail="has no field named 'response_id'",  # FIXME: This fails because the grpc client also nly gets the response as a dict
     ),
 ]
 
