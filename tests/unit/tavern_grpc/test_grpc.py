@@ -180,7 +180,7 @@ TESTS = [
 @pytest.mark.parametrize(
     "test_spec",
     TESTS,
-    ids=[test_spec.test_name for test_spec in TESTS],
+    ids=[getattr(test_spec, "test_name", None) for test_spec in TESTS],
 )
 def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTestSpec):
     request = GRPCRequest(
