@@ -68,7 +68,7 @@ dev = [
     "Faker",
     "allure-pytest",
     "colorlog",
-    "flask>=2.2.3",
+    "flask>=3,<4",
     "fluent-logger",
     "itsdangerous",
     "coverage[toml]",
