@@ -446,12 +446,15 @@ class YamlFile(pytest.File):
             raise exceptions.BadSchemaError from e
 
         merge_down = None
-        for i, test_spec in enumerate(all_tests):
+        # Iterate over yaml documents and tests
+        for document_idx, test_spec in enumerate(all_tests):
             if not test_spec:
                 logger.warning("Empty document in input file '%s'", self.path)
                 continue
 
-            if i == 0 and not test_spec.get("stages"):
+            if document_idx == 0 and not test_spec.get("stages"):
+                # If it's the first document and there were no tests, its implicitly the
+                # 'defaults' for the file and will be merged with all lower documents
                 if test_spec.get("name"):
                     logger.warning("initial block had no stages, but had a name")
                 merge_down = test_spec
