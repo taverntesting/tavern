@@ -697,3 +697,32 @@ class TestHooks:
         assert "http://www.google.com" in request_args["url"]
 
         assert request_args["headers"] == {"foo": "myzclqkptpk"}
+
+
+@pytest.mark.parametrize(
+    "marks,expected",
+    [
+        (["skip"], ([pytest.mark.skip], [])),
+        (["xfail"], ([pytest.mark.xfail], [])),
+        (["slow"], ([pytest.mark.slow], [])),
+        (["skip", "xfail"], ([pytest.mark.skip, pytest.mark.xfail], [])),
+        (["xdist_group('group1')"], ([pytest.mark.xdist_group("group1")], [])),
+        (
+            ["skip", "xfail", 'xdist_group("group1")'],
+            (
+                [
+                    pytest.mark.skip,
+                    pytest.mark.xfail,
+                    pytest.mark.xdist_group("group1"),
+                ],
+                [],
+            ),
+        ),
+    ],
+)
+def test_format_test_marks(marks, expected):
+    from tavern._core.pytest.file import _format_test_marks
+
+    # Dummy values for fmt_vars and test_name, as required by the function signature
+    result = _format_test_marks(marks, fmt_vars={}, test_name="dummy")
+    assert result == expected
