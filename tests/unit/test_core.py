@@ -708,6 +708,21 @@ class TestHooks:
         (["skip", "xfail"], ([pytest.mark.skip, pytest.mark.xfail], [])),
         (["xdist_group('group1')"], ([pytest.mark.xdist_group("group1")], [])),
         (
+            ["xdist_group('group1', 'group2')"],
+            ([pytest.mark.xdist_group("group1", "group2")], []),
+        ),
+        (
+            ["xdist_group(('group1', 'group2'),)"],
+            (
+                [
+                    pytest.mark.xdist_group(
+                        ("group1", "group2"),
+                    )
+                ],
+                [],
+            ),
+        ),
+        (
             ["skip", "xfail", 'xdist_group("group1")'],
             (
                 [
@@ -726,3 +741,20 @@ def test_format_test_marks(marks, expected):
     # Dummy values for fmt_vars and test_name, as required by the function signature
     result = _format_test_marks(marks, fmt_vars={}, test_name="dummy")
     assert result == expected
+
+
+@pytest.mark.parametrize(
+    "invalid_marks",
+    [
+        ["invalid(mark)"],  # nonexistent mark name
+        ["slow()"],  # slow mark shouldn't have args
+        ["xdist_group('unclosed)"],  # Invalid string literal
+        ["xdist_group(missing_quote)"],  # Invalid arg format
+    ],
+)
+def test_failing_format_marks(invalid_marks):
+    from tavern._core import exceptions
+    from tavern._core.pytest.file import _format_test_marks
+
+    with pytest.raises(exceptions.BadSchemaError):
+        _format_test_marks(invalid_marks, fmt_vars={}, test_name="dummy")

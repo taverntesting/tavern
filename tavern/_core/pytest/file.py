@@ -71,14 +71,23 @@ def _format_test_marks(
             # a normal mark
             if re.match(r"^\w+\(.*\)$", m.strip()):
                 try:
-                    # This is a mark with arguments
-                    mark_call = ast.parse(f"pytest.mark.{m}", mode="eval").body
-                    pytest_marks.append(
-                        eval(compile(ast.Expression(mark_call), "<string>", "eval"))
-                    )
-                except Exception:
-                    msg = f"Tried to use mark '{m}' in but it could not be parsed. This is likely due to a syntax error in the mark."
+                    # Safely parse mark with arguments
+                    mark_name = m.split("(")[0]
+                    args_str = m[len(mark_name) + 1 : -1]
+
+                    args = ast.literal_eval(args_str)
+                    mark = getattr(pytest.mark, mark_name)
+
+                    if isinstance(args, tuple):
+                        evaluated = mark(*args)
+                    else:
+                        evaluated = mark(args)
+
+                    pytest_marks.append(evaluated)
+                except Exception as e:
+                    msg = f"Tried to use mark '{m}' but it could not be parsed: {e!s}"
                     logger.error(msg)
+                    raise exceptions.BadSchemaError(msg) from e
             else:
                 # This is a mark without arguments
                 m = _format_without_inner(m, fmt_vars)
