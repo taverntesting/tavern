@@ -20,6 +20,7 @@ from tavern._core.loader import (
     RegexSentinel,
     TypeConvertToken,
     TypeSentinel,
+    NumberSentinel,
 )
 
 from .formatted_str import FormattedString
@@ -419,7 +420,36 @@ def check_keys_match_recursive(
         if isinstance(expected_val.constructor, tuple):
             expected_matches = actual_type in expected_val.constructor
         else:
-            expected_matches = actual_type == expected_val.constructor
+            # The constructor is a function, so we need to check what type it returns
+            try:
+                # Test the constructor with a sample value to see what type it returns
+                if hasattr(expected_val.constructor, '__name__'):
+                    # For NumberSentinel which accepts both int and float
+                    if expected_val.constructor.__name__ == 'constructor' and expected_val.__class__.__name__ == 'NumberSentinel':
+                        expected_matches = actual_type in (int, float)
+                    else:
+                        # Test with a sample value to determine the return type
+                        # Use appropriate sample values for each constructor type
+                        if expected_val.__class__.__name__ == 'ListSentinel':
+                            sample_result = expected_val.constructor([1, 2, 3])
+                        elif expected_val.__class__.__name__ == 'DictSentinel':
+                            sample_result = expected_val.constructor({'a': 1})
+                        else:
+                            sample_result = expected_val.constructor(0)
+                        expected_matches = actual_type == type(sample_result)
+                else:
+                    expected_matches = False
+            except Exception:
+                expected_matches = False
+
+        # For type tokens, we only care about type matching, not value equality
+        if expected_matches:
+            logger.debug(
+                "Actual value = '%s' - matches !any%s",
+                actual_val,
+                expected_val.constructor,
+            )
+            return  # Type matches, no need to check value equality
     else:
         # Normal matching
         expected_matches = (
@@ -545,7 +575,7 @@ def check_keys_match_recursive(
             else:
                 if len(expected_val) != len(actual_val):
                     raise exceptions.KeyMismatchError(
-                        f"Length of returned list was different than expected - expected {len(expected_val)} items from got {len(actual_val)} ({full_err()}"
+                        f"Length of returned list was different than expected - expected {len(expected_val)} items from got {len(actual_val)} ({full_err()})"
                     ) from e
 
                 for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):

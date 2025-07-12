@@ -477,15 +477,18 @@ def load_single_document_yaml(filename: Union[str, os.PathLike]) -> dict:
 
     Raises:
         UnexpectedDocumentsError: If more than one document was in the file
+        BadSchemaError: If the YAML contains an empty value or other schema error
     """
-
     with open(filename, encoding="utf-8") as fileobj:
         try:
             contents = yaml.load(fileobj, Loader=IncludeLoader)  # type:ignore # noqa
+        except exceptions.BadSchemaError:
+            # Propagate schema errors as-is
+            raise
         except Exception as e:
+            # Only wrap exceptions that indicate multiple documents
             msg = "Expected only one document in this file but found multiple"
             raise exceptions.UnexpectedDocumentsError(msg) from e
-
     return contents
 
 
@@ -494,3 +497,5 @@ def error_on_empty_scalar(self, mark):
     error = f"Error at {location} - cannot define an empty value in test - either give it a value or explicitly set it to None"
 
     raise exceptions.BadSchemaError(error)
+
+yaml.parser.Parser.process_empty_scalar = error_on_empty_scalar  # Always patch for all YAML loads
