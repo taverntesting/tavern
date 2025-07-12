@@ -1,0 +1,132 @@
+---
+# External Functions Example
+# This example demonstrates how to use external functions with Tavern:
+# - Using $ext for dynamic data generation
+# - Using verify_response_with for custom validation
+# - Using external functions for authentication
+# - Using external functions for data transformation
+
+test_name: Using External Functions for Data Generation
+
+stages:
+  - name: Create user with generated data
+    request:
+      url: http://localhost:5000/users
+      method: POST
+      json:
+        $ext:
+          function: conftest:generate_test_user
+      headers:
+        content-type: application/json
+    response:
+      status_code: 201
+      json:
+        username: !anything
+        email: !anything
+
+  - name: Create post with generated authentication
+    request:
+      url: http://localhost:5000/posts
+      method: POST
+      json:
+        title: "Post with Generated Auth"
+        content: "This post uses generated authentication"
+      headers:
+        content-type: application/json
+        Authorization:
+          $ext:
+            function: conftest:create_bearer_token
+            extra_kwargs:
+              username: "testuser"
+    response:
+      status_code: 201
+      json:
+        title: "Post with Generated Auth"
+        content: "This post uses generated authentication"
+        author: "testuser"
+
+---
+test_name: Using External Functions for Validation
+
+stages:
+  - name: Test response time validation
+    request:
+      url: http://localhost:5000/health
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: "healthy"
+      verify_response_with:
+        function: conftest:validate_response_time
+        extra_kwargs:
+          max_time: 1.0
+
+---
+test_name: Using External Functions for Complex Data
+
+stages:
+  - name: Create user with complex generated data
+    request:
+      url: http://localhost:5000/users
+      method: POST
+      json:
+        username:
+          $ext:
+            function: conftest:generate_test_user
+            extra_kwargs:
+              prefix: "complex"
+        email:
+          $ext:
+            function: conftest:generate_test_user
+            extra_kwargs:
+              prefix: "complex"
+      headers:
+        content-type: application/json
+    response:
+      status_code: 201
+      json:
+        username: !anything
+        email: !anything
+
+---
+test_name: Using External Functions for Authentication Flow
+
+stages:
+  - name: Login with generated credentials
+    request:
+      url: http://localhost:5000/login
+      method: POST
+      json:
+        username:
+          $ext:
+            function: conftest:generate_test_user
+            extra_kwargs:
+              prefix: "auth"
+        password: "password123"
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        message: "Login successful"
+      save:
+        json:
+          session_id: session_id
+
+  - name: Create post with generated session
+    request:
+      url: http://localhost:5000/posts
+      method: POST
+      json:
+        title: "Post with Generated Session"
+        content: "This post uses a generated session"
+      headers:
+        content-type: application/json
+        X-Session-ID: "{session_id}"
+    response:
+      status_code: 201
+      json:
+        title: "Post with Generated Session"
+        content: "This post uses a generated session"
+        author: !anything

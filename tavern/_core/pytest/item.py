@@ -8,6 +8,7 @@ import pytest
 import yaml
 from _pytest._code.code import ExceptionInfo, TerminalRepr
 from _pytest.nodes import Node
+from _pytest.mark.structures import Mark
 
 from tavern._core import exceptions
 from tavern._core.loader import error_on_empty_scalar
@@ -118,7 +119,7 @@ class YamlItem(pytest.Item):
     def add_markers(self, pytest_marks) -> None:
         for pm in pytest_marks:
             if pm.name == "usefixtures":
-                if not isinstance(pm.mark.args, list | tuple) or len(pm.mark.args) == 0:
+                if not isinstance(pm.args, (list, tuple)) or len(pm.args) == 0:
                     logger.error(
                         "'usefixtures' was an invalid type (should"
                         " be a list of fixture names)"
@@ -127,10 +128,10 @@ class YamlItem(pytest.Item):
                 # Need to do this here because we expect a list of markers from
                 # usefixtures, which pytest then wraps in a tuple. we need to
                 # extract this tuple so pytest can use both fixtures.
-                if isinstance(pm.mark.args[0], list | tuple):
-                    new_mark = attr.evolve(pm.mark, args=pm.mark.args[0])
-                    pm = attr.evolve(pm, mark=new_mark)
-                elif isinstance(pm.mark.args[0], (dict)):
+                if isinstance(pm.args[0], (list, tuple)):
+                    new_mark = Mark(pm.name, tuple(pm.args[0]), {})
+                    pm = new_mark
+                elif isinstance(pm.args[0], dict):
                     # We could raise a TypeError here instead, but then it's a
                     # failure at collection time (which is a bit annoying to
                     # deal with). Instead just don't add the marker and it will
@@ -144,12 +145,12 @@ class YamlItem(pytest.Item):
             self.add_marker(pm)
 
     def _load_fixture_values(self):
-        fixture_markers = self.iter_markers("usefixtures")
+        fixture_markers = list(self.iter_markers("usefixtures"))
 
         values = {}
 
         for m in fixture_markers:
-            if isinstance(m.args, list | tuple):
+            if isinstance(m.args, (list, tuple)):
                 mark_values = {f: self.funcargs[f] for f in m.args}
             elif isinstance(m.args, str):
                 # Not sure if this can happen if validation is working
@@ -216,7 +217,7 @@ class YamlItem(pytest.Item):
         except exceptions.BadSchemaError:
             if xfail == "verify":
                 logger.info("xfailing test while verifying schema")
-                self.add_marker(pytest.mark.xfail, True)
+                self.add_marker(Mark("xfail", (), {}))
             raise
         except exceptions.TavernException as e:
             if isinstance(xfail, dict):
@@ -226,15 +227,15 @@ class YamlItem(pytest.Item):
                             f"error message did not match: expected '{msg}', got '{e!s}'"
                         ) from e
                     logger.info("xfailing test when running")
-                    self.add_marker(pytest.mark.xfail, True)
+                    self.add_marker(Mark("xfail", (), {}))
                 else:
                     logger.warning("internal error checking 'xfail'")
             elif xfail == "run" and not e.is_final:
                 logger.info("xfailing test when running")
-                self.add_marker(pytest.mark.xfail, True)
+                self.add_marker(Mark("xfail", (), {}))
             elif xfail == "finally" and e.is_final:
                 logger.info("xfailing test when finalising")
-                self.add_marker(pytest.mark.xfail, True)
+                self.add_marker(Mark("xfail", (), {}))
 
             raise
         else:

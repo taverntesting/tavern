@@ -1,0 +1,215 @@
+---
+# Basic API Testing Example
+# This example demonstrates fundamental Tavern concepts:
+# - Simple HTTP requests and responses
+# - Variable formatting and data saving
+# - Error handling
+# - Multi-stage tests
+
+test_name: Basic API Health Check
+
+stages:
+  - name: Check server health
+    request:
+      url: http://localhost:5000/health
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: "healthy"
+      save:
+        json:
+          server_timestamp: timestamp
+
+  - name: Verify timestamp is recent
+    request:
+      url: http://localhost:5000/health
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: "healthy"
+        timestamp: !approx "{server_timestamp}"
+
+---
+test_name: User Management Flow
+
+stages:
+  - name: Create a new user
+    request:
+      url: http://localhost:5000/users
+      method: POST
+      json:
+        username: "testuser"
+        email: "test@example.com"
+      headers:
+        content-type: application/json
+    response:
+      status_code: 201
+      json:
+        username: "testuser"
+        email: "test@example.com"
+      save:
+        json:
+          user_id: id
+
+  - name: Retrieve the created user
+    request:
+      url: http://localhost:5000/users/{user_id}
+      method: GET
+    response:
+      status_code: 200
+      json:
+        id: "{user_id}"
+        username: "testuser"
+        email: "test@example.com"
+
+  - name: Try to get non-existent user
+    request:
+      url: http://localhost:5000/users/nonexistent
+      method: GET
+    response:
+      status_code: 404
+      json:
+        error: "User not found"
+
+---
+test_name: Authentication and Session Management
+
+stages:
+  - name: Login to get session
+    request:
+      url: http://localhost:5000/login
+      method: POST
+      json:
+        username: "testuser"
+        password: "password123"
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        message: "Login successful"
+      save:
+        json:
+          session_id: session_id
+
+  - name: Create a post with authentication
+    request:
+      url: http://localhost:5000/posts
+      method: POST
+      json:
+        title: "My First Post"
+        content: "This is the content of my first post"
+      headers:
+        content-type: application/json
+        X-Session-ID: "{session_id}"
+    response:
+      status_code: 201
+      json:
+        title: "My First Post"
+        content: "This is the content of my first post"
+        author: "testuser"
+      save:
+        json:
+          post_id: id
+
+  - name: Retrieve the created post
+    request:
+      url: http://localhost:5000/posts/{post_id}
+      method: GET
+    response:
+      status_code: 200
+      json:
+        id: "{post_id}"
+        title: "My First Post"
+        content: "This is the content of my first post"
+        author: "testuser"
+
+---
+test_name: Error Handling Examples
+
+stages:
+  - name: Test 404 error
+    request:
+      url: http://localhost:5000/error/demo?type=not_found
+      method: GET
+    response:
+      status_code: 404
+      json:
+        error: "Resource not found"
+
+  - name: Test 401 error
+    request:
+      url: http://localhost:5000/error/demo?type=unauthorized
+      method: GET
+    response:
+      status_code: 401
+      json:
+        error: "Unauthorized"
+
+  - name: Test 500 error
+    request:
+      url: http://localhost:5000/error/demo?type=server_error
+      method: GET
+    response:
+      status_code: 500
+      json:
+        error: "Internal server error"
+
+  - name: Test 400 error
+    request:
+      url: http://localhost:5000/error/demo?type=bad_request
+      method: GET
+    response:
+      status_code: 400
+      json:
+        error: "Bad request"
+
+---
+test_name: Data Validation and Edge Cases
+
+stages:
+  - name: Try to create user without required fields
+    request:
+      url: http://localhost:5000/users
+      method: POST
+      json:
+        username: "testuser"
+        # Missing email field
+      headers:
+        content-type: application/json
+    response:
+      status_code: 400
+      json:
+        error: "username and email are required"
+
+  - name: Try to create post without authentication
+    request:
+      url: http://localhost:5000/posts
+      method: POST
+      json:
+        title: "Unauthorized Post"
+        content: "This should fail"
+      headers:
+        content-type: application/json
+        # Missing X-Session-ID header
+    response:
+      status_code: 401
+      json:
+        error: "Authentication required"
+
+  - name: Try to create post with missing fields
+    request:
+      url: http://localhost:5000/posts
+      method: POST
+      json:
+        title: "Incomplete Post"
+        # Missing content field
+      headers:
+        content-type: application/json
+        X-Session-ID: "fake-session"
+    response:
+      status_code: 400
+      json:
+        error: "title and content are required"

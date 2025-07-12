@@ -1,0 +1,150 @@
+---
+# Pytest Marks and Fixtures Example
+# This example demonstrates how to use Pytest marks and fixtures with Tavern
+# - Using marks for test organization and selection
+# - Using fixtures for setup and teardown
+# - Using usefixtures for automatic fixture injection
+
+test_name: Test with slow mark
+
+marks:
+  - slow
+  - usefixtures:
+      - setup_test_data
+
+stages:
+  - name: Test that takes time
+    request:
+      url: http://localhost:5000/slow
+      method: GET
+    response:
+      status_code: 200
+      json:
+        message: "Slow response completed"
+
+---
+test_name: Test with integration mark
+
+marks:
+  - integration
+  - usefixtures:
+      - setup_test_data
+
+stages:
+  - name: Create user for integration test
+    request:
+      url: http://localhost:5000/users
+      method: POST
+      json:
+        username: "integration_user"
+        email: "integration@example.com"
+      headers:
+        content-type: application/json
+    response:
+      status_code: 201
+      json:
+        username: "integration_user"
+        email: "integration@example.com"
+      save:
+        json:
+          user_id: id
+
+  - name: Login with integration user
+    request:
+      url: http://localhost:5000/login
+      method: POST
+      json:
+        username: "integration_user"
+        password: "password123"
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      json:
+        message: "Login successful"
+      save:
+        json:
+          session_id: session_id
+
+  - name: Create post with integration user
+    request:
+      url: http://localhost:5000/posts
+      method: POST
+      json:
+        title: "Integration Test Post"
+        content: "This post was created during integration testing"
+      headers:
+        content-type: application/json
+        X-Session-ID: "{session_id}"
+    response:
+      status_code: 201
+      json:
+        title: "Integration Test Post"
+        content: "This post was created during integration testing"
+        author: "integration_user"
+
+---
+test_name: Test with parametrize mark
+
+marks:
+  - parametrize:
+      key: user_data
+      vals:
+        - username: "user1"
+          email: "user1@example.com"
+        - username: "user2"
+          email: "user2@example.com"
+        - username: "user3"
+          email: "user3@example.com"
+
+stages:
+  - name: Create user with parametrized data
+    request:
+      url: http://localhost:5000/users
+      method: POST
+      json:
+        username: "{user_data.username}"
+        email: "{user_data.email}"
+      headers:
+        content-type: application/json
+    response:
+      status_code: 201
+      json:
+        username: "{user_data.username}"
+        email: "{user_data.email}"
+
+---
+test_name: Test with skipif mark
+
+marks:
+  - skipif: "{tavern.env_vars.SKIP_SLOW_TESTS}" == "true"
+  - usefixtures:
+      - setup_test_data
+
+stages:
+  - name: Test that might be skipped
+    request:
+      url: http://localhost:5000/slow
+      method: GET
+    response:
+      status_code: 200
+      json:
+        message: "Slow response completed"
+
+---
+test_name: Test with xfail mark
+
+marks:
+  - xfail
+  - usefixtures:
+      - setup_test_data
+
+stages:
+  - name: Test that is expected to fail
+    request:
+      url: http://localhost:5000/error/demo?type=server_error
+      method: GET
+    response:
+      status_code: 200  # This should fail, but we expect it to
+      json:
+        status: "success"
