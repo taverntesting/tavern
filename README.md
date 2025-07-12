@@ -250,3 +250,13 @@ Tavern is currently maintained by
 - pyjwt
 - paho-mqtt (for MQTT testing)
 - simpleeval
+
+## Pytest 7.3.0+ Compatibility
+
+Tavern is fully compatible with Pytest 7.3.0 and newer. All internal mark handling has been refactored to use the modern Pytest API (`pytest.Mark`, `item.iter_markers`, `.args`).
+
+- Custom marks are registered automatically or via configuration files.
+- A comprehensive audit script (`audit_pytest_marks.py`) is included to verify mark usage and registration.
+- All mark-related tests pass with the latest Pytest.
+
+See the [CHANGELOG.md](CHANGELOG.md) for details.

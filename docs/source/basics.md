@@ -410,7 +410,7 @@ it is in the Python path. For example, if `utils.py` is in the 'tests' folder,
 you will need to run your tests something like (on Linux):
 
 ```shell
-$ PYTHONPATH=$PYTHONPATH:tests py.test tests/
+PYTHONPATH=$PYTHONPATH:tests py.test tests/
 ```
 
 ### Checking the response using external functions
@@ -921,7 +921,8 @@ stages:
 
 Tests can be marked using the `marks` key. This uses pytest's marking system under the hood.
 
-**Note:** Tavern is fully compatible with Pytest 7.3.0+ and uses the modern mark API. All custom marks are properly registered in the configuration.
+> **Pytest 7.3.0+ Compatibility:**
+> All marks in Tavern are now created and handled using the modern Pytest API. Use `pytest.Mark` objects for programmatic mark creation, and always access mark arguments via `.args`. Register custom marks in your `pytest.ini`, `pyproject.toml`, or `conftest.py` to avoid warnings.
 
 ```yaml
 test_name: A test with marks
