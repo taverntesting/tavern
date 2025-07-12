@@ -126,3 +126,4 @@ bazel-tavern
 bazel-testlogs
 
 example/grpc/proto
+node_modules

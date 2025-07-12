@@ -3,7 +3,7 @@
 import grpc
 import warnings
 
-import helloworld_v1_precompiled_pb2 as helloworld__v1__precompiled__pb2
+import helloworld_v3_reflected_pb2 as helloworld__v3__reflected__pb2
 
 GRPC_GENERATED_VERSION = '1.73.1'
 GRPC_VERSION = grpc.__version__
@@ -18,7 +18,7 @@ except ImportError:
 if _version_not_supported:
     raise RuntimeError(
         f'The grpc package installed is at version {GRPC_VERSION},'
-        + f' but the generated code in helloworld_v1_precompiled_pb2_grpc.py depends on'
+        + f' but the generated code in helloworld_v3_reflected_pb2_grpc.py depends on'
         + f' grpcio>={GRPC_GENERATED_VERSION}.'
         + f' Please upgrade your grpc module to grpcio>={GRPC_GENERATED_VERSION}'
         + f' or downgrade your generated code using grpcio-tools<={GRPC_VERSION}.'
@@ -35,9 +35,9 @@ class GreeterStub(object):
             channel: A grpc.Channel.
         """
         self.SayHello = channel.unary_unary(
-                '/helloworld.v1.Greeter/SayHello',
-                request_serializer=helloworld__v1__precompiled__pb2.HelloRequest.SerializeToString,
-                response_deserializer=helloworld__v1__precompiled__pb2.HelloReply.FromString,
+                '/helloworld.v3.Greeter/SayHello',
+                request_serializer=helloworld__v3__reflected__pb2.HelloRequest.SerializeToString,
+                response_deserializer=helloworld__v3__reflected__pb2.HelloReply.FromString,
                 _registered_method=True)
 
 
@@ -55,14 +55,14 @@ def add_GreeterServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'SayHello': grpc.unary_unary_rpc_method_handler(
                     servicer.SayHello,
-                    request_deserializer=helloworld__v1__precompiled__pb2.HelloRequest.FromString,
-                    response_serializer=helloworld__v1__precompiled__pb2.HelloReply.SerializeToString,
+                    request_deserializer=helloworld__v3__reflected__pb2.HelloRequest.FromString,
+                    response_serializer=helloworld__v3__reflected__pb2.HelloReply.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'helloworld.v1.Greeter', rpc_method_handlers)
+            'helloworld.v3.Greeter', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
-    server.add_registered_method_handlers('helloworld.v1.Greeter', rpc_method_handlers)
+    server.add_registered_method_handlers('helloworld.v3.Greeter', rpc_method_handlers)
 
 
  # This class is part of an EXPERIMENTAL API.
@@ -83,9 +83,9 @@ class Greeter(object):
         return grpc.experimental.unary_unary(
             request,
             target,
-            '/helloworld.v1.Greeter/SayHello',
-            helloworld__v1__precompiled__pb2.HelloRequest.SerializeToString,
-            helloworld__v1__precompiled__pb2.HelloReply.FromString,
+            '/helloworld.v3.Greeter/SayHello',
+            helloworld__v3__reflected__pb2.HelloRequest.SerializeToString,
+            helloworld__v3__reflected__pb2.HelloReply.FromString,
             options,
             channel_credentials,
             insecure,

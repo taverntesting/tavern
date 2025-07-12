@@ -200,37 +200,53 @@ class TypeSentinel(yaml.YAMLObject):
 
 class NumberSentinel(TypeSentinel):
     yaml_tag = "!anynumber"
-    constructor = (int, float)  # Tuple of allowed types
+    @staticmethod
+    def constructor(x):
+        if isinstance(x, (int, float)):
+            return x
+        raise TypeError("Expected int or float")
 
 
 class IntSentinel(TypeSentinel):
     yaml_tag = "!anyint"
-    constructor = int
+    @staticmethod
+    def constructor(x):
+        return int(x)
 
 
 class FloatSentinel(TypeSentinel):
     yaml_tag = "!anyfloat"
-    constructor = float
+    @staticmethod
+    def constructor(x):
+        return float(x)
 
 
 class StrSentinel(TypeSentinel):
     yaml_tag = "!anystr"
-    constructor = str
+    @staticmethod
+    def constructor(x):
+        return str(x)
 
 
 class BoolSentinel(TypeSentinel):
     yaml_tag = "!anybool"
-    constructor = bool
+    @staticmethod
+    def constructor(x):
+        return bool(x)
 
 
 class ListSentinel(TypeSentinel):
     yaml_tag = "!anylist"
-    constructor = list
+    @staticmethod
+    def constructor(x):
+        return list(x)
 
 
 class DictSentinel(TypeSentinel):
     yaml_tag = "!anydict"
-    constructor = dict
+    @staticmethod
+    def constructor(x):
+        return dict(x)
 
 
 @dataclasses.dataclass
@@ -240,7 +256,9 @@ class RegexSentinel(TypeSentinel):
     This shouldn't be used directly and instead one of the below match/fullmatch/search tokens will be used
     """
 
-    constructor = str
+    @staticmethod
+    def constructor(x):
+        return str(x)
     compiled: re.Pattern
 
     def __str__(self) -> str:
@@ -260,21 +278,27 @@ class RegexSentinel(TypeSentinel):
 
 
 class _RegexMatchSentinel(RegexSentinel):
-    yaml_tag = "!re_match"
+    @property
+    def yaml_tag(self):
+        return "!re_match"
 
     def passes(self, string) -> bool:
         return self.compiled.match(string) is not None
 
 
 class _RegexFullMatchSentinel(RegexSentinel):
-    yaml_tag = "!re_fullmatch"
+    @property
+    def yaml_tag(self):
+        return "!re_fullmatch"
 
     def passes(self, string) -> bool:
         return self.compiled.fullmatch(string) is not None
 
 
 class _RegexSearchSentinel(RegexSentinel):
-    yaml_tag = "!re_search"
+    @property
+    def yaml_tag(self):
+        return "!re_search"
 
     def passes(self, string) -> bool:
         return self.compiled.search(string) is not None
@@ -282,7 +306,9 @@ class _RegexSearchSentinel(RegexSentinel):
 
 class AnythingSentinel(TypeSentinel):
     yaml_tag = "!anything"
-    constructor = "anything"
+    @staticmethod
+    def constructor(x):
+        return x
 
     @classmethod
     def from_yaml(cls, loader, node):
@@ -347,12 +373,16 @@ class TypeConvertToken(yaml.YAMLObject):
 
 class IntToken(TypeConvertToken):
     yaml_tag = "!int"
-    constructor = int
+    @staticmethod
+    def constructor(x):
+        return int(x)
 
 
 class FloatToken(TypeConvertToken):
     yaml_tag = "!float"
-    constructor = float
+    @staticmethod
+    def constructor(x):
+        return float(x)
 
 
 class StrToBoolConstructor:
@@ -364,7 +394,9 @@ class StrToBoolConstructor:
 
 class BoolToken(TypeConvertToken):
     yaml_tag = "!bool"
-    constructor = StrToBoolConstructor
+    @staticmethod
+    def constructor(x):
+        return strtobool(x)
 
 
 class StrToRawConstructor:
@@ -376,7 +408,9 @@ class StrToRawConstructor:
 
 class RawStrToken(TypeConvertToken):
     yaml_tag = "!raw"
-    constructor = StrToRawConstructor
+    @staticmethod
+    def constructor(x):
+        return str(x.replace("{", "{{").replace("}", "}}"))
 
 
 class ForceIncludeToken(TypeConvertToken):
@@ -448,7 +482,7 @@ def load_single_document_yaml(filename: Union[str, os.PathLike]) -> dict:
     with open(filename, encoding="utf-8") as fileobj:
         try:
             contents = yaml.load(fileobj, Loader=IncludeLoader)  # type:ignore # noqa
-        except yaml.composer.ComposerError as e:
+        except Exception as e:
             msg = "Expected only one document in this file but found multiple"
             raise exceptions.UnexpectedDocumentsError(msg) from e
 

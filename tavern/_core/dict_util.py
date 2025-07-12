@@ -10,6 +10,7 @@ from typing import Any, Optional, Union
 
 import box
 import jmespath
+from jmespath.exceptions import ParseError
 from box.box import Box
 
 from tavern._core import exceptions
@@ -189,7 +190,7 @@ def recurse_access_key(data: Union[list, Mapping], query: str) -> Any:
 
     try:
         from_jmespath = jmespath.search(query, data)
-    except jmespath.exceptions.ParseError as e:
+    except ParseError as e:
         logger.error("Error parsing JMES query")
 
         try:
