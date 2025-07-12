@@ -1,3 +1,13 @@
+"""
+Tavern REST Response Plugin
+
+This module provides the REST response handling and validation for the Tavern testing framework.
+It handles HTTP response processing, validation, and verification for REST APIs.
+
+The module contains classes and functions for processing and validating
+HTTP responses from REST API endpoints during testing.
+"""
+
 import contextlib
 import json
 import logging
@@ -19,6 +29,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 class RestResponse(BaseResponse):
+    """REST response implementation for Tavern.
+
+    This class handles the validation and processing of REST HTTP responses.
+    It supports status code validation, header checking, and body verification.
+    """
     response: requests.Response
 
     def __init__(

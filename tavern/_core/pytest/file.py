@@ -1,3 +1,13 @@
+"""
+Tavern Pytest File Module
+
+This module provides file handling functionality for the Tavern pytest integration.
+It handles test file discovery and processing for pytest.
+
+The module contains classes and functions for discovering and processing
+test files in a way that integrates with pytest's file collection system.
+"""
+
 import copy
 import functools
 import itertools
@@ -8,8 +18,8 @@ from typing import Any, Union
 
 import pytest
 import yaml
+from _pytest.mark.structures import Mark
 from box import Box
-from pytest import Mark
 
 from tavern._core import exceptions
 from tavern._core.dict_util import deep_dict_merge, format_keys, get_tavern_box
@@ -33,7 +43,7 @@ def _format_test_marks(
     original_marks: Iterable[Union[str, dict]], fmt_vars: Mapping, test_name: str
 ) -> tuple[list[Mark], list[Mapping]]:
     """Given the 'raw' marks from the test and any available format variables,
-    generate new  marks for this test
+    generate new marks for this test
 
     Args:
         original_marks: Raw string from test - should correspond to either a
@@ -68,7 +78,7 @@ def _format_test_marks(
         if isinstance(m, str):
             # a normal mark
             m = _format_without_inner(m, fmt_vars)
-            pytest_marks.append(getattr(pytest.mark, m))
+            pytest_marks.append(Mark(m, (), {}))
         elif isinstance(m, dict):
             # skipif or parametrize (for now)
             for markname, extra_arg in m.items():
@@ -85,7 +95,7 @@ def _format_test_marks(
                     # happened (even if it is difficult to test)
                     raise exceptions.MissingFormatError(msg) from e
                 else:
-                    pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
+                    pytest_marks.append(Mark(markname, (extra_arg,), {}))
                     formatted_marks.append({markname: extra_arg})
         else:
             raise exceptions.BadSchemaError(f"Unexpected mark type '{type(m)}'")

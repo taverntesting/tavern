@@ -1,3 +1,13 @@
+"""
+Tavern gRPC Protos Plugin
+
+This module provides protobuf handling functionality for gRPC requests in the Tavern testing framework.
+It handles protobuf compilation, loading, and management for gRPC API testing.
+
+The module contains classes and functions for managing protobuf files
+and their compilation for gRPC API requests and responses.
+"""
+
 import functools
 import hashlib
 import importlib.util
@@ -17,6 +27,14 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @functools.lru_cache
 def find_protoc() -> str:
+    """Find the Protocol Compiler executable.
+
+    Returns:
+        Path to the protoc executable
+
+    Raises:
+        ProtoCompilerException: If protoc cannot be found
+    """
     # Find the Protocol Compiler.
     if "PROTOC" in os.environ and os.path.exists(os.environ["PROTOC"]):
         return os.environ["PROTOC"]

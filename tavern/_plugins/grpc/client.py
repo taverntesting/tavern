@@ -1,13 +1,21 @@
+"""
+Tavern gRPC Client Plugin
+
+This module provides gRPC client functionality for the Tavern testing framework.
+It handles gRPC client creation and management for API testing.
+
+The module contains classes and functions for creating and managing
+gRPC clients that can be used for API testing scenarios.
+"""
+
 import dataclasses
 import logging
 import warnings
 from collections.abc import Mapping
-from typing import Any, Optional
+from typing import Any, Optional, cast
 
 import grpc
-import grpc_reflection
 import proto.message
-from google._upb._message import DescriptorPool
 from google.protobuf import (
     descriptor_pb2,
     json_format,
@@ -15,7 +23,6 @@ from google.protobuf import (
     symbol_database,
 )
 from google.protobuf.json_format import ParseError
-from grpc_reflection.v1alpha import reflection_pb2, reflection_pb2_grpc
 from grpc_status import rpc_status
 
 from tavern._core import exceptions
@@ -98,7 +105,7 @@ class GRPCClient:
 
     def _register_file_descriptor(
         self,
-        service_proto: grpc_reflection.v1alpha.reflection_pb2.FileDescriptorResponse,
+        service_proto: Any,  # grpc_reflection.v1alpha.reflection_pb2.FileDescriptorResponse
     ) -> None:
         for file_descriptor_proto in service_proto.file_descriptor_proto:
             descriptor = descriptor_pb2.FileDescriptorProto()
@@ -111,6 +118,9 @@ class GRPCClient:
         logger.debug(
             "Getting GRPC protobuf for service %s from reflection", service_name
         )
+        # Import here to avoid import issues
+        from grpc_reflection.v1alpha import reflection_pb2, reflection_pb2_grpc
+
         ref_request = reflection_pb2.ServerReflectionRequest(
             file_containing_symbol=service_name, file_by_filename=file_by_filename
         )
@@ -135,8 +145,8 @@ class GRPCClient:
 
         grpc_method = channel.unary_unary(
             "/" + full_service_name,
-            request_serializer=input_type.SerializeToString,
-            response_deserializer=output_type.FromString,
+            request_serializer=lambda x: cast(Any, input_type).SerializeToString(x),
+            response_deserializer=lambda x: cast(Any, output_type).FromString(x),
         )
 
         return _ChannelVals(grpc_method, input_type, output_type)
@@ -159,13 +169,13 @@ class GRPCClient:
 
         service, method = full_method_name.split("/")
 
-        pool: DescriptorPool = self.sym_db.pool
+        pool = self.sym_db.pool
         grpc_service = pool.FindServiceByName(service)
         method = grpc_service.FindMethodByName(method)
         input_type = message_factory.GetMessageClass(method.input_type)  # type: ignore
         output_type = message_factory.GetMessageClass(method.output_type)  # type: ignore
 
-        return input_type, output_type
+        return cast(tuple[_ProtoMessageType, _ProtoMessageType], (input_type, output_type))
 
     def _make_call_request(
         self, host: str, full_service: str
@@ -216,8 +226,8 @@ class GRPCClient:
         except grpc.RpcError as rpc_error:
             code = details = None
             try:
-                code = rpc_error.code()
-                details = rpc_error.details()
+                code = getattr(rpc_error, 'code', lambda: None)()
+                details = getattr(rpc_error, 'details', lambda: None)()
             except AttributeError:
                 status = rpc_status.from_call(rpc_error)
                 if status is None:
@@ -271,7 +281,7 @@ class GRPCClient:
         request = channel_vals.input_type()
         if body is not None:
             try:
-                request = json_format.ParseDict(body, request)
+                request = json_format.ParseDict(body, cast(Any, request))
             except ParseError as e:
                 raise exceptions.GRPCRequestException(
                     "error creating request from json body"

@@ -1,3 +1,13 @@
+"""
+Tavern Report Module
+
+This module provides reporting functionality for the Tavern testing framework.
+It handles test result reporting and output formatting.
+
+The module contains functions for generating and formatting test reports,
+including error reporting and result presentation.
+"""
+
 import logging
 from textwrap import dedent
 from typing import Union

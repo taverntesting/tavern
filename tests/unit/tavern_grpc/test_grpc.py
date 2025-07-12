@@ -83,14 +83,12 @@ class GRPCTestSpec:
     def request(self) -> Mapping:
         return json_format.MessageToDict(
             self.req,
-            including_default_value_fields=True,
             preserving_proto_field_name=True,
         )
 
     def body(self) -> Mapping:
         return json_format.MessageToDict(
             self.resp,
-            including_default_value_fields=True,
             preserving_proto_field_name=True,
         )
 

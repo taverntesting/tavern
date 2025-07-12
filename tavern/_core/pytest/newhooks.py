@@ -1,3 +1,13 @@
+"""
+Tavern Pytest New Hooks Module
+
+This module provides new hook functionality for the Tavern pytest integration.
+It handles modern pytest hook patterns and execution for Tavern.
+
+The module contains functions for implementing modern pytest hook patterns
+that provide better integration with pytest's plugin system.
+"""
+
 import logging
 from collections.abc import MutableMapping
 from typing import Any

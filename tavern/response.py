@@ -1,3 +1,13 @@
+"""
+Tavern Response Module
+
+This module provides response handling and validation for the Tavern testing framework.
+It handles HTTP response processing, validation, and verification.
+
+The module contains classes and functions for processing and validating
+HTTP responses from API endpoints during testing.
+"""
+
 import dataclasses
 import logging
 import traceback
@@ -16,6 +26,14 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 def indent_err_text(err: str) -> str:
+    """Format error text with proper indentation.
+
+    Args:
+        err: Error text to format
+
+    Returns:
+        Formatted error text with indentation
+    """
     if err == "null":
         err = "<No body>"
     return indent(err, " " * 4)
@@ -23,6 +41,12 @@ def indent_err_text(err: str) -> str:
 
 @dataclasses.dataclass
 class BaseResponse:
+    """Base class for all response types in Tavern.
+
+    This abstract base class defines the interface that all response
+    implementations must follow. It provides methods for response validation,
+    error handling, and value extraction.
+    """
     name: str
     expected: Any
     test_block_config: TestConfig
@@ -49,8 +73,8 @@ class BaseResponse:
         """Verify response against expected values and returns any values that
         we wanted to save for use in future requests
 
-        It is expected that anything subclassing this can throw an exception indicating that the response
-        verification failed.
+        It is expected that anything subclassing this can throw an exception
+        indicating that the response verification failed.
         """
 
     def recurse_check_key_match(
@@ -76,7 +100,8 @@ class BaseResponse:
             logger.debug("No expected %s to check against", blockname)
             return
 
-        # This should be done _before_ it gets to this point - typically in get_expected_from_request from plugin
+        # This should be done _before_ it gets to this point - typically in
+        # get_expected_from_request from plugin
         # expected_block = format_keys(
         #     expected_block, self.test_block_config.variables
         # )
@@ -110,7 +135,8 @@ class BaseResponse:
 
     def _check_for_validate_functions(self, response_block: Mapping) -> None:
         """
-        See if there were any functions specified in the response block and save them for later use
+        See if there were any functions specified in the response block and save
+        them for later use
 
         Args:
             response_block: block of external functions to call
@@ -164,7 +190,7 @@ class BaseResponse:
         for vf in self.validate_functions:
             try:
                 vf(response)
-            except Exception as e:
+            except (ValueError, TypeError, AttributeError) as e:
                 self._adderr(
                     "Error calling validate function '%s':\n%s",
                     vf.func,
@@ -197,7 +223,7 @@ class BaseResponse:
 
         try:
             saved = wrapped(response)
-        except Exception as e:
+        except (ValueError, TypeError, AttributeError) as e:
             self._adderr(
                 "Error calling save function '%s':\n%s",
                 wrapped.func,  # type:ignore
@@ -210,9 +236,10 @@ class BaseResponse:
 
         if isinstance(saved, dict):
             return saved
-        elif saved is not None:
+        if saved is not None:
             self._adderr(
-                "Unexpected return value '%s' from $ext save function (expected a dict or None)",
+                "Unexpected return value '%s' from $ext save function "
+                "(expected a dict or None)",
                 saved,
             )
 

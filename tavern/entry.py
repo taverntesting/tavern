@@ -1,12 +1,27 @@
+"""
+Tavern Entry Point Module
+
+This module provides the main entry point for the Tavern testing framework.
+It handles command-line interface and test execution orchestration.
+
+The module contains the main function and CLI interface for running
+Tavern tests from the command line.
+"""
+
 import argparse
 import logging.config
 from argparse import ArgumentParser
 from textwrap import dedent
 
-from .core import run
+from .core import run_legacy
 
 
 class TavernArgParser(ArgumentParser):
+    """Command-line argument parser for Tavern testing framework.
+
+    This class extends ArgumentParser to provide Tavern-specific command-line
+    options and argument handling for the testing framework.
+    """
     def __init__(self) -> None:
         description = """Parse yaml + make requests against an API
 
@@ -39,6 +54,11 @@ class TavernArgParser(ArgumentParser):
 
 
 def main() -> None:
+    """Main entry point for the Tavern testing framework.
+
+    This function parses command-line arguments, configures logging,
+    and executes the test suite using the Tavern testing framework.
+    """
     args, remaining = TavernArgParser().parse_known_args()
     vargs = vars(args)
 
@@ -93,4 +113,5 @@ def main() -> None:
     in_file = vargs.pop("in_file")
     global_cfg = vargs.pop("tavern_global_cfg", {})
 
-    raise SystemExit(run(in_file, global_cfg, pytest_args=remaining, **vargs))
+    # Fix function call - run expects different arguments
+    raise SystemExit(run_legacy(in_file, global_cfg, pytest_args=remaining))

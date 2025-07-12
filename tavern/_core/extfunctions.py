@@ -1,3 +1,13 @@
+"""
+Tavern External Functions Module
+
+This module provides external function handling for the Tavern testing framework.
+It handles the execution and management of external functions used in test configuration.
+
+The module contains classes and functions for loading, executing, and managing
+external functions that can be called during test execution.
+"""
+
 import functools
 import importlib
 import logging

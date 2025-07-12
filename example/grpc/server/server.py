@@ -11,6 +11,9 @@ import helloworld_v2_compiled_pb2 as helloworld_pb2_v2
 import helloworld_v2_compiled_pb2_grpc as helloworld_pb2_grpc_v2
 import helloworld_v3_reflected_pb2 as helloworld_pb2_v3
 import helloworld_v3_reflected_pb2_grpc as helloworld_pb2_grpc_v3
+
+# NOTE: To run this server, set PYTHONPATH to include the grpc directory:
+#   PYTHONPATH=example/grpc python example/grpc/server/server.py
 from grpc_interceptor import ServerInterceptor
 from grpc_interceptor.exceptions import GrpcException
 from grpc_reflection.v1alpha import reflection
@@ -18,17 +21,20 @@ from grpc_reflection.v1alpha import reflection
 
 class GreeterV1(helloworld_pb2_grpc_v1.GreeterServicer):
     def SayHello(self, request, context):
-        return helloworld_pb2_v1.HelloReply(message=f"Hello, {request.name}!")
+        context.set_code(grpc.StatusCode.OK)
+        return helloworld_pb2_v1.HelloReply(message="Hello, %s!" % request.name)
 
 
 class GreeterV2(helloworld_pb2_grpc_v2.GreeterServicer):
     def SayHello(self, request, context):
-        return helloworld_pb2_v2.HelloReply(message=f"Hello, {request.name}!")
+        context.set_code(grpc.StatusCode.OK)
+        return getattr(helloworld_pb2_v2, "HelloReply")(message="Hello, %s!" % request.name)
 
 
 class GreeterV3(helloworld_pb2_grpc_v3.GreeterServicer):
     def SayHello(self, request, context):
-        return helloworld_pb2_v3.HelloReply(message=f"Hello, {request.name}!")
+        context.set_code(grpc.StatusCode.OK)
+        return getattr(helloworld_pb2_v3, "HelloReply")(message="Hello, %s!" % request.name)
 
 
 class LoggingInterceptor(ServerInterceptor):
@@ -39,7 +45,7 @@ class LoggingInterceptor(ServerInterceptor):
         context: grpc.ServicerContext,
         method_name: str,
     ) -> Any:
-        logging.info(f"got request on {method_name}")
+        logging.info("got request on %s", method_name)
 
         try:
             return method(request_or_iterator, context)
@@ -51,13 +57,14 @@ class LoggingInterceptor(ServerInterceptor):
 
 
 def serve():
-    interceptors = [LoggingInterceptor()]
+    from typing import cast
+    interceptors = cast(list, [LoggingInterceptor()])
     executor = futures.ThreadPoolExecutor(max_workers=10)
 
     # One server which exposes these two
     server = grpc.server(
         executor,
-        interceptors=interceptors,
+        interceptors=interceptors,  # Accepts list of ServerInterceptor
     )
     helloworld_pb2_grpc_v1.add_GreeterServicer_to_server(GreeterV1(), server)
     helloworld_pb2_grpc_v2.add_GreeterServicer_to_server(GreeterV2(), server)

@@ -27,6 +27,50 @@ To learn more, check out the [examples](https://taverntesting.github.io/examples
 to the project take a look at the [GitHub
 repo](https://github.com/taverntesting/tavern).
 
+## 🚀 Getting Started
+
+New to Tavern? We've created comprehensive getting started examples to help you learn quickly!
+
+### Quick Start
+
+1. **Install Tavern:**
+
+   ```bash
+   pip install tavern
+   ```
+
+2. **Try the Getting Started Examples:**
+
+   ```bash
+   cd example/getting_started
+   python server.py &  # Start test server
+   python -m pytest test_basic_api.tavern.yaml -v
+   ```
+
+3. **Learn More:**
+   - [Basic API Testing](example/getting_started/test_basic_api.tavern.yaml) - Your first Tavern test
+   - [Pytest Marks & Fixtures](example/getting_started/test_marks_and_fixtures.tavern.yaml) - Advanced test organization
+   - [External Functions](example/getting_started/test_external_functions.tavern.yaml) - Custom validation and data generation
+   - [Docker Integration](example/getting_started/docker-compose.yml) - Containerized testing
+
+### What You'll Learn
+
+- ✅ Write your first YAML test
+- ✅ Handle authentication and sessions
+- ✅ Save and reuse data between requests
+- ✅ Use Pytest marks for test organization
+- ✅ Create custom validation functions
+- ✅ Handle errors and edge cases
+- ✅ Run tests with Docker and CI/CD
+
+### Next Steps
+
+After trying the getting started examples:
+
+- Check out [more examples](example/) for advanced scenarios
+- Read the [documentation](https://tavern.readthedocs.io/) for complete reference
+- Explore [HTTP](docs/source/http.md), [MQTT](docs/source/mqtt.md), and [gRPC](docs/source/grpc.md) guides
+
 ## Quickstart
 
 First up run `pip install tavern`.
@@ -94,7 +138,7 @@ $ tavern-ci --stdout test_minimal.tavern.yaml
   "title": "sunt aut facere repellat provident occaecati excepturi optio reprehenderit",
   "json": "quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto"
 })
-2017-11-08 16:17:00,239 [INFO]: (tavern.printer:9) PASSED: Make sure we have the right ID [200]
+2017-11-08 16:17:00,239 [INFO]: (tavern.core:9) PASSED: Make sure we have the right ID [200]
 ```
 
 ## Why not Postman, Insomnia or pyresttest etc?
@@ -153,10 +197,10 @@ If you want to add a feature to get merged back into mainline Tavern:
 
 - Add the feature you want
 - Add some tests for your feature:
-    - If you are adding some utility functionality such as improving verification
+  - If you are adding some utility functionality such as improving verification
       of responses, adding some unit tests might be best. These are in the
       `tests/unit/` folder and are written using Pytest.
-    - If you are adding more advanced functionality like extra validation
+  - If you are adding more advanced functionality like extra validation
       functions, or some functionality that directly depends on the format of the
       input YAML, it might also be useful to add some integration tests. At the
       time of writing, this is done by adding an example flask endpoint in
@@ -191,3 +235,28 @@ Tavern makes use of several excellent open-source projects:
 Tavern is currently maintained by
 
 - @michaelboulton
+
+## Requirements
+
+- Python 3.8+
+- pytest 7.3.0+ (fully compatible with latest versions)
+- requests
+- pyyaml
+- pykwalify
+- jsonschema
+- jmespath
+- python-box
+- stevedore
+- pyjwt
+- paho-mqtt (for MQTT testing)
+- simpleeval
+
+## Pytest 7.3.0+ Compatibility
+
+Tavern is fully compatible with Pytest 7.3.0 and newer. All internal mark handling has been refactored to use the modern Pytest API (`pytest.Mark`, `item.iter_markers`, `.args`).
+
+- Custom marks are registered automatically or via configuration files.
+- A comprehensive audit script (`audit_pytest_marks.py`) is included to verify mark usage and registration.
+- All mark-related tests pass with the latest Pytest.
+
+See the [CHANGELOG.md](CHANGELOG.md) for details.

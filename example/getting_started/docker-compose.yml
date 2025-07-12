@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  # Test server
+  test-server:
+    build: .
+    ports:
+      - "5000:5000"
+    command: python server.py
+    environment:
+      - FLASK_ENV=development
+    volumes:
+      - .:/app
+    networks:
+      - tavern-test
+
+  # Tavern tests
+  tavern-tests:
+    build: .
+    depends_on:
+      - test-server
+    command: >
+      sh -c "
+        echo 'Waiting for test server to be ready...' &&
+        sleep 10 &&
+        python -m pytest test_basic_api.tavern.yaml -v
+      "
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      - .:/app
+    networks:
+      - tavern-test
+
+  # Integration tests
+  integration-tests:
+    build: .
+    depends_on:
+      - test-server
+    command: >
+      sh -c "
+        echo 'Waiting for test server to be ready...' &&
+        sleep 10 &&
+        python -m pytest test_marks_and_fixtures.tavern.yaml -m integration -v
+      "
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      - .:/app
+    networks:
+      - tavern-test
+
+  # All tests with coverage
+  all-tests:
+    build: .
+    depends_on:
+      - test-server
+    command: >
+      sh -c "
+        echo 'Waiting for test server to be ready...' &&
+        sleep 10 &&
+        python -m pytest *.tavern.yaml -v --html=report.html --self-contained-html
+      "
+    environment:
+      - PYTHONPATH=/app
+    volumes:
+      - .:/app
+      - ./reports:/app/reports
+    networks:
+      - tavern-test
+
+networks:
+  tavern-test:
+    driver: bridge

@@ -1,3 +1,13 @@
+"""
+Tavern Pytest Hooks Module
+
+This module provides hook functionality for the Tavern pytest integration.
+It handles pytest hook registration and execution for Tavern.
+
+The module contains functions for registering and executing pytest hooks
+that enable Tavern to integrate with pytest's plugin system.
+"""
+
 import logging
 import logging.config
 import os

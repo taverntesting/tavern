@@ -1,3 +1,13 @@
+"""
+Tavern General Utilities Module
+
+This module provides general utility functions for the Tavern testing framework.
+It contains common helper functions used throughout the framework.
+
+The module contains utility functions for common operations like
+string formatting, data manipulation, and other general-purpose utilities.
+"""
+
 import logging
 import os
 from typing import Union
