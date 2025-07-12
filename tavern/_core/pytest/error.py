@@ -1,3 +1,13 @@
+"""
+Tavern Pytest Error Module
+
+This module provides error handling functionality for the Tavern pytest integration.
+It handles test error reporting and exception formatting for pytest.
+
+The module contains classes and functions for formatting and reporting
+test errors and exceptions in a way that integrates with pytest.
+"""
+
 import dataclasses
 import json
 import logging

@@ -1,3 +1,13 @@
+"""
+Tavern Pytest Configuration Module
+
+This module provides configuration functionality for the Tavern pytest integration.
+It handles test configuration and option management for pytest.
+
+The module contains classes and functions for managing test configuration
+and pytest options specific to Tavern testing.
+"""
+
 import copy
 import dataclasses
 import logging

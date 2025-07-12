@@ -1,3 +1,13 @@
+"""
+Tavern gRPC Request Plugin
+
+This module provides gRPC request functionality for the Tavern testing framework.
+It handles gRPC request creation, formatting, and execution for API testing.
+
+The module contains classes and functions for building and sending gRPC requests
+with various authentication methods, headers, and payload formats.
+"""
+
 import dataclasses
 import functools
 import json
@@ -42,6 +52,11 @@ class WrappedFuture:
 
 
 class GRPCRequest(BaseRequest):
+    """gRPC request implementation for Tavern.
+
+    This class handles the creation and execution of gRPC requests.
+    It supports various gRPC methods and payload formats.
+    """
     """Wrapper for a single GRPC request on a client
 
     Similar to RestRequest, publishes a single message.

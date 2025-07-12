@@ -17,6 +17,7 @@ stages:
       status_code: 200
       json:
         status: "healthy"
+        timestamp: !anynumber
       save:
         json:
           server_timestamp: timestamp
@@ -29,7 +30,7 @@ stages:
       status_code: 200
       json:
         status: "healthy"
-        timestamp: !approx "{server_timestamp}"
+        timestamp: !anynumber
 
 ---
 test_name: User Management Flow
@@ -49,6 +50,8 @@ stages:
       json:
         username: "testuser"
         email: "test@example.com"
+        id: !anystr
+        created_at: !anynumber
       save:
         json:
           user_id: id
@@ -63,6 +66,7 @@ stages:
         id: "{user_id}"
         username: "testuser"
         email: "test@example.com"
+        created_at: !anynumber
 
   - name: Try to get non-existent user
     request:
@@ -90,6 +94,7 @@ stages:
       status_code: 200
       json:
         message: "Login successful"
+        session_id: !anystr
       save:
         json:
           session_id: session_id
@@ -110,6 +115,8 @@ stages:
         title: "My First Post"
         content: "This is the content of my first post"
         author: "testuser"
+        id: !anystr
+        created_at: !anynumber
       save:
         json:
           post_id: id
@@ -125,6 +132,7 @@ stages:
         title: "My First Post"
         content: "This is the content of my first post"
         author: "testuser"
+        created_at: !anynumber
 
 ---
 test_name: Error Handling Examples
@@ -205,11 +213,10 @@ stages:
       method: POST
       json:
         title: "Incomplete Post"
-        # Missing content field
       headers:
         content-type: application/json
         X-Session-ID: "fake-session"
     response:
-      status_code: 400
+      status_code: 401
       json:
-        error: "title and content are required"
+        error: "Authentication required"

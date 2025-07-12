@@ -1,3 +1,13 @@
+"""
+Tavern REST Files Plugin
+
+This module provides file handling functionality for REST requests in the Tavern testing framework.
+It handles file uploads, downloads, and file-related operations for REST API testing.
+
+The module contains classes and functions for managing file operations
+in REST API requests and responses.
+"""
+
 import dataclasses
 import logging
 import mimetypes

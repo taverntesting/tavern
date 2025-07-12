@@ -1,3 +1,13 @@
+"""
+Tavern Pytest File Module
+
+This module provides file handling functionality for the Tavern pytest integration.
+It handles test file discovery and processing for pytest.
+
+The module contains classes and functions for discovering and processing
+test files in a way that integrates with pytest's file collection system.
+"""
+
 import copy
 import functools
 import itertools
@@ -8,8 +18,8 @@ from typing import Any, Union
 
 import pytest
 import yaml
-from box import Box
 from _pytest.mark.structures import Mark
+from box import Box
 
 from tavern._core import exceptions
 from tavern._core.dict_util import deep_dict_merge, format_keys, get_tavern_box

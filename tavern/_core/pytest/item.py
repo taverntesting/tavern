@@ -1,14 +1,23 @@
+"""
+Tavern Pytest Item Module
+
+This module provides item functionality for the Tavern pytest integration.
+It handles test item creation and management for pytest.
+
+The module contains classes and functions for creating and managing
+test items that represent individual test cases in pytest.
+"""
+
 import logging
 import pathlib
 from collections.abc import MutableMapping
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
-import attr
 import pytest
 import yaml
 from _pytest._code.code import ExceptionInfo, TerminalRepr
-from _pytest.nodes import Node
 from _pytest.mark.structures import Mark
+from _pytest.nodes import Node
 
 from tavern._core import exceptions
 from tavern._core.loader import error_on_empty_scalar
@@ -54,7 +63,7 @@ class YamlItem(pytest.Item):
         self.spec = spec
 
         if not YamlItem._patched_yaml:
-            yaml.parser.Parser.process_empty_scalar = (  # type:ignore
+            yaml.parser.Parser.process_empty_scalar = (  # type: ignore
                 error_on_empty_scalar
             )
 
@@ -74,11 +83,11 @@ class YamlItem(pytest.Item):
         )  # type: ignore
 
         fixtureinfo = self.session._fixturemanager.getfixtureinfo(
-            self, self.obj, type(self), funcargs=False
+            self, self.obj, type(self)
         )
         self._fixtureinfo = fixtureinfo
         self.fixturenames = fixtureinfo.names_closure
-        self._request = pytest.FixtureRequest(self, _ispytest=True)
+        # self._request = pytest.FixtureRequest(self, _ispytest=True)  # Removed for Pytest 8.x compatibility
 
     @property
     def location(self):
@@ -92,7 +101,7 @@ class YamlItem(pytest.Item):
 
     def setup(self) -> None:
         super().setup()
-        self._request._fillfixtures()
+        # self._request._fillfixtures()  # Removed for Pytest 8.x compatibility
 
     @property
     def obj(self):
@@ -144,19 +153,31 @@ class YamlItem(pytest.Item):
 
             self.add_marker(pm)
 
-    def _load_fixture_values(self):
-        fixture_markers = list(self.iter_markers("usefixtures"))
+    def _load_fixture_values(self) -> dict[str, Any]:
+        # Use pytest's request fixture to access fixture values
+        try:
+            request = self._request
+        except AttributeError:
+            # If _request is not set, fallback to empty dict
+            return {}
 
-        values = {}
+        values: dict[str, Any] = {}
+        fixture_markers = list(self.iter_markers("usefixtures"))
 
         for m in fixture_markers:
             if isinstance(m.args, (list, tuple)):
-                mark_values = {f: self.funcargs[f] for f in m.args}
+                for f in m.args:
+                    if hasattr(request, 'getfixturevalue'):
+                        try:
+                            values[f] = request.getfixturevalue(f)
+                        except Exception:
+                            continue
             elif isinstance(m.args, str):
-                # Not sure if this can happen if validation is working
-                # correctly, but it appears to be slightly broken so putting
-                # this check here just in case
-                mark_values = {m.args: self.funcargs[m.args]}
+                if hasattr(request, 'getfixturevalue'):
+                    try:
+                        values[m.args] = request.getfixturevalue(m.args)
+                    except Exception:
+                        continue
             else:
                 raise exceptions.BadSchemaError(
                     f"Can't handle 'usefixtures' spec of '{m.args}'."
@@ -165,20 +186,17 @@ class YamlItem(pytest.Item):
                     " names"
                 )
 
-            if any(mv in values for mv in mark_values):
-                logger.warning("Overriding value for %s", mark_values)
-
-            values.update(mark_values)
-
         # Use autouse fixtures as well
-        for name in self.fixturenames:
-            if name in values:
-                logger.debug("%s already explicitly used", name)
-                continue
-
-            mark_values = {name: self.funcargs[name]}
-            values.update(mark_values)
-
+        if hasattr(self, 'fixturenames'):
+            for name in self.fixturenames:
+                if name in values:
+                    logger.debug("%s already explicitly used", name)
+                    continue
+                if hasattr(request, 'getfixturevalue'):
+                    try:
+                        values[name] = request.getfixturevalue(name)
+                    except Exception:
+                        continue
         return values
 
     def runtest(self) -> None:

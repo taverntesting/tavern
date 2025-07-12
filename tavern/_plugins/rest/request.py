@@ -1,3 +1,13 @@
+"""
+Tavern REST Request Plugin
+
+This module provides the REST request functionality for the Tavern testing framework.
+It handles HTTP request creation, formatting, and execution for REST API testing.
+
+The module contains classes and functions for building and sending HTTP requests
+with various authentication methods, headers, and payload formats for REST APIs.
+"""
+
 import contextlib
 import json
 import logging
@@ -75,7 +85,8 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
     if "files" in rspec:
         if content_header:
             logger.warning(
-                "Tried to specify a content-type header while sending multipart files - this will be ignored"
+                "Tried to specify a content-type header while sending multipart "
+                "files - this will be ignored"
             )
             rspec["headers"] = {
                 i: j
@@ -87,7 +98,9 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
 
     if fspec["method"] not in valid_http_methods:
         raise exceptions.BadSchemaError(
-            "Unknown HTTP method {}".format(fspec["method"])
+            "Unknown HTTP method {}".format(
+                fspec["method"]
+            )
         )
 
     # If the user is using the file_body key, try to guess what type of file/encoding it is.
@@ -99,7 +112,8 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
             # Group name doesn't matter here as it's a single file
             if group_name:
                 logger.warning(
-                    f"'group_name' for the 'file_body' key was specified as '{group_name}' but this will be ignored "
+                    f"'group_name' for the 'file_body' key was specified as "
+                    f"'{group_name}' but this will be ignored "
                 )
 
             fspec["file_body"] = filename
@@ -113,7 +127,8 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                 inferred_content_type = file_spec[2]
                 if content_header:
                     logger.info(
-                        "inferred content type '%s' from %s, but using user specified content type '%s'",
+                        "inferred content type '%s' from %s, but using user "
+                        "specified content type '%s'",
                         inferred_content_type,
                         filename,
                         content_header,
@@ -331,6 +346,11 @@ def _read_expected_cookies(
 
 
 class RestRequest(BaseRequest):
+    """REST request implementation for Tavern.
+
+    This class handles the creation and execution of REST HTTP requests.
+    It supports various HTTP methods, headers, authentication, and file uploads.
+    """
     optional_in_file: ClassVar[list[str]] = [
         "json",
         "data",

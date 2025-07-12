@@ -1,3 +1,13 @@
+"""
+Tavern MQTT Response Plugin
+
+This module provides MQTT response handling and validation for the Tavern testing framework.
+It handles MQTT response processing, validation, and verification.
+
+The module contains classes and functions for processing and validating
+MQTT responses from API endpoints during testing.
+"""
+
 import concurrent
 import concurrent.futures
 import contextlib

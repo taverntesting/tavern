@@ -1,7 +1,17 @@
+"""
+Tavern Pytest Utilities Module
+
+This module provides utility functionality for the Tavern pytest integration.
+It handles common utility functions used by the pytest integration.
+
+The module contains utility functions that support the pytest integration,
+including option parsing, configuration management, and helper functions.
+"""
+
 import logging
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Optional, TypeVar, Union
+from typing import Any, Optional, TypeVar, Union, cast
 
 import pytest
 
@@ -126,6 +136,14 @@ def add_ini_options(parser: pytest.Parser) -> None:
 
 
 def load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
+    """Load global configuration and return a new TestConfig with fresh variables.
+
+    Args:
+        pytest_config: Pytest config object
+
+    Returns:
+        TestConfig with global configuration loaded and variables formatted
+    """
     return _load_global_cfg(pytest_config).with_new_variables()
 
 
@@ -149,7 +167,8 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     # THEN load command line, to allow overwriting of values
     cmdline_global_cfg_paths = pytest_config.getoption("tavern_global_cfg") or []
 
-    all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
+    # Fix type annotation issues with list concatenation
+    all_paths = list(ini_global_cfg_paths) + list(cmdline_global_cfg_paths)
     global_cfg_dict = load_global_config(all_paths)
 
     variables: dict = {}
@@ -221,4 +240,4 @@ def get_option_generic(
     if pytest_config.getoption(cli_flag) is not None:
         use = pytest_config.getoption(cli_flag)
 
-    return use
+    return cast(T, use)

@@ -1,3 +1,13 @@
+"""
+Tavern Schema Files Module
+
+This module provides schema file handling functionality for the Tavern testing framework.
+It handles schema file loading and validation for test configuration.
+
+The module contains classes and functions for loading and validating
+schema files that define the structure of Tavern test configurations.
+"""
+
 import contextlib
 import copy
 import logging

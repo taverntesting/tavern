@@ -1,3 +1,13 @@
+"""
+Tavern MQTT Client Plugin
+
+This module provides MQTT client functionality for the Tavern testing framework.
+It handles MQTT client creation and management for API testing.
+
+The module contains classes and functions for creating and managing
+MQTT clients that can be used for API testing scenarios.
+"""
+
 import copy
 import dataclasses
 import logging
@@ -466,8 +476,14 @@ class MQTTClient:
 
         if status == 0:
             with self._subscribe_lock:
-                self._subscription_mappings[topic] = mid
-                self._subscribed[mid] = _Subscription(topic)
+                # Fix type annotation - ensure mid is not None
+                if mid is not None:
+                    self._subscription_mappings[topic] = mid
+                    self._subscribed[mid] = _Subscription(topic)
+                else:
+                    raise exceptions.MQTTError(
+                        f"Error subscribing to '{topic}' - no message ID returned"
+                    )
         else:
             raise exceptions.MQTTError(
                 f"Error subscribing to '{topic}' (err code {status})"

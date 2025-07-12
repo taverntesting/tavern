@@ -1,3 +1,13 @@
+"""
+Tavern Stage Lines Module
+
+This module provides stage line functionality for the Tavern testing framework.
+It handles test stage processing and line-by-line test execution.
+
+The module contains classes and functions for processing test stages
+and managing line-by-line test execution flow.
+"""
+
 import dataclasses
 import logging
 from collections.abc import Iterable, Mapping

@@ -1,3 +1,13 @@
+"""
+Tavern Skip Module
+
+This module provides skip functionality for the Tavern testing framework.
+It handles test skipping logic and conditional test execution.
+
+The module contains functions for determining when tests should be skipped
+based on various conditions and configurations.
+"""
+
 import logging
 
 import simpleeval
