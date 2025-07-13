@@ -454,3 +454,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 #  2.14.0          Fix pytest_tavern_beta_before_every_request not allowing a user to override request vars (2025-03-08)
 
 #  2.15.0          Add !anynumber token (2025-04-12)
+
+##  3.0.0a6         release 3.0.0a6 (2025-07-13)
