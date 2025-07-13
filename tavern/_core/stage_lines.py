@@ -2,7 +2,6 @@ import dataclasses
 import logging
 from collections.abc import Iterable, Mapping
 from typing import (
-    Optional,
     Protocol,
     Union,
 )
@@ -15,7 +14,7 @@ class YamlMark:
     """A pyyaml mark"""
 
     line: int = 0
-    name: Optional[str] = None
+    name: str | None = None
 
 
 class _WithMarks(Protocol):
@@ -53,7 +52,7 @@ def read_relevant_lines(
                 yield line.split("#", 1)[0].rstrip()
 
 
-def get_stage_filename(yaml_block: PyYamlDict) -> Optional[str]:
+def get_stage_filename(yaml_block: PyYamlDict) -> str | None:
     return start_mark(yaml_block).name
 
 

@@ -1,17 +1,14 @@
 import os
 from contextlib import ExitStack
-from typing import Union
 
 import pytest
-from _pytest.config import ExitCode
+from pytest import ExitCode
 
 from tavern._core import exceptions
 from tavern._core.schema.files import wrapfile
 
 
-def _get_or_wrap_global_cfg(
-    stack: ExitStack, tavern_global_cfg: Union[dict, str]
-) -> str:
+def _get_or_wrap_global_cfg(stack: ExitStack, tavern_global_cfg: dict | str) -> str:
     """
     Try to parse global configuration from given argument.
 
@@ -45,13 +42,13 @@ def _get_or_wrap_global_cfg(
 
 def run(  # type:ignore
     in_file: str,
-    tavern_global_cfg: Union[dict, str, None] = None,
-    tavern_mqtt_backend: Union[str, None] = None,
-    tavern_http_backend: Union[str, None] = None,
-    tavern_grpc_backend: Union[str, None] = None,
-    tavern_strict: Union[bool, None] = None,
-    pytest_args: Union[list, None] = None,
-) -> Union[ExitCode, int]:
+    tavern_global_cfg: dict | str | None = None,
+    tavern_mqtt_backend: str | None = None,
+    tavern_http_backend: str | None = None,
+    tavern_grpc_backend: str | None = None,
+    tavern_strict: bool | None = None,
+    pytest_args: list | None = None,
+) -> ExitCode | int:
     """Run all tests contained in a file using pytest.main()
 
     Args:

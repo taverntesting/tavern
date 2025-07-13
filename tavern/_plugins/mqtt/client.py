@@ -6,7 +6,7 @@ import threading
 import time
 from collections.abc import Mapping, MutableMapping
 from queue import Empty, Full, Queue
-from typing import Any, Optional, Union
+from typing import Any
 
 import paho.mqtt.client as paho
 from paho.mqtt.client import MQTTMessageInfo
@@ -59,7 +59,7 @@ def check_file_exists(key, filename) -> None:
 
 def _handle_tls_args(
     tls_args: MutableMapping,
-) -> Optional[Mapping]:
+) -> Mapping | None:
     """Make sure TLS options are valid"""
 
     if not tls_args:
@@ -76,7 +76,7 @@ def _handle_tls_args(
 
 def _handle_ssl_context_args(
     ssl_context_args: MutableMapping,
-) -> Optional[Mapping]:
+) -> Mapping | None:
     """Make sure SSL Context options are valid"""
     if not ssl_context_args:
         return None
@@ -352,8 +352,8 @@ class MQTTClient:
         logger.debug("MQTT socket closed")
 
     def message_received(
-        self, topic: str, timeout: Union[float, int] = 1
-    ) -> Optional[paho.MQTTMessage]:
+        self, topic: str, timeout: float | int = 1
+    ) -> paho.MQTTMessage | None:
         """Check that a message is in the message queue
 
         Args:
@@ -385,9 +385,9 @@ class MQTTClient:
     def publish(
         self,
         topic: str,
-        payload: Optional[Any] = None,
-        qos: Optional[int] = None,
-        retain: Optional[bool] = False,
+        payload: None | bytearray | bytes | float | str = None,
+        qos: int | None = None,
+        retain: bool | None = None,
     ) -> MQTTMessageInfo:
         """publish message using paho library"""
         self._wait_for_subscriptions()

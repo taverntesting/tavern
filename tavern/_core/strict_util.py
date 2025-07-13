@@ -2,7 +2,7 @@ import dataclasses
 import enum
 import logging
 import re
-from typing import Optional, Union
+from typing import Union
 
 from tavern._core import exceptions
 from tavern._core.strtobool import strtobool
@@ -24,7 +24,7 @@ valid_keys = ["json", "headers", "redirect_query_params"]
 valid_switches = ["on", "off", "list_any_order"]
 
 
-def strict_setting_factory(str_setting: Optional[str]) -> StrictSetting:
+def strict_setting_factory(str_setting: str | None) -> StrictSetting:
     """Converts from cmdline/setting file to an enum"""
     if str_setting is None:
         return StrictSetting.UNSET

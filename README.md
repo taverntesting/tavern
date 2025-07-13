@@ -142,7 +142,7 @@ to run the integration tests, make sure you have
 It's that simple!
 
 If you want to develop things in tavern, enter your virtualenv and run
-`pip install -r requirements.txt` to install the library, any requirements,
+`uv sync --all-extras` to install the library, any requirements,
 and other useful development options.
 
 Tavern uses [ruff](https://pypi.org/project/ruff/) to keep all of the code
