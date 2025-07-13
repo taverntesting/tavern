@@ -187,6 +187,7 @@ ignore = [
     "PLR0912", "PLR0915", "PLR0911", "PLR0913", # too many branches/variables/return values - sometimes this is just unavoidable
     "PLR2004", # 'magic numbers'
     "PLW2901", # Loop variable overridden
+    "PLC0415", # import not at top of file
 ]
 select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL", "U"]
 
