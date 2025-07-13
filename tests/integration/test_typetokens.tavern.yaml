@@ -163,6 +163,7 @@ stages:
           Thing: !anystr
           nested: !anything
         an_integer: !anyint
+        a_float: !anyfloat
         a_string: !anystr
         a_bool: !anybool
 
@@ -704,3 +705,55 @@ stages:
       status_code: 200
       json:
         uuid: !re_fullmatch "[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}"
+
+---
+test_name: Test number type match
+
+strict:
+  - json:off
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: match integer value
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        an_integer: !anynumber
+
+  - name: match float value
+    request:
+      url: "{host}/fake_dictionary"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        a_float: !anynumber
+
+---
+test_name: Test number type match in list
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match generic number types
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        - a
+        - b
+        - c
+        - !anynumber
+        - !anynumber
+        - !anynumber
+        - !anynumber
+        - !anynumber
+        - !anynumber

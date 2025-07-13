@@ -21,6 +21,12 @@ stages:
             - jmespath: "an_integer"
               operator: "type"
               expected: int
+            - jmespath: "a_float"
+              operator: "eq"
+              expected: 1.23
+            - jmespath: "a_float"
+              operator: "type"
+              expected: float
             - jmespath: "a_string"
               operator: "eq"
               expected: abc

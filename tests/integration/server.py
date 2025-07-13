@@ -54,6 +54,7 @@ def get_fake_dictionary():
     fake = {
         "top": {"Thing": "value", "nested": {"doubly": {"inner": "value"}}},
         "an_integer": 123,
+        "a_float": 1.23,
         "a_string": "abc",
         "a_bool": True,
     }
