@@ -57,6 +57,8 @@ jobs:
       - name: run tests
         run: |
           pip install uv
+          uv venv
+          source .venv/bin/activate
           uv sync --all-extras
           tox -c ${TOXCFG} -e ${TOXENV}
 
@@ -122,5 +124,7 @@ jobs:
       - name: Run tests
         run: |
           pip install uv
+          uv venv
+          source .venv/bin/activate
           uv sync --all-extras
           tox -c ${TOXCFG} -e ${TOXENV}
