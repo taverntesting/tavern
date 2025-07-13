@@ -156,7 +156,7 @@ class GRPCResponse(BaseResponse):
 
         json_result = json_format.MessageToDict(
             result,
-            including_default_value_fields=True,
+            always_print_fields_with_no_presence=True,
             preserving_proto_field_name=True,
         )
 
