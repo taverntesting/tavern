@@ -86,6 +86,14 @@ dev = [
     "types-jsonschema",
     "types-paho-mqtt",
     "types-jmespath",
+    "grpc-interceptor",
+    # for pytest
+    "exceptiongroup",
+    "tomli",
+    "tbump>=6.10.0"
+]
+
+docs = [
     "sphinx>=7,<8",
     "sphinx_rtd_theme",
     "recommonmark",
@@ -93,11 +101,6 @@ dev = [
     "docutils",
     "pygments",
     "sphinx-markdown-tables",
-    "grpc-interceptor",
-    # for pytest
-    "exceptiongroup",
-    "tomli",
-    "tbump>=6.10.0"
 ]
 
 mqtt = [
@@ -232,3 +235,9 @@ cmd = "./scripts/update-changelog.bash"
 # [[tool.tbump.after_push]]
 # name = "publish"
 # cmd = "./scripts/release.sh"
+
+[tool.tox]
+runner = "uv-venv-lock-runner"
+skip_missing_interpreters = true
+isolated_build = true
+base_python = "3.11"

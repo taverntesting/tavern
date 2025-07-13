@@ -6,8 +6,16 @@ All configuration for the project should be put into `pyproject.toml`.
 
 1. Create a virtualenv using whatever method you like (
    eg, [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/))
+   
+```shell
+uv venv
+```
 
-1. Install dependencies from requirements.txt
+1. Sync venv
+
+```shell
+uv sync --all-extras
+```
 
 ## Running tests locally
 
@@ -21,11 +29,16 @@ If on Windows, you should be able to just run the 'tox' commands in that file.
 
 1. Add or update the dependency in [pyproject.toml](/pyproject.toml)
 
-1. Update constraints and requirements file
+1. Update lock file
 
 ```shell
-uv pip compile --universal --all-extras pyproject.toml --output-file constraints.txt -U
-uv pip compile --universal --all-extras pyproject.toml --output-file requirements.txt -U --generate-hashes
+uv lock
+```
+
+1. Sync venv
+
+```shell
+uv sync --all-extras
 ```
 
 1. Run tests as above
