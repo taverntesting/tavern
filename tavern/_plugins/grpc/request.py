@@ -56,7 +56,8 @@ class GRPCRequest(BaseRequest):
 
         self._prepared = functools.partial(client.call, **grpc_args)
 
-        self._service_name = grpc_args.get("service", None)
+        service = grpc_args.get("service")
+        self._service_name = str(service) if service else ""
 
         # Need to do this here because get_publish_args will modify the original
         # input, which we might want to use to format. No error handling because
