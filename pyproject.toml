@@ -90,7 +90,8 @@ dev = [
     # for pytest
     "exceptiongroup",
     "tomli",
-    "tbump>=6.10.0"
+    "tbump>=6.10.0",
+    "tox>4.20,<5"
 ]
 
 docs = [

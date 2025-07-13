@@ -827,16 +827,16 @@ wheels = [
 
 [[package]]
 name = "protobuf"
-version = "6.31.1"
+version = "4.25.8"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/52/f3/b9655a711b32c19720253f6f06326faf90580834e2e83f840472d752bc8b/protobuf-6.31.1.tar.gz", hash = "sha256:d8cac4c982f0b957a4dc73a80e2ea24fab08e679c0de9deb835f4a12d69aca9a", size = 441797 }
+sdist = { url = "https://files.pythonhosted.org/packages/df/01/34c8d2b6354906d728703cb9d546a0e534de479e25f1b581e4094c4a85cc/protobuf-4.25.8.tar.gz", hash = "sha256:6135cf8affe1fc6f76cced2641e4ea8d3e59518d1f24ae41ba97bcad82d397cd", size = 380920 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f3/6f/6ab8e4bf962fd5570d3deaa2d5c38f0a363f57b4501047b5ebeb83ab1125/protobuf-6.31.1-cp310-abi3-win32.whl", hash = "sha256:7fa17d5a29c2e04b7d90e5e32388b8bfd0e7107cd8e616feef7ed3fa6bdab5c9", size = 423603 },
-    { url = "https://files.pythonhosted.org/packages/44/3a/b15c4347dd4bf3a1b0ee882f384623e2063bb5cf9fa9d57990a4f7df2fb6/protobuf-6.31.1-cp310-abi3-win_amd64.whl", hash = "sha256:426f59d2964864a1a366254fa703b8632dcec0790d8862d30034d8245e1cd447", size = 435283 },
-    { url = "https://files.pythonhosted.org/packages/6a/c9/b9689a2a250264a84e66c46d8862ba788ee7a641cdca39bccf64f59284b7/protobuf-6.31.1-cp39-abi3-macosx_10_9_universal2.whl", hash = "sha256:6f1227473dc43d44ed644425268eb7c2e488ae245d51c6866d19fe158e207402", size = 425604 },
-    { url = "https://files.pythonhosted.org/packages/76/a1/7a5a94032c83375e4fe7e7f56e3976ea6ac90c5e85fac8576409e25c39c3/protobuf-6.31.1-cp39-abi3-manylinux2014_aarch64.whl", hash = "sha256:a40fc12b84c154884d7d4c4ebd675d5b3b5283e155f324049ae396b95ddebc39", size = 322115 },
-    { url = "https://files.pythonhosted.org/packages/fa/b1/b59d405d64d31999244643d88c45c8241c58f17cc887e73bcb90602327f8/protobuf-6.31.1-cp39-abi3-manylinux2014_x86_64.whl", hash = "sha256:4ee898bf66f7a8b0bd21bce523814e6fbd8c6add948045ce958b73af7e8878c6", size = 321070 },
-    { url = "https://files.pythonhosted.org/packages/f7/af/ab3c51ab7507a7325e98ffe691d9495ee3d3aa5f589afad65ec920d39821/protobuf-6.31.1-py3-none-any.whl", hash = "sha256:720a6c7e6b77288b85063569baae8536671b39f15cc22037ec7045658d80489e", size = 168724 },
+    { url = "https://files.pythonhosted.org/packages/45/ff/05f34305fe6b85bbfbecbc559d423a5985605cad5eda4f47eae9e9c9c5c5/protobuf-4.25.8-cp310-abi3-win32.whl", hash = "sha256:504435d831565f7cfac9f0714440028907f1975e4bed228e58e72ecfff58a1e0", size = 392745 },
+    { url = "https://files.pythonhosted.org/packages/08/35/8b8a8405c564caf4ba835b1fdf554da869954712b26d8f2a98c0e434469b/protobuf-4.25.8-cp310-abi3-win_amd64.whl", hash = "sha256:bd551eb1fe1d7e92c1af1d75bdfa572eff1ab0e5bf1736716814cdccdb2360f9", size = 413736 },
+    { url = "https://files.pythonhosted.org/packages/28/d7/ab27049a035b258dab43445eb6ec84a26277b16105b277cbe0a7698bdc6c/protobuf-4.25.8-cp37-abi3-macosx_10_9_universal2.whl", hash = "sha256:ca809b42f4444f144f2115c4c1a747b9a404d590f18f37e9402422033e464e0f", size = 394537 },
+    { url = "https://files.pythonhosted.org/packages/bd/6d/a4a198b61808dd3d1ee187082ccc21499bc949d639feb948961b48be9a7e/protobuf-4.25.8-cp37-abi3-manylinux2014_aarch64.whl", hash = "sha256:9ad7ef62d92baf5a8654fbb88dac7fa5594cfa70fd3440488a5ca3bfc6d795a7", size = 294005 },
+    { url = "https://files.pythonhosted.org/packages/d6/c6/c9deaa6e789b6fc41b88ccbdfe7a42d2b82663248b715f55aa77fbc00724/protobuf-4.25.8-cp37-abi3-manylinux2014_x86_64.whl", hash = "sha256:83e6e54e93d2b696a92cad6e6efc924f3850f82b52e1563778dfab8b355101b0", size = 294924 },
+    { url = "https://files.pythonhosted.org/packages/0c/c1/6aece0ab5209981a70cd186f164c133fdba2f51e124ff92b73de7fd24d78/protobuf-4.25.8-py3-none-any.whl", hash = "sha256:15a0af558aa3b13efef102ae6e4f3efac06f1eea11afb3a57db2901447d9fb59", size = 156757 },
 ]
 
 [[package]]
@@ -1457,9 +1457,7 @@ dependencies = [
 dev = [
     { name = "allure-pytest" },
     { name = "colorlog" },
-    { name = "commonmark" },
     { name = "coverage", extra = ["toml"] },
-    { name = "docutils" },
     { name = "exceptiongroup" },
     { name = "faker" },
     { name = "flask" },
@@ -1469,14 +1467,9 @@ dev = [
     { name = "itsdangerous" },
     { name = "pre-commit" },
     { name = "py" },
-    { name = "pygments" },
     { name = "pytest-cov" },
     { name = "pytest-xdist" },
-    { name = "recommonmark" },
     { name = "ruff" },
-    { name = "sphinx" },
-    { name = "sphinx-markdown-tables" },
-    { name = "sphinx-rtd-theme" },
     { name = "tbump" },
     { name = "tomli" },
     { name = "tox" },
@@ -1488,6 +1481,15 @@ dev = [
     { name = "types-requests" },
     { name = "uv" },
     { name = "wheel" },
+]
+docs = [
+    { name = "commonmark" },
+    { name = "docutils" },
+    { name = "pygments" },
+    { name = "recommonmark" },
+    { name = "sphinx" },
+    { name = "sphinx-markdown-tables" },
+    { name = "sphinx-rtd-theme" },
 ]
 grpc = [
     { name = "google-api-python-client" },
@@ -1505,9 +1507,9 @@ mqtt = [
 requires-dist = [
     { name = "allure-pytest", marker = "extra == 'dev'" },
     { name = "colorlog", marker = "extra == 'dev'" },
-    { name = "commonmark", marker = "extra == 'dev'" },
+    { name = "commonmark", marker = "extra == 'docs'" },
     { name = "coverage", extras = ["toml"], marker = "extra == 'dev'" },
-    { name = "docutils", marker = "extra == 'dev'" },
+    { name = "docutils", marker = "extra == 'docs'" },
     { name = "exceptiongroup", marker = "extra == 'dev'" },
     { name = "faker", marker = "extra == 'dev'" },
     { name = "flask", marker = "extra == 'dev'", specifier = ">=3,<4" },
@@ -1524,9 +1526,9 @@ requires-dist = [
     { name = "paho-mqtt", marker = "extra == 'mqtt'", specifier = ">=1.3.1,<=1.6.1" },
     { name = "pre-commit", marker = "extra == 'dev'" },
     { name = "proto-plus", marker = "extra == 'grpc'" },
-    { name = "protobuf", marker = "extra == 'grpc'", specifier = ">=6,<7" },
+    { name = "protobuf", marker = "extra == 'grpc'", specifier = ">=4,<5" },
     { name = "py", marker = "extra == 'dev'" },
-    { name = "pygments", marker = "extra == 'dev'" },
+    { name = "pygments", marker = "extra == 'docs'" },
     { name = "pyjwt", specifier = ">=2.5.0,<3" },
     { name = "pykwalify", specifier = ">=1.8.0,<2" },
     { name = "pytest", specifier = ">=7.4,<8" },
@@ -1534,21 +1536,22 @@ requires-dist = [
     { name = "pytest-xdist", marker = "extra == 'dev'" },
     { name = "python-box", specifier = ">=6,<7" },
     { name = "pyyaml", specifier = ">=6.0.1,<7" },
-    { name = "recommonmark", marker = "extra == 'dev'" },
+    { name = "recommonmark", marker = "extra == 'docs'" },
     { name = "requests", specifier = ">=2.22.0,<3" },
     { name = "ruff", marker = "extra == 'dev'", specifier = "~=0.9.10" },
     { name = "simpleeval", specifier = ">=1.0.3" },
-    { name = "sphinx", marker = "extra == 'dev'", specifier = ">=7,<8" },
-    { name = "sphinx-markdown-tables", marker = "extra == 'dev'" },
-    { name = "sphinx-rtd-theme", marker = "extra == 'dev'" },
+    { name = "sphinx", marker = "extra == 'docs'", specifier = ">=7,<8" },
+    { name = "sphinx-markdown-tables", marker = "extra == 'docs'" },
+    { name = "sphinx-rtd-theme", marker = "extra == 'docs'" },
     { name = "stevedore", specifier = ">=4,<5" },
     { name = "tbump", marker = "extra == 'dev'", specifier = ">=6.10.0" },
     { name = "tomli", marker = "extra == 'dev'" },
+    { name = "tox", marker = "extra == 'dev'", specifier = ">4.20,<5" },
     { name = "tox", marker = "extra == 'dev'", specifier = ">=4,<5" },
     { name = "types-jmespath", marker = "extra == 'dev'" },
     { name = "types-jsonschema", marker = "extra == 'dev'" },
     { name = "types-paho-mqtt", marker = "extra == 'dev'" },
-    { name = "types-protobuf", marker = "extra == 'dev'", specifier = ">=6,<7" },
+    { name = "types-protobuf", marker = "extra == 'dev'", specifier = ">=4,<5" },
     { name = "types-pyyaml", marker = "extra == 'dev'" },
     { name = "types-requests", marker = "extra == 'dev'" },
     { name = "uv", marker = "extra == 'dev'" },
@@ -1679,11 +1682,11 @@ wheels = [
 
 [[package]]
 name = "types-protobuf"
-version = "6.30.2.20250703"
+version = "4.25.0.20240417"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/dc/54/d63ce1eee8e93c4d710bbe2c663ec68e3672cf4f2fca26eecd20981c0c5d/types_protobuf-6.30.2.20250703.tar.gz", hash = "sha256:609a974754bbb71fa178fc641f51050395e8e1849f49d0420a6281ed8d1ddf46", size = 62300 }
+sdist = { url = "https://files.pythonhosted.org/packages/76/21/757620113af23233496c04b8a66e0201e78695495b1db8e676672608588b/types-protobuf-4.25.0.20240417.tar.gz", hash = "sha256:c34eff17b9b3a0adb6830622f0f302484e4c089f533a46e3f147568313544352", size = 53340 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/7e/2b/5d0377c3d6e0f49d4847ad2c40629593fee4a5c9ec56eba26a15c708fbc0/types_protobuf-6.30.2.20250703-py3-none-any.whl", hash = "sha256:fa5aff9036e9ef432d703abbdd801b436a249b6802e4df5ef74513e272434e57", size = 76489 },
+    { url = "https://files.pythonhosted.org/packages/ef/78/6f0351f80a682c4005775c7e1fd2b17235b88d87c85ef59214bd1f60ff60/types_protobuf-4.25.0.20240417-py3-none-any.whl", hash = "sha256:e9b613227c2127e3d4881d75d93c93b4d6fd97b5f6a099a0b654a05351c8685d", size = 67896 },
 ]
 
 [[package]]
