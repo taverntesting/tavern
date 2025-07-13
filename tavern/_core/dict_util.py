@@ -357,10 +357,10 @@ def check_keys_match_recursive(
     elif isinstance(expected_val, TypeSentinel):
         # If the 'expected' type is actually just a sentinel for another type,
         # then it should match
-        if isinstance(expected_val.constructor, tuple):
-            expected_matches = actual_type in expected_val.constructor
+        if isinstance(expected_val.allowed_types, tuple):
+            expected_matches = actual_type in expected_val.allowed_types
         else:
-            expected_matches = actual_type == expected_val.constructor
+            expected_matches = actual_type == expected_val.allowed_types
     else:
         # Normal matching
         expected_matches = (
@@ -509,7 +509,7 @@ def check_keys_match_recursive(
             logger.debug(
                 "Actual value = '%s' - matches !any%s",
                 actual_val,
-                expected_val.constructor,
+                expected_val.allowed_types,
             )
         else:
             raise exceptions.KeyMismatchError(f"Key mismatch: ({full_err()})") from e
