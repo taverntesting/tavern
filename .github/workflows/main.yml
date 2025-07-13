@@ -54,13 +54,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: install deps
+      - name: run tests
         run: |
           pip install uv
           uv sync --all-extras
-
-      - name: tox
-        run: |
           tox -c ${TOXCFG} -e ${TOXENV}
 
   integration-tests:
@@ -122,11 +119,8 @@ jobs:
         with:
           version: "23.x"
 
-      - name: install deps
+      - name: Run tests
         run: |
           pip install uv
           uv sync --all-extras
-
-      - name: tox
-        run: |
           tox -c ${TOXCFG} -e ${TOXENV}
