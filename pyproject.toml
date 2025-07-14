@@ -164,6 +164,10 @@ norecursedirs = [
     "example",
     "example/grpc/server"
 ]
+markers = [
+    "slow: A test marker to check if markers work with custom markers",
+    "xdist_group('group1'): A test marker to check if markers work with args",
+]
 
 [tool.ruff]
 target-version = "py310"

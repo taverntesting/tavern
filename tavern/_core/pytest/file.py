@@ -1,7 +1,9 @@
+import ast
 import copy
 import functools
 import itertools
 import logging
+import re
 import typing
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from typing import Any, Union
@@ -67,8 +69,29 @@ def _format_test_marks(
     for m in original_marks:
         if isinstance(m, str):
             # a normal mark
-            m = _format_without_inner(m, fmt_vars)
-            pytest_marks.append(getattr(pytest.mark, m))
+            if re.match(r"^\w+\(.*\)$", m.strip()):
+                try:
+                    # Safely parse mark with arguments
+                    mark_name = m.split("(")[0]
+                    args_str = m[len(mark_name) + 1 : -1]
+
+                    args = ast.literal_eval(args_str)
+                    mark = getattr(pytest.mark, mark_name)
+
+                    if isinstance(args, tuple):
+                        evaluated = mark(*args)
+                    else:
+                        evaluated = mark(args)
+
+                    pytest_marks.append(evaluated)
+                except Exception as e:
+                    msg = f"Tried to use mark '{m}' but it could not be parsed: {e!s}"
+                    logger.error(msg)
+                    raise exceptions.BadSchemaError(msg) from e
+            else:
+                # This is a mark without arguments
+                m = _format_without_inner(m, fmt_vars)
+                pytest_marks.append(getattr(pytest.mark, m))
         elif isinstance(m, dict):
             # skipif or parametrize (for now)
             for markname, extra_arg in m.items():
