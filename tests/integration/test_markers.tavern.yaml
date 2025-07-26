@@ -41,3 +41,24 @@ stages:
 #      status_code: 200
 #      json:
 #        value: test-1
+
+---
+test_name: Test should not be run if it has a special marker
+
+includes:
+  - !include common.yaml
+
+marks:
+  - do_not_run
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: test-1
+    response:
+      status_code: 555
+      json:
+        value: good
