@@ -157,6 +157,7 @@ addopts = [
     "-p", "no:logging",
     "--tb=short",
     "--color=yes",
+    "-m", "not do_not_run"
 ]
 norecursedirs = [
     ".git",
@@ -167,6 +168,7 @@ norecursedirs = [
 markers = [
     "slow: A test marker to check if markers work with custom markers",
     "xdist_group('group1'): A test marker to check if markers work with args",
+    "do_not_run: Test marker for tests that should not be run",
 ]
 
 [tool.ruff]
