@@ -43,7 +43,6 @@ stages:
 #        value: test-1
 
 ---
-
 test_name: Test should not be run if it has a special marker
 
 includes:
