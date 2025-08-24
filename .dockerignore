@@ -91,7 +91,6 @@ ENV/
 tags
 .pytest_cache
 
-dist
 docker
 docs
 .eggs
@@ -101,14 +100,11 @@ example
 LICENSE
 # MANIFEST.in
 README.md
-README.md
-requirements.txt
 # setup.cfg
 # setup.py
 # tavern
 tavern.egg-info
 tests
-.tox
 tox.ini
 tox-integration.ini
 

@@ -9,7 +9,7 @@ on:
   pull_request:
     branches:
       - master
-      - feature-2.0
+      - feat/3.0-release
 
 jobs:
   simple-checks:
@@ -20,7 +20,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
       - uses: pre-commit/action@v3.0.0
 
@@ -40,27 +40,26 @@ jobs:
           cache-name: cache-${TOXENV}
         with:
           path: .tox
-          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml', 'constraints.txt') }}
 
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'constraints.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
-      - name: install deps
+      - name: run tests
         run: |
           pip install uv
-          uv pip install --system -r requirements.txt
-
-      - name: tox
-        run: |
+          uv venv
+          source .venv/bin/activate
+          uv sync --all-extras
           tox -c ${TOXCFG} -e ${TOXENV}
 
   integration-tests:
@@ -102,19 +101,19 @@ jobs:
           cache-name: cache-${{ matrix.TOXENV }}
         with:
           path: .tox
-          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml', 'constraints.txt') }}
 
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'constraints.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
       - name: Install Protoc
         if: ${{ contains(matrix.TOXENV, 'grpc') }}
@@ -122,11 +121,10 @@ jobs:
         with:
           version: "23.x"
 
-      - name: install deps
+      - name: Run tests
         run: |
           pip install uv
-          uv pip install --system -r requirements.txt
-
-      - name: tox
-        run: |
+          uv venv
+          source .venv/bin/activate
+          uv sync --all-extras
           tox -c ${TOXCFG} -e ${TOXENV}

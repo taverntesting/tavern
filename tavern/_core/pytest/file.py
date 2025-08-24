@@ -108,7 +108,7 @@ def _parse_func_mark(fmt_vars: Mapping, m: str) -> pytest.Mark:
 
 
 def _format_test_marks(
-    original_marks: Iterable[Union[str, dict]], fmt_vars: Mapping, test_name: str
+    original_marks: Iterable[str | dict], fmt_vars: Mapping, test_name: str
 ) -> tuple[list[Mark], list[Mapping]]:
     """Given the 'raw' marks from the test and any available format variables,
     generate new  marks for this test

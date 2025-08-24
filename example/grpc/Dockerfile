@@ -1,4 +1,4 @@
-FROM python:3.12-slim-bookworm@sha256:ee9a59cfdad294560241c9a8c8e40034f165feb4af7088c1479c2cdd84aafbed AS base
+FROM python:3.12-slim-trixie AS base
 
 RUN pip install grpcio-tools==1.59.0 grpcio==1.59.0 grpcio-reflection==1.59.0 grpcio-status==1.59.0 grpc-interceptor==0.15.3
 
