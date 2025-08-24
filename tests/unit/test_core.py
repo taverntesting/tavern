@@ -697,5 +697,3 @@ class TestHooks:
         assert "http://www.google.com" in request_args["url"]
 
         assert request_args["headers"] == {"foo": "myzclqkptpk"}
-
-
