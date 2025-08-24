@@ -78,10 +78,7 @@ def _parse_func_mark(fmt_vars: Mapping, m: str):
             evaluated = mark(*posargs, **kwargs)
             return evaluated
         else:
-            # Fallback to treating as a single argument
-            arg = _ast_node_to_literal(call)
-            evaluated = getattr(pytest.mark, mark_name)(arg)
-            return evaluated
+            raise Exception(f"unexpected type {type(call)} from parsing function call")
     except Exception as e:
         msg = f"Tried to use mark '{m}' but it could not be parsed: {e!s}"
         logger.error(msg)
