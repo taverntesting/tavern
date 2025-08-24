@@ -282,7 +282,7 @@ class _RegexSearchSentinel(RegexSentinel):
 
 class AnythingSentinel(TypeSentinel):
     yaml_tag = "!anything"
-    constructor = "anything"
+    constructor = str
 
     @classmethod
     def from_yaml(cls, loader, node):
