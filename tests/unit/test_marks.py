@@ -2,7 +2,7 @@ import ast
 
 import pytest
 
-from tavern._core.pytest.file import _ast_node_to_literal
+from tavern._core.pytest.file import _ast_node_to_literal, _format_test_marks
 
 
 @pytest.mark.parametrize(
@@ -264,3 +264,14 @@ class TestAstNodeToLiteral:
             ValueError, match="Unsupported AST node type: <class 'ast.Expr'>"
         ):
             _ast_node_to_literal(node)
+
+
+def test_format_test_marks_with_fmt_vars():
+    """Test that _format_test_marks correctly substitutes formatted variables in mark arguments"""
+
+    marks = ["skipif('{condition}', reason='{reason}')"]
+    fmt_vars = {"condition": "True", "reason": "test_skip"}
+    expected = ([pytest.mark.skipif("True", reason="test_skip")], [])
+
+    result = _format_test_marks(marks, fmt_vars=fmt_vars, test_name="dummy")
+    assert result == expected
