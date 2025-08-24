@@ -458,3 +458,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  3.0.0a6         release 3.0.0a6 (2025-07-13)
 
 ##  3.0.0a7         release 3.0.0a7 (2025-07-13)
+
+#  2.16.0          Allow using pytest marks which are function calls (2025-07-14)
