@@ -2,6 +2,7 @@ import ast
 
 import pytest
 
+from tavern._core import exceptions
 from tavern._core.pytest.file import _ast_node_to_literal, _format_test_marks
 
 
@@ -75,8 +76,6 @@ from tavern._core.pytest.file import _ast_node_to_literal, _format_test_marks
     ],
 )
 def test_format_test_marks(marks, expected):
-    from tavern._core.pytest.file import _format_test_marks
-
     # Dummy values for fmt_vars and test_name, as required by the function signature
     result = _format_test_marks(marks, fmt_vars={}, test_name="dummy")
     assert result == expected
@@ -91,9 +90,6 @@ def test_format_test_marks(marks, expected):
     ],
 )
 def test_failing_format_marks(invalid_marks):
-    from tavern._core import exceptions
-    from tavern._core.pytest.file import _format_test_marks
-
     with pytest.raises(exceptions.BadSchemaError):
         _format_test_marks(invalid_marks, fmt_vars={}, test_name="dummy")
 
