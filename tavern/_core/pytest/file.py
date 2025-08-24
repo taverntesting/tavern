@@ -58,7 +58,24 @@ def _ast_node_to_literal(node: ast.AST) -> Any:
         raise ValueError(f"Unsupported AST node type: {type(node)}")
 
 
-def _parse_func_mark(fmt_vars: Mapping, m: str):
+def _parse_func_mark(fmt_vars: Mapping, m: str) -> pytest.Mark:
+    """Parse a function-style mark string and return a pytest Mark object.
+
+    This function takes a string representation of a pytest mark with arguments
+    (e.g., "skipif(condition)") and parses it into a proper pytest Mark object.
+    The arguments are formatted using the provided format variables before parsing.
+
+    Args:
+        fmt_vars: A mapping of format variables to use when formatting the mark arguments
+        m: The mark string to parse, expected to be in format "mark_name(args)"
+
+    Returns:
+        A pytest Mark object with the parsed arguments
+
+    Raises:
+        exceptions.BadSchemaError: If the mark string cannot be parsed or if there are
+            issues with the AST parsing
+    """
     try:
         # Extract mark name and arguments string
         mark_name = m.split("(")[0]
