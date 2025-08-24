@@ -739,6 +739,35 @@ class TestHooks:
                 [],
             ),
         ),
+        # Additional test cases
+        (["usefixtures('fixture1')"], ([pytest.mark.usefixtures("fixture1")], [])),
+        (
+            ["usefixtures('fixture1', 'fixture2')"],
+            ([pytest.mark.usefixtures("fixture1", "fixture2")], []),
+        ),
+        (
+            ["skipif(True, reason='test')"],
+            ([pytest.mark.skipif(True, reason="test")], []),
+        ),
+        (
+            ["xfail(reason='flaky')"],
+            ([pytest.mark.xfail(reason="flaky")], []),
+        ),
+        (
+            ["parametrize('a,b', [(1,2), (3,4)])"],
+            ([pytest.mark.parametrize("a,b", [(1, 2), (3, 4)])], []),
+        ),
+        (
+            ["skip", "slow", 'usefixtures("db")'],
+            (
+                [
+                    pytest.mark.skip,
+                    pytest.mark.slow,
+                    pytest.mark.usefixtures("db"),
+                ],
+                [],
+            ),
+        ),
     ],
 )
 def test_format_test_marks(marks, expected):
