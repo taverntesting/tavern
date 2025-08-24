@@ -455,4 +455,10 @@ This is technically not a operational change but I'm adding a new tag so it can 
 
 #  2.15.0          Add !anynumber token (2025-04-12)
 
+##  3.0.0a6         release 3.0.0a6 (2025-07-13)
+
+##  3.0.0a7         release 3.0.0a7 (2025-07-13)
+
 #  2.16.0          Allow using pytest marks which are function calls (2025-07-14)
+
+#  2.17.0          Allow using kwargs in marks as well (2025-08-24)
