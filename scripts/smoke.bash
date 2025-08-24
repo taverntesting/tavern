@@ -2,6 +2,7 @@
 
 set -ex
 
+uv lock --check || true
 pre-commit run ruff --all-files || true
 pre-commit run ruff-format --all-files || true
 
