@@ -8,7 +8,7 @@ from textwrap import dedent
 from typing import Optional
 
 if typing.TYPE_CHECKING:
-    from .file import YamlFile  # noqa: PLC0415
+    from .file import YamlFile
 
 
 import pytest
