@@ -38,10 +38,15 @@ def _ast_node_to_literal(node: ast.AST) -> Any:
     elif isinstance(node, ast.List):
         return [_ast_node_to_literal(elem) for elem in node.elts]
     elif isinstance(node, ast.Dict):
-        return {
-            _ast_node_to_literal(k): _ast_node_to_literal(v)
-            for k, v in zip(node.keys, node.values)
-        }
+        result = {}
+        for k, v in zip(node.keys, node.values):
+            # Handle None keys (e.g., from dictionary unpacking)
+            if k is None:
+                continue
+            key = _ast_node_to_literal(k)
+            value = _ast_node_to_literal(v)
+            result[key] = value
+        return result
     elif isinstance(node, ast.Tuple):
         return tuple([_ast_node_to_literal(elem) for elem in node.elts])
     elif isinstance(node, ast.Name):
