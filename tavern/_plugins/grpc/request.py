@@ -68,7 +68,10 @@ class GRPCRequest(BaseRequest):
 
         self._prepared = functools.partial(client.call, **grpc_args)
 
-        self._service_name = grpc_args.get("service", None)
+        try:
+            self._service_name = grpc_args["service"]
+        except KeyError as e:
+            raise exceptions.BadSchemaError("No service specified in request") from e
 
         # Need to do this here because get_publish_args will modify the original
         # input, which we might want to use to format. No error handling because
