@@ -127,7 +127,7 @@ paho-mqtt = "tavern._plugins.mqtt.tavernhook"
 grpc = "tavern._plugins.grpc.tavernhook"
 
 [tool.mypy]
-python_version = 3.11
+python_version = "3.11"
 
 # See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
 explicit_package_bases = true
@@ -166,12 +166,18 @@ addopts = [
     "-p", "no:logging",
     "--tb=short",
     "--color=yes",
+    "-m", "not do_not_run"
 ]
 norecursedirs = [
     ".git",
     ".tox",
     "example",
     "example/grpc/server"
+]
+markers = [
+    "slow: A test marker to check if markers work with custom markers",
+    "xdist_group('group1'): A test marker to check if markers work with args",
+    "do_not_run: Test marker for tests that should not be run",
 ]
 
 [tool.ruff]
