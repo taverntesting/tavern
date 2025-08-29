@@ -200,7 +200,8 @@ class TypeSentinel(yaml.YAMLObject):
 
 class NumberSentinel(TypeSentinel):
     yaml_tag = "!anynumber"
-    constructor = (int, float)  # Tuple of allowed types
+    # Tuple of allowed types - this needs special handling wherever it's used
+    constructor = (int, float)  # type:ignore
 
 
 class IntSentinel(TypeSentinel):
@@ -282,7 +283,7 @@ class _RegexSearchSentinel(RegexSentinel):
 
 class AnythingSentinel(TypeSentinel):
     yaml_tag = "!anything"
-    constructor = "anything"
+    constructor = str
 
     @classmethod
     def from_yaml(cls, loader, node):

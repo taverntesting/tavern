@@ -86,7 +86,7 @@ def pytest_collect_file(parent, path: os.PathLike) -> Optional["YamlFile"]:
 
     match_tavern_file = compiled.search
 
-    from .file import YamlFile
+    from .file import YamlFile  # noqa: PLC0415
 
     path = pathlib.Path(path)
 
@@ -98,6 +98,6 @@ def pytest_collect_file(parent, path: os.PathLike) -> Optional["YamlFile"]:
 
 def pytest_addhooks(pluginmanager) -> None:
     """Add our custom tavern hooks"""
-    from . import newhooks
+    from . import newhooks  # noqa: PLC0415
 
     pluginmanager.add_hookspecs(newhooks)

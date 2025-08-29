@@ -157,7 +157,7 @@ def validate_grpc_status_is_valid_or_list_of_names(
 
 
 def to_grpc_status(value: Union[str, int]):
-    from grpc import StatusCode
+    from grpc import StatusCode  # noqa: PLC0415
 
     if isinstance(value, str):
         value = value.upper()
