@@ -9,7 +9,7 @@ from collections.abc import Callable, Iterable, Iterator, Mapping
 from typing import Any, Union
 
 import pytest
-import yaml
+import yaml.parser
 from box import Box
 from pytest import Mark
 
@@ -447,16 +447,34 @@ class YamlFile(pytest.File):
         except yaml.parser.ParserError as e:
             raise exceptions.BadSchemaError from e
 
-        for test_spec in all_tests:
+        merge_down = None
+        # Iterate over yaml documents and tests
+        for document_idx, test_spec in enumerate(all_tests):
             if not test_spec:
                 logger.warning("Empty document in input file '%s'", self.path)
                 continue
+
+            if document_idx == 0 and not test_spec.get("stages"):
+                # If it's the first document and there were no tests, its implicitly the
+                # 'defaults' for the file and will be merged with all lower documents
+                if test_spec.get("name"):
+                    logger.warning("initial block had no stages, but had a name")
+                merge_down = test_spec
+                logger.info(
+                    f"merging initial block from {self.path} into subsequent tests"
+                )
+                continue
+
+            if merge_down:
+                test_spec = deep_dict_merge(test_spec, merge_down)
 
             try:
                 for i in self._generate_items(test_spec):
                     i.initialise_fixture_attrs()
                     yield i
             except (TypeError, KeyError) as e:
+                # If there was one of these errors, we can probably figure out
+                # if the error is from a bad test layout by calling verify_tests
                 try:
                     verify_tests(test_spec, with_plugins=False)
                 except Exception as e2:
