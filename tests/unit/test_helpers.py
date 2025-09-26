@@ -8,6 +8,7 @@ from unittest.mock import Mock, patch
 import _pytest
 import pytest
 import yaml
+from box import Box
 
 from tavern._core import exceptions
 from tavern._core.dict_util import _check_and_format_values, format_keys
@@ -118,16 +119,14 @@ class TestRunAlone:
 
 class TestOptionParsing:
     valid = [
-        "{0:s}:{1:s}".format(section, setting)
+        f"{section:s}:{setting:s}"
         for section in ("json", "headers", "redirect_params")
         for setting in ("on", "off")
     ]
 
     @pytest.mark.parametrize("optval", valid)
     def test_strictness_parsing_good(self, pytestconfig, optval):
-        args = pytestconfig._parser.parse_known_args(
-            ["--tavern-strict={}".format(optval)]
-        )
+        args = pytestconfig._parser.parse_known_args([f"--tavern-strict={optval}"])
         assert "tavern_strict" in args
         assert args.tavern_strict == [optval]
 
@@ -142,14 +141,14 @@ class TestTavernRepr:
 
     @pytest.fixture(autouse=True, scope="session")
     def add_opts(self, pytestconfig):
-        from tavern._core.pytest.hooks import pytest_addoption
+        from tavern._core.pytest.hooks import pytest_addoption  # noqa: PLC0415
 
         with contextlib.suppress(ValueError):
             pytest_addoption(pytestconfig._parser)
 
     def _make_fake_exc_info(self, exc_type):
         # Copied from pytest tests
-        class FakeExcinfo(_pytest._code.ExceptionInfo):
+        class FakeExcinfo(_pytest._code.ExceptionInfo):  # type:ignore
             pass
 
         try:
@@ -293,25 +292,55 @@ class TestPykwalifyExtension:
 
 
 class TestCheckParseValues:
-    @pytest.mark.parametrize(
-        "item", [[134], {"a": 2}, yaml, yaml.load, yaml.SafeLoader]
-    )
+    @pytest.mark.parametrize("item", [yaml, yaml.load, yaml.SafeLoader])
     def test_warns_bad_type(self, item):
         with patch("tavern._core.dict_util.logger.warning") as wmock:
-            _check_and_format_values("{fd}", {"fd": item})
+            _check_and_format_values("{fd}", Box({"fd": item}))
 
-        assert wmock.called_with(
-            "Formatting 'fd' will result in it being coerced to a string (it is a {})".format(
-                type(item)
-            )
+        wmock.assert_called_with(
+            "Formatting '%s' will result in it being coerced to a string (it is a %s)",
+            "fd",
+            type(item),
+        )
+
+    @pytest.mark.parametrize(
+        "item",
+        [
+            [134],
+            {"a": 2},
+        ],
+    )
+    def test_warns_bad_type_box(self, item):
+        box = Box({"fd": item})
+        with patch("tavern._core.dict_util.logger.warning") as wmock:
+            _check_and_format_values("{fd}", box)
+
+        wmock.assert_called_with(
+            "Formatting '%s' will result in it being coerced to a string (it is a %s)",
+            "fd",
+            type(box["fd"]),
         )
 
     @pytest.mark.parametrize("item", [1, "a", 1.3, format_keys("{s}", {"s": 2})])
     def test_no_warn_good_type(self, item):
         with patch("tavern._core.dict_util.logger.warning") as wmock:
-            _check_and_format_values("{fd}", {"fd": item})
+            _check_and_format_values("{fd}", Box({"fd": item}))
 
         assert not wmock.called
+
+    def test_format_with_array_access(self):
+        """Test accessing using array indexing format"""
+
+        assert "hello" == _check_and_format_values(
+            "{a.b.c[0].d}", Box({"a": {"b": {"c": [{"d": "hello"}]}}})
+        )
+
+    def test_format_with_dict_access(self):
+        """Test accessing using dict indexing format"""
+
+        assert "hello" == _check_and_format_values(
+            "{a[b].c[0].d}", Box({"a": {"b": {"c": [{"d": "hello"}]}}})
+        )
 
 
 class TestFormatWithJson:
@@ -369,7 +398,7 @@ class TestStrictUtils:
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     @pytest.mark.parametrize("setting", ["on", "off"])
     def test_parse_option(self, section, setting):
-        option = "{}:{}".format(section, setting)
+        option = f"{section}:{setting}"
         match = validate_and_parse_option(option)
 
         assert match.section == section
@@ -391,7 +420,7 @@ class TestStrictUtils:
     @pytest.mark.parametrize("setting", ["true", "1", "hi", ""])
     def test_fails_bad_setting(self, setting):
         with pytest.raises(exceptions.InvalidConfigurationException):
-            validate_and_parse_option("json:{}".format(setting))
+            validate_and_parse_option(f"json:{setting}")
 
     @pytest.mark.parametrize("section", ["json", "headers", "redirect_query_params"])
     def test_defaults_good(self, section):

@@ -2,18 +2,20 @@ import dataclasses
 import os
 import tempfile
 from contextlib import ExitStack
+from textwrap import dedent
 from unittest.mock import Mock
 
 import pytest
 import requests
+import yaml
 from requests.cookies import RequestsCookieJar
 
 from tavern._core import exceptions
 from tavern._core.extfunctions import update_from_ext
+from tavern._plugins.rest.files import get_file_arguments
 from tavern._plugins.rest.request import (
     RestRequest,
     _check_allow_redirects,
-    _get_file_arguments,
     _read_expected_cookies,
     get_request_args,
 )
@@ -400,14 +402,14 @@ class TestGetFiles:
 
         request_args = {}
 
-        assert _get_file_arguments(request_args, mock_stack, includes) == {}
+        assert get_file_arguments(request_args, mock_stack, includes) == {}
 
     def test_get_empty_files_list(self, mock_stack, includes):
         """No specific files specified -> no files"""
 
         request_args = {"files": {}}
 
-        assert _get_file_arguments(request_args, mock_stack, includes) == {}
+        assert get_file_arguments(request_args, mock_stack, includes) == {}
 
     def test_a_file(self, mock_stack, includes):
         """Json file should have the correct mimetype etc."""
@@ -415,7 +417,7 @@ class TestGetFiles:
         with tempfile.NamedTemporaryFile(suffix=".json") as tfile:
             request_args = {"files": {"file1": tfile.name}}
 
-            file_spec = _get_file_arguments(request_args, mock_stack, includes)
+            file_spec = get_file_arguments(request_args, mock_stack, includes)
 
         file = file_spec["files"]["file1"]
         assert file[0] == os.path.basename(tfile.name)
@@ -435,7 +437,7 @@ class TestGetFiles:
                 }
             }
 
-            file_spec = _get_file_arguments(request_args, mock_stack, includes)
+            file_spec = get_file_arguments(request_args, mock_stack, includes)
 
         file = file_spec["files"]["file1"]
         assert file[0] == os.path.basename(tfile.name)
@@ -462,7 +464,53 @@ class TestGetFiles:
             includes.variables["tmpname"] = tfile.name
             request_args = {"files": {"file1": tfile.name}}
 
-            file_spec = _get_file_arguments(request_args, mock_stack, includes)
+            file_spec = get_file_arguments(request_args, mock_stack, includes)
 
         file = file_spec["files"]["file1"]
         assert file[0] == os.path.basename(tfile.name)
+
+    def test_grouped_file_names(self, mock_stack, includes):
+        """Parse grouped names appropriately"""
+        with tempfile.NamedTemporaryFile() as tfile:
+            raw_yaml_args = """
+                # Send file_1.txt and file_2.txt, both with name="input_files", in the multipart data.
+                - form_field_name: "input_files"
+                  file_path: "%FILENAME%"
+                  content_type: "application/customtype"
+                  content_encoding: "UTF16"
+                - form_field_name: "input_files"
+                  file_path: "%FILENAME%"
+                  content_type: "application/json"
+                """
+
+            raw_yaml_args = raw_yaml_args.replace("%FILENAME%", tfile.name)
+
+            file_args = yaml.safe_load(dedent(raw_yaml_args))
+
+            request_args = {"files": file_args}
+
+            parsed = get_file_arguments(request_args, mock_stack, includes)
+
+            parsed_into = {
+                "files": [
+                    (
+                        "input_files",
+                        (
+                            os.path.basename(tfile.name),
+                            mock_stack.enter_context.return_value,
+                            "application/customtype",
+                            {"Content-Encoding": "UTF16"},
+                        ),
+                    ),
+                    (
+                        "input_files",
+                        (
+                            os.path.basename(tfile.name),
+                            mock_stack.enter_context.return_value,
+                            "application/json",
+                        ),
+                    ),
+                ],
+            }
+
+        assert parsed_into == parsed

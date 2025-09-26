@@ -1,0 +1,70 @@
+---
+test_name: Test finally block doing nothing
+
+stages:
+  - name: Simple echo
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "123"
+    response:
+      status_code: 200
+      json:
+        value: "123"
+
+finally:
+  - name: nothing
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "123"
+
+---
+test_name: Test finally block being replaced
+
+stages:
+  - name: Simple echo
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "123"
+    response:
+      status_code: 200
+      json:
+        value: "123"
+
+finally:
+  - type: ref
+    id: finally-nothing-check
+
+---
+test_name: Test finally block fail
+
+_xfail: finally
+
+stages:
+  - name: Simple echo
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "123"
+    response:
+      status_code: 200
+      json:
+        value: "123"
+
+finally:
+  - name: nothing
+    request:
+      url: "{global_host}/echo"
+      method: DELETE
+      json:
+        value: "123"
+    response:
+      status_code: 200
+      json:
+        value: "123"

@@ -145,8 +145,8 @@ If you want to develop things in tavern, enter your virtualenv and run
 `pip install -r requirements.txt` to install the library, any requirements,
 and other useful development options.
 
-Tavern uses [black](https://github.com/ambv/black) to keep all of the code
-formatted consistently. There is a pre-commit hook to run black which can
+Tavern uses [ruff](https://pypi.org/project/ruff/) to keep all of the code
+formatted consistently. There is a pre-commit hook to run `ruff format` which can
 be enabled by running `pre-commit install`.
 
 If you want to add a feature to get merged back into mainline Tavern:

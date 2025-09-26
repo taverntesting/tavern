@@ -9,9 +9,9 @@ classifiers = [
     "Intended Audience :: Developers",
     "Framework :: Pytest",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Topic :: Utilities",
     "Topic :: Software Development :: Testing",
     "License :: OSI Approved :: MIT License",
@@ -21,22 +21,23 @@ keywords = ["testing", "pytest"]
 
 name = "tavern"
 description = "Simple testing of RESTful APIs"
-version = "2.0.6"
+version = "2.17.0"
 
 dependencies = [
-    "PyYAML>=5.3.1,<7",
+    "PyYAML>=6.0.1,<7",
     "jmespath>=1,<2",
-    "jsonschema>=3.2.0,<5",
+    "jsonschema>=4,<5",
     "paho-mqtt>=1.3.1,<=1.6.1",
-    "pyjwt>=2.4.0,<3",
+    "pyjwt>=2.5.0,<3",
     "pykwalify>=1.8.0,<2",
-    "pytest>=7,<8",
+    "pytest>=7,<7.3",
     "python-box>=6,<7",
     "requests>=2.22.0,<3",
+    "simpleeval>=1.0.3",
     "stevedore>=4,<5",
 ]
 
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 
 [[project.authors]]
 name = "Michael Boulton"
@@ -54,34 +55,50 @@ Documentation = "https://tavern.readthedocs.io/en/latest/"
 Source = "https://github.com/taverntesting/tavern"
 
 [project.optional-dependencies]
+grpc = [
+    "grpcio",
+    "grpcio-reflection",
+    "grpcio-status",
+    "google-api-python-client",
+    "protobuf>=4,<5",
+    "proto-plus",
+]
+
 dev = [
     "Faker",
     "allure-pytest",
-    "black==23.1.0",
-    "bump2version",
     "colorlog",
-    "docker-compose",
-    "flask",
+    "flask>=3,<4",
     "fluent-logger",
     "itsdangerous",
-    "mypy",
-    "mypy-extensions",
     "coverage[toml]",
-    "types-PyYAML",
     "flit >=3.2,<4",
-    "pip-tools",
+    "wheel",
     "pre-commit",
-    "pygments",
     "pytest-cov",
-    "ruff>=0.0.246",
     "pytest-xdist",
     "py",
-    "tox>=3,<4",
-    "tox-travis",
-    "twine",
-    "wheel",
-    # This has to be installed separately, otherwise you can't upload to pypi
-    # "tbump@https://github.com/michaelboulton/tbump/archive/714ba8957a3c84b625608ceca39811ebe56229dc.zip",
+    "tox>=4,<5",
+    "ruff~=0.9.10",
+    "uv",
+    "types-PyYAML",
+    "types-protobuf>=4,<5",
+    "types-requests",
+    "types-jsonschema",
+    "types-paho-mqtt",
+    "types-jmespath",
+    "sphinx>=7,<8",
+    "sphinx_rtd_theme",
+    "recommonmark",
+    "commonmark",
+    "docutils",
+    "pygments",
+    "sphinx-markdown-tables",
+    "grpc-interceptor",
+    # for pytest
+    "exceptiongroup",
+    "tomli",
+    "tbump>=6.10.0"
 ]
 
 
@@ -97,13 +114,20 @@ tavern = "tavern._core.pytest"
 requests = "tavern._plugins.rest.tavernhook:TavernRestPlugin"
 [project.entry-points.tavern_mqtt]
 paho-mqtt = "tavern._plugins.mqtt.tavernhook"
-
-[tool.black]
-target-version = ['py37']
+[project.entry-points.tavern_grpc]
+grpc = "tavern._plugins.grpc.tavernhook"
 
 [tool.mypy]
-python_version = 3.8
-ignore_missing_imports = true
+python_version = "3.10"
+
+# See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
+explicit_package_bases = true
+
+exclude = [
+    '_pb2.pyi?$', # generated proto files
+    'bazel-*',
+    'venv/',
+]
 
 [tool.coverage.run]
 branch = false
@@ -119,8 +143,8 @@ source = ["tavern"]
 [tool.coverage.paths]
 tavern = [
     "tavern/",
-    ".tox/py39-generic/lib/python3.9/site-packages/tavern/",
-    ".tox/py39-mqtt/lib/python3.9/site-packages/tavern",
+    ".tox/py310-generic/lib/python3.10/site-packages/tavern/",
+    ".tox/py310-mqtt/lib/python3.10/site-packages/tavern",
 ]
 
 [tool.pytest.ini_options]
@@ -132,33 +156,54 @@ addopts = [
     "--strict-markers",
     "-p", "no:logging",
     "--tb=short",
+    "--color=yes",
+    "-m", "not do_not_run"
 ]
 norecursedirs = [
     ".git",
     ".tox",
     "example",
+    "example/grpc/server"
+]
+markers = [
+    "slow: A test marker to check if markers work with custom markers",
+    "xdist_group('group1'): A test marker to check if markers work with args",
+    "do_not_run: Test marker for tests that should not be run",
 ]
 
 [tool.ruff]
+target-version = "py310"
+extend-exclude = [
+    "tests/unit/tavern_grpc/test_services_pb2*",
+    "example/grpc/helloworld_v1_precompiled_pb2*"
+]
+
+[tool.ruff.lint]
 ignore = [
+    "UP045", "UP007", # Optional/Union
     "E501", # line length
     "RUF005", # union types only valid from 3.10+
     "B905", # zip(..., strict=True) only valid from 3.10+
     "PLR0912", "PLR0915", "PLR0911", "PLR0913", # too many branches/variables/return values - sometimes this is just unavoidable
     "PLR2004", # 'magic numbers'
+    "PLW2901", # Loop variable overridden
 ]
-select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL"]
-# Look at: UP
-target-version = "py38"
+select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL", "U"]
 
-[tool.ruff.per-file-ignores]
-"tests/*" = ["S"]
+[tool.ruff.lint.per-file-ignores]
+"example/*" = ["S", "RUF", "T", "E", "PLW", "B"]
+"tests/*" = ["S", "RUF"]
+"tests/unit/tavern_grpc/test_grpc.py" = ["E402"]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 known-first-party = ["tavern"]
 
+[tool.ruff.format]
+exclude = ["*_pb2.py", "*_pb2_grpc.py", "*_pb2.pyi"]
+docstring-code-format = true
+
 [tool.tbump.version]
-current = "2.0.6"
+current = "2.17.0"
 
 regex = '''
   (?P<major>\d+)

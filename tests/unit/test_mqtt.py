@@ -1,4 +1,4 @@
-from typing import Dict
+import time
 from unittest.mock import MagicMock, Mock, patch
 
 import paho.mqtt.client as paho
@@ -21,7 +21,7 @@ def test_host_required():
 
 @pytest.fixture(name="fake_client")
 def fix_fake_client():
-    args = {"connect": {"host": "localhost"}}
+    args = {"connect": {"host": "localhost", "timeout": 0.6}}
 
     mqtt_client = MQTTClient(**args)
 
@@ -64,35 +64,79 @@ class TestClient:
     def test_context_connection_success(self, fake_client):
         """returns self on success"""
 
-        with patch.object(fake_client._client, "loop_start"), patch.object(
-            fake_client._client, "connect_async"
+        with (
+            patch.object(fake_client._client, "loop_start"),
+            patch.object(fake_client._client, "connect_async"),
         ):
             fake_client._client._state = paho.mqtt_cs_connected
             with fake_client as x:
                 assert fake_client == x
 
-    def test_assert_message_published(self, fake_client):
-        """If it couldn't immediately publish the message, error out"""
+    def test_assert_message_published_error(self, fake_client):
+        """Error waiting for it to publish"""
 
-        class FakeMessage:
-            is_published = False
+        class FakeMessage(paho.MQTTMessageInfo):
+            def wait_for_publish(self, timeout=None):
+                raise RuntimeError
+
             rc = 1
 
-        with patch.object(fake_client._client, "subscribe"), patch.object(
-            fake_client._client, "publish", return_value=FakeMessage()
+        with (
+            patch.object(fake_client._client, "subscribe"),
+            patch.object(fake_client._client, "publish", return_value=FakeMessage(10)),
         ):
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")
 
+    def test_assert_message_published_failure(self, fake_client: MQTTClient):
+        """If it couldn't publish the message, error out"""
+
+        class FakeMessage(paho.MQTTMessageInfo):
+            def wait_for_publish(self, timeout=None):
+                return
+
+            def is_published(self):
+                return False
+
+            rc = 1
+
+        with (
+            patch.object(fake_client._client, "subscribe"),
+            patch.object(fake_client._client, "publish", return_value=FakeMessage(10)),
+        ):
+            with pytest.raises(exceptions.MQTTError):
+                fake_client.publish("abc", "123")
+
+    def test_assert_message_published_delay(self, fake_client):
+        """Published but only after a small delay"""
+
+        class FakeMessage(paho.MQTTMessageInfo):
+            def wait_for_publish(self, timeout=None):
+                time.sleep(0.5)
+
+            def is_published(self):
+                return True
+
+            rc = 1
+
+        with (
+            patch.object(fake_client._client, "subscribe"),
+            patch.object(fake_client._client, "publish", return_value=FakeMessage(10)),
+        ):
+            fake_client.publish("abc", "123")
+
     def test_assert_message_published_unknown_err(self, fake_client):
         """Same, but with an unknown error code"""
 
-        class FakeMessage:
-            is_published = False
+        class FakeMessage(paho.MQTTMessageInfo):
+            def is_published(self):
+                return False
+
             rc = 2342423
 
-        with patch.object(fake_client._client, "subscribe"), patch.object(
-            fake_client._client, "publish", return_value=FakeMessage()
+        with (
+            patch.object(fake_client._client, "subscribe"),
+            patch.object(fake_client._client, "publish", return_value=FakeMessage(10)),
         ):
             with pytest.raises(exceptions.MQTTError):
                 fake_client.publish("abc", "123")
@@ -198,7 +242,7 @@ class TestSubscription:
 
 class TestExtFunctions:
     @pytest.fixture()
-    def basic_mqtt_request_args(self) -> Dict:
+    def basic_mqtt_request_args(self) -> dict:
         return {
             "topic": "/a/b/c",
         }
@@ -224,3 +268,31 @@ class TestExtFunctions:
 
         assert "payload" in m._publish_args
         assert m._publish_args["payload"] == "3"
+
+
+class TestSSLContext:
+    def test_ciphers_set_correctly(self):
+        """Test that ciphers are set correctly in SSL context"""
+        args = {
+            "connect": {"host": "localhost"},
+            "ssl_context": {
+                "certfile": "/path/to/certfile",
+                "keyfile": "/path/to/keyfile",
+                "ciphers": "ECDHE-RSA-AES256-GCM-SHA384",
+            },
+        }
+
+        with (
+            patch(
+                "tavern._plugins.mqtt.client.ssl.create_default_context"
+            ) as mock_create_context,
+            patch("tavern._plugins.mqtt.client.check_file_exists"),
+        ):
+            mock_context = MagicMock()
+            mock_create_context.return_value = mock_context
+
+            _ = MQTTClient(**args)
+
+            mock_context.set_ciphers.assert_called_once_with(
+                "ECDHE-RSA-AES256-GCM-SHA384"
+            )

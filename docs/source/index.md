@@ -3,8 +3,8 @@
 
 Tavern is an advanced pytest based API testing framework for HTTP, MQTT or other protocols.
 
-Note that Tavern **only** supports Python 3.4 and up. At the time of writing we
-test against Python 3.8-3.10. Python 2 is now **unsupported**.
+Note that Tavern **only** supports Python 3.10 and up. At the time of writing we
+test against Python 3.10. Python 2 is now **unsupported**.
 
 ## Why Tavern
 
@@ -32,6 +32,7 @@ Tavern is still in active development and is used by 100s of companies.
 * [Basic Concepts](basics.md)
 * [HTTP Integration testing](http.md)
 * [MQTT Integration testing](mqtt.md)
+* [gRPC Integration testing](grpc.md)
 * [Plugins](plugins.md)
 * [Debugging Tests](debugging.md)
 * [Examples](examples.md)

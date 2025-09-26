@@ -1,15 +1,18 @@
 import logging
+from collections.abc import Iterable
 from os.path import abspath, dirname, join
+from typing import Optional, Union
 
 import yaml
 
 from tavern._core.dict_util import format_keys
+from tavern._core.pytest.config import TestConfig
 
 from .client import MQTTClient
 from .request import MQTTRequest
 from .response import MQTTResponse
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 session_type = MQTTClient
 
@@ -17,8 +20,12 @@ request_type = MQTTRequest
 request_block_name = "mqtt_publish"
 
 
-def get_expected_from_request(response_block, test_block_config, session):
-    expected = None
+def get_expected_from_request(
+    response_block: Union[dict, Iterable[dict]],
+    test_block_config: TestConfig,
+    session: MQTTClient,
+) -> Optional[dict]:
+    expected: Optional[dict] = None
 
     # mqtt response is not required
     if response_block:
@@ -39,6 +46,6 @@ def get_expected_from_request(response_block, test_block_config, session):
 verifier_type = MQTTResponse
 response_block_name = "mqtt_response"
 
-schema_path = join(abspath(dirname(__file__)), "jsonschema.yaml")
-with open(schema_path, "r", encoding="utf-8") as schema_file:
+schema_path: str = join(abspath(dirname(__file__)), "jsonschema.yaml")
+with open(schema_path, encoding="utf-8") as schema_file:
     schema = yaml.load(schema_file, Loader=yaml.SafeLoader)

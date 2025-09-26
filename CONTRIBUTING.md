@@ -21,10 +21,12 @@ If on Windows, you should be able to just run the 'tox' commands in that file.
 
 1. Add or update the dependency in [pyproject.toml](/pyproject.toml)
 
-1. Update requirements files (BOTH of them)
+1. Update constraints and requirements file
 
-       pip-compile --all-extras --resolver=backtracking pyproject.toml --output-file requirements.txt --reuse-hashes --generate-hashes
-       pip-compile --all-extras --resolver=backtracking pyproject.toml --output-file constraints.txt --strip-extras
+```shell
+uv pip compile --universal --all-extras pyproject.toml --output-file constraints.txt -U
+uv pip compile --universal --all-extras pyproject.toml --output-file requirements.txt -U --generate-hashes
+```
 
 1. Run tests as above
 
@@ -44,17 +46,24 @@ Run every so often to update the pre-commit hooks
 
 ### Fixing Python formatting issue
 
-    black tavern/ tests/
+    ruff format tavern/ tests/
     ruff --fix tavern/ tests/
+
+### Fix yaml formatting issues
+
+    pre-commit run --all-files
 
 ## Creating a new release
 
 1. Setup `~/.pypirc`
 
-1. Install the correct version of tbump
-
-       pip install tbump@https://github.com/michaelboulton/tbump/archive/714ba8957a3c84b625608ceca39811ebe56229dc.zip
-
 1. Tag and push to git with `tbump <new-tag> --tag-message "<tag-message>"`
 
 1. Upload to pypi with `flit publish`
+
+## Building the documentation
+
+```shell
+mkdir -p dist/
+sphinx-build docs/source/ dist/
+```

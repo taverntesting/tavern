@@ -123,10 +123,10 @@ class TestResponse:
         fake_messages = []
         for i in range(n_messages):
             expected = {
-                "topic": "/a/b/c/{}".format(i + 1),
+                "topic": f"/a/b/c/{i + 1}",
                 "payload": "hello",
                 "save": {
-                    "$ext": {"function": "function_name_{}".format(i + 1)},
+                    "$ext": {"function": f"function_name_{i + 1}"},
                 },
             }
 
@@ -143,7 +143,7 @@ class TestResponse:
                     match = re.match(r"function_name_(?P<idx>\d+)", ext["function"])
                     assert match
                     message_number = match.group("idx")
-                    return {"saved_topic_{}".format(message_number): response.topic}
+                    return {f"saved_topic_{message_number}": response.topic}
 
                 return actual
 
@@ -162,7 +162,7 @@ class TestResponse:
 
             assert len(saved) == n_messages
 
-            assert saved["saved_topic_{}".format(i + 1)] == expecteds[i]["topic"]
+            assert saved[f"saved_topic_{i + 1}"] == expecteds[i]["topic"]
 
     def test_correct_message_eventually(self, includes):
         """One wrong messge, then the correct one"""

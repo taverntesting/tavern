@@ -1,6 +1,7 @@
 import logging
 from functools import lru_cache
-from typing import Any, Dict
+from pathlib import Path
+from typing import Any, Optional, TypeVar, Union
 
 import pytest
 
@@ -9,7 +10,7 @@ from tavern._core.general import load_global_config
 from tavern._core.pytest.config import TavernInternalConfig, TestConfig
 from tavern._core.strict_util import StrictLevel
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
@@ -33,6 +34,11 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
         "--tavern-mqtt-backend",
         help="Which mqtt backend to use",
         default="paho-mqtt" if with_defaults else None,
+    )
+    parser_addoption(
+        "--tavern-grpc-backend",
+        help="Which grpc backend to use",
+        default="grpc" if with_defaults else None,
     )
     parser_addoption(
         "--tavern-strict",
@@ -59,6 +65,12 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
         action="store",
         nargs=1,
     )
+    parser_addoption(
+        "--tavern-setup-init-logging",
+        help="Set up a simple logger for tavern initialisation. Only for internal use and debugging, may be removed in future with no warning.",
+        default=False,
+        action="store_true",
+    )
 
 
 def add_ini_options(parser: pytest.Parser) -> None:
@@ -77,6 +89,9 @@ def add_ini_options(parser: pytest.Parser) -> None:
     )
     parser.addini(
         "tavern-mqtt-backend", help="Which mqtt backend to use", default="paho-mqtt"
+    )
+    parser.addini(
+        "tavern-grpc-backend", help="Which grpc backend to use", default="grpc"
     )
     parser.addini(
         "tavern-strict",
@@ -102,13 +117,19 @@ def add_ini_options(parser: pytest.Parser) -> None:
         default=r".+\.tavern\.ya?ml$",
         type="args",
     )
+    parser.addini(
+        "tavern-setup-init-logging",
+        help="Set up a simple logger for tavern initialisation. Only for internal use and debugging, may be removed in future with no warning.",
+        type="bool",
+        default=False,
+    )
 
 
 def load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     return _load_global_cfg(pytest_config).with_new_variables()
 
 
-@lru_cache()
+@lru_cache
 def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     """Load globally included config files from cmdline/cfg file arguments
 
@@ -131,11 +152,11 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     all_paths = ini_global_cfg_paths + cmdline_global_cfg_paths
     global_cfg_dict = load_global_config(all_paths)
 
+    variables: dict = {}
     try:
         loaded_variables = global_cfg_dict["variables"]
     except KeyError:
         logger.debug("Nothing to format in global config files")
-        variables = {}
     else:
         tavern_box = get_tavern_box()
         variables = format_keys(loaded_variables, tavern_box)
@@ -154,33 +175,35 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     return global_cfg
 
 
-def _load_global_backends(pytest_config: pytest.Config) -> Dict[str, Any]:
+def _load_global_backends(pytest_config: pytest.Config) -> dict[str, Any]:
     """Load which backend should be used"""
-    backend_settings = {}
-
-    backends = ["http", "mqtt"]
-    for b in backends:
-        backend_settings[b] = get_option_generic(
-            pytest_config, "tavern-{}-backend".format(b), None
-        )
-
-    return backend_settings
+    return {
+        b: get_option_generic(pytest_config, f"tavern-{b}-backend", None)
+        for b in TestConfig.backends()
+    }
 
 
 def _load_global_strictness(pytest_config: pytest.Config) -> StrictLevel:
     """Load the global 'strictness' setting"""
 
-    options = get_option_generic(pytest_config, "tavern-strict", [])
+    options: list = get_option_generic(pytest_config, "tavern-strict", [])
 
     return StrictLevel.from_options(options)
 
 
-def _load_global_follow_redirects(pytest_config: pytest.Config):
+def _load_global_follow_redirects(pytest_config: pytest.Config) -> bool:
     """Load the global 'follow redirects' setting"""
     return get_option_generic(pytest_config, "tavern-always-follow-redirects", False)
 
 
-def get_option_generic(pytest_config: pytest.Config, flag: str, default):
+T = TypeVar("T", bound=Optional[Union[str, list, list[Path], list[str], bool]])
+
+
+def get_option_generic(
+    pytest_config: pytest.Config,
+    flag: str,
+    default: T,
+) -> T:
     """Get a configuration option or return the default
 
     Priority order is cmdline, then ini, then default"""

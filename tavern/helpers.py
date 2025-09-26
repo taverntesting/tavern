@@ -2,7 +2,8 @@ import importlib
 import json
 import logging
 import re
-from typing import Dict, List, Optional
+from collections.abc import Iterable, Mapping
+from typing import Optional
 
 import jmespath
 import jwt
@@ -14,7 +15,7 @@ from tavern._core.dict_util import check_keys_match_recursive, recurse_access_ke
 from tavern._core.jmesutils import actual_validation, validate_comparison
 from tavern._core.schema.files import verify_pykwalify
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 def check_exception_raised(
@@ -68,7 +69,9 @@ def check_exception_raised(
         ) from e
 
 
-def validate_jwt(response, jwt_key, **kwargs) -> Dict[str, Box]:
+def validate_jwt(
+    response: requests.Response, jwt_key: str, **kwargs
+) -> Mapping[str, Box]:
     """Make sure a jwt is valid
 
     This uses the pyjwt library to decode the jwt, so any keyword args needed
@@ -80,12 +83,12 @@ def validate_jwt(response, jwt_key, **kwargs) -> Dict[str, Box]:
     it wraps this in a Box so it can also be used for future formatting
 
     Args:
-        response (Response): requests.Response object
-        jwt_key (str): key of jwt in body of request
+        response: requests.Response object
+        jwt_key: key of jwt in body of request
         **kwargs: Any extra arguments to pass to jwt.decode
 
     Returns:
-        dict: dictionary of jwt: boxed jwt claims
+        mapping of jwt: boxed jwt claims
     """
     token = response.json()[jwt_key]
 
@@ -96,12 +99,12 @@ def validate_jwt(response, jwt_key, **kwargs) -> Dict[str, Box]:
     return {"jwt": Box(decoded)}
 
 
-def validate_pykwalify(response, schema) -> None:
+def validate_pykwalify(response: requests.Response, schema: dict) -> None:
     """Make sure the response matches a given schema
 
     Args:
-        response (Response): reqeusts.Response object
-        schema (dict): Schema for response
+        response: reqeusts Response object
+        schema: Schema for response
     """
     try:
         to_verify = response.json()
@@ -120,7 +123,7 @@ def validate_regex(
     *,
     header: Optional[str] = None,
     in_jmespath: Optional[str] = None,
-) -> Dict[str, Box]:
+) -> dict[str, Box]:
     """Make sure the response matches a regex expression
 
     Args:
@@ -157,9 +160,7 @@ def validate_regex(
         content = recurse_access_key(decoded, in_jmespath)
         if not isinstance(content, str):
             raise exceptions.RegexAccessError(
-                "Successfully accessed {} from response, but it was a {} and not a string".format(
-                    in_jmespath, type(content)
-                )
+                f"Successfully accessed {in_jmespath} from response, but it was a {type(content)} and not a string"
             )
 
     logger.debug("Matching %s with %s", content, expression)
@@ -171,7 +172,7 @@ def validate_regex(
     return {"regex": Box(match.groupdict())}
 
 
-def validate_content(response: requests.Response, comparisons: List[str]) -> None:
+def validate_content(response: requests.Response, comparisons: Iterable[dict]) -> None:
     """Asserts expected value with actual value using JMES path expression
 
     Args:
@@ -209,7 +210,7 @@ def check_jmespath_match(parsed_response, query: str, expected: Optional[str] = 
     """
     actual = jmespath.search(query, parsed_response)
 
-    msg = "JMES path '{}' not found in response".format(query)
+    msg = f"JMES path '{query}' not found in response"
 
     if actual is None:
         raise exceptions.JMESError(msg)

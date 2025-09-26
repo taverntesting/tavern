@@ -9,9 +9,10 @@ import time
 import uuid
 from datetime import datetime, timedelta
 from hashlib import sha512
-from urllib.parse import unquote_plus
+from urllib.parse import unquote_plus, urlencode
 
 import jwt
+from box import Box
 from flask import Flask, Response, jsonify, make_response, redirect, request, session
 from itsdangerous import URLSafeTimedSerializer
 
@@ -53,6 +54,7 @@ def get_fake_dictionary():
     fake = {
         "top": {"Thing": "value", "nested": {"doubly": {"inner": "value"}}},
         "an_integer": 123,
+        "a_float": 1.23,
         "a_string": "abc",
         "a_bool": True,
     }
@@ -87,8 +89,6 @@ def upload_fake_file():
 
 
 def _handle_files():
-    if not mimetypes.inited:
-        mimetypes.init()
     for item in request.files.values():
         if item.filename:
             filetype = ".{}".format(item.filename.split(".")[-1])
@@ -104,19 +104,70 @@ def _handle_files():
     return "", 200
 
 
+class BadFileUploadException(Exception):
+    """Something wrong when uploading files"""
+
+
+def _verify_is_file_multipart():
+    if not mimetypes.inited:
+        mimetypes.init()
+
+    if not request.content_type.startswith("multipart/form-data"):
+        raise BadFileUploadException("Was not a multipart form upload")
+
+    if not request.files:
+        raise BadFileUploadException("No files in request")
+
+
 @app.route("/fake_upload_file_data", methods=["POST"])
 def upload_fake_file_and_data():
-    if not request.files:
-        return "", 401
+    try:
+        _verify_is_file_multipart()
+    except BadFileUploadException as e:
+        return jsonify({"error": str(e)}), 400
 
     if not request.form.to_dict():
-        return "", 402
-
-    # Verify that the content type is `multipart`
-    if not request.content_type.startswith("multipart/form-data"):
-        return "", 403
+        return "", 400
 
     return _handle_files()
+
+
+@app.route("/files_expect_in_order", methods=["POST"])
+def upload_specific_files_in_order():
+    """Expects a multipart form upload with files in the correct order
+
+    See test_files.tavern.yaml for expected list of files here
+    """
+
+    try:
+        _verify_is_file_multipart()
+    except BadFileUploadException as e:
+        return jsonify({"error": str(e)}), 400
+
+    try:
+        group_1 = request.files.getlist("group_1")
+        if len(group_1) != 2:
+            raise Exception(f"expected 2 files in group 1, got {len(group_1)}")
+        if group_1[0].filename != "OK.txt":
+            raise Exception(
+                f"First file in group 1 should be OK.txt, was {group_1[0].filename}"
+            )
+        if group_1[1].filename != "OK.json.gz":
+            raise Exception(
+                f"Second file in group 1 should be OK.json.gz, was {group_1[1].filename}"
+            )
+
+        group_2 = request.files.getlist("group_2")
+        if len(group_2) != 1:
+            raise Exception(f"expected 1 files in group 2, got {len(group_2)}")
+        if group_2[0].filename != "OK.txt":
+            raise Exception(
+                f"First file in group 2 should be OK.txt, was {group_2[0].filename}"
+            )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+    return "", 200
 
 
 @app.route("/nested/again", methods=["GET"])
@@ -145,12 +196,12 @@ def expect_type():
         status = "Missing expected type or value"
         code = 400
 
-    if str(type(value)) != "<class '{}'>".format(dtype):
-        status = "Unexpected type: '{}'".format(str(type(value)))
+    if str(type(value)) != f"<class '{dtype}'>":
+        status = f"Unexpected type: '{str(type(value))}'"
         code = 400
 
     if value != dvalue:
-        status = "Unexpected value: '{}'".format(value)
+        status = f"Unexpected value: '{value}'"
         code = 400
 
     return jsonify({"status": status}), code
@@ -195,7 +246,7 @@ def expect_raw_data():
         response = {"status": "denied"}
         code = 401
     else:
-        response = {"status": "err: '{}'".format(raw_data)}
+        response = {"status": f"err: '{raw_data}'"}
         code = 400
 
     return jsonify(response), code
@@ -223,7 +274,7 @@ def expect_compressed_data():
         response = {"status": "ok"}
         code = 200
     else:
-        response = {"status": "err: '{}'".format(raw_data)}
+        response = {"status": f"err: '{raw_data}'"}
         code = 400
 
     return jsonify(response), code
@@ -274,7 +325,7 @@ def expect_cookie():
     cookie_name = _maybe_get_cookie_name()
     if cookie_name not in request.cookies:
         return (
-            jsonify({"error": "No cookie named {} in request".format(cookie_name)}),
+            jsonify({"error": f"No cookie named {cookie_name} in request"}),
             400,
         )
     else:
@@ -283,7 +334,13 @@ def expect_cookie():
 
 @app.route("/redirect/source", methods=["GET"])
 def redirect_to_other_endpoint():
-    return redirect("/redirect/destination", 302)
+    query_params = urlencode(
+        {
+            "test_value": "lorem ipsum?",
+        }
+    )
+
+    return redirect(f"/redirect/destination?{query_params}", 302)
 
 
 @app.route("/redirect/loop", methods=["GET"])
@@ -414,6 +471,14 @@ def get_606_list():
 @app.route("/606-regression-dict", methods=["GET"])
 def get_606_dict():
     return jsonify({})
+
+
+@app.route("/sub-path-query", methods=["POST"])
+def sub_path_query():
+    r = request.get_json(force=True)
+    sub_path = r["sub_path"]
+
+    return jsonify({"result": Box(r, box_dots=True)[sub_path]})
 
 
 @app.route("/magic-multi-method", methods=["GET", "POST", "DELETE"])

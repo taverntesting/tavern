@@ -4,10 +4,12 @@ import logging
 import ssl
 import threading
 import time
+from collections.abc import Mapping, MutableMapping
 from queue import Empty, Full, Queue
-from typing import Dict, List, Mapping, MutableMapping, Optional
+from typing import Any, Optional, Union
 
 import paho.mqtt.client as paho
+from paho.mqtt.client import MQTTMessageInfo
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys
@@ -33,11 +35,7 @@ _err_vals = {
     15: "MQTT_ERR_QUEUE_SIZE",
 }
 
-logger = logging.getLogger(__name__)
-
-
-def root_topic(topic):
-    return topic.split("+")[0].split("#")[0]
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass
@@ -53,12 +51,10 @@ class _Subscription:
 
 def check_file_exists(key, filename) -> None:
     try:
-        with open(filename, "r", encoding="utf-8"):
+        with open(filename, encoding="utf-8"):
             pass
-    except IOError as e:
-        raise exceptions.MQTTTLSError(
-            "Couldn't load '{}' from '{}'".format(key, filename)
-        ) from e
+    except OSError as e:
+        raise exceptions.MQTTTLSError(f"Couldn't load '{key}' from '{filename}'") from e
 
 
 def _handle_tls_args(
@@ -93,8 +89,8 @@ def _handle_ssl_context_args(
 
 
 def _check_and_update_common_tls_args(
-    tls_args: MutableMapping, check_file_keys: List[str]
-):
+    tls_args: MutableMapping, check_file_keys: list[str]
+) -> None:
     """Checks common args between ssl/tls args"""
 
     # could be moved to schema validation stage
@@ -261,7 +257,7 @@ class MQTTClient:
             else:
                 context.load_default_certs()
 
-            ciphers = self._ssl_context_args.get("cipthers")
+            ciphers = self._ssl_context_args.get("ciphers")
             if ciphers is not None:
                 context.set_ciphers(ciphers)
 
@@ -280,14 +276,14 @@ class MQTTClient:
                 self._client.tls_insecure_set(True)
 
         # Topics to subscribe to - mapping of subscription message id to subscription object
-        self._subscribed: Dict[int, _Subscription] = {}
+        self._subscribed: dict[int, _Subscription] = {}
         # Lock to ensure there is no race condition when subscribing
         self._subscribe_lock = threading.RLock()
         # callback
         self._client.on_subscribe = self._on_subscribe
 
         # Mapping of topic -> subscription id, for indexing into self._subscribed
-        self._subscription_mappings: Dict[str, int] = {}
+        self._subscription_mappings: dict[str, int] = {}
         self._userdata = {
             "_subscription_mappings": self._subscription_mappings,
             "_subscribed": self._subscribed,
@@ -295,7 +291,9 @@ class MQTTClient:
         self._client.user_data_set(self._userdata)
 
     @staticmethod
-    def _on_message(client, userdata, message) -> None:
+    def _on_message(
+        client, userdata: Mapping[str, Any], message: paho.MQTTMessage
+    ) -> None:
         """Add any messages received to the queue
 
         Todo:
@@ -304,21 +302,20 @@ class MQTTClient:
 
         logger.info("Received mqtt message on %s", message.topic)
 
-        sanitised = root_topic(message.topic)
-
         try:
-            userdata["_subscribed"][
-                userdata["_subscription_mappings"][sanitised]
-            ].queue.put(message)
-        except KeyError as e:
-            raise exceptions.MQTTTopicException(
-                "Message received on unregistered topic: {}".format(message.topic)
-            ) from e
+            for sub_topic, sub_id in userdata["_subscription_mappings"].items():
+                if paho.topic_matches_sub(sub_topic, message.topic):
+                    userdata["_subscribed"][sub_id].queue.put(message)
+                    break
+            else:
+                raise exceptions.MQTTTopicException(
+                    f"Message received on unregistered topic: {message.topic}"
+                )
         except Full:
             logger.exception("message queue full")
 
     @staticmethod
-    def _on_connect(client, userdata, flags, rc) -> None:
+    def _on_connect(client, userdata, flags, rc: int) -> None:
         logger.debug(
             "Client '%s' connected to the broker with result code '%s'",
             client._client_id.decode(),
@@ -326,7 +323,7 @@ class MQTTClient:
         )
 
     @staticmethod
-    def _on_disconnect(client, userdata, rc) -> None:
+    def _on_disconnect(client, userdata, rc: int) -> None:
         if rc == paho.CONNACK_ACCEPTED:
             logger.debug(
                 "Client '%s' successfully disconnected from the broker with result code '%s'",
@@ -354,30 +351,28 @@ class MQTTClient:
     def _on_socket_close(client, userdata, socket) -> None:
         logger.debug("MQTT socket closed")
 
-    def message_received(self, topic: str, timeout: int = 1):
+    def message_received(
+        self, topic: str, timeout: Union[float, int] = 1
+    ) -> Optional[paho.MQTTMessage]:
         """Check that a message is in the message queue
 
         Args:
-            topic (str): topic to fetch message for
-            timeout (int): How long to wait before signalling that the message
+            topic: topic to fetch message for
+            timeout: How long to wait before signalling that the message
                 was not received.
 
         Returns:
-            paho.MQTTMessage: whether the message was received within the timeout
+            the message, if one was received, otherwise None
 
         Todo:
             Allow regexes for topic names? Better validation for mqtt payloads
         """
 
-        sanitised = root_topic(topic)
-
         try:
             with self._subscribe_lock:
-                queue = self._subscribed[self._subscription_mappings[sanitised]].queue
+                queue = self._subscribed[self._subscription_mappings[topic]].queue
         except KeyError as e:
-            raise exceptions.MQTTTopicException(
-                "Unregistered topic: {}".format(topic)
-            ) from e
+            raise exceptions.MQTTTopicException(f"Unregistered topic: {topic}") from e
 
         try:
             msg = queue.get(block=True, timeout=timeout)
@@ -387,7 +382,13 @@ class MQTTClient:
 
         return msg
 
-    def publish(self, topic, payload=None, qos=None, retain=None):
+    def publish(
+        self,
+        topic: str,
+        payload: Optional[Any] = None,
+        qos: Optional[int] = None,
+        retain: Optional[bool] = False,
+    ) -> MQTTMessageInfo:
         """publish message using paho library"""
         self._wait_for_subscriptions()
 
@@ -400,7 +401,14 @@ class MQTTClient:
             kwargs["retain"] = retain
         msg = self._client.publish(topic, payload, **kwargs)
 
-        if not msg.is_published:
+        # Wait for 2*connect timeout which should be plenty to publish the message even with qos 2
+        # TODO: configurable
+        try:
+            msg.wait_for_publish(self._connect_timeout * 2)
+        except (RuntimeError, ValueError) as e:
+            raise exceptions.MQTTError("could not publish message") from e
+
+        if not msg.is_published():
             raise exceptions.MQTTError(
                 "err {:s}: {:s}".format(
                     _err_vals.get(msg.rc, "unknown"), paho.error_string(msg.rc)
@@ -457,13 +465,12 @@ class MQTTClient:
         (status, mid) = self._client.subscribe(topic, *args, **kwargs)
 
         if status == 0:
-            sanitised = root_topic(topic)
             with self._subscribe_lock:
-                self._subscription_mappings[sanitised] = mid
+                self._subscription_mappings[topic] = mid
                 self._subscribed[mid] = _Subscription(topic)
         else:
             raise exceptions.MQTTError(
-                "Error subscribing to '{}' (err code {})".format(topic, status)
+                f"Error subscribing to '{topic}' (err code {status})"
             )
 
     def unsubscribe_all(self) -> None:

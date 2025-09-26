@@ -1,8 +1,8 @@
 import datetime
 import functools
 
-from flask import Flask, jsonify, request
 import jwt
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -64,4 +64,4 @@ def ping():
 @app.route("/hello/<name>", methods=["GET"])
 @requires_jwt
 def hello(name):
-    return jsonify({"data": "Hello, {}".format(name)}), 200
+    return jsonify({"data": f"Hello, {name}"}), 200

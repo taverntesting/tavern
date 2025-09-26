@@ -1,6 +1,7 @@
 import os
 import re
-from typing import Union
+from collections.abc import Callable, Mapping
+from typing import TYPE_CHECKING, Any, Union
 
 from pykwalify.types import is_bool, is_float, is_int
 
@@ -12,13 +13,24 @@ from tavern._core.extfunctions import (
     is_ext_function,
 )
 from tavern._core.general import valid_http_methods
-from tavern._core.loader import ApproxScalar, BoolToken, FloatToken, IntToken
+from tavern._core.loader import (
+    ApproxScalar,
+    BoolToken,
+    FloatToken,
+    IntToken,
+    TypeConvertToken,
+)
 from tavern._core.strict_util import StrictLevel
+
+if TYPE_CHECKING:
+    from tavern._plugins.grpc.response import GRPCCode
 
 
 # To extend pykwalify's type validation, extend its internal functions
 # These return boolean values
-def validate_type_and_token(validate_type, token):
+def validate_type_and_token(
+    validate_type: Callable[[Any], bool], token: type[TypeConvertToken]
+):
     def validate(value):
         return validate_type(value) or isinstance(value, token)
 
@@ -31,14 +43,12 @@ is_bool_like = validate_type_and_token(is_bool, BoolToken)
 
 
 # These plug into the pykwalify extension function API
-def validator_like(validate, description):
+def validator_like(validate: Callable[[Any], bool], description: str):
     def validator(value, rule_obj, path):
         if validate(value):
             return True
         else:
-            err_msg = "expected '{}' type at '{}', got '{}'".format(
-                description, path, value
-            )
+            err_msg = f"expected '{description}' type at '{path}', got '{value}'"
             raise BadSchemaError(err_msg)
 
     return validator
@@ -49,12 +59,12 @@ float_variable = validator_like(is_float_like, "float-like")
 bool_variable = validator_like(is_bool_like, "bool-like")
 
 
-def _validate_one_extension(input_value) -> None:
+def _validate_one_extension(input_value: Mapping) -> None:
     expected_keys = {"function", "extra_args", "extra_kwargs"}
     extra = set(input_value) - expected_keys
 
     if extra:
-        raise BadSchemaError("Unexpected keys passed to $ext: {}".format(extra))
+        raise BadSchemaError(f"Unexpected keys passed to $ext: {extra}")
 
     if "function" not in input_value:
         raise BadSchemaError("No function specified for validation")
@@ -68,14 +78,10 @@ def _validate_one_extension(input_value) -> None:
     extra_kwargs = input_value.get("extra_kwargs")
 
     if extra_args and not isinstance(extra_args, list):
-        raise BadSchemaError(
-            "Expected a list of extra_args, got {}".format(type(extra_args))
-        )
+        raise BadSchemaError(f"Expected a list of extra_args, got {type(extra_args)}")
 
     if extra_kwargs and not isinstance(extra_kwargs, dict):
-        raise BadSchemaError(
-            "Expected a dict of extra_kwargs, got {}".format(type(extra_args))
-        )
+        raise BadSchemaError(f"Expected a dict of extra_kwargs, got {type(extra_args)}")
 
 
 def validate_extensions(value, rule_obj, path) -> bool:
@@ -106,10 +112,8 @@ def validate_extensions(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path) -> bool:
-    err_msg = "status_code has to be an integer or a list of integers (got {})".format(
-        value
-    )
+def validate_status_code_is_int_or_list_of_ints(value: Mapping, rule_obj, path) -> bool:
+    err_msg = f"status_code has to be an integer or a list of integers (got {value})"
 
     if not isinstance(value, list) and not is_int_like(value):
         raise BadSchemaError(err_msg)
@@ -121,10 +125,10 @@ def validate_status_code_is_int_or_list_of_ints(value, rule_obj, path) -> bool:
     return True
 
 
-def check_usefixtures(value, rule_obj, path) -> bool:
+def check_usefixtures(value: Mapping, rule_obj, path) -> bool:
     err_msg = "'usefixtures' has to be a list with at least one item"
 
-    if not isinstance(value, (list, tuple)):
+    if not isinstance(value, list | tuple):
         raise BadSchemaError(err_msg)
 
     if not value:
@@ -133,11 +137,45 @@ def check_usefixtures(value, rule_obj, path) -> bool:
     return True
 
 
-def verify_oneof_id_name(value, rule_obj, path) -> bool:
+def validate_grpc_status_is_valid_or_list_of_names(
+    value: "GRPCCode", rule_obj, path
+) -> bool:
+    """Validate GRPC statuses https://github.com/grpc/grpc/blob/master/doc/statuscodes.md"""
+    # pylint: disable=unused-argument
+    err_msg = f"status has to be an valid grpc status code, name, or list (got {value})"
+
+    if isinstance(value, str | int):
+        if not to_grpc_status(value):
+            raise BadSchemaError(err_msg)
+    elif isinstance(value, list):
+        if not all(to_grpc_status(i) for i in value):
+            raise BadSchemaError(err_msg)
+    else:
+        raise BadSchemaError(err_msg)
+
+    return True
+
+
+def to_grpc_status(value: Union[str, int]):
+    from grpc import StatusCode  # noqa: PLC0415
+
+    if isinstance(value, str):
+        value = value.upper()
+        for status in StatusCode:
+            if status.name == value:
+                return status.name
+    elif isinstance(value, int):
+        for status in StatusCode:
+            if status.value[0] == value:
+                return status.name
+
+    return None
+
+
+def verify_oneof_id_name(value: Mapping, rule_obj, path) -> bool:
     """Checks that if 'name' is not present, 'id' is"""
 
-    name = value.get("name")
-    if not name:
+    if not (name := value.get("name")):
         if name == "":
             raise BadSchemaError("Name cannot be empty")
 
@@ -208,7 +246,7 @@ def check_parametrize_marks(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_data_key(value, rule_obj, path) -> bool:
+def validate_data_key(value, rule_obj, path: str) -> bool:
     """Validate the 'data' key in a http request
 
     From requests docs:
@@ -224,13 +262,11 @@ def validate_data_key(value, rule_obj, path) -> bool:
     if isinstance(value, dict):
         # Fine
         pass
-    elif isinstance(value, (str, bytes)):
+    elif isinstance(value, str | bytes):
         # Also fine - might want to do checking on this for encoding etc?
         pass
     elif isinstance(value, list):
-        raise BadSchemaError(
-            "Error at {} - expected a dict, str, or !!binary".format(path)
-        )
+        raise BadSchemaError(f"Error at {path} - expected a dict, str, or !!binary")
 
         # invalid = []
 
@@ -244,9 +280,7 @@ def validate_data_key(value, rule_obj, path) -> bool:
         # if invalid:
         #     raise BadSchemaError("Error at {} - when passing a list to the 'data' key, all items must be 2-tuples (invalid values: {})".format(path, invalid))
     else:
-        raise BadSchemaError(
-            "Error at {} - expected a dict, str, or !!binary".format(path)
-        )
+        raise BadSchemaError(f"Error at {path} - expected a dict, str, or !!binary")
 
     return True
 
@@ -260,8 +294,7 @@ def validate_request_json(value, rule_obj, path) -> bool:
         if isinstance(d, dict):
             for v in d.values():
                 if isinstance(v, dict):
-                    for v_s in v.values():
-                        yield v_s
+                    yield from v.values()
                 else:
                     yield v
         else:
@@ -271,9 +304,7 @@ def validate_request_json(value, rule_obj, path) -> bool:
         # If this is a request data block
         if not re.search(r"^/stages/\d/(response/json|mqtt_response/json)", path):
             raise BadSchemaError(
-                "Error at {} - Cannot use a '!approx' in anything other than an expected http response body or mqtt response json".format(
-                    path
-                )
+                f"Error at {path} - Cannot use a '!approx' in anything other than an expected http response body or mqtt response json"
             )
 
     return True
@@ -288,12 +319,12 @@ def validate_json_with_ext(value, rule_obj, path) -> bool:
         if isinstance(maybe_ext_val, dict):
             validate_extensions(maybe_ext_val, rule_obj, path)
         elif maybe_ext_val is not None:
-            raise BadSchemaError("Unexpected $ext key in block at {}".format(path))
+            raise BadSchemaError(f"Unexpected $ext key in block at {path}")
 
     return True
 
 
-def check_strict_key(value, rule_obj, path) -> bool:
+def check_strict_key(value: Union[list, bool], rule_obj, path) -> bool:
     """Make sure the 'strict' key is either a bool or a list"""
 
     if not isinstance(value, list) and not is_bool_like(value):
@@ -310,12 +341,10 @@ def check_strict_key(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_timeout_tuple_or_float(value, rule_obj, path) -> bool:
+def validate_timeout_tuple_or_float(value: Union[list, tuple], rule_obj, path) -> bool:
     """Make sure timeout is a float/int or a tuple of floats/ints"""
 
-    err_msg = "'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{}' (type {})".format(
-        value, type(value)
-    )
+    err_msg = f"'timeout' must be either a float/int or a 2-tuple of floats/ints - got '{value}' (type {type(value)})"
     logger = get_pykwalify_logger("tavern.schemas.extensions")
 
     def check_is_timeout_val(v):
@@ -323,7 +352,7 @@ def validate_timeout_tuple_or_float(value, rule_obj, path) -> bool:
             logger.debug("'timeout' value not a float/int")
             raise BadSchemaError(err_msg)
 
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, list | tuple):
         if len(value) != 2:
             raise BadSchemaError(err_msg)
         for v in value:
@@ -337,7 +366,7 @@ def validate_timeout_tuple_or_float(value, rule_obj, path) -> bool:
 def validate_verify_bool_or_str(value: Union[bool, str], rule_obj, path) -> bool:
     """Make sure the 'verify' key is either a bool or a str"""
 
-    if not isinstance(value, (bool, str)) and not is_bool_like(value):
+    if not isinstance(value, bool | str) and not is_bool_like(value):
         raise BadSchemaError(
             "'verify' has to be either a boolean or the path to a CA_BUNDLE file or directory with certificates of trusted CAs"
         )
@@ -353,10 +382,10 @@ def validate_cert_tuple_or_str(value, rule_obj, path) -> bool:
         "or as a tuple of both files"
     )
 
-    if not isinstance(value, (str, tuple, list)):
+    if not isinstance(value, str | tuple | list):
         raise BadSchemaError(err_msg)
 
-    if isinstance(value, (list, tuple)):
+    if isinstance(value, list | tuple):
         if len(value) != 2:
             raise BadSchemaError(err_msg)
         elif not all(isinstance(i, str) for i in value):
@@ -365,25 +394,30 @@ def validate_cert_tuple_or_str(value, rule_obj, path) -> bool:
     return True
 
 
-def validate_file_spec(value, rule_obj, path) -> bool:
+def validate_file_spec(value: dict, rule_obj, path) -> bool:
     """Validate file upload arguments"""
+
+    logger = get_pykwalify_logger("tavern.schema.extensions")
 
     if not isinstance(value, dict):
         raise BadSchemaError(
-            "File specification must be a mapping of file names to file specs, got {}".format(
-                value
-            )
+            f"File specification must be a mapping of file names to file specs, got {value}"
         )
+
+    if value.get("file_path"):
+        # If the file spec was a list, this function will be called for each item. Just call this
+        # function recursively to check each item.
+        return validate_file_spec({"file": value}, rule_obj, path)
 
     for _, filespec in value.items():
         if isinstance(filespec, str):
             file_path = filespec
         elif isinstance(filespec, dict):
-            valid = {"file_path", "content_type", "content_encoding"}
+            valid = {"file_path", "content_type", "content_encoding", "form_field_name"}
             extra = set(filespec.keys()) - valid
             if extra:
                 raise BadSchemaError(
-                    "Invalid extra keys passed to file upload block: {}".format(extra)
+                    f"Invalid extra keys passed to file upload block: {extra}"
                 )
 
             try:
@@ -399,12 +433,12 @@ def validate_file_spec(value, rule_obj, path) -> bool:
 
         if not os.path.exists(file_path):
             if re.search(".*{.+}.*", file_path):
-                get_pykwalify_logger("tavern.schemas.extensions").debug(
+                logger.debug(
                     "Could not find file path, but it might be a format variable, so continuing"
                 )
             else:
                 raise BadSchemaError(
-                    "Path to file to upload '{}' was not found".format(file_path)
+                    f"Path to file to upload '{file_path}' was not found"
                 )
 
     return True

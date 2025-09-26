@@ -1,6 +1,6 @@
 FROM python:3.10-alpine
 
-RUN pip3 install pyjwt~=2.4.0 flask~=2.0.3
+RUN pip3 install 'pyjwt>=2.4.0,<3' 'flask>=2.2.3' "python-box>=6,<7"
 
 ENV FLASK_DEBUG=1
 ENV PYTHONUNBUFFERED=0

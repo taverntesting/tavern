@@ -2,12 +2,12 @@ import dataclasses
 import enum
 import logging
 import re
-from typing import List, Optional, Tuple, Union
+from typing import Optional, Union
 
 from tavern._core import exceptions
 from tavern._core.strtobool import strtobool
 
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class StrictSetting(enum.Enum):
@@ -69,7 +69,7 @@ def validate_and_parse_option(key: str) -> StrictOption:
     if not match:
         raise exceptions.InvalidConfigurationException(
             "Invalid value for 'strict' given - expected one of {}, got '{}'".format(
-                ["{}[:on/off]".format(key) for key in valid_keys], key
+                [f"{key}[:on/off]" for key in valid_keys], key
             )
         )
 
@@ -100,7 +100,7 @@ class StrictLevel:
     )
 
     @classmethod
-    def from_options(cls, options: Union[List[str], str]) -> "StrictLevel":
+    def from_options(cls, options: Union[list[str], str]) -> "StrictLevel":
         if isinstance(options, str):
             options = [options]
         elif not isinstance(options, list):
@@ -120,7 +120,7 @@ class StrictLevel:
             return getattr(self, section)
         except AttributeError as e:
             raise exceptions.InvalidConfigurationException(
-                "No setting for '{}'".format(section)
+                f"No setting for '{section}'"
             ) from e
 
     @classmethod
@@ -135,7 +135,7 @@ class StrictLevel:
 StrictSettingKinds = Union[None, bool, StrictSetting, StrictOption]
 
 
-def extract_strict_setting(strict: StrictSettingKinds) -> Tuple[bool, StrictSetting]:
+def extract_strict_setting(strict: StrictSettingKinds) -> tuple[bool, StrictSetting]:
     """Takes either a bool, StrictOption, or a StrictSetting and return the bool representation
     and StrictSetting representation"""
 
@@ -154,9 +154,7 @@ def extract_strict_setting(strict: StrictSettingKinds) -> Tuple[bool, StrictSett
         strict_setting = strict_setting_factory("false")
     else:
         raise exceptions.InvalidConfigurationException(
-            "Unable to parse strict setting '{}' of type '{}'".format(
-                strict, type(strict)
-            )
+            f"Unable to parse strict setting '{strict}' of type '{type(strict)}'"
         )
 
     logger.debug("Got strict as '%s', setting as '%s'", strict, strict_setting)

@@ -1,0 +1,31 @@
+---
+test_name: Test getting format vars from environment variables
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Make requests using environment variables
+    request:
+      url: "{tavern.env_vars.TEST_HOST}/{first_part}/{second_part}"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: OK
+
+---
+test_name: Test slicing request vars
+
+stages:
+  - name: Make request and expect part of list in it to be returned
+    request:
+      url: "{global_host}/sub-path-query"
+      method: POST
+      json:
+        sub_path: "a.b[0].c"
+        "a": { "b": [{ "c": 3 }] }
+    response:
+      status_code: 200
+      json:
+        result: !int "{tavern.request_vars.json.a.b[0].c}"

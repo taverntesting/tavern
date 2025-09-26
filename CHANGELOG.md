@@ -166,8 +166,6 @@ calling run() directly will now cause a pytest isntance to be run in the backgro
 
 #  0.18.0          Add 'timeout' parameter for http requests (2018-08-24)
 
-##  show            Bump version: 0.17.2 → 0.18.0 (2018-08-24)
-
 ##  0.18.1          Add content type/encoding to uploaded files (2018-09-05)
 
 ##  0.18.2          Fix formatting environment variables in command line global config files (2018-09-21)
@@ -260,8 +258,6 @@ The initial 2 hooks should allow a user to do something before every test and af
 #  1.1.0           Add new global option to enable merging of keys from external functions (2020-05-01)
 
 ##  1.1.1           Travis fix (2020-05-23)
-
-##  travis-force    Attempt to force travis to commit (2020-05-23)
 
 ##  1.1.2           fforce new verison to make travis actually commit (2020-05-23)
 
@@ -406,3 +402,61 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  2.0.4           Fix using ext functions in MQTT publish (2023-02-16)
 
 ##  2.0.5           Attempt to fix deadlock in subscribe locks (2023-02-16)
+
+##  2.0.6           Fix a few small MQTT issues (2023-03-13)
+
+##  2.0.7           Lock pytest to <7.3 to fix issue with marks (2023-04-15)
+
+#  2.1.0           Allow multi part file uploads with the same form field name (2023-06-04)
+
+#  2.2.0           Allow wildcards in MQTT topics (2023-06-25)
+
+##  2.2.1           Update some dependencies (2023-07-30)
+
+#  2.3.0           Add 'finally' block (2023-08-05)
+
+##  2.3.1           Fix error formatting when including files with curly braces (2023-09-18)
+
+#  2.4.0           Allow using an ext function to create a URL (2023-09-18)
+
+#  2.5.0           Tinctures: a utility for running things before/after stages, able to be specified at test or stage level. (2023-10-22)
+
+#  2.6.0           fix verify_response_with with multiple MQTT responses (2023-11-18)
+
+#  2.7.0           update minimum version of jsonschema (2023-12-26)
+
+##  2.7.1           Fix jsonschema warnings (2023-12-26)
+
+#  2.8.0           Initial gRPC support (2024-01-20)
+
+#  2.9.0           Fix mqtt implementation checking for message publication correctly (2024-01-23)
+
+##  2.9.1           internal cleanup (2024-01-27)
+
+##  2.9.2           Fix saving in gRPC (2024-02-10)
+
+##  2.9.3           Fix saving in gRPC without checking the response (2024-02-17)
+
+#  2.10.0          Lock protobuf version to <5 (2024-03-27)
+
+##  2.10.1          minor changes to fix tavern_flask plugin (2024-03-27)
+
+##  2.10.2          Fix missing schema check for redirect query params (2024-04-13)
+
+##  2.10.3          Allow using referenced 'finally' stages (2024-04-13)
+
+#  2.11.0          Remove requirement for 'name' in variable files (2024-05-11)
+
+#  2.12.0          Add dynamic skipping of stages based on simpleeval (2025-03-07)
+
+#  2.13.0          Update minimum python version to 3.10 (2025-03-08)
+
+#  2.14.0          Fix pytest_tavern_beta_before_every_request not allowing a user to override request vars (2025-03-08)
+
+#  2.15.0          Add !anynumber token (2025-04-12)
+
+##  3.0.0a6         release 3.0.0a6 (2025-07-13)
+
+##  3.0.0a7         release 3.0.0a7 (2025-07-13)
+
+#  2.16.0          Allow using pytest marks which are function calls (2025-07-14)

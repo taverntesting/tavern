@@ -1,6 +1,7 @@
 import operator
 import re
-from typing import Any, Dict, List, Sized
+from collections.abc import Sized
+from typing import Any
 
 from tavern._core import exceptions
 
@@ -10,7 +11,7 @@ def test_type(val, mytype) -> bool:
     typelist = TYPES.get(str(mytype).lower())
     if typelist is None:
         raise TypeError(
-            "Type {0} is not a valid type to test against!".format(str(mytype).lower())
+            f"Type {str(mytype).lower()} is not a valid type to test against!"
         )
     try:
         for testtype in typelist:
@@ -37,7 +38,7 @@ COMPARATORS = {
     "regex": lambda x, y: regex_compare(str(x), str(y)),
     "type": test_type,
 }
-TYPES: Dict[str, List[Any]] = {
+TYPES: dict[str, list[Any]] = {
     "none": [type(None)],
     "number": [int, float],
     "int": [int],
@@ -61,12 +62,10 @@ def safe_length(var: Sized) -> int:
         return -1
 
 
-def validate_comparison(each_comparison):
+def validate_comparison(each_comparison: dict[Any, Any]):
     if extra := set(each_comparison.keys()) - {"jmespath", "operator", "expected"}:
         raise exceptions.BadSchemaError(
-            "Invalid keys given to JMES validation function (got extra keys: {})".format(
-                extra
-            )
+            f"Invalid keys given to JMES validation function (got extra keys: {extra})"
         )
 
     jmespath, _operator, expected = (
@@ -87,6 +86,4 @@ def actual_validation(
     _operator: str, _actual, expected, _expression, expression
 ) -> None:
     if not COMPARATORS[_operator](_actual, expected):
-        raise exceptions.JMESError(
-            "Validation '{}' ({}) failed!".format(expression, _expression)
-        )
+        raise exceptions.JMESError(f"Validation '{expression}' ({_expression}) failed!")

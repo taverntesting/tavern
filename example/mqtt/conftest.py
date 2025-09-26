@@ -1,4 +1,3 @@
-import datetime
 import logging
 import logging.config
 import random
@@ -51,7 +50,7 @@ loggers:
             - stderr
         level: DEBUG
         propagate: False
-    tavern: 
+    tavern:
         <<: *log
 
     tavern.mqtt: &reduced_log
@@ -95,7 +94,7 @@ def reset_devices():
 
 @pytest.fixture
 def get_publish_topic(random_device_id):
-    return "/device/{}/echo".format(random_device_id)
+    return f"/device/{random_device_id}/echo"
 
 
 @pytest.fixture

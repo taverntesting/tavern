@@ -1,9 +1,31 @@
+from typing import TYPE_CHECKING, Optional
+
+if TYPE_CHECKING:
+    from tavern._core.pytest.config import TestConfig
+
+
 class TavernException(Exception):
-    """Base exception"""
+    """Base exception
+
+    Fields are internal and might change in future without warning
+
+    Attributes:
+        is_final: whether this exception came from a 'finally' block
+        stage: stage that caused this issue
+        test_block_config: config for stage
+    """
+
+    stage: Optional[dict]
+    test_block_config: Optional["TestConfig"]
+    is_final: bool = False
 
 
 class BadSchemaError(TavernException):
     """Schema mismatch"""
+
+
+class EvalError(TavernException):
+    """Error parsing or running a simpleeval program"""
 
 
 class TestFailError(TavernException):
@@ -52,6 +74,18 @@ class MissingCookieError(TavernException):
 
 class RestRequestException(TavernException):
     """Error making requests in RestRequest()"""
+
+
+class GRPCRequestException(TavernException):
+    """Error making requests in GRPCRequest()"""
+
+
+class GRPCServiceException(TavernException):
+    """Some kind of error when trying to get the gRPC service"""
+
+
+class ProtoCompilerException(TavernException):
+    """Some kind of error using protoc"""
 
 
 class MQTTRequestException(TavernException):
@@ -119,9 +153,7 @@ class MisplacedExtBlockException(TavernException):
 
     def __init__(self, block) -> None:
         super().__init__(
-            "$ext function found in block {} - this has been moved to verify_response_with block - see documentation".format(
-                block
-            )
+            f"$ext function found in block {block} - this has been moved to verify_response_with block - see documentation"
         )
 
 

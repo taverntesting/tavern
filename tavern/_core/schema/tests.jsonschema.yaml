@@ -44,9 +44,6 @@ definitions:
     type: object
     additionalProperties: false
 
-    required:
-      - name
-
     properties:
       name:
         type: string
@@ -77,8 +74,13 @@ definitions:
 
     properties:
       url:
-        type: string
         description: URL to make request to
+        oneOf:
+          - type: string
+          - type: object
+            properties:
+              "$ext":
+                $ref: "#/definitions/verify_block"
 
       cert:
         description: Certificate to use - either a path to a certificate and key in one file, or a two item list containing the certificate and key separately
@@ -162,7 +164,9 @@ definitions:
         description: Path to a file to upload as the request body
 
       files:
-        type: object
+        oneOf:
+          - type: object
+          - type: array
         description: Files to send as part of the request
 
       clear_session_cookies:
@@ -244,6 +248,50 @@ definitions:
         type: object
         description: Which objects to save from the response
 
+  grpc_request:
+    type: object
+    required:
+      - service
+    properties:
+      host:
+        type: string
+
+      service:
+        type: string
+
+      body:
+        type: object
+
+      json:
+        type: object
+
+      retain:
+        type: boolean
+
+  grpc_response:
+    type: object
+    properties:
+      status:
+        oneOf:
+          - type: string
+          - type: integer
+
+      details:
+        type: object
+
+      proto_body:
+        type: object
+
+      timeout:
+        type: number
+
+      verify_response_with:
+        oneOf:
+          - $ref: "#/definitions/verify_block"
+          - type: array
+            items:
+              $ref: "#/definitions/verify_block"
+
   http_response:
     type: object
     additionalProperties: false
@@ -274,6 +322,10 @@ definitions:
       json:
         description: Expected JSON response
         $ref: "#/definitions/any_json"
+
+      redirect_query_params:
+        description: Query parameters parsed from the 'location' of a redirect
+        type: object
 
       verify_response_with:
         oneOf:
@@ -315,6 +367,12 @@ definitions:
       - name
 
     properties:
+      tinctures:
+        type: array
+        description: Tinctures for stage
+        items:
+          $ref: "#/definitions/verify_block"
+
       id:
         type: string
         description: ID of stage for use in stage references
@@ -325,9 +383,13 @@ definitions:
         default: 0
 
       skip:
-        type: boolean
-        description: Whether to skip this stage
-        default: false
+        oneOf:
+          - type: boolean
+            description: Whether to skip this stage
+            default: false
+
+          - type: string
+            description: CEL expression saying whether to skip this stage
 
       only:
         type: boolean
@@ -362,6 +424,12 @@ definitions:
       response:
         $ref: "#/definitions/http_response"
 
+      grpc_request:
+        $ref: "#/definitions/grpc_request"
+
+      grpc_response:
+        $ref: "#/definitions/grpc_response"
+
 ###
 
 type: object
@@ -376,10 +444,18 @@ properties:
     description: Name of test
 
   _xfail:
-    type: string
-    enum:
-      - verify
-      - run
+    oneOf:
+      - type: string
+        enum:
+          - verify
+          - run
+          - finally
+      - type: object
+        properties:
+          verify:
+            type: string
+          run:
+            type: string
 
   marks:
     type: array
@@ -407,6 +483,12 @@ properties:
                 - key
                 - vals
 
+  tinctures:
+    type: array
+    description: Tinctures for whole test
+    items:
+      $ref: "#/definitions/verify_block"
+
   strict:
     $ref: "#/definitions/strict_block"
 
@@ -420,6 +502,15 @@ properties:
     type: array
     description: Stages in test
     minItems: 1
+
+    items:
+      oneOf:
+        - $ref: "#/definitions/stage"
+        - $ref: "#/definitions/stage_ref"
+
+  finally:
+    type: array
+    description: Stages to run after test finishes
 
     items:
       oneOf:

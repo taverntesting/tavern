@@ -116,6 +116,7 @@ stages:
       status_code: 200
       json:
         value: "{yield_str_fixture}"
+
 ---
 test_name: Test autouse fixture
 
@@ -133,3 +134,21 @@ stages:
       status_code: 200
       json:
         value: "{autouse_thing_named}"
+
+---
+test_name: Test autouse fixture host
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: post json and expect it to be echoed
+    request:
+      url: "{fixture_echo_url}"
+      method: POST
+      json:
+        value: "hello"
+    response:
+      status_code: 200
+      json:
+        value: "hello"
