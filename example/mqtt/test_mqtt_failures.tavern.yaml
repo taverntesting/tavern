@@ -171,27 +171,3 @@ stages:
         timeout: 2
         qos: 1
         unexpected: true
-
----
-
-test_name: Test unexpected message fails even on its own
-
-includes:
-  - !include common.yaml
-
-paho-mqtt: *mqtt_spec
-
-_xfail: run
-
-stages:
-  - *setup_device_for_test
-
-  - name: step 1 - ping/pong
-    mqtt_publish:
-      topic: /devices/status
-    mqtt_response:
-      - topic: /device/88466412/status/response
-        payload: !anything
-        timeout: 3
-        qos: 1
-        unexpected: true

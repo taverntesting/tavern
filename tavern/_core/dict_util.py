@@ -155,6 +155,10 @@ def format_keys(
         logger.debug("Got type convert token '%s'", val)
         if isinstance(val, ForceIncludeToken):
             return _attempt_find_include(val.value, box_vars)
+        elif isinstance(val.constructor, tuple):
+            raise exceptions.BadSchemaError(
+                f"Can not use {val.yaml_tag} for formatting as it has multiple possible constructors"
+            )
         else:
             value = format_keys_(val.value, box_vars)
             return val.constructor(value)
