@@ -3,7 +3,7 @@
 set -ex
 
 uv lock --check || true
-pre-commit run ruff --all-files || true
+pre-commit run ruff-check --all-files || true
 pre-commit run ruff-format --all-files || true
 
 tox --parallel -c tox.ini        \
