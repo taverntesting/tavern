@@ -167,7 +167,9 @@ def _format_test_marks(
                     # happened (even if it is difficult to test)
                     raise exceptions.MissingFormatError(msg) from e
                 else:
-                    pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
+                    if markname != "parametrize":
+                        # Handle parametrize marks specially in _generate_parametrized_test_items
+                        pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
                     formatted_marks.append({markname: extra_arg})
         else:
             raise exceptions.BadSchemaError(f"Unexpected mark type '{type(m)}'")
@@ -410,15 +412,11 @@ class YamlFile(pytest.File):
             # things like selecting on mark names still works even
             # after parametrization
             parametrize_mark_idxs = [
-                (isinstance(m, dict) and "parametrize" in m)
-                for i, m in enumerate(formatted_marks)
+                (isinstance(m, dict) and "parametrize" in m) for m in formatted_marks
             ]
 
             parametrize_marks = list(
                 itertools.compress(formatted_marks, parametrize_mark_idxs)
-            )
-            pytest_marks = list(
-                itertools.compress(pytest_marks, [not f for f in parametrize_mark_idxs])
             )
 
             if parametrize_marks:
