@@ -2,10 +2,18 @@
 [![docs](https://readthedocs.org/projects/pip/badge/?version=latest&style=flat)](https://tavern.readthedocs.io/en/latest/)
 ![workflow](https://github.com/taverntesting/tavern/actions/workflows/main.yml/badge.svg?branch=master)
 
+## 3.0 Breaking changes
+
+- Python 3.11 is now the minimum required version - upgrade your Python installation accordingly
+- If using gRPC support, Tavern now requires v5 of the protobuf library.
+- Tavern now requires pytest 8
+- MQTT support is now an optional extra and requires installation like `pip install tavern[mqtt]`
+- If you rely on earlier behaviour of `recurse_access_key` it might have changed
+
 # Easier API testing
 
-Tavern is a pytest plugin, command-line tool and Python library for
-automated testing of APIs, with a simple, concise and flexible
+Tavern is a pytest plugin, command-line tool, and Python library for
+automated testing of APIs, with a simple, concise, and flexible
 YAML-based syntax. It's very simple to get started, and highly
 customisable for complex tests. Tavern supports testing RESTful APIs,
 MQTT based APIs, and gRPC services.
