@@ -54,6 +54,12 @@ class _TavernFixtureRequest(pytest.FixtureRequest):
     def _scope(self) -> Scope:
         return Scope.Function
 
+    def _fillfixtures(self) -> None:
+        item = self._pyfuncitem
+        for argname in item.fixturenames:
+            if argname not in item.funcargs:
+                item.funcargs[argname] = self.getfixturevalue(argname)
+
 
 class YamlItem(pytest.Item):
     """Simple wrapper around new test type that can report errors more
