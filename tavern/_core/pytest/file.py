@@ -109,7 +109,7 @@ def _parse_func_mark(fmt_vars: Mapping, m: str) -> pytest.Mark:
 
 def _format_test_marks(
     original_marks: Iterable[str | dict], fmt_vars: Mapping, test_name: str
-) -> tuple[list[Mark], list[Mapping]]:
+) -> tuple[list[Mark], list[dict]]:
     """Given the 'raw' marks from the test and any available format variables,
     generate new  marks for this test
 
@@ -140,7 +140,7 @@ def _format_test_marks(
     """
 
     pytest_marks: list[Mark] = []
-    formatted_marks: list[Mapping] = []
+    formatted_marks: list[dict] = []
 
     for m in original_marks:
         if isinstance(m, str):
@@ -266,10 +266,6 @@ def _get_parametrized_items(
     This will change the name from something like 'test a thing' to 'test a
     thing[param1]', 'test a thing[param2]', etc. This probably messes with
     -k
-
-    Note:
-        This still has the pytest.mark.parametrize mark on it, though it
-        doesn't appear to do anything. This could be removed?
     """
 
     logger.debug("parametrize marks: %s", parametrize_marks)
@@ -413,9 +409,17 @@ class YamlFile(pytest.File):
             # Do this after we've added all the other marks so doing
             # things like selecting on mark names still works even
             # after parametrization
-            parametrize_marks = [
-                i for i in formatted_marks if isinstance(i, dict) and "parametrize" in i
+            parametrize_mark_idxs = [
+                (isinstance(m, dict) and "parametrize" in m)
+                for i, m in enumerate(formatted_marks)
             ]
+
+            parametrize_marks = list(
+                itertools.compress(formatted_marks, parametrize_mark_idxs)
+            )
+            pytest_marks = list(
+                itertools.compress(pytest_marks, [not f for f in parametrize_mark_idxs])
+            )
 
             if parametrize_marks:
                 yield from _get_parametrized_items(
