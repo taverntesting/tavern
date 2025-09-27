@@ -1,12 +1,14 @@
 import dataclasses
 import logging
 import pathlib
-from collections.abc import Iterable, MutableMapping
+from collections.abc import Callable, Iterable, MutableMapping
 
 import pytest
 import yaml
 from _pytest._code.code import ExceptionInfo, TerminalRepr
+from _pytest.fixtures import FixtureDef, PseudoFixtureDef
 from _pytest.nodes import Node
+from _pytest.scope import Scope
 from pytest import Mark, MarkDecorator
 
 from tavern._core import exceptions
@@ -22,6 +24,35 @@ from .config import TestConfig
 from .util import load_global_cfg
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+class _TavernFixtureRequest(pytest.FixtureRequest):
+    def __init__(self, pyfuncitem: "YamlItem", *, _ispytest: bool = False) -> None:
+        super().__init__(
+            fixturename=None,
+            pyfuncitem=pyfuncitem,
+            arg2fixturedefs=pyfuncitem._fixtureinfo.name2fixturedefs.copy(),
+            fixture_defs={},
+            _ispytest=_ispytest,
+        )
+
+    def _check_scope(
+        self,
+        requested_fixturedef: FixtureDef[object] | PseudoFixtureDef[object],
+        requested_scope: Scope,
+    ) -> None:
+        pass
+
+    @property
+    def node(self):
+        return self._pyfuncitem
+
+    def addfinalizer(self, finalizer: Callable[[], object]) -> None:
+        self.node.addfinalizer(finalizer)
+
+    @property
+    def _scope(self) -> Scope:
+        return Scope.Function
 
 
 class YamlItem(pytest.Item):
@@ -64,6 +95,8 @@ class YamlItem(pytest.Item):
         return cls.from_parent(parent, name=name, spec=spec, path=path)
 
     def initialise_fixture_attrs(self) -> None:
+        # Prevent pytest from inspecting this item to try and find arguments,
+        # which doesn't work because this isn't a Python function
         self.funcargs = {}  # type: ignore
 
         # _get_direct_parametrize_args checks parametrize arguments in Python
@@ -73,11 +106,13 @@ class YamlItem(pytest.Item):
         )  # type: ignore
 
         fixtureinfo = self.session._fixturemanager.getfixtureinfo(
-            self, self.obj, type(self), funcargs=False
+            self,
+            self.obj,
+            type(self),
         )
         self._fixtureinfo = fixtureinfo
         self.fixturenames = fixtureinfo.names_closure
-        self._request = pytest.FixtureRequest(self, _ispytest=True)
+        self._request = _TavernFixtureRequest(self, _ispytest=True)
 
     @property
     def location(self):
