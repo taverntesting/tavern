@@ -1,3 +1,13 @@
+"""
+Tavern gRPC Response Plugin
+
+This module provides gRPC response handling and validation for the Tavern testing framework.
+It handles gRPC response processing, validation, and verification.
+
+The module contains classes and functions for processing and validating
+gRPC responses from API endpoints during testing.
+"""
+
 import logging
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, Optional, TypedDict, Union
@@ -44,6 +54,11 @@ class _GRPCExpected(TypedDict):
 
 
 class GRPCResponse(BaseResponse):
+    """gRPC response implementation for Tavern.
+
+    This class handles the validation and processing of gRPC responses.
+    It supports status code validation, body verification, and error handling.
+    """
     def __init__(
         self,
         client: GRPCClient,
@@ -156,7 +171,6 @@ class GRPCResponse(BaseResponse):
 
         json_result = json_format.MessageToDict(
             result,
-            including_default_value_fields=True,
             preserving_proto_field_name=True,
         )
 

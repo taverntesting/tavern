@@ -1,3 +1,13 @@
+"""
+Tavern Schema JSON Schema Module
+
+This module provides JSON Schema functionality for the Tavern testing framework.
+It handles JSON Schema validation and processing for test configuration.
+
+The module contains classes and functions for validating test configurations
+using JSON Schema and providing detailed validation feedback.
+"""
+
 import logging
 import re
 from collections.abc import Mapping

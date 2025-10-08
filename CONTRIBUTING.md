@@ -67,3 +67,22 @@ Run every so often to update the pre-commit hooks
 mkdir -p dist/
 sphinx-build docs/source/ dist/
 ```
+
+## Development Guidelines
+
+### Pytest Mark Compatibility
+
+Tavern is fully compatible with Pytest 7.3.0+ and uses the modern mark API. When working with Pytest marks:
+
+- Use `pytest.Mark` objects for programmatic mark creation
+- Use `item.iter_markers()` instead of deprecated `.get_marker()`
+- Access mark arguments via `.args` instead of `.mark.args`
+- Register custom marks in `pyproject.toml` or `conftest.py`
+
+The `audit_pytest_marks.py` script can be used to verify mark compatibility:
+
+```bash
+python3 audit_pytest_marks.py
+```
+
+### Code Style

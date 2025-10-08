@@ -1,3 +1,13 @@
+"""
+Tavern Strict Utilities Module
+
+This module provides strict checking utilities for the Tavern testing framework.
+It handles strict validation and comparison operations for test data.
+
+The module contains functions for performing strict comparisons and
+validations of test data with configurable strictness levels.
+"""
+
 import dataclasses
 import enum
 import logging

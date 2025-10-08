@@ -31,7 +31,8 @@ def get_client():
 
 
 def get_db():
-    return sqlite3.connect(DATABASE)
+    db_path = DATABASE if DATABASE is not None else ':memory:'
+    return sqlite3.connect(db_path)
 
 
 def get_cached_db():

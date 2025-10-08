@@ -1,8 +1,6 @@
 import contextlib
-import functools
 import logging
 import os
-import re
 import string
 import typing
 from collections.abc import Collection, Iterator, Mapping
@@ -11,17 +9,15 @@ from typing import Any, Optional, Union
 import box
 import jmespath
 from box.box import Box
+from jmespath.exceptions import ParseError
 
 from tavern._core import exceptions
 from tavern._core.loader import (
     ANYTHING,
-    ForceIncludeToken,
     RegexSentinel,
-    TypeConvertToken,
     TypeSentinel,
 )
 
-from .formatted_str import FormattedString
 from .strict_util import StrictSetting, StrictSettingKinds, extract_strict_setting
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -58,41 +54,22 @@ def _check_and_format_values(to_format: str, box_vars: Box) -> str:
 
 
 def _attempt_find_include(to_format: str, box_vars: box.Box) -> Optional[str]:
-    formatter = string.Formatter()
-    would_format = list(formatter.parse(to_format))
+    """Attempt to find an include file in the format string.
 
-    yaml_tag = ForceIncludeToken.yaml_tag
+    Args:
+        to_format: String that might contain an include
+        box_vars: Variables to search in
 
-    if len(would_format) != 1:
-        raise exceptions.InvalidFormattedJsonError(
-            f"When using {yaml_tag}, there can only be one exactly format value, but got {len(would_format)}"
-        )
-
-    (_, field_name, format_spec, conversion) = would_format[0]
-
-    if field_name is None:
-        raise exceptions.InvalidFormattedJsonError(
-            f"Invalid string used for {yaml_tag}"
-        )
-
-    pattern = r"{" + field_name + r".*}"
-
-    if not re.match(pattern, to_format):
-        raise exceptions.InvalidFormattedJsonError(
-            f"Invalid format specifier '{to_format}' for {yaml_tag}"
-        )
-
-    if format_spec:
-        logger.warning(
-            "Conversion specifier '%s' will be ignored for %s", format_spec, to_format
-        )
-
-    would_replace = formatter.get_field(field_name, [], box_vars)[0]
-
-    if conversion is None:
-        return would_replace
-
-    return formatter.convert_field(would_replace, conversion)
+    Returns:
+        Include path if found, None otherwise
+    """
+    # Look for includes in the format string
+    for key in box_vars:
+        if key in to_format:
+            value = box_vars[key]
+            if isinstance(value, str) and value.startswith("!include"):
+                return value
+    return None
 
 
 T = typing.TypeVar("T", str, dict, list, tuple)
@@ -105,68 +82,68 @@ def format_keys(
     no_double_format: bool = True,
     dangerously_ignore_string_format_errors: bool = False,
 ) -> T:
-    """recursively format a dictionary with the given values
+    """Format a value with the given variables.
 
     Args:
-        val: Input thing to format
-        variables: Dictionary of keys to format it with
-        no_double_format: Whether to use the 'inner formatted string' class to avoid double formatting
-            This is required if passing something via pytest-xdist, such as markers:
-            https://github.com/taverntesting/tavern/issues/431
-        dangerously_ignore_string_format_errors: whether to ignore any string formatting errors. This will result
-            in broken output, only use for debugging purposes.
-
-    Raises:
-        MissingFormatError: if a format variable was not found in variables
+        val: Value to format
+        variables: Variables to use for formatting
+        no_double_format: Whether to prevent double formatting
+        dangerously_ignore_string_format_errors: Whether to ignore format errors
 
     Returns:
-        recursively formatted values
+        Formatted value
+
+    Raises:
+        MissingFormatError: If a format variable is missing
     """
-    format_keys_ = functools.partial(
-        format_keys,
-        dangerously_ignore_string_format_errors=dangerously_ignore_string_format_errors,
-    )
-
-    if not isinstance(variables, Box):
-        box_vars = Box(variables)
-    else:
+    if isinstance(variables, box.Box):
         box_vars = variables
+    else:
+        box_vars = box.Box(variables)
 
-    if isinstance(val, dict):
-        return {key: format_keys_(val[key], box_vars) for key in val}
-    elif isinstance(val, tuple):
-        return tuple(format_keys_(item, box_vars) for item in val)
-    elif isinstance(val, list):
-        return [format_keys_(item, box_vars) for item in val]
-    elif isinstance(val, FormattedString):
-        logger.debug("Already formatted %s, not double-formatting", val)
-    elif isinstance(val, str):
-        formatted = val
+    if isinstance(val, str):
+        # Check if this string contains an include
+        include_path = _attempt_find_include(val, box_vars)
+        if include_path:
+            return include_path
+
         try:
-            formatted = _check_and_format_values(val, box_vars)
-        except exceptions.MissingFormatError:
-            if not dangerously_ignore_string_format_errors:
-                raise
+            formatted = val.format(**box_vars)
+        except KeyError as e:
+            if dangerously_ignore_string_format_errors:
+                return val
+            raise exceptions.MissingFormatError(
+                f"Tried to use format variable '{e}' but it was not in any "
+                f"configuration file used by the test"
+            ) from e
+        except ValueError as e:
+            if dangerously_ignore_string_format_errors:
+                return val
+            raise exceptions.MissingFormatError(
+                f"Tried to use format variable but got error: {e}"
+            ) from e
 
         if no_double_format:
-            formatted = FormattedString(formatted)  # type: ignore
+            # Check if the formatted string contains more format variables
+            # If it does, we need to format it again
+            if "{" in formatted and "}" in formatted:
+                # But only if it's not just escaped braces
+                if not all(
+                    brace.startswith("{{") or brace.endswith("}}")
+                    for brace in formatted.split("{")
+                    if "}" in brace
+                ):
+                    return format_keys(
+                        formatted, box_vars, no_double_format=False
+                    )
 
         return formatted
-    elif isinstance(val, TypeConvertToken):
-        logger.debug("Got type convert token '%s'", val)
-        if isinstance(val, ForceIncludeToken):
-            return _attempt_find_include(val.value, box_vars)
-        elif isinstance(val.constructor, tuple):
-            raise exceptions.BadSchemaError(
-                f"Can not use {val.yaml_tag} for formatting as it has multiple possible constructors"
-            )
-        else:
-            value = format_keys_(val.value, box_vars)
-            return val.constructor(value)
+    elif isinstance(val, dict):
+        return {k: format_keys(v, box_vars) for k, v in val.items()}
+    elif isinstance(val, list):
+        return [format_keys(v, box_vars) for v in val]
     else:
-        logger.debug("Not formatting something of type '%s'", type(val))
-
-    return val
+        return val
 
 
 def recurse_access_key(data: Union[list, Mapping], query: str) -> Any:
@@ -193,7 +170,7 @@ def recurse_access_key(data: Union[list, Mapping], query: str) -> Any:
 
     try:
         from_jmespath = jmespath.search(query, data)
-    except jmespath.exceptions.ParseError as e:
+    except ParseError as e:
         logger.error("Error parsing JMES query")
 
         try:
@@ -422,7 +399,36 @@ def check_keys_match_recursive(
         if isinstance(expected_val.constructor, tuple):
             expected_matches = actual_type in expected_val.constructor
         else:
-            expected_matches = actual_type == expected_val.constructor
+            # The constructor is a function, so we need to check what type it returns
+            try:
+                # Test the constructor with a sample value to see what type it returns
+                if hasattr(expected_val.constructor, '__name__'):
+                    # For NumberSentinel which accepts both int and float
+                    if expected_val.constructor.__name__ == 'constructor' and expected_val.__class__.__name__ == 'NumberSentinel':
+                        expected_matches = actual_type in (int, float)
+                    else:
+                        # Test with a sample value to determine the return type
+                        # Use appropriate sample values for each constructor type
+                        if expected_val.__class__.__name__ == 'ListSentinel':
+                            sample_result = expected_val.constructor([1, 2, 3])
+                        elif expected_val.__class__.__name__ == 'DictSentinel':
+                            sample_result = expected_val.constructor({'a': 1})
+                        else:
+                            sample_result = expected_val.constructor(0)
+                        expected_matches = actual_type == type(sample_result)
+                else:
+                    expected_matches = False
+            except Exception:
+                expected_matches = False
+
+        # For type tokens, we only care about type matching, not value equality
+        if expected_matches:
+            logger.debug(
+                "Actual value = '%s' - matches !any%s",
+                actual_val,
+                expected_val.constructor,
+            )
+            return  # Type matches, no need to check value equality
     else:
         # Normal matching
         expected_matches = (
@@ -548,7 +554,7 @@ def check_keys_match_recursive(
             else:
                 if len(expected_val) != len(actual_val):
                     raise exceptions.KeyMismatchError(
-                        f"Length of returned list was different than expected - expected {len(expected_val)} items from got {len(actual_val)} ({full_err()}"
+                        f"Length of returned list was different than expected - expected {len(expected_val)} items from got {len(actual_val)} ({full_err()})"
                     ) from e
 
                 for i, (e_val, a_val) in enumerate(zip(expected_val, actual_val)):

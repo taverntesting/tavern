@@ -1,3 +1,14 @@
+"""
+Tavern Helper Functions
+
+This module provides utility functions for Tavern testing framework.
+It includes functions for JWT token handling, request formatting,
+and other common testing utilities.
+
+The module contains helper functions that are used throughout the
+Tavern testing framework to support API testing workflows.
+"""
+
 import importlib
 import json
 import logging
@@ -160,7 +171,8 @@ def validate_regex(
         content = recurse_access_key(decoded, in_jmespath)
         if not isinstance(content, str):
             raise exceptions.RegexAccessError(
-                f"Successfully accessed {in_jmespath} from response, but it was a {type(content)} and not a string"
+                f"Successfully accessed {in_jmespath} from response, "
+                f"but it was a {type(content)} and not a string"
             )
 
     logger.debug("Matching %s with %s", content, expression)
@@ -224,3 +236,25 @@ def check_jmespath_match(parsed_response, query: str, expected: Optional[str] = 
         raise exceptions.JMESError(msg)
 
     return actual
+
+
+def format_keys(format_string, variables):
+    """Format a string with variables, supporting nested dictionary access.
+
+    Args:
+        format_string: String containing format placeholders
+        variables: Dictionary of variables to substitute
+
+    Returns:
+        Formatted string with variables substituted
+    """
+    # TODO: improve logic? Use a regex like '{.+?}' instead?
+    if not variables:
+        return format_string
+
+    try:
+        return format_string.format(**variables)
+    except KeyError as e:
+        raise exceptions.BadSchemaError(
+            f"Could not format '{format_string}' with variables '{variables}' - missing key {e}"
+        )

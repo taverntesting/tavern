@@ -1,0 +1,16 @@
+# Requirements for Tavern Getting Started Examples
+# Core dependencies
+tavern>=2.15.0
+pytest>=7.3.0
+requests>=2.22.0
+flask>=3.0.0
+
+# Optional dependencies for enhanced functionality
+pytest-xdist>=3.0.0
+pytest-html>=3.0.0
+allure-pytest>=2.13.0
+
+# Development dependencies
+black>=23.0.0
+ruff>=0.1.0
+mypy>=1.0.0

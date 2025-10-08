@@ -1,3 +1,13 @@
+"""
+Tavern JMES Utilities Module
+
+This module provides JMESPath utilities for the Tavern testing framework.
+It handles JSON querying and data extraction operations.
+
+The module contains functions for performing JMESPath queries and
+data extraction operations on JSON responses and test data.
+"""
+
 import operator
 import re
 from collections.abc import Sized

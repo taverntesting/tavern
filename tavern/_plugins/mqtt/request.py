@@ -1,3 +1,13 @@
+"""
+Tavern MQTT Request Plugin
+
+This module provides MQTT request functionality for the Tavern testing framework.
+It handles MQTT request creation, formatting, and execution for API testing.
+
+The module contains classes and functions for building and sending MQTT requests
+with various authentication methods, headers, and payload formats.
+"""
+
 import functools
 import json
 import logging

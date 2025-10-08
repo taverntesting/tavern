@@ -1,3 +1,13 @@
+"""
+Tavern MQTT TavernHook Plugin
+
+This module provides tavernhook functionality for MQTT requests in the Tavern testing framework.
+It handles the integration between Tavern and the MQTT request system.
+
+The module contains the tavernhook classes and functions that enable Tavern to
+properly handle MQTT request execution and response processing.
+"""
+
 import logging
 from collections.abc import Iterable
 from os.path import abspath, dirname, join
@@ -25,6 +35,16 @@ def get_expected_from_request(
     test_block_config: TestConfig,
     session: MQTTClient,
 ) -> Optional[dict]:
+    """Get expected response from MQTT request configuration.
+
+    Args:
+        response_block: Response block configuration
+        test_block_config: Test configuration
+        session: MQTT client session
+
+    Returns:
+        Formatted expected response configuration or None if no response block
+    """
     expected: Optional[dict] = None
 
     # mqtt response is not required

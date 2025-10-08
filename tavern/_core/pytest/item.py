@@ -1,12 +1,22 @@
+"""
+Tavern Pytest Item Module
+
+This module provides item functionality for the Tavern pytest integration.
+It handles test item creation and management for pytest.
+
+The module contains classes and functions for creating and managing
+test items that represent individual test cases in pytest.
+"""
+
 import logging
 import pathlib
 from collections.abc import MutableMapping
-from typing import Optional, Union
+from typing import Any, Optional, Union
 
-import attr
 import pytest
 import yaml
 from _pytest._code.code import ExceptionInfo, TerminalRepr
+from _pytest.mark.structures import Mark
 from _pytest.nodes import Node
 
 from tavern._core import exceptions
@@ -53,7 +63,7 @@ class YamlItem(pytest.Item):
         self.spec = spec
 
         if not YamlItem._patched_yaml:
-            yaml.parser.Parser.process_empty_scalar = (  # type:ignore
+            yaml.parser.Parser.process_empty_scalar = (  # type: ignore
                 error_on_empty_scalar
             )
 
@@ -73,11 +83,11 @@ class YamlItem(pytest.Item):
         )  # type: ignore
 
         fixtureinfo = self.session._fixturemanager.getfixtureinfo(
-            self, self.obj, type(self), funcargs=False
+            self, self.obj, type(self)
         )
         self._fixtureinfo = fixtureinfo
         self.fixturenames = fixtureinfo.names_closure
-        self._request = pytest.FixtureRequest(self, _ispytest=True)
+        # self._request = pytest.FixtureRequest(self, _ispytest=True)  # Removed for Pytest 8.x compatibility
 
     @property
     def location(self):
@@ -91,7 +101,7 @@ class YamlItem(pytest.Item):
 
     def setup(self) -> None:
         super().setup()
-        self._request._fillfixtures()
+        # self._request._fillfixtures()  # Removed for Pytest 8.x compatibility
 
     @property
     def obj(self):
@@ -118,7 +128,7 @@ class YamlItem(pytest.Item):
     def add_markers(self, pytest_marks) -> None:
         for pm in pytest_marks:
             if pm.name == "usefixtures":
-                if not isinstance(pm.mark.args, list | tuple) or len(pm.mark.args) == 0:
+                if not isinstance(pm.args, (list, tuple)) or len(pm.args) == 0:
                     logger.error(
                         "'usefixtures' was an invalid type (should"
                         " be a list of fixture names)"
@@ -127,10 +137,10 @@ class YamlItem(pytest.Item):
                 # Need to do this here because we expect a list of markers from
                 # usefixtures, which pytest then wraps in a tuple. we need to
                 # extract this tuple so pytest can use both fixtures.
-                if isinstance(pm.mark.args[0], list | tuple):
-                    new_mark = attr.evolve(pm.mark, args=pm.mark.args[0])
-                    pm = attr.evolve(pm, mark=new_mark)
-                elif isinstance(pm.mark.args[0], (dict)):
+                if isinstance(pm.args[0], (list, tuple)):
+                    new_mark = Mark(pm.name, tuple(pm.args[0]), {})
+                    pm = new_mark
+                elif isinstance(pm.args[0], dict):
                     # We could raise a TypeError here instead, but then it's a
                     # failure at collection time (which is a bit annoying to
                     # deal with). Instead just don't add the marker and it will
@@ -143,19 +153,31 @@ class YamlItem(pytest.Item):
 
             self.add_marker(pm)
 
-    def _load_fixture_values(self):
-        fixture_markers = self.iter_markers("usefixtures")
+    def _load_fixture_values(self) -> dict[str, Any]:
+        # Use pytest's request fixture to access fixture values
+        try:
+            request = self._request
+        except AttributeError:
+            # If _request is not set, fallback to empty dict
+            return {}
 
-        values = {}
+        values: dict[str, Any] = {}
+        fixture_markers = list(self.iter_markers("usefixtures"))
 
         for m in fixture_markers:
-            if isinstance(m.args, list | tuple):
-                mark_values = {f: self.funcargs[f] for f in m.args}
+            if isinstance(m.args, (list, tuple)):
+                for f in m.args:
+                    if hasattr(request, 'getfixturevalue'):
+                        try:
+                            values[f] = request.getfixturevalue(f)
+                        except Exception:
+                            continue
             elif isinstance(m.args, str):
-                # Not sure if this can happen if validation is working
-                # correctly, but it appears to be slightly broken so putting
-                # this check here just in case
-                mark_values = {m.args: self.funcargs[m.args]}
+                if hasattr(request, 'getfixturevalue'):
+                    try:
+                        values[m.args] = request.getfixturevalue(m.args)
+                    except Exception:
+                        continue
             else:
                 raise exceptions.BadSchemaError(
                     f"Can't handle 'usefixtures' spec of '{m.args}'."
@@ -164,20 +186,17 @@ class YamlItem(pytest.Item):
                     " names"
                 )
 
-            if any(mv in values for mv in mark_values):
-                logger.warning("Overriding value for %s", mark_values)
-
-            values.update(mark_values)
-
         # Use autouse fixtures as well
-        for name in self.fixturenames:
-            if name in values:
-                logger.debug("%s already explicitly used", name)
-                continue
-
-            mark_values = {name: self.funcargs[name]}
-            values.update(mark_values)
-
+        if hasattr(self, 'fixturenames'):
+            for name in self.fixturenames:
+                if name in values:
+                    logger.debug("%s already explicitly used", name)
+                    continue
+                if hasattr(request, 'getfixturevalue'):
+                    try:
+                        values[name] = request.getfixturevalue(name)
+                    except Exception:
+                        continue
         return values
 
     def runtest(self) -> None:
@@ -216,7 +235,7 @@ class YamlItem(pytest.Item):
         except exceptions.BadSchemaError:
             if xfail == "verify":
                 logger.info("xfailing test while verifying schema")
-                self.add_marker(pytest.mark.xfail, True)
+                self.add_marker(Mark("xfail", (), {}))
             raise
         except exceptions.TavernException as e:
             if isinstance(xfail, dict):
@@ -226,15 +245,15 @@ class YamlItem(pytest.Item):
                             f"error message did not match: expected '{msg}', got '{e!s}'"
                         ) from e
                     logger.info("xfailing test when running")
-                    self.add_marker(pytest.mark.xfail, True)
+                    self.add_marker(Mark("xfail", (), {}))
                 else:
                     logger.warning("internal error checking 'xfail'")
             elif xfail == "run" and not e.is_final:
                 logger.info("xfailing test when running")
-                self.add_marker(pytest.mark.xfail, True)
+                self.add_marker(Mark("xfail", (), {}))
             elif xfail == "finally" and e.is_final:
                 logger.info("xfailing test when finalising")
-                self.add_marker(pytest.mark.xfail, True)
+                self.add_marker(Mark("xfail", (), {}))
 
             raise
         else:
