@@ -223,11 +223,12 @@ class MQTTResponse(BaseResponse):
 
         if verifiers:
             for v in verifiers:
-                self._adderr(
-                    "Expected '%s' on topic '%s' but no such message received",
-                    v.expected_payload,
-                    topic,
-                )
+                if not v.expected.get("unexpected"):
+                    self._adderr(
+                        "Expected '%s' on topic '%s' but no such message received",
+                        v.expected_payload,
+                        topic,
+                    )
 
         for msg in correct_messages:
             if msg.expected.get("unexpected"):

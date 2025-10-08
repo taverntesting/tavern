@@ -1,3 +1,4 @@
+
 """
 Tavern Pytest File Module
 
@@ -12,6 +13,7 @@ import copy
 import functools
 import itertools
 import logging
+import re
 import typing
 from collections.abc import Callable, Iterable, Iterator, Mapping
 from typing import Any, Union
@@ -37,6 +39,82 @@ T = typing.TypeVar("T")
 _format_without_inner: Callable[[T, Mapping], T] = functools.partial(  # type:ignore
     format_keys, no_double_format=False
 )
+
+
+def _ast_node_to_literal(node: ast.AST) -> Any:
+    """Convert an AST node to its literal value"""
+    if isinstance(node, ast.Constant):
+        return node.value
+    elif isinstance(node, ast.List):
+        return [_ast_node_to_literal(elem) for elem in node.elts]
+    elif isinstance(node, ast.Dict):
+        result = {}
+        for k, v in zip(node.keys, node.values):
+            # Handle None keys (e.g., from dictionary unpacking)
+            if k is None:
+                continue
+            key = _ast_node_to_literal(k)
+            value = _ast_node_to_literal(v)
+            result[key] = value
+        return result
+    elif isinstance(node, ast.Tuple):
+        return tuple([_ast_node_to_literal(elem) for elem in node.elts])
+    elif isinstance(node, ast.Name):
+        # Handle special constants like True, False, None
+        if node.id in ("True", "False", "None"):
+            return ast.literal_eval(node.id)
+        raise ValueError(f"Unsupported variable reference: {node.id}")
+    else:
+        raise ValueError(f"Unsupported AST node type: {type(node)}")
+
+
+def _parse_func_mark(fmt_vars: Mapping, m: str) -> pytest.Mark:
+    """Parse a function-style mark string and return a pytest Mark object.
+
+    This function takes a string representation of a pytest mark with arguments
+    (e.g., "skipif(condition)") and parses it into a proper pytest Mark object.
+    The arguments are formatted using the provided format variables before parsing.
+
+    Args:
+        fmt_vars: A mapping of format variables to use when formatting the mark arguments
+        m: The mark string to parse, expected to be in format "mark_name(args)"
+
+    Returns:
+        A pytest Mark object with the parsed arguments
+
+    Raises:
+        exceptions.BadSchemaError: If the mark string cannot be parsed or if there are
+            issues with the AST parsing
+    """
+    try:
+        # Extract mark name and arguments string
+        mark_name = m.split("(")[0]
+        args_str = m[len(mark_name) + 1 : -1]
+
+        # Format the arguments string
+        formatted_args_str = _format_without_inner(args_str, fmt_vars)
+
+        # Wrap in a function call for parsing
+        tree = ast.parse(f"func({formatted_args_str})", mode="eval")
+        call = tree.body
+
+        if isinstance(call, ast.Call):
+            # Extract positional arguments as literals
+            posargs = [_ast_node_to_literal(arg) for arg in call.args]
+
+            # Extract keyword arguments as literals
+            kwargs = {kw.arg: _ast_node_to_literal(kw.value) for kw in call.keywords}
+
+            # Create the mark with parsed arguments
+            mark = getattr(pytest.mark, mark_name)
+            evaluated = mark(*posargs, **kwargs)
+            return evaluated
+        else:
+            raise Exception(f"unexpected type {type(call)} from parsing function call")
+    except Exception as e:
+        msg = f"Tried to use mark '{m}' but it could not be parsed: {e!s}"
+        logger.error(msg)
+        raise exceptions.BadSchemaError(msg) from e
 
 
 def _format_test_marks(

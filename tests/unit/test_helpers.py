@@ -141,7 +141,7 @@ class TestTavernRepr:
 
     @pytest.fixture(autouse=True, scope="session")
     def add_opts(self, pytestconfig):
-        from tavern._core.pytest.hooks import pytest_addoption
+        from tavern._core.pytest.hooks import pytest_addoption  # noqa: PLC0415
 
         with contextlib.suppress(ValueError):
             pytest_addoption(pytestconfig._parser)

@@ -1,0 +1,108 @@
+---
+test_name: Test xdist mark
+
+includes:
+  - !include common.yaml
+
+marks:
+  - xdist_group('test')
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: test-1
+    response:
+      status_code: 200
+      json:
+        value: test-1
+#---
+#test_name: Test xdist mark
+#
+#includes:
+#  - !include common.yaml
+#
+#_xfail: verify
+#
+# This fails at verification time because it's done before the tests run, so can't be tested directly.
+#marks:
+#  - xdist_group(bad mark')
+#
+#stages:
+#  - name: Echo back a unicode value and make sure it matches
+#    request:
+#      url: "{host}/echo"
+#      method: POST
+#      json:
+#        value: test-1
+#    response:
+#      status_code: 200
+#      json:
+#        value: test-1
+
+---
+test_name: Test should not be run if it has a special marker
+
+includes:
+  - !include common.yaml
+
+marks:
+  - do_not_run
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: test-1
+    response:
+      status_code: 555
+      json:
+        value: good
+
+---
+test_name: Test mark with keyword arguments
+
+includes:
+  - !include common.yaml
+
+marks:
+  - skipif(True, reason='Testing keyword arguments in marks')
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: test-1
+    response:
+      status_code: 200
+      json:
+        value: test-failure
+
+---
+test_name: Test mark with keyword arguments expected failure
+
+includes:
+  - !include common.yaml
+
+marks:
+  - skipif(False, reason='Testing keyword arguments in marks')
+
+_xfail: run
+
+stages:
+  - name: Echo back a unicode value and make sure it matches
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: test-1
+    response:
+      status_code: 200
+      json:
+        value: test-failure
