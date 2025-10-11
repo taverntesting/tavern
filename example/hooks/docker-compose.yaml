@@ -1,6 +1,4 @@
 ---
-version: '2'
-
 services:
   server:
     build:

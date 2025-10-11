@@ -48,7 +48,7 @@ class GRPCResponse(BaseResponse):
         self,
         client: GRPCClient,
         name: str,
-        expected: Union[_GRPCExpected, Mapping],
+        expected: _GRPCExpected | Mapping,
         test_block_config: TestConfig,
     ) -> None:
         check_expected_keys({"body", "status", "details", "save"}, expected)
@@ -127,7 +127,7 @@ class GRPCResponse(BaseResponse):
 
     def _handle_grpc_response(
         self,
-        grpc_response: Union[grpc.Call, grpc.Future],
+        grpc_response: grpc.Call | grpc.Future,
         response: "WrappedFuture",
         verify_status: list[str],
     ) -> Optional[dict[str, Any]]:
@@ -156,7 +156,7 @@ class GRPCResponse(BaseResponse):
 
         json_result = json_format.MessageToDict(
             result,
-            including_default_value_fields=True,
+            always_print_fields_with_no_presence=True,
             preserving_proto_field_name=True,
         )
 

@@ -1,13 +1,15 @@
+import dataclasses
 import logging
 import pathlib
-from collections.abc import MutableMapping
-from typing import Optional, Union
+from collections.abc import Callable, Iterable, MutableMapping
 
-import attr
 import pytest
 import yaml
 from _pytest._code.code import ExceptionInfo, TerminalRepr
+from _pytest.fixtures import FixtureDef, PseudoFixtureDef
 from _pytest.nodes import Node
+from _pytest.scope import Scope
+from pytest import Mark, MarkDecorator
 
 from tavern._core import exceptions
 from tavern._core.loader import error_on_empty_scalar
@@ -22,6 +24,41 @@ from .config import TestConfig
 from .util import load_global_cfg
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+class _TavernFixtureRequest(pytest.FixtureRequest):
+    def __init__(self, pyfuncitem: "YamlItem", *, _ispytest: bool = False) -> None:
+        super().__init__(
+            fixturename=None,
+            pyfuncitem=pyfuncitem,
+            arg2fixturedefs=pyfuncitem._fixtureinfo.name2fixturedefs.copy(),
+            fixture_defs={},
+            _ispytest=_ispytest,
+        )
+
+    def _check_scope(
+        self,
+        requested_fixturedef: FixtureDef[object] | PseudoFixtureDef[object],
+        requested_scope: Scope,
+    ) -> None:
+        pass
+
+    @property
+    def node(self):
+        return self._pyfuncitem
+
+    def addfinalizer(self, finalizer: Callable[[], object]) -> None:
+        self.node.addfinalizer(finalizer)
+
+    @property
+    def _scope(self) -> Scope:
+        return Scope.Function
+
+    def _fillfixtures(self) -> None:
+        item = self._pyfuncitem
+        for argname in item.fixturenames:
+            if argname not in item.funcargs:
+                item.funcargs[argname] = self.getfixturevalue(argname)
 
 
 class YamlItem(pytest.Item):
@@ -64,6 +101,8 @@ class YamlItem(pytest.Item):
         return cls.from_parent(parent, name=name, spec=spec, path=path)
 
     def initialise_fixture_attrs(self) -> None:
+        # Prevent pytest from inspecting this item to try and find arguments,
+        # which doesn't work because this isn't a Python function
         self.funcargs = {}  # type: ignore
 
         # _get_direct_parametrize_args checks parametrize arguments in Python
@@ -73,11 +112,13 @@ class YamlItem(pytest.Item):
         )  # type: ignore
 
         fixtureinfo = self.session._fixturemanager.getfixtureinfo(
-            self, self.obj, type(self), funcargs=False
+            self,
+            self.obj,
+            type(self),
         )
         self._fixtureinfo = fixtureinfo
         self.fixturenames = fixtureinfo.names_closure
-        self._request = pytest.FixtureRequest(self, _ispytest=True)
+        self._request = _TavernFixtureRequest(self, _ispytest=True)
 
     @property
     def location(self):
@@ -115,7 +156,7 @@ class YamlItem(pytest.Item):
     def _obj(self):
         return self.obj
 
-    def add_markers(self, pytest_marks) -> None:
+    def add_markers(self, pytest_marks: Iterable[MarkDecorator]) -> None:
         for pm in pytest_marks:
             if pm.name == "usefixtures":
                 if not isinstance(pm.mark.args, list | tuple) or len(pm.mark.args) == 0:
@@ -128,9 +169,17 @@ class YamlItem(pytest.Item):
                 # usefixtures, which pytest then wraps in a tuple. we need to
                 # extract this tuple so pytest can use both fixtures.
                 if isinstance(pm.mark.args[0], list | tuple):
-                    new_mark = attr.evolve(pm.mark, args=pm.mark.args[0])
-                    pm = attr.evolve(pm, mark=new_mark)
-                elif isinstance(pm.mark.args[0], (dict)):
+                    new_mark = Mark(
+                        name=pm.mark.name,
+                        args=tuple(pm.mark.args[0]),
+                        kwargs=pm.mark.kwargs,
+                        param_ids_from=pm.mark._param_ids_from,
+                        param_ids_generated=pm.mark._param_ids_generated,
+                        _ispytest=True,
+                    )
+
+                    pm = dataclasses.replace(pm, mark=new_mark, _ispytest=True)  # type:ignore
+                elif isinstance(pm.mark.args[0], dict):
                     # We could raise a TypeError here instead, but then it's a
                     # failure at collection time (which is a bit annoying to
                     # deal with). Instead just don't add the marker and it will
@@ -249,8 +298,8 @@ class YamlItem(pytest.Item):
             )
 
     def repr_failure(
-        self, excinfo: ExceptionInfo[BaseException], style: Optional[str] = None
-    ) -> Union[TerminalRepr, str, ReprdError]:
+        self, excinfo: ExceptionInfo[BaseException], style: str | None = None
+    ) -> TerminalRepr | str | ReprdError:
         """called when self.runtest() raises an exception.
 
         By default, will raise a custom formatted traceback if it's a tavern error. if not, will use the default

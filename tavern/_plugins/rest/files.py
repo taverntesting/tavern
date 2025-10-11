@@ -17,12 +17,12 @@ class _Filespec:
     """A description of a file for a file upload, possibly as part of a multi part upload"""
 
     path: str
-    content_type: Optional[str] = None
-    content_encoding: Optional[str] = None
-    form_field_name: Optional[str] = None
+    content_type: str | None = None
+    content_encoding: str | None = None
+    form_field_name: str | None = None
 
 
-def _parse_filespec(filespec: Union[str, dict]) -> _Filespec:
+def _parse_filespec(filespec: str | dict) -> _Filespec:
     """
     Get configuration for uploading file
 

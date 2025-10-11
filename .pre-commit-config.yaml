@@ -25,9 +25,14 @@ repos:
       - id: mypy
         additional_dependencies:
           - types-requests
-          - "types-protobuf>=4,<5"
+          - "types-protobuf>=5,<6"
           - types-PyYAML
           - mypy-extensions
         exclude: tests
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.9.2
+    hooks:
+      - id: uv-lock
 
 exclude: (docs/|example/)

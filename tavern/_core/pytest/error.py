@@ -4,7 +4,7 @@ import logging
 import re
 import typing
 from io import StringIO
-from typing import Any, Optional
+from typing import Any
 
 import yaml
 from _pytest._code.code import FormattedExcinfo, TerminalRepr
@@ -116,7 +116,7 @@ class ReprdError(TerminalRepr):
         tw: TerminalWriter,
         code_lines: list[str],
         missing_format_vars: list[str],
-        line_start: Optional[int],
+        line_start: int | None,
     ) -> None:
         """Print the direct source lines from this test stage
 

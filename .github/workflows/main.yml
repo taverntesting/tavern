@@ -9,62 +9,60 @@ on:
   pull_request:
     branches:
       - master
-      - feature-2.0
+      - feat/3.0-release
 
 jobs:
   simple-checks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
 
       - uses: pre-commit/action@v3.0.0
 
   unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: simple-checks
 
     env:
       TOXENV: py3
       TOXCFG: tox.ini
 
+    strategy:
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/cache@v4
         env:
           cache-name: cache-${TOXENV}
         with:
           path: .tox
-          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml') }}-${{ matrix.python-version }}
 
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}-${{ matrix.python-version }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.10"
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
 
-      - name: install deps
+      - name: run tests
         run: |
-          pip install uv
-          uv pip install --system -r requirements.txt
-
-      - name: tox
-        run: |
-          tox -c ${TOXCFG} -e ${TOXENV}
+          uv sync --all-extras
+          uvx --python ${{ matrix.python-version }} tox -c ${TOXCFG} -e ${TOXENV}
 
   integration-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     needs: unit-tests
 
     strategy:
@@ -95,26 +93,29 @@ jobs:
       - uses: docker/setup-buildx-action@v3
         continue-on-error: true
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/cache@v4
         env:
           cache-name: cache-${{ matrix.TOXENV }}
         with:
           path: .tox
-          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml') }}
 
       - uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml', 'requirements.in') }}
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
             ${{ runner.os }}-pip-
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
 
       - name: Install Protoc
         if: ${{ contains(matrix.TOXENV, 'grpc') }}
@@ -122,11 +123,7 @@ jobs:
         with:
           version: "23.x"
 
-      - name: install deps
+      - name: Run tests
         run: |
-          pip install uv
-          uv pip install --system -r requirements.txt
-
-      - name: tox
-        run: |
-          tox -c ${TOXCFG} -e ${TOXENV}
+          uv sync --all-extras
+          uvx tox -c ${TOXCFG} -e ${TOXENV}

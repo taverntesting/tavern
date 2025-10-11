@@ -2,13 +2,21 @@
 [![docs](https://readthedocs.org/projects/pip/badge/?version=latest&style=flat)](https://tavern.readthedocs.io/en/latest/)
 ![workflow](https://github.com/taverntesting/tavern/actions/workflows/main.yml/badge.svg?branch=master)
 
+## 3.0 Breaking changes
+
+- Python 3.11 is now the minimum required version - upgrade your Python installation accordingly
+- If using gRPC support, Tavern now requires v5 of the protobuf library.
+- Tavern now requires pytest 8
+- MQTT support is now an optional extra and requires installation like `pip install tavern[mqtt]`
+- If you rely on earlier behaviour of `recurse_access_key` it might have changed
+
 # Easier API testing
 
-Tavern is a pytest plugin, command-line tool and Python library for
-automated testing of APIs, with a simple, concise and flexible
+Tavern is a pytest plugin, command-line tool, and Python library for
+automated testing of APIs, with a simple, concise, and flexible
 YAML-based syntax. It's very simple to get started, and highly
-customisable for complex tests. Tavern supports testing RESTful APIs as
-well as MQTT based APIs.
+customisable for complex tests. Tavern supports testing RESTful APIs,
+MQTT based APIs, and gRPC services.
 
 The best way to use Tavern is with
 [pytest](https://docs.pytest.org/en/latest/). Tavern comes with a
@@ -108,7 +116,7 @@ Postman. However, specifically with regards to automated testing, Tavern
 has several advantages over Postman:
 
 - A full-featured Python environment for writing easily reusable custom validation functions
-- Testing of MQTT based systems in tandem with RESTful APIS.
+- Testing of MQTT based systems and gRPC services in tandem with RESTful APIs.
 - Seamless integration with pytest to keep all your tests in one place
 - A simpler, less verbose and clearer testing language
 
@@ -142,7 +150,7 @@ to run the integration tests, make sure you have
 It's that simple!
 
 If you want to develop things in tavern, enter your virtualenv and run
-`pip install -r requirements.txt` to install the library, any requirements,
+`uv sync --all-extras` to install the library, any requirements,
 and other useful development options.
 
 Tavern uses [ruff](https://pypi.org/project/ruff/) to keep all of the code
@@ -169,12 +177,16 @@ See [CONTRIBUTING.md](/CONTRIBUTING.md) for more details.
 
 ## Acknowledgements
 
+Tavern supports testing of different API types:
+
+- **RESTful APIs**: Using the [requests](http://docs.python-requests.org/en/master/) library
+- **MQTT services**: Using the [paho-mqtt](https://github.com/eclipse/paho.mqtt.python) library  
+- **gRPC services**: Using native gRPC protocol support with protobuf definitions
+
 Tavern makes use of several excellent open-source projects:
 
 - [pytest](https://docs.pytest.org/en/latest/), the testing
   framework Tavern intergrates with
-- [requests](http://docs.python-requests.org/en/master/), for HTTP
-  requests
 - [YAML](http://yaml.org/) and
   [pyyaml](https://github.com/yaml/pyyaml), for the test syntax
 - [pykwalify](https://github.com/Grokzen/pykwalify), for YAML schema
@@ -183,8 +195,6 @@ Tavern makes use of several excellent open-source projects:
   Tokens
 - [colorlog](https://github.com/borntyping/python-colorlog), for
   formatting terminal outputs
-- [paho-mqtt](https://github.com/eclipse/paho.mqtt.python), for
-  sending MQTT messages
 
 ## Maintenance
 

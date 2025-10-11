@@ -3,7 +3,6 @@ import json
 import logging
 import re
 from collections.abc import Iterable, Mapping
-from typing import Optional
 
 import jmespath
 import jwt
@@ -121,8 +120,8 @@ def validate_regex(
     response: requests.Response,
     expression: str,
     *,
-    header: Optional[str] = None,
-    in_jmespath: Optional[str] = None,
+    header: str | None = None,
+    in_jmespath: str | None = None,
 ) -> dict[str, Box]:
     """Make sure the response matches a regex expression
 
@@ -198,7 +197,7 @@ def validate_content(response: requests.Response, comparisons: Iterable[dict]) -
             raise exceptions.JMESError("Error validating JMES") from e
 
 
-def check_jmespath_match(parsed_response, query: str, expected: Optional[str] = None):
+def check_jmespath_match(parsed_response, query: str, expected: str | None = None):
     """
     Check that the JMES path given in 'query' is present in the given response
 

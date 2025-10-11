@@ -5,7 +5,7 @@ import warnings
 from collections.abc import Callable, Mapping
 from contextlib import ExitStack
 from itertools import filterfalse, tee
-from typing import ClassVar, Optional
+from typing import ClassVar
 from urllib.parse import quote_plus
 
 import requests
@@ -265,7 +265,7 @@ def _check_allow_redirects(rspec: dict, test_block_config: TestConfig):
 
 def _read_expected_cookies(
     session: requests.Session, rspec: Mapping, test_block_config: TestConfig
-) -> Optional[dict]:
+) -> dict | None:
     """
     Read cookies to inject into request, ignoring others which are present
 
@@ -394,7 +394,7 @@ class RestRequest(BaseRequest):
         )
 
         # Used further down, but pop it asap to avoid unwanted side effects
-        file_body: Optional[str] = request_args.pop("file_body", None)
+        file_body: str | None = request_args.pop("file_body", None)
 
         # If there was a 'cookies' key, set it in the request
         expected_cookies = _read_expected_cookies(session, rspec, test_block_config)

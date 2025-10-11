@@ -12,7 +12,7 @@
   in-process and ran tests against that instead of having to use a remote server
 - Fix comparing results - currently it serialises with
 
-      including_default_value_fields=True,
+      always_print_fields_with_no_presence=True,
       preserving_proto_field_name=True,
 
   Which formats a field like `my_field_name` as `my_field_name` and not `myFieldName` which is what protojson in Go
@@ -153,7 +153,7 @@ This has a few drawbacks, especially that if it can't find the protoc compiler a
 fail, but it might be useful if you're talking to a Java/Go/other server and you don't want to keep
 some compiled Python gRPC stubs in your repository.
 
-The main downside to this is that Tavern currently depends on `protobuf>=4,<5`. If the version of 
+The main downside to this is that Tavern currently depends on `protobuf>=5,<6`. If the version of 
 `protoc` you are using generates outputs that are incompatible with this, it will fail at runtime. 
 Consider using this only as a last resort!
 

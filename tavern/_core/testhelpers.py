@@ -2,7 +2,6 @@ import logging
 import time
 from collections.abc import Callable, Mapping
 from functools import wraps
-from typing import Union
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -101,7 +100,7 @@ def retry(stage: Mapping, test_block_config: TestConfig) -> Callable:
 
 
 def maybe_format_max_retries(
-    max_retries: Union[str, int], test_block_config: TestConfig
+    max_retries: str | int, test_block_config: TestConfig
 ) -> int:
     """Possibly handle max_retries validation"""
 

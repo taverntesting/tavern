@@ -108,8 +108,8 @@ def _parse_func_mark(fmt_vars: Mapping, m: str) -> pytest.Mark:
 
 
 def _format_test_marks(
-    original_marks: Iterable[Union[str, dict]], fmt_vars: Mapping, test_name: str
-) -> tuple[list[Mark], list[Mapping]]:
+    original_marks: Iterable[str | dict], fmt_vars: Mapping, test_name: str
+) -> tuple[list[Mark], list[dict]]:
     """Given the 'raw' marks from the test and any available format variables,
     generate new  marks for this test
 
@@ -140,7 +140,7 @@ def _format_test_marks(
     """
 
     pytest_marks: list[Mark] = []
-    formatted_marks: list[Mapping] = []
+    formatted_marks: list[dict] = []
 
     for m in original_marks:
         if isinstance(m, str):
@@ -167,7 +167,9 @@ def _format_test_marks(
                     # happened (even if it is difficult to test)
                     raise exceptions.MissingFormatError(msg) from e
                 else:
-                    pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
+                    if markname != "parametrize":
+                        # Handle parametrize marks specially in _generate_parametrized_test_items
+                        pytest_marks.append(getattr(pytest.mark, markname)(extra_arg))
                     formatted_marks.append({markname: extra_arg})
         else:
             raise exceptions.BadSchemaError(f"Unexpected mark type '{type(m)}'")
@@ -266,10 +268,6 @@ def _get_parametrized_items(
     This will change the name from something like 'test a thing' to 'test a
     thing[param1]', 'test a thing[param2]', etc. This probably messes with
     -k
-
-    Note:
-        This still has the pytest.mark.parametrize mark on it, though it
-        doesn't appear to do anything. This could be removed?
     """
 
     logger.debug("parametrize marks: %s", parametrize_marks)

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 #
 # Tavern documentation build configuration file, created by
 # sphinx-quickstart on Wed Nov  1 11:37:47 2017.

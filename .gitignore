@@ -113,7 +113,6 @@ pytype_output
 
 out/
 **/*.iml
-.idea
 
 allure/
 

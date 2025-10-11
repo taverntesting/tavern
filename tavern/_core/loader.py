@@ -3,10 +3,11 @@ import dataclasses
 import logging
 import os.path
 import re
+import typing
 import uuid
 from abc import abstractmethod
 from itertools import chain
-from typing import Optional, Union
+from typing import Optional
 
 import pytest
 import yaml
@@ -33,7 +34,9 @@ def makeuuid(loader, node) -> str:
 class RememberComposer(Composer):
     """A composer that doesn't forget anchors across documents"""
 
-    def compose_document(self) -> Optional[Node]:
+    def get_event(self) -> None: ...
+
+    def compose_document(self) -> Node | None:
         # Drop the DOCUMENT-START event.
         self.get_event()  # type:ignore
 
@@ -181,16 +184,14 @@ class TypeSentinel(yaml.YAMLObject):
 
     yaml_loader = IncludeLoader
 
-    @staticmethod
-    def constructor(_):
-        raise NotImplementedError
+    allowed_types: typing.ClassVar
 
     @classmethod
     def from_yaml(cls, loader, node) -> "TypeSentinel":
         return cls()
 
     def __str__(self) -> str:
-        return f"<Tavern YAML sentinel for {self.constructor}>"
+        return f"<Tavern YAML sentinel for {self.allowed_types}>"
 
     @classmethod
     def to_yaml(cls, dumper, data) -> ScalarNode:
@@ -201,37 +202,37 @@ class TypeSentinel(yaml.YAMLObject):
 class NumberSentinel(TypeSentinel):
     yaml_tag = "!anynumber"
     # Tuple of allowed types - this needs special handling wherever it's used
-    constructor = (int, float)  # type:ignore
+    allowed_types = (int, float)  # type:ignore
 
 
 class IntSentinel(TypeSentinel):
     yaml_tag = "!anyint"
-    constructor = int
+    allowed_types = int
 
 
 class FloatSentinel(TypeSentinel):
     yaml_tag = "!anyfloat"
-    constructor = float
+    allowed_types = float
 
 
 class StrSentinel(TypeSentinel):
     yaml_tag = "!anystr"
-    constructor = str
+    allowed_types = str
 
 
 class BoolSentinel(TypeSentinel):
     yaml_tag = "!anybool"
-    constructor = bool
+    allowed_types = bool
 
 
 class ListSentinel(TypeSentinel):
     yaml_tag = "!anylist"
-    constructor = list
+    allowed_types = list
 
 
 class DictSentinel(TypeSentinel):
     yaml_tag = "!anydict"
-    constructor = dict
+    allowed_types = dict
 
 
 @dataclasses.dataclass
@@ -241,7 +242,7 @@ class RegexSentinel(TypeSentinel):
     This shouldn't be used directly and instead one of the below match/fullmatch/search tokens will be used
     """
 
-    constructor = str
+    allowed_types = str
     compiled: re.Pattern
 
     def __str__(self) -> str:
@@ -371,7 +372,7 @@ class BoolToken(TypeConvertToken):
 class StrToRawConstructor:
     """Used when we want to ignore brace formatting syntax"""
 
-    def __new__(cls, s):
+    def __new__(cls, s) -> str:  # type:ignore
         return str(s.replace("{", "{{").replace("}", "}}"))
 
 
@@ -432,7 +433,7 @@ class ApproxSentinel(yaml.YAMLObject, ApproxScalar):  # type:ignore
 yaml.dumper.Dumper.add_representer(ApproxScalar, ApproxSentinel.to_yaml)
 
 
-def load_single_document_yaml(filename: Union[str, os.PathLike]) -> dict:
+def load_single_document_yaml(filename: str | os.PathLike) -> dict:
     """
     Load a yaml file and expect only one document
 

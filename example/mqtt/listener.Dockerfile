@@ -1,4 +1,4 @@
-FROM python:3.10-slim-bookworm
+FROM python:3.11-slim-trixie
 
 RUN pip install 'paho-mqtt>=1.3.1,<=1.6.1' fluent-logger 'PyYAML>=6,<7'
 

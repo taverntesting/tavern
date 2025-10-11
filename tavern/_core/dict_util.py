@@ -1,12 +1,11 @@
-import contextlib
 import functools
 import logging
 import os
 import re
 import string
 import typing
-from collections.abc import Collection, Iterator, Mapping
-from typing import Any, Optional, Union
+from collections.abc import Collection, Iterator, Mapping, Sequence
+from typing import Any, Union
 
 import box
 import jmespath
@@ -57,7 +56,7 @@ def _check_and_format_values(to_format: str, box_vars: Box) -> str:
     return to_format.format(**box_vars)
 
 
-def _attempt_find_include(to_format: str, box_vars: box.Box) -> Optional[str]:
+def _attempt_find_include(to_format: str, box_vars: box.Box) -> str | None:
     formatter = string.Formatter()
     would_format = list(formatter.parse(to_format))
 
@@ -100,7 +99,7 @@ T = typing.TypeVar("T", str, dict, list, tuple)
 
 def format_keys(
     val: T,
-    variables: Union[Mapping, Box],
+    variables: Mapping | Box,
     *,
     no_double_format: bool = True,
     dangerously_ignore_string_format_errors: bool = False,
@@ -194,69 +193,9 @@ def recurse_access_key(data: Union[list, Mapping], query: str) -> Any:
     try:
         from_jmespath = jmespath.search(query, data)
     except jmespath.exceptions.ParseError as e:
-        logger.error("Error parsing JMES query")
-
-        try:
-            _deprecated_recurse_access_key(data, query.split("."))
-        except (IndexError, KeyError):
-            logger.debug("Nothing found searching using old method")
-        else:
-            # If we found a key using 'old' style searching
-            logger.warning(
-                "Something was found using 'old style' searching in the response - please change the query to use jmespath instead - see http://jmespath.org/ for more information"
-            )
-
         raise exceptions.JMESError("Invalid JMES query") from e
 
     return from_jmespath
-
-
-def _deprecated_recurse_access_key(
-    current_val: Union[list, Mapping], keys: list
-) -> Any:
-    """Given a list of keys and a dictionary, recursively access the dicionary
-    using the keys until we find the key its looking for
-
-    If a key is an integer, it will convert it and use it as a list index
-
-    Example:
-
-        >>> _deprecated_recurse_access_key({"a": "b"}, ["a"])
-        'b'
-        >>> _deprecated_recurse_access_key({"a": {"b": ["c", "d"]}}, ["a", "b", "0"])
-        'c'
-
-    Args:
-        current_val: current dictionary we have recursed into
-        keys: list of str/int of subkeys
-
-    Raises:
-        IndexError: list index not found in data
-        KeyError: dict key not found in data
-
-    Returns:
-        value of subkey in dict
-    """
-    logger.debug("Recursively searching for '%s' in '%s'", keys, current_val)
-
-    if not keys:
-        return current_val
-    else:
-        current_key = keys.pop(0)
-
-        with contextlib.suppress(ValueError):
-            current_key = int(current_key)
-
-        try:
-            return _deprecated_recurse_access_key(current_val[current_key], keys)
-        except (IndexError, KeyError, TypeError) as e:
-            logger.error(
-                "%s accessing data - looking for '%s' in '%s'",
-                type(e).__name__,
-                current_key,
-                current_val,
-            )
-            raise
 
 
 def deep_dict_merge(initial_dct: dict, merge_dct: Mapping) -> dict:
@@ -284,7 +223,10 @@ def deep_dict_merge(initial_dct: dict, merge_dct: Mapping) -> dict:
     return dct
 
 
-def check_expected_keys(expected: Collection, actual: Collection) -> None:
+_CanCheck = Sequence | Mapping | set | Collection
+
+
+def check_expected_keys(expected: _CanCheck, actual: _CanCheck) -> None:
     """Check that a set of expected keys is a superset of the actual keys
 
     Args:
@@ -419,10 +361,10 @@ def check_keys_match_recursive(
     elif isinstance(expected_val, TypeSentinel):
         # If the 'expected' type is actually just a sentinel for another type,
         # then it should match
-        if isinstance(expected_val.constructor, tuple):
-            expected_matches = actual_type in expected_val.constructor
+        if isinstance(expected_val.allowed_types, tuple):
+            expected_matches = actual_type in expected_val.allowed_types
         else:
-            expected_matches = actual_type == expected_val.constructor
+            expected_matches = actual_type == expected_val.allowed_types
     else:
         # Normal matching
         expected_matches = (
@@ -571,7 +513,7 @@ def check_keys_match_recursive(
             logger.debug(
                 "Actual value = '%s' - matches !any%s",
                 actual_val,
-                expected_val.constructor,
+                expected_val.allowed_types,
             )
         else:
             raise exceptions.KeyMismatchError(f"Key mismatch: ({full_err()})") from e
