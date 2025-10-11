@@ -241,6 +241,9 @@ src = "docs/source/conf.py"
 [[tool.tbump.before_commit]]
 name = "Update changelog"
 cmd = "./scripts/update-changelog.bash"
+[[tool.tbump.before_commit]]
+name = "Update lock"
+cmd = "uv lock"
 
 # TODO: enable
 # [[tool.tbump.after_push]]
