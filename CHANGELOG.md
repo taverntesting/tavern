@@ -462,5 +462,3 @@ This is technically not a operational change but I'm adding a new tag so it can 
 #  2.16.0          Allow using pytest marks which are function calls (2025-07-14)
 
 #  2.17.0          Allow using kwargs in marks as well (2025-08-24)
-
-##  3.0.0a8         release 3.0.0a8 (2025-08-24)

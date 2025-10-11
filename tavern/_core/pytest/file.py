@@ -411,13 +411,9 @@ class YamlFile(pytest.File):
             # Do this after we've added all the other marks so doing
             # things like selecting on mark names still works even
             # after parametrization
-            parametrize_mark_idxs = [
-                (isinstance(m, dict) and "parametrize" in m) for m in formatted_marks
+            parametrize_marks = [
+                i for i in formatted_marks if isinstance(i, dict) and "parametrize" in i
             ]
-
-            parametrize_marks = list(
-                itertools.compress(formatted_marks, parametrize_mark_idxs)
-            )
 
             if parametrize_marks:
                 yield from _get_parametrized_items(
