@@ -86,12 +86,11 @@ from .response import GraphQLResponse
 
 logger = logging.getLogger(__name__)
 
-class TavernGraphQLPlugin(PluginHelperBase):
-    session_type = GraphQLClient
-    request_type = GraphQLRequest
-    request_block_name = "graphql_request"
-    verifier_type = GraphQLResponse
-    response_block_name = "graphql_response"
+session_type = GraphQLClient
+request_type = GraphQLRequest
+request_block_name = "graphql_request"
+verifier_type = GraphQLResponse
+response_block_name = "graphql_response"
 
     @staticmethod
     def get_expected_from_request(
@@ -519,8 +518,6 @@ GraphQL sessions are managed like other protocols:
 
 **Features:**
 - WebSocket-based subscriptions
-- Real-time response handling
-- Test execution
 - Subscription-specific validation
 
 **Files to create:**
