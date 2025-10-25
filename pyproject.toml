@@ -63,6 +63,10 @@ grpc = [
     "proto-plus",
 ]
 
+graphql-ws = [
+    "websockets>=12,<13",
+]
+
 dev = [
     "Faker",
     "allure-pytest",
