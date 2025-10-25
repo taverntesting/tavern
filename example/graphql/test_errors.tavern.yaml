@@ -1,6 +1,9 @@
 ---
 test_name: GraphQL error handling test
 
+includes:
+  - !include graphql_config.yaml
+
 stages:
   - name: Query non-existent user
     graphql_request:
@@ -26,6 +29,9 @@ stages:
 ---
 test_name: GraphQL error handling test
 
+includes:
+  - !include graphql_config.yaml
+
 stages:
   - name: Invalid query
     graphql_request:
@@ -45,6 +51,9 @@ stages:
 ---
 test_name: GraphQL error handling test
 
+includes:
+  - !include graphql_config.yaml
+
 stages:
   - name: Missing query parameter
     graphql_request:
@@ -58,6 +67,9 @@ stages:
 
 ---
 test_name: GraphQL error handling test
+
+includes:
+  - !include graphql_config.yaml
 
 _xfail: verify
 

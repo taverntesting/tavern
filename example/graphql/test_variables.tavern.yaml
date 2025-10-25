@@ -1,6 +1,9 @@
 ---
 test_name: GraphQL variable substitution test
 
+includes:
+  - !include graphql_config.yaml
+
 stages:
   - name: Query user with variable from test variables
     graphql_request:
@@ -27,6 +30,9 @@ stages:
 ---
 test_name: GraphQL variable substitution test
 
+includes:
+  - !include graphql_config.yaml
+
 stages:
   - name: Create user with multiple variables
     graphql_request:
@@ -52,6 +58,9 @@ stages:
 
 ---
 test_name: GraphQL variable substitution test
+
+includes:
+  - !include graphql_config.yaml
 
 stages:
   - name: Create post with mixed variables

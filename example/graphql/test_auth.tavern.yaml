@@ -1,4 +1,8 @@
-test_name: GraphQL authentication test
+---
+test_name: GraphQL authentication - Query with authorization header
+
+includes:
+  - !include graphql_config.yaml
 
 stages:
   - name: Query with authorization header
@@ -26,6 +30,13 @@ stages:
             name: "John Doe"
             email: "john@example.com"
 
+---
+test_name: GraphQL authentication - Query with custom content type
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
   - name: Query with custom content type
     graphql_request:
       url: "{graphql_server_url}/graphql"
@@ -53,6 +64,13 @@ stages:
               name: "Jane Smith"
               email: "jane@example.com"
 
+---
+test_name: GraphQL authentication - GET request with query parameters
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
   - name: GET request with query parameters
     graphql_request:
       url: "{graphql_server_url}/graphql"

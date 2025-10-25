@@ -1,4 +1,8 @@
-test_name: GraphQL basic query integration test
+---
+test_name: GraphQL basic query - Get user by ID
+
+includes:
+  - !include graphql_config.yaml
 
 stages:
   - name: Get user by ID
@@ -23,6 +27,13 @@ stages:
             name: "John Doe"
             email: "john@example.com"
 
+---
+test_name: GraphQL basic query - Get all users
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
   - name: Get all users
     graphql_request:
       url: "{graphql_server_url}/graphql"
@@ -46,6 +57,13 @@ stages:
               name: "Jane Smith"
               email: "jane@example.com"
 
+---
+test_name: GraphQL basic query - Get posts
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
   - name: Get posts
     graphql_request:
       url: "{graphql_server_url}/graphql"
