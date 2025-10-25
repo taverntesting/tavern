@@ -92,17 +92,75 @@ class GraphQLRequest(BaseRequest):
             if "headers" in self._formatted_rspec:
                 self.session.update_session(headers=self._formatted_rspec["headers"])
 
-            # Execute request
-            response = self.session.make_request(
-                url=self._formatted_rspec["url"],
-                query=self._formatted_rspec["query"],
-                variables=self._formatted_rspec.get("variables"),
-                operation_name=self._formatted_rspec.get("operation_name"),
-            )
-
-            logger.debug("GraphQL response: %s", response.text)
-            return response
+            # Check if this is a subscription request
+            if self._is_subscription_query():
+                return self._run_subscription()
+            else:
+                return self._run_query()
 
         except Exception as e:
             logger.exception("Error executing GraphQL request")
             raise exceptions.TavernException(f"GraphQL request failed: {e}") from e
+
+    def _is_subscription_query(self) -> bool:
+        """Check if the query is a subscription"""
+        query = self._formatted_rspec.get("query", "").strip()
+        # Simple check for subscription keyword at the start of the query
+        return query.lower().startswith("subscription")
+
+    def _run_query(self):
+        """Execute regular GraphQL query/mutation"""
+        response = self.session.make_request(
+            url=self._formatted_rspec["url"],
+            query=self._formatted_rspec["query"],
+            variables=self._formatted_rspec.get("variables"),
+            operation_name=self._formatted_rspec.get("operation_name"),
+        )
+
+        logger.debug("GraphQL response: %s", response.text)
+        return response
+
+    def _run_subscription(self):
+        """Execute GraphQL subscription and return mock response for validation"""
+        # For subscriptions, we establish the connection and return a mock response
+        # The actual subscription testing happens in the response validation
+        subscription_timeout = self._formatted_rspec.get("timeout", 30)
+
+        try:
+            with self.session.subscription(
+                url=self._formatted_rspec["url"],
+                query=self._formatted_rspec["query"],
+                variables=self._formatted_rspec.get("variables"),
+            ) as subscription:
+                # Store the subscription connection for use in response validation
+                self._subscription_connection = subscription
+
+                # Create a mock response object for initial validation
+                mock_response = _MockSubscriptionResponse()
+
+                logger.debug("GraphQL subscription established")
+                return mock_response
+
+        except Exception as e:
+            logger.exception("Error establishing GraphQL subscription")
+            raise exceptions.TavernException(f"GraphQL subscription failed: {e}") from e
+
+
+class _MockSubscriptionResponse:
+    """Mock response object for GraphQL subscriptions"""
+
+    def __init__(self):
+        self.status_code = 200
+        self.text = "Subscription established"
+        self._messages = []
+
+    def json(self):
+        return {"data": None, "subscription": "established"}
+
+    def add_message(self, message: dict):
+        """Add a received subscription message"""
+        self._messages.append(message)
+
+    def get_messages(self) -> list:
+        """Get all received subscription messages"""
+        return self._messages.copy()
