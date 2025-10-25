@@ -92,16 +92,16 @@ request_block_name = "graphql_request"
 verifier_type = GraphQLResponse
 response_block_name = "graphql_response"
 
-    @staticmethod
-    def get_expected_from_request(
-        response_block: dict, test_block_config: TestConfig, session: GraphQLClient
-    ):
-        if response_block is None:
-            # GraphQL responses are optional for subscriptions
-            return None
+@staticmethod
+def get_expected_from_request(
+    response_block: dict, test_block_config: TestConfig, session: GraphQLClient
+):
+    if response_block is None:
+        # GraphQL responses are optional for subscriptions
+        return None
 
-        f_expected = format_keys(response_block, test_block_config.variables)
-        return f_expected
+    f_expected = format_keys(response_block, test_block_config.variables)
+    return f_expected
 
 # Schema validation
 schema_path: str = join(abspath(dirname(__file__)), "jsonschema.yaml")
