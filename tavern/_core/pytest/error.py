@@ -1,3 +1,4 @@
+import copy
 import dataclasses
 import json
 import logging
@@ -156,9 +157,22 @@ class ReprdError(TerminalRepr):
         keys = self._get_available_format_keys()
 
         # Format stage variables recursively
-        formatted_stage = format_keys(
-            stage, keys, dangerously_ignore_string_format_errors=True
-        )
+        if stage.get("graphql_request"):
+            # Format the graphql request in a special way to avoid formatting errors from curly braces in graphql
+            stage_copy = copy.deepcopy(stage)
+            from tavern._plugins.graphql.request import _format_graphql_request
+
+            stage_copy["graphql_request"] = _format_graphql_request(
+                stage_copy["graphql_request"],
+                keys,
+            )
+            formatted_stage = format_keys(
+                stage_copy, keys, dangerously_ignore_string_format_errors=True
+            )
+        else:
+            formatted_stage = format_keys(
+                stage, keys, dangerously_ignore_string_format_errors=True
+            )
 
         # Replace formatted strings with strings for dumping
         prepared_stage = prepare_yaml(formatted_stage)

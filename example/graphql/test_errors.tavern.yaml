@@ -1,0 +1,81 @@
+---
+test_name: Test non-existent user
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Query non-existent user
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        query GetUser($id: ID!) {
+          user(id: $id) {
+            id
+            name
+            email
+          }
+        }
+      variables:
+        id: "999"
+    graphql_response:
+      errors:
+        - message: "User not found"
+
+---
+test_name: Test invalid query
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Invalid query
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        query InvalidQuery {
+          invalidField {
+            id
+          }
+        }
+    graphql_response:
+      errors:
+        - message: Cannot query field 'invalidField'
+
+---
+test_name: Test empty query
+
+includes:
+  - !include graphql_config.yaml
+
+_xfail: run
+
+stages:
+  - name: Missing query parameter
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: ""
+    graphql_response:
+      errors:
+        - message: "No query provided"
+
+---
+test_name: Test invalid JSON payload
+
+includes:
+  - !include graphql_config.yaml
+
+_xfail: verify
+
+stages:
+  - name: Invalid JSON payload
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      method: POST
+      headers:
+        Content-Type: "application/json"
+      json:
+        invalid: "payload"
+    graphql_response:
+      errors:
+        - message: "No query provided"
