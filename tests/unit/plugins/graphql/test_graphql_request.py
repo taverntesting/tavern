@@ -19,7 +19,7 @@ class TestGraphQLRequest:
         request = GraphQLRequest(session, rspec, graphql_test_block_config)
 
         assert request.request_vars.url == "http://example.com/graphql"
-        assert request.request_vars.query == "query TestQuery { hello }"
+        assert request.request_vars.query == "query { hello }"
         assert request.request_vars.variables == {"name": "world"}
 
     def test_init_missing_query(self, graphql_test_block_config):
