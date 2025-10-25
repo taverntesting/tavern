@@ -42,7 +42,6 @@ class _SubscriptionConnection:
             yield self.conn
             complete_payload = {"type": "complete"}
             self.conn.send(json.dumps(complete_payload))
-            self.conn.__exit__(None, None, None)
 
     def receive(self, timeout: Optional[float] = None) -> dict:
         """Receive a message from the subscription"""
