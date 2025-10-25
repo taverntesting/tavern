@@ -86,6 +86,3 @@ class GraphQLResponse(BaseResponse):
 
         # GraphQL-specific validation
         self._validate_response_format(response)
-
-        # Standard response verification from base class
-        return super().verify(response)

@@ -59,6 +59,8 @@ class TestConfig:
             available_backends.append("mqtt")
         if has_module("grpc"):
             available_backends.append("grpc")
+        # GraphQL is always available since it uses the core requests library
+        available_backends.append("graphql")
 
         logger.debug(f"available request backends: {available_backends}")
 
