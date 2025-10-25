@@ -86,3 +86,5 @@ class GraphQLResponse(BaseResponse):
 
         # GraphQL-specific validation
         self._validate_response_format(response)
+
+        return {}
