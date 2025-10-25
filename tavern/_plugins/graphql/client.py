@@ -22,11 +22,11 @@ class GraphQLClient:
         self.timeout = kwargs.get("timeout", 30)
         self.ws_url = kwargs.get("ws_url")
 
-    def __enter__(self) -> "GraphQLClient":
-        return self
+    def __enter__(self):
+        return self.session.__enter__()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.session.close()
+        self.session.__exit__(exc_type, exc_val, exc_tb)
 
     def update_session(self, **kwargs):
         """Update session with new configuration"""
