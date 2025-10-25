@@ -397,7 +397,7 @@ Test files needed:
 
 ### 2. Integration Tests
 
-**Directory:** `tests/integration/graphql/`
+**Directory:** `example/graphql/`
 
 Test scenarios:
 - Basic query execution
@@ -409,7 +409,7 @@ Test scenarios:
 
 ### 3. Test Server
 
-**File:** `tests/integration/graphql/test_server.py`
+**File:** `example/graphql/server.py`
 
 Mock GraphQL server for testing (can use GraphQL libraries for test infrastructure):
 ```python
