@@ -1,4 +1,8 @@
-test_name: GraphQL mutations integration test
+---
+test_name: GraphQL mutations - Create new user
+
+includes:
+  - !include graphql_config.yaml
 
 stages:
   - name: Create new user
@@ -24,6 +28,35 @@ stages:
             name: "Alice Johnson"
             email: "alice@example.com"
 
+  - name: Verify created user exists
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        query GetUser($id: ID!) {
+          user(id: $id) {
+            id
+            name
+            email
+          }
+        }
+      variables:
+        id: "3"
+    graphql_response:
+      status_code: 200
+      json:
+        data:
+          user:
+            id: "3"
+            name: "Alice Johnson"
+            email: "alice@example.com"
+
+---
+test_name: GraphQL mutations - Create new post
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
   - name: Create new post
     graphql_request:
       url: "{graphql_server_url}/graphql"
@@ -49,25 +82,3 @@ stages:
             title: "My First Post"
             content: "This is my first GraphQL post!"
             authorId: "3"
-
-  - name: Verify created user exists
-    graphql_request:
-      url: "{graphql_server_url}/graphql"
-      query: |
-        query GetUser($id: ID!) {
-          user(id: $id) {
-            id
-            name
-            email
-          }
-        }
-      variables:
-        id: "3"
-    graphql_response:
-      status_code: 200
-      json:
-        data:
-          user:
-            id: "3"
-            name: "Alice Johnson"
-            email: "alice@example.com"
