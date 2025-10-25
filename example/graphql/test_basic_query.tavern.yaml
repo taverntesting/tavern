@@ -1,0 +1,73 @@
+test_name: GraphQL basic query integration test
+
+stages:
+  - name: Get user by ID
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        query GetUser($id: ID!) {
+          user(id: $id) {
+            id
+            name
+            email
+          }
+        }
+      variables:
+        id: "1"
+    graphql_response:
+      status_code: 200
+      json:
+        data:
+          user:
+            id: "1"
+            name: "John Doe"
+            email: "john@example.com"
+
+  - name: Get all users
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        query GetUsers {
+          users {
+            id
+            name
+            email
+          }
+        }
+    graphql_response:
+      status_code: 200
+      json:
+        data:
+          users:
+            - id: "1"
+              name: "John Doe"
+              email: "john@example.com"
+            - id: "2"
+              name: "Jane Smith"
+              email: "jane@example.com"
+
+  - name: Get posts
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        query GetPosts {
+          posts {
+            id
+            title
+            content
+            authorId
+          }
+        }
+    graphql_response:
+      status_code: 200
+      json:
+        data:
+          posts:
+            - id: "1"
+              title: "First Post"
+              content: "Hello World!"
+              authorId: "1"
+            - id: "2"
+              title: "Second Post"
+              content: "GraphQL is cool"
+              authorId: "2"
