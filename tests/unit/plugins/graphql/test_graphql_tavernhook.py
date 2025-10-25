@@ -1,7 +1,5 @@
-from unittest.mock import Mock
+import dataclasses
 
-from tavern._core.pytest.config import TavernInternalConfig, TestConfig
-from tavern._core.strict_util import StrictLevel
 from tavern._plugins.graphql.client import GraphQLClient
 from tavern._plugins.graphql.tavernhook import TavernGraphQLPlugin
 
@@ -12,58 +10,35 @@ class TestTavernGraphQLPlugin:
         assert TavernGraphQLPlugin.request_block_name == "graphql_request"
         assert TavernGraphQLPlugin.response_block_name == "graphql_response"
 
-    def test_get_expected_from_request_with_response(self):
+    def test_get_expected_from_request_with_response(self, graphql_test_block_config):
         response_block = {"status_code": 200}
-        test_block_config = TestConfig(
-            variables={},
-            strict=StrictLevel.all_on(),
-            tavern_internal=TavernInternalConfig(
-                pytest_hook_caller=Mock(),
-                backends={"graphql": "graphql"},
-            ),
-            follow_redirects=False,
-            stages=[],
-        )
         session = GraphQLClient()
 
         result = TavernGraphQLPlugin.get_expected_from_request(
-            response_block, test_block_config, session
+            response_block, graphql_test_block_config, session
         )
 
         assert result == {"status_code": 200}
 
-    def test_get_expected_from_request_without_response(self):
+    def test_get_expected_from_request_without_response(
+        self, graphql_test_block_config
+    ):
         response_block = None
-        test_block_config = TestConfig(
-            variables={},
-            strict=StrictLevel.all_on(),
-            tavern_internal=TavernInternalConfig(
-                pytest_hook_caller=Mock(),
-                backends={"graphql": "graphql"},
-            ),
-            follow_redirects=False,
-            stages=[],
-        )
         session = GraphQLClient()
 
         result = TavernGraphQLPlugin.get_expected_from_request(
-            response_block, test_block_config, session
+            response_block, graphql_test_block_config, session
         )
 
         assert result is None
 
-    def test_get_expected_from_request_with_variables(self):
+    def test_get_expected_from_request_with_variables(self, graphql_test_block_config):
         response_block = {"status_code": 200, "data": {"user_id": "{user_id}"}}
-        test_block_config = TestConfig(
-            variables={"user_id": "123"},
-            strict=StrictLevel.all_on(),
-            tavern_internal=TavernInternalConfig(
-                pytest_hook_caller=Mock(),
-                backends={"graphql": "graphql"},
-            ),
-            follow_redirects=False,
-            stages=[],
+
+        test_block_config = dataclasses.replace(
+            graphql_test_block_config, variables={"user_id": "123"}
         )
+
         session = GraphQLClient()
 
         result = TavernGraphQLPlugin.get_expected_from_request(
