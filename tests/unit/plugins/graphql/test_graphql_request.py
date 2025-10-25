@@ -52,46 +52,47 @@ class TestGraphQLRequest:
         assert request.request_vars.operation_name is None
         assert request.request_vars.headers == {}
 
-    @patch.object(GraphQLClient, "make_request")
-    @patch.object(GraphQLClient, "update_session")
-    def test_run_success(
-        self, graphql_test_block_config, mock_update_session, mock_make_request
-    ):
-        mock_response = Mock()
-        mock_response.text = '{"data": {"hello": "world"}}'
-        mock_make_request.return_value = mock_response
-
-        session = GraphQLClient()
-        rspec = {
-            "url": "http://example.com/graphql",
-            "query": "query { hello }",
-            "headers": {"Authorization": "Bearer token"},
-        }
-
-        request = GraphQLRequest(session, rspec, graphql_test_block_config)
-        response = request.run()
-
-        mock_update_session.assert_called_once_with(
-            headers={"Authorization": "Bearer token"}
-        )
-        mock_make_request.assert_called_once_with(
-            url="http://example.com/graphql",
-            query="query { hello }",
-            variables=None,
-            operation_name=None,
-        )
-        assert response.text == '{"data": {"hello": "world"}}'
-
-    @patch.object(GraphQLClient, "make_request")
-    def test_run_failure(self, graphql_test_block_config, mock_make_request):
-        mock_make_request.side_effect = Exception("Connection error")
-
-        session = GraphQLClient()
-        rspec = {"url": "http://example.com/graphql", "query": "query { hello }"}
-
-        request = GraphQLRequest(session, rspec, graphql_test_block_config)
-
-        with pytest.raises(
-            exceptions.TavernException, match="GraphQL request failed: Connection error"
+    def test_run_success(self, graphql_test_block_config):
+        with (
+            patch.object(GraphQLClient, "make_request") as mock_make_request,
+            patch.object(GraphQLClient, "update_session") as mock_update_session,
         ):
-            request.run()
+            mock_response = Mock()
+            mock_response.text = '{"data": {"hello": "world"}}'
+            mock_make_request.return_value = mock_response
+
+            session = GraphQLClient()
+            rspec = {
+                "url": "http://example.com/graphql",
+                "query": "query { hello }",
+                "headers": {"Authorization": "Bearer token"},
+            }
+
+            request = GraphQLRequest(session, rspec, graphql_test_block_config)
+            response = request.run()
+
+            mock_update_session.assert_called_once_with(
+                headers={"Authorization": "Bearer token"}
+            )
+            mock_make_request.assert_called_once_with(
+                url="http://example.com/graphql",
+                query="query { hello }",
+                variables=None,
+                operation_name=None,
+            )
+            assert response.text == '{"data": {"hello": "world"}}'
+
+    def test_run_failure(self, graphql_test_block_config):
+        with patch.object(GraphQLClient, "make_request") as mock_make_request:
+            mock_make_request.side_effect = Exception("Connection error")
+
+            session = GraphQLClient()
+            rspec = {"url": "http://example.com/graphql", "query": "query { hello }"}
+
+            request = GraphQLRequest(session, rspec, graphql_test_block_config)
+
+            with pytest.raises(
+                exceptions.TavernException,
+                match="GraphQL request failed: Connection error",
+            ):
+                request.run()
