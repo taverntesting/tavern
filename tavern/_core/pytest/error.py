@@ -156,9 +156,12 @@ class ReprdError(TerminalRepr):
         keys = self._get_available_format_keys()
 
         # Format stage variables recursively
-        formatted_stage = format_keys(
-            stage, keys, dangerously_ignore_string_format_errors=True
-        )
+        try:
+            formatted_stage = format_keys(
+                stage, keys, dangerously_ignore_string_format_errors=True
+            )
+        except ValueError:
+            formatted_stage = stage
 
         # Replace formatted strings with strings for dumping
         prepared_stage = prepare_yaml(formatted_stage)
