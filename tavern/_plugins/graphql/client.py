@@ -1,3 +1,5 @@
+import contextlib
+import dataclasses
 import json
 import logging
 from contextlib import contextmanager
@@ -13,22 +15,18 @@ except ImportError:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@dataclasses.dataclass()
 class _SubscriptionConnection:
-    def __init__(
-        self,
-        ws_url: str,
-        gql_query: str,
-        gql_variables: Optional[dict[str, Any]],
-    ):
-        self.ws_url = ws_url
-        self.query = gql_query
-        self.variables = gql_variables or {}
-        self.ws_connection = None
+    ws_url: str
+    query: str
+    variables: Optional[dict[str, Any]] = None
 
+    conn: websockets.connect | None = dataclasses.field(init=False)
+
+    @contextlib.contextmanager
     def connect(self):
         """Establish WebSocket connection and send subscription query"""
-        self.ws_connection = websockets.connect(self.ws_url)
-        conn = self.ws_connection.__enter__()
+        self.conn = websockets.connect(self.ws_url)
 
         # Send subscription start message
         start_payload = {
@@ -38,32 +36,21 @@ class _SubscriptionConnection:
                 "variables": self.variables,
             },
         }
-        conn.send(json.dumps(start_payload))
-        return conn
+        self.conn.send(json.dumps(start_payload))
+
+        with self.conn:
+            yield self.conn
+            complete_payload = {"type": "complete"}
+            self.conn.send(json.dumps(complete_payload))
+            self.conn.__exit__(None, None, None)
 
     def receive(self, timeout: Optional[float] = None) -> dict:
         """Receive a message from the subscription"""
-        if self.ws_connection is None:
-            raise RuntimeError("WebSocket connection not established")
-
         try:
-            message = self.ws_connection.recv(timeout=timeout)
+            message = self.conn.recv(timeout=timeout)
             return json.loads(message)
         except Exception as e:
             raise RuntimeError(f"Failed to receive WebSocket message: {e}") from e
-
-    def close(self):
-        """Close the WebSocket connection"""
-        if self.ws_connection:
-            try:
-                # Send complete message
-                complete_payload = {"type": "complete"}
-                self.ws_connection.send(json.dumps(complete_payload))
-                self.ws_connection.__exit__(None, None, None)
-            except Exception as e:
-                logger.warning("Error closing WebSocket connection: %s", e)
-            finally:
-                self.ws_connection = None
 
 
 class GraphQLClient:
@@ -134,12 +121,7 @@ class GraphQLClient:
                 "Install with: pip install tavern[graphql-ws]"
             )
 
-        websocket_url = url.replace("http://", "ws://").replace("https://", "wss://")
+        subscription_conn = _SubscriptionConnection(url, query, variables)
 
-        subscription_conn = _SubscriptionConnection(websocket_url, query, variables)
-
-        try:
-            subscription_conn.connect()
+        with subscription_conn.connect():
             yield subscription_conn
-        finally:
-            subscription_conn.close()
