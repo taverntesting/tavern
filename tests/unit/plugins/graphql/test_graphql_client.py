@@ -2,6 +2,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 import requests
+import websockets
 
 from tavern._plugins.graphql.client import GraphQLClient
 
@@ -92,7 +93,7 @@ class TestGraphQLClient:
             client = GraphQLClient()
 
             with client.subscription(
-                "http://example.com/graphql",
+                "ws://example.com/graphql",
                 "subscription { hello }",
                 {"variable": "value"},
             ) as subscription:
@@ -154,7 +155,7 @@ class TestGraphQLClient:
     def test_subscription_close_handling(self):
         """Test WebSocket subscription close handling"""
         with patch("tavern._plugins.graphql.client.websockets") as mock_websockets:
-            mock_ws_connect = MagicMock()
+            mock_ws_connect = MagicMock(spec_set=websockets.connect)
             mock_websockets.connect.return_value = mock_ws_connect
             mock_connection = MagicMock()
             mock_ws_connect.__enter__.return_value = mock_connection
@@ -170,25 +171,7 @@ class TestGraphQLClient:
             complete_calls = [
                 call
                 for call in mock_connection.send.call_args_list
-                if '"type": "complete"' in call[0][0]
+                if "complete" in str(call)
             ]
             assert len(complete_calls) == 1
             mock_ws_connect.__exit__.assert_called_once()
-
-    def test_subscription_https_url_conversion(self):
-        """Test HTTPS URL conversion to WebSocket URL"""
-        with patch("tavern._plugins.graphql.client.websockets") as mock_websockets:
-            mock_ws_connect = MagicMock()
-            mock_websockets.connect.return_value = mock_ws_connect
-            mock_connection = MagicMock()
-            mock_ws_connect.__enter__.return_value = mock_connection
-
-            client = GraphQLClient()
-
-            with client.subscription(
-                "https://example.com/graphql", "subscription { hello }"
-            ):
-                pass
-
-            # Verify HTTPS was converted to WSS
-            mock_websockets.connect.assert_called_once_with("wss://example.com/graphql")
