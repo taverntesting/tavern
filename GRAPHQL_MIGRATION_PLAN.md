@@ -9,7 +9,7 @@ Tavern currently supports three protocols through a plugin system:
 - **gRPC** - gRPC protocol with protobuf
 - **MQTT** - Message Queuing Telemetry Transport
 
-This plan adds **GraphQL** as a fourth protocol, enabling testing of GraphQL APIs with the same level of integration as existing protocols.
+This plan adds **GraphQL** as a fourth protocol, enabling testing of GraphQL APIs with the same level of integration as existing protocols. Note: WebSocket subscriptions are not supported - only standard HTTP-based GraphQL queries and mutations.
 
 ## Implementation Structure
 
@@ -57,13 +57,7 @@ dev = [
 ```
 
 **Optional Runtime Dependencies:**
-WebSocket support for subscriptions can be optional:
-```toml
-[project.optional-dependencies]
-graphql-ws = [
-    "websockets>=12,<13",  # Only needed for GraphQL subscriptions
-]
-```
+No additional optional dependencies required since WebSocket subscriptions are not supported.
 
 ## Core Plugin Components
 
@@ -97,7 +91,6 @@ def get_expected_from_request(
     response_block: dict, test_block_config: TestConfig, session: GraphQLClient
 ):
     if response_block is None:
-        # GraphQL responses are optional for subscriptions
         return None
 
     f_expected = format_keys(response_block, test_block_config.variables)
@@ -111,26 +104,23 @@ with open(schema_path) as schema_file:
 
 ### 2. GraphQL Client (`client.py`)
 
-Session management for GraphQL using raw HTTP requests and WebSocket for subscriptions:
+Session management for GraphQL using raw HTTP requests:
 
 ```python
 import logging
 from typing import Optional, Dict, Any
 import requests
 import json
-import websockets
-from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 
 class GraphQLClient:
-    """GraphQL client for HTTP requests and WebSocket connections"""
+    """GraphQL client for HTTP requests"""
 
     def __init__(self, **kwargs):
         self.session = requests.Session()
         self.default_headers = kwargs.get('headers', {})
         self.timeout = kwargs.get('timeout', 30)
-        self.ws_url = kwargs.get('ws_url')
 
     def update_session(self, **kwargs):
         """Update session with new configuration"""
@@ -173,23 +163,6 @@ class GraphQLClient:
                 headers=headers,
                 timeout=self.timeout
             )
-
-    @contextmanager
-    def subscription(self, url: str, query: str, variables: Optional[Dict[str, Any]] = None):
-        """Context manager for GraphQL subscriptions over WebSocket"""
-        ws_url = url.replace('http://', 'ws://').replace('https://', 'wss://')
-
-        payload = {
-            'type': 'start',
-            'payload': {
-                'query': query,
-                'variables': variables or {},
-            }
-        }
-
-        with websockets.connect(ws_url) as websocket:
-            websocket.send(json.dumps(payload))
-            yield websocket
 ```
 
 ### 3. GraphQL Request (`request.py`)
@@ -404,7 +377,6 @@ Test scenarios:
 - Variable substitution
 - Error handling
 - Authentication
-- Subscription handling (if implemented)
 
 ### 3. Test Server
 
@@ -514,18 +486,7 @@ GraphQL sessions are managed like other protocols:
 - Extended response verification
 - Integration test suite
 
-### Phase 3: Subscription Support (Priority 3)
-
-**Features:**
-- WebSocket-based subscriptions
-- Subscription-specific validation
-
-**Files to create:**
-- WebSocket client implementation
-- Request/response handling
-- Subscription test utilities
-
-### Phase 4: Documentation and Polish (Priority 4)
+### Phase 3: Documentation and Polish (Priority 3)
 
 **Features:**
 - Comprehensive documentation
@@ -594,9 +555,9 @@ GraphQL sessions are managed like other protocols:
 
 ## Risks and Mitigations
 
-### Risk 1: WebSocket Complexity
-**Issue:** GraphQL subscriptions require WebSocket handling, increasing complexity
-**Mitigation:** Implement basic HTTP queries first, add subscriptions in later phase
+### Risk 1: Limited Feature Set
+**Issue:** Without WebSocket subscriptions, GraphQL support is limited to queries and mutations only
+**Mitigation:** Clearly document limitations and focus on robust HTTP-based GraphQL testing
 
 ### Risk 2: Client Library Compatibility
 **Issue:** GraphQL client library may not integrate well with existing patterns
