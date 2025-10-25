@@ -12,6 +12,36 @@ from .client import GraphQLClient
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+def _format_graphql_request(rspec: dict, variables: dict) -> dict:
+    """Format a GraphQL request spec, excluding the query field from formatting.
+
+    GraphQL queries contain curly braces which are mistakenly interpreted as format
+    placeholders by the standard format_keys function. This function formats all
+    fields except the query field to preserve the GraphQL syntax.
+
+    Args:
+        rspec: Request specification dictionary
+        variables: Variables to format with
+
+    Returns:
+        Formatted request specification with query field unchanged
+    """
+    formatted_rspec = {}
+
+    for key, value in rspec.items():
+        if key == "query":
+            # Skip formatting for GraphQL queries to preserve { } syntax
+            formatted_rspec[key] = value
+        elif key == "operation_name" and value is not None:
+            # Format operation_name if it exists and is not None
+            formatted_rspec[key] = format_keys(value, variables)
+        else:
+            # Format all other fields normally
+            formatted_rspec[key] = format_keys(value, variables)
+
+    return formatted_rspec
+
+
 class GraphQLRequest(BaseRequest):
     """GraphQL request implementation"""
 
@@ -22,8 +52,10 @@ class GraphQLRequest(BaseRequest):
         self.rspec = rspec
         self.test_block_config = test_block_config
 
-        # Format request spec with test variables
-        self._formatted_rspec = format_keys(rspec, test_block_config.variables)
+        # Format request spec with test variables, excluding query from formatting
+        self._formatted_rspec = _format_graphql_request(
+            rspec, test_block_config.variables
+        )
 
         # Validate required fields
         self._validate_request()
