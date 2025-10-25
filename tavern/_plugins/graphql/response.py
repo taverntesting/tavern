@@ -72,17 +72,10 @@ class GraphQLResponse(BaseResponse):
             except ValueError as e:
                 raise exceptions.BadSchemaError(f"Invalid JSON response: {e}") from e
 
-    def _verify_status_code(self, response: Union[requests.Response, Any]):
+    def _verify_status_code(self, response: requests.Response):
         """Verify HTTP status code matches expected"""
         # For mock subscription responses, skip status code verification
-        if hasattr(response, "status_code") and callable(
-            getattr(response, "status_code", None)
-        ):
-            actual = response.status_code
-        elif hasattr(response, "status_code"):
-            actual = response.status_code
-        else:
-            return  # Skip status code check for non-HTTP responses
+        actual = response.status_code
 
         expected = self.expected["status_code"]
         if isinstance(expected, list):
