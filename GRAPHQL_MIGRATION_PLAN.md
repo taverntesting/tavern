@@ -120,7 +120,7 @@ from typing import Optional, Dict, Any
 import requests
 import json
 import websockets
-from contextlib import asynccontextmanager
+from contextlib import contextmanager
 
 logger = logging.getLogger(__name__)
 
@@ -175,8 +175,8 @@ class GraphQLClient:
                 timeout=self.timeout
             )
 
-    @asynccontextmanager
-    async def subscription(self, url: str, query: str, variables: Optional[Dict[str, Any]] = None):
+    @contextmanager
+    def subscription(self, url: str, query: str, variables: Optional[Dict[str, Any]] = None):
         """Context manager for GraphQL subscriptions over WebSocket"""
         ws_url = url.replace('http://', 'ws://').replace('https://', 'wss://')
 
@@ -188,8 +188,8 @@ class GraphQLClient:
             }
         }
 
-        async with websockets.connect(ws_url) as websocket:
-            await websocket.send(json.dumps(payload))
+        with websockets.connect(ws_url) as websocket:
+            websocket.send(json.dumps(payload))
             yield websocket
 ```
 
@@ -520,12 +520,12 @@ GraphQL sessions are managed like other protocols:
 **Features:**
 - WebSocket-based subscriptions
 - Real-time response handling
-- Async test execution
+- Test execution
 - Subscription-specific validation
 
 **Files to create:**
 - WebSocket client implementation
-- Async request/response handling
+- Request/response handling
 - Subscription test utilities
 
 ### Phase 4: Documentation and Polish (Priority 4)
