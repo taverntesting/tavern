@@ -13,6 +13,59 @@ except ImportError:
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+class _SubscriptionConnection:
+    def __init__(
+        self,
+        ws_url: str,
+        gql_query: str,
+        gql_variables: Optional[dict[str, Any]],
+    ):
+        self.ws_url = ws_url
+        self.query = gql_query
+        self.variables = gql_variables or {}
+        self.ws_connection = None
+
+    def connect(self):
+        """Establish WebSocket connection and send subscription query"""
+        self.ws_connection = websockets.connect(self.ws_url)
+        conn = self.ws_connection.__enter__()
+
+        # Send subscription start message
+        start_payload = {
+            "type": "start",
+            "payload": {
+                "query": self.query,
+                "variables": self.variables,
+            },
+        }
+        conn.send(json.dumps(start_payload))
+        return conn
+
+    def receive(self, timeout: Optional[float] = None) -> dict:
+        """Receive a message from the subscription"""
+        if self.ws_connection is None:
+            raise RuntimeError("WebSocket connection not established")
+
+        try:
+            message = self.ws_connection.recv(timeout=timeout)
+            return json.loads(message)
+        except Exception as e:
+            raise RuntimeError(f"Failed to receive WebSocket message: {e}") from e
+
+    def close(self):
+        """Close the WebSocket connection"""
+        if self.ws_connection:
+            try:
+                # Send complete message
+                complete_payload = {"type": "complete"}
+                self.ws_connection.send(json.dumps(complete_payload))
+                self.ws_connection.__exit__(None, None, None)
+            except Exception as e:
+                logger.warning("Error closing WebSocket connection: %s", e)
+            finally:
+                self.ws_connection = None
+
+
 class GraphQLClient:
     """GraphQL client for HTTP requests and WebSocket connections"""
 
@@ -83,61 +136,7 @@ class GraphQLClient:
 
         websocket_url = url.replace("http://", "ws://").replace("https://", "wss://")
 
-        class SubscriptionConnection:
-            def __init__(
-                self,
-                ws_url: str,
-                gql_query: str,
-                gql_variables: Optional[dict[str, Any]],
-            ):
-                self.ws_url = ws_url
-                self.query = gql_query
-                self.variables = gql_variables or {}
-                self.ws_connection = None
-
-            def connect(self):
-                """Establish WebSocket connection and send subscription query"""
-                self.ws_connection = websockets.connect(self.ws_url)
-                conn = self.ws_connection.__enter__()
-
-                # Send subscription start message
-                start_payload = {
-                    "type": "start",
-                    "payload": {
-                        "query": self.query,
-                        "variables": self.variables,
-                    },
-                }
-                conn.send(json.dumps(start_payload))
-                return conn
-
-            def receive(self, timeout: Optional[float] = None) -> dict:
-                """Receive a message from the subscription"""
-                if self.ws_connection is None:
-                    raise RuntimeError("WebSocket connection not established")
-
-                try:
-                    message = self.ws_connection.recv(timeout=timeout)
-                    return json.loads(message)
-                except Exception as e:
-                    raise RuntimeError(
-                        f"Failed to receive WebSocket message: {e}"
-                    ) from e
-
-            def close(self):
-                """Close the WebSocket connection"""
-                if self.ws_connection:
-                    try:
-                        # Send complete message
-                        complete_payload = {"type": "complete"}
-                        self.ws_connection.send(json.dumps(complete_payload))
-                        self.ws_connection.__exit__(None, None, None)
-                    except Exception as e:
-                        logger.warning("Error closing WebSocket connection: %s", e)
-                    finally:
-                        self.ws_connection = None
-
-        subscription_conn = SubscriptionConnection(websocket_url, query, variables)
+        subscription_conn = _SubscriptionConnection(websocket_url, query, variables)
 
         try:
             subscription_conn.connect()
