@@ -4,3 +4,8 @@ description: Configuration for GraphQL integration tests
 
 variables:
   graphql_server_url: http://localhost:8001
+  user_id: "1"
+  user_name: "Bob Wilson"
+  user_email: "bob@example.com"
+  post_title: "Variable Test Post"
+  post_content: "Testing variable substitution in GraphQL"

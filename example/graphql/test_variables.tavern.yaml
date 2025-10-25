@@ -1,12 +1,5 @@
+---
 test_name: GraphQL variable substitution test
-
-includes:
-  - variables:
-      user_id: "1"
-      user_name: "Bob Wilson"
-      user_email: "bob@example.com"
-      post_title: "Variable Test Post"
-      post_content: "Testing variable substitution in GraphQL"
 
 stages:
   - name: Query user with variable from test variables
@@ -31,6 +24,10 @@ stages:
             name: "John Doe"
             email: "john@example.com"
 
+---
+test_name: GraphQL variable substitution test
+
+stages:
   - name: Create user with multiple variables
     graphql_request:
       url: "{graphql_server_url}/graphql"
@@ -53,6 +50,10 @@ stages:
             name: "{user_name}"
             email: "{user_email}"
 
+---
+test_name: GraphQL variable substitution test
+
+stages:
   - name: Create post with mixed variables
     graphql_request:
       url: "{graphql_server_url}/graphql"
