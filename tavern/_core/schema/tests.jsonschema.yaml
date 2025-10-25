@@ -292,6 +292,83 @@ definitions:
             items:
               $ref: "#/definitions/verify_block"
 
+  graphql_request:
+    type: object
+    description: GraphQL request to perform as part of stage
+    additionalProperties: false
+    required:
+      - url
+      - query
+
+    properties:
+      url:
+        description: URL to make GraphQL request to
+        oneOf:
+          - type: string
+          - type: object
+            properties:
+              "$ext":
+                $ref: "#/definitions/verify_block"
+
+      query:
+        type: string
+        description: GraphQL query string
+
+      variables:
+        description: Variables for GraphQL query
+        oneOf:
+          - type: object
+          - type: array
+          - type: string
+          - type: number
+          - type: boolean
+
+      method:
+        description: HTTP method to use for GraphQL request
+        default: POST
+        type: string
+        enum: [POST, GET]
+
+      headers:
+        description: Headers for GraphQL request
+        type: object
+
+  graphql_response:
+    type: object
+    description: Expected GraphQL response
+    additionalProperties: false
+    required:
+      - status_code
+
+    properties:
+      status_code:
+        description: Status code(s) to match
+        oneOf:
+          - type: integer
+          - type: array
+            minItems: 1
+            items:
+              type: integer
+
+      json:
+        description: Expected JSON response
+        $ref: "#/definitions/any_json"
+
+      headers:
+        description: Headers expected in response
+        type: object
+
+      verify_response_with:
+        oneOf:
+          - $ref: "#/definitions/verify_block"
+          - type: array
+            items:
+              $ref: "#/definitions/verify_block"
+
+      save:
+        type: object
+        description: Which objects to save from response
+
   http_response:
     type: object
     additionalProperties: false
@@ -429,6 +506,12 @@ definitions:
 
       grpc_response:
         $ref: "#/definitions/grpc_response"
+
+      graphql_request:
+        $ref: "#/definitions/graphql_request"
+
+      graphql_response:
+        $ref: "#/definitions/graphql_response"
 
 ###
 
