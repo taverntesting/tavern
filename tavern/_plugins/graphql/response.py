@@ -84,25 +84,7 @@ class GraphQLResponse(BaseResponse):
         elif actual != expected:
             self._adderr("Status code %s not equal to expected %s", actual, expected)
 
-    def _verify_subscription_messages(self, response):
-        """Verify subscription messages against expected"""
-        if not hasattr(response, "get_messages"):
-            return
-
-        # Get subscription configuration from expected response
-        subscription_config = self.expected.get("subscription", {})
-        if not subscription_config:
-            return
-
-        # Get expected message count and timeout
-        expected_messages = subscription_config.get("messages", 1)
-        timeout = subscription_config.get("timeout", 30)
-
-        # For now, we'll just verify the subscription was established
-        # In a full implementation, we would collect messages and verify them
-        logger.info("Subscription verification completed")
-
-    def verify(self, response: Union[requests.Response, Any]):
+    def verify(self, response: requests.Response | Any):
         """Verify GraphQL response against expected"""
         self.response = response
 
@@ -113,6 +95,7 @@ class GraphQLResponse(BaseResponse):
         self._validate_response_format(response)
 
         # Additional verification for subscriptions
-        self._verify_subscription_messages(response)
+        # TODO
+        # self._verify_subscription_messages(response)
 
         return {}
