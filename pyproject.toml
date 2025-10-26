@@ -53,21 +53,9 @@ Home = "https://taverntesting.github.io/"
 Documentation = "https://tavern.readthedocs.io/en/latest/"
 Source = "https://github.com/taverntesting/tavern"
 
-[project.optional-dependencies]
-grpc = [
-    "grpcio",
-    "grpcio-reflection",
-    "grpcio-status",
-    "google-api-python-client",
-    "protobuf>=5,<6",
-    "proto-plus",
-]
-
-graphql-ws = [
-    "websockets>=12,<13",
-]
-
+[dependency-groups]
 dev = [
+    "graphene-sqlalchemy>=2.3.0",
     "Faker",
     "allure-pytest",
     "colorlog",
@@ -81,7 +69,6 @@ dev = [
     "pytest-cov",
     "pytest-xdist",
     "py",
-    "tox>=4,<5",
     "ruff~=0.9.10",
     "uv>=0.9.2",
     "types-PyYAML",
@@ -98,7 +85,18 @@ dev = [
     "exceptiongroup",
     "tomli",
     "tbump>=6.10.0",
-    "tox>4.20,<5"
+    "tox>4.20,<5",
+    "flask-graphql>=2.0.1",
+]
+
+[project.optional-dependencies]
+grpc = [
+    "grpcio",
+    "grpcio-reflection",
+    "grpcio-status",
+    "google-api-python-client",
+    "protobuf>=5,<6",
+    "proto-plus",
 ]
 
 docs = [
