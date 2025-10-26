@@ -40,6 +40,23 @@ definitions:
       - type: string
       - type: boolean
 
+  graphql_response_json:
+    type: object
+    description: Expected GraphQL response JSON with top-level 'data' and/or 'errors' keys
+    properties:
+      data:
+        description: The data returned by the GraphQL query
+        type: object
+
+      errors:
+        description: Errors returned by the GraphQL query
+        type: array
+        items:
+          type: object
+
+    additionalProperties: false
+    minProperties: 1
+
   included_file:
     type: object
     additionalProperties: false
@@ -342,7 +359,7 @@ definitions:
 
     properties:
       status_code:
-        description: Status code(s) to match
+        description: Status code(s) to match - GraphQL responses should typically be 200
         oneOf:
           - type: integer
           - type: array
@@ -351,8 +368,8 @@ definitions:
               type: integer
 
       json:
-        description: Expected JSON response
-        $ref: "#/definitions/any_json"
+        description: Expected JSON response - must have top-level keys 'data' and/or 'errors'
+        $ref: "#/definitions/graphql_response_json"
 
       headers:
         description: Headers expected in response
