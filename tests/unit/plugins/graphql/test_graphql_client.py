@@ -28,7 +28,7 @@ class TestGraphQLClient:
 
     def test_make_request_post(self):
         with patch.object(requests.Session, "post") as mock_post:
-            mock_response = Mock()
+            mock_response = Mock(spec=requests.Response)
             mock_response.text = '{"data": {"hello": "world"}}'
             mock_post.return_value = mock_response
 
@@ -48,7 +48,7 @@ class TestGraphQLClient:
 
     def test_make_request_get(self):
         with patch.object(requests.Session, "get") as mock_get:
-            mock_response = Mock()
+            mock_response = Mock(spec=requests.Response)
             mock_response.text = '{"data": {"hello": "world"}}'
             mock_get.return_value = mock_response
 
