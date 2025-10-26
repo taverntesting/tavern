@@ -1,7 +1,8 @@
 import logging
-from typing import Any, Union
+from typing import Any
 
 import requests
+from _core.pytest import call_hook
 from requests.status_codes import _codes  # type:ignore
 
 from tavern._core import exceptions
@@ -46,31 +47,47 @@ class GraphQLResponse(BaseResponse):
         else:
             return "<Not run yet>"
 
-    def _validate_response_format(self, response: Union[requests.Response, Any]):
+    def _validate_response_format(self, response: requests.Response):
         """Validate GraphQL response structure"""
+
+        call_hook(
+            self.test_block_config,
+            "pytest_tavern_beta_after_every_response",
+            expected=self.expected,
+            response=response,
+        )
+
         # Handle mock subscription responses
-        if hasattr(response, "json") and callable(response.json):
-            try:
-                response_json = response.json()
+        try:
+            body = response.json()
+        except ValueError:
+            self._adderr("Response is not valid JSON")
+        else:
+            response_json = response.json()
 
-                # Skip validation for mock subscription responses
-                if response_json.get("subscription") == "established":
-                    return
+            # Skip validation for mock subscription responses
+            if response_json.get("subscription") == "established":
+                self._adderr("Did not expect a subscription response")
 
-                # Check for GraphQL-specific errors
-                if "errors" in response_json:
-                    logger.warning(
-                        "GraphQL errors in response: %s", response_json["errors"]
+            if "errors" in response_json and "errors" not in self.expected:
+                assert 0
+                # TODO: deserialise errors to list, add each as an error with self._adderr
+
+            if "data" in response_json:
+                if "errors" in self.expected:
+                    self._adderr(
+                        "Expected 'errors' field in response, but found 'data'"
                     )
 
-                # Check for data field
-                if "data" not in response_json and "errors" not in response_json:
-                    raise exceptions.BadSchemaError(
-                        "GraphQL response must contain 'data' or 'errors' field"
-                    )
+                self._validate_block("json", body)
 
-            except ValueError as e:
-                raise exceptions.BadSchemaError(f"Invalid JSON response: {e}") from e
+            self._maybe_run_validate_functions(response)
+
+        if self.errors:
+            raise exceptions.TestFailError(
+                f"Test '{self.name:s}' failed:\n{self._str_errors():s}",
+                failures=self.errors,
+            )
 
     def _verify_status_code(self, response: requests.Response):
         """Verify HTTP status code matches expected"""
