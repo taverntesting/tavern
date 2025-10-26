@@ -381,7 +381,7 @@ def test_status_code_warns(example_response, includes):
     """Should continue if the status code is nonexistent"""
     example_response["status_code"] = 231234
 
-    with patch("tavern._plugins.rest.response.logger.warning") as wmock:
+    with patch("tavern._plugins.common.response.logger.warning") as wmock:
         RestResponse(Mock(), "Test 1", example_response, includes)
 
     assert wmock.called
