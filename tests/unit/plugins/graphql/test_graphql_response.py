@@ -110,7 +110,7 @@ class TestGraphQLResponse:
 
         response._check_status_code(404, {})
         assert len(response.errors) == 1
-        assert "Status code 404 not equal to expected 200" in response.errors[0]
+        assert "Status code was 404, expected 200" in response.errors[0]
 
     def test_check_status_code_list_match(self, graphql_test_block_config):
         session = Mock(spec=GraphQLClient)
@@ -129,4 +129,4 @@ class TestGraphQLResponse:
 
         response._check_status_code(404, {})
         assert len(response.errors) == 1
-        assert "Status code 404 not in expected list [200, 201]" in response.errors[0]
+        assert "Status code was 404, expected [200, 201]" in response.errors[0]
