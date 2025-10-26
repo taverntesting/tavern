@@ -87,6 +87,7 @@ dev = [
     "tbump>=6.10.0",
     "tox>4.20,<5",
     "flask-graphql>=2.0.1",
+    "tox-uv>=1.28.0",
 ]
 
 [project.optional-dependencies]
