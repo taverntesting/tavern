@@ -1,5 +1,4 @@
 import contextlib
-import json
 import logging
 from collections.abc import Mapping
 from typing import Any, Union
@@ -11,8 +10,7 @@ from tavern._core import exceptions
 from tavern._core.dict_util import deep_dict_merge
 from tavern._core.pytest.config import TestConfig
 from tavern._core.pytest.newhooks import call_hook
-from tavern._core.report import attach_yaml
-from tavern.response import BaseResponse, indent_err_text
+from tavern.response import BaseResponse
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -133,16 +131,20 @@ class CommonResponse(BaseResponse):
         """Get redirect query parameters - default implementation returns empty dict"""
         return {}
 
-    def _common_verify_validation(self, response: requests.Response, body: Any, redirect_query_params: dict) -> None:
+    def _common_verify_validation(
+        self, response: requests.Response, body: Any, redirect_query_params: dict
+    ) -> None:
         """Common validation steps"""
         self._check_status_code(response.status_code, body)
-        
+
         if body is not None:
             self._validate_block("json", body)
         self._validate_block("headers", response.headers)
         self._validate_block("redirect_query_params", redirect_query_params)
 
-    def _common_verify_save(self, body: Any, response: requests.Response, redirect_query_params: dict) -> dict:
+    def _common_verify_save(
+        self, body: Any, response: requests.Response, redirect_query_params: dict
+    ) -> dict:
         """Common save functionality"""
         saved: dict = {}
 
@@ -168,3 +170,6 @@ class CommonResponse(BaseResponse):
                 f"Test '{self.name:s}' failed:\n{self._str_errors():s}",
                 failures=self.errors,
             )
+
+    def _check_status_code(self, status_code: Union[int, list[int]], body: Any) -> None:
+        raise NotImplementedError

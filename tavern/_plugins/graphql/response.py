@@ -1,10 +1,15 @@
-from typing import Any
+import json
+import logging
+from typing import Any, Union
 
 import requests
 
 from tavern._core.pytest.config import TestConfig
 from tavern._core.report import attach_yaml
 from tavern._plugins.common.response import CommonResponse
+from tavern.response import indent_err_text
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class GraphQLResponse(CommonResponse):
@@ -18,9 +23,11 @@ class GraphQLResponse(CommonResponse):
         test_block_config: TestConfig,
     ) -> None:
         # GraphQL responses should always have status code 200
-        super().__init__(session, name, expected, test_block_config, default_status_code=200)
+        super().__init__(
+            session, name, expected, test_block_config, default_status_code=200
+        )
 
-    def _check_status_code(self, status_code: int, body: Any) -> None:
+    def _check_status_code(self, status_code: Union[int, list[int]], body: Any) -> None:
         """Check GraphQL status code (should always be 200)"""
         expected_code = self.expected["status_code"]
 
@@ -56,14 +63,18 @@ class GraphQLResponse(CommonResponse):
 
         invalid_keys = actual_keys - allowed_keys
         if invalid_keys:
-            self._adderr(f"Response contains invalid top-level keys: {invalid_keys}. Only 'data' and 'errors' are allowed.")
+            self._adderr(
+                f"Response contains invalid top-level keys: {invalid_keys}. Only 'data' and 'errors' are allowed."
+            )
 
         # Check mutual exclusivity - should have either 'data' or 'errors', but can have both in some cases
         has_data = "data" in body
         has_errors = "errors" in body
 
         if not has_data and not has_errors:
-            self._adderr("Response must contain either 'data' or 'errors' at the top level")
+            self._adderr(
+                "Response must contain either 'data' or 'errors' at the top level"
+            )
 
     def verify(self, response: requests.Response) -> dict:
         """Verify response against expected values and returns any values that

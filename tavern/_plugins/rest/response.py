@@ -1,12 +1,16 @@
+import json
+import logging
 from typing import Any, Union
 from urllib.parse import parse_qs, urlparse
 
 import requests
 
-from tavern._core import exceptions
 from tavern._core.pytest.config import TestConfig
 from tavern._core.report import attach_yaml
 from tavern._plugins.common.response import CommonResponse
+from tavern.response import indent_err_text
+
+logger: logging.Logger = logging.getLogger(__name__)
 
 
 class RestResponse(CommonResponse):
@@ -15,7 +19,9 @@ class RestResponse(CommonResponse):
     def __init__(
         self, session, name: str, expected, test_block_config: TestConfig
     ) -> None:
-        super().__init__(session, name, expected, test_block_config, default_status_code=200)
+        super().__init__(
+            session, name, expected, test_block_config, default_status_code=200
+        )
 
     def _get_redirect_query_params(self, response: requests.Response) -> dict[str, str]:
         """If there was a redirect header, get any query parameters from it"""
