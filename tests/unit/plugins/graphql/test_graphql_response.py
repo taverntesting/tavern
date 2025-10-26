@@ -1,9 +1,7 @@
 from unittest.mock import Mock
 
-import pytest
 import requests
 
-from tavern._core import exceptions
 from tavern._plugins.graphql.client import GraphQLClient
 from tavern._plugins.graphql.response import GraphQLResponse
 
@@ -69,15 +67,12 @@ class TestGraphQLResponse:
         session = Mock(spec=GraphQLClient)
         expected = {}
 
-        mock_response = Mock(spec=requests.Response)
-        mock_response.json.return_value = {
-            "errors": [{"message": "Something went wrong"}]
-        }
-
         response = GraphQLResponse(session, "test", expected, graphql_test_block_config)
 
         # Should not raise any exception, just log warning
-        response._validate_graphql_response_structure(mock_response)
+        response._validate_graphql_response_structure(
+            {"errors": [{"message": "Something went wrong"}]}
+        )
 
     def test_validate_response_format_invalid_no_data_or_errors(
         self, graphql_test_block_config
@@ -85,30 +80,14 @@ class TestGraphQLResponse:
         session = Mock(spec=GraphQLClient)
         expected = {}
 
-        mock_response = Mock()
-        mock_response.json.return_value = {"other": "field"}
-
         response = GraphQLResponse(session, "test", expected, graphql_test_block_config)
 
-        with pytest.raises(
-            exceptions.BadSchemaError,
-            match="GraphQL response must contain 'data' or 'errors' field",
-        ):
-            response._validate_graphql_response_structure(mock_response)
-
-    def test_validate_response_format_invalid_json(self, graphql_test_block_config):
-        session = Mock(spec=GraphQLClient)
-        expected = {}
-
-        mock_response = Mock(spec=requests.Response)
-        mock_response.json.side_effect = ValueError("Invalid JSON")
-
-        response = GraphQLResponse(session, "test", expected, graphql_test_block_config)
-
-        with pytest.raises(
-            exceptions.BadSchemaError, match="Invalid JSON response: Invalid JSON"
-        ):
-            response._validate_graphql_response_structure(mock_response)
+        response._validate_graphql_response_structure({"other": "field"})
+        assert len(response.errors) == 1
+        assert (
+            "Response must contain either 'data' or 'errors' at the top level"
+            in response.errors[0]
+        )
 
     def test_check_status_code_single_match(self, graphql_test_block_config):
         session = Mock(spec=GraphQLClient)
