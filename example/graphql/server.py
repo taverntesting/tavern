@@ -1,9 +1,7 @@
 """Simple GraphQL test server for integration testing using SQLite and graphene"""
 
-import json
-import sqlite3
-
-from flask import Flask, request, jsonify
+from flask import Flask, jsonify
+from flask_graphql import GraphQLView
 from graphene import (
     ObjectType,
     String,
@@ -137,153 +135,15 @@ class Mutation(ObjectType):
 
 schema = Schema(query=Query, mutation=Mutation)
 
-
-def init_db():
-    """Initialize the SQLite database with sample data"""
-    conn = sqlite3.connect("/tmp/graphql_test.db")
-    cursor = conn.cursor()
-
-    # Create users table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL
-        )
-    """)
-
-    # Create posts table
-    cursor.execute("""
-        CREATE TABLE IF NOT EXISTS posts (
-            id INTEGER PRIMARY KEY,
-            title TEXT NOT NULL,
-            content TEXT NOT NULL,
-            author_id INTEGER NOT NULL,
-            FOREIGN KEY (author_id) REFERENCES users (id)
-        )
-    """)
-
-    # Insert sample users if they don't exist
-    cursor.execute("SELECT COUNT(*) FROM users")
-    if cursor.fetchone()[0] == 0:
-        cursor.execute(
-            "INSERT INTO users (id, name, email) VALUES (?, ?, ?)",
-            (1, "John Doe", "john@example.com"),
-        )
-        cursor.execute(
-            "INSERT INTO users (id, name, email) VALUES (?, ?, ?)",
-            (2, "Jane Smith", "jane@example.com"),
-        )
-
-    # Insert sample posts if they don't exist
-    cursor.execute("SELECT COUNT(*) FROM posts")
-    if cursor.fetchone()[0] == 0:
-        cursor.execute(
-            "INSERT INTO posts (id, title, content, author_id) VALUES (?, ?, ?, ?)",
-            (1, "First Post", "Hello World!", 1),
-        )
-        cursor.execute(
-            "INSERT INTO posts (id, title, content, author_id) VALUES (?, ?, ?, ?)",
-            (2, "Second Post", "GraphQL is cool", 2),
-        )
-
-    conn.commit()
-    conn.close()
-
-
 app = Flask(__name__)
-
-# Initialize the database
-init_db()
-
-
-def get_db_connection():
-    """Get a connection to the SQLite database"""
-    conn = sqlite3.connect("/tmp/graphql_test.db")
-    conn.row_factory = sqlite3.Row  # This allows us to access columns by name
-    return conn
-
-
-@app.route("/graphql", methods=["GET", "POST"])
-def graphql():
-    """GraphQL endpoint with custom context"""
-
-    def context():
-        return {"connection": get_db_connection()}
-
-    # Use GraphQLView to handle GraphQL requests
-    # We'll create a custom view to handle both GET and POST
-    if request.method == "POST":
-        try:
-            data = request.get_json()
-            if not data:
-                return jsonify({"errors": [{"message": "No JSON data provided"}]}), 400
-
-            query = data.get("query")
-            variables = data.get("variables", {})
-
-            if not query:
-                return jsonify({"errors": [{"message": "No query provided"}]}), 400
-
-            result = schema.execute(
-                query,
-                variable_values=variables,
-                context={"connection": get_db_connection()},
-            )
-
-            response_data = {}
-            if result.data:
-                response_data["data"] = result.data
-            if result.errors:
-                response_data["errors"] = [
-                    {"message": str(error)} for error in result.errors
-                ]
-
-            # Return 400 if there are errors and no data
-            if result.errors and not result.data:
-                return jsonify(response_data), 400
-
-            return jsonify(response_data)
-
-        except Exception as e:
-            return jsonify({"errors": [{"message": str(e)}]}), 500
-
-    # Handle GET requests for simple queries
-    else:
-        try:
-            query = request.args.get("query")
-            variables_str = request.args.get("variables", "{}")
-
-            if not query:
-                return jsonify({"errors": [{"message": "No query provided"}]}), 400
-
-            try:
-                variables = json.loads(variables_str) if variables_str else {}
-            except json.JSONDecodeError:
-                variables = {}
-
-            result = schema.execute(
-                query,
-                variable_values=variables,
-                context={"connection": get_db_connection()},
-            )
-
-            response_data = {}
-            if result.data:
-                response_data["data"] = result.data
-            if result.errors:
-                response_data["errors"] = [
-                    {"message": str(error)} for error in result.errors
-                ]
-
-            # Return 400 if there are errors and no data
-            if result.errors and not result.data:
-                return jsonify(response_data), 400
-
-            return jsonify(response_data)
-
-        except Exception as e:
-            return jsonify({"errors": [{"message": str(e)}]}), 500
+app.add_url_rule(
+    "/graphql",
+    view_func=GraphQLView.as_view(
+        "graphql",
+        schema=schema,
+        graphiql=True,  # for having the GraphiQL interface
+    ),
+)
 
 
 @app.route("/health", methods=["GET"])
