@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
+import requests
 
 from tavern._core import exceptions
 from tavern._plugins.graphql.client import GraphQLClient
@@ -57,7 +58,7 @@ class TestGraphQLRequest:
             patch.object(GraphQLClient, "make_request") as mock_make_request,
             patch.object(GraphQLClient, "update_session") as mock_update_session,
         ):
-            mock_response = Mock()
+            mock_response = Mock(spec=requests.Response)
             mock_response.text = '{"data": {"hello": "world"}}'
             mock_make_request.return_value = mock_response
 
