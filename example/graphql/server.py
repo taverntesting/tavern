@@ -1,7 +1,6 @@
 """Simple GraphQL test server for integration testing using SQLite and graphene"""
 
 from flask import Flask, jsonify
-from flask_graphql import GraphQLView
 from graphene import (
     ID,
     Field,
@@ -13,6 +12,7 @@ from graphene import (
 from graphene import (
     List as GrapheneList,
 )
+from graphql_server.flask.views import GraphQLView
 
 
 class User(ObjectType):
@@ -142,7 +142,7 @@ app.add_url_rule(
     "/graphql",
     view_func=GraphQLView.as_view(
         "graphql",
-        schema=schema,
+        schema=schema.graphql_schema,
         graphiql=True,  # for having the GraphiQL interface
     ),
 )
