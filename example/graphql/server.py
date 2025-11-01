@@ -3,13 +3,15 @@
 from flask import Flask, jsonify
 from flask_graphql import GraphQLView
 from graphene import (
-    ObjectType,
-    String,
     ID,
-    Schema,
     Field,
-    List as GrapheneList,
     Mutation,
+    ObjectType,
+    Schema,
+    String,
+)
+from graphene import (
+    List as GrapheneList,
 )
 
 
