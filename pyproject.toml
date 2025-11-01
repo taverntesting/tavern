@@ -29,6 +29,7 @@ dependencies = [
     "jsonschema>=4,<5",
     "pyjwt>=2.5.0,<3",
     "pykwalify>=1.8.0,<2",
+    "pyrefly>=0.39.4",
     "pytest>=8,<9",
     "python-box>=6,<7",
     "requests>=2.22.0,<3",
@@ -55,7 +56,6 @@ Source = "https://github.com/taverntesting/tavern"
 
 [dependency-groups]
 dev = [
-    "graphene-sqlalchemy>=2.3.0",
     "Faker",
     "allure-pytest",
     "colorlog",
@@ -86,8 +86,9 @@ dev = [
     "tomli",
     "tbump>=6.10.0",
     "tox>4.20,<5",
-    "flask-graphql>=2.0.1",
     "tox-uv>=1.28.0",
+    "graphql-server>=3,<4",
+    "graphene-sqlalchemy",
 ]
 
 [project.optional-dependencies]

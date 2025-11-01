@@ -1,6 +1,6 @@
 FROM python:3.11-alpine
 
-RUN pip3 install 'pyjwt>=2.4.0,<3' 'flask>=2.2.3' "python-box>=6,<7" "requests" "graphene-sqlalchemy" "flask-graphql"
+RUN pip3 install 'pyjwt>=2.4.0,<3' 'flask>=2.2.3' "python-box>=6,<7" "requests" "graphene-sqlalchemy" "graphql-server>=3,<4"
 
 ENV FLASK_DEBUG=1
 ENV PYTHONUNBUFFERED=0
