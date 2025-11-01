@@ -16,23 +16,17 @@ logger: logging.Logger = logging.getLogger(__name__)
 class GraphQLResponse(CommonResponse):
     """GraphQL response verification"""
 
-    def _check_status_code(self, status_code: Union[int, list[int]], body: Any) -> None:
+    def _check_status_code(self, status_code: int, body: Any) -> None:
         """Check GraphQL status code (should always be 200)"""
-        expected_code = self.expected["status_code"]
-
-        if (isinstance(expected_code, int) and status_code == expected_code) or (
-            isinstance(expected_code, list) and (status_code in expected_code)
-        ):
-            logger.debug(
-                "Status code '%s' matched expected '%s'", status_code, expected_code
-            )
+        if int(status_code) == 200:
+            logger.debug("Status code '%s' matched expected '%s'", status_code, 200)
             return
         else:
             # For GraphQL, non-200 status codes are always an error
             self._adderr(
                 "Status code was %s, expected %s:\n%s",
                 status_code,
-                expected_code,
+                200,
                 indent_err_text(json.dumps(body) if body else "<no body>"),
             )
 
