@@ -99,7 +99,9 @@ def add_ini_options(parser: pytest.Parser) -> None:
         "tavern-grpc-backend", help="Which grpc backend to use", default="grpc"
     )
     parser.addini(
-        "tavern-graphql-backend", help="Which graphql backend to use", default="requests"
+        "tavern-graphql-backend",
+        help="Which graphql backend to use",
+        default="requests",
     )
     parser.addini(
         "tavern-strict",
