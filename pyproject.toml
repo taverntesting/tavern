@@ -129,7 +129,7 @@ paho-mqtt = "tavern._plugins.mqtt.tavernhook"
 [project.entry-points.tavern_grpc]
 grpc = "tavern._plugins.grpc.tavernhook"
 [project.entry-points.tavern_graphql]
-graphql = "tavern._plugins.graphql.tavernhook"
+requests = "tavern._plugins.graphql.tavernhook"
 
 [tool.mypy]
 python_version = "3.11"
