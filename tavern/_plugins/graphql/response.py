@@ -37,7 +37,7 @@ class GraphQLResponse(CommonResponse):
             return
 
         if not isinstance(body, dict):
-            self._adderr("Response body is not a JSON object")
+            self._adderr("Response body is not a JSON object (got %s)", body)
             return
 
         # Check that response has only 'data' or 'errors' at the top level
