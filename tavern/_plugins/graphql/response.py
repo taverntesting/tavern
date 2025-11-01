@@ -4,7 +4,8 @@ from typing import Any, Union
 
 import requests
 
-from tavern._core.pytest.config import TestConfig
+from tavern._core import exceptions
+from tavern._core.pytest import call_hook
 from tavern._core.report import attach_yaml
 from tavern._plugins.common.response import CommonResponse
 from tavern.response import indent_err_text
@@ -14,18 +15,6 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 class GraphQLResponse(CommonResponse):
     """GraphQL response verification"""
-
-    def __init__(
-        self,
-        session,
-        name: str,
-        expected: dict[str, Any],
-        test_block_config: TestConfig,
-    ) -> None:
-        # GraphQL responses should always have status code 200
-        super().__init__(
-            session, name, expected, test_block_config, default_status_code=200
-        )
 
     def _check_status_code(self, status_code: Union[int, list[int]], body: Any) -> None:
         """Check GraphQL status code (should always be 200)"""
@@ -89,7 +78,15 @@ class GraphQLResponse(CommonResponse):
         Raises:
             TestFailError: Something went wrong with validating the response
         """
-        body, redirect_query_params = self._common_verify_setup(response)
+
+        call_hook(
+            self.test_block_config,
+            "pytest_tavern_beta_after_every_response",
+            expected=self.expected,
+            response=response,
+        )
+
+        body = self._common_verify_setup(response)
 
         # Run validation on response
         self._check_status_code(response.status_code, body)
@@ -114,8 +111,12 @@ class GraphQLResponse(CommonResponse):
         self._maybe_run_validate_functions(response)
 
         # Get any keys to save
-        saved = self._common_verify_save(body, response, redirect_query_params)
+        saved = self._common_verify_save(body, response)
 
-        self._common_verify_finalize()
+        if self.errors:
+            raise exceptions.TestFailError(
+                f"Test '{self.name:s}' failed:\n{self._str_errors():s}",
+                failures=self.errors,
+            )
 
         return saved
