@@ -1,4 +1,5 @@
 import contextlib
+import json
 import logging
 from collections.abc import Mapping
 from typing import Any, Union
@@ -9,8 +10,7 @@ from requests.status_codes import _codes  # type:ignore
 from tavern._core import exceptions
 from tavern._core.dict_util import deep_dict_merge
 from tavern._core.pytest.config import TestConfig
-from tavern._core.pytest.newhooks import call_hook
-from tavern.response import BaseResponse
+from tavern.response import BaseResponse, indent_err_text
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -103,16 +103,9 @@ class CommonResponse(BaseResponse):
         block_strictness = test_strictness.option_for(blockname)
         self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
 
-    def _common_verify_setup(self, response: requests.Response) -> tuple[Any, dict]:
+    def _common_verify_setup(self, response: requests.Response) -> Any | None:
         """Common setup for verify method"""
         self._verbose_log_response(response)
-
-        call_hook(
-            self.test_block_config,
-            "pytest_tavern_beta_after_every_response",
-            expected=self.expected,
-            response=response,
-        )
 
         self.response = response
 
@@ -122,10 +115,7 @@ class CommonResponse(BaseResponse):
         except ValueError:
             body = None
 
-        # Get any redirect query params (REST specific, but handled here for common flow)
-        redirect_query_params = self._get_redirect_query_params(response)
-
-        return body, redirect_query_params
+        return body
 
     def _get_redirect_query_params(self, response: requests.Response) -> dict[str, str]:
         """Get redirect query parameters - default implementation returns empty dict"""
@@ -143,33 +133,43 @@ class CommonResponse(BaseResponse):
         self._validate_block("redirect_query_params", redirect_query_params)
 
     def _common_verify_save(
-        self, body: Any, response: requests.Response, redirect_query_params: dict
+        self,
+        body: Any,
+        response: requests.Response,
     ) -> dict:
         """Common save functionality"""
         saved: dict = {}
 
         if body is not None:
             saved.update(self.maybe_get_save_values_from_save_block("json", body))
+
         saved.update(
             self.maybe_get_save_values_from_save_block("headers", response.headers)
-        )
-        saved.update(
-            self.maybe_get_save_values_from_save_block(
-                "redirect_query_params", redirect_query_params
-            )
         )
 
         saved.update(self.maybe_get_save_values_from_ext(response, self.expected))
 
         return saved
 
-    def _common_verify_finalize(self) -> None:
-        """Common finalization"""
-        if self.errors:
-            raise exceptions.TestFailError(
-                f"Test '{self.name:s}' failed:\n{self._str_errors():s}",
-                failures=self.errors,
-            )
-
     def _check_status_code(self, status_code: Union[int, list[int]], body: Any) -> None:
-        raise NotImplementedError
+        expected_code = self.expected["status_code"]
+
+        if (isinstance(expected_code, int) and status_code == expected_code) or (
+            isinstance(expected_code, list) and (status_code in expected_code)
+        ):
+            logger.debug(
+                "Status code '%s' matched expected '%s'", status_code, expected_code
+            )
+            return
+        elif isinstance(status_code, int) and 400 <= status_code < 500:
+            # special case if there was a bad request. This assumes that the
+            # response would contain some kind of information as to why this
+            # request was rejected.
+            self._adderr(
+                "Status code was %s, expected %s:\n%s",
+                status_code,
+                expected_code,
+                indent_err_text(json.dumps(body)),
+            )
+        else:
+            self._adderr("Status code was %s, expected %s", status_code, expected_code)
