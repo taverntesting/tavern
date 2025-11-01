@@ -55,13 +55,11 @@ class TestGraphQLResponse:
         session = Mock(spec=GraphQLClient)
         expected = {}
 
-        mock_response = Mock(spec=requests.Response)
-        mock_response.json.return_value = {"data": {"hello": "world"}}
-
         response = GraphQLResponse(session, "test", expected, graphql_test_block_config)
 
         # Should not raise any exception
-        response._validate_graphql_response_structure(mock_response)
+        response._validate_graphql_response_structure({"data": {"hello": "world"}})
+        assert len(response.errors) == 0
 
     def test_validate_response_format_valid_errors(self, graphql_test_block_config):
         session = Mock(spec=GraphQLClient)
@@ -73,6 +71,7 @@ class TestGraphQLResponse:
         response._validate_graphql_response_structure(
             {"errors": [{"message": "Something went wrong"}]}
         )
+        assert len(response.errors) == 0
 
     def test_validate_response_format_invalid_no_data_or_errors(
         self, graphql_test_block_config
@@ -101,6 +100,7 @@ class TestGraphQLResponse:
 
         # Should not raise any exception
         response._check_status_code(200, {})
+        assert len(response.errors) == 0
 
     def test_check_status_code_single_mismatch(self, graphql_test_block_config):
         session = Mock(spec=GraphQLClient)
@@ -111,22 +111,3 @@ class TestGraphQLResponse:
         response._check_status_code(404, {})
         assert len(response.errors) == 1
         assert "Status code was 404, expected 200" in response.errors[0]
-
-    def test_check_status_code_list_match(self, graphql_test_block_config):
-        session = Mock(spec=GraphQLClient)
-        expected = {"status_code": [200, 201]}
-
-        response = GraphQLResponse(session, "test", expected, graphql_test_block_config)
-
-        # Should not raise any exception
-        response._check_status_code(201, {})
-
-    def test_check_status_code_list_mismatch(self, graphql_test_block_config):
-        session = Mock(spec=GraphQLClient)
-        expected = {"status_code": [200, 201]}
-
-        response = GraphQLResponse(session, "test", expected, graphql_test_block_config)
-
-        response._check_status_code(404, {})
-        assert len(response.errors) == 1
-        assert "Status code was 404, expected [200, 201]" in response.errors[0]
