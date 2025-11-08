@@ -27,6 +27,23 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 def _check_and_format_values(to_format: str, box_vars: Box) -> str:
+    """Checks and formats a string with the given variables.
+
+    Parses the input string to identify format placeholders and verifies that
+    all required variables exist in the provided box_vars. Performs string
+    formatting after validation, optionally ignoring missing format variables.
+
+    Args:
+        to_format: String with format placeholders to be formatted
+        box_vars: Box object containing variables for formatting
+
+    Raises:
+        MissingFormatError: If a required format variable is not found in
+            box_vars (and dangerously_ignore_string_format_errors is False)
+
+    Returns:
+        Formatted string with variables replaced by their values
+    """
     formatter = string.Formatter()
     would_format = formatter.parse(to_format)
 
@@ -57,6 +74,23 @@ def _check_and_format_values(to_format: str, box_vars: Box) -> str:
 
 
 def _attempt_find_include(to_format: str, box_vars: box.Box) -> str | None:
+    """Attempts to find and return a value to include based on a format string.
+
+    This function parses the format string expecting exactly one format placeholder
+    and retrieves the corresponding value from the box variables. It supports
+    conversion specifiers and validates the format string against expected patterns.
+
+    Args:
+        to_format: String with format placeholders to be parsed
+        box_vars: Box object containing variables to retrieve values from
+
+    Raises:
+        InvalidFormattedJsonError: If the format string doesn't meet the
+            requirements for inclusion (e.g., has multiple format values)
+
+    Returns:
+        The retrieved value after applying any conversion, or None if not found
+    """
     formatter = string.Formatter()
     would_format = list(formatter.parse(to_format))
 
