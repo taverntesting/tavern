@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any, Union
+from typing import Any
 
 import requests
 
