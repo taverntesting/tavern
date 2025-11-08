@@ -198,7 +198,6 @@ stages:
       variables:
         id: "1"
     graphql_response:
-      status_code: 200
       json:
         data:
           user:
@@ -223,7 +222,7 @@ stages:
       variables:
         id: "999"
     graphql_response:
-      status_code: 200                  # GraphQL errors still return 200
+      # status_code: 200  # GraphQL errors still return 200
       json:
         data:
           user: null
@@ -247,7 +246,7 @@ stages:
           }
         }
     graphql_response:
-      status_code: 200                  # Validation errors return 200
+      # status_code: 200  # Validation errors return 200
       json:
         errors:
           - message: "Cannot query field 'invalidField' on type 'Query'."
