@@ -1,3 +1,4 @@
+import copy
 import dataclasses
 import json
 import logging
@@ -12,6 +13,7 @@ from _pytest._io import TerminalWriter
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
+from tavern._plugins.graphql.request import _format_graphql_request
 
 if typing.TYPE_CHECKING:
     from tavern._core.pytest.item import YamlItem
@@ -156,12 +158,19 @@ class ReprdError(TerminalRepr):
         keys = self._get_available_format_keys()
 
         # Format stage variables recursively
-        try:
+        if stage["graphql_request"]:
+            stage_copy = copy.deepcopy(stage)
+            stage_copy["graphql_request"] = _format_graphql_request(
+                stage_copy["graphql_request"],
+                keys,
+            )
+            formatted_stage = format_keys(
+                stage_copy, keys, dangerously_ignore_string_format_errors=True
+            )
+        else:
             formatted_stage = format_keys(
                 stage, keys, dangerously_ignore_string_format_errors=True
             )
-        except ValueError:
-            formatted_stage = stage
 
         # Replace formatted strings with strings for dumping
         prepared_stage = prepare_yaml(formatted_stage)

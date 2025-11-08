@@ -4,6 +4,7 @@ import box
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
+from tavern._core.formatted_str import FormattedString
 from tavern._core.pytest.config import TestConfig
 from tavern.request import BaseRequest
 
@@ -31,10 +32,7 @@ def _format_graphql_request(rspec: dict, variables: dict) -> dict:
     for key, value in rspec.items():
         if key == "query":
             # Skip formatting for GraphQL queries to preserve { } syntax
-            formatted_rspec[key] = value
-        elif key == "operation_name" and value is not None:
-            # Format operation_name if it exists and is not None
-            formatted_rspec[key] = format_keys(value, variables)
+            formatted_rspec[key] = FormattedString(value)
         else:
             # Format all other fields normally
             formatted_rspec[key] = format_keys(value, variables)
