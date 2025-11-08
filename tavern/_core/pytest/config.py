@@ -57,7 +57,12 @@ class TestConfig:
 
         if has_module("paho.mqtt"):
             available_backends.append("mqtt")
-        if all(map(has_module, ("grpc_status", "grpcl_reflection", "grpc", "google.protobuf"))):
+        if all(
+            map(
+                has_module,
+                ("grpc_status", "grpc_reflection", "grpc", "google.protobuf"),
+            )
+        ):
             available_backends.append("grpc")
         # GraphQL is always available since it uses the core requests library
         available_backends.append("graphql")
