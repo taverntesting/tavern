@@ -36,7 +36,6 @@ properties:
             description: Default headers to include in all requests
             additionalProperties:
               type: string
-
-          ws_url:
-            type: string
-            description: WebSocket URL for subscriptions (future feature)
+#          ws_url:
+#            type: string
+#            description: WebSocket URL for subscriptions (future feature)
