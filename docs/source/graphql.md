@@ -173,6 +173,10 @@ stages:
         id: "1"
 ```
 
+> **Note**: While `operation_name` isn't required for most use cases, it becomes essential when you're using the
+> `!include` tag to import an external GraphQL file that contains multiple operations. In such cases, `operation_name`
+> helps identify which specific operation you want to execute from the included file.
+
 ## Responses
 
 GraphQL responses follow the standard GraphQL format with `data` and/or `errors` at the top level:

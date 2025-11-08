@@ -350,6 +350,10 @@ definitions:
         description: Headers for GraphQL request
         type: object
 
+      operation_name:
+        description: Operation name for GraphQL request
+        type: string
+
   graphql_response:
     type: object
     description: Expected GraphQL response
