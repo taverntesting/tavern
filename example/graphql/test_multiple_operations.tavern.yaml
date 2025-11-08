@@ -1,0 +1,98 @@
+---
+test_name: GraphQL multiple operations test - Using operation_name with included file
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Get user by ID using operation_name
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: !include multiple_operations.graphql
+      operation_name: GetUser
+      variables:
+        id: "1"
+    graphql_response:
+      status_code: 200
+      json:
+        data:
+          user:
+            id: "1"
+            name: "John Doe"
+            email: "john@example.com"
+
+---
+test_name: GraphQL multiple operations test - Get all users with operation_name
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Get all users using operation_name
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: !include multiple_operations.graphql
+      operation_name: GetUsers
+    graphql_response:
+      status_code: 200
+      json:
+        data:
+          users:
+            - id: "1"
+              name: "John Doe"
+              email: "john@example.com"
+            - id: "2"
+              name: "Jane Smith"
+              email: "jane@example.com"
+
+---
+test_name: GraphQL multiple operations test - Create user with operation_name
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Create user using operation_name
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: !include multiple_operations.graphql
+      operation_name: CreateUser
+      variables:
+        name: "Charlie Brown"
+        email: "charlie@example.com"
+    graphql_response:
+      status_code: 200
+      json:
+        data:
+          createUser:
+            id: "3"
+            name: "Charlie Brown"
+            email: "charlie@example.com"
+
+---
+test_name: GraphQL multiple operations test - Get user posts with operation_name
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Get user posts using operation_name
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: !include multiple_operations.graphql
+      operation_name: GetUserPosts
+      variables:
+        authorId: "1"
+    graphql_response:
+      status_code: 200
+      json:
+        data:
+          userPosts:
+            - id: "1"
+              title: "First Post"
+              content: "Hello World!"
+              authorId: "1"
+            - id: "2"
+              title: "Second Post"
+              content: "GraphQL is cool"
+              authorId: "2"
