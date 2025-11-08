@@ -16,8 +16,12 @@ logger: logging.Logger = logging.getLogger(__name__)
 class GraphQLResponse(CommonResponse):
     """GraphQL response verification"""
 
-    def _check_status_code(self, status_code: int, body: Any) -> None:
+    def _check_status_code(self, status_code: int | list[int], body: Any) -> None:
         """Check GraphQL status code (should always be 200)"""
+        if isinstance(status_code, list):
+            self._adderr("For graphql, status codes cannot be lists")
+            return
+
         if int(status_code) == 200:
             logger.debug("Status code '%s' matched expected '%s'", status_code, 200)
             return
