@@ -1096,6 +1096,15 @@ wheels = [
 ]
 
 [[package]]
+name = "promise"
+version = "2.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "six" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cf/9c/fb5d48abfe5d791cd496e4242ebcf87a4bb2e0c3dcd6e0ae68c11426a528/promise-2.3.tar.gz", hash = "sha256:dfd18337c523ba4b6a58801c164c1904a9d4d1b1747c7d5dbf45b693a49d93d0", size = 19534, upload-time = "2019-12-18T07:31:43.07Z" }
+
+[[package]]
 name = "proto-plus"
 version = "1.26.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1890,6 +1899,7 @@ dev = [
     { name = "grpcio-tools" },
     { name = "itsdangerous" },
     { name = "pre-commit" },
+    { name = "promise" },
     { name = "protobuf-protoc-bin" },
     { name = "py" },
     { name = "pytest-cov" },
@@ -1957,6 +1967,7 @@ dev = [
     { name = "grpcio-tools" },
     { name = "itsdangerous" },
     { name = "pre-commit" },
+    { name = "promise" },
     { name = "protobuf-protoc-bin", specifier = "==29.5" },
     { name = "py" },
     { name = "pytest-cov" },

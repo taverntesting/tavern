@@ -91,6 +91,7 @@ dev = [
     "graphene>=3,<4",
     "graphene-sqlalchemy>2,<3",
     "flask-sqlalchemy>=3,<4",
+    "promise"
 ]
 
 [project.optional-dependencies]

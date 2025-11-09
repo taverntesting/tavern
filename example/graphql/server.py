@@ -1,6 +1,7 @@
-"""Simple GraphQL test server for integration testing using SQLite and graphene"""
+"""Simple GraphQL test server for integration testing using SQLite and graphene-sqlalchemy"""
 
 from flask import Flask, jsonify
+from flask_sqlalchemy import SQLAlchemy
 from graphene import (
     ID,
     Field,
@@ -12,21 +13,42 @@ from graphene import (
 from graphene import (
     List as GrapheneList,
 )
+from graphene_sqlalchemy import SQLAlchemyObjectType
 from graphql import GraphQLResolveInfo
 from graphql_server.flask.views import GraphQLView
 
-
-class User(ObjectType):
-    id = ID()
-    name = String()
-    email = String()
+db = SQLAlchemy()
 
 
-class Post(ObjectType):
-    id = ID()
-    title = String()
-    content = String()
-    author_id = ID(name="authorId")
+class User(db.Model):
+    __tablename__ = "users"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+
+
+class Post(db.Model):
+    __tablename__ = "posts"
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(200), nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    author_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    # Relationship
+    author = db.relationship("User", backref="posts")
+
+
+class UserObject(SQLAlchemyObjectType):
+    class Meta:
+        model = User
+        load_instance = True
+
+
+class PostObject(SQLAlchemyObjectType):
+    class Meta:
+        model = Post
+        load_instance = True
 
 
 class CreateUser(Mutation):
@@ -34,24 +56,14 @@ class CreateUser(Mutation):
         name = String(required=True)
         email = String(required=True)
 
-    user = Field(lambda: User)
+    user = Field(lambda: UserObject)
 
     def mutate(self, info: GraphQLResolveInfo, name: str, email: str):
-        connection = info.context["connection"]
-        cursor = connection.cursor()
+        user = User(name=name, email=email)
+        db.session.add(user)
+        db.session.commit()
 
-        # Get the next available ID
-        cursor.execute("SELECT MAX(id) FROM users")
-        result = cursor.fetchone()
-        new_id = 1 if result[0] is None else result[0] + 1
-
-        cursor.execute(
-            "INSERT INTO users (id, name, email) VALUES (?, ?, ?)",
-            (new_id, name, email),
-        )
-        connection.commit()
-
-        return CreateUser(user=User(id=str(new_id), name=name, email=email))
+        return CreateUser(user=user)
 
 
 class CreatePost(Mutation):
@@ -60,79 +72,37 @@ class CreatePost(Mutation):
         content = String(required=True)
         author_id = String(required=True, name="authorId")
 
-    post = Field(lambda: Post)
+    post = Field(lambda: PostObject)
 
     def mutate(
         self, info: GraphQLResolveInfo, title: str, content: str, author_id: str
     ):
-        connection = info.context["connection"]
-        cursor = connection.cursor()
+        post = Post(title=title, content=content, author_id=author_id)
+        db.session.add(post)
+        db.session.commit()
 
-        # Get the next available ID
-        cursor.execute("SELECT MAX(id) FROM posts")
-        result = cursor.fetchone()
-        new_id = 1 if result[0] is None else result[0] + 1
-
-        cursor.execute(
-            "INSERT INTO posts (id, title, content, author_id) VALUES (?, ?, ?, ?)",
-            (new_id, title, content, author_id),
-        )
-        connection.commit()
-
-        return CreatePost(
-            post=Post(id=str(new_id), title=title, content=content, author_id=author_id)
-        )
+        return CreatePost(post=post)
 
 
 class Query(ObjectType):
-    user = Field(User, id=ID(required=True))
-    users = GrapheneList(User)
-    posts = GrapheneList(Post)
-    user_posts = GrapheneList(Post, author_id=ID(required=True), name="userPosts")
+    user = Field(UserObject, id=ID(required=True))
+    users = GrapheneList(UserObject)
+    posts = GrapheneList(PostObject)
+    user_posts = GrapheneList(PostObject, author_id=ID(required=True), name="userPosts")
 
     def resolve_user(self, info: GraphQLResolveInfo, id: str) -> User | None:
-        connection = info.context["connection"]
-        cursor = connection.cursor()
-        cursor.execute("SELECT id, name, email FROM users WHERE id = ?", (id,))
-        row = cursor.fetchone()
-        if row:
-            return User(id=str(row[0]), name=row[1], email=row[2])
-        else:
-            # In the original implementation, when a user wasn't found, it returned an error
-            # We'll return None which should be handled by the GraphQL execution to return null
-            return None
+        return User.query.get(id)
 
     def resolve_users(self, info) -> list[User]:
-        connection = info.context["connection"]
-        cursor = connection.cursor()
-        cursor.execute("SELECT id, name, email FROM users")
-        rows = cursor.fetchall()
-        return [User(id=str(row[0]), name=row[1], email=row[2]) for row in rows]
+        return User.query.all()
 
     def resolve_posts(self, info) -> list[Post]:
-        connection = info.context["connection"]
-        cursor = connection.cursor()
-        cursor.execute("SELECT id, title, content, author_id FROM posts")
-        rows = cursor.fetchall()
-        return [
-            Post(id=str(row[0]), title=row[1], content=row[2], author_id=row[3])
-            for row in rows
-        ]
+        return Post.query.all()
 
     def resolve_user_posts(
         self, info: GraphQLResolveInfo, author_id: str
     ) -> list[Post]:
-        connection = info.context["connection"]
-        cursor = connection.cursor()
-        cursor.execute(
-            "SELECT id, title, content, author_id FROM posts WHERE author_id = ?",
-            (author_id,),
-        )
-        rows = cursor.fetchall()
-        return [
-            Post(id=str(row[0]), title=row[1], content=row[2], author_id=row[3])
-            for row in rows
-        ]
+        return Post.query.filter_by(author_id=author_id).all()
 
 
 class Mutation(ObjectType):
@@ -143,12 +113,21 @@ class Mutation(ObjectType):
 schema = Schema(query=Query, mutation=Mutation)
 
 app = Flask(__name__)
+# Configure SQLite database
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Initialize the database with the app
+db.init_app(app)
+
 app.add_url_rule(
     "/graphql",
     view_func=GraphQLView.as_view(
         "graphql",
         schema=schema.graphql_schema,
         graphiql=True,  # for having the GraphiQL interface
+        # Add context with the database session
+        get_context=lambda: {"session": db.session},
     ),
 )
 
