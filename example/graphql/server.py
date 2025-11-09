@@ -12,6 +12,7 @@ from graphene import (
 from graphene import (
     List as GrapheneList,
 )
+from graphql import GraphQLResolveInfo
 from graphql_server.flask.views import GraphQLView
 
 
@@ -35,7 +36,7 @@ class CreateUser(Mutation):
 
     user = Field(lambda: User)
 
-    def mutate(self, info, name: str, email: str):
+    def mutate(self, info: GraphQLResolveInfo, name: str, email: str):
         connection = info.context["connection"]
         cursor = connection.cursor()
 
@@ -61,7 +62,9 @@ class CreatePost(Mutation):
 
     post = Field(lambda: Post)
 
-    def mutate(self, info, title: str, content: str, author_id: str):
+    def mutate(
+        self, info: GraphQLResolveInfo, title: str, content: str, author_id: str
+    ):
         connection = info.context["connection"]
         cursor = connection.cursor()
 
@@ -87,7 +90,7 @@ class Query(ObjectType):
     posts = GrapheneList(Post)
     user_posts = GrapheneList(Post, author_id=ID(required=True), name="userPosts")
 
-    def resolve_user(self, info, id: str) -> User | None:
+    def resolve_user(self, info: GraphQLResolveInfo, id: str) -> User | None:
         connection = info.context["connection"]
         cursor = connection.cursor()
         cursor.execute("SELECT id, name, email FROM users WHERE id = ?", (id,))
@@ -116,7 +119,9 @@ class Query(ObjectType):
             for row in rows
         ]
 
-    def resolve_user_posts(self, info, author_id: str) -> list[Post]:
+    def resolve_user_posts(
+        self, info: GraphQLResolveInfo, author_id: str
+    ) -> list[Post]:
         connection = info.context["connection"]
         cursor = connection.cursor()
         cursor.execute(
