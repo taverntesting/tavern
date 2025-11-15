@@ -466,3 +466,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  3.0.0a8         release 3.0.0a8 (2025-08-24)
 
 ##  3.0.0a9         release 3.0.0a9 (2025-09-27)
+
+#  3.0.0           release 3.0.0 (2025-10-11)
