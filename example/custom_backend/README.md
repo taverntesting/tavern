@@ -43,6 +43,10 @@ Or in your `pytest.ini`:
 tavern-extra-backends = your_backend_name=your.package.path:your_backend_module
 ```
 
+This is because Tavern by default only tries to load "grpc", "http" and "mqtt" backends. The flag registers the custom
+backend with Tavern, which can then tell [stevedore](https://github.com/openstack/stevedore) to load the plugin from 
+the entrypoint.
+
 ## Example Test
 
 ```yaml
