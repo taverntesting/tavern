@@ -1,5 +1,5 @@
 [project]
-name = "custom-backend"
+name = "my_tavern_plugin"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
@@ -7,4 +7,4 @@ requires-python = ">=3.14"
 dependencies = []
 
 [project.entry-points.tavern_file]
-custom_backend = "custom_backend"
+my_tavern_plugin = "my_tavern_plugin.plugin"

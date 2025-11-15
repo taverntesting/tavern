@@ -10,6 +10,6 @@ fi
 uv pip install -e . 'tavern @ ../..'
 
 PYTHONPATH=. tavern-ci \
-  --tavern-extra-backends=file=custom_backend \
-  test_file_touched.tavern.yaml \
-  --debug "$@" --stdout
+  --tavern-extra-backends=file=my_tavern_plugin \
+  --debug "$@" --stdout \
+  tests
