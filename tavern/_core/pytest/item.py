@@ -6,7 +6,13 @@ from collections.abc import Callable, Iterable, MutableMapping
 import pytest
 import yaml
 from _pytest._code.code import ExceptionInfo, TerminalRepr
-from _pytest.fixtures import FixtureDef, PseudoFixtureDef
+from _pytest.fixtures import FixtureDef
+
+try:
+    from _pytest.fixtures import PseudoFixtureDef
+except ImportError:
+    PseudoFixtureDef = FixtureDef
+
 from _pytest.nodes import Node
 from _pytest.scope import Scope
 from pytest import Mark, MarkDecorator
