@@ -7,3 +7,40 @@ stages:
       filename: hello.txt
     file_exists:
       filename: hello.txt
+
+---
+test_name: Test file touched - should fail because file doesn't exist
+
+marks:
+  - xfail
+
+stages:
+  - name: Touch file that doesn't exist
+    touch_file:
+      filename: some_other_file.txt
+    file_exists:
+      filename: nonexistent_file.txt
+
+---
+test_name: Test with invalid schema - should fail
+
+_xfail: verify
+
+stages:
+  - name: Test invalid touch_file schema
+    touch_file:
+      nonexistent_field: some_value
+    file_exists:
+      filename: hello.txt
+
+---
+test_name: Test with invalid response schema - should fail
+
+_xfail: verify
+
+stages:
+  - name: Test invalid file_exists schema
+    touch_file:
+      filename: hello.txt
+    file_exists:
+      nonexistent_field: some_value
