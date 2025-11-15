@@ -1,0 +1,180 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+
+title: REST schema
+description: Schema for REST requests
+
+###
+
+definitions:
+  http_request:
+    type: object
+    additionalProperties: false
+    description: HTTP request to perform as part of stage
+
+    required:
+      - url
+
+    properties:
+      url:
+        description: URL to make request to
+        oneOf:
+          - type: string
+          - type: object
+            properties:
+              "$ext":
+                $ref: "#/definitions/verify_block"
+
+      cert:
+        description: Certificate to use - either a path to a certificate and key in one file, or a two item list containing the certificate and key separately
+        oneOf:
+          - type: string
+          - type: array
+            minItems: 2
+            maxItems: 2
+            items:
+              type: string
+
+      auth:
+        description: Authorisation to use for request - a list containing username and password
+        type: array
+        minItems: 2
+        maxItems: 2
+        items:
+          type: string
+
+      verify:
+        description: Whether to verify the server's certificates
+        oneOf:
+          - type: boolean
+            default: false
+          - type: string
+
+      method:
+        description: HTTP method to use for request
+        default: GET
+        type: string
+
+      follow_redirects:
+        type: boolean
+        description: Whether to follow redirects from 3xx responses
+        default: false
+
+      stream:
+        type: boolean
+        description: Whether to stream the download from the request
+        default: false
+
+      cookies:
+        type: array
+        description: Which cookies to use in the request
+
+        items:
+          oneOf:
+            - type: string
+            - type: object
+
+      json:
+        description: JSON body to send in request body
+        $ref: "#/definitions/any_json"
+
+      params:
+        description: Query parameters
+        type: object
+
+      headers:
+        description: Headers for request
+        type: object
+
+      data:
+        description: Form data to send in request
+        oneOf:
+          - type: object
+          - type: string
+
+      timeout:
+        description: How long to wait for requests to time out
+        oneOf:
+          - type: number
+          - type: array
+            minItems: 2
+            maxItems: 2
+            items:
+              type: number
+
+      file_body:
+        type: string
+        description: Path to a file to upload as the request body
+
+      files:
+        oneOf:
+          - type: object
+          - type: array
+        description: Files to send as part of the request
+
+      clear_session_cookies:
+        description: Whether to clear sesion cookies before running this request
+        type: boolean
+
+  http_response:
+    type: object
+    additionalProperties: false
+    description: Expected HTTP response
+
+    properties:
+      strict:
+        $ref: "#/definitions/strict_block"
+
+      status_code:
+        description: Status code(s) to match
+        oneOf:
+          - type: integer
+          - type: array
+            minItems: 1
+            items:
+              type: integer
+
+      cookies:
+        type: array
+        description: Cookies expected to be returned
+        uniqueItems: true
+        minItems: 1
+
+        items:
+          type: string
+
+      json:
+        description: Expected JSON response
+        $ref: "#/definitions/any_json"
+
+      redirect_query_params:
+        description: Query parameters parsed from the 'location' of a redirect
+        type: object
+
+      verify_response_with:
+        oneOf:
+          - $ref: "#/definitions/verify_block"
+          - type: array
+            items:
+              $ref: "#/definitions/verify_block"
+
+      headers:
+        description: Headers expected in response
+        type: object
+
+      save:
+        type: object
+        description: Which objects to save from the response
+
+  stage:
+    type: object
+    description: One stage in a test
+    additionalProperties: false
+    required:
+      - name
+
+    properties:
+      request:
+        $ref: "#/definitions/http_request"
+
+      response:
+        $ref: "#/definitions/http_response"

@@ -5,6 +5,7 @@ from typing import Any, Optional, TypeVar, Union
 
 import pytest
 
+from tavern._core import exceptions
 from tavern._core.dict_util import format_keys, get_tavern_box
 from tavern._core.general import load_global_config
 from tavern._core.pytest.config import TavernInternalConfig, TestConfig
@@ -71,6 +72,13 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
         default=False,
         action="store_true",
     )
+    parser_addoption(
+        "--tavern-extra-backends",
+        help="list of extra backends to register",
+        default="",
+        type=str,
+        action="store",
+    )
 
 
 def add_ini_options(parser: pytest.Parser) -> None:
@@ -122,6 +130,12 @@ def add_ini_options(parser: pytest.Parser) -> None:
         help="Set up a simple logger for tavern initialisation. Only for internal use and debugging, may be removed in future with no warning.",
         type="bool",
         default=False,
+    )
+    parser.addini(
+        "tavern-extra-backends",
+        help="list of extra backends to register",
+        type="args",
+        default=[],
     )
 
 
@@ -177,10 +191,25 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
 
 def _load_global_backends(pytest_config: pytest.Config) -> dict[str, Any]:
     """Load which backend should be used"""
-    return {
+    backends: dict[str, str | None] = {
         b: get_option_generic(pytest_config, f"tavern-{b}-backend", None)
         for b in TestConfig.backends()
     }
+
+    extra_backends: list[str] = get_option_generic(
+        pytest_config, "tavern-extra-backends", []
+    )
+    for backend in extra_backends:
+        split = backend.split("=", 1)
+        if len(split) != 2:
+            raise exceptions.BadSchemaError(
+                f"extra backends must be in the form 'name=value', got {backend}"
+            )
+
+        key, value = split
+        backends[key] = value
+
+    return backends
 
 
 def _load_global_strictness(pytest_config: pytest.Config) -> StrictLevel:
@@ -214,11 +243,23 @@ def get_option_generic(
     use = default
 
     # Middle priority
-    if pytest_config.getini(ini_flag) is not None:
-        use = pytest_config.getini(ini_flag)
+    if ini := pytest_config.getini(ini_flag):
+        if isinstance(default, list):
+            if isinstance(ini, list):
+                use.extend(ini)  # type:ignore
+            else:
+                raise ValueError(
+                    f"Expected list for {ini_flag} option, got {ini} of type {type(ini)}"
+                )
+        else:
+            use = ini
 
     # Top priority
-    if pytest_config.getoption(cli_flag) is not None:
-        use = pytest_config.getoption(cli_flag)
+    if cli := pytest_config.getoption(cli_flag):
+        if isinstance(default, list):
+            cli = cli.split(",")
+            use.extend(cli)  # type:ignore
+        else:
+            use = cli
 
     return use

@@ -57,7 +57,7 @@ class TestConfig:
 
         if has_module("paho.mqtt"):
             available_backends.append("mqtt")
-        if has_module("grpc"):
+        if has_module("grpc") and has_module("grpc_reflection"):
             available_backends.append("grpc")
 
         logger.debug(f"available request backends: {available_backends}")

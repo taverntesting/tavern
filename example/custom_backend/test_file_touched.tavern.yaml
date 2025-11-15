@@ -1,0 +1,9 @@
+---
+test_name: Test file touched
+
+stages:
+  - name: Touch file and check it exists
+    touch_file:
+      filename: hello.txt
+    file_exists:
+      filename: hello.txt

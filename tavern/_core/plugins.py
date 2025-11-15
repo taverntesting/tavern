@@ -127,11 +127,13 @@ class _PluginCache:
         plugins = []
 
         def enabled(current_backend, ext):
-            return (
+            is_enabled = (
                 ext.name == test_block_config.tavern_internal.backends[current_backend]
             )
+            logger.debug(f"is {ext.name} enabled? {is_enabled}")
+            return is_enabled
 
-        for backend in test_block_config.backends():
+        for backend in test_block_config.tavern_internal.backends.keys():
             logger.debug("loading backend for %s", backend)
 
             namespace = f"tavern_{backend}"
