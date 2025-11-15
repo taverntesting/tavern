@@ -1,9 +1,9 @@
 [project]
 name = "my_tavern_plugin"
 version = "0.1.0"
-description = "Add your description here"
+description = "A custom 'generic' plugin for tavern that touches files and checks if they are created."
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.12"
 dependencies = []
 
 [project.entry-points.tavern_file]
