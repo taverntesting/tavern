@@ -1,4 +1,6 @@
 ---
+is_defaults: true
+
 includes:
   - !include common.yaml
 ---
