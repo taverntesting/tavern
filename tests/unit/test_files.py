@@ -59,7 +59,7 @@ class TestGenerateFiles:
 
         # Collect all tests
         if with_merge_down_test:
-            tavern_test_content.insert(0, {"includes": []})
+            tavern_test_content.insert(0, {"includes": [], "is_defaults": True})
 
         def generate_yamlitem(test_spec):
             mock = Mock(spec=YamlItem)

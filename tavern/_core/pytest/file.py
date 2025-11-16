@@ -452,16 +452,38 @@ class YamlFile(pytest.File):
                 logger.warning("Empty document in input file '%s'", self.path)
                 continue
 
-            if document_idx == 0 and not test_spec.get("stages"):
-                # If it's the first document and there were no tests, its implicitly the
-                # 'defaults' for the file and will be merged with all lower documents
-                if test_spec.get("name"):
-                    logger.warning("initial block had no stages, but had a name")
-                merge_down = test_spec
-                logger.info(
-                    f"merging initial block from {self.path} into subsequent tests"
+            # Check if this document has the explicit 'defaults' marker
+            has_defaults_marker = test_spec.pop("is_defaults", False)
+
+            # Validate that 'defaults' marker is only used in the first document
+            if has_defaults_marker and document_idx > 0:
+                raise exceptions.BadSchemaError(
+                    f"'defaults' marker can only be used in the first YAML document, but found it in document {document_idx + 1} of '{self.path}'"
                 )
-                continue
+
+            missing_stages_and_name = (
+                "stages" not in test_spec or "test_name" not in test_spec
+            )
+            if document_idx == 0:
+                if has_defaults_marker:
+                    logger.info(
+                        "Found explicit defaults marker in first document from %s",
+                        self.path,
+                    )
+                    merge_down = test_spec
+                    continue
+                elif missing_stages_and_name:
+                    # Has a name but no stages - this is an error
+                    raise exceptions.BadSchemaError(
+                        f"First document in '{self.path}' has a name but no stages. "
+                        f"If this is meant to be defaults for the file, add 'defaults: true'. "
+                        f"If this is meant to be a test, add a 'stages' section."
+                    )
+
+            elif missing_stages_and_name:
+                raise exceptions.BadSchemaError(
+                    f"Document {document_idx + 1} in '{self.path}' does not have a 'test_name' or 'stages' section"
+                )
 
             if merge_down:
                 test_spec = deep_dict_merge(test_spec, merge_down)
