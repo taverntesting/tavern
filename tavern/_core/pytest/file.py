@@ -453,7 +453,7 @@ class YamlFile(pytest.File):
                 continue
 
             # Check if this document has the explicit 'defaults' marker
-            has_defaults_marker = test_spec.pop("is_defaults", False)
+            has_defaults_marker: bool = test_spec.pop("is_defaults", False)
 
             # Validate that 'defaults' marker is only used in the first document
             if has_defaults_marker and document_idx > 0:
@@ -479,7 +479,6 @@ class YamlFile(pytest.File):
                         f"If this is meant to be defaults for the file, add 'defaults: true'. "
                         f"If this is meant to be a test, add a 'stages' section."
                     )
-
             elif missing_stages_and_name:
                 raise exceptions.BadSchemaError(
                     f"Document {document_idx + 1} in '{self.path}' does not have a 'test_name' or 'stages' section"
