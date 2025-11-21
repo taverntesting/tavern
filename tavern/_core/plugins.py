@@ -125,12 +125,27 @@ class _PluginCache:
         """
 
         plugins = []
+        discovered_plugins: dict[str, list[str]] = {}
 
-        def enabled(current_backend, ext):
-            is_enabled = (
-                ext.name == test_block_config.tavern_internal.backends[current_backend]
-            )
-            logger.debug(f"is {ext.name} enabled? {is_enabled}")
+        def is_plugin_backend_enabled(current_backend, ext):
+            if test_block_config.tavern_internal.backends[current_backend] is None:
+                # Use whatever default - will raise an error if >1 is discovered
+                is_enabled = True
+                logger.debug(f"Using default backend for {ext.name}")
+            else:
+                is_enabled = (
+                    ext.name
+                    == test_block_config.tavern_internal.backends[current_backend]
+                )
+                logger.debug(
+                    f"Is {current_backend} for {ext.name} enabled? {is_enabled}"
+                )
+
+            if is_enabled:
+                if current_backend not in discovered_plugins:
+                    discovered_plugins[current_backend] = []
+                discovered_plugins[current_backend].append(ext.name)
+
             return is_enabled
 
         for backend in test_block_config.tavern_internal.backends.keys():
@@ -140,7 +155,7 @@ class _PluginCache:
 
             manager = stevedore.EnabledExtensionManager(
                 namespace=namespace,
-                check_func=partial(enabled, backend),
+                check_func=partial(is_plugin_backend_enabled, backend),
                 verify_requirements=True,
                 on_load_failure_callback=plugin_load_error,
             )
@@ -154,6 +169,12 @@ class _PluginCache:
                 )
 
             plugins.extend(manager.extensions)
+
+        for plugin, enabled in discovered_plugins.items():
+            if len(enabled) > 1:
+                raise exceptions.PluginLoadError(
+                    f"Multiple plugins enabled for '{plugin}' backend: {enabled}"
+                )
 
         return plugins
 

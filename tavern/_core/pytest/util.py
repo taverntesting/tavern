@@ -93,13 +93,19 @@ def add_ini_options(parser: pytest.Parser) -> None:
         default=[],
     )
     parser.addini(
-        "tavern-http-backend", help="Which http backend to use", default="requests"
+        "tavern-http-backend",
+        help="Which http backend to use",
+        default="requests",
     )
     parser.addini(
-        "tavern-mqtt-backend", help="Which mqtt backend to use", default="paho-mqtt"
+        "tavern-mqtt-backend",
+        help="Which mqtt backend to use",
+        default="paho-mqtt",
     )
     parser.addini(
-        "tavern-grpc-backend", help="Which grpc backend to use", default="grpc"
+        "tavern-grpc-backend",
+        help="Which grpc backend to use",
+        default="grpc",
     )
     parser.addini(
         "tavern-strict",
@@ -200,14 +206,16 @@ def _load_global_backends(pytest_config: pytest.Config) -> dict[str, Any]:
         pytest_config, "tavern-extra-backends", []
     )
     for backend in extra_backends:
-        split = backend.split("=", 1)
-        if len(split) != 2:
+        split = backend.split("=")
+        if len(split) == 1:
+            backends[split[0]] = None
+        elif len(split) == 2:
+            key, value = split
+            backends[key] = value
+        else:
             raise exceptions.BadSchemaError(
-                f"extra backends must be in the form 'name=value', got {backend}"
+                f"extra backends must be in the form 'name' or 'name=value', got '{backend}'"
             )
-
-        key, value = split
-        backends[key] = value
 
     return backends
 
