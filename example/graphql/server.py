@@ -15,7 +15,7 @@ strawberry_sqlalchemy_mapper = StrawberrySQLAlchemyMapper()
 
 db = SQLAlchemy()
 
-Base = declarative_base()
+Base = declarative_base(metadata=db.metadata)
 
 
 class models:
@@ -71,7 +71,11 @@ class Query:
 
     @strawberry.field(graphql_type=list[Post])
     def user_posts(self, author_id: strawberry.ID) -> list[Post]:
-        return db.session.execute(select(models.Post).filter_by(author_id=author_id)).scalars().all()
+        return (
+            db.session.execute(select(models.Post).filter_by(author_id=author_id))
+            .scalars()
+            .all()
+        )
 
 
 @strawberry.type
@@ -107,11 +111,12 @@ schema = strawberry.Schema(
 
 app = Flask(__name__)
 # Configure SQLite database
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///test.db"
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////tmp/test.db"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 # Initialize the database with the app
 db.init_app(app)
+
 
 app.add_url_rule(
     "/graphql",
@@ -128,6 +133,9 @@ def health():
     """Health check endpoint"""
     return jsonify({"status": "healthy"})
 
+
+with app.app_context():
+    db.create_all()
 
 if __name__ == "__main__":
     app.run(host="localhost", port=8001, debug=True)
