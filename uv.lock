@@ -3,7 +3,8 @@ revision = 3
 requires-python = ">=3.11"
 resolution-markers = [
     "python_full_version >= '3.13'",
-    "python_full_version < '3.13'",
+    "python_full_version == '3.12.*'",
+    "python_full_version < '3.12'",
 ]
 
 [[package]]
@@ -530,66 +531,12 @@ wheels = [
 ]
 
 [[package]]
-name = "graphene"
-version = "3.4.3"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "graphql-core" },
-    { name = "graphql-relay" },
-    { name = "python-dateutil" },
-    { name = "typing-extensions" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/cc/f6/bf62ff950c317ed03e77f3f6ddd7e34aaa98fe89d79ebd660c55343d8054/graphene-3.4.3.tar.gz", hash = "sha256:2a3786948ce75fe7e078443d37f609cbe5bb36ad8d6b828740ad3b95ed1a0aaa", size = 44739, upload-time = "2024-11-09T20:44:25.757Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/66/e0/61d8e98007182e6b2aca7cf65904721fb2e4bce0192272ab9cb6f69d8812/graphene-3.4.3-py2.py3-none-any.whl", hash = "sha256:820db6289754c181007a150db1f7fff544b94142b556d12e3ebc777a7bf36c71", size = 114894, upload-time = "2024-11-09T20:44:23.851Z" },
-]
-
-[[package]]
-name = "graphene-sqlalchemy"
-version = "2.1.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "graphene" },
-    { name = "singledispatch" },
-    { name = "six" },
-    { name = "sqlalchemy" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/99/6e/c40b4fdeb7ad90082dcf52fa7ae26f35dfc30f94f67bd6d2b3507a777142/graphene-sqlalchemy-2.1.0.tar.gz", hash = "sha256:8260a128f360eda5437147a3cb72809e267fa8e2464f9996ff95ddc47239dcec", size = 14954, upload-time = "2018-07-19T23:04:59.136Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/cc/6a/4b1bd01cc18c95b107319d9d7e48f584255abfe717a1a2893a63ef43d70f/graphene_sqlalchemy-2.1.0-py2.py3-none-any.whl", hash = "sha256:5bfc93986c5e6001861e8cdfe33eeb5094ca1f30efde6822387e13070ec3ab82", size = 20498, upload-time = "2018-07-19T23:04:58.076Z" },
-]
-
-[[package]]
 name = "graphql-core"
 version = "3.2.7"
 source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/ac/9b/037a640a2983b09aed4a823f9cf1729e6d780b0671f854efa4727a7affbe/graphql_core-3.2.7.tar.gz", hash = "sha256:27b6904bdd3b43f2a0556dad5d579bdfdeab1f38e8e8788e555bdcb586a6f62c", size = 513484, upload-time = "2025-11-01T22:30:40.436Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0a/14/933037032608787fb92e365883ad6a741c235e0ff992865ec5d904a38f1e/graphql_core-3.2.7-py3-none-any.whl", hash = "sha256:17fc8f3ca4a42913d8e24d9ac9f08deddf0a0b2483076575757f6c412ead2ec0", size = 207262, upload-time = "2025-11-01T22:30:38.912Z" },
-]
-
-[[package]]
-name = "graphql-relay"
-version = "3.2.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "graphql-core" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/d1/13/98fbf8d67552f102488ffc16c6f559ce71ea15f6294728d33928ab5ff14d/graphql-relay-3.2.0.tar.gz", hash = "sha256:1ff1c51298356e481a0be009ccdff249832ce53f30559c1338f22a0e0d17250c", size = 50027, upload-time = "2022-04-16T11:03:45.447Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/74/16/a4cf06adbc711bd364a73ce043b0b08d8fa5aae3df11b6ee4248bcdad2e0/graphql_relay-3.2.0-py3-none-any.whl", hash = "sha256:c9b22bd28b170ba1fe674c74384a8ff30a76c8e26f88ac3aa1584dd3179953e5", size = 16940, upload-time = "2022-04-16T11:03:43.895Z" },
-]
-
-[[package]]
-name = "graphql-server"
-version = "3.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "graphql-core" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/d1/c1/d33490424627c99a760059012b3f7524292f799db432757370a6a8071ce0/graphql_server-3.0.0.tar.gz", hash = "sha256:a21156ae32448ec46989fcc6f65f4eb966a2f23c15936029b5c56b487b786039", size = 54379, upload-time = "2025-08-17T12:34:18.809Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ec/c8/39938512c54529107f194aa8fb671435470a23fd35f5833ec8935c951373/graphql_server-3.0.0-py3-none-any.whl", hash = "sha256:98f2259003c404f972479df49b5e019497f44c7ba2f447170a1fb981b4f271d2", size = 89347, upload-time = "2025-08-17T12:34:17.302Z" },
 ]
 
 [[package]]
@@ -881,6 +828,18 @@ wheels = [
 ]
 
 [[package]]
+name = "lia-web"
+version = "0.2.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/1e/4e/847404ca9d36e3f5468c9e460aed565a02cbca0fdf81247da9f87fabc1b8/lia_web-0.2.3.tar.gz", hash = "sha256:ccc9d24cdc200806ea96a20b22fb68f4759e6becdb901bd36024df7921e848d7", size = 156761, upload-time = "2025-08-11T10:23:21.003Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/00/f2/c68a97c727c795119f1056ad2b7e716c23f26f004292517c435accf90b5c/lia_web-0.2.3-py3-none-any.whl", hash = "sha256:237c779c943cd4341527fc0adfcc3d8068f992ee051f4ef059b8474ee087f641", size = 13965, upload-time = "2025-08-11T10:23:20.215Z" },
+]
+
+[[package]]
 name = "markdown"
 version = "3.10"
 source = { registry = "https://pypi.org/simple" }
@@ -1094,15 +1053,6 @@ sdist = { url = "https://files.pythonhosted.org/packages/f4/9b/6a4ffb4ed980519da
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5d/c4/b2d28e9d2edf4f1713eb3c29307f1a63f3d67cf09bdda29715a36a68921a/pre_commit-4.5.0-py2.py3-none-any.whl", hash = "sha256:25e2ce09595174d9c97860a95609f9f852c0614ba602de3561e267547f2335e1", size = 226429, upload-time = "2025-11-22T21:02:40.836Z" },
 ]
-
-[[package]]
-name = "promise"
-version = "2.3"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "six" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/cf/9c/fb5d48abfe5d791cd496e4242ebcf87a4bb2e0c3dcd6e0ae68c11426a528/promise-2.3.tar.gz", hash = "sha256:dfd18337c523ba4b6a58801c164c1904a9d4d1b1747c7d5dbf45b693a49d93d0", size = 19534, upload-time = "2019-12-18T07:31:43.07Z" }
 
 [[package]]
 name = "proto-plus"
@@ -1620,6 +1570,15 @@ wheels = [
 ]
 
 [[package]]
+name = "sentinel"
+version = "1.0.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/4a/d8/49115169583d02b38e7d93909a474c7ed0863f7d4df27095588344f2e66a/sentinel-1.0.0.tar.gz", hash = "sha256:190928f9951af6e94a1f84eefcaed791c28097dd152b88e988906be300451fd2", size = 6981, upload-time = "2022-07-23T10:22:19.606Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f3/c4/37cd564e7c5ee72afc864e43b872c716ed43604e50ea0adbb510d720f92d/sentinel-1.0.0-py3-none-any.whl", hash = "sha256:24f02a34cc9f0fcba5a666a23b6c7f56aff332fc624632ee442e7237751a9f60", size = 6485, upload-time = "2022-07-23T10:22:16.826Z" },
+]
+
+[[package]]
 name = "setuptools"
 version = "80.9.0"
 source = { registry = "https://pypi.org/simple" }
@@ -1635,15 +1594,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/ff/6f/15be211749430f52f2c8f0c69158a6fc961c03aac93fa28d44d1a6f5ebc7/simpleeval-1.0.3.tar.gz", hash = "sha256:67bbf246040ac3b57c29cf048657b9cf31d4e7b9d6659684daa08ca8f1e45829", size = 24358, upload-time = "2024-11-02T10:29:46.912Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/a0/e9/e58082fbb8cecbb6fb4133033c40cc50c248b1a331582be3a0f39138d65b/simpleeval-1.0.3-py3-none-any.whl", hash = "sha256:e3bdbb8c82c26297c9a153902d0fd1858a6c3774bf53ff4f134788c3f2035c38", size = 15762, upload-time = "2024-11-02T10:29:45.706Z" },
-]
-
-[[package]]
-name = "singledispatch"
-version = "4.1.2"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/9e/2c/7a556f0b5c96161417df04b9af069b8e4d060c425f4369b9966271f70ba4/singledispatch-4.1.2.tar.gz", hash = "sha256:0ad18e5a55c54a836a695a4e7c12faa05adfe88c7eeb64dcd331a4b13934c3b6", size = 18332, upload-time = "2025-05-14T07:24:47.206Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/71/9b/93adabae9d3979ac081f4488d3da1cf8ad8f3b27660f896d59c5a088253b/singledispatch-4.1.2-py3-none-any.whl", hash = "sha256:24802c4e743a252645c461e71abcaa95c3f678a96688e72bb0bf63e663018c7a", size = 6761, upload-time = "2025-05-14T07:24:46.38Z" },
 ]
 
 [[package]]
@@ -1784,6 +1734,21 @@ wheels = [
 ]
 
 [[package]]
+name = "sqlakeyset"
+version = "2.0.1762907931"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "packaging" },
+    { name = "python-dateutil" },
+    { name = "sqlalchemy" },
+    { name = "typing-extensions", marker = "python_full_version < '3.13'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3e/42/53e772e4194da1eb3f3857769a6f556d9386ea3e8b3e8ccc27499f408e75/sqlakeyset-2.0.1762907931.tar.gz", hash = "sha256:80b1ab1d8813b7c91fd7b45de4448978be2cedb3c75fff3fd192b0f9cf91508d", size = 113872, upload-time = "2025-11-12T00:38:53.396Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/6f/06/ee0374e12f225142fa843bf5963a32b377773b13184637bf8a7b6792d1ca/sqlakeyset-2.0.1762907931-py3-none-any.whl", hash = "sha256:3fda94510bfc63eded6dc064eb007343d9582c1605517d28651128381dbbb9ae", size = 27154, upload-time = "2025-11-12T00:38:52.416Z" },
+]
+
+[[package]]
 name = "sqlalchemy"
 version = "2.0.44"
 source = { registry = "https://pypi.org/simple" }
@@ -1820,6 +1785,11 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/9c/5e/6a29fa884d9fb7ddadf6b69490a9d45fded3b38541713010dad16b77d015/sqlalchemy-2.0.44-py3-none-any.whl", hash = "sha256:19de7ca1246fbef9f9d1bff8f1ab25641569df226364a0e40457dc5457c54b05", size = 1928718, upload-time = "2025-10-10T15:29:45.32Z" },
 ]
 
+[package.optional-dependencies]
+asyncio = [
+    { name = "greenlet" },
+]
+
 [[package]]
 name = "stevedore"
 version = "4.1.1"
@@ -1830,6 +1800,51 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/66/c0/26afabea111a642f33cfd15f54b3dbe9334679294ad5c0423c556b75eba2/stevedore-4.1.1.tar.gz", hash = "sha256:7f8aeb6e3f90f96832c301bff21a7eb5eefbe894c88c506483d355565d88cc1a", size = 514168, upload-time = "2022-11-10T09:08:25.439Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/74/a3/72792236f981aee8bb1ef15e72a6f65444150834830f6a97178fe1e2cdf4/stevedore-4.1.1-py3-none-any.whl", hash = "sha256:aa6436565c069b2946fe4ebff07f5041e0c8bf18c7376dd29edf80cf7d524e4e", size = 50014, upload-time = "2022-11-10T09:08:22.025Z" },
+]
+
+[[package]]
+name = "strawberry-graphql"
+version = "0.287.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "graphql-core" },
+    { name = "lia-web" },
+    { name = "packaging" },
+    { name = "python-dateutil" },
+    { name = "typing-extensions" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/0b/66/dfdb0f9b1f58123e1a00597931d46cc25e4d310f44dbb1e24cffa905ebc2/strawberry_graphql-0.287.0.tar.gz", hash = "sha256:4da748f82684f3dc914fc9ed88184e715903d7fa06248f8f702bbbab55f7ed36", size = 211808, upload-time = "2025-11-22T13:00:45.802Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e8/21/954ed4a43d8ddafcc022b4f212937606249d9ab7c47e77988ecf949a46c2/strawberry_graphql-0.287.0-py3-none-any.whl", hash = "sha256:d85cc90101d322a641fe8f4adb8f3c4a1aa5dddb61ba1a4bbb7bf42aa4dbad8c", size = 309017, upload-time = "2025-11-22T13:00:44.005Z" },
+]
+
+[[package]]
+name = "strawberry-sqlalchemy"
+version = "0.1.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "sqlalchemy" },
+    { name = "strawberry-graphql" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2a/43/cb20e8a9b637d0a38d3a5b07d87f7db5ab738c5e3dccb804163c622e1b31/strawberry_sqlalchemy-0.1.5.tar.gz", hash = "sha256:d2952535864fa3808fe698f57705a46a2e51b160c98942eaf41d0d0ae8a579c8", size = 12334, upload-time = "2021-12-26T19:26:52.489Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e0/cb/a2eabec2e68860a9b55aa106181f41414f65fdef72d98df81fcd8eb47395/strawberry_sqlalchemy-0.1.5-py3-none-any.whl", hash = "sha256:b8eb09e1911e42dc550421bd103471945c594ef6316e03001b03fd0ad2f61cf6", size = 12871, upload-time = "2021-12-26T19:26:49.597Z" },
+]
+
+[[package]]
+name = "strawberry-sqlalchemy-mapper"
+version = "0.7.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "greenlet", marker = "python_full_version >= '3.12'" },
+    { name = "sentinel" },
+    { name = "sqlakeyset" },
+    { name = "sqlalchemy", extra = ["asyncio"] },
+    { name = "strawberry-graphql" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f9/d3/2f5bb907e61ca29a2108e3b4d1da69e00263b6975758a82751a39b16e885/strawberry_sqlalchemy_mapper-0.7.0.tar.gz", hash = "sha256:8169b0ccad7496cd083f093bd8b561e554b1f5ec8f82bda74c01b6b4e56ca632", size = 29662, upload-time = "2025-08-07T02:30:53.925Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/07/16/d1985c0313a3d3b8c13a4c4ec12f176e46501fe2a2a1235ab39efb59940d/strawberry_sqlalchemy_mapper-0.7.0-py3-none-any.whl", hash = "sha256:a9638938b1fd9367cf832fb22a84896abc7b0b1f5485e8313e4e301d201fd2c4", size = 29040, upload-time = "2025-08-07T02:30:52.73Z" },
 ]
 
 [[package]]
@@ -1892,19 +1907,17 @@ dev = [
     { name = "flask-sqlalchemy" },
     { name = "flit" },
     { name = "fluent-logger" },
-    { name = "graphene" },
-    { name = "graphene-sqlalchemy" },
-    { name = "graphql-server" },
     { name = "grpc-interceptor" },
     { name = "grpcio-tools" },
     { name = "itsdangerous" },
     { name = "pre-commit" },
-    { name = "promise" },
     { name = "protobuf-protoc-bin" },
     { name = "py" },
     { name = "pytest-cov" },
     { name = "pytest-xdist" },
     { name = "ruff" },
+    { name = "strawberry-sqlalchemy" },
+    { name = "strawberry-sqlalchemy-mapper" },
     { name = "tbump" },
     { name = "tomli" },
     { name = "tox" },
@@ -1960,19 +1973,17 @@ dev = [
     { name = "flask-sqlalchemy", specifier = ">=3,<4" },
     { name = "flit", specifier = ">=3.2,<4" },
     { name = "fluent-logger" },
-    { name = "graphene", specifier = ">=3,<4" },
-    { name = "graphene-sqlalchemy", specifier = ">2,<3" },
-    { name = "graphql-server", specifier = ">=3,<4" },
     { name = "grpc-interceptor" },
     { name = "grpcio-tools" },
     { name = "itsdangerous" },
     { name = "pre-commit" },
-    { name = "promise" },
     { name = "protobuf-protoc-bin", specifier = "==29.5" },
     { name = "py" },
     { name = "pytest-cov" },
     { name = "pytest-xdist" },
     { name = "ruff", specifier = "~=0.9.10" },
+    { name = "strawberry-sqlalchemy", specifier = ">=0.1,<1" },
+    { name = "strawberry-sqlalchemy-mapper" },
     { name = "tbump", specifier = ">=6.10.0" },
     { name = "tomli" },
     { name = "tox", specifier = ">4.20,<5" },
