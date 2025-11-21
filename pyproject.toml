@@ -87,11 +87,9 @@ dev = [
     "tbump>=6.10.0",
     "tox>4.20,<5",
     "tox-uv>=1.28.0",
-    "graphql-server>=3,<4",
-    "graphene>=3,<4",
-    "graphene-sqlalchemy>2,<3",
+    "strawberry-sqlalchemy>=0.1,<1",
+    "strawberry-sqlalchemy-mapper",
     "flask-sqlalchemy>=3,<4",
-    "promise"
 ]
 
 [project.optional-dependencies]

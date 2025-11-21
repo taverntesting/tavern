@@ -1,21 +1,15 @@
-"""Simple GraphQL test server for integration testing using SQLite and graphene-sqlalchemy"""
+"""Simple GraphQL test server for integration testing using SQLite and strawberry-graphql"""
 
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from graphene import (
-    ID,
-    Field,
-    Mutation,
-    ObjectType,
-    Schema,
-    String,
+import strawberry
+from strawberry.flask.views import GraphQLView
+from strawberry_sqlalchemy_mapper import (
+    StrawberrySQLAlchemyMapper,
+    StrawberrySQLAlchemyLoader,
 )
-from graphene import (
-    List as GrapheneList,
-)
-from graphene_sqlalchemy import SQLAlchemyObjectType
-from graphql import GraphQLResolveInfo
-from graphql_server.flask.views import GraphQLView
+
+strawberry_sqlalchemy_mapper = StrawberrySQLAlchemyMapper()
 
 db = SQLAlchemy()
 
@@ -39,78 +33,65 @@ class Post(db.Model):
     author = db.relationship("User", backref="posts")
 
 
-class UserObject(SQLAlchemyObjectType):
-    class Meta:
-        model = User
-        load_instance = True
+@strawberry_sqlalchemy_mapper.type(User)
+class UserType:
+    pass
 
 
-class PostObject(SQLAlchemyObjectType):
-    class Meta:
-        model = Post
-        load_instance = True
+@strawberry_sqlalchemy_mapper.type(Post)
+class PostType:
+    pass
 
 
-class CreateUser(Mutation):
-    class Arguments:
-        name = String(required=True)
-        email = String(required=True)
-
-    user = Field(lambda: UserObject)
-
-    def mutate(self, info: GraphQLResolveInfo, name: str, email: str):
-        user = User(name=name, email=email)
-        db.session.add(user)
-        db.session.commit()
-
-        return CreateUser(user=user)
-
-
-class CreatePost(Mutation):
-    class Arguments:
-        title = String(required=True)
-        content = String(required=True)
-        author_id = String(required=True, name="authorId")
-
-    post = Field(lambda: PostObject)
-
-    def mutate(
-        self, info: GraphQLResolveInfo, title: str, content: str, author_id: str
-    ):
-        post = Post(title=title, content=content, author_id=author_id)
-        db.session.add(post)
-        db.session.commit()
-
-        return CreatePost(post=post)
-
-
-class Query(ObjectType):
-    user = Field(UserObject, id=ID(required=True))
-    users = GrapheneList(UserObject)
-    posts = GrapheneList(PostObject)
-    user_posts = GrapheneList(PostObject, author_id=ID(required=True), name="userPosts")
-
-    def resolve_user(self, info: GraphQLResolveInfo, id: str) -> User | None:
+@strawberry.type
+class Query:
+    @strawberry.field
+    def user(self, id: int) -> UserType | None:
         return User.query.get(id)
 
-    def resolve_users(self, info) -> list[User]:
+    @strawberry.field
+    def users(self) -> list[UserType]:
         return User.query.all()
 
-    def resolve_posts(self, info) -> list[Post]:
+    @strawberry.field
+    def posts(self) -> list[PostType]:
         return Post.query.all()
 
-    def resolve_user_posts(
-        self, info: GraphQLResolveInfo, author_id: str
-    ) -> list[Post]:
+    @strawberry.field
+    def user_posts(self, author_id: int) -> list[PostType]:
         return Post.query.filter_by(author_id=author_id).all()
 
 
-class Mutation(ObjectType):
-    create_user = CreateUser.Field()
-    create_post = CreatePost.Field()
+@strawberry.type
+class Mutation:
+    @strawberry.mutation
+    def create_user(self, name: str, email: str) -> UserType:
+        user = User(name=name, email=email)
+        db.session.add(user)
+        db.session.commit()
+        return user
+
+    @strawberry.mutation
+    def create_post(self, title: str, content: str, author_id: str) -> PostType:
+        post = Post(title=title, content=content, author_id=author_id)
+        db.session.add(post)
+        db.session.commit()
+        return post
 
 
-schema = Schema(query=Query, mutation=Mutation)
+# context is expected to have an instance of StrawberrySQLAlchemyLoader
+class CustomGraphQLView(GraphQLView):
+    def get_context(self):
+        return {
+            "sqlalchemy_loader": StrawberrySQLAlchemyLoader(bind=db),
+        }
+
+
+strawberry_sqlalchemy_mapper.finalize()
+schema = strawberry.Schema(
+    query=Query,
+    mutation=Mutation,
+)
 
 app = Flask(__name__)
 # Configure SQLite database
@@ -124,7 +105,7 @@ app.add_url_rule(
     "/graphql",
     view_func=GraphQLView.as_view(
         "graphql",
-        schema=schema.graphql_schema,
+        schema=schema,
         graphiql=True,  # for having the GraphiQL interface
         # Add context with the database session
         get_context=lambda: {"session": db.session},
