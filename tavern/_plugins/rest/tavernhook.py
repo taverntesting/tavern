@@ -1,6 +1,8 @@
 import logging
+from os.path import abspath, dirname, join
 
 import requests
+import yaml
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -19,6 +21,8 @@ class TavernRestPlugin(PluginHelperBase):
     request_type = RestRequest
     request_block_name = "request"
 
+    schema: dict
+
     @staticmethod
     def get_expected_from_request(
         response_block: dict, test_block_config: TestConfig, session
@@ -33,3 +37,10 @@ class TavernRestPlugin(PluginHelperBase):
 
     verifier_type = RestResponse
     response_block_name = "response"
+
+
+schema_path: str = join(abspath(dirname(__file__)), "jsonschema.yaml")
+with open(schema_path, encoding="utf-8") as schema_file:
+    schema = yaml.load(schema_file, Loader=yaml.SafeLoader)
+
+TavernRestPlugin.schema = schema

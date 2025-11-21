@@ -1,7 +1,7 @@
 $schema: "http://json-schema.org/draft-07/schema#"
 
 title: Paho MQTT schema
-description: Schema for paho-mqtt connection
+description: Schema for paho-mqtt connection and requests/responses
 
 ###
 
@@ -9,6 +9,94 @@ type: object
 additionalProperties: false
 required:
   - paho-mqtt
+
+definitions:
+  mqtt_publish:
+    type: object
+    description: Publish MQTT message
+    additionalProperties: false
+
+    properties:
+      topic:
+        type: string
+        description: Topic to publish on
+
+      payload:
+        type: string
+        description: Raw payload to post
+
+      json:
+        description: JSON payload to post
+        $ref: "#/definitions/any_json"
+
+      qos:
+        type: integer
+        description: QoS level to use for request
+        default: 0
+
+      retain:
+        type: boolean
+        description: Whether the message should be retained
+        default: false
+
+  mqtt_response:
+    type: object
+    additionalProperties: false
+    description: Expected MQTT response
+
+    properties:
+      unexpected:
+        type: boolean
+        description: Receiving this message fails the test
+
+      topic:
+        type: string
+        description: Topic message should be received on
+
+      payload:
+        description: Expected raw payload in response
+        oneOf:
+          - type: number
+          - type: integer
+          - type: string
+          - type: boolean
+
+      json:
+        description: Expected JSON payload in response
+        $ref: "#/definitions/any_json"
+
+      timeout:
+        type: number
+        description: How long to wait for response to arrive
+
+      qos:
+        type: integer
+        description: QoS level that message should be received on
+        minimum: 0
+        maximum: 2
+
+      verify_response_with:
+        oneOf:
+          - $ref: "#/definitions/verify_block"
+          - type: array
+            items:
+              $ref: "#/definitions/verify_block"
+
+      save:
+        type: object
+        description: Which objects to save from the response
+
+  stage:
+    properties:
+      mqtt_publish:
+        $ref: "#/definitions/mqtt_publish"
+
+      mqtt_response:
+        oneOf:
+          - $ref: "#/definitions/mqtt_response"
+          - type: array
+            items:
+              $ref: "#/definitions/mqtt_response"
 
 properties:
   paho-mqtt:
