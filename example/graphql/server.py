@@ -21,6 +21,7 @@ class models:
     """dummy module to contains models so they dont have to be a in a separate file
 
     requires because strawberry seems to (?) do name-based resolution of models"""
+
     class User(Base):
         __tablename__ = "users"
 
@@ -52,7 +53,7 @@ class Post:
 @strawberry.type
 class Query:
     @strawberry.field(graphql_type=User)
-    def user(self, id: int) -> User | None:
+    def user(self, id: strawberry.ID) -> User | None:
         return models.User.query.get(id)
 
     @strawberry.field(graphql_type=list[User])
@@ -60,7 +61,7 @@ class Query:
         return models.User.query.all()
 
     @strawberry.field(graphql_type=Post)
-    def post(self, id: int) -> Post | None:
+    def post(self, id: strawberry.ID) -> Post | None:
         return models.Post.query.get(id)
 
     @strawberry.field(graphql_type=list[Post])
@@ -68,7 +69,7 @@ class Query:
         return models.Post.query.all()
 
     @strawberry.field(graphql_type=list[Post])
-    def user_posts(self, author_id: int) -> list[Post]:
+    def user_posts(self, author_id: strawberry.ID) -> list[Post]:
         return models.Post.query.filter_by(author_id=author_id).all()
 
 
@@ -116,9 +117,7 @@ app.add_url_rule(
     view_func=GraphQLView.as_view(
         "graphql",
         schema=schema,
-        graphiql=True,  # for having the GraphiQL interface
-        # Add context with the database session
-        get_context=lambda: {"session": db.session},
+        graphiql=True,
     ),
 )
 
