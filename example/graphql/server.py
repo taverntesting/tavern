@@ -3,6 +3,7 @@
 from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 import strawberry
+from sqlalchemy import select
 from sqlalchemy.orm import declarative_base
 from strawberry.flask.views import GraphQLView
 from strawberry_sqlalchemy_mapper import (
@@ -54,23 +55,23 @@ class Post:
 class Query:
     @strawberry.field(graphql_type=User)
     def user(self, id: strawberry.ID) -> User | None:
-        return models.User.query.get(id)
+        return db.session.get(models.User, id)
 
     @strawberry.field(graphql_type=list[User])
     def users(self) -> list[User]:
-        return models.User.query.all()
+        return db.session.execute(select(models.User)).scalars().all()
 
     @strawberry.field(graphql_type=Post)
     def post(self, id: strawberry.ID) -> Post | None:
-        return models.Post.query.get(id)
+        return db.session.get(models.Post, id)
 
     @strawberry.field(graphql_type=list[Post])
     def posts(self) -> list[Post]:
-        return models.Post.query.all()
+        return db.session.execute(select(models.Post)).scalars().all()
 
     @strawberry.field(graphql_type=list[Post])
     def user_posts(self, author_id: strawberry.ID) -> list[Post]:
-        return models.Post.query.filter_by(author_id=author_id).all()
+        return db.session.execute(select(models.Post).filter_by(author_id=author_id)).scalars().all()
 
 
 @strawberry.type
