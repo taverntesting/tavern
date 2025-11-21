@@ -11,6 +11,7 @@ from functools import partial
 from typing import Any, Optional, Protocol
 
 import stevedore
+import stevedore.extension
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -127,7 +128,21 @@ class _PluginCache:
         plugins = []
         discovered_plugins: dict[str, list[str]] = {}
 
-        def is_plugin_backend_enabled(current_backend, ext):
+        def is_plugin_backend_enabled(
+            current_backend: str, ext: stevedore.extension.Extension
+        ) -> bool:
+            """Checks if a plugin backend is enabled based on configuration.
+
+            If no specific backend is configured, defaults to enabled.
+            Adds enabled plugins to discovered_plugins tracking dictionary.
+
+            Args:
+                current_backend: The backend being checked (e.g. 'http', 'mqtt')
+                ext: The stevedore extension object representing the plugin
+
+            Returns:
+                Whether the plugin backend is enabled
+            """
             if test_block_config.tavern_internal.backends[current_backend] is None:
                 # Use whatever default - will raise an error if >1 is discovered
                 is_enabled = True
