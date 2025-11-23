@@ -9,7 +9,7 @@ from collections.abc import Callable, Iterable, Iterator, Mapping
 from typing import Any, Union
 
 import pytest
-import yaml
+import yaml.parser
 from box import Box
 from pytest import Mark
 
@@ -445,16 +445,55 @@ class YamlFile(pytest.File):
         except yaml.parser.ParserError as e:
             raise exceptions.BadSchemaError from e
 
-        for test_spec in all_tests:
+        merge_down = None
+        # Iterate over yaml documents and tests
+        for document_idx, test_spec in enumerate(all_tests):
             if not test_spec:
                 logger.warning("Empty document in input file '%s'", self.path)
                 continue
+
+            # Check if this document has the explicit 'defaults' marker
+            has_defaults_marker: bool = test_spec.pop("is_defaults", False)
+
+            # Validate that 'defaults' marker is only used in the first document
+            if has_defaults_marker and document_idx > 0:
+                raise exceptions.BadSchemaError(
+                    f"'defaults' marker can only be used in the first YAML document, but found it in document {document_idx + 1} of '{self.path}'"
+                )
+
+            missing_stages_and_name = (
+                "stages" not in test_spec or "test_name" not in test_spec
+            )
+            if document_idx == 0:
+                if has_defaults_marker:
+                    logger.info(
+                        "Found explicit defaults marker in first document from %s",
+                        self.path,
+                    )
+                    merge_down = test_spec
+                    continue
+                elif missing_stages_and_name:
+                    # Has a name but no stages - this is an error
+                    raise exceptions.BadSchemaError(
+                        f"First document in '{self.path}' has a name but no stages. "
+                        f"If this is meant to be defaults for the file, add 'defaults: true'. "
+                        f"If this is meant to be a test, add a 'stages' section."
+                    )
+            elif missing_stages_and_name:
+                raise exceptions.BadSchemaError(
+                    f"Document {document_idx + 1} in '{self.path}' does not have a 'test_name' or 'stages' section"
+                )
+
+            if merge_down:
+                test_spec = deep_dict_merge(test_spec, merge_down)
 
             try:
                 for i in self._generate_items(test_spec):
                     i.initialise_fixture_attrs()
                     yield i
             except (TypeError, KeyError) as e:
+                # If there was one of these errors, we can probably figure out
+                # if the error is from a bad test layout by calling verify_tests
                 try:
                     verify_tests(test_spec, with_plugins=False)
                 except Exception as e2:
