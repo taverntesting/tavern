@@ -1,4 +1,16 @@
-# The problem
+# GraphQL Subscriptions Support
+
+## The Problem
+
+There is support for sending GraphQL queries/mutations, but subscriptions are not yet supported.
+
+Subscriptions work via WebSocket upgrade:
+1. HTTP POST to `/graphql` with subscription query → server upgrades to WS (status **101 Switching Protocols**, no data body).
+2. Client sends `Connection_init`, then `Start` (with payload/query).
+3. Server sends `Data`, `Complete`, `Error` over WS (graphql-ws protocol: https://github.com/enisdenjo/graphql-ws).
+4. Use **sync** `websocket-client` library (not async `websockets`) to avoid asyncio.
+
+Example flow in Tavern YAML:
 
 There is support for sending graphql queries, but subscriptions are not yet supported.
 
@@ -150,14 +162,20 @@ The flow is:
 
 ## Code changes
 
-- Update the graphql client to support subscriptions. Currently the `GraphQLClient` creates a requests Session to use
+- Update `GraphQLClient` (tavern/_plugins/graphql/client.py) to support graphql-ws over sync WS:
+  - On subscription `graphql_request`: POST HTTP, expect 101, upgrade to WS w/ websocket-client.
+  - Track active subs by operation name/hash (dict of queues for responses).
+  - No per-stage session; persist WS across test run.
+  - On `graphql_response`: pop/dequeue from matching sub queue, match JSON.
+- Update JSON schema (tavern/schemas/plugins/graphql_request.json etc.) for `type: subscription` (optional, auto-detect from query).
+- Update entrypoint (tavern/_plugins/graphql/tavernhook.py) to handle `graphql_response` like MQTT (poll/dequeue WS msgs).
   with `graphql_request`, it needs to also track susbcriptions _for the duration of a test_, not just the duration of
   the stage. This should create a websocket connection using the websockets library.
 - This should also handle multiple subscriptions at once.
 - json schema in the graphql plugin needs to be updated to support subscriptions.
 - Update the graphql tavern entrypoint so it can handle multiple responses like in tavern/_plugins/mqtt/tavernhook.py.
 
-This shouldn't use asyncio because nothing else in Tavern uses asyncio.
+Use sync `websocket-client` (add to pyproject.toml optional-deps.graphql if needed).
 
 After this, update the example server in example/graphql/server.py to have subscriptions, and add integration tests
 using those subscriptions alongside the existing tests in example/graphql/.

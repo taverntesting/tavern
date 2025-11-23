@@ -1,5 +1,7 @@
 import logging
+from collections.abc import Iterable
 from os.path import abspath, dirname, join
+from typing import Optional, Union
 
 import yaml
 
@@ -21,14 +23,22 @@ response_block_name = "graphql_response"
 
 
 def get_expected_from_request(
-    response_block: dict, test_block_config: TestConfig, session: GraphQLClient
-):
+    response_block: Union[dict, Iterable[dict]],
+    test_block_config: TestConfig,
+    session: GraphQLClient,
+) -> Optional[dict]:
     if response_block is None:
-        # GraphQL responses are optional for subscriptions
         return None
 
-    f_expected = format_keys(response_block, test_block_config.variables)
-    return f_expected
+    expected: dict[str, list] = {"graphql_responses": []}
+    if isinstance(response_block, dict):
+        response_block = [response_block]
+
+    for resp_block in response_block:
+        f_expected = format_keys(resp_block, test_block_config.variables)
+        expected["graphql_responses"].append(f_expected)
+
+    return expected
 
 
 # Schema validation

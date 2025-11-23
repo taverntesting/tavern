@@ -4,10 +4,6 @@ repos:
     hooks:
       - id: actionlint
         args: ["-shellcheck="]
-  - repo: https://github.com/hadialqattan/pycln
-    rev: v2.6.0
-    hooks:
-      - id: pycln
   - repo: https://github.com/charliermarsh/ruff-pre-commit
     rev: v0.14.5
     hooks:

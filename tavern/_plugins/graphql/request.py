@@ -1,6 +1,7 @@
 import logging
 
 import box
+import requests
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -55,8 +56,7 @@ class GraphQLRequest(BaseRequest):
             rspec, test_block_config.variables
         )
 
-        if self._is_subscription_query():
-            raise NotImplementedError("Subscription queries are not supported yet")
+        self.is_sub = self._is_subscription_query()
 
         # Validate required fields
         self._validate_request()
@@ -71,6 +71,11 @@ class GraphQLRequest(BaseRequest):
         if "url" not in self._formatted_rspec:
             raise exceptions.MissingKeysError(
                 "GraphQL request must contain 'url' field"
+            )
+
+        if self.is_sub and "operation_name" not in self._formatted_rspec:
+            raise exceptions.MissingKeysError(
+                "operation_name is required for subscription requests"
             )
 
     @property
@@ -93,13 +98,28 @@ class GraphQLRequest(BaseRequest):
             if "headers" in self._formatted_rspec:
                 self.session.update_session(headers=self._formatted_rspec["headers"])
 
+            url = str(self._formatted_rspec["url"])
+            query = str(self._formatted_rspec["query"])
+            variables = self._formatted_rspec.get("variables", {}) or {}
+            operation_name = self._formatted_rspec.get("operation_name")
+
+            if self.is_sub:
+                self.session.start_subscription(url, query, variables, operation_name)
+                fake_resp = requests.Response()
+                fake_resp.status_code = 101
+                fake_resp.reason = "Switching Protocols"
+                fake_resp.headers = {
+                    "Upgrade": "websocket",
+                    "Connection": "Upgrade",
+                    "Sec-WebSocket-Protocol": "graphql-ws",
+                }
+                logger.debug(
+                    "Subscription '%s' started, fake 101 response", operation_name
+                )
+                return fake_resp
+
             # Execute regular GraphQL query/mutation
-            response = self.session.make_request(
-                url=self._formatted_rspec["url"],
-                query=self._formatted_rspec["query"],
-                variables=self._formatted_rspec.get("variables"),
-                operation_name=self._formatted_rspec.get("operation_name"),
-            )
+            response = self.session.make_request(url, query, variables, operation_name)
 
             logger.debug("GraphQL response: %s", response.text)
             return response
