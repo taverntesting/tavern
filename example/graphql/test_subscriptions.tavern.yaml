@@ -1,0 +1,116 @@
+---
+test_name: test user subscription update
+
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Create initial user
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        mutation CreateUser($name: String!, $email: String!) {
+          createUser(name: $name, email: $email) {
+            id
+            name
+            email
+          }
+        }
+      variables:
+        name: "Alice Smith"
+        email: "alice@example.com"
+    response:
+      status_code: 200
+      json:
+        data:
+          createUser:
+            id: 1
+            name: "Alice Smith"
+            email: "alice@example.com"
+
+  - name: Subscribe to user updates
+    graphql_request:
+      operation_name: subscribe
+      url: "{graphql_server_url}/graphql"
+      query: |
+        subscription GetUser($id: ID!) {
+          user(id: $id) {
+            id
+            name
+            email
+          }
+        }
+      variables:
+        id: "1"
+
+  - name: Update user and expect subscription notification
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        mutation UpdateUser($id: ID!, $name: String!, $email: String!) {
+          updateUser(id: $id, name: $name, email: $email) {
+            id
+            name
+            email
+          }
+        }
+      variables:
+        id: "1"
+        name: "Alice Johnson"
+        email: "alice.j@example.com"
+    graphql_response:
+      - subscription: GetUser
+        json:
+          data:
+            user:
+              id: "1"
+              name: "Alice Johnson"
+              email: "alice.j@example.com"
+      - json:
+          data:
+            updateUser:
+              id: "1"
+              name: "Alice Johnson"
+              email: "alice.j@example.com"
+    response:
+      status_code: 200
+
+---
+test_name: test subscription no update
+
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Subscribe to non-existent user
+    graphql_request:
+      operation_name: subscribe
+      url: "{graphql_server_url}/graphql"
+      query: |
+        subscription GetUser($id: ID!) {
+          user(id: $id) {
+            id
+            name
+          }
+        }
+      variables:
+        id: "999"
+
+  - name: Perform unrelated mutation
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        mutation {
+          createUser(name: "Bob", email: "bob@example.com") {
+            id
+          }
+        }
+    graphql_response:
+      json:
+        data:
+          user:
+            id: "1"
+            name: "Alice Johnson"
+            email: "alice.j@example.com"

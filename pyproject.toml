@@ -35,7 +35,6 @@ dependencies = [
     "requests>=2.22.0,<3",
     "simpleeval>=1.0.3",
     "stevedore>=4,<5",
-    "websockets>=15.0.1",
 ]
 
 requires-python = ">=3.11"
@@ -57,6 +56,9 @@ Source = "https://github.com/taverntesting/tavern"
 
 [dependency-groups]
 dev = [
+    "fastapi>=0.121.3",
+    "uvicorn>=0.38.0",
+    "apsw>=3.51.0.0",
     "Faker",
     "allure-pytest",
     "colorlog",
@@ -118,6 +120,7 @@ mqtt = [
 ]
 graphql = [
     "websocket-client>=1.0",
+    "websockets",
 ]
 
 [project.scripts]

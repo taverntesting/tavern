@@ -7,7 +7,8 @@ from collections import defaultdict
 from typing import Any, Optional
 
 import requests
-import websocket
+import websockets
+import websockets.sync.client
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -15,7 +16,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 class GraphQLClient:
     """GraphQL client for HTTP requests and subscriptions over WebSocket"""
 
-    ws: websocket.WebSocket | None
+    ws: websockets.sync.client.ClientConnection | None
 
     def __init__(self, **kwargs):
         self.session = requests.Session()
@@ -102,7 +103,7 @@ class GraphQLClient:
                     self.ws.send(json.dumps({"id": msg["id"], "type": "ka"}))
                 else:
                     logger.debug(f"WS msg: {msg}")
-            except websocket.WebSocketConnectionClosedException:
+            except websockets.ConnectionClosedError:
                 break
             except Exception as e:
                 logger.error(f"WS recv error: {e}")
@@ -117,7 +118,7 @@ class GraphQLClient:
 
         if self.ws is None:
             ws_url = url.replace("http://", "ws://").replace("https://", "wss://")
-            self.ws = websocket.create_connection(ws_url)
+            self.ws = websockets.sync.client.connect(ws_url)
             self.ws.send(json.dumps({"type": "connection_init", "payload": {}}))
             ack = json.loads(self.ws.recv())
             if ack.get("type") != "connection_ack":

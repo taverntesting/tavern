@@ -1,13 +1,9 @@
 FROM python:3.11-alpine
 
-RUN pip3 install 'pyjwt>=2.4.0,<3' 'flask>=2.2.3' "python-box>=6,<7" "requests" "flask-sqlalchemy>=3,<4" "strawberry-sqlalchemy>=0.1,<1" "strawberry-sqlalchemy-mapper"
+RUN pip3 install "strawberry-graphql[fastapi]" "uvicorn[standard]" "apsw>=3.51.0.0"
 
-ENV FLASK_DEBUG=1
 ENV PYTHONUNBUFFERED=0
-
 
 COPY server.py /
 
-ENV FLASK_APP=/server.py
-
-CMD ["flask", "run", "--host=0.0.0.0"]
+CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "5010"]

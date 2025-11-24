@@ -358,8 +358,6 @@ definitions:
     type: object
     description: Expected GraphQL response
     additionalProperties: false
-    required:
-      - status_code
 
     properties:
       status_code:
