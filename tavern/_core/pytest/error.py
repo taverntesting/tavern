@@ -157,7 +157,7 @@ class ReprdError(TerminalRepr):
         keys = self._get_available_format_keys()
 
         # Format stage variables recursively
-        if stage["graphql_request"]:
+        if stage.get("graphql_request"):
             stage_copy = copy.deepcopy(stage)
             from tavern._plugins.graphql.request import _format_graphql_request
 
