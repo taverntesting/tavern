@@ -78,7 +78,7 @@ class TestGraphQLRequest:
             mock_make_request.assert_called_once_with(
                 url="http://example.com/graphql",
                 query="query { hello }",
-                variables=None,
+                variables={},
                 operation_name=None,
             )
             assert response.text == '{"data": {"hello": "world"}}'

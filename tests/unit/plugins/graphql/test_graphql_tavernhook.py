@@ -18,7 +18,7 @@ class TestTavernGraphQLPlugin:
             response_block, graphql_test_block_config, session
         )
 
-        assert result == {"status_code": 200}
+        assert result == {"graphql_responses": [{"status_code": 200}]}
 
     def test_get_expected_from_request_without_response(
         self, graphql_test_block_config
@@ -45,7 +45,9 @@ class TestTavernGraphQLPlugin:
             response_block, test_block_config, session
         )
 
-        assert result == {"status_code": 200, "data": {"user_id": "123"}}
+        assert result == {
+            "graphql_responses": [{"status_code": 200, "data": {"user_id": "123"}}]
+        }
 
     def test_schema_loaded(self):
         from tavern._plugins.graphql.tavernhook import schema

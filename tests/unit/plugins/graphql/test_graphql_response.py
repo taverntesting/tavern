@@ -84,11 +84,11 @@ class TestGraphQLResponse:
         response._validate_graphql_response_structure({"other": "field"})
         assert len(response.errors) == 2
         assert (
-            "Response contains invalid top-level keys: {'other'}. Only 'data' and 'errors' are allowed."
+            "Response must contain either 'data' or 'errors' at the top level"
             in response.errors[0]
         )
         assert (
-            "Response must contain either 'data' or 'errors' at the top level"
+            "Invalid GraphQL top-level keys: {'other'}. Only 'data' and 'errors' are allowed"
             in response.errors[1]
         )
 

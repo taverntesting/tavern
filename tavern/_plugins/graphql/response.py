@@ -27,9 +27,14 @@ class GraphQLResponse(CommonResponse):
 
         allowed = {"data", "errors"}
         if not allowed & set(body):
-            self._adderr("No 'data' or 'errors' in GraphQL body")
+            self._adderr(
+                "Response must contain either 'data' or 'errors' at the top level"
+            )
         if set(body) - allowed:
-            self._adderr("Invalid GraphQL top-level keys: %s", set(body) - allowed)
+            self._adderr(
+                "Invalid GraphQL top-level keys: %s. Only 'data' and 'errors' are allowed",
+                set(body) - allowed,
+            )
 
     def verify(self, response: Any) -> dict:
         """Verify response against expected values and returns any values that

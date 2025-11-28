@@ -1,7 +1,9 @@
 import json
 import logging
+import threading
 from collections.abc import Generator
 from dataclasses import dataclass, field
+from queue import Empty, Queue
 from typing import Any, Optional
 
 from gql import Client, gql
@@ -160,8 +162,6 @@ class GraphQLClient:
     def get_next_message(self, op_name: str, timeout: float = 5.0) -> Optional[dict]:
         """
         Get next message from subscription generator.
-        Note: timeout parameter is ignored in this implementation as the generator
-        is synchronous and will block until the next message is available.
         """
         if op_name not in self.subscriptions:
             raise ValueError(
@@ -170,13 +170,29 @@ class GraphQLClient:
 
         subscription_generator = self.subscriptions[op_name]
         try:
-            # Get the next result from the subscription generator
-            result = next(subscription_generator)
-            return result
-        except StopIteration:
-            logger.debug("Subscription ended")
-            # Subscription ended
-            return None
+            # Get the next result from the subscription generator with timeout
+            result_queue = Queue()
+
+            def get_next():
+                try:
+                    result_queue.put(next(subscription_generator))
+                except StopIteration:
+                    result_queue.put(None)
+                except Exception as e:
+                    result_queue.put(e)
+
+            thread = threading.Thread(target=get_next)
+            thread.daemon = True
+            thread.start()
+
+            try:
+                result = result_queue.get(timeout=timeout)
+                if isinstance(result, Exception):
+                    raise result
+                return result
+            except Empty:
+                return None
+
         except Exception as e:
             logger.error(f"Error getting next message from subscription: {e}")
             raise

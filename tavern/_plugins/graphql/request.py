@@ -119,7 +119,9 @@ class GraphQLRequest(BaseRequest):
                 return fake_resp
 
             # Execute regular GraphQL query/mutation
-            response = self.session.make_request(url, query, variables, operation_name)
+            response = self.session.make_request(
+                url=url, query=query, variables=variables, operation_name=operation_name
+            )
 
             logger.debug("GraphQL response: %s", response.text)
             return response
