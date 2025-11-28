@@ -122,6 +122,8 @@ class Subscription:
     async def user(self, id: strawberry.ID) -> AsyncGenerator[User, None]:
         while True:
             user = await q.get()
+            if user.id != int(id):
+                continue
             logging.info(f"User {user.name} updated")
             yield user
 
