@@ -1,6 +1,7 @@
 """Simple GraphQL test server for integration testing using SQLite and strawberry-graphql with subscriptions"""
 
 import asyncio
+import logging
 from collections.abc import AsyncGenerator
 
 import strawberry
@@ -82,7 +83,7 @@ class Mutation:
         user = models.User(name=name, email=email)
         global_db_session.add(user)
         global_db_session.commit()
-        info.context["background_tasks"].add_task(user_updated, name)
+        info.context["background_tasks"].add_task(user_updated, user)
         return user
 
     @strawberry.mutation
@@ -104,7 +105,7 @@ class Mutation:
         user.name = name
         user.email = email
         global_db_session.commit()
-        info.context["background_tasks"].add_task(user_updated, name)
+        info.context["background_tasks"].add_task(user_updated, user)
         return user
 
 
@@ -120,7 +121,9 @@ class Subscription:
     @strawberry.subscription(graphql_type=User)
     async def user(self, id: strawberry.ID) -> AsyncGenerator[User, None]:
         while True:
-            yield await q.get()
+            user = await q.get()
+            logging.info(f"User {user.name} updated")
+            yield user
 
 
 strawberry_sqlalchemy_mapper.finalize()
@@ -130,7 +133,13 @@ schema = strawberry.Schema(
     subscription=Subscription,
 )
 
-app = FastAPI(title="GraphQL Test Server")
+
+async def lifespan(_):
+    logging.basicConfig(level=logging.INFO)
+    yield
+
+
+app = FastAPI(title="GraphQL Test Server", lifespan=lifespan)
 app.include_router(GraphQLRouter(schema), prefix="/graphql")
 
 
@@ -144,6 +153,7 @@ engine = create_engine("sqlite:////tmp/test.db", echo=False)
 Session = sessionmaker(bind=engine)
 global_db_session = Session()
 Base.metadata.create_all(bind=engine)
+
 
 if __name__ == "__main__":
     uvicorn.run(

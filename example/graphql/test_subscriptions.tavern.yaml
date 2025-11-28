@@ -34,7 +34,7 @@ stages:
 
   - name: Subscribe to user updates
     graphql_request:
-      operation_name: subscribe
+      operation_name: GetUser
       url: "{graphql_server_url}/graphql"
       query: |
         subscription GetUser($id: ID!) {

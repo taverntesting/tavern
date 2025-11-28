@@ -24,6 +24,7 @@ class GraphQLResponse(CommonResponse):
         if not isinstance(body, dict):
             self._adderr("GraphQL body not dict: %r", body)
             return
+
         allowed = {"data", "errors"}
         if not allowed & set(body):
             self._adderr("No 'data' or 'errors' in GraphQL body")
@@ -48,7 +49,7 @@ class GraphQLResponse(CommonResponse):
 
             if "subscription" in expected_resp:
                 op_name = expected_resp["subscription"]
-                timeout = expected_resp.get("timeout", 5.0)
+                timeout: int | float = expected_resp.get("timeout", 5.0)
                 ws_msg = self.session.get_next_message(op_name, timeout)
                 if ws_msg is None:
                     self._adderr(
@@ -57,7 +58,6 @@ class GraphQLResponse(CommonResponse):
                     continue
 
                 body = ws_msg
-                self._validate_graphql_response_structure(body)
                 if "json" in expected_resp:
                     self._validate_block("json", body)
 

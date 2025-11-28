@@ -1,5 +1,7 @@
 import json
 import logging
+from collections.abc import Generator
+from dataclasses import dataclass, field
 from typing import Any, Optional
 
 from gql import Client, gql
@@ -12,15 +14,16 @@ from tavern._plugins.common.response import ResponseLike
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+@dataclass(kw_only=True)
 class GraphQLResponseLike(ResponseLike):
     """A response-like object implementing the ResponseLike protocol for GraphQL responses"""
 
-    def __init__(self, status_code: int, reason: str, headers: dict, text: str):
-        self.status_code = status_code
-        self.reason = reason
-        self.headers = headers
-        self.text = text
-        self._json = None
+    status_code: int
+    reason: str
+    headers: dict
+    text: str
+
+    _json: Any = field(default=None, init=False)
 
     def json(self) -> Any:
         """Parse and return the JSON content of the response"""
@@ -37,14 +40,18 @@ class GraphQLResponseLike(ResponseLike):
 class GraphQLClient:
     """GraphQL client for HTTP requests and subscriptions over WebSocket"""
 
+    # separate clients for HTTP and WebSocket connections
+    http_client: Client | None = None
+    ws_client: Client | None = None
+    ws_transport: WebsocketsTransport | None = None
+
+    subscriptions: dict[str, Generator[dict[str, Any], None, None]]
+
     def __init__(self, **kwargs):
         self.default_headers = kwargs.get("headers", {})
         self.timeout = kwargs.get("timeout", 30)
 
-        # For managing separate clients for HTTP and WebSocket connections
-        self.http_client = None
-        self.ws_client = None
-        self.ws_transport = None
+        self.subscriptions = {}
 
     def __enter__(self):
         return self
@@ -105,12 +112,13 @@ class GraphQLClient:
             text = json.dumps(body_dict)
 
         response_headers = {"Content-Type": "application/json"}
-
-        return GraphQLResponseLike(status_code, reason, response_headers, text)
+        return GraphQLResponseLike(
+            status_code=status_code, reason=reason, headers=response_headers, text=text
+        )
 
     def start_subscription(
         self, url: str, query: str, variables: dict, operation_name: str
-    ):
+    ) -> None:
         """Start a GraphQL subscription over WS using gql WebSockets transport"""
         if operation_name is None:
             raise ValueError("operation_name required for subscriptions")
@@ -141,38 +149,45 @@ class GraphQLClient:
                 operation_name=operation_name,
             )
 
+            self.subscriptions[operation_name] = subscription_generator
+
             logger.debug(f"Started subscription {operation_name}")
             # Return the generator to allow iterating through subscription messages
-            return subscription_generator
         except Exception as exc:
             logger.error(f"Failed to start subscription: {exc}")
             raise
 
-    def get_next_message(
-        self, subscription_generator, timeout: float = 5.0
-    ) -> Optional[dict]:
+    def get_next_message(self, op_name: str, timeout: float = 5.0) -> Optional[dict]:
         """
         Get next message from subscription generator.
         Note: timeout parameter is ignored in this implementation as the generator
         is synchronous and will block until the next message is available.
         """
+        if op_name not in self.subscriptions:
+            raise ValueError(
+                f"Subscription with name '{op_name}' not found (have: {self.subscriptions.keys()} )"
+            )
+
+        subscription_generator = self.subscriptions[op_name]
         try:
             # Get the next result from the subscription generator
             result = next(subscription_generator)
             return result
         except StopIteration:
+            logger.debug("Subscription ended")
             # Subscription ended
             return None
         except Exception as e:
             logger.error(f"Error getting next message from subscription: {e}")
-            return None
+            raise
 
     def _close_ws(self):
         """Close WS connection"""
         if self.ws_client:
             try:
                 # Close the WebSocket client
-                self.ws_client.close()
+                self.ws_client.close_sync()
+                self.ws_transport.close()
                 logger.debug("WS connection closed")
             except Exception as e:
                 logger.error(f"Error closing WS connection: {e}")

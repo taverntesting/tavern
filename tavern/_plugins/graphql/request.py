@@ -104,14 +104,14 @@ class GraphQLRequest(BaseRequest):
             if self.is_subscription_query:
                 self.session.start_subscription(url, query, variables, operation_name)
                 fake_resp = GraphQLResponseLike(
-                    101,
-                    "Switching Protocols",
-                    {
+                    status_code=101,
+                    reason="Switching Protocols",
+                    headers={
                         "Upgrade": "websocket",
                         "Connection": "Upgrade",
                         "Sec-WebSocket-Protocol": "graphql-ws",
                     },
-                    "",
+                    text="",
                 )
                 logger.debug(
                     "Subscription '%s' started, fake 101 response", operation_name
