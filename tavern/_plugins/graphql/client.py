@@ -6,11 +6,36 @@ import uuid
 from collections import defaultdict
 from typing import Any, Optional
 
-import requests
 import websockets
 import websockets.sync.client
+from _plugins.common.response import ResponseLike
+from gql import Client, gql
+from gql.transport.aiohttp import AIOHTTPTransport
+from graphql import ExecutionResult
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+class GraphQLResponseLike(ResponseLike):
+    """A response-like object implementing the ResponseLike protocol for GraphQL responses"""
+
+    def __init__(self, status_code: int, reason: str, headers: dict, text: str):
+        self.status_code = status_code
+        self.reason = reason
+        self.headers = headers
+        self.text = text
+        self._json = None
+
+    def json(self) -> Any:
+        """Parse and return the JSON content of the response"""
+        if self._json is None:
+            try:
+                self._json = json.loads(self.text)
+            except ValueError as e:
+                raise ValueError(
+                    f"Response content is not valid JSON: {self.text}"
+                ) from e
+        return self._json
 
 
 class GraphQLClient:
@@ -19,7 +44,6 @@ class GraphQLClient:
     ws: websockets.sync.client.ClientConnection | None
 
     def __init__(self, **kwargs):
-        self.session = requests.Session()
         self.default_headers = kwargs.get("headers", {})
         self.timeout = kwargs.get("timeout", 30)
 
@@ -31,16 +55,15 @@ class GraphQLClient:
         self.sub_queues: defaultdict[str, queue.Queue] = defaultdict(queue.Queue)
 
     def __enter__(self):
-        return self.session.__enter__()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._close_ws()
-        self.session.__exit__(exc_type, exc_val, exc_tb)
 
     def update_session(self, **kwargs):
         """Update session with new configuration"""
         if "headers" in kwargs:
-            self.session.headers.update(kwargs["headers"])
+            self.default_headers.update(kwargs["headers"])
 
     def make_request(
         self,
@@ -49,33 +72,49 @@ class GraphQLClient:
         variables: Optional[dict[str, Any]] = None,
         operation_name: Optional[str] = None,
         method: str = "POST",
-    ) -> requests.Response:
-        """Execute GraphQL query/mutation over HTTP using raw requests"""
-        payload = {
-            "query": query,
-            "variables": variables or {},
-        }
-
-        if operation_name:
-            payload["operationName"] = operation_name
+    ) -> ResponseLike:
+        """Execute GraphQL query/mutation over HTTP using gql"""
+        if method.upper() == "GET":
+            raise NotImplementedError(
+                "GET method not supported with gql transport. Use POST."
+            )
 
         headers = dict(self.default_headers)
-        headers.update({"Content-Type": "application/json"})
+        headers["Content-Type"] = "application/json"
 
-        if method.upper() == "GET":
-            params = {"query": query}
-            if variables:
-                params["variables"] = json.dumps(variables)
-            if operation_name:
-                params["operationName"] = operation_name
+        transport = AIOHTTPTransport(
+            url=url,
+            headers=headers,
+            timeout=self.timeout,
+        )
+        client = Client(transport=transport)
 
-            return self.session.get(
-                url, params=params, headers=headers, timeout=self.timeout
+        query_gql = gql(query)
+
+        try:
+            result: ExecutionResult = client.execute(
+                query_gql,
+                variable_values=variables or {},
+                operation_name=operation_name,
+                get_execution_result=True,
             )
-        else:
-            return self.session.post(
-                url, json=payload, headers=headers, timeout=self.timeout
-            )
+            body_dict = {}
+            if result.data:
+                body_dict["data"] = result.data
+            if result.errors:
+                body_dict["errors"] = result.errors
+            text = json.dumps(body_dict)
+            status_code = 200
+            reason = "OK"
+        except Exception as exc:
+            status_code = 500
+            reason = "Internal Server Error"
+            body_dict = {"errors": [{"message": str(exc)}]}
+            text = json.dumps(body_dict)
+
+        response_headers = {"Content-Type": "application/json"}
+
+        return GraphQLResponseLike(status_code, reason, response_headers, text)
 
     def _ws_recv_loop(self):
         """Daemon thread to receive WS messages and dispatch to sub queues"""

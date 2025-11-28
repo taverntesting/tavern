@@ -2,9 +2,8 @@ import contextlib
 import json
 import logging
 from collections.abc import Mapping
-from typing import Any, Union
+from typing import Any, Protocol, Union
 
-import requests
 from requests.status_codes import _codes  # type:ignore
 
 from tavern._core import exceptions
@@ -13,6 +12,16 @@ from tavern._core.pytest.config import TestConfig
 from tavern.response import BaseResponse, indent_err_text
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+class ResponseLike(Protocol):
+    """Protocol for response-like objects"""
+
+    text: str
+    headers: Mapping[str, str]
+    status_code: int
+
+    def json(self) -> Any: ...
 
 
 class CommonResponse(BaseResponse):
@@ -49,7 +58,7 @@ class CommonResponse(BaseResponse):
         else:
             return "<Not run yet>"
 
-    def _verbose_log_response(self, response: requests.Response) -> None:
+    def _verbose_log_response(self, response: ResponseLike) -> None:
         """Verbosely log the response object, with query params etc."""
 
         logger.info("Response: '%s'", response)
@@ -103,7 +112,7 @@ class CommonResponse(BaseResponse):
         block_strictness = test_strictness.option_for(blockname)
         self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
 
-    def _common_verify_setup(self, response: requests.Response) -> Any | None:
+    def _common_verify_setup(self, response: ResponseLike) -> Any | None:
         """Common setup for verify method"""
         self._verbose_log_response(response)
 
@@ -117,25 +126,10 @@ class CommonResponse(BaseResponse):
 
         return body
 
-    def _get_redirect_query_params(self, response: requests.Response) -> dict[str, str]:
-        """Get redirect query parameters - default implementation returns empty dict"""
-        return {}
-
-    def _common_verify_validation(
-        self, response: requests.Response, body: Any, redirect_query_params: dict
-    ) -> None:
-        """Common validation steps"""
-        self._check_status_code(response.status_code, body)
-
-        if body is not None:
-            self._validate_block("json", body)
-        self._validate_block("headers", response.headers)
-        self._validate_block("redirect_query_params", redirect_query_params)
-
     def _common_verify_save(
         self,
         body: Any,
-        response: requests.Response,
+        response: ResponseLike,
     ) -> dict:
         """Common save functionality"""
         saved: dict = {}

@@ -1,7 +1,6 @@
 import logging
 
 import box
-import requests
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -9,7 +8,7 @@ from tavern._core.formatted_str import FormattedString
 from tavern._core.pytest.config import TestConfig
 from tavern.request import BaseRequest
 
-from .client import GraphQLClient
+from .client import GraphQLClient, GraphQLResponseLike
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -105,14 +104,16 @@ class GraphQLRequest(BaseRequest):
 
             if self.is_sub:
                 self.session.start_subscription(url, query, variables, operation_name)
-                fake_resp = requests.Response()
-                fake_resp.status_code = 101
-                fake_resp.reason = "Switching Protocols"
-                fake_resp.headers = {
-                    "Upgrade": "websocket",
-                    "Connection": "Upgrade",
-                    "Sec-WebSocket-Protocol": "graphql-ws",
-                }
+                fake_resp = GraphQLResponseLike(
+                    101,
+                    "Switching Protocols",
+                    {
+                        "Upgrade": "websocket",
+                        "Connection": "Upgrade",
+                        "Sec-WebSocket-Protocol": "graphql-ws",
+                    },
+                    "",
+                )
                 logger.debug(
                     "Subscription '%s' started, fake 101 response", operation_name
                 )
