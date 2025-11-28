@@ -1,16 +1,11 @@
 import json
 import logging
-import queue
-import threading
-import uuid
-from collections import defaultdict
 from typing import Any, Optional
 
-import websockets
-import websockets.sync.client
 from _plugins.common.response import ResponseLike
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
+from gql.transport.websockets import WebsocketsTransport
 from graphql import ExecutionResult
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -41,18 +36,14 @@ class GraphQLResponseLike(ResponseLike):
 class GraphQLClient:
     """GraphQL client for HTTP requests and subscriptions over WebSocket"""
 
-    ws: websockets.sync.client.ClientConnection | None
-
     def __init__(self, **kwargs):
         self.default_headers = kwargs.get("headers", {})
         self.timeout = kwargs.get("timeout", 30)
 
-        # WS for subscriptions
-        self.ws = None
-        self.recv_thread = None
-        self.op_to_id: dict[str, str] = {}
-        self.id_to_op: dict[str, str] = {}
-        self.sub_queues: defaultdict[str, queue.Queue] = defaultdict(queue.Queue)
+        # For managing separate clients for HTTP and WebSocket connections
+        self.http_client = None
+        self.ws_client = None
+        self.ws_transport = None
 
     def __enter__(self):
         return self
@@ -87,12 +78,12 @@ class GraphQLClient:
             headers=headers,
             timeout=self.timeout,
         )
-        client = Client(transport=transport)
+        self.http_client = Client(transport=transport)
 
         query_gql = gql(query)
 
         try:
-            result: ExecutionResult = client.execute(
+            result: ExecutionResult = self.http_client.execute(
                 query_gql,
                 variable_values=variables or {},
                 operation_name=operation_name,
@@ -116,86 +107,74 @@ class GraphQLClient:
 
         return GraphQLResponseLike(status_code, reason, response_headers, text)
 
-    def _ws_recv_loop(self):
-        """Daemon thread to receive WS messages and dispatch to sub queues"""
-        while self.ws:
-            try:
-                msg_str = self.ws.recv()
-                msg = json.loads(msg_str)
-                msg_type = msg.get("type")
-
-                if msg_type == "connection_ack":
-                    logger.debug("WS connection acknowledged")
-                elif msg_type == "data":
-                    id_ = msg["id"]
-                    if id_ in self.id_to_op:
-                        op = self.id_to_op[id_]
-                        payload = msg["payload"]
-                        self.sub_queues[op].put(payload)
-                        logger.debug(f"Dispatched data for sub {op}")
-                elif msg_type == "complete":
-                    id_ = msg["id"]
-                    logger.debug(f"Subscription complete: {id_}")
-                elif msg_type == "error":
-                    logger.error(f"WS error: {msg}")
-                elif msg_type == "ka":
-                    self.ws.send(json.dumps({"id": msg["id"], "type": "ka"}))
-                else:
-                    logger.debug(f"WS msg: {msg}")
-            except websockets.ConnectionClosedError:
-                break
-            except Exception as e:
-                logger.error(f"WS recv error: {e}")
-                break
-
     def start_subscription(
         self, url: str, query: str, variables: dict, operation_name: str
-    ) -> str:
-        """Start a GraphQL subscription over WS"""
+    ):
+        """Start a GraphQL subscription over WS using gql WebSockets transport"""
         if operation_name is None:
             raise ValueError("operation_name required for subscriptions")
 
-        if self.ws is None:
-            ws_url = url.replace("http://", "ws://").replace("https://", "wss://")
-            logger.debug(f"Starting WS connection to {ws_url}")
-            self.ws = websockets.sync.client.connect(ws_url)
-            self.ws.send(json.dumps({"type": "connection_init", "payload": {}}))
-            ack = json.loads(self.ws.recv())
-            if ack.get("type") != "connection_ack":
-                raise RuntimeError(f"WS connection failed: {ack}")
-            self.recv_thread = threading.Thread(target=self._ws_recv_loop, daemon=True)
-            self.recv_thread.start()
-            logger.debug("WS connection started")
+        # Prepare headers
+        headers = dict(self.default_headers)
 
-        id_ = str(uuid.uuid4())
-        self.op_to_id[operation_name] = id_
-        self.id_to_op[id_] = operation_name
+        # Create WebSocket transport
+        ws_url = url.replace("http://", "ws://").replace("https://", "wss://")
+        self.ws_transport = WebsocketsTransport(
+            url=ws_url,
+            headers=headers,
+            timeout=self.timeout,
+        )
 
-        payload = {
-            "query": query,
-            "variables": variables,
-            "operationName": operation_name,
-        }
-        self.ws.send(json.dumps({"id": id_, "type": "start", "payload": payload}))
-        logger.debug(f"Started subscription {operation_name} id {id_}")
-        return id_
+        # Create client with WebSocket transport
+        self.ws_client = Client(transport=self.ws_transport)
+
+        # Parse the GraphQL query
+        query_gql = gql(query)
+
+        # Execute the subscription - this returns a generator
+        try:
+            # Using the subscription as a generator that yields results
+            subscription_generator = self.ws_client.subscribe(
+                query_gql,
+                variable_values=variables or {},
+                operation_name=operation_name,
+            )
+
+            logger.debug(f"Started subscription {operation_name}")
+            # Return the generator to allow iterating through subscription messages
+            return subscription_generator
+        except Exception as exc:
+            logger.error(f"Failed to start subscription: {exc}")
+            raise
 
     def get_next_message(
-        self, operation_name: str, timeout: float = 5.0
+        self, subscription_generator, timeout: float = 5.0
     ) -> Optional[dict]:
-        """Get next message from subscription queue"""
+        """
+        Get next message from subscription generator.
+        Note: timeout parameter is ignored in this implementation as the generator
+        is synchronous and will block until the next message is available.
+        """
         try:
-            return self.sub_queues[operation_name].get(timeout=timeout)
-        except queue.Empty:
+            # Get the next result from the subscription generator
+            result = next(subscription_generator)
+            return result
+        except StopIteration:
+            # Subscription ended
+            return None
+        except Exception as e:
+            logger.error(f"Error getting next message from subscription: {e}")
             return None
 
     def _close_ws(self):
         """Close WS connection"""
-        if self.ws:
-            self.ws.send(json.dumps({"type": "connection_terminate"}))
-            self.ws.close()
-            self.ws = None
-            self.sub_queues.clear()
-            self.op_to_id.clear()
-            self.id_to_op.clear()
-            logger.debug("WS connection closed")
+        if self.ws_client:
+            try:
+                # Close the WebSocket client
+                self.ws_client.close()
+                logger.debug("WS connection closed")
+            except Exception as e:
+                logger.error(f"Error closing WS connection: {e}")
+            finally:
+                self.ws_client = None
+                self.ws_transport = None

@@ -1,4 +1,5 @@
 import logging
+from functools import cached_property
 
 import box
 
@@ -55,8 +56,6 @@ class GraphQLRequest(BaseRequest):
             rspec, test_block_config.variables
         )
 
-        self.is_sub = self._is_subscription_query()
-
         # Validate required fields
         self._validate_request()
 
@@ -72,7 +71,7 @@ class GraphQLRequest(BaseRequest):
                 "GraphQL request must contain 'url' field"
             )
 
-        if self.is_sub and "operation_name" not in self._formatted_rspec:
+        if self.is_subscription_query and "operation_name" not in self._formatted_rspec:
             raise exceptions.MissingKeysError(
                 "operation_name is required for subscription requests"
             )
@@ -102,7 +101,7 @@ class GraphQLRequest(BaseRequest):
             variables = self._formatted_rspec.get("variables", {}) or {}
             operation_name = self._formatted_rspec.get("operation_name")
 
-            if self.is_sub:
+            if self.is_subscription_query:
                 self.session.start_subscription(url, query, variables, operation_name)
                 fake_resp = GraphQLResponseLike(
                     101,
@@ -129,7 +128,8 @@ class GraphQLRequest(BaseRequest):
             logger.exception("Error executing GraphQL request")
             raise exceptions.TavernException(f"GraphQL request failed: {e}") from e
 
-    def _is_subscription_query(self) -> bool:
+    @cached_property
+    def is_subscription_query(self) -> bool:
         """Check if the query is a subscription"""
         query = self._formatted_rspec.get("query", "").strip()
         # Simple check for subscription keyword at the start of the query
