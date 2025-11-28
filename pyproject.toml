@@ -119,6 +119,7 @@ mqtt = [
     "paho-mqtt>=1.3.1,<=1.6.1",
 ]
 graphql = [
+    "aiohttp",
     "websockets",
     "gql>=4.0.0",
 ]
