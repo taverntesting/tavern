@@ -1,3 +1,4 @@
+import asyncio
 from unittest.mock import Mock, patch
 
 import pytest
@@ -90,3 +91,51 @@ class TestGraphQLClient:
         with pytest.raises(ValueError) as exc_info:
             client.get_next_message("non_existent")
         assert "Subscription with name 'non_existent' not found" in str(exc_info.value)
+
+    def test_get_next_message_success(self):
+        """Test getting next message from subscription successfully"""
+        client = GraphQLClient()
+
+        # Create a mock async generator for the subscription
+        async def mock_async_gen():
+            yield {"data": {"test": "value"}}
+
+        # Add the mock generator to subscriptions
+        client.subscriptions["test_op"] = mock_async_gen()
+
+        # Test getting the next message
+        message = client.get_next_message("test_op")
+        assert message == {"data": {"test": "value"}}
+
+    def test_get_next_message_timeout(self):
+        """Test getting next message times out"""
+        client = GraphQLClient()
+
+        # Create a mock async generator that will timeout
+        async def slow_async_gen():
+            await asyncio.sleep(10)  # This will cause timeout
+            yield {"data": {"test": "value"}}
+
+        # Add the mock generator to subscriptions
+        client.subscriptions["slow_op"] = slow_async_gen()
+
+        # Test that timeout is raised
+        with pytest.raises(TimeoutError):
+            client.get_next_message("slow_op", timeout=0.1)
+
+    def test_get_next_message_exception(self):
+        """Test getting next message when an exception occurs"""
+        client = GraphQLClient()
+
+        # Create a mock async generator that raises an exception
+        async def error_async_gen():
+            raise Exception("Test error")
+            yield
+
+        # Add the mock generator to subscriptions
+        client.subscriptions["error_op"] = error_async_gen()
+
+        # Test that the exception is propagated
+        with pytest.raises(Exception) as exc_info:
+            client.get_next_message("error_op")
+        assert "Test error" in str(exc_info.value)
