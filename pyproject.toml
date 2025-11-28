@@ -58,7 +58,6 @@ Source = "https://github.com/taverntesting/tavern"
 dev = [
     "fastapi>=0.121.3",
     "uvicorn>=0.38.0",
-    "apsw>=3.51.0.0",
     "Faker",
     "allure-pytest",
     "colorlog",
