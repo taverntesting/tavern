@@ -1,4 +1,6 @@
+from unittest.mock import Mock, patch
 
+import pytest
 
 from tavern._plugins.graphql.client import GraphQLClient
 
@@ -12,3 +14,79 @@ class TestGraphQLClient:
         client = GraphQLClient(**kwargs)
         assert client.default_headers == {"Authorization": "Bearer token"}
         assert client.timeout == 60
+
+    def test_start_subscription(self):
+        """Test starting a GraphQL subscription"""
+        client = GraphQLClient(headers={"Authorization": "Bearer token"}, timeout=30)
+
+        # Mock the WebsocketsTransport and Client
+        with (
+            patch(
+                "tavern._plugins.graphql.client.WebsocketsTransport"
+            ) as mock_ws_transport,
+            patch("tavern._plugins.graphql.client.Client") as mock_client_class,
+            patch("tavern._plugins.graphql.client.gql") as mock_gql,
+        ):
+            # Setup mock transport
+            mock_transport_instance = Mock()
+            mock_ws_transport.return_value = mock_transport_instance
+
+            # Setup mock client
+            mock_client_instance = Mock()
+            mock_client_class.return_value = mock_client_instance
+
+            # Setup mock subscription generator
+            mock_subscription_gen = Mock()
+            mock_client_instance.subscribe.return_value = mock_subscription_gen
+
+            # Setup mock gql query
+            mock_gql_query = Mock()
+            mock_gql.return_value = mock_gql_query
+
+            # Call start_subscription
+            url = "http://example.com/graphql"
+            query = "subscription Test { testField }"
+            variables = {"id": 123}
+            operation_name = "Test"
+
+            client.start_subscription(url, query, variables, operation_name)
+
+            # Assertions
+            mock_ws_transport.assert_called_once_with(
+                url="ws://example.com/graphql",
+                headers={"Authorization": "Bearer token"},
+                connect_timeout=30,
+            )
+            mock_client_class.assert_called_once_with(transport=mock_transport_instance)
+            mock_gql.assert_called_once_with(query)
+            mock_client_instance.subscribe.assert_called_once_with(
+                mock_gql_query,
+                variable_values=variables,
+                operation_name=operation_name,
+            )
+            assert operation_name in client.subscriptions
+            assert client.subscriptions[operation_name] == mock_subscription_gen
+
+    def test_start_subscription_requires_operation_name(self):
+        """Test that starting a subscription requires operation_name"""
+        client = GraphQLClient()
+
+        with (
+            patch("tavern._plugins.graphql.client.WebsocketsTransport"),
+            patch("tavern._plugins.graphql.client.Client"),
+            patch("tavern._plugins.graphql.client.gql"),
+        ):
+            # Should raise ValueError when operation_name is None
+            with pytest.raises(ValueError) as exc_info:
+                client.start_subscription(
+                    "ws://example.com", "subscription Test { test }", {}, None
+                )
+            assert "operation_name required for subscriptions" in str(exc_info.value)
+
+    def test_get_next_message_not_found(self):
+        """Test getting next message from non-existent subscription"""
+        client = GraphQLClient()
+
+        with pytest.raises(ValueError) as exc_info:
+            client.get_next_message("non_existent")
+        assert "Subscription with name 'non_existent' not found" in str(exc_info.value)
