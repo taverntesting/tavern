@@ -59,6 +59,7 @@ class GraphQLClient:
         self.subscriptions = {}
 
     def __enter__(self):
+        self._loop = asyncio.get_event_loop()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -172,11 +173,10 @@ class GraphQLClient:
             )
 
         subscription_generator = self.subscriptions[op_name]
-        loop = asyncio.get_event_loop()
 
         socket_iter = subscription_generator.__aiter__()
         try:
-            message = loop.run_until_complete(
+            message = self._loop.run_until_complete(
                 asyncio.wait_for(socket_iter.__anext__(), timeout=timeout)
             )
             return message
