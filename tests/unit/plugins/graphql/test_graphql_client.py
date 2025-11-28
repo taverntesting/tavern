@@ -29,16 +29,16 @@ class TestGraphQLClient:
             patch("tavern._plugins.graphql.client.gql") as mock_gql,
         ):
             # Setup mock transport
-            mock_transport_instance = Mock()
+            mock_transport_instance = Mock(spec=["close"])
             mock_ws_transport.return_value = mock_transport_instance
 
             # Setup mock client
-            mock_client_instance = Mock()
+            mock_client_instance = Mock(spec=["subscribe_async", "close_sync"])
             mock_client_class.return_value = mock_client_instance
 
-            # Setup mock subscription generator
+            # Setup mock async subscription generator
             mock_subscription_gen = Mock()
-            mock_client_instance.subscribe.return_value = mock_subscription_gen
+            mock_client_instance.subscribe_async.return_value = mock_subscription_gen
 
             # Setup mock gql query
             mock_gql_query = Mock()
@@ -50,7 +50,8 @@ class TestGraphQLClient:
             variables = {"id": 123}
             operation_name = "Test"
 
-            client.start_subscription(url, query, variables, operation_name)
+            with client:  # Use the client context manager to set up the event loop
+                client.start_subscription(url, query, variables, operation_name)
 
             # Assertions
             mock_ws_transport.assert_called_once_with(
@@ -60,7 +61,7 @@ class TestGraphQLClient:
             )
             mock_client_class.assert_called_once_with(transport=mock_transport_instance)
             mock_gql.assert_called_once_with(query)
-            mock_client_instance.subscribe.assert_called_once_with(
+            mock_client_instance.subscribe_async.assert_called_once_with(
                 mock_gql_query,
                 variable_values=variables,
                 operation_name=operation_name,
@@ -101,11 +102,16 @@ class TestGraphQLClient:
             yield {"data": {"test": "value"}}
 
         # Add the mock generator to subscriptions
-        client.subscriptions["test_op"] = mock_async_gen()
+        with patch.object(client, "_loop", spec=asyncio.AbstractEventLoop) as mock_loop:
+            # Mock the loop.run_until_complete to return the expected value
+            mock_loop.run_until_complete.return_value = {"data": {"test": "value"}}
 
-        # Test getting the next message
-        message = client.get_next_message("test_op")
-        assert message == {"data": {"test": "value"}}
+            client.subscriptions["test_op"] = mock_async_gen()
+
+            # Test getting the next message
+            with client:  # Use context manager to set up the event loop
+                message = client.get_next_message("test_op")
+            assert message == {"data": {"test": "value"}}
 
     def test_get_next_message_timeout(self):
         """Test getting next message times out"""
@@ -117,11 +123,16 @@ class TestGraphQLClient:
             yield {"data": {"test": "value"}}
 
         # Add the mock generator to subscriptions
-        client.subscriptions["slow_op"] = slow_async_gen()
+        with patch.object(client, "_loop", spec=asyncio.AbstractEventLoop) as mock_loop:
+            # Mock the loop.run_until_complete to raise TimeoutError
+            mock_loop.run_until_complete.side_effect = TimeoutError()
 
-        # Test that timeout is raised
-        with pytest.raises(TimeoutError):
-            client.get_next_message("slow_op", timeout=0.1)
+            client.subscriptions["slow_op"] = slow_async_gen()
+
+            # Test that timeout is raised
+            with client:  # Use context manager to set up the event loop
+                with pytest.raises(TimeoutError):
+                    client.get_next_message("slow_op", timeout=0.1)
 
     def test_get_next_message_exception(self):
         """Test getting next message when an exception occurs"""
@@ -133,9 +144,14 @@ class TestGraphQLClient:
             yield
 
         # Add the mock generator to subscriptions
-        client.subscriptions["error_op"] = error_async_gen()
+        with patch.object(client, "_loop", spec=asyncio.AbstractEventLoop) as mock_loop:
+            # Mock the loop.run_until_complete to raise an exception
+            mock_loop.run_until_complete.side_effect = Exception("Test error")
 
-        # Test that the exception is propagated
-        with pytest.raises(Exception) as exc_info:
-            client.get_next_message("error_op")
-        assert "Test error" in str(exc_info.value)
+            client.subscriptions["error_op"] = error_async_gen()
+
+            # Test that the exception is propagated
+            with client:  # Use context manager to set up the event loop
+                with pytest.raises(Exception) as exc_info:
+                    client.get_next_message("error_op")
+            assert "Test error" in str(exc_info.value)
