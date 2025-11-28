@@ -1,260 +1,154 @@
-"""Simple GraphQL test server for integration testing using SQLite and strawberry-graphql with subscriptions
-
-Supports FastAPI ASGI for WebSocket subscriptions.
-"""
+"""Simple GraphQL test server for integration testing using SQLite and strawberry-graphql with subscriptions"""
 
 import asyncio
-import logging
-import threading
 from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
 
-import apsw
 import strawberry
 import uvicorn
 from fastapi import FastAPI
+from sqlalchemy import Column, ForeignKey, Integer, String, create_engine, select
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 from strawberry.fastapi import GraphQLRouter
+from strawberry_sqlalchemy_mapper import StrawberrySQLAlchemyMapper
+
+strawberry_sqlalchemy_mapper = StrawberrySQLAlchemyMapper()
+
+Base = declarative_base()
 
 
-@strawberry.type
+class models:
+    """dummy module to contains models so they dont have to be a in a separate file"""
+
+    class User(Base):
+        __tablename__ = "users"
+
+        id = Column(Integer, primary_key=True)
+        name = Column(String(100), nullable=False)
+        email = Column(String(100), nullable=False)
+
+    class Post(Base):
+        __tablename__ = "posts"
+
+        id = Column(Integer, primary_key=True)
+        title = Column(String(200), nullable=False)
+        content = Column(String, nullable=False)
+        author_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+        author = relationship("User", backref="posts")
+
+
+@strawberry_sqlalchemy_mapper.type(models.User)
 class User:
-    id: strawberry.ID
-    name: str
-    email: str
+    pass
 
 
-@strawberry.type
+@strawberry_sqlalchemy_mapper.type(models.Post)
 class Post:
-    id: strawberry.ID
-    title: str
-    content: str
-    author_id: strawberry.ID
-
-
-db_conn: apsw.Connection
-subscribers_lock = threading.Lock()
-# A mapping of user IDs to queues
-subscribers: dict = {}
-pending_notifications = asyncio.Queue()
-
-
-def update_hook(operation: str, database: str, table: bytes, rowid: int):
-    if table == b"users":
-        pending_notifications.put_nowait((table.decode(), rowid))
-
-
-async def consumer_loop():
-    while True:
-        try:
-            table, rowid = await pending_notifications.get()
-
-            if table != "users":
-                continue
-
-            cur = db_conn.execute(
-                "SELECT id, name, email FROM users WHERE rowid=?", (rowid,)
-            )
-            row = cur.fetchone()
-            if row:
-                user_dict = {
-                    "id": strawberry.ID(str(row[0])),
-                    "name": row[1],
-                    "email": row[2],
-                }
-                user_obj = User(**user_dict)
-                user_id = str(row[0])
-                with subscribers_lock:
-                    if user_id in subscribers:
-                        for q in subscribers[user_id]:
-                            await q.put(user_obj)
-        except Exception as e:
-            logging.error(f"Consumer error: {e}")
-            asyncio.sleep(1)
+    pass
 
 
 @strawberry.type
 class Query:
-    @strawberry.field(graphql_type=User)
-    def user(self, id: strawberry.ID) -> User | None:
-        cur = db_conn.execute(
-            "SELECT id, name, email FROM users WHERE id=?", (int(id),)
-        )
-        row = cur.fetchone()
-        if row:
-            return User(id=strawberry.ID(str(row[0])), name=row[1], email=row[2])
-        return None
+    @strawberry.field
+    def user(self, id: strawberry.ID) -> User:
+        return global_db_session.get(models.User, int(id))
 
-    @strawberry.field(graphql_type=list[User])
+    @strawberry.field
     def users(self) -> list[User]:
-        cur = db_conn.execute("SELECT id, name, email FROM users")
-        rows = cur.fetchall()
-        return [User(id=strawberry.ID(str(r[0])), name=r[1], email=r[2]) for r in rows]
+        return global_db_session.execute(select(models.User)).scalars().all()
 
-    @strawberry.field(graphql_type=Post)
-    def post(self, id: strawberry.ID) -> Post | None:
-        cur = db_conn.execute(
-            "SELECT id, title, content, author_id FROM posts WHERE id=?", (int(id),)
-        )
-        row = cur.fetchone()
-        if row:
-            return Post(
-                id=strawberry.ID(str(row[0])),
-                title=row[1],
-                content=row[2],
-                author_id=strawberry.ID(str(row[3])),
-            )
-        return None
+    @strawberry.field
+    def post(self, id: strawberry.ID) -> Post:
+        return global_db_session.get(models.Post, int(id))
 
-    @strawberry.field(graphql_type=list[Post])
+    @strawberry.field
     def posts(self) -> list[Post]:
-        cur = db_conn.execute("SELECT id, title, content, author_id FROM posts")
-        rows = cur.fetchall()
-        return [
-            Post(
-                id=strawberry.ID(str(r[0])),
-                title=r[1],
-                content=r[2],
-                author_id=strawberry.ID(str(r[3])),
-            )
-            for r in rows
-        ]
+        return global_db_session.execute(select(models.Post)).scalars().all()
 
-    @strawberry.field(graphql_type=list[Post])
+    @strawberry.field
     def user_posts(self, author_id: strawberry.ID) -> list[Post]:
-        cur = db_conn.execute(
-            "SELECT id, title, content, author_id FROM posts WHERE author_id=?",
-            (int(author_id),),
-        )
-        rows = cur.fetchall()
-        return [
-            Post(
-                id=strawberry.ID(str(r[0])),
-                title=r[1],
-                content=r[2],
-                author_id=strawberry.ID(str(r[3])),
+        return (
+            global_db_session.execute(
+                select(models.Post).filter_by(author_id=int(author_id))
             )
-            for r in rows
-        ]
+            .scalars()
+            .all()
+        )
 
 
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    def create_user(self, name: str, email: str) -> User:
-        cur = db_conn.execute(
-            "INSERT INTO users (name, email) VALUES (?, ?) RETURNING id, name, email",
-            (name, email),
-        )
-        row = cur.fetchone()
-        return User(id=strawberry.ID(str(row[0])), name=row[1], email=row[2])
+    def create_user(self, name: str, email: str, info: strawberry.Info) -> User:
+        user = models.User(name=name, email=email)
+        global_db_session.add(user)
+        global_db_session.commit()
+        info.context["background_tasks"].add_task(user_updated, name)
+        return user
 
     @strawberry.mutation
-    def create_post(self, title: str, content: str, author_id: str) -> Post:
-        cur = db_conn.execute(
-            "INSERT INTO posts (title, content, author_id) VALUES (?, ?, ?) RETURNING id, title, content, author_id",
-            (title, content, int(author_id)),
-        )
-        row = cur.fetchone()
-        return Post(
-            id=strawberry.ID(str(row[0])),
-            title=row[1],
-            content=row[2],
-            author_id=strawberry.ID(str(row[3])),
-        )
+    def create_post(
+        self, title: str, content: str, author_id: str, info: strawberry.Info
+    ) -> Post:
+        post = models.Post(title=title, content=content, author_id=int(author_id))
+        global_db_session.add(post)
+        global_db_session.commit()
+        return post
 
-    @strawberry.mutation(graphql_type=User)
-    def update_user(self, id: strawberry.ID, name: str, email: str) -> User:
-        cur = db_conn.execute(
-            "UPDATE users SET name=?, email=? WHERE id=? RETURNING id, name, email",
-            (name, email, int(id)),
-        )
-        row = cur.fetchone()
-        if not row:
+    @strawberry.mutation
+    def update_user(
+        self, id: strawberry.ID, name: str, email: str, info: strawberry.Info
+    ) -> User:
+        user = global_db_session.get(models.User, int(id))
+        if user is None:
             raise Exception("User not found")
+        user.name = name
+        user.email = email
+        global_db_session.commit()
+        info.context["background_tasks"].add_task(user_updated, name)
+        return user
 
-        return User(id=strawberry.ID(str(row[0])), name=row[1], email=row[2])
+
+q = asyncio.Queue()
+
+
+async def user_updated(name: str):
+    await q.put(name)
 
 
 @strawberry.type
 class Subscription:
     @strawberry.subscription(graphql_type=User)
     async def user(self, id: strawberry.ID) -> AsyncGenerator[User, None]:
-        user_id = str(id)
-
-        # Create a queue for each user ID
-        q = asyncio.Queue()
-        with subscribers_lock:
-            # Add it to the dict of subscribers
-            subscribers.setdefault(user_id, []).append(q)
-
-        try:
-            while True:
-                user = await q.get()
-                yield user
-        finally:
-            with subscribers_lock:
-                if user_id in subscribers:
-                    subscribers[user_id] = [
-                        x for x in subscribers[user_id] if x is not q
-                    ]
-                    if not subscribers[user_id]:
-                        del subscribers[user_id]
+        while True:
+            yield await q.get()
 
 
+strawberry_sqlalchemy_mapper.finalize()
 schema = strawberry.Schema(
     query=Query,
     mutation=Mutation,
     subscription=Subscription,
 )
 
-
-@asynccontextmanager
-async def lifespan(app_: FastAPI):
-    # Startup: start consumer
-    consumer_task = asyncio.create_task(consumer_loop())
-    yield
-    # Shutdown
-    consumer_task.cancel()
-    try:
-        await consumer_task
-    except asyncio.CancelledError:
-        pass
-
-
-app = FastAPI(lifespan=lifespan)
-
-graphql_router = GraphQLRouter(schema, graphql_ide=True)
-app.include_router(graphql_router, prefix="/graphql")
+app = FastAPI(title="GraphQL Test Server")
+app.include_router(GraphQLRouter(schema), prefix="/graphql")
 
 
 @app.get("/health")
-def health():
-    """Health check endpoint"""
+async def health():
     return {"status": "healthy"}
 
 
-# Database setup
-db_conn = apsw.Connection("/tmp/test.db")
-db_conn.set_update_hook(update_hook)
-
-db_conn.execute("""CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL,
-    email TEXT NOT NULL
-)""")
-
-db_conn.execute("""CREATE TABLE IF NOT EXISTS posts (
-    id INTEGER PRIMARY KEY,
-    title TEXT NOT NULL,
-    content TEXT NOT NULL,
-    author_id INTEGER NOT NULL,
-    FOREIGN KEY (author_id) REFERENCES users(id)
-)""")
-
+# DB setup
+engine = create_engine("sqlite:////tmp/test.db", echo=False)
+Session = sessionmaker(bind=engine)
+global_db_session = Session()
+Base.metadata.create_all(bind=engine)
 
 if __name__ == "__main__":
     uvicorn.run(
         app,
-        host="localhost",
+        host="0.0.0.0",
         port=5010,
+        log_level="info",
     )

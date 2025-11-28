@@ -1,6 +1,6 @@
 FROM python:3.11-alpine
 
-RUN pip3 install "strawberry-graphql[fastapi]" "uvicorn[standard]" "apsw>=3.51.0.0"
+RUN pip3 install "strawberry-graphql[fastapi]" "uvicorn[standard]" "sqlalchemy>=2,<3" "strawberry_sqlalchemy_mapper"
 
 ENV PYTHONUNBUFFERED=0
 

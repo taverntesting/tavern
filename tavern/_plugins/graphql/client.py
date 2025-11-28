@@ -2,11 +2,12 @@ import json
 import logging
 from typing import Any, Optional
 
-from _plugins.common.response import ResponseLike
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
 from gql.transport.websockets import WebsocketsTransport
 from graphql import ExecutionResult
+
+from tavern._plugins.common.response import ResponseLike
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -122,7 +123,7 @@ class GraphQLClient:
         self.ws_transport = WebsocketsTransport(
             url=ws_url,
             headers=headers,
-            timeout=self.timeout,
+            connect_timeout=self.timeout,
         )
 
         # Create client with WebSocket transport

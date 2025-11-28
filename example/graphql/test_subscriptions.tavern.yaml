@@ -25,9 +25,12 @@ stages:
       json:
         data:
           createUser:
-            id: 1
+            id: !anyint
             name: "Alice Smith"
             email: "alice@example.com"
+
+      save:
+        user_id: json.data.createUser.id
 
   - name: Subscribe to user updates
     graphql_request:
