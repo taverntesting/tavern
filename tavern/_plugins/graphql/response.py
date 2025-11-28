@@ -55,7 +55,13 @@ class GraphQLResponse(CommonResponse):
             if "subscription" in expected_resp:
                 op_name = expected_resp["subscription"]
                 timeout: int | float = expected_resp.get("timeout", 5.0)
-                ws_msg = self.session.get_next_message(op_name, timeout)
+                try:
+                    ws_msg = self.session.get_next_message(op_name, timeout)
+                except TimeoutError:
+                    self._adderr(
+                        f"Timeout waiting for subscription message on '{op_name}' within {timeout}s"
+                    )
+                    continue
                 if ws_msg is None:
                     self._adderr(
                         f"Timeout waiting for subscription message on '{op_name}' within {timeout}s"
