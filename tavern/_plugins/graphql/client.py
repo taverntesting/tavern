@@ -118,6 +118,7 @@ class GraphQLClient:
 
         if self.ws is None:
             ws_url = url.replace("http://", "ws://").replace("https://", "wss://")
+            logger.debug(f"Starting WS connection to {ws_url}")
             self.ws = websockets.sync.client.connect(ws_url)
             self.ws.send(json.dumps({"type": "connection_init", "payload": {}}))
             ack = json.loads(self.ws.recv())
