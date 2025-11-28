@@ -1,9 +1,8 @@
+import asyncio
 import json
 import logging
-import threading
-from collections.abc import Generator
+from collections.abc import AsyncGenerator
 from dataclasses import dataclass, field
-from queue import Empty, Queue
 from typing import Any, Optional
 
 from gql import Client, gql
@@ -14,6 +13,10 @@ from graphql import ExecutionResult
 from tavern._plugins.common.response import ResponseLike
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+_SubResponse = (
+    AsyncGenerator[dict[str, Any], None] | AsyncGenerator[ExecutionResult, None]
+)
 
 
 @dataclass(kw_only=True)
@@ -47,7 +50,7 @@ class GraphQLClient:
     ws_client: Client | None = None
     ws_transport: WebsocketsTransport | None = None
 
-    subscriptions: dict[str, Generator[dict[str, Any], None, None]]
+    subscriptions: dict[str, _SubResponse]
 
     def __init__(self, **kwargs):
         self.default_headers = kwargs.get("headers", {})
@@ -145,7 +148,7 @@ class GraphQLClient:
         # Execute the subscription - this returns a generator
         try:
             # Using the subscription as a generator that yields results
-            subscription_generator = self.ws_client.subscribe(
+            subscription_generator = self.ws_client.subscribe_async(
                 query_gql,
                 variable_values=variables or {},
                 operation_name=operation_name,
@@ -169,30 +172,17 @@ class GraphQLClient:
             )
 
         subscription_generator = self.subscriptions[op_name]
+        loop = asyncio.get_event_loop()
+
+        socket_iter = subscription_generator.__aiter__()
         try:
-            # Get the next result from the subscription generator with timeout
-            result_queue = Queue()
-
-            def get_next():
-                try:
-                    result_queue.put(next(subscription_generator))
-                except StopIteration:
-                    result_queue.put(None)
-                except Exception as e:
-                    result_queue.put(e)
-
-            thread = threading.Thread(target=get_next)
-            thread.daemon = True
-            thread.start()
-
-            try:
-                result = result_queue.get(timeout=timeout)
-                if isinstance(result, Exception):
-                    raise result
-                return result
-            except Empty:
-                return None
-
+            message = loop.run_until_complete(
+                asyncio.wait_for(socket_iter.__anext__(), timeout=timeout)
+            )
+            return message
+        except TimeoutError as e:
+            logger.error(f"Timeout getting next message from subscription: {e}")
+            raise
         except Exception as e:
             logger.error(f"Error getting next message from subscription: {e}")
             raise
