@@ -142,11 +142,8 @@ class Mutation:
     @strawberry.mutation
     def create_user(self, name: str, email: str) -> User:
         cur = db_conn.execute(
-            "INSERT INTO users (name, email) VALUES (?, ?)", (name, email)
-        )
-        rowid = cur.lastrowid
-        cur = db_conn.execute(
-            "SELECT id, name, email FROM users WHERE rowid=?", (rowid,)
+            "INSERT INTO users (name, email) VALUES (?, ?) RETURNING id, name, email",
+            (name, email),
         )
         row = cur.fetchone()
         return User(id=strawberry.ID(str(row[0])), name=row[1], email=row[2])
@@ -154,12 +151,8 @@ class Mutation:
     @strawberry.mutation
     def create_post(self, title: str, content: str, author_id: str) -> Post:
         cur = db_conn.execute(
-            "INSERT INTO posts (title, content, author_id) VALUES (?, ?, ?)",
+            "INSERT INTO posts (title, content, author_id) VALUES (?, ?, ?) RETURNING id, title, content, author_id",
             (title, content, int(author_id)),
-        )
-        rowid = cur.lastrowid
-        cur = db_conn.execute(
-            "SELECT id, title, content, author_id FROM posts WHERE rowid=?", (rowid,)
         )
         row = cur.fetchone()
         return Post(
@@ -172,14 +165,13 @@ class Mutation:
     @strawberry.mutation(graphql_type=User)
     def update_user(self, id: strawberry.ID, name: str, email: str) -> User:
         cur = db_conn.execute(
-            "UPDATE users SET name=?, email=? WHERE id=?", (name, email, int(id))
-        )
-        if cur.rowcount == 0:
-            raise Exception("User not found")
-        cur = db_conn.execute(
-            "SELECT id, name, email FROM users WHERE id=?", (int(id),)
+            "UPDATE users SET name=?, email=? WHERE id=? RETURNING id, name, email",
+            (name, email, int(id)),
         )
         row = cur.fetchone()
+        if not row:
+            raise Exception("User not found")
+
         return User(id=strawberry.ID(str(row[0])), name=row[1], email=row[2])
 
 
