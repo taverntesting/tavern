@@ -13,7 +13,6 @@ from _pytest._io import TerminalWriter
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
-from tavern._plugins.graphql.request import _format_graphql_request
 
 if typing.TYPE_CHECKING:
     from tavern._core.pytest.item import YamlItem
@@ -160,6 +159,8 @@ class ReprdError(TerminalRepr):
         # Format stage variables recursively
         if stage["graphql_request"]:
             stage_copy = copy.deepcopy(stage)
+            from tavern._plugins.graphql.request import _format_graphql_request
+
             stage_copy["graphql_request"] = _format_graphql_request(
                 stage_copy["graphql_request"],
                 keys,
