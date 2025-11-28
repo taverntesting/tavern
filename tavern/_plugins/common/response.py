@@ -17,9 +17,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 class ResponseLike(Protocol):
     """Protocol for response-like objects"""
 
-    text: str
     headers: Mapping[str, str]
     status_code: int
+
+    @property
+    def text(self) -> str: ...
 
     def json(self) -> Any: ...
 
