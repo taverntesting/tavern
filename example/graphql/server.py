@@ -4,6 +4,7 @@ Supports FastAPI ASGI for WebSocket subscriptions.
 """
 
 import asyncio
+import logging
 import threading
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
@@ -67,7 +68,7 @@ async def consumer_loop():
                         for q in subscribers[user_id]:
                             await q.put(user_obj)
         except Exception as e:
-            print(f"Consumer error: {e}")
+            logging.error(f"Consumer error: {e}")
             asyncio.sleep(1)
 
 
