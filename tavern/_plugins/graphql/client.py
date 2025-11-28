@@ -58,8 +58,20 @@ class GraphQLClient:
 
         self.subscriptions = {}
 
+        # Create a new event loop if one doesn't exist
+        try:
+            self._loop = asyncio.get_event_loop()
+            # Check if the loop is running - if not, we need to handle this differently
+            if not self._loop.is_running():
+                # Create a new loop for handling async operations in sync context
+                self._loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(self._loop)
+        except RuntimeError:
+            # No event loop found, create a new one
+            self._loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(self._loop)
+
     def __enter__(self):
-        self._loop = asyncio.get_event_loop()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -149,13 +161,17 @@ class GraphQLClient:
         # Execute the subscription - this returns a generator
         try:
             # Using the subscription as a generator that yields results
-            subscription_generator = self.ws_client.subscribe_async(
-                query_gql,
-                variable_values=variables or {},
-                operation_name=operation_name,
-            )
+            # Run the async subscription in the event loop
+            async def _create_subscription():
+                subscription_generator = self.ws_client.subscribe_async(
+                    query_gql,
+                    variable_values=variables or {},
+                    operation_name=operation_name,
+                )
 
-            self.subscriptions[operation_name] = subscription_generator
+                self.subscriptions[operation_name] = subscription_generator
+
+            self._loop.run_until_complete(_create_subscription())
 
             logger.debug(f"Started subscription {operation_name}")
             # Return the generator to allow iterating through subscription messages
@@ -174,11 +190,17 @@ class GraphQLClient:
 
         subscription_generator = self.subscriptions[op_name]
 
-        socket_iter = subscription_generator.__aiter__()
+        async def _get_next():
+            # Get the next item from the async iterator
+            try:
+                return await asyncio.wait_for(
+                    subscription_generator.__anext__(), timeout=timeout
+                )
+            except StopAsyncIteration:
+                return None
+
         try:
-            message = self._loop.run_until_complete(
-                asyncio.wait_for(socket_iter.__anext__(), timeout=timeout)
-            )
+            message = self._loop.run_until_complete(_get_next())
             return message
         except TimeoutError as e:
             logger.error(f"Timeout getting next message from subscription: {e}")
@@ -191,12 +213,11 @@ class GraphQLClient:
         """Close WS connection"""
         if self.ws_client:
             try:
-                # Close the WebSocket client
-                self.ws_client.close_sync()
-                self.ws_transport.close()
+                self._loop.call_soon(self.ws_transport.close)
                 logger.debug("WS connection closed")
             except Exception as e:
                 logger.error(f"Error closing WS connection: {e}")
+                raise
             finally:
                 self.ws_client = None
                 self.ws_transport = None
