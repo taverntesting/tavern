@@ -57,13 +57,13 @@ class RestResponse(CommonResponse):
             expected=self.expected,
             response=response,
         )
-        body = self._common_verify_setup(response)
+        body = self._common_verify_setup(response)  # type:ignore[arg-type]
         redirect_query_params = self._get_redirect_query_params(response)
 
         # Run validation on response
         self._check_status_code(response.status_code, body)
 
-        self._validate_block("json", body)
+        self._validate_block("json", body)  # type:ignore[arg-type]
         self._validate_block("headers", response.headers)
 
         self._validate_block("redirect_query_params", redirect_query_params)
@@ -81,7 +81,7 @@ class RestResponse(CommonResponse):
         self._maybe_run_validate_functions(response)
 
         # Get any keys to save
-        saved = self._common_verify_save(body, response)
+        saved = self._common_verify_save(body, response)  # type:ignore[arg-type]
         saved.update(
             self.maybe_get_save_values_from_save_block(
                 "redirect_query_params", redirect_query_params
