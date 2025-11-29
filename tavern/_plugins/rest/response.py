@@ -1,4 +1,6 @@
+import json
 import logging
+from typing import Any, Union
 from urllib.parse import parse_qs, urlparse
 
 import requests
@@ -7,6 +9,7 @@ from tavern._core import exceptions
 from tavern._core.pytest import call_hook
 from tavern._core.report import attach_yaml
 from tavern._plugins.common.response import CommonResponse
+from tavern.response import indent_err_text
 
 logger: logging.Logger = logging.getLogger(__name__)
 

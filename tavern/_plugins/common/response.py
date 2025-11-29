@@ -1,15 +1,14 @@
 import contextlib
-import json
 import logging
 from collections.abc import Mapping
-from typing import Any, Protocol, Union
+from typing import Any, Protocol
 
 from requests.status_codes import _codes  # type:ignore
 
 from tavern._core import exceptions
 from tavern._core.dict_util import deep_dict_merge
 from tavern._core.pytest.config import TestConfig
-from tavern.response import BaseResponse, indent_err_text
+from tavern.response import BaseResponse
 
 logger: logging.Logger = logging.getLogger(__name__)
 
