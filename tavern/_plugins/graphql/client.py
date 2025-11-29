@@ -23,14 +23,13 @@ _SubResponse = (
 class GraphQLResponseLike(ResponseLike):
     """A response-like object implementing the ResponseLike protocol for GraphQL responses"""
 
-    headers: dict
-    _text: str
+    result: ExecutionResult
 
     _json: Any = field(default=None, init=False)
 
     @property
     def text(self) -> str:
-        return self._text
+        return json.dumps(self.result.data)
 
     def json(self) -> Any:
         """Parse and return the JSON content of the response"""
@@ -110,25 +109,14 @@ class GraphQLClient:
 
         query_gql = gql(query)
 
-        try:
-            result: ExecutionResult = self.http_client.execute(
-                query_gql,
-                variable_values=variables or {},
-                operation_name=operation_name,
-                get_execution_result=True,
-            )
-            body_dict = {}
-            if result.data:
-                body_dict["data"] = result.data
-            if result.errors:
-                body_dict["errors"] = result.errors
-            text = json.dumps(body_dict)
-        except Exception as exc:
-            body_dict = {"errors": [{"message": str(exc)}]}
-            text = json.dumps(body_dict)
+        result: ExecutionResult = self.http_client.execute(
+            query_gql,
+            variable_values=variables or {},
+            operation_name=operation_name,
+            get_execution_result=True,
+        )
 
-        response_headers = {"Content-Type": "application/json"}
-        return GraphQLResponseLike(headers=response_headers, _text=text)
+        return GraphQLResponseLike(result=result)
 
     def start_subscription(
         self, url: str, query: str, variables: dict, operation_name: str

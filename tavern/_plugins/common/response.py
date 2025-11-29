@@ -77,7 +77,8 @@ class CommonResponse(BaseResponse):
                     to_log += f"\n {block}"
                 logger.debug(to_log)
 
-        log_dict_block(response.headers, "Headers")
+        if hasattr(response, "headers"):
+            log_dict_block(response.headers, "Headers")
 
         with contextlib.suppress(ValueError):
             log_dict_block(response.json(), "Body")
@@ -112,20 +113,6 @@ class CommonResponse(BaseResponse):
         block_strictness = test_strictness.option_for(blockname)
         self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
 
-    def _common_verify_setup(self, response: ResponseLike) -> Any | None:
-        """Common setup for verify method"""
-        self._verbose_log_response(response)
-
-        self.response = response
-
-        # Get things to use from the response
-        try:
-            body = response.json()
-        except ValueError:
-            body = None
-
-        return body
-
     def _common_verify_save(
         self,
         body: Any,
@@ -137,10 +124,6 @@ class CommonResponse(BaseResponse):
         logger.debug(f"Saving response to variables with {body} and {self.expected}")
         if body is not None:
             saved.update(self.maybe_get_save_values_from_save_block("json", body))
-
-        saved.update(
-            self.maybe_get_save_values_from_save_block("headers", response.headers)
-        )
 
         saved.update(self.maybe_get_save_values_from_ext(response, self.expected))
 

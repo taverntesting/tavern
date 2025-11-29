@@ -83,7 +83,14 @@ class RestResponse(CommonResponse):
             expected=self.expected,
             response=response,
         )
-        body = self._common_verify_setup(response)  # type:ignore[arg-type]
+
+        self._verbose_log_response(response)
+
+        try:
+            body = response.json()
+        except ValueError:
+            body = None
+
         redirect_query_params = self._get_redirect_query_params(response)
 
         # Run validation on response
@@ -108,6 +115,9 @@ class RestResponse(CommonResponse):
 
         # Get any keys to save
         saved = self._common_verify_save(body, response)  # type:ignore[arg-type]
+        saved.update(
+            self.maybe_get_save_values_from_save_block("headers", response.headers)
+        )
         saved.update(
             self.maybe_get_save_values_from_save_block(
                 "redirect_query_params", redirect_query_params

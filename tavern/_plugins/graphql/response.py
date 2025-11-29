@@ -1,6 +1,7 @@
 import logging
 from typing import Any
 
+from tavern._plugins.graphql.client import GraphQLResponseLike
 from tavern._core import exceptions
 from tavern._core.pytest import call_hook
 from tavern._core.report import attach_yaml
@@ -54,7 +55,7 @@ class GraphQLResponse(CommonResponse):
                 set(body) - allowed,
             )
 
-    def verify(self, response: Any) -> dict:
+    def verify(self, response: GraphQLResponseLike) -> dict:
         """Verify response against expected values and returns any values that
         we wanted to save for use in future requests"""
 
@@ -95,28 +96,42 @@ class GraphQLResponse(CommonResponse):
                     name="graphql_ws_response",
                 )
             else:
-                # Regular HTTP GraphQL response
-                body = (
-                    self._common_verify_setup(response)
-                    if hasattr(response, "_common_verify_setup")
-                    else response.json()
-                    if hasattr(response, "json")
-                    else None
-                )
-                expected_status = expected_resp.get("status_code", 200)
-                actual_status = getattr(response, "status_code", 200)
-                if actual_status != expected_status:
+                expected_errors: list[str]
+                if expected_errors := expected_resp.get("errors", []):
+                    if not response.result.errors:
+                        self._adderr("Expected errors but got none")
+                        continue
+
+                    if len(expected_errors) != len(response.result.errors):
+                        self._adderr(
+                            f"Expected {len(expected_errors)} errors but got {len(response.result.errors)}"
+                        )
+                        # Continue and do a best effort check
+
+                    got_error_messages = [
+                        error.message for error in response.result.errors
+                    ]
+                    for expected_error in expected_errors:
+                        if expected_error not in got_error_messages:
+                            self._adderr(
+                                f"error message {expected_error} not found in returned error messages"
+                            )
+                elif response.result.errors:
                     self._adderr(
-                        f"Status code was {actual_status}, expected {expected_status}"
+                        f"got errors when none were expected: {response.result.errors}"
                     )
-                self._validate_graphql_response_structure(body)
-                self._validate_block("json", body)  # type:ignore
-                self._validate_block("headers", getattr(response, "headers", {}))
+                    continue
+
+                # Regular HTTP GraphQL response
+                logger.info(f"response: {response}")
+                # FIXME
+                # TODO
+                # Need to do something like MQTT and check multiple responses
+                body = response.result.data
+                self._validate_block("data", body)  # type:ignore
 
                 attach_yaml(
                     {
-                        "status_code": actual_status,
-                        "headers": dict(getattr(response, "headers", {})),
                         "body": body,
                     },
                     name="graphql_response",
