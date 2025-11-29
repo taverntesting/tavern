@@ -158,6 +158,7 @@ class ReprdError(TerminalRepr):
 
         # Format stage variables recursively
         if stage.get("graphql_request"):
+            # Format the graphql request in a special way to avoid formatting errors from curly braces in graphql
             stage_copy = copy.deepcopy(stage)
             from tavern._plugins.graphql.request import _format_graphql_request
 
