@@ -34,6 +34,29 @@ class RestResponse(CommonResponse):
 
         return redirect_query_params
 
+    def _check_status_code(self, status_code: Union[int, list[int]], body: Any) -> None:
+        expected_code = self.expected["status_code"]
+
+        if (isinstance(expected_code, int) and status_code == expected_code) or (
+            isinstance(expected_code, list) and (status_code in expected_code)
+        ):
+            logger.debug(
+                "Status code '%s' matched expected '%s'", status_code, expected_code
+            )
+            return
+        elif isinstance(status_code, int) and 400 <= status_code < 500:
+            # special case if there was a bad request. This assumes that the
+            # response would contain some kind of information as to why this
+            # request was rejected.
+            self._adderr(
+                "Status code was %s, expected %s:\n%s",
+                status_code,
+                expected_code,
+                indent_err_text(json.dumps(body)),
+            )
+        else:
+            self._adderr("Status code was %s, expected %s", status_code, expected_code)
+
     def verify(self, response: requests.Response) -> dict:
         """Verify response against expected values and returns any values that
         we wanted to save for use in future requests

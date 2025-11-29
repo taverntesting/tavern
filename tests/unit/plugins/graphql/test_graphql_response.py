@@ -91,23 +91,3 @@ class TestGraphQLResponse:
             "Invalid GraphQL top-level keys: {'other'}. Only 'data' and 'errors' are allowed"
             in response.errors[1]
         )
-
-    def test_check_status_code_single_match(self, graphql_test_block_config):
-        session = Mock(spec=GraphQLClient)
-        expected = {"status_code": 200}
-
-        response = GraphQLResponse(session, "test", expected, graphql_test_block_config)
-
-        # Should not raise any exception
-        response._check_status_code(200, {})
-        assert len(response.errors) == 0
-
-    def test_check_status_code_single_mismatch(self, graphql_test_block_config):
-        session = Mock(spec=GraphQLClient)
-        expected = {"status_code": 200}
-
-        response = GraphQLResponse(session, "test", expected, graphql_test_block_config)
-
-        response._check_status_code(404, {})
-        assert len(response.errors) == 1
-        assert "Status code was 404, expected 200" in response.errors[0]

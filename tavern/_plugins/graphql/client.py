@@ -23,7 +23,6 @@ _SubResponse = (
 class GraphQLResponseLike(ResponseLike):
     """A response-like object implementing the ResponseLike protocol for GraphQL responses"""
 
-    status_code: int
     reason: str
     headers: dict
     text: str
@@ -121,18 +120,14 @@ class GraphQLClient:
             if result.errors:
                 body_dict["errors"] = result.errors
             text = json.dumps(body_dict)
-            status_code = 200
             reason = "OK"
         except Exception as exc:
-            status_code = 500
             reason = "Internal Server Error"
             body_dict = {"errors": [{"message": str(exc)}]}
             text = json.dumps(body_dict)
 
         response_headers = {"Content-Type": "application/json"}
-        return GraphQLResponseLike(
-            status_code=status_code, reason=reason, headers=response_headers, text=text
-        )
+        return GraphQLResponseLike(reason=reason, headers=response_headers, text=text)
 
     def start_subscription(
         self, url: str, query: str, variables: dict, operation_name: str
