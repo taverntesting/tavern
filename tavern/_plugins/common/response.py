@@ -134,6 +134,7 @@ class CommonResponse(BaseResponse):
         """Common save functionality"""
         saved: dict = {}
 
+        logger.debug(f"Saving response to variables with {body} and {self.expected}")
         if body is not None:
             saved.update(self.maybe_get_save_values_from_save_block("json", body))
 

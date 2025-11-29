@@ -14,6 +14,24 @@ class GraphQLResponse(CommonResponse):
 
     def __init__(self, session, name: str, expected: dict, test_block_config):
         self.session = session
+
+        expected["save"] = expected.get("save", {})
+        for e in expected.get("graphql_responses", []):
+            save_block: dict
+            if save_block := e.get("save", {}):
+                if not isinstance(save_block, dict):
+                    raise exceptions.BadSchemaError(
+                        "save block for graphql_response must be a dict"
+                    )
+
+                for to_save in save_block:
+                    if to_save in expected["save"]:
+                        raise exceptions.BadSchemaError(
+                            f"save block for graphql_response cannot contain duplicate keys: {to_save}"
+                        )
+
+                expected["save"].update(save_block)
+
         super().__init__(session, name, expected, test_block_config)
 
     def _validate_graphql_response_structure(self, body: Any) -> None:
