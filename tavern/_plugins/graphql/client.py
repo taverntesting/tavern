@@ -23,11 +23,14 @@ _SubResponse = (
 class GraphQLResponseLike(ResponseLike):
     """A response-like object implementing the ResponseLike protocol for GraphQL responses"""
 
-    reason: str
     headers: dict
-    text: str
+    _text: str
 
     _json: Any = field(default=None, init=False)
+
+    @property
+    def text(self) -> str:
+        return self._text
 
     def json(self) -> Any:
         """Parse and return the JSON content of the response"""
@@ -120,14 +123,12 @@ class GraphQLClient:
             if result.errors:
                 body_dict["errors"] = result.errors
             text = json.dumps(body_dict)
-            reason = "OK"
         except Exception as exc:
-            reason = "Internal Server Error"
             body_dict = {"errors": [{"message": str(exc)}]}
             text = json.dumps(body_dict)
 
         response_headers = {"Content-Type": "application/json"}
-        return GraphQLResponseLike(reason=reason, headers=response_headers, text=text)
+        return GraphQLResponseLike(headers=response_headers, _text=text)
 
     def start_subscription(
         self, url: str, query: str, variables: dict, operation_name: str
