@@ -24,6 +24,7 @@ class GraphQLResponseLike(ResponseLike):
     """A response-like object implementing the ResponseLike protocol for GraphQL responses"""
 
     result: ExecutionResult
+    headers: dict[str, str] = field(default_factory=dict)
 
     _json: Any = field(default=None, init=False)
 

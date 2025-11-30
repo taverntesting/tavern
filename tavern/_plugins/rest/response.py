@@ -84,7 +84,7 @@ class RestResponse(CommonResponse):
             response=response,
         )
 
-        self._verbose_log_response(response)
+        self._verbose_log_response(response)  # type:ignore[arg-type]
 
         try:
             body = response.json()

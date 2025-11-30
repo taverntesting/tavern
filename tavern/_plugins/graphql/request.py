@@ -103,14 +103,7 @@ class GraphQLRequest(BaseRequest):
 
             if self.is_subscription_query:
                 self.session.start_subscription(url, query, variables, operation_name)
-                fake_resp = GraphQLResponseLike(
-                    headers={
-                        "Upgrade": "websocket",
-                        "Connection": "Upgrade",
-                        "Sec-WebSocket-Protocol": "graphql-ws",
-                    },
-                    _text="",
-                )
+                fake_resp = GraphQLResponseLike(result=None)
                 logger.debug(
                     "Subscription '%s' started, fake 101 response", operation_name
                 )

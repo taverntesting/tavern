@@ -1,11 +1,11 @@
 import logging
 from typing import Any
 
-from tavern._plugins.graphql.client import GraphQLResponseLike
 from tavern._core import exceptions
 from tavern._core.pytest import call_hook
 from tavern._core.report import attach_yaml
 from tavern._plugins.common.response import CommonResponse
+from tavern._plugins.graphql.client import GraphQLResponseLike
 
 logger: logging.Logger = logging.getLogger(__name__)
 
