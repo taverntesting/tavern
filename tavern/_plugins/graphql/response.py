@@ -149,7 +149,7 @@ class GraphQLResponse(CommonResponse):
 
         async def get_subscription_results(
             expected_resp,
-        ) -> tuple[dict, ResultOrErr] | None:
+        ) -> ResultOrErr | None:
             """Get subscription message result for an expected response.
 
             Waits for the next message on a subscription operation and returns
@@ -162,7 +162,7 @@ class GraphQLResponse(CommonResponse):
                 Tuple of (expected_resp, response) or None if error occurred
             """
             op_name = expected_resp["subscription"]
-            timeout: int | float = expected_resp.get("timeout", 5.0)
+            timeout: int | float = expected_resp.get("timeout", 3.0)
             try:
                 response = await self.session.get_next_message(op_name, timeout)
             except TimeoutError:
@@ -178,7 +178,7 @@ class GraphQLResponse(CommonResponse):
                 self._adderr(f"Subscription message on '{op_name}' was None")
                 return None
 
-            return expected_resp, response
+            return response
 
         saved = {}
 
