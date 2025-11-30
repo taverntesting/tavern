@@ -1,8 +1,6 @@
-import asyncio
 import logging
 from typing import Any
 
-import more_itertools
 from box.box import Box
 
 from tavern._core import exceptions
@@ -89,78 +87,79 @@ class GraphQLResponse(CommonResponse):
         sub_responses_list = [
             resp for resp in graphql_responses if "subscription" in resp
         ]
-        # Process all subscription responses concurrently using the event loop
-        subscription_results = {}
+        # Process subscription responses
         if sub_responses_list:
-
-            async def get_subscription_message(
-                expected_resp,
-            ) -> tuple[str, Any, dict, Exception | None]:
-                op_name = expected_resp["subscription"]
-                timeout: int | float = expected_resp.get("timeout", 5.0)
-                try:
-                    ws_msg = await self.session.get_next_message(op_name, timeout)
-                    return op_name, ws_msg, expected_resp, None
-                except TimeoutError:
-                    return (
-                        op_name,
-                        None,
-                        expected_resp,
-                        TimeoutError(
-                            f"Timeout waiting for subscription message on '{op_name}' within {timeout}s"
-                        ),
-                    )
-                except Exception as e:
-                    return op_name, None, expected_resp, e
-
-            # Create tasks for all subscription requests
-            tasks = [get_subscription_message(resp) for resp in sub_responses_list]
-
-        # Run all subscription tasks concurrently using the client's event loop
-        async_result = self.session._loop.run_until_complete(
-            asyncio.gather(*tasks, return_exceptions=True)
-        )
-
-        # Process the results
-        for result in async_result:
-            if isinstance(result, Exception):
-                # Handle any exception during task execution
-                raise result
-            else:
-                op_name, ws_msg, expected_resp, error = result
-                if error:
-                    if isinstance(error, TimeoutError):
-                        self._adderr(str(error))
-                    else:
-                        raise error
-                elif ws_msg is None:
-                    self._adderr(f"Subscription message on '{op_name}' was None")
-                else:
-                    # Process successful subscription response
-                    body = ws_msg
-                    if "json" in expected_resp:
-                        self._validate_block("json", body)
-
-                    attach_yaml(
-                        {"ws_op": op_name, "body": body},
-                        name="graphql_ws_response",
-                    )
-                    subscription_results[op_name] = (ws_msg, expected_resp)
-
-        # Process subscription results for validation functions
-        for op_name, (ws_msg, expected_resp) in subscription_results.items():
-            call_hook(
-                self.test_block_config,
-                "pytest_tavern_beta_after_every_response",
-                expected=expected_resp,
-                response=ws_msg,
+            saved.update(
+                self.session._loop.run_until_complete(
+                    self._handle_subscription_responses(sub_responses_list)
+                )
             )
-            self._maybe_run_validate_functions(ws_msg)
 
         if self.errors:
             raise exceptions.TestFailError(
                 f"Test '{self.name:s}' failed:\n{self._str_errors():s}",
                 failures=self.errors,
+            )
+
+        return saved
+
+    async def _handle_subscription_responses(
+        self, sub_responses_list: list[dict]
+    ) -> dict:
+        """Handle subscription responses concurrently"""
+
+        async def get_subscription_results(expected_resp) -> tuple[dict, dict] | None:
+            op_name = expected_resp["subscription"]
+            timeout: int | float = expected_resp.get("timeout", 5.0)
+            try:
+                response = await self.session.get_next_message(op_name, timeout)
+            except TimeoutError:
+                self._adderr(
+                    f"Timed out waiting for subscription message on '{op_name}'"
+                )
+                return None
+            except Exception:
+                self._adderr(f"Error getting subscription message on '{op_name}'")
+                return None
+
+            if response is None:
+                self._adderr(f"Subscription message on '{op_name}' was None")
+                return None
+
+            return expected_resp, response
+
+        saved = {}
+
+        async def async_generator_wrapper():
+            for resp in sub_responses_list:
+                yield resp, await get_subscription_results(resp)
+
+        # Process the results using async for
+        async for expected_resp, response in async_generator_wrapper():
+            if response is None:
+                continue
+            op_name = expected_resp["subscription"]
+            # Process successful subscription response
+            body = response
+            if "json" in expected_resp:
+                self._validate_block("json", body)
+
+            attach_yaml(
+                {"ws_op": op_name, "body": body},
+                name="graphql_ws_response",
+            )
+
+            call_hook(
+                self.test_block_config,
+                "pytest_tavern_beta_after_every_response",
+                expected=expected_resp,
+                response=response,
+            )
+            self._maybe_run_validate_functions(response)
+
+            saved.update(self._common_verify_save(body, response))
+            saved.update(
+                self.maybe_get_save_values_from_save_block("data", {"data": body})
             )
 
         return saved

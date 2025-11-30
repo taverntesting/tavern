@@ -167,7 +167,9 @@ class GraphQLClient:
             logger.error(f"Failed to start subscription: {e}")
             raise
 
-    async def get_next_message(self, op_name: str, timeout: float = 5.0) -> Optional[dict]:
+    async def get_next_message(
+        self, op_name: str, timeout: float = 5.0
+    ) -> Optional[_SubResponse]:
         """
         Get next message from subscription generator.
         """
@@ -184,6 +186,9 @@ class GraphQLClient:
                 anext(subscription_generator), timeout=timeout
             )
         except StopAsyncIteration:
+            logger.error(
+                f"got unexpected StopAsyncIteration from subscription {op_name}"
+            )
             return None
         except TimeoutError as e:
             logger.error(f"Timeout getting next message from subscription: {e}")
