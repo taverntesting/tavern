@@ -18,6 +18,16 @@ class GraphQLResponse(CommonResponse):
     def __init__(self, session, name: str, expected: dict, test_block_config):
         self.session = session
 
+        sync_responses = 0
+        for resp in expected.get("graphql_responses", []):
+            if resp.get("subscription") is None:
+                sync_responses += 1
+
+        if sync_responses > 1:
+            raise exceptions.BadSchemaError(
+                "Only one graphql_response can be synchronous"
+            )
+
         expected["save"] = expected.get("save", {})
         for e in expected.get("graphql_responses", []):
             save_block: dict
@@ -84,9 +94,7 @@ class GraphQLResponse(CommonResponse):
                     )
                     continue
                 if ws_msg is None:
-                    self._adderr(
-                        f"Timeout waiting for subscription message on '{op_name}' within {timeout}s"
-                    )
+                    self._adderr(f"Subscription message on '{op_name}' was None")
                     continue
 
                 body = ws_msg
@@ -98,6 +106,9 @@ class GraphQLResponse(CommonResponse):
                     name="graphql_ws_response",
                 )
             else:
+                # Regular HTTP GraphQL response
+                logger.info(f"response: {response}")
+
                 expected_errors: list[str]
                 if expected_errors := expected_resp.get("errors", []):
                     if not response.result.errors:
@@ -125,11 +136,6 @@ class GraphQLResponse(CommonResponse):
                     )
                     continue
 
-                # Regular HTTP GraphQL response
-                logger.info(f"response: {response}")
-                # FIXME
-                # TODO
-                # Need to do something like MQTT and check multiple responses
                 body = response.result.data
                 self._validate_block("data", body)  # type:ignore
 
