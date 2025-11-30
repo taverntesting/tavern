@@ -85,15 +85,17 @@ class TestGraphQLClient:
                 )
             assert "operation_name required for subscriptions" in str(exc_info.value)
 
-    def test_get_next_message_not_found(self):
+    @pytest.mark.asyncio
+    async def test_get_next_message_not_found(self):
         """Test getting next message from non-existent subscription"""
         client = GraphQLClient()
 
         with pytest.raises(ValueError) as exc_info:
-            client.get_next_message("non_existent")
+            await client.get_next_message("non_existent")
         assert "Subscription with name 'non_existent' not found" in str(exc_info.value)
 
-    def test_get_next_message_success(self):
+    @pytest.mark.asyncio
+    async def test_get_next_message_success(self):
         """Test getting next message from subscription successfully"""
         client = GraphQLClient()
 
@@ -110,10 +112,11 @@ class TestGraphQLClient:
 
             # Test getting the next message
             with client:  # Use context manager to set up the event loop
-                message = client.get_next_message("test_op")
+                message = await client.get_next_message("test_op")
             assert message == {"data": {"test": "value"}}
 
-    def test_get_next_message_timeout(self):
+    @pytest.mark.asyncio
+    async def test_get_next_message_timeout(self):
         """Test getting next message times out"""
         client = GraphQLClient()
 
@@ -132,9 +135,10 @@ class TestGraphQLClient:
             # Test that timeout is raised
             with client:  # Use context manager to set up the event loop
                 with pytest.raises(TimeoutError):
-                    client.get_next_message("slow_op", timeout=0.1)
+                    await client.get_next_message("slow_op", timeout=0.1)
 
-    def test_get_next_message_exception(self):
+    @pytest.mark.asyncio
+    async def test_get_next_message_exception(self):
         """Test getting next message when an exception occurs"""
         client = GraphQLClient()
 
@@ -153,5 +157,5 @@ class TestGraphQLClient:
             # Test that the exception is propagated
             with client:  # Use context manager to set up the event loop
                 with pytest.raises(Exception) as exc_info:
-                    client.get_next_message("error_op")
+                    await client.get_next_message("error_op")
             assert "Test error" in str(exc_info.value)
