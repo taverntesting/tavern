@@ -63,7 +63,7 @@ stages:
     graphql_request:
       url: "{graphql_server_url}/graphql"
       query: |
-        mutation CreatePost($title: String!, $content: String!, $authorId: ID!) {
+        mutation CreatePost($title: String!, $content: String!, $authorId: String!) {
           createPost(title: $title, content: $content, authorId: $authorId) {
             id
             title
