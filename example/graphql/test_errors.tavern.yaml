@@ -19,8 +19,6 @@ stages:
       variables:
         id: "999"
     graphql_response:
-      data:
-        user: null
       errors:
         - message: "User not found"
 
