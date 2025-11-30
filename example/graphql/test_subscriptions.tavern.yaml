@@ -488,12 +488,12 @@ stages:
       - subscription: ComplexSubscription
         data:
           user:
-            id: "{complex_user_id}"
+            id: !int "{complex_user_id}"
             name: "Complex Test User Updated"
             email: "complex.updated@example.com"
       - data:
           updateUser:
-            id: "{complex_user_id}"
+            id: !int "{complex_user_id}"
             name: "Complex Test User Updated"
             email: "complex.updated@example.com"
 
