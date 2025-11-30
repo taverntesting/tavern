@@ -82,7 +82,7 @@ includes:
 stages:
   - name: Subscribe to non-existent user
     graphql_request:
-      operation_name: subscribe
+      operation_name: GetUser
       url: "{graphql_server_url}/graphql"
       query: |
         subscription GetUser($id: ID!) {
@@ -104,11 +104,17 @@ stages:
           }
         }
     graphql_response:
-      data:
-        user:
-          id: "1"
-          name: "Alice Johnson"
-          email: "alice.j@example.com"
+      - data:
+          user:
+            id: !anyint
+      - subscription: GetUser
+        timeout: 1
+        data:
+          user:
+            id: "1"
+
+_xfail:
+  run: Timed out waiting for subscription message on 'GetUser'
 
 ---
 test_name: test multiple concurrent subscriptions
