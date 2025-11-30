@@ -163,8 +163,8 @@ class GraphQLClient:
 
             logger.debug(f"Started subscription {operation_name}")
             # Return the generator to allow iterating through subscription messages
-        except Exception as exc:
-            logger.error(f"Failed to start subscription: {exc}")
+        except Exception as e:
+            logger.error(f"Failed to start subscription: {e}")
             raise
 
     def get_next_message(self, op_name: str, timeout: float = 5.0) -> Optional[dict]:
