@@ -64,12 +64,12 @@ stages:
       - subscription: GetUser
         data:
           user:
-            id: "1"
+            id: !anyint
             name: "Alice Johnson"
             email: "alice.j@example.com"
       - data:
           updateUser:
-            id: "1"
+            id: !anyint
             name: "Alice Johnson"
             email: "alice.j@example.com"
 
