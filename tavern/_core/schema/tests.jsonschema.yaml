@@ -365,7 +365,13 @@ definitions:
         description: Which objects to save from response
 
       subscription:
+        description: Name of subscription that the response is expected for
         type: string
+
+      timeout:
+        type: number
+        description: Request timeout in seconds
+        default: 5
 
   http_response:
     type: object
