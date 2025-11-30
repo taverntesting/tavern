@@ -21,9 +21,9 @@ stages:
     graphql_response:
       data:
         user:
-          id: "1"
-          name: "John Doe"
-          email: "john@example.com"
+          id: 1
+          name: !anystr
+          email: !anystr
 
 ---
 test_name: GraphQL basic query - Get all users

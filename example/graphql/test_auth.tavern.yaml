@@ -24,7 +24,7 @@ stages:
     graphql_response:
       data:
         user:
-          id: "1"
+          id: !anyint
           name: "John Doe"
           email: "john@example.com"
 

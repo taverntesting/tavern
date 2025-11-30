@@ -81,7 +81,7 @@ stages:
         authorId: "1"
     graphql_response:
       data:
-        userPosts:
+        userPostsffdfdf:
           - id: "1"
             title: "First Post"
             content: "Hello World!"

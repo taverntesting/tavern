@@ -220,12 +220,12 @@ stages:
       - subscription: FirstUserSubscription
         data:
           user:
-            id: "{first_user_id}"
+            id: !int "{first_user_id}"
             name: "First User Updated"
             email: "first.updated@example.com"
       - data:
           updateUser:
-            id: "{first_user_id}"
+            id: !int "{first_user_id}"
             name: "First User Updated"
             email: "first.updated@example.com"
 
@@ -248,12 +248,12 @@ stages:
       - subscription: SecondUserSubscription
         data:
           user:
-            id: "{second_user_id}"
+            id: !int "{second_user_id}"
             name: "Second User Updated"
             email: "second.updated@example.com"
       - data:
           updateUser:
-            id: "{second_user_id}"
+            id: !int "{second_user_id}"
             name: "Second User Updated"
             email: "second.updated@example.com"
 
@@ -393,12 +393,12 @@ stages:
       - subscription: ErrorTestSubscription
         data:
           user:
-            id: "{error_user_id}"
+            id: !int "{error_user_id}"
             name: "Error Test User Updated"
             email: "error.updated@example.com"
       - data:
           updateUser:
-            id: "{error_user_id}"
+            id: !int "{error_user_id}"
             name: "Error Test User Updated"
             email: "error.updated@example.com"
 
@@ -464,7 +464,10 @@ stages:
         email: "another@example.com"
     graphql_response:
       data:
-        al: akkk
+        createUser:
+          id: !anyint
+          name: "Another User"
+          email: "another@example.com"
 
   - name: Update user that we're subscribed to
     graphql_request:

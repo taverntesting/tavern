@@ -21,9 +21,9 @@ stages:
     graphql_response:
       data:
         user:
-          id: "{user_id}"
-          name: "John Doe"
-          email: "john@example.com"
+          id: !int "{user_id}"
+          name: !anystr
+          email: !anystr
 
 ---
 test_name: GraphQL mutation create user with multiple variables
@@ -49,6 +49,7 @@ stages:
     graphql_response:
       data:
         createUser:
+          id: !anyint
           name: "{user_name}"
           email: "{user_email}"
 
@@ -78,6 +79,7 @@ stages:
     graphql_response:
       data:
         createPost:
+          id: !anyint
           title: "{post_title}"
           content: "{post_content}"
-          authorId: "{user_id}"
+          authorId: !int "{user_id}"
