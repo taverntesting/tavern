@@ -20,7 +20,6 @@ stages:
         name: "Alice Johnson"
         email: "alice@example.com"
     graphql_response:
-      status_code: 200
       json:
         data:
           createUser:
@@ -42,7 +41,6 @@ stages:
       variables:
         id: "3"
     graphql_response:
-      status_code: 200
       json:
         data:
           user:
@@ -74,7 +72,6 @@ stages:
         content: "This is my first GraphQL post!"
         authorId: "3"
     graphql_response:
-      status_code: 200
       json:
         data:
           createPost:

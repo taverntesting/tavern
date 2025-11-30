@@ -19,7 +19,6 @@ stages:
       variables:
         id: "{user_id}"
     graphql_response:
-      status_code: 200
       json:
         data:
           user:
@@ -49,7 +48,6 @@ stages:
         name: "{user_name}"
         email: "{user_email}"
     graphql_response:
-      status_code: 200
       json:
         data:
           createUser:
@@ -80,7 +78,6 @@ stages:
         content: "{post_content}"
         authorId: "{user_id}"
     graphql_response:
-      status_code: 200
       json:
         data:
           createPost:

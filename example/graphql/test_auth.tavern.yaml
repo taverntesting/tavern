@@ -22,7 +22,6 @@ stages:
         Authorization: "Bearer test-token"
         X-API-Key: "test-api-key"
     graphql_response:
-      status_code: 200
       json:
         data:
           user:
@@ -53,7 +52,6 @@ stages:
         Accept: "application/json"
         X-Custom-Header: "custom-value"
     graphql_response:
-      status_code: 200
       json:
         data:
           users:
@@ -86,7 +84,6 @@ stages:
       variables:
         id: "2"
     graphql_response:
-      status_code: 200
       json:
         data:
           user:

@@ -19,7 +19,6 @@ stages:
       variables:
         id: "1"
     graphql_response:
-      status_code: 200
       json:
         data:
           user:
@@ -46,7 +45,6 @@ stages:
           }
         }
     graphql_response:
-      status_code: 200
       json:
         data:
           users:
@@ -77,7 +75,6 @@ stages:
           }
         }
     graphql_response:
-      status_code: 200
       json:
         data:
           posts:

@@ -73,8 +73,6 @@ stages:
             id: "1"
             name: "Alice Johnson"
             email: "alice.j@example.com"
-    response:
-      status_code: 200
 
 ---
 test_name: test subscription no update

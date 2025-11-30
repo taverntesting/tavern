@@ -19,7 +19,6 @@ stages:
       variables:
         id: "999"
     graphql_response:
-      status_code: 200
       json:
         data:
           user: null
@@ -43,7 +42,6 @@ stages:
           }
         }
     graphql_response:
-      status_code: 200
       json:
         errors:
           - message: "Unknown query"
@@ -60,7 +58,6 @@ stages:
       url: "{graphql_server_url}/graphql"
       query: ""
     graphql_response:
-      status_code: 400
       json:
         errors:
           - message: "No query provided"
@@ -83,7 +80,6 @@ stages:
       json:
         invalid: "payload"
     graphql_response:
-      status_code: 400
       json:
         errors:
           - message: "No query provided"

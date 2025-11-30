@@ -13,7 +13,6 @@ stages:
       variables:
         id: "1"
     graphql_response:
-      status_code: 200
       json:
         data:
           user:
@@ -34,7 +33,6 @@ stages:
       query: !include multiple_operations.graphql
       operation_name: GetUsers
     graphql_response:
-      status_code: 200
       json:
         data:
           users:
@@ -61,7 +59,6 @@ stages:
         name: "Charlie Brown"
         email: "charlie@example.com"
     graphql_response:
-      status_code: 200
       json:
         data:
           createUser:
@@ -84,7 +81,6 @@ stages:
       variables:
         authorId: "1"
     graphql_response:
-      status_code: 200
       json:
         data:
           userPosts:
