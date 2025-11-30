@@ -3,7 +3,7 @@ import json
 import logging
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
@@ -19,7 +19,7 @@ _SubResponse = (
     AsyncGenerator[dict[str, Any], None] | AsyncGenerator[ExecutionResult, None]
 )
 
-_ResultOrErr = ExecutionResult | TransportQueryError
+_ResultOrErr = Union[ExecutionResult, TransportQueryError]
 
 
 @dataclass(kw_only=True)
