@@ -7,7 +7,11 @@ from tavern._core import exceptions
 from tavern._core.pytest import call_hook
 from tavern._core.report import attach_yaml
 from tavern._plugins.common.response import CommonResponse
-from tavern._plugins.graphql.client import GraphQLClient, GraphQLResponseLike
+from tavern._plugins.graphql.client import (
+    GraphQLClient,
+    GraphQLResponseLike,
+    ResultOrErr,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -143,7 +147,9 @@ class GraphQLResponse(CommonResponse):
             Dictionary of saved values from subscription responses
         """
 
-        async def get_subscription_results(expected_resp) -> tuple[dict, dict] | None:
+        async def get_subscription_results(
+            expected_resp,
+        ) -> tuple[dict, ResultOrErr] | None:
             """Get subscription message result for an expected response.
 
             Waits for the next message on a subscription operation and returns
@@ -268,9 +274,9 @@ class GraphQLResponse(CommonResponse):
                         found = True
 
                 if not found:
-                        self._adderr(
-                            f"error message '{expected_error}' not found in returned error messages (had {got_error_messages})"
-                        )
+                    self._adderr(
+                        f"error message '{expected_error}' not found in returned error messages (had {got_error_messages})"
+                    )
         elif response.result.errors:
             self._adderr(
                 f"got errors when none were expected: {response.result.errors}"

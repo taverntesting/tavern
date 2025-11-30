@@ -1,8 +1,7 @@
-from typing import Optional
 import contextlib
 import logging
 from collections.abc import Mapping
-from typing import Any, Protocol
+from typing import Any, Optional, Protocol
 
 from requests.status_codes import _codes  # type:ignore
 

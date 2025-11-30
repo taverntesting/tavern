@@ -19,14 +19,14 @@ _SubResponse = (
     AsyncGenerator[dict[str, Any], None] | AsyncGenerator[ExecutionResult, None]
 )
 
-_ResultOrErr = Union[ExecutionResult, TransportQueryError]
+ResultOrErr = Union[ExecutionResult, TransportQueryError]
 
 
 @dataclass(kw_only=True)
 class GraphQLResponseLike(ResponseLike):
     """A response-like object implementing the ResponseLike protocol for GraphQL responses"""
 
-    result: _ResultOrErr
+    result: ResultOrErr
     headers: dict[str, str] = field(default_factory=dict)
 
     _json: Any = field(default=None, init=False)
