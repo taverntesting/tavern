@@ -20,12 +20,11 @@ stages:
         name: "Alice Johnson"
         email: "alice@example.com"
     graphql_response:
-      json:
-        data:
-          createUser:
-            id: "3"
-            name: "Alice Johnson"
-            email: "alice@example.com"
+      data:
+        createUser:
+          id: "3"
+          name: "Alice Johnson"
+          email: "alice@example.com"
 
   - name: Verify created user exists
     graphql_request:
@@ -41,12 +40,11 @@ stages:
       variables:
         id: "3"
     graphql_response:
-      json:
-        data:
-          user:
-            id: "3"
-            name: "Alice Johnson"
-            email: "alice@example.com"
+      data:
+        user:
+          id: "3"
+          name: "Alice Johnson"
+          email: "alice@example.com"
 
 ---
 test_name: GraphQL mutations - Create new post
@@ -72,10 +70,9 @@ stages:
         content: "This is my first GraphQL post!"
         authorId: "3"
     graphql_response:
-      json:
-        data:
-          createPost:
-            id: "3"
-            title: "My First Post"
-            content: "This is my first GraphQL post!"
-            authorId: "3"
+      data:
+        createPost:
+          id: "3"
+          title: "My First Post"
+          content: "This is my first GraphQL post!"
+          authorId: "3"

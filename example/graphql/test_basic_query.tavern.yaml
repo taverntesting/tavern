@@ -19,12 +19,11 @@ stages:
       variables:
         id: "1"
     graphql_response:
-      json:
-        data:
-          user:
-            id: "1"
-            name: "John Doe"
-            email: "john@example.com"
+      data:
+        user:
+          id: "1"
+          name: "John Doe"
+          email: "john@example.com"
 
 ---
 test_name: GraphQL basic query - Get all users
@@ -45,15 +44,14 @@ stages:
           }
         }
     graphql_response:
-      json:
-        data:
-          users:
-            - id: "1"
-              name: "John Doe"
-              email: "john@example.com"
-            - id: "2"
-              name: "Jane Smith"
-              email: "jane@example.com"
+      data:
+        users:
+          - id: "1"
+            name: "John Doe"
+            email: "john@example.com"
+          - id: "2"
+            name: "Jane Smith"
+            email: "jane@example.com"
 
 ---
 test_name: GraphQL basic query - Get posts
@@ -75,14 +73,13 @@ stages:
           }
         }
     graphql_response:
-      json:
-        data:
-          posts:
-            - id: "1"
-              title: "First Post"
-              content: "Hello World!"
-              authorId: "1"
-            - id: "2"
-              title: "Second Post"
-              content: "GraphQL is cool"
-              authorId: "2"
+      data:
+        posts:
+          - id: "1"
+            title: "First Post"
+            content: "Hello World!"
+            authorId: "1"
+          - id: "2"
+            title: "Second Post"
+            content: "GraphQL is cool"
+            authorId: "2"

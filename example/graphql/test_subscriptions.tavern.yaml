@@ -1,7 +1,6 @@
 ---
 test_name: test user subscription update
 
-
 includes:
   - !include graphql_config.yaml
 
@@ -77,7 +76,6 @@ stages:
 ---
 test_name: test subscription no update
 
-
 includes:
   - !include graphql_config.yaml
 
@@ -114,7 +112,6 @@ stages:
 
 ---
 test_name: test multiple concurrent subscriptions
-
 
 includes:
   - !include graphql_config.yaml
@@ -257,7 +254,6 @@ stages:
 ---
 test_name: test invalid subscription scenarios
 
-
 includes:
   - !include graphql_config.yaml
 
@@ -309,7 +305,6 @@ stages:
 
 ---
 test_name: test error handling
-
 
 includes:
   - !include graphql_config.yaml
@@ -403,7 +398,6 @@ stages:
 
 ---
 test_name: test complex subscription scenario with multiple operations
-
 
 includes:
   - !include graphql_config.yaml

@@ -13,12 +13,11 @@ stages:
       variables:
         id: "1"
     graphql_response:
-      json:
-        data:
-          user:
-            id: "1"
-            name: "John Doe"
-            email: "john@example.com"
+      data:
+        user:
+          id: "1"
+          name: "John Doe"
+          email: "john@example.com"
 
 ---
 test_name: GraphQL multiple operations test - Get all users with operation_name
@@ -33,15 +32,14 @@ stages:
       query: !include multiple_operations.graphql
       operation_name: GetUsers
     graphql_response:
-      json:
-        data:
-          users:
-            - id: "1"
-              name: "John Doe"
-              email: "john@example.com"
-            - id: "2"
-              name: "Jane Smith"
-              email: "jane@example.com"
+      data:
+        users:
+          - id: "1"
+            name: "John Doe"
+            email: "john@example.com"
+          - id: "2"
+            name: "Jane Smith"
+            email: "jane@example.com"
 
 ---
 test_name: GraphQL multiple operations test - Create user with operation_name
@@ -59,12 +57,11 @@ stages:
         name: "Charlie Brown"
         email: "charlie@example.com"
     graphql_response:
-      json:
-        data:
-          createUser:
-            id: "3"
-            name: "Charlie Brown"
-            email: "charlie@example.com"
+      data:
+        createUser:
+          id: "3"
+          name: "Charlie Brown"
+          email: "charlie@example.com"
 
 ---
 test_name: GraphQL multiple operations test - Get user posts with operation_name
@@ -81,14 +78,13 @@ stages:
       variables:
         authorId: "1"
     graphql_response:
-      json:
-        data:
-          userPosts:
-            - id: "1"
-              title: "First Post"
-              content: "Hello World!"
-              authorId: "1"
-            - id: "2"
-              title: "Second Post"
-              content: "GraphQL is cool"
-              authorId: "2"
+      data:
+        userPosts:
+          - id: "1"
+            title: "First Post"
+            content: "Hello World!"
+            authorId: "1"
+          - id: "2"
+            title: "Second Post"
+            content: "GraphQL is cool"
+            authorId: "2"

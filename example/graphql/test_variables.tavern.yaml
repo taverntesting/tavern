@@ -19,12 +19,11 @@ stages:
       variables:
         id: "{user_id}"
     graphql_response:
-      json:
-        data:
-          user:
-            id: "{user_id}"
-            name: "John Doe"
-            email: "john@example.com"
+      data:
+        user:
+          id: "{user_id}"
+          name: "John Doe"
+          email: "john@example.com"
 
 ---
 test_name: GraphQL variable substitution test
@@ -48,11 +47,10 @@ stages:
         name: "{user_name}"
         email: "{user_email}"
     graphql_response:
-      json:
-        data:
-          createUser:
-            name: "{user_name}"
-            email: "{user_email}"
+      data:
+        createUser:
+          name: "{user_name}"
+          email: "{user_email}"
 
 ---
 test_name: GraphQL variable substitution test
@@ -78,9 +76,8 @@ stages:
         content: "{post_content}"
         authorId: "{user_id}"
     graphql_response:
-      json:
-        data:
-          createPost:
-            title: "{post_title}"
-            content: "{post_content}"
-            authorId: "{user_id}"
+      data:
+        createPost:
+          title: "{post_title}"
+          content: "{post_content}"
+          authorId: "{user_id}"

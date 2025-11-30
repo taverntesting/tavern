@@ -22,12 +22,11 @@ stages:
         Authorization: "Bearer test-token"
         X-API-Key: "test-api-key"
     graphql_response:
-      json:
-        data:
-          user:
-            id: "1"
-            name: "John Doe"
-            email: "john@example.com"
+      data:
+        user:
+          id: "1"
+          name: "John Doe"
+          email: "john@example.com"
 
 ---
 test_name: GraphQL authentication - Query with custom content type
@@ -52,15 +51,14 @@ stages:
         Accept: "application/json"
         X-Custom-Header: "custom-value"
     graphql_response:
-      json:
-        data:
-          users:
-            - id: "1"
-              name: "John Doe"
-              email: "john@example.com"
-            - id: "2"
-              name: "Jane Smith"
-              email: "jane@example.com"
+      data:
+        users:
+          - id: "1"
+            name: "John Doe"
+            email: "john@example.com"
+          - id: "2"
+            name: "Jane Smith"
+            email: "jane@example.com"
 
 ---
 test_name: GraphQL authentication - GET request with query parameters
@@ -84,9 +82,8 @@ stages:
       variables:
         id: "2"
     graphql_response:
-      json:
-        data:
-          user:
-            id: "2"
-            name: "Jane Smith"
-            email: "jane@example.com"
+      data:
+        user:
+          id: "2"
+          name: "Jane Smith"
+          email: "jane@example.com"

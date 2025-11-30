@@ -19,11 +19,10 @@ stages:
       variables:
         id: "999"
     graphql_response:
-      json:
-        data:
-          user: null
-        errors:
-          - message: "User not found"
+      data:
+        user: null
+      errors:
+        - message: "User not found"
 
 ---
 test_name: GraphQL error handling test
@@ -42,9 +41,8 @@ stages:
           }
         }
     graphql_response:
-      json:
-        errors:
-          - message: "Unknown query"
+      errors:
+        - message: Cannot query field 'invalidField'
 
 ---
 test_name: GraphQL error handling test
@@ -58,9 +56,8 @@ stages:
       url: "{graphql_server_url}/graphql"
       query: ""
     graphql_response:
-      json:
-        errors:
-          - message: "No query provided"
+      errors:
+        - message: "No query provided"
 
 ---
 test_name: GraphQL error handling test
@@ -80,6 +77,5 @@ stages:
       json:
         invalid: "payload"
     graphql_response:
-      json:
-        errors:
-          - message: "No query provided"
+      errors:
+        - message: "No query provided"
