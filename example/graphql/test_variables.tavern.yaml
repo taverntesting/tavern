@@ -1,5 +1,5 @@
 ---
-test_name: GraphQL variable substitution test
+test_name: GraphQL query user with variable
 
 includes:
   - !include graphql_config.yaml
@@ -26,7 +26,7 @@ stages:
           email: "john@example.com"
 
 ---
-test_name: GraphQL variable substitution test
+test_name: GraphQL mutation create user with multiple variables
 
 includes:
   - !include graphql_config.yaml
@@ -53,7 +53,7 @@ stages:
           email: "{user_email}"
 
 ---
-test_name: GraphQL variable substitution test
+test_name: GraphQL mutation create post with mixed variables
 
 includes:
   - !include graphql_config.yaml
