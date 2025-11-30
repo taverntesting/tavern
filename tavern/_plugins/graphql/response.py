@@ -100,7 +100,7 @@ class GraphQLResponse(CommonResponse):
 
         graphql_responses = self.expected.get("graphql_responses", [])
 
-        sync_responses_list = [
+        sync_responses_list: list[dict] = [
             resp for resp in graphql_responses if "subscription" not in resp
         ]
 
@@ -220,7 +220,7 @@ class GraphQLResponse(CommonResponse):
 
     def _check_sync_response(
         self,
-        expected_resp,
+        expected_resp: dict,
         response: GraphQLResponseLike,
     ) -> dict[Any, Any]:
         """Check a synchronous GraphQL response against expected values.
@@ -278,7 +278,7 @@ class GraphQLResponse(CommonResponse):
             return {}
 
         body = response.result.data
-        self._validate_block("data", body)  # type:ignore
+        self._validate_block("data", body, read_from=expected_resp)  # type:ignore
 
         attach_yaml(
             {

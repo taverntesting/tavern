@@ -1,3 +1,4 @@
+from typing import Optional
 import contextlib
 import logging
 from collections.abc import Mapping
@@ -83,15 +84,21 @@ class CommonResponse(BaseResponse):
         with contextlib.suppress(ValueError):
             log_dict_block(response.json(), "Body")
 
-    def _validate_block(self, blockname: str, block: Mapping) -> None:
+    def _validate_block(
+        self, blockname: str, block: Mapping, read_from: Optional[dict] = None
+    ) -> None:
         """Validate a block of the response
 
         Args:
             blockname: which part of the response is being checked
             block: The actual part being checked
+            read_from: The block to read from, or self.expected if not specified
         """
+        if read_from is None:
+            read_from = self.expected
+
         try:
-            expected_block = self.expected[blockname]
+            expected_block = read_from[blockname]
         except KeyError:
             expected_block = None
 
@@ -107,7 +114,7 @@ class CommonResponse(BaseResponse):
             block = {i.lower(): j for i, j in block.items()}
             expected_block = {i.lower(): j for i, j in expected_block.items()}
 
-        logger.debug("Validating response %s against %s", blockname, expected_block)
+        logger.debug("Validating response '%s' against %s", blockname, expected_block)
 
         test_strictness = self.test_block_config.strict
         if blockname == "data":
