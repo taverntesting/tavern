@@ -75,7 +75,7 @@ class Query:
     def user_posts(self, author_id: strawberry.ID) -> list[Post]:
         posts_by_author = list(global_db_session.execute(select(models.Post).filter_by(author_id=int(author_id))).scalars().all())
         if not posts_by_author:
-            raise Exception("No p")
+            raise Exception("No posts found for that author")
         return posts_by_author
 
 

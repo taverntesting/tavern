@@ -70,6 +70,23 @@ includes:
   - !include graphql_config.yaml
 
 stages:
+  - name: Create a post for the user
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: !include multiple_operations.graphql
+      operation_name: CreatePost
+      variables:
+        title: "First Post"
+        content: "Hello World!"
+        authorId: "1"
+    graphql_response:
+      data:
+        userPosts:
+          - id: "1"
+            title: "First Post"
+            content: "Hello World!"
+            authorId: "1"
+
   - name: Get user posts using operation_name
     graphql_request:
       url: "{graphql_server_url}/graphql"
