@@ -18,6 +18,14 @@ class GraphQLResponse(CommonResponse):
     session: GraphQLClient
 
     def __init__(self, session, name: str, expected: dict, test_block_config):
+        """Initialize GraphQL response validator.
+
+        Args:
+            session: GraphQL client instance
+            name: Name of the test block
+            expected: Expected response configuration
+            test_block_config: Test block configuration
+        """
         self.session = session
 
         sync_responses = 0
@@ -50,7 +58,14 @@ class GraphQLResponse(CommonResponse):
         super().__init__(session, name, expected, test_block_config)
 
     def _validate_graphql_response_structure(self, body: Any) -> None:
-        """Validate GraphQL response structure: data or errors top-level"""
+        """Validate GraphQL response structure: data or errors top-level
+
+        Checks if the response body contains valid GraphQL response structure
+        with either 'data' or 'errors' keys at the top level.
+
+        Args:
+            body: Response body to validate
+        """
         if body is None:
             self._adderr("GraphQL response body missing")
             return
@@ -71,7 +86,17 @@ class GraphQLResponse(CommonResponse):
 
     def verify(self, response: GraphQLResponseLike) -> dict:
         """Verify response against expected values and returns any values that
-        we wanted to save for use in future requests"""
+        we wanted to save for use in future requests.
+
+        Args:
+            response: The GraphQL response to verify
+
+        Returns:
+            Dictionary of saved values from the response
+
+        Raises:
+            TestFailError: If verification fails with collected errors
+        """
 
         graphql_responses = self.expected.get("graphql_responses", [])
 
@@ -106,9 +131,30 @@ class GraphQLResponse(CommonResponse):
     async def _handle_subscription_responses(
         self, sub_responses_list: list[dict]
     ) -> dict:
-        """Handle subscription responses concurrently"""
+        """Handle subscription responses concurrently.
+
+        Processes subscription-based GraphQL responses by waiting for messages
+        on each subscription and validating them against expected responses.
+
+        Args:
+            sub_responses_list: List of subscription response configurations
+
+        Returns:
+            Dictionary of saved values from subscription responses
+        """
 
         async def get_subscription_results(expected_resp) -> tuple[dict, dict] | None:
+            """Get subscription message result for an expected response.
+
+            Waits for the next message on a subscription operation and returns
+            the expected response configuration along with the actual response.
+
+            Args:
+                expected_resp: Expected response configuration for subscription
+
+            Returns:
+                Tuple of (expected_resp, response) or None if error occurred
+            """
             op_name = expected_resp["subscription"]
             timeout: int | float = expected_resp.get("timeout", 5.0)
             try:
@@ -131,6 +177,14 @@ class GraphQLResponse(CommonResponse):
         saved = {}
 
         async def async_generator_wrapper():
+            """Asynchronous generator that yields expected responses with results.
+
+            For each expected subscription response, gets the subscription result
+            and yields the pair for processing.
+
+            Yields:
+                Tuple of (expected_resp, response) for each subscription
+            """
             for resp in sub_responses_list:
                 yield resp, await get_subscription_results(resp)
 
@@ -169,6 +223,18 @@ class GraphQLResponse(CommonResponse):
         expected_resp,
         response: GraphQLResponseLike,
     ) -> dict[Any, Any]:
+        """Check a synchronous GraphQL response against expected values.
+
+        Validates a synchronous (non-subscription) GraphQL response by checking
+        for expected errors and validating the response data.
+
+        Args:
+            expected_resp: Expected response configuration
+            response: Actual GraphQL response to validate
+
+        Returns:
+            Dictionary of saved values from the response
+        """
         call_hook(
             self.test_block_config,
             "pytest_tavern_beta_after_every_response",
