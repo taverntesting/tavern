@@ -167,7 +167,7 @@ class GraphQLClient:
             logger.error(f"Failed to start subscription: {e}")
             raise
 
-    def get_next_message(self, op_name: str, timeout: float = 5.0) -> Optional[dict]:
+    async def get_next_message(self, op_name: str, timeout: float = 5.0) -> Optional[dict]:
         """
         Get next message from subscription generator.
         """
@@ -178,18 +178,13 @@ class GraphQLClient:
 
         subscription_generator = self.subscriptions[op_name]
 
-        async def _get_next():
-            # Get the next item from the async iterator
-            try:
-                return await asyncio.wait_for(
-                    subscription_generator.__anext__(), timeout=timeout
-                )
-            except StopAsyncIteration:
-                return None
-
+        # Get the next item from the async iterator
         try:
-            message = self._loop.run_until_complete(_get_next())
-            return message
+            return await asyncio.wait_for(
+                subscription_generator.__anext__(), timeout=timeout
+            )
+        except StopAsyncIteration:
+            return None
         except TimeoutError as e:
             logger.error(f"Timeout getting next message from subscription: {e}")
             raise
