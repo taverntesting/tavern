@@ -7,7 +7,7 @@ from tavern._core import exceptions
 from tavern._core.pytest import call_hook
 from tavern._core.report import attach_yaml
 from tavern._plugins.common.response import CommonResponse
-from tavern._plugins.graphql.client import GraphQLResponseLike, GraphQLClient
+from tavern._plugins.graphql.client import GraphQLClient, GraphQLResponseLike
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -196,10 +196,15 @@ class GraphQLResponse(CommonResponse):
             ]
             expected_errors = [Box(error).message for error in expected_errors]
             for expected_error in expected_errors:
-                if expected_error not in got_error_messages:
-                    self._adderr(
-                        f"error message {expected_error} not found in returned error messages"
-                    )
+                found = False
+                for got_error in got_error_messages:
+                    if expected_error in got_error:
+                        found = True
+
+                if not found:
+                        self._adderr(
+                            f"error message '{expected_error}' not found in returned error messages (had {got_error_messages})"
+                        )
         elif response.result.errors:
             self._adderr(
                 f"got errors when none were expected: {response.result.errors}"

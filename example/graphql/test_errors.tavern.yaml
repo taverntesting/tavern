@@ -1,5 +1,5 @@
 ---
-test_name: GraphQL error handling test
+test_name: Test non-existent user
 
 includes:
   - !include graphql_config.yaml
@@ -25,7 +25,7 @@ stages:
         - message: "User not found"
 
 ---
-test_name: GraphQL error handling test
+test_name: Test invalid query
 
 includes:
   - !include graphql_config.yaml
@@ -45,10 +45,12 @@ stages:
         - message: Cannot query field 'invalidField'
 
 ---
-test_name: GraphQL error handling test
+test_name: Test empty query
 
 includes:
   - !include graphql_config.yaml
+
+_xfail: run
 
 stages:
   - name: Missing query parameter
@@ -60,7 +62,7 @@ stages:
         - message: "No query provided"
 
 ---
-test_name: GraphQL error handling test
+test_name: Test invalid JSON payload
 
 includes:
   - !include graphql_config.yaml

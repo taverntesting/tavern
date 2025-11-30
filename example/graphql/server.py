@@ -51,7 +51,10 @@ class Post:
 class Query:
     @strawberry.field
     def user(self, id: strawberry.ID) -> User:
-        return global_db_session.get(models.User, int(id))
+        user = global_db_session.get(models.User, int(id))
+        if user is None:
+            raise Exception("User not found")
+        return user
 
     @strawberry.field
     def users(self) -> list[User]:
@@ -59,7 +62,10 @@ class Query:
 
     @strawberry.field
     def post(self, id: strawberry.ID) -> Post:
-        return global_db_session.get(models.Post, int(id))
+        post = global_db_session.get(models.Post, int(id))
+        if post is None:
+            raise Exception("Post not found")
+        return post
 
     @strawberry.field
     def posts(self) -> list[Post]:
@@ -67,13 +73,10 @@ class Query:
 
     @strawberry.field
     def user_posts(self, author_id: strawberry.ID) -> list[Post]:
-        return (
-            global_db_session.execute(
-                select(models.Post).filter_by(author_id=int(author_id))
-            )
-            .scalars()
-            .all()
-        )
+        posts_by_author = list(global_db_session.execute(select(models.Post).filter_by(author_id=int(author_id))).scalars().all())
+        if not posts_by_author:
+            raise Exception("No p")
+        return posts_by_author
 
 
 @strawberry.type
