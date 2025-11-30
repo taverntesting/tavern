@@ -137,6 +137,9 @@ class GraphQLResponse(CommonResponse):
                     name="graphql_response",
                 )
                 saved.update(self._common_verify_save(body, response))
+                saved.update(
+                    self.maybe_get_save_values_from_save_block("data", {"data": body})
+                )
 
             self._maybe_run_validate_functions(
                 response if "subscription" not in expected_resp else ws_msg
