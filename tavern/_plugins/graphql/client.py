@@ -181,7 +181,7 @@ class GraphQLClient:
         # Get the next item from the async iterator
         try:
             return await asyncio.wait_for(
-                subscription_generator.__anext__(), timeout=timeout
+                anext(subscription_generator), timeout=timeout
             )
         except StopAsyncIteration:
             return None
