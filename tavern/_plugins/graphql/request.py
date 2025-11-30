@@ -2,6 +2,7 @@ import logging
 from functools import cached_property
 
 import box
+import gql.transport.exceptions
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
@@ -117,6 +118,9 @@ class GraphQLRequest(BaseRequest):
             logger.debug("GraphQL response: %s", response.text)
             return response
 
+        except gql.transport.exceptions.TransportQueryError as e:
+            logger.debug("graphql error while making request: %s", e)
+            return GraphQLResponseLike(result=e)
         except Exception as e:
             logger.exception("Error executing GraphQL request")
             raise exceptions.TavernException(f"GraphQL request failed: {e}") from e

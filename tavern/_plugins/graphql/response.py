@@ -1,6 +1,8 @@
 import logging
 from typing import Any
 
+from box.box import Box
+
 from tavern._core import exceptions
 from tavern._core.pytest import call_hook
 from tavern._core.report import attach_yaml
@@ -109,8 +111,9 @@ class GraphQLResponse(CommonResponse):
                         # Continue and do a best effort check
 
                     got_error_messages = [
-                        error.message for error in response.result.errors
+                        Box(error).message for error in response.result.errors
                     ]
+                    expected_errors = [Box(error).message for error in expected_errors]
                     for expected_error in expected_errors:
                         if expected_error not in got_error_messages:
                             self._adderr(

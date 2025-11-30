@@ -7,6 +7,7 @@ from typing import Any, Optional
 
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
+from gql.transport.exceptions import TransportQueryError
 from gql.transport.websockets import WebsocketsTransport
 from graphql import ExecutionResult
 
@@ -18,12 +19,14 @@ _SubResponse = (
     AsyncGenerator[dict[str, Any], None] | AsyncGenerator[ExecutionResult, None]
 )
 
+_ResultOrErr = ExecutionResult | TransportQueryError
+
 
 @dataclass(kw_only=True)
 class GraphQLResponseLike(ResponseLike):
     """A response-like object implementing the ResponseLike protocol for GraphQL responses"""
 
-    result: ExecutionResult
+    result: _ResultOrErr
     headers: dict[str, str] = field(default_factory=dict)
 
     _json: Any = field(default=None, init=False)
