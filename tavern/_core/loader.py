@@ -2,6 +2,7 @@
 import dataclasses
 import logging
 import os.path
+import pathlib
 import re
 import typing
 import uuid
@@ -161,14 +162,17 @@ def construct_include(loader, node):
     """Include file referenced at node."""
 
     filename = find_include(loader, node)
-    extension = os.path.splitext(filename)[1].lstrip(".")
+    resolved_path = pathlib.Path(filename)
+    extension = resolved_path.suffix.lstrip(".")
 
-    if extension not in ("yaml", "yml", "json"):
-        raise BadSchemaError(
-            f"Unknown filetype '{filename}' (included files must be in YAML format and end with .yaml or .yml)"
-        )
+    if extension in ("yaml", "yml", "json"):
+        return load_single_document_yaml(filename)
+    elif extension == "graphql":
+        return resolved_path.read_text()
 
-    return load_single_document_yaml(filename)
+    raise BadSchemaError(
+        f"Unknown filetype '{filename}' (included files must be in YAML format and end with .yaml or .yml)"
+    )
 
 
 IncludeLoader.add_constructor("!include", construct_include)
@@ -285,6 +289,8 @@ class _RegexSearchSentinel(RegexSentinel):
 class AnythingSentinel(TypeSentinel):
     yaml_tag = "!anything"
     constructor = str
+
+    allowed_types = "<anything>"
 
     @classmethod
     def from_yaml(cls, loader, node):

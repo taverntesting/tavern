@@ -1,15 +1,11 @@
 repos:
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.8
+    rev: v1.7.9
     hooks:
       - id: actionlint
         args: ["-shellcheck="]
-  - repo: https://github.com/hadialqattan/pycln
-    rev: v2.6.0
-    hooks:
-      - id: pycln
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.14.5
+    rev: v0.14.7
     hooks:
       - id: ruff-format
       - id: ruff-check
@@ -20,7 +16,7 @@ repos:
       - id: prettier
         types_or: [yaml]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.18.2
+    rev: v1.19.0
     hooks:
       - id: mypy
         additional_dependencies:
@@ -31,7 +27,7 @@ repos:
         exclude: tests
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.9.9
+    rev: 0.9.13
     hooks:
       - id: uv-lock
 

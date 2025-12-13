@@ -33,6 +33,7 @@ Tavern is still in active development and is used by 100s of companies.
 * [HTTP Integration testing](http.md)
 * [MQTT Integration testing](mqtt.md)
 * [gRPC Integration testing](grpc.md)
+* [GraphQL Integration testing](graphql.md)
 * [Plugins](plugins.md)
 * [Debugging Tests](debugging.md)
 * [Examples](examples.md)

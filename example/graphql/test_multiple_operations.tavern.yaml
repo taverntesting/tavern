@@ -1,0 +1,171 @@
+---
+test_name: GraphQL multiple operations test - Using operation_name with included file
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: create user by operation_name
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: !include multiple_operations.graphql
+      operation_name: CreateUser
+      variables:
+        name: "John Doe"
+        email: "john@example.com"
+    graphql_response:
+      data:
+        createUser:
+          id: !anyint
+          name: "John Doe"
+          email: "john@example.com"
+
+      save:
+        data:
+          user_id: data.createUser.id
+
+  - name: Get user by ID using operation_name
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: !include multiple_operations.graphql
+      operation_name: GetUser
+      variables:
+        id: "{user_id}"
+    graphql_response:
+      data:
+        user:
+          id: !int "{user_id}"
+          name: "John Doe"
+          email: "john@example.com"
+
+---
+test_name: GraphQL multiple operations test - Get all users with operation_name
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: create user 1 by operation_name
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: !include multiple_operations.graphql
+      operation_name: CreateUser
+      variables:
+        name: "John Doe"
+        email: "john@example.com"
+    graphql_response:
+      data:
+        createUser:
+          id: !anyint
+          name: "John Doe"
+          email: "john@example.com"
+
+  - name: create user 1 by operation_name
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: !include multiple_operations.graphql
+      operation_name: CreateUser
+      variables:
+        name: "Jane Smith"
+        email: "jane@example.com"
+    graphql_response:
+      data:
+        createUser:
+          id: !anyint
+          name: "Jane Smith"
+          email: "jane@example.com"
+
+  - name: Get all users using operation_name
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: !include multiple_operations.graphql
+      operation_name: GetUsers
+    graphql_response:
+      data:
+        users:
+          - id: !anyint
+            name: "John Doe"
+            email: "john@example.com"
+          - id: !anyint
+            name: "Jane Smith"
+            email: "jane@example.com"
+
+
+---
+
+test_name: GraphQL basic query - Get posts for a user
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Create user
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: !include multiple_operations.graphql
+      operation_name: CreateUser
+      variables:
+        name: "Test User"
+        email: "test@example.com"
+    graphql_response:
+      data:
+        createUser:
+          id: !anyint
+          name: "Test User"
+          email: "test@example.com"
+      save:
+        data:
+          user_id: data.createUser.id
+
+  - name: Create post 1 for user
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: !include multiple_operations.graphql
+      operation_name: CreatePost
+      variables:
+        title: "First Test Post"
+        content: "This is my first test post"
+        authorId: "{user_id}"
+    graphql_response:
+      data:
+        createPost:
+          id: !anyint
+          title: "First Test Post"
+          content: "This is my first test post"
+          authorId: !int "{user_id}"
+
+  - name: Create post 2 for user
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: !include multiple_operations.graphql
+      operation_name: CreatePost
+      variables:
+        title: "Second Test Post"
+        content: "This is my second test post"
+        authorId: "{user_id}"
+    graphql_response:
+      data:
+        createPost:
+          id: !anyint
+          title: "Second Test Post"
+          content: "This is my second test post"
+          authorId: !int "{user_id}"
+
+  - name: Get posts for the user
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: !include multiple_operations.graphql
+      operation_name: GetUserPosts
+      variables:
+        authorId: "{user_id}"
+    graphql_response:
+      data:
+        userPosts:
+          - id: !anyint
+            title: "First Test Post"
+            content: "This is my first test post"
+            authorId: !int "{user_id}"
+          - id: !anyint
+            title: "Second Test Post"
+            content: "This is my second test post"
+            authorId: !int "{user_id}"
