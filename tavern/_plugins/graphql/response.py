@@ -153,13 +153,13 @@ class GraphQLResponse(CommonResponse):
             """Get subscription message result for an expected response.
 
             Waits for the next message on a subscription operation and returns
-            the expected response configuration along with the actual response.
+            the result.
 
             Args:
                 expected_resp: Expected response configuration for subscription
 
             Returns:
-                Tuple of (expected_resp, response) or None if error occurred
+                response or None if error occurred
             """
             op_name = expected_resp["subscription"]
             timeout: int | float = expected_resp.get("timeout", 3.0)
