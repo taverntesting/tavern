@@ -228,8 +228,6 @@ stages:
           user: null
         errors:
           - message: "User not found"
-            extensions:
-              code: "NOT_FOUND"
 ```
 
 ### Error Response
