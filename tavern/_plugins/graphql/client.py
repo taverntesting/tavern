@@ -105,8 +105,13 @@ class GraphQLClient:
         """Exit the context manager and close WebSocket connections."""
         # If the event loop is already running, the async __aexit__ will handle cleanup.
         if self._loop.is_running():
-            return None
-        self._loop.run_until_complete(self.stack.__aexit__(exc_type, exc_val, exc_tb))
+            return
+
+        async def _close_subscriptions():
+            await asyncio.gather(*(s.aclose() for s in self.subscriptions.values()))
+            await self.stack.aclose()
+
+        self._loop.run_until_complete(_close_subscriptions())
 
     def make_request(
         self,

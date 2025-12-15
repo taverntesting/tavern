@@ -239,6 +239,8 @@ app.include_router(
 async def reset_db():
     global_db_session.execute(text("delete from users"))
     global_db_session.execute(text("delete from posts"))
+    while not q.empty():
+        q.get_nowait()
     logging.info("Database reset")
 
 
