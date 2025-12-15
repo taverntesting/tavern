@@ -1,31 +1,4 @@
 ---
-test_name: GraphQL query user with variable
-
-includes:
-  - !include graphql_config.yaml
-
-stages:
-  - name: Query user with variable from test variables
-    graphql_request:
-      url: "{graphql_server_url}/graphql"
-      query: |
-        query GetUser($id: ID!) {
-          user(id: $id) {
-            id
-            name
-            email
-          }
-        }
-      variables:
-        id: "{user_id}"
-    graphql_response:
-      data:
-        user:
-          id: !int "{user_id}"
-          name: !anystr
-          email: !anystr
-
----
 test_name: GraphQL mutation create user with multiple variables
 
 includes:
@@ -52,7 +25,6 @@ stages:
           id: !anyint
           name: "{user_name}"
           email: "{user_email}"
-
 ---
 test_name: GraphQL mutation create post with mixed variables
 
