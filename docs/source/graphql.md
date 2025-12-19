@@ -51,10 +51,9 @@ Configure GraphQL connection settings at the test level:
 test_name: GraphQL API tests
 
 graphql:
-  client:
-    headers:
-      Authorization: "Bearer {token}"
-      User-Agent: "Tavern GraphQL Test"
+  headers:
+    Authorization: "Bearer {token}"
+    User-Agent: "Tavern GraphQL Test"
 
 stages:
   - name: Query data
