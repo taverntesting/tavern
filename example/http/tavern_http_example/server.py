@@ -153,3 +153,15 @@ def reset_db():
         db.execute("DELETE FROM numbers_table")
 
     return "", 204
+
+
+@app.route("/hello/<name>", methods=["GET"])
+@requires_jwt
+def hello(name: str):
+    return jsonify({"data": f"Hello, {name}"}), 200
+
+
+@app.route("/ping", methods=["GET"])
+@requires_jwt
+def ping():
+    return jsonify({"data": "pong"}), 200
