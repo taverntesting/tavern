@@ -121,8 +121,6 @@ tavern = "tavern._core.pytest"
 
 [project.entry-points.tavern_http]
 requests = "tavern._plugins.rest.tavernhook:TavernRestPlugin"
-[project.entry-points.tavern_grpc]
-grpc = "tavern._plugins.grpc.tavernhook"
 
 [tool.mypy]
 python_version = "3.11"
@@ -257,7 +255,9 @@ base_python = "3.11"
 [tool.uv.workspace]
 members = [
     "example/mqtt",
+    "example/grpc",
 ]
 [tool.uv.sources]
 tavern = { workspace = true }
 tavern_mqtt_example = { workspace = true }
+tavern_grpc_example = { workspace = true }

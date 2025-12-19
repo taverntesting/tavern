@@ -8,6 +8,4 @@ COPY . /app
 
 RUN uv sync
 
-COPY tavern_mqtt_example/listener.py /
-
-CMD ["uv", "run", "/listener.py"]
+CMD ["uv", "run", "/app/tavern_mqtt_example/listener.py"]

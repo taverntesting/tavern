@@ -9,7 +9,8 @@ resolution-markers = [
 [manifest]
 members = [
     "tavern",
-    "tavern_mqtt_example",
+    "tavern-grpc-example",
+    "tavern-mqtt-example",
 ]
 
 [[package]]
@@ -1786,7 +1787,24 @@ requires-dist = [
 provides-extras = ["grpc", "dev", "docs", "mqtt"]
 
 [[package]]
-name = "tavern_mqtt_example"
+name = "tavern-grpc-example"
+version = "0.1.0"
+source = { editable = "example/grpc" }
+dependencies = [
+    { name = "grpc-interceptor" },
+    { name = "grpcio-tools" },
+    { name = "tavern", extra = ["grpc"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "grpc-interceptor" },
+    { name = "grpcio-tools" },
+    { name = "tavern", extras = ["grpc"], editable = "." },
+]
+
+[[package]]
+name = "tavern-mqtt-example"
 version = "0.1.0"
 source = { editable = "example/mqtt" }
 dependencies = [
