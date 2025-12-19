@@ -121,8 +121,6 @@ tavern = "tavern._core.pytest"
 
 [project.entry-points.tavern_http]
 requests = "tavern._plugins.rest.tavernhook:TavernRestPlugin"
-[project.entry-points.tavern_mqtt]
-paho-mqtt = "tavern._plugins.mqtt.tavernhook"
 [project.entry-points.tavern_grpc]
 grpc = "tavern._plugins.grpc.tavernhook"
 
@@ -255,3 +253,11 @@ runner = "uv-venv-lock-runner"
 skip_missing_interpreters = true
 isolated_build = true
 base_python = "3.11"
+
+[tool.uv.workspace]
+members = [
+    "example/mqtt",
+]
+[tool.uv.sources]
+tavern = { workspace = true }
+tavern_mqtt_example = { workspace = true }

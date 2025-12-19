@@ -1,7 +1,13 @@
 FROM python:3.11-slim-trixie
 
-RUN pip install 'paho-mqtt>=1.3.1,<=1.6.1' fluent-logger 'PyYAML>=6,<7'
+RUN python3 -m pip install uv
 
-COPY listener.py /
+RUN mkdir /app
+WORKDIR /app
+COPY . /app
 
-CMD ["python3", "/listener.py"]
+RUN uv sync
+
+COPY tavern_mqtt_example/listener.py /
+
+CMD ["uv", "run", "/listener.py"]
