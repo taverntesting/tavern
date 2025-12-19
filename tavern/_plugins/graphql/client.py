@@ -32,8 +32,6 @@ class GraphQLResponseLike(ResponseLike):
     result: ResultOrErr
     headers: dict[str, str] = field(default_factory=dict)
 
-    _json: Any = field(default=None, init=False)
-
     @property
     def text(self) -> str:
         """Return the JSON serialized representation of the GraphQL result data.
@@ -47,14 +45,7 @@ class GraphQLResponseLike(ResponseLike):
 
     def json(self) -> Any:
         """Parse and return the JSON content of the response"""
-        if self._json is None:
-            try:
-                self._json = json.loads(self.text)
-            except ValueError as e:
-                raise ValueError(
-                    f"Response content is not valid JSON: {self.text}"
-                ) from e
-        return self._json
+        return self.result.data
 
 
 class GraphQLClient:
