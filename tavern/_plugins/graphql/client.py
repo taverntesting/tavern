@@ -2,7 +2,6 @@ import asyncio
 import json
 import logging
 from collections.abc import AsyncGenerator
-from contextlib import AsyncExitStack
 from dataclasses import dataclass, field
 from typing import Any, Optional, Union
 
@@ -54,15 +53,12 @@ class GraphQLClient:
     # separate clients for HTTP and WebSocket connections
     subscriptions: dict[str, _SubResponse]
 
-    stack: AsyncExitStack
-
     def __init__(self, **kwargs):
         """Initialize the GraphQL client."""
         self.default_headers = kwargs.get("headers", {})
         self.timeout = kwargs.get("timeout", 30)
 
         self.subscriptions = {}
-        self.stack = AsyncExitStack()
 
         # Create a new event loop if one doesn't exist
         try:
@@ -89,7 +85,6 @@ class GraphQLClient:
         # context manager (__aenter__) will handle the stack setup.
         if self._loop.is_running():
             return self
-        self._loop.run_until_complete(self.stack.__aenter__())
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -100,7 +95,6 @@ class GraphQLClient:
 
         async def _close_subscriptions():
             await asyncio.gather(*(s.aclose() for s in self.subscriptions.values()))
-            await self.stack.aclose()
 
         self._loop.run_until_complete(_close_subscriptions())
 
