@@ -63,11 +63,12 @@ class GraphQLClient:
         # Create a new event loop if one doesn't exist
         try:
             self._loop = asyncio.get_event_loop()
-            # Check if the loop is running - if not, we need to handle this differently
+            # If the loop is already running we keep the existing loop;
+            # otherwise we create a dedicated loop for sync usage.
             if not self._loop.is_running():
-                # Create a new loop for handling async operations in sync context
                 self._loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(self._loop)
+
         except RuntimeError:
             logger.debug("No event loop found, creating a new one", exc_info=True)
             # No event loop found, create a new one
@@ -80,23 +81,21 @@ class GraphQLClient:
         Returns:
             The GraphQLClient instance.
         """
-        # If the event loop is already running (e.g., when used inside an async context),
-        # we cannot call run_until_complete. In that case, we assume the async
-        # context manager (__aenter__) will handle the stack setup.
-        if self._loop.is_running():
-            return self
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Exit the context manager and close WebSocket connections."""
-        # If the event loop is already running, the async __aexit__ will handle cleanup.
-        if self._loop.is_running():
-            return
 
         async def _close_subscriptions():
+            """Close all active subscription generators."""
             await asyncio.gather(*(s.aclose() for s in self.subscriptions.values()))
 
-        self._loop.run_until_complete(_close_subscriptions())
+        if self._loop.is_running():
+            # If the event loop is already running, schedule cleanup as a task.
+            self._loop.create_task(_close_subscriptions())
+            return
+
+        asyncio.run(_close_subscriptions())
 
     def make_request(
         self,
@@ -191,10 +190,13 @@ class GraphQLClient:
             # Run the async subscription in the event loop
             async def _create_subscription():
                 subscription_generator = ws_client.subscribe_async(query_gql)
-
                 self.subscriptions[operation_name] = subscription_generator
 
-            self._loop.run_until_complete(_create_subscription())
+            # Use the appropriate loop: if already running, schedule; else run directly.
+            if self._loop.is_running():
+                self._loop.create_task(_create_subscription())
+            else:
+                self._loop.run_until_complete(_create_subscription())
 
             logger.debug(f"Started subscription {operation_name}")
             # Return the generator to allow iterating through subscription messages
