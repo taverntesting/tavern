@@ -100,7 +100,7 @@ stages:
       json:
         number: 246
       verify_response_with:
-        function: testing_utils:assert_quick_response
+        function: tavern_http_example.testing_utils:assert_quick_response
       headers:
         content-type: application/json
 
@@ -165,7 +165,7 @@ stages:
       headers:
         content-type: application/json
         $ext:
-          function: testing_utils:create_bearer_token
+          function: tavern_http_example.testing_utils:create_bearer_token
     response:
       status_code: 201
       headers:

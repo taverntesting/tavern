@@ -63,6 +63,11 @@ grpc = [
     "proto-plus",
 ]
 
+mqtt = [
+    "paho-mqtt>=1.3.1,<=1.6.1",
+]
+
+[dependency-groups]
 dev = [
     "Faker",
     "allure-pytest",
@@ -105,10 +110,6 @@ docs = [
     "docutils",
     "pygments",
     "sphinx-markdown-tables",
-]
-
-mqtt = [
-    "paho-mqtt>=1.3.1,<=1.6.1",
 ]
 
 [project.scripts]
@@ -256,8 +257,10 @@ base_python = "3.11"
 members = [
     "example/mqtt",
     "example/grpc",
+    "example/http",
 ]
 [tool.uv.sources]
 tavern = { workspace = true }
 tavern_mqtt_example = { workspace = true }
 tavern_grpc_example = { workspace = true }
+tavern_http_example = { workspace = true }

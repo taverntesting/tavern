@@ -1,0 +1,15 @@
+[project]
+name = "tavern_http_example"
+version = "0.1.0"
+description = "Tavern MQTT example project"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "tavern",
+    "gunicorn",
+    "flask",
+    "pyjwt",
+]
+
+[project.entry-points.tavern_http]
+requests = "tavern._plugins.rest.tavernhook:TavernRestPlugin"
