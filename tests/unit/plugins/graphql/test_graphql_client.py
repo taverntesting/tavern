@@ -1,5 +1,5 @@
 import asyncio
-from unittest.mock import Mock, patch
+from unittest.mock import AsyncMock, Mock, patch
 
 import gql
 import pytest
@@ -39,6 +39,7 @@ class TestGraphQLClient:
 
             # Setup mock async subscription generator
             mock_subscription_gen = Mock()
+            mock_subscription_gen.aclose = AsyncMock()
             mock_client_instance.subscribe_async.return_value = mock_subscription_gen
 
             # Setup mock gql query
