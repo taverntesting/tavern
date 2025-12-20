@@ -468,3 +468,5 @@ This is technically not a operational change but I'm adding a new tag so it can 
 ##  3.0.0a9         release 3.0.0a9 (2025-09-27)
 
 #  3.0.0           release 3.0.0 (2025-10-11)
+
+##  3.0.1           support pytest 9 (2025-11-15)

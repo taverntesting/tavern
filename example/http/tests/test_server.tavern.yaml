@@ -1,24 +1,5 @@
 ---
 
-test_name: Check OPTIONS
-
-includes:
-  - !include common.yaml
-
-stages:
-  - name: Run OPTIONS on login endpoint
-    request:
-      url: "{host}/login"
-      method: OPTIONS
-      headers:
-        content-type: application/json
-    response:
-      status_code: 200
-      headers:
-        content-type: text/html; charset=utf-8
-
----
-
 test_name: Make sure jwt returned has the expected aud value
 
 includes:
@@ -28,7 +9,7 @@ stages:
   - &login_request
     name: login
     request:
-      url: "{host}/login"
+      url: "{service}/login"
       json:
         user: test-user
         password: correct-password
@@ -37,10 +18,24 @@ stages:
         content-type: application/json
     response:
       status_code: 200
-      cookies:
-        - session
+      verify_response_with: &verify_token
+        function: tavern.helpers:validate_jwt
+        extra_kwargs:
+          jwt_key: "token"
+          key: CGQgaG7GYvTcpaQZqosLy4
+          algorithms: [ HS256 ]
+          options:
+            verify_signature: true
+            verify_aud: true
+            verify_exp: true
+          audience: testserver
       headers:
         content-type: application/json
+      save:
+        $ext:
+          <<: *verify_token
+        json:
+          test_login_token: token
 
 ---
 
@@ -53,7 +48,7 @@ stages:
   - &reset_request
     name: reset database for test
     request:
-      url: "{host}/reset"
+      url: "{service}/reset"
       method: POST
     response:
       status_code: 204
@@ -62,13 +57,14 @@ stages:
 
   - name: post a number
     request:
-      url: "{host}/numbers"
+      url: "{service}/numbers"
       json:
         name: smallnumber
         number: 123
       method: POST
       headers:
         content-type: application/json
+        Authorization: "bearer {test_login_token:s}"
     response:
       status_code: 201
       headers:
@@ -76,12 +72,13 @@ stages:
 
   - name: Make sure its in the db
     request:
-      url: "{host}/numbers"
+      url: "{service}/numbers"
       params:
         name: smallnumber
       method: GET
       headers:
         content-type: application/json
+        Authorization: "bearer {test_login_token:s}"
     response:
       status_code: 200
       json:
@@ -91,27 +88,31 @@ stages:
 
   - name: double it
     request:
-      url: "{host}/double"
+      url: "{service}/double"
       json:
         name: smallnumber
       method: POST
       headers:
         content-type: application/json
+        Authorization: "bearer {test_login_token:s}"
     response:
       status_code: 200
       json:
         number: 246
+      verify_response_with:
+        function: tavern_http_example.testing_utils:assert_quick_response
       headers:
         content-type: application/json
 
   - name: Make sure db has been updated properly
     request:
-      url: "{host}/numbers"
+      url: "{service}/numbers"
       params:
         name: smallnumber
       method: GET
       headers:
         content-type: application/json
+        Authorization: "bearer {test_login_token:s}"
     response:
       status_code: 200
       json:
@@ -132,12 +133,13 @@ stages:
 
   - name: double it
     request:
-      url: "{host}/numbers"
+      url: "{service}/numbers"
       params:
         name: whatnumber
       method: GET
       headers:
         content-type: application/json
+        Authorization: "bearer {test_login_token:s}"
     response:
       status_code: 404
       json:
@@ -147,27 +149,24 @@ stages:
 
 ---
 
-test_name: Check trying to double a number that we didnt post before returns a 404
+test_name: Create a jwt ourselves to authorize
 
 includes:
   - !include common.yaml
 
 stages:
-  - *reset_request
-  - *login_request
-
-  - name: double it
+  - name: post a number and crate our own authorization
     request:
-      url: "{host}/double"
-      verify: false
+      url: "{service}/numbers"
       json:
-        name: whatnumber
+        name: smallnumber
+        number: 123
       method: POST
       headers:
         content-type: application/json
+        $ext:
+          function: tavern_http_example.testing_utils:create_bearer_token
     response:
-      status_code: 404
-      json:
-        error: Unknown number
+      status_code: 201
       headers:
         content-type: application/json

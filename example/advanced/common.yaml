@@ -1,9 +1,0 @@
----
-name: test includes
-description: used for testing against local server
-
-variables:
-  service:
-    proto: http
-    host: localhost
-    port: 5000

@@ -18,17 +18,25 @@ from tavern._core import exceptions
 
 from .util import add_ini_options, add_parser_options, get_option_generic
 
+if pytest.version_tuple >= (9, 0, 0):
+
+    def pytest_collect_file(parent, file_path: pathlib.Path) -> Optional["YamlFile"]:  # type:ignore
+        return _pytest_collect_file(parent, file_path)
+else:
+
+    def pytest_collect_file(parent, path: os.PathLike) -> Optional["YamlFile"]:  # type:ignore
+        return _pytest_collect_file(parent, pathlib.Path(path))
+
 
 def pytest_addoption(parser: pytest.Parser) -> None:
     add_parser_options(parser.addoption, with_defaults=False)
     add_ini_options(parser)
 
 
-def pytest_collect_file(parent, path: os.PathLike) -> Optional["YamlFile"]:
+def _pytest_collect_file(parent, file_path: pathlib.Path) -> Optional["YamlFile"]:
     """On collecting files, get any files that end in .tavern.yaml or .tavern.yml as tavern
     test files
     """
-
     if int(pytest.__version__.split(".", maxsplit=1)[0]) < 7:
         raise exceptions.TavernException("Only pytest >=7 is supported")
 
@@ -88,10 +96,8 @@ def pytest_collect_file(parent, path: os.PathLike) -> Optional["YamlFile"]:
 
     from .file import YamlFile
 
-    path = pathlib.Path(path)
-
-    if match_tavern_file(str(path)):
-        return YamlFile.from_parent(parent, path=path)
+    if match_tavern_file(str(file_path)):
+        return YamlFile.from_parent(parent, path=file_path)
 
     return None
 

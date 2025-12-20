@@ -1,0 +1,27 @@
+[project]
+name = "tavern_grpc_example"
+version = "0.1.0"
+description = "Tavern MQTT example project"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "tavern[grpc]",
+    "grpcio-tools",
+    "grpc-interceptor",
+]
+
+[project.entry-points.tavern_grpc]
+grpc = "tavern._plugins.grpc.tavernhook"
+
+[tool.pytest.ini_options]
+addopts = [
+    "-r", "xs",
+    "-vv",
+    "--strict-markers",
+    "-p", "no:logging",
+    "--tb=short",
+    "--color=yes",
+]
+norecursedirs = [
+    "tavern_mqtt_example"
+]

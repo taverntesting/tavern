@@ -9,10 +9,11 @@ includes:
 stages:
   - name: Unauthenticated /hello
     request:
-      url: "{service:s}/hello/Jim"
+      url: "{service}/hello/Jim"
       method: GET
     response:
       status_code: 401
+
   - type: ref
     id: login_get_token
   - name: Authenticated /hello

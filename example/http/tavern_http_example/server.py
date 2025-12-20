@@ -1,13 +1,15 @@
 import contextlib
+import datetime
 import functools
 import sqlite3
 
-from flask import Flask, g, jsonify, request, session
+import jwt
+from flask import Flask, g, jsonify, request
 
 app = Flask(__name__)
-app.secret_key = "t1uNraxw+9oxUyCuXHO2G0u38ig="
 
 
+SECRET = "CGQgaG7GYvTcpaQZqosLy4"
 DATABASE = "/tmp/test_db"
 SERVERNAME = "testserver"
 
@@ -40,9 +42,15 @@ def login():
     if r["user"] != "test-user" or r["password"] != "correct-password":
         return jsonify({"error": "Incorrect username/password"}), 401
 
-    session["user"] = "test-user"
+    payload = {
+        "sub": "test-user",
+        "aud": SERVERNAME,
+        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=1),
+    }
 
-    return jsonify({"status": "logged in"}), 200
+    token = jwt.encode(payload, SECRET, algorithm="HS256")
+
+    return jsonify({"token": token})
 
 
 def requires_jwt(endpoint):
@@ -50,8 +58,21 @@ def requires_jwt(endpoint):
 
     @functools.wraps(endpoint)
     def check_auth_call(*args, **kwargs):
-        if not session:
-            return jsonify({"error": "No session cookie"}), 401
+        token = request.headers.get("Authorization")
+
+        # check token is present
+        if not token:
+            return jsonify({"error": "No token"}), 401
+
+        token_type, token = token.split(" ")
+
+        if token_type.lower() != "bearer":
+            return jsonify({"error": "Wrong token type"}), 401
+
+        try:
+            jwt.decode(token, SECRET, audience=SERVERNAME, algorithms=["HS256"])
+        except Exception:
+            return jsonify({"error": "Invalid token"}), 401
 
         return endpoint(*args, **kwargs)
 
@@ -132,3 +153,15 @@ def reset_db():
         db.execute("DELETE FROM numbers_table")
 
     return "", 204
+
+
+@app.route("/hello/<name>", methods=["GET"])
+@requires_jwt
+def hello(name: str):
+    return jsonify({"data": f"Hello, {name}"}), 200
+
+
+@app.route("/ping", methods=["GET"])
+@requires_jwt
+def ping():
+    return jsonify({"data": "pong"}), 200
