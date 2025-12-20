@@ -53,12 +53,15 @@ class GraphQLClient:
     # separate clients for HTTP and WebSocket connections
     subscriptions: dict[str, _SubResponse]
 
+    to_close: list[AsyncGenerator]
+
     def __init__(self, **kwargs):
         """Initialize the GraphQL client."""
         self.default_headers = kwargs.get("headers", {})
         self.timeout = kwargs.get("timeout", 30)
 
         self.subscriptions = {}
+        self.to_close = []
 
         # Create a new event loop if one doesn't exist
         try:
@@ -89,6 +92,7 @@ class GraphQLClient:
         async def _close_subscriptions():
             """Close all active subscription generators."""
             await asyncio.gather(*(s.aclose() for s in self.subscriptions.values()))
+            await asyncio.gather(*(s.aclose() for s in self.to_close))
 
         if self._loop.is_running():
             # If the event loop is already running, schedule cleanup as a task.
@@ -186,11 +190,21 @@ class GraphQLClient:
 
         # Execute the subscription - this returns a generator
         try:
+
+            async def subscribe_async_wrapper() -> AsyncGenerator:
+                """Wrapper for subscribe_async because that method does not close subscriptions properly."""
+                async with ws_client as session:
+                    generator = session.subscribe(query_gql)
+
+                    self.to_close.append(generator)
+
+                    async for result in generator:
+                        yield result
+
             # Using the subscription as a generator that yields results
             # Run the async subscription in the event loop
             async def _create_subscription():
-                subscription_generator = ws_client.subscribe_async(query_gql)
-                self.subscriptions[operation_name] = subscription_generator
+                self.subscriptions[operation_name] = subscribe_async_wrapper()
 
             # Use the appropriate loop: if already running, schedule; else run directly.
             if self._loop.is_running():
