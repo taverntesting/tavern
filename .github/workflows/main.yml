@@ -74,9 +74,7 @@ jobs:
             TOXCFG: tox-integration.ini
           - TOXENV: py3-mqtt
             TOXCFG: tox-integration.ini
-          - TOXENV: py3-hooks
-            TOXCFG: tox-integration.ini
-          - TOXENV: py3-advanced
+          - TOXENV: py3-http
             TOXCFG: tox-integration.ini
           - TOXENV: py3-grpc
             TOXCFG: tox-integration.ini
