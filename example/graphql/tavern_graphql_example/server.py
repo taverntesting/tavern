@@ -24,7 +24,11 @@ Base = declarative_base()
 
 
 class models:
-    """dummy module to contains models so they dont have to be a in a separate file"""
+    """dummy module to contains models so they dont have to be a in a separate file
+
+    It seems like there is undocumented(?) feature of strawberry that the original
+    model has to have the same name as the graphql type
+    """
 
     class User(Base):
         __tablename__ = "users"
