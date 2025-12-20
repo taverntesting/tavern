@@ -16,3 +16,8 @@ dependencies = [
 
 [project.entry-points.tavern_graphql]
 gql = "tavern._plugins.graphql.tavernhook"
+
+[tool.pytest.ini_options]
+norecursedirs = [
+    "tavern_graphql_example",
+]
