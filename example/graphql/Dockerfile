@@ -1,9 +1,12 @@
-FROM python:3.11-alpine
+FROM python:3.11-slim-trixie
 
-RUN pip3 install "strawberry-graphql[fastapi]" "uvicorn[standard]" "sqlalchemy>=2,<3" "strawberry_sqlalchemy_mapper"
+RUN python3 -m pip install uv
 
-ENV PYTHONUNBUFFERED=0
+RUN mkdir /app
+WORKDIR /app
+COPY . /app
 
-COPY server.py /
+RUN uv sync
 
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "5010"]
+ENV PYTHONPATH=/app/
+CMD ["uv", "run", "uvicorn", "tavern_graphql_example.server:app", "--host", "0.0.0.0", "--port", "5010"]
