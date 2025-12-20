@@ -43,7 +43,7 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
     parser_addoption(
         "--tavern-graphql-backend",
         help="Which graphql backend to use",
-        default="requests" if with_defaults else None,
+        default="gql" if with_defaults else None,
     )
     parser_addoption(
         "--tavern-strict",
