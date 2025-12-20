@@ -137,6 +137,14 @@ jobs:
         id: setup-bats
         uses: bats-core/bats-action@3.0.1
 
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
       - name: Run tests
         env:
           BATS_LIB_PATH: ${{ steps.setup-bats.outputs.lib-path }}
