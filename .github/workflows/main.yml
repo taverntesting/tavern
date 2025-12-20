@@ -123,5 +123,5 @@ jobs:
 
       - name: Run tests
         run: |
-          uv sync --all-extras
+          uv sync --all-extras --all-packages
           uvx tox -c ${TOXCFG} -e ${TOXENV}
