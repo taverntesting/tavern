@@ -140,5 +140,5 @@ jobs:
       - name: Run tests
         env:
           BATS_LIB_PATH: ${{ steps.setup-bats.outputs.lib-path }}
-        working-directory: ./example/custom-backend
+        working-directory: ./example/custom_backend
         run: ./run_tests.sh
