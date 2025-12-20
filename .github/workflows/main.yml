@@ -125,3 +125,20 @@ jobs:
         run: |
           uv sync --all-extras --all-packages
           uvx tox -c ${TOXCFG} -e ${TOXENV}
+
+  custom-backend-tests:
+    name: Custom Backend Tests
+    needs: unit-tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+      - name: Setup Bats and bats libs
+        id: setup-bats
+        uses: bats-core/bats-action@3.0.1
+
+      - name: Run tests
+        env:
+          BATS_LIB_PATH: ${{ steps.setup-bats.outputs.lib-path }}
+        working-directory: ./example/custom-backend
+        run: ./run_tests.sh
