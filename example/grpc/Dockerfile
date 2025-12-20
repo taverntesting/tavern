@@ -1,6 +1,12 @@
-FROM python:3.12-slim-trixie AS base
+FROM python:3.11-slim-trixie AS base
 
-RUN pip install grpcio-tools==1.59.0 grpcio==1.59.0 grpcio-reflection==1.59.0 grpcio-status==1.59.0 grpc-interceptor==0.15.3
+RUN python3 -m pip install uv
+
+RUN mkdir /app
+WORKDIR /app
+COPY . /app
+
+RUN uv sync
 
 
 FROM base AS protos
@@ -9,14 +15,12 @@ RUN apt-get update  && apt-get install protobuf-compiler --yes --no-install-reco
 
 COPY *.proto .
 
-RUN python3 -m grpc_tools.protoc --proto_path=$(pwd) --pyi_out=$(pwd) --python_out=$(pwd) --grpc_python_out=$(pwd) *.proto
-
+RUN uv run -m grpc_tools.protoc --proto_path=$(pwd) --pyi_out=$(pwd) --python_out=$(pwd) --grpc_python_out=$(pwd) *.proto
 
 
 FROM base
 
-COPY --from=protos /*.py /
+COPY --from=protos /app/*.py /app/
 
-COPY server/server.py /
-
-CMD ["python3", "/server.py"]
+ENV PYTHONPATH=.
+CMD ["uv", "run", "/app/tavern_grpc_example/server.py"]

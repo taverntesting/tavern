@@ -8,4 +8,5 @@ COPY . /app
 
 RUN uv sync
 
-CMD ["uv", "run", "/app/tavern_mqtt_example/listener.py"]
+ENV PYTHONPATH=/app/
+CMD ["uv", "run", "gunicorn", "--bind", "0.0.0.0:5000", "tavern_http_example.server:app"]

@@ -1,0 +1,6 @@
+*
+!tavern_mqtt_example
+!fluent.conf
+!mosquitto.conf
+!pyproject.toml
+!mosquitto_passwd

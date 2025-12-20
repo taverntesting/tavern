@@ -1,8 +1,12 @@
 FROM python:3.11-slim-trixie
 
-RUN apt-get update  && apt-get install build-essential --yes --no-install-recommends && apt-get clean
-RUN pip install flask 'paho-mqtt>=1.3.1,<=1.6.1' fluent-logger 'PyYAML>=6,<7' uwsgi gevent
+RUN python3 -m pip install uv
 
-COPY server.py /
+RUN mkdir /app
+WORKDIR /app
+COPY . /app
 
-CMD ["uwsgi", "--plugin", "python3", "--http-socket", "0.0.0.0:5000", "--mount", "/=/server.py", "--gevent", "20", "--gevent-monkey-patch"]
+RUN uv sync
+
+ENV PYTHONPATH=/app/
+CMD ["uv", "run", "gunicorn", "--bind", "0.0.0.0:5000", "tavern_mqtt_example.server"]

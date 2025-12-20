@@ -202,7 +202,7 @@ stages:
       timeout: 5
       qos: 1
       verify_response_with:
-        function: testing_utils:message_says_hello
+        function: tavern_mqtt_example.testing_utils:message_says_hello
 
 ---
 
@@ -726,7 +726,7 @@ stages:
       qos: 1
       save:
         $ext:
-          function: testing_utils:return_hello
+          function: tavern_mqtt_example.testing_utils:return_hello
 
   - name: Echo text
     mqtt_publish:
@@ -761,7 +761,7 @@ stages:
         qos: 1
         save:
           $ext:
-            function: testing_utils:return_hello
+            function: tavern_mqtt_example.testing_utils:return_hello
 
   - name: Echo text
     mqtt_publish:
@@ -790,7 +790,7 @@ stages:
       topic: /device/{random_device_id}/echo
       json:
         $ext:
-          function: testing_utils:return_hello
+          function: tavern_mqtt_example.testing_utils:return_hello
     mqtt_response:
         topic: /device/{random_device_id}/echo/response
         timeout: 3
