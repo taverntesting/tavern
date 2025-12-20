@@ -10,6 +10,7 @@ resolution-markers = [
 [manifest]
 members = [
     "tavern",
+    "tavern-graphql-example",
     "tavern-grpc-example",
     "tavern-http-example",
     "tavern-mqtt-example",
@@ -1908,6 +1909,15 @@ wheels = [
 ]
 
 [[package]]
+name = "python-multipart"
+version = "0.0.21"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/78/96/804520d0850c7db98e5ccb70282e29208723f0964e88ffd9d0da2f52ea09/python_multipart-0.0.21.tar.gz", hash = "sha256:7137ebd4d3bbf70ea1622998f902b97a29434a9e8dc40eb203bbcf7c2a2cba92", size = 37196, upload-time = "2025-12-17T09:24:22.446Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/aa/76/03af049af4dcee5d27442f71b6924f01f3efb5d2bd34f23fcd563f2cc5f5/python_multipart-0.0.21-py3-none-any.whl", hash = "sha256:cf7a6713e01c87aa35387f4774e812c4361150938d20d232800f75ffcf266090", size = 24541, upload-time = "2025-12-17T09:24:21.153Z" },
+]
+
+[[package]]
 name = "pyyaml"
 version = "6.0.3"
 source = { registry = "https://pypi.org/simple" }
@@ -2482,6 +2492,12 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/7c/8e/ffd20e179cc8218465599922660323f453c7b955aca2b909e5b86ba61eb0/strawberry_graphql-0.287.3-py3-none-any.whl", hash = "sha256:2bb1f9b122ef1213f82f01cf27a095eb0776fda78e12af9e60c54de6e543797c", size = 309183, upload-time = "2025-12-12T11:50:20.574Z" },
 ]
 
+[package.optional-dependencies]
+fastapi = [
+    { name = "fastapi" },
+    { name = "python-multipart" },
+]
+
 [[package]]
 name = "strawberry-sqlalchemy"
 version = "0.1.5"
@@ -2674,6 +2690,31 @@ docs = [
     { name = "sphinx", specifier = ">=7,<8" },
     { name = "sphinx-markdown-tables" },
     { name = "sphinx-rtd-theme" },
+]
+
+[[package]]
+name = "tavern-graphql-example"
+version = "0.1.0"
+source = { editable = "example/graphql" }
+dependencies = [
+    { name = "fastapi" },
+    { name = "sqlalchemy" },
+    { name = "starlette" },
+    { name = "strawberry-graphql", extra = ["fastapi"] },
+    { name = "strawberry-sqlalchemy-mapper" },
+    { name = "tavern", extra = ["graphql"] },
+    { name = "uvicorn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "fastapi" },
+    { name = "sqlalchemy", specifier = ">=2,<3" },
+    { name = "starlette" },
+    { name = "strawberry-graphql", extras = ["fastapi"] },
+    { name = "strawberry-sqlalchemy-mapper" },
+    { name = "tavern", extras = ["graphql"], editable = "." },
+    { name = "uvicorn" },
 ]
 
 [[package]]

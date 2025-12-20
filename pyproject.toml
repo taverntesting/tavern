@@ -273,9 +273,11 @@ members = [
     "example/mqtt",
     "example/grpc",
     "example/http",
+    "example/graphql",
 ]
 [tool.uv.sources]
 tavern = { workspace = true }
 tavern_mqtt_example = { workspace = true }
 tavern_grpc_example = { workspace = true }
 tavern_http_example = { workspace = true }
+tavern_graphql_example = { workspace = true }
