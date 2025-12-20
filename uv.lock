@@ -598,19 +598,6 @@ wheels = [
 ]
 
 [[package]]
-name = "flask-sqlalchemy"
-version = "3.1.1"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "flask" },
-    { name = "sqlalchemy" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/91/53/b0a9fcc1b1297f51e68b69ed3b7c3c40d8c45be1391d77ae198712914392/flask_sqlalchemy-3.1.1.tar.gz", hash = "sha256:e4b68bb881802dda1a7d878b2fc84c06d1ee57fb40b874d3dc97dabfa36b8312", size = 81899, upload-time = "2023-09-11T21:42:36.147Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1d/6a/89963a5c6ecf166e8be29e0d1bf6806051ee8fe6c82e232842e3aeac9204/flask_sqlalchemy-3.1.1-py3-none-any.whl", hash = "sha256:4ba4be7f419dc72f4efd8802d69974803c37259dd42f3913b0dcf75c9447e0a0", size = 25125, upload-time = "2023-09-11T21:42:34.514Z" },
-]
-
-[[package]]
 name = "flit"
 version = "3.12.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2499,19 +2486,6 @@ fastapi = [
 ]
 
 [[package]]
-name = "strawberry-sqlalchemy"
-version = "0.1.5"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "sqlalchemy" },
-    { name = "strawberry-graphql" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/2a/43/cb20e8a9b637d0a38d3a5b07d87f7db5ab738c5e3dccb804163c622e1b31/strawberry_sqlalchemy-0.1.5.tar.gz", hash = "sha256:d2952535864fa3808fe698f57705a46a2e51b160c98942eaf41d0d0ae8a579c8", size = 12334, upload-time = "2021-12-26T19:26:52.489Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e0/cb/a2eabec2e68860a9b55aa106181f41414f65fdef72d98df81fcd8eb47395/strawberry_sqlalchemy-0.1.5-py3-none-any.whl", hash = "sha256:b8eb09e1911e42dc550421bd103471945c594ef6316e03001b03fd0ad2f61cf6", size = 12871, upload-time = "2021-12-26T19:26:49.597Z" },
-]
-
-[[package]]
 name = "strawberry-sqlalchemy-mapper"
 version = "0.8.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2578,9 +2552,7 @@ dev = [
     { name = "coverage", extra = ["toml"] },
     { name = "exceptiongroup" },
     { name = "faker" },
-    { name = "fastapi" },
     { name = "flask" },
-    { name = "flask-sqlalchemy" },
     { name = "flit" },
     { name = "fluent-logger" },
     { name = "grpc-interceptor" },
@@ -2593,8 +2565,6 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytest-xdist" },
     { name = "ruff" },
-    { name = "strawberry-sqlalchemy" },
-    { name = "strawberry-sqlalchemy-mapper" },
     { name = "tbump" },
     { name = "tomli" },
     { name = "tox" },
@@ -2606,7 +2576,6 @@ dev = [
     { name = "types-pyyaml" },
     { name = "types-requests" },
     { name = "uv" },
-    { name = "uvicorn" },
     { name = "wheel" },
 ]
 docs = [
@@ -2651,9 +2620,7 @@ dev = [
     { name = "coverage", extras = ["toml"] },
     { name = "exceptiongroup" },
     { name = "faker" },
-    { name = "fastapi", specifier = ">=0.121.3" },
     { name = "flask", specifier = ">=3,<4" },
-    { name = "flask-sqlalchemy", specifier = ">=3,<4" },
     { name = "flit", specifier = ">=3.2,<4" },
     { name = "fluent-logger" },
     { name = "grpc-interceptor" },
@@ -2666,8 +2633,6 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytest-xdist" },
     { name = "ruff", specifier = "~=0.9.10" },
-    { name = "strawberry-sqlalchemy", specifier = ">=0.1,<1" },
-    { name = "strawberry-sqlalchemy-mapper" },
     { name = "tbump", specifier = ">=6.10.0" },
     { name = "tomli" },
     { name = "tox", specifier = ">4.20,<5" },
@@ -2679,7 +2644,6 @@ dev = [
     { name = "types-pyyaml" },
     { name = "types-requests" },
     { name = "uv", specifier = ">=0.9.2" },
-    { name = "uvicorn", specifier = ">=0.38.0" },
     { name = "wheel" },
 ]
 docs = [
