@@ -6,7 +6,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "tavern[graphql]",
-    "uvicorn",
+    "uvicorn[standard]",
     "fastapi",
     "starlette",
     "strawberry-graphql[fastapi]",
@@ -20,4 +20,11 @@ gql = "tavern._plugins.graphql.tavernhook"
 [tool.pytest.ini_options]
 norecursedirs = [
     "tavern_graphql_example",
+]
+
+addopts = [
+    "-vv",
+    "--strict-markers",
+    "--tb=short",
+    "--color=yes",
 ]
