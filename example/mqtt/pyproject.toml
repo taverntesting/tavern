@@ -1,0 +1,15 @@
+[project]
+name = "tavern_mqtt_example"
+version = "0.1.0"
+description = "Tavern MQTT example project"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "tavern[mqtt]",
+    "gunicorn",
+    "flask",
+    "fluent-logger"
+]
+
+[project.entry-points.tavern_mqtt]
+paho-mqtt = "tavern._plugins.mqtt.tavernhook"
