@@ -7,19 +7,11 @@ if [ ! -d ".venv" ]; then
 fi
 . .venv/bin/activate
 
-uv pip install -e . 'tavern @ ../..'
+uv sync
 
-PYTHONPATH=. tavern-ci \
-  --tavern-extra-backends=file \
-  --debug "$@" --stdout \
-  tests
+if ! command -v bats; then
+  exit 1
+fi
 
-PYTHONPATH=. tavern-ci \
-  --tavern-extra-backends=file=my_tavern_plugin \
-  --debug "$@" --stdout \
-  tests
-
-PYTHONPATH=. tavern-ci \
-  --tavern-extra-backends=file=i_dont_exist \
-  --debug "$@" --stdout \
-  tests
+# Run tests using bats
+bats --timing --print-output-on-failure "$@" tests.bats
