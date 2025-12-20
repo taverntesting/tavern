@@ -168,8 +168,11 @@ addopts = [
 norecursedirs = [
     ".git",
     ".tox",
+    ".venv",
     "example",
-    "example/grpc/server"
+    "node_modules",
+    "dist",
+    "docs",
 ]
 markers = [
     "slow: A test marker to check if markers work with custom markers",

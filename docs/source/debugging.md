@@ -88,7 +88,7 @@ Some pytest options can be used to make the test output easier to read.
 
 ### Example
 
-Say we are running against the [advanced example](https://github.com/taverntesting/tavern/tree/master/example/advanced)
+Say we are running against the [http example](https://github.com/taverntesting/tavern/tree/master/example/http)
 from Tavern but we have an error in the yaml:
 
 ```yaml
