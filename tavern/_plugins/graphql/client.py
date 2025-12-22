@@ -51,10 +51,20 @@ class GraphQLResponseLike(ResponseLike):
 class GraphQLClient:
     """GraphQL client for HTTP requests and subscriptions over WebSocket"""
 
-    # separate clients for HTTP and WebSocket connections
     _subscriptions: dict[str, _SubResponse]
+    """Dictionary of active subscriptions, keyed by subscription name."""
 
     _to_close: list[AsyncGenerator]
+    """List of subscription generators to close when the client is closed."""
+
+    _loop: asyncio.AbstractEventLoop
+    """Loop run in a separate thread to avoid blocking the main thread and avoid problems with nested async"""
+
+    _shutdown_event: threading.Event
+    """Event used to signal the event loop thread to shut down"""
+
+    _async_thread: threading.Thread
+    """Thread running the event loop"""
 
     def __init__(self, **kwargs):
         """Initialize the GraphQL client."""
@@ -64,7 +74,6 @@ class GraphQLClient:
         self._subscriptions = {}
         self._to_close = []
 
-        # Create a new event loop to avoid problems with nested async
         self._loop = asyncio.new_event_loop()
         if logger.getEffectiveLevel() <= logging.DEBUG:
             # Sort of hacky, but enable debug loop if debug logging is enabled
