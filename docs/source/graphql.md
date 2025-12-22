@@ -44,21 +44,32 @@ stages:
 
 ## Configuration
 
-Configure GraphQL connection settings at the test level:
+If using the default `gql` backend for graphql,
+default options can be passed to the underlying HTTP transport in the "gql" block at the top level for a test.
+The GraphQL configuration schema supports these options:
+
+```yaml
+gql:
+  headers:
+    string: string              # Default headers for all requests
+```
+
+For example, to make a query with an authorization header for all requests, not just for a single stage
+like in [the example below](#query-with-headers):
 
 ```yaml
 ---
-test_name: GraphQL API tests
 
-graphql:
+test_name: Query with global authorization header
+
+gql:
   headers:
-    Authorization: "Bearer {token}"
-    User-Agent: "Tavern GraphQL Test"
+    Authorization: "Bearer test-token"
 
 stages:
-  - name: Query data
+  - name: Query with authorization header
     graphql_request:
-    # ... request details
+      ...
 ```
 
 ## Requests
@@ -208,31 +219,6 @@ stages:
 
 ```yaml
 stages:
-  - name: Query non-existent user
-    graphql_request:
-      url: "{graphql_server_url}/graphql"
-      query: |
-        query GetUser($id: ID!) {
-          user(id: $id) {
-            id
-            name
-          }
-        }
-      variables:
-        id: "999"
-    graphql_response:
-      # status_code: 200  # GraphQL errors still return 200
-      json:
-        data:
-          user: null
-        errors:
-          - message: "User not found"
-```
-
-### Error Response
-
-```yaml
-stages:
   - name: Invalid query
     graphql_request:
       url: "{graphql_server_url}/graphql"
@@ -243,58 +229,16 @@ stages:
           }
         }
     graphql_response:
-      # status_code: 200  # Validation errors return 200
       json:
         errors:
           - message: "Cannot query field 'invalidField' on type 'Query'."
 ```
 
-## Client options
-
-If using the default `gql` backend for graphql,
-default options can be passed to the underlying HTTP transport in the "gql" block at the top level fo a test.
-The GraphQL configuration schema supports these options:
-
-```yaml
-gql:
-  headers:
-    string: string              # Default headers for all requests
-```
-
-For example, to make a query with an authorization header:
-
-```yaml
----
-
-test_name: Query with authorization header
-
-gql:
-  headers:
-    Authorization: "Bearer test-token"
-
-stages:
-  - name: Query with authorization header
-    graphql_request:
-      ...
-```
-
 ## Strictness
 
-As described in the [strict key checking](./basics.md#strict-key-checking) section in the basics, GraphQL responses 
+As described in the [strict key checking](./basics.md#strict-key-checking) section in the basics, GraphQL responses
 can use the `strict` key to check that the response contains all or some of the expected keys. See that section
-for more details.
-
-## Limitations
-
-### Current Limitations
-
-- **No WebSocket Support**: GraphQL subscriptions over WebSocket are not supported yet
-- **Query Formatting**: Cannot use `{variable}` formatting in GraphQL queries themselves - use GraphQL variables instead
-- **Streaming**: No support for streaming responses (defer/stream directives)
-
-### Future Plans
-
-- Improved error message formatting
+for more details. The `json` strictness setting is reused for the `data` key in GraphQL responses.
 
 ## Error Handling
 
@@ -316,3 +260,17 @@ GraphQL responses should always return HTTP 200 status codes, even for:
 - Missing required fields
 
 Non-200 status codes indicate HTTP-level problems (authentication, network issues, etc.).
+
+## Limitations
+
+### Current Limitations
+
+- **No WebSocket Support**: GraphQL subscriptions over WebSocket are not supported yet
+- **Query Formatting**: Cannot use `{variable}` formatting in GraphQL queries themselves - use GraphQL variables instead
+- **Streaming**: No support for streaming responses (defer/stream directives)
+
+### Future Plans
+
+- Improved error message formatting
+- Extensions (unsupported by [gql](https://github.com/graphql-python/gql) so we'd need to implement our own)
+- 'Partial responses' (errors and data in the response)
