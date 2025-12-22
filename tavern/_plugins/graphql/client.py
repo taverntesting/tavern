@@ -52,7 +52,7 @@ class GraphQLClient:
     """GraphQL client for HTTP requests and subscriptions over WebSocket"""
 
     # separate clients for HTTP and WebSocket connections
-    subscriptions: dict[str, _SubResponse]
+    _subscriptions: dict[str, _SubResponse]
 
     _to_close: list[AsyncGenerator]
 
@@ -61,7 +61,7 @@ class GraphQLClient:
         self.default_headers = kwargs.get("headers", {})
         self.timeout = kwargs.get("timeout", 30)
 
-        self.subscriptions = {}
+        self._subscriptions = {}
         self._to_close = []
 
         # Create a new event loop to avoid problems with nested async
@@ -98,7 +98,7 @@ class GraphQLClient:
 
         async def _close_subscriptions():
             """Close all active subscription generators."""
-            await asyncio.gather(*(s.aclose() for s in self.subscriptions.values()))
+            await asyncio.gather(*(s.aclose() for s in self._subscriptions.values()))
             await asyncio.gather(*(s.aclose() for s in self._to_close))
 
         # Schedule the closing of subscriptions in the event loop
@@ -183,7 +183,7 @@ class GraphQLClient:
         if operation_name is None:
             raise ValueError("operation_name required for subscriptions")
 
-        if operation_name in self.subscriptions:
+        if operation_name in self._subscriptions:
             raise ValueError(
                 f"Subscription with name '{operation_name}' already exists"
             )
@@ -223,7 +223,7 @@ class GraphQLClient:
             # Using the subscription as a generator that yields results
             # Run the async subscription in the event loop
             async def _create_subscription():
-                self.subscriptions[operation_name] = subscribe_async_wrapper()
+                self._subscriptions[operation_name] = subscribe_async_wrapper()
 
             asyncio.run_coroutine_threadsafe(
                 _create_subscription(), self._loop
@@ -253,12 +253,12 @@ class GraphQLClient:
             TimeoutError: If the timeout is reached while waiting.
             Exception: If an error occurs while getting the next message.
         """
-        if op_name not in self.subscriptions:
+        if op_name not in self._subscriptions:
             raise ValueError(
-                f"Subscription with name '{op_name}' not found (have: {self.subscriptions.keys()} )"
+                f"Subscription with name '{op_name}' not found (have: {self._subscriptions.keys()} )"
             )
 
-        subscription_generator = self.subscriptions[op_name]
+        subscription_generator = self._subscriptions[op_name]
 
         # Get the next item from the async iterator
         try:
