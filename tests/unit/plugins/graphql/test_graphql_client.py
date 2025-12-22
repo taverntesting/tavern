@@ -47,7 +47,7 @@ class TestGraphQLClient:
                 )
 
             # Verify the subscription was created
-            assert "TestSubscription" in client.subscriptions
+            assert "TestSubscription" in client._subscriptions
             assert mock_ws_transport.called
 
     def test_start_subscription_requires_operation_name(self):
@@ -84,7 +84,7 @@ class TestGraphQLClient:
         async def mock_async_gen():
             yield {"data": {"test": "value"}}
 
-        client.subscriptions["test_op"] = mock_async_gen()
+        client._subscriptions["test_op"] = mock_async_gen()
 
         # Test getting the next message
         with client:  # Use context manager to set up the event loop
@@ -102,7 +102,7 @@ class TestGraphQLClient:
             yield {"data": {"test": "value"}}
 
         # Add the mock generator to subscriptions
-        client.subscriptions["slow_op"] = slow_async_gen()
+        client._subscriptions["slow_op"] = slow_async_gen()
 
         # Test that timeout is raised
         with client:  # Use context manager to set up the event loop
@@ -119,7 +119,7 @@ class TestGraphQLClient:
             raise Exception("Test error")
             yield
 
-        client.subscriptions["error_op"] = error_async_gen()
+        client._subscriptions["error_op"] = error_async_gen()
 
         # Test that the exception is propagated
         with client:  # Use context manager to set up the event loop
