@@ -64,13 +64,23 @@ class GraphQLClient:
         self.subscriptions = {}
         self._to_close = []
 
-        # Create a new event loop
-        self._loop: asyncio.BaseEventLoop = asyncio.new_event_loop()
-        self._loop.set_debug(True)
+        # Create a new event loop to avoid problems with nested async
+        self._loop = asyncio.new_event_loop()
+        if logger.getEffectiveLevel() <= logging.DEBUG:
+            # Sort of hacky, but enable debug loop if debug logging is enabled
+            self._loop.set_debug(True)
+
+        # Flag to signal shutdown
+        self._shutdown_event = threading.Event()
 
         def run_loop_in_thread():
             asyncio.set_event_loop(self._loop)
-            self._loop.run_forever()
+            while not self._shutdown_event.is_set():
+                # Run the loop for a short period, then check shutdown flag
+                self._loop.run_until_complete(asyncio.sleep(0.1))
+            # Close the loop after shutdown
+            if self._loop.is_running():
+                self._loop.stop()
 
         self._async_thread = threading.Thread(target=run_loop_in_thread)
 
@@ -91,9 +101,24 @@ class GraphQLClient:
             await asyncio.gather(*(s.aclose() for s in self.subscriptions.values()))
             await asyncio.gather(*(s.aclose() for s in self._to_close))
 
-        asyncio.run_coroutine_threadsafe(_close_subscriptions(), self._loop).result()
-        self._loop.stop()
-        self._async_thread.join()
+        # Schedule the closing of subscriptions in the event loop
+        future = asyncio.run_coroutine_threadsafe(_close_subscriptions(), self._loop)
+
+        # Wait for the closing operations to complete with a timeout
+        try:
+            future.result(timeout=5.0)  # 5 second timeout
+        except TimeoutError:
+            logger.warning("Timed out waiting for subscriptions to close")
+
+        # Signal the event loop thread to shut down
+        self._shutdown_event.set()
+
+        # Join the thread with a timeout to prevent indefinite blocking
+        self._async_thread.join(timeout=5.0)
+
+        # Check if thread is still alive after timeout
+        if self._async_thread.is_alive():
+            logger.warning("GraphQL client thread did not terminate within timeout")
 
     def make_request(
         self,

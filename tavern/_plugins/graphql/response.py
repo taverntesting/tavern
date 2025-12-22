@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Any
 
@@ -119,9 +120,10 @@ class GraphQLResponse(CommonResponse):
         # Process subscription responses
         if sub_responses_list:
             saved.update(
-                self.session._loop.run_until_complete(
-                    self._handle_subscription_responses(sub_responses_list)
-                )
+                asyncio.run_coroutine_threadsafe(
+                    self._handle_subscription_responses(sub_responses_list),
+                    self.session._loop,
+                ).result()
             )
 
         if self.errors:
