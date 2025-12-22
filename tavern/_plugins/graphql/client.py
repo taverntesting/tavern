@@ -1,8 +1,8 @@
 import asyncio
 import json
 import logging
+import threading
 from collections.abc import AsyncGenerator
-from concurrent.futures.thread import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from typing import Any, Optional, Union
 
@@ -66,16 +66,13 @@ class GraphQLClient:
 
         # Create a new event loop
         self._loop: asyncio.BaseEventLoop = asyncio.new_event_loop()
-        # self._loop.set_debug(True)
-
-        self._executor = ThreadPoolExecutor()
-        self._loop.set_default_executor(self._executor)
+        self._loop.set_debug(True)
 
         def run_loop_in_thread():
             asyncio.set_event_loop(self._loop)
             self._loop.run_forever()
 
-        self._executor.submit(run_loop_in_thread)
+        self._async_thread = threading.Thread(target=run_loop_in_thread)
 
     def __enter__(self):
         """Enter the context manager.
@@ -83,6 +80,7 @@ class GraphQLClient:
         Returns:
             The GraphQLClient instance.
         """
+        self._async_thread.start()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -93,12 +91,9 @@ class GraphQLClient:
             await asyncio.gather(*(s.aclose() for s in self.subscriptions.values()))
             await asyncio.gather(*(s.aclose() for s in self._to_close))
 
-        # If the event loop is already running, schedule cleanup as a task.
-        asyncio.run_coroutine_threadsafe(_close_subscriptions(), self._loop)
+        asyncio.run_coroutine_threadsafe(_close_subscriptions(), self._loop).result()
         self._loop.stop()
-        self._loop.run_forever()
-
-        self._executor.shutdown(wait=True)
+        self._async_thread.join()
 
     def make_request(
         self,
@@ -205,7 +200,9 @@ class GraphQLClient:
             async def _create_subscription():
                 self.subscriptions[operation_name] = subscribe_async_wrapper()
 
-            asyncio.run_coroutine_threadsafe(_create_subscription(), self._loop)
+            asyncio.run_coroutine_threadsafe(
+                _create_subscription(), self._loop
+            ).result()
 
             logger.debug(f"Started subscription {operation_name}")
             # Return the generator to allow iterating through subscription messages
