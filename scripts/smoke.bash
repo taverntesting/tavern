@@ -2,9 +2,16 @@
 
 set -ex
 
+# Use prek if available, otherwise default to pre-commit
+if command -v prek >/dev/null 2>&1; then
+    PRE_COMMIT_CMD="prek"
+else
+    PRE_COMMIT_CMD="pre-commit"
+fi
+
 uv lock --check || true
-pre-commit run ruff-check --all-files || true
-pre-commit run ruff-format --all-files || true
+$PRE_COMMIT_CMD run ruff-check --all-files || true
+$PRE_COMMIT_CMD run ruff-format --all-files || true
 
 tox --parallel -c tox.ini        \
   -e py3check
