@@ -12,11 +12,11 @@ from requests.cookies import RequestsCookieJar
 
 from tavern._core import exceptions
 from tavern._core.extfunctions import update_from_ext
-from tavern._plugins.rest.files import get_file_arguments
 from tavern._plugins.rest.request import (
     RestRequest,
     _check_allow_redirects,
     _read_expected_cookies,
+    get_file_arguments,
     get_request_args,
 )
 

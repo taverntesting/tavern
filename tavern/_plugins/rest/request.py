@@ -5,7 +5,7 @@ import warnings
 from collections.abc import Callable, Mapping
 from contextlib import ExitStack
 from itertools import filterfalse, tee
-from typing import ClassVar
+from typing import ClassVar, Optional, Union
 from urllib.parse import quote_plus
 
 import requests
@@ -19,10 +19,49 @@ from tavern._core.extfunctions import update_from_ext
 from tavern._core.general import valid_http_methods
 from tavern._core.pytest.config import TestConfig
 from tavern._core.report import attach_yaml
-from tavern._plugins.rest.files import get_file_arguments, guess_filespec
+from tavern._plugins.rest.files import (
+    _parse_file_list,
+    _parse_file_mapping,
+    guess_filespec,
+)
 from tavern.request import BaseRequest
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+def get_file_arguments(
+    request_args: dict, stack: ExitStack, test_block_config: TestConfig
+) -> dict:
+    """Get correct arguments for anything that should be passed as a file to
+    requests
+
+    Args:
+        request_args: args passed to requests
+        test_block_config: config for test
+        stack: context stack to add file objects to so they're
+            closed correctly after use
+
+    Returns:
+        mapping of 'files' block to pass directly to requests
+    """
+
+    files_to_send: Optional[Union[dict, list]] = None
+
+    file_args = request_args.get("files")
+
+    if isinstance(file_args, dict):
+        files_to_send = _parse_file_mapping(file_args, stack, test_block_config)
+    elif isinstance(file_args, list):
+        files_to_send = _parse_file_list(file_args, stack, test_block_config)
+    elif file_args is not None:
+        raise exceptions.BadSchemaError(
+            f"'files' key in a HTTP request can only be a dict or a list but was {type(file_args)}"
+        )
+
+    if files_to_send:
+        return {"files": files_to_send}
+    else:
+        return {}
 
 
 def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:

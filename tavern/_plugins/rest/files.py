@@ -117,7 +117,7 @@ def guess_filespec(
     return file_spec, parsed.form_field_name
 
 
-def _parse_file_mapping(file_args, stack, test_block_config) -> dict:
+def _parse_file_mapping(file_args, stack, test_block_config) -> dict[str, tuple]:
     """Parses a simple mapping of uploads where each key is mapped to one form field name which has one file"""
     files_to_send = {}
     for key, filespec in file_args.items():
@@ -130,10 +130,11 @@ def _parse_file_mapping(file_args, stack, test_block_config) -> dict:
             )
 
         files_to_send[key] = tuple(file_spec)
+
     return files_to_send
 
 
-def _parse_file_list(file_args, stack, test_block_config) -> list:
+def _parse_file_list(file_args, stack, test_block_config) -> list[tuple]:
     """Parses a case where there may be multiple files uploaded as part of one form field"""
     files_to_send: list[Any] = []
     for filespec in file_args:
@@ -152,38 +153,3 @@ def _parse_file_list(file_args, stack, test_block_config) -> list:
         )
 
     return files_to_send
-
-
-def get_file_arguments(
-    request_args: dict, stack: ExitStack, test_block_config: TestConfig
-) -> dict:
-    """Get correct arguments for anything that should be passed as a file to
-    requests
-
-    Args:
-        request_args: args passed to requests
-        test_block_config: config for test
-        stack: context stack to add file objects to so they're
-            closed correctly after use
-
-    Returns:
-        mapping of 'files' block to pass directly to requests
-    """
-
-    files_to_send: Optional[Union[dict, list]] = None
-
-    file_args = request_args.get("files")
-
-    if isinstance(file_args, dict):
-        files_to_send = _parse_file_mapping(file_args, stack, test_block_config)
-    elif isinstance(file_args, list):
-        files_to_send = _parse_file_list(file_args, stack, test_block_config)
-    elif file_args is not None:
-        raise exceptions.BadSchemaError(
-            f"'files' key in a HTTP request can only be a dict or a list but was {type(file_args)}"
-        )
-
-    if files_to_send:
-        return {"files": files_to_send}
-    else:
-        return {}
