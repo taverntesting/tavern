@@ -16,14 +16,14 @@ from requests.utils import dict_from_cookiejar
 from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys, deep_dict_merge, format_keys
 from tavern._core.extfunctions import update_from_ext
-from tavern._core.general import valid_http_methods
-from tavern._core.pytest.config import TestConfig
-from tavern._core.report import attach_yaml
-from tavern._plugins.rest.files import (
+from tavern._core.files import (
     _parse_file_list,
     _parse_file_mapping,
     guess_filespec,
 )
+from tavern._core.general import valid_http_methods
+from tavern._core.pytest.config import TestConfig
+from tavern._core.report import attach_yaml
 from tavern.request import BaseRequest
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -133,7 +133,9 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
     filename = fspec.get("file_body")
     if filename:
         with ExitStack() as stack:
-            file_spec, group_name = guess_filespec(filename, stack, test_block_config)
+            file_spec, group_name, _ = guess_filespec(
+                filename, stack, test_block_config
+            )
 
             # Group name doesn't matter here as it's a single file
             if group_name:
@@ -142,14 +144,9 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                 )
 
             fspec["file_body"] = filename
-            if len(file_spec) == 2:
-                logger.debug(
-                    "No content type or encoding inferred from file_body for %s",
-                    filename,
-                )
 
-            if len(file_spec) >= 3:
-                inferred_content_type = file_spec[2]
+            if file_spec.content_type:
+                inferred_content_type = file_spec.content_type
                 if content_header:
                     logger.info(
                         "inferred content type '%s' from %s, but using user specified content type '%s'",
@@ -159,9 +156,14 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                     )
                 else:
                     fspec["headers"]["content-type"] = inferred_content_type
+            else:
+                logger.debug(
+                    "No content type inferred from file_body for %s",
+                    filename,
+                )
 
-            if len(file_spec) == 4:
-                inferred_content_encoding = file_spec[3]
+            if file_spec.content_encoding:
+                inferred_content_encoding = file_spec.content_encoding
                 if encoding_header:
                     logger.info(
                         "inferred content encoding '%s' from %s, but using user specified encoding '%s",
@@ -171,6 +173,11 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                     )
                 else:
                     fspec["headers"].update(**inferred_content_encoding)
+            else:
+                logger.debug(
+                    "No encoding inferred from file_body for %s",
+                    filename,
+                )
 
     #########################################
 

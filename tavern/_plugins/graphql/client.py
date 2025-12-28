@@ -8,7 +8,7 @@ from typing import Any, Optional, Union
 
 from gql import Client, gql
 from gql.transport.aiohttp import AIOHTTPTransport
-from gql.transport.exceptions import TransportQueryError
+from gql.transport.exceptions import TransportQueryError, TransportServerError
 from gql.transport.websockets import WebsocketsTransport
 from graphql import ExecutionResult
 
@@ -136,6 +136,7 @@ class GraphQLClient:
         variables: Optional[dict[str, Any]] = None,
         operation_name: Optional[str] = None,
         headers: Optional[dict] = None,
+        has_files: bool = False,
     ) -> ResponseLike:
         """Execute GraphQL query/mutation over HTTP using gql.
 
@@ -145,6 +146,7 @@ class GraphQLClient:
             variables: Optional variables for the query.
             operation_name: Optional name of the operation to execute.
             headers: any headers to send with the request
+            has_files: whether the request contains files
 
         Returns:
             A GraphQLResponseLike object containing the query result.
@@ -154,7 +156,6 @@ class GraphQLClient:
         """
         headers = headers or {}
         headers = dict(self.default_headers, **headers)
-        headers["Content-Type"] = "application/json"
 
         transport = AIOHTTPTransport(
             url=url,
@@ -167,10 +168,15 @@ class GraphQLClient:
         query_gql.variable_values = variables or {}
         query_gql.operation_name = operation_name
 
-        result: ExecutionResult = http_client.execute(
-            query_gql,
-            get_execution_result=True,
-        )
+        try:
+            result: ExecutionResult = http_client.execute(
+                query_gql,
+                get_execution_result=True,
+                upload_files=has_files,
+            )
+        except (TransportQueryError, TransportServerError) as e:
+            logger.debug(f"GraphQL request failed: {e}", exc_info=True)
+            raise
 
         return GraphQLResponseLike(result=result)
 

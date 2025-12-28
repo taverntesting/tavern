@@ -1,11 +1,14 @@
 import logging
+from contextlib import ExitStack
 from functools import cached_property
 
 import box
 import gql.transport.exceptions
+from gql import FileVar
 
 from tavern._core import exceptions
-from tavern._core.dict_util import format_keys
+from tavern._core.dict_util import deep_dict_merge, format_keys
+from tavern._core.files import guess_filespec
 from tavern._core.formatted_str import FormattedString
 from tavern._core.pytest.config import TestConfig
 from tavern.request import BaseRequest
@@ -13,6 +16,43 @@ from tavern.request import BaseRequest
 from .client import GraphQLClient, GraphQLResponseLike
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+def get_file_arguments(file_args: dict, test_block_config: TestConfig) -> dict:
+    """Get correct arguments for anything that should be passed as a file to
+    gql
+
+    Args:
+        file_args: dict of files to upload
+        test_block_config: config for test
+
+    Returns:
+        mapping of 'files' block to pass directly to gql
+    """
+
+    # Note: Not actually using the opened files
+    gql_file_vars = {}
+    with ExitStack() as stack:
+        for var_name, file_path_or_long_format in file_args.items():
+            file_spec, form_field_name, resolved_file_path = guess_filespec(
+                file_path_or_long_format, stack, test_block_config
+            )
+            if form_field_name is None:
+                form_field_name = var_name
+
+            if form_field_name in gql_file_vars:
+                raise exceptions.BadSchemaError(
+                    f"Cannot upload multiple files with the same name '{form_field_name}'"
+                )
+
+            gql_file_var = FileVar(
+                f=resolved_file_path,
+                filename=form_field_name,
+                content_type=file_spec.content_type,
+            )
+            gql_file_vars[var_name] = gql_file_var
+
+    return gql_file_vars
 
 
 def _format_graphql_request(rspec: dict, variables: dict) -> dict:
@@ -98,6 +138,17 @@ class GraphQLRequest(BaseRequest):
             variables = self._formatted_rspec.get("variables", {}) or {}
             operation_name = self._formatted_rspec.get("operation_name")
 
+            headers = {}
+            files = self._formatted_rspec.get("files")
+            if files:
+                variables.update(get_file_arguments(files, self.test_block_config))
+            else:
+                headers["Content-Type"] = "application/json"
+
+            logger.debug(f"graphql variables: {variables}")
+
+            headers = deep_dict_merge(headers, self._formatted_rspec.get("headers", {}))
+
             if self.is_subscription_query:
                 self.session.start_subscription(url, query, variables, operation_name)
                 fake_resp = GraphQLResponseLike(result=None)
@@ -112,7 +163,8 @@ class GraphQLRequest(BaseRequest):
                 query=query,
                 variables=variables,
                 operation_name=operation_name,
-                headers=self._formatted_rspec.get("headers", {}),
+                headers=headers,
+                has_files=files is not None,
             )
 
             logger.debug("GraphQL response: %s", response.text)

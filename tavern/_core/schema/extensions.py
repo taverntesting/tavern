@@ -424,7 +424,7 @@ def validate_file_spec(value: dict, rule_obj, path) -> bool:
                 file_path = filespec["file_path"]
             except KeyError as e:
                 raise BadSchemaError(
-                    "When using 'long form' file uplaod spec, the file_path must be present"
+                    "When using 'long form' file upload spec, the file_path must be present"
                 ) from e
         else:
             raise BadSchemaError(

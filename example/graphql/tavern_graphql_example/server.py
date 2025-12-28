@@ -4,7 +4,11 @@ import asyncio
 import logging
 from collections.abc import AsyncGenerator
 
+from starlette.background import BackgroundTask
+from starlette.responses import Response
+from strawberry.file_uploads import Upload
 import starlette
+from starlette.datastructures import UploadFile
 import starlette.authentication
 import starlette.middleware.authentication
 import starlette.websockets
@@ -115,6 +119,20 @@ class Mutation:
         return post
 
     @strawberry.mutation
+    async def create_post_from_file(
+        self, title: str, my_file_name: Upload, author_id: str, info: strawberry.Info
+    ) -> Post:
+        post = models.Post(
+            title=title,
+            content=(await my_file_name.read()).decode("utf-8"),
+            author_id=int(author_id),
+        )
+        logging.info(f"Creating post {post.title}")
+        global_db_session.add(post)
+        global_db_session.commit()
+        return post
+
+    @strawberry.mutation
     def update_user(
         self, id: strawberry.ID, name: str, email: str, info: strawberry.Info
     ) -> User:
@@ -149,15 +167,41 @@ schema = strawberry.Schema(
     query=Query,
     mutation=Mutation,
     subscription=Subscription,
+    scalar_overrides={UploadFile: Upload},
 )
 
 
 async def lifespan(_):
-    logging.basicConfig(level=logging.INFO)
+    logging.basicConfig(level=logging.DEBUG)
     yield
 
 
 app = FastAPI(title="GraphQL Test Server", lifespan=lifespan)
+
+
+@app.middleware("http")
+async def some_middleware(request, call_next):
+    req_body = await request.body()
+    # await set_body(request, req_body)  # not needed when using FastAPI>=0.108.0.
+    response = await call_next(request)
+
+    chunks = []
+    async for chunk in response.body_iterator:
+        chunks.append(chunk)
+    res_body = b"".join(chunks)
+
+    def log_info(req_body, res_body):
+        logging.info(req_body)
+        logging.info(res_body)
+
+    task = BackgroundTask(log_info, req_body, res_body)
+    return Response(
+        content=res_body,
+        status_code=response.status_code,
+        headers=dict(response.headers),
+        media_type=response.media_type,
+        background=task,
+    )
 
 
 class BasicAuthBackend(starlette.authentication.AuthenticationBackend):
@@ -232,7 +276,9 @@ class AuthenticatedGraphqlRouter(GraphQLRouter):
         return True
 
 
-app.include_router(GraphQLRouter(schema), prefix="/graphql")
+app.include_router(
+    GraphQLRouter(schema, multipart_uploads_enabled=True), prefix="/graphql"
+)
 app.include_router(
     AuthenticatedGraphqlRouter(schema),
     prefix="/graphql_authenticated",

@@ -323,6 +323,10 @@ definitions:
           - type: number
           - type: boolean
 
+      files:
+        type: object
+        description: Files to send as part of the request. Mapping of graphql variable name to file path, or to 'long form' files
+
       headers:
         description: Headers for GraphQL request
         type: object
