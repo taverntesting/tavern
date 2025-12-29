@@ -277,7 +277,6 @@ class GraphQLClient:
             )
 
             logger.debug(f"Started subscription {operation_name}")
-            # Return the generator to allow iterating through subscription messages
         except Exception as e:
             logger.error(f"Failed to start subscription: {e}")
             raise
