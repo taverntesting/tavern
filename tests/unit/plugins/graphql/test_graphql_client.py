@@ -5,7 +5,7 @@ import gql
 import pytest
 from gql.transport.aiohttp import AIOHTTPTransport
 
-from tavern._plugins.graphql.client import GraphQLClient, TransportKey
+from tavern._plugins.graphql.client import ClientCacheKey, GraphQLClient
 
 
 class TestGraphQLClient:
@@ -130,13 +130,13 @@ class TestGraphQLClient:
         assert "Test error" in str(exc_info.value)
 
 
-class TestTransportKey:
-    """Tests for the TransportKey class"""
+class TestClientCacheKey:
+    """Tests for the ClientCacheKey class"""
 
-    def test_transport_key_creation(self):
-        """Test creating a TransportKey from components"""
+    def test_client_cache_key_creation(self):
+        """Test creating a ClientCacheKey from components"""
         headers = {"Authorization": "Bearer token", "Content-Type": "application/json"}
-        key = TransportKey(
+        key = ClientCacheKey(
             url="https://example.com/graphql",
             headers=headers,
             timeout=30,
@@ -148,19 +148,19 @@ class TestTransportKey:
         assert ("Authorization", "Bearer token") in key.headers
         assert ("Content-Type", "application/json") in key.headers
 
-    def test_transport_key_hashable(self):
-        """Test that TransportKey instances are hashable"""
+    def test_client_cache_key_hashable(self):
+        """Test that ClientCacheKey instances are hashable"""
         headers1 = {"Authorization": "Bearer token"}
         headers2 = {"Authorization": "Bearer token"}
         headers3 = {"Authorization": "Different token"}
 
-        key1 = TransportKey(
+        key1 = ClientCacheKey(
             url="https://example.com/graphql", headers=headers1, timeout=30
         )
-        key2 = TransportKey(
+        key2 = ClientCacheKey(
             url="https://example.com/graphql", headers=headers2, timeout=30
         )
-        key3 = TransportKey(
+        key3 = ClientCacheKey(
             url="https://example.com/graphql", headers=headers3, timeout=30
         )
 
@@ -170,19 +170,19 @@ class TestTransportKey:
         # Keys with different values should have different hashes
         assert hash(key1) != hash(key3)
 
-    def test_transport_key_equality(self):
-        """Test TransportKey equality comparison"""
+    def test_client_cache_key_equality(self):
+        """Test ClientCacheKey equality comparison"""
         headers1 = {"Authorization": "Bearer token"}
         headers2 = {"Authorization": "Bearer token"}
         headers3 = {"Authorization": "Different token"}
 
-        key1 = TransportKey(
+        key1 = ClientCacheKey(
             url="https://example.com/graphql", headers=headers1, timeout=30
         )
-        key2 = TransportKey(
+        key2 = ClientCacheKey(
             url="https://example.com/graphql", headers=headers2, timeout=30
         )
-        key3 = TransportKey(
+        key3 = ClientCacheKey(
             url="https://example.com/graphql", headers=headers3, timeout=30
         )
 
@@ -191,17 +191,17 @@ class TestTransportKey:
 
         # Different keys
         assert key1 != key3
-        assert key1 != "not a transport key"
+        assert key1 != "not a client cache key"
 
-    def test_transport_key_headers_order_independence(self):
-        """Test that header order doesn't matter for TransportKey"""
+    def test_client_cache_key_headers_order_independence(self):
+        """Test that header order doesn't matter for ClientCacheKey"""
         headers1 = {"Authorization": "Bearer token", "Content-Type": "application/json"}
         headers2 = {"Content-Type": "application/json", "Authorization": "Bearer token"}
 
-        key1 = TransportKey(
+        key1 = ClientCacheKey(
             url="https://example.com/graphql", headers=headers1, timeout=30
         )
-        key2 = TransportKey(
+        key2 = ClientCacheKey(
             url="https://example.com/graphql", headers=headers2, timeout=30
         )
 
@@ -209,22 +209,22 @@ class TestTransportKey:
         assert key1 == key2
         assert hash(key1) == hash(key2)
 
-    def test_transport_key_repr(self):
-        """Test TransportKey string representation"""
+    def test_client_cache_key_repr(self):
+        """Test ClientCacheKey string representation"""
         headers = {"Authorization": "Bearer token"}
-        key = TransportKey(
+        key = ClientCacheKey(
             url="https://example.com/graphql", headers=headers, timeout=30
         )
         repr_str = repr(key)
-        assert "TransportKey" in repr_str
+        assert "ClientCacheKey" in repr_str
         assert "https://example.com/graphql" in repr_str
 
 
-class TestTransportCaching:
-    """Tests for HTTP transport caching functionality"""
+class TestClientCaching:
+    """Tests for GraphQL client caching functionality"""
 
-    def test_make_request_creates_new_transport(self):
-        """Test that first request creates a new transport"""
+    def test_make_request_creates_new_client(self):
+        """Test that first request creates a new GraphQL client"""
         client = GraphQLClient()
 
         query = """
@@ -252,15 +252,17 @@ class TestTransportCaching:
                     query=query,
                 )
 
-                # Verify transport was created
+                # Verify client and transport were created
                 assert mock_transport.called
-                assert len(client._http_transport_cache) == 1
+                assert mock_client.called
+                assert len(client._gql_client_cache) == 1
+                assert len(client._transport_cache) == 1
 
                 # Verify the response
                 assert response.json() == {"user": {"id": "1"}}
 
-    def test_make_request_reuses_cached_transport(self):
-        """Test that subsequent requests to same URL reuse transport"""
+    def test_make_request_reuses_cached_client(self):
+        """Test that subsequent requests to same URL reuse GraphQL client"""
         client = GraphQLClient()
 
         query1 = """
@@ -302,12 +304,14 @@ class TestTransportCaching:
                     query=query2,
                 )
 
-                # Verify transport was created only once
+                # Verify client was created only once
                 assert mock_transport.call_count == 1
-                assert len(client._http_transport_cache) == 1
+                assert mock_client.call_count == 1
+                assert len(client._gql_client_cache) == 1
+                assert len(client._transport_cache) == 1
 
-    def test_make_request_different_urls_create_different_transports(self):
-        """Test that requests to different URLs create different transports"""
+    def test_make_request_different_urls_create_different_clients(self):
+        """Test that requests to different URLs create different GraphQL clients"""
         client = GraphQLClient()
 
         query = """
@@ -340,12 +344,14 @@ class TestTransportCaching:
                     query=query,
                 )
 
-                # Verify two transports were created
+                # Verify two clients were created
                 assert mock_transport.call_count == 2
-                assert len(client._http_transport_cache) == 2
+                assert mock_client.call_count == 2
+                assert len(client._gql_client_cache) == 2
+                assert len(client._transport_cache) == 2
 
-    def test_make_request_different_headers_create_different_transports(self):
-        """Test that requests with different headers create different transports"""
+    def test_make_request_different_headers_create_different_clients(self):
+        """Test that requests with different headers create different GraphQL clients"""
         client = GraphQLClient()
 
         query = """
@@ -381,12 +387,14 @@ class TestTransportCaching:
                     headers={"Authorization": "Bearer token2"},
                 )
 
-                # Verify two transports were created (different headers)
+                # Verify two clients were created (different headers)
                 assert mock_transport.call_count == 2
-                assert len(client._http_transport_cache) == 2
+                assert mock_client.call_count == 2
+                assert len(client._gql_client_cache) == 2
+                assert len(client._transport_cache) == 2
 
-    def test_make_request_same_headers_reuse_transport(self):
-        """Test that requests with same headers reuse transport"""
+    def test_make_request_same_headers_reuse_client(self):
+        """Test that requests with same headers reuse GraphQL client"""
         client = GraphQLClient()
 
         query = """
@@ -421,12 +429,14 @@ class TestTransportCaching:
                     headers={"Authorization": "Bearer token"},
                 )
 
-                # Verify only one transport was created
+                # Verify only one client was created
                 assert mock_transport.call_count == 1
-                assert len(client._http_transport_cache) == 1
+                assert mock_client.call_count == 1
+                assert len(client._gql_client_cache) == 1
+                assert len(client._transport_cache) == 1
 
-    def test_client_context_manager_closes_cached_transports(self):
-        """Test that context manager exit closes cached transports"""
+    def test_client_context_manager_closes_cached_clients(self):
+        """Test that context manager exit closes cached clients and transports"""
         client = GraphQLClient()
 
         with patch("tavern._plugins.graphql.client.AIOHTTPTransport") as mock_transport:
@@ -449,3 +459,6 @@ class TestTransportCaching:
 
                 # Verify transport.close() was called on exit
                 assert mock_transport_instance.close.called
+                # Verify client cache was populated
+                assert len(client._gql_client_cache) == 1
+                assert len(client._transport_cache) == 1

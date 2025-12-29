@@ -25,26 +25,36 @@ ResultOrErr = Union[ExecutionResult, TransportQueryError]
 """The type returned from a gql query"""
 
 
-class TransportKey:
-    """Cache key for HTTP transports."""
+class ClientCacheKey:
+    """Cache key for GraphQL clients.
+
+    Uses a tuple of sorted header items to ensure hashability.
+    """
 
     url: str
     headers: tuple[tuple[str, str], ...]
     timeout: int
 
     def __init__(self, url: str, headers: dict[str, str], timeout: int):
+        """Initialize ClientCacheKey with conversion of headers dict to tuple.
+
+        Args:
+            url: The URL for the transport
+            headers: Headers dictionary
+            timeout: Timeout in seconds
+        """
         # Convert headers dict to sorted tuple for hashability
         self.url = url
         self.headers = tuple(sorted(headers.items()))
         self.timeout = timeout
 
     def __hash__(self) -> int:
-        """Make TransportKey hashable."""
+        """Make ClientCacheKey hashable."""
         return hash((self.url, self.headers, self.timeout))
 
     def __eq__(self, other: object) -> bool:
-        """Compare two TransportKey instances."""
-        if not isinstance(other, TransportKey):
+        """Compare two ClientCacheKey instances."""
+        if not isinstance(other, ClientCacheKey):
             return NotImplemented
         return (
             self.url == other.url
@@ -53,8 +63,8 @@ class TransportKey:
         )
 
     def __repr__(self) -> str:
-        """String representation of TransportKey."""
-        return f"TransportKey(url={self.url!r}, headers={self.headers!r}, timeout={self.timeout})"
+        """String representation of ClientCacheKey."""
+        return f"ClientCacheKey(url={self.url!r}, headers={self.headers!r}, timeout={self.timeout})"
 
 
 @dataclass(kw_only=True)
@@ -98,8 +108,11 @@ class GraphQLClient:
     _async_thread: threading.Thread
     """Thread running the event loop"""
 
-    _http_transport_cache: dict[TransportKey, AIOHTTPTransport]
-    """Cache of HTTP transports to avoid creating new ones for the same URL."""
+    _gql_client_cache: dict[ClientCacheKey, Client]
+    """Cache of GraphQL clients to avoid creating new ones for the same URL."""
+
+    _transport_cache: dict[ClientCacheKey, AIOHTTPTransport]
+    """Cache of HTTP transports associated with each client."""
 
     def __init__(self, **kwargs):
         """Initialize the GraphQL client."""
@@ -108,7 +121,8 @@ class GraphQLClient:
 
         self._subscriptions = {}
         self._to_close = []
-        self._http_transport_cache = {}
+        self._gql_client_cache = {}
+        self._transport_cache = {}
 
         self._loop = asyncio.new_event_loop()
         if logger.getEffectiveLevel() <= logging.DEBUG:
@@ -156,7 +170,7 @@ class GraphQLClient:
             logger.warning("Timed out waiting for subscriptions to close")
 
         # Close cached HTTP transports
-        for transport in self._http_transport_cache.values():
+        for transport in self._transport_cache.values():
             transport.close()
 
         # Signal the event loop thread to shut down
@@ -197,27 +211,27 @@ class GraphQLClient:
         headers = headers or {}
         headers = dict(self.default_headers, **headers)
 
-        # Create a cache key for the transport
-        transport_key = TransportKey(
+        # Create a cache key for the client
+        client_key = ClientCacheKey(
             url=url,
             headers=headers,
             timeout=self.timeout,
         )
 
-        # Get or create the transport
-        transport = self._http_transport_cache.get(transport_key)
-        if transport is None:
+        # Get or create the GraphQL client
+        http_client = self._gql_client_cache.get(client_key)
+        if http_client is None:
             transport = AIOHTTPTransport(
                 url=url,
                 headers=headers,
                 timeout=self.timeout,
             )
-            self._http_transport_cache[transport_key] = transport
-            logger.debug(f"Created new HTTP transport for {url}")
+            http_client = Client(transport=transport)
+            self._gql_client_cache[client_key] = http_client
+            self._transport_cache[client_key] = transport
+            logger.debug(f"Created new GraphQL client for {url}")
         else:
-            logger.debug(f"Reusing cached HTTP transport for {url}")
-
-        http_client = Client(transport=transport)
+            logger.debug(f"Reusing cached GraphQL client for {url}")
 
         query_gql = gql(query)
         query_gql.variable_values = variables or {}
