@@ -25,6 +25,38 @@ ResultOrErr = Union[ExecutionResult, TransportQueryError]
 """The type returned from a gql query"""
 
 
+class TransportKey:
+    """Cache key for HTTP transports."""
+
+    url: str
+    headers: tuple[tuple[str, str], ...]
+    timeout: int
+
+    def __init__(self, url: str, headers: dict[str, str], timeout: int):
+        # Convert headers dict to sorted tuple for hashability
+        self.url = url
+        self.headers = tuple(sorted(headers.items()))
+        self.timeout = timeout
+
+    def __hash__(self) -> int:
+        """Make TransportKey hashable."""
+        return hash((self.url, self.headers, self.timeout))
+
+    def __eq__(self, other: object) -> bool:
+        """Compare two TransportKey instances."""
+        if not isinstance(other, TransportKey):
+            return NotImplemented
+        return (
+            self.url == other.url
+            and self.headers == other.headers
+            and self.timeout == other.timeout
+        )
+
+    def __repr__(self) -> str:
+        """String representation of TransportKey."""
+        return f"TransportKey(url={self.url!r}, headers={self.headers!r}, timeout={self.timeout})"
+
+
 @dataclass(kw_only=True)
 class GraphQLResponseLike(ResponseLike):
     """A response-like object implementing the ResponseLike protocol for GraphQL responses"""
@@ -66,6 +98,9 @@ class GraphQLClient:
     _async_thread: threading.Thread
     """Thread running the event loop"""
 
+    _http_transport_cache: dict[TransportKey, AIOHTTPTransport]
+    """Cache of HTTP transports to avoid creating new ones for the same URL."""
+
     def __init__(self, **kwargs):
         """Initialize the GraphQL client."""
         self.default_headers = kwargs.get("headers", {})
@@ -73,6 +108,7 @@ class GraphQLClient:
 
         self._subscriptions = {}
         self._to_close = []
+        self._http_transport_cache = {}
 
         self._loop = asyncio.new_event_loop()
         if logger.getEffectiveLevel() <= logging.DEBUG:
@@ -119,6 +155,10 @@ class GraphQLClient:
         except TimeoutError:
             logger.warning("Timed out waiting for subscriptions to close")
 
+        # Close cached HTTP transports
+        for transport in self._http_transport_cache.values():
+            transport.close()
+
         # Signal the event loop thread to shut down
         self._shutdown_event.set()
 
@@ -157,11 +197,26 @@ class GraphQLClient:
         headers = headers or {}
         headers = dict(self.default_headers, **headers)
 
-        transport = AIOHTTPTransport(
+        # Create a cache key for the transport
+        transport_key = TransportKey(
             url=url,
             headers=headers,
             timeout=self.timeout,
         )
+
+        # Get or create the transport
+        transport = self._http_transport_cache.get(transport_key)
+        if transport is None:
+            transport = AIOHTTPTransport(
+                url=url,
+                headers=headers,
+                timeout=self.timeout,
+            )
+            self._http_transport_cache[transport_key] = transport
+            logger.debug(f"Created new HTTP transport for {url}")
+        else:
+            logger.debug(f"Reusing cached HTTP transport for {url}")
+
         http_client = Client(transport=transport)
 
         query_gql = gql(query)
