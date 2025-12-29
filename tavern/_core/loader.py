@@ -171,7 +171,7 @@ def construct_include(loader, node):
         return resolved_path.read_text(encoding="utf-8")
 
     raise BadSchemaError(
-        f"Unknown filetype '{filename}' (included files must be in YAML format and end with .yaml or .yml)"
+        f"Unknown filetype '{filename}' (included files must be in YAML, JSON, or GraphQL format with extensions .yaml, .yml, .json, or .graphql)"
     )
 
 
