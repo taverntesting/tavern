@@ -55,6 +55,33 @@ stages:
           content: Lorem Ipsum etc.
           authorId: !int "{user_id}"
 
+  - name: Create post 2 for user from a file using long format
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        mutation CreatePostFromFile($title: String!, $myFileName: Upload!, $authorId: String!) {
+          createPostFromFile(title: $title, myFileName: $myFileName, authorId: $authorId) {
+            id
+            title
+            content
+            authorId
+          }
+        }
+      variables:
+        title: "Second Test Post"
+        authorId: "{user_id}"
+      files:
+        myFileName:
+          file_path: testdata/test_file_content.txt
+          content_type: text/plain
+    graphql_response:
+      data:
+        createPostFromFile:
+          id: !anyint
+          title: "Second Test Post"
+          content: Lorem Ipsum etc.
+          authorId: !int "{user_id}"
+
   - name: Get posts for the user
     graphql_request:
       url: "{graphql_server_url}/graphql"
@@ -74,5 +101,9 @@ stages:
         userPosts:
           - id: !anyint
             title: "First Test Post"
+            content: Lorem Ipsum etc.
+            authorId: !int "{user_id}"
+          - id: !anyint
+            title: "Second Test Post"
             content: Lorem Ipsum etc.
             authorId: !int "{user_id}"

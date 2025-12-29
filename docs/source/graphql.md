@@ -187,6 +187,97 @@ stages:
 > `!include` tag to import an external GraphQL file that contains multiple operations. In such cases, `operation_name`
 > helps identify which specific operation you want to execute from the included file.
 
+### File Uploads
+
+GraphQL file uploads are handled through variables using the `Upload` scalar type. You need to:
+
+1. Define a GraphQL mutation with an `Upload` parameter
+2. Use the `files:` block in your test to specify which file to upload
+3. The variable name in `files:` must match the parameter name in your mutation
+
+```yaml
+stages:
+  - name: Upload a file
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        mutation UploadFile($file: Upload!, $title: String!) {
+          uploadFile(file: $file, title: $title) {
+            id
+            filename
+            url
+          }
+        }
+      variables:
+        title: "My File"
+      files:
+        file: path/to/local/file.txt
+    graphql_response:
+      data:
+        uploadFile:
+          id: !anyint
+          filename: "file.txt"
+```
+
+You can upload multiple files by specifying them in the `files:` block:
+
+```yaml
+stages:
+  - name: Upload multiple files
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        mutation UploadFiles($file1: Upload!, $file2: Upload!) {
+          uploadMultiple(file1: $file1, file2: $file2) {
+            id
+            files {
+              filename
+              url
+            }
+          }
+        }
+      variables:
+        # Note: variables here should not contain the file data
+      files:
+        file1: path/to/first/file.txt
+        file2: path/to/second/file.txt
+    graphql_response:
+      json:
+        data:
+          uploadMultiple:
+            id: !anyint
+            files:
+              - filename: "file.txt"
+              - filename: "file.txt"
+```
+
+You can also use the **long form** to specify the `content_type` of the file:
+
+```yaml
+stages:
+  - name: Upload file with custom content type
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        mutation UploadFile($myFileName: Upload!, $title: String!) {
+          uploadFile(file: $myFileName, title: $title) {
+            id
+            filename
+          }
+        }
+      variables:
+        title: "Custom File"
+      files:
+        myFileName:
+          file_path: path/to/file.txt
+          content_type: text/plain
+    graphql_response:
+      data:
+        uploadFile:
+          id: !anyint
+          filename: "file.txt"
+```
+
 ## Responses
 
 GraphQL responses follow the standard GraphQL format with `data` and/or `errors` at the top level:
