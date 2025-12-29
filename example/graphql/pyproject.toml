@@ -28,3 +28,6 @@ addopts = [
     "--tb=short",
     "--color=yes",
 ]
+
+[tool.setuptools.packages.find]
+include = ["tavern_graphql_example"]
