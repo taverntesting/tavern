@@ -163,12 +163,12 @@ def construct_include(loader, node):
 
     filename = find_include(loader, node)
     resolved_path = pathlib.Path(filename)
-    extension = resolved_path.suffix.lstrip(".")
+    extension = resolved_path.suffix.lstrip(".").lower()
 
     if extension in ("yaml", "yml", "json"):
         return load_single_document_yaml(filename)
     elif extension == "graphql":
-        return resolved_path.read_text()
+        return resolved_path.read_text(encoding="utf-8")
 
     raise BadSchemaError(
         f"Unknown filetype '{filename}' (included files must be in YAML format and end with .yaml or .yml)"
