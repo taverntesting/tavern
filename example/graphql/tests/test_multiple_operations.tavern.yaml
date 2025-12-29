@@ -60,7 +60,7 @@ stages:
           name: "John Doe"
           email: "john@example.com"
 
-  - name: create user 1 by operation_name
+  - name: create user 2 by operation_name
     graphql_request:
       url: "{graphql_server_url}/graphql"
       query: !include multiple_operations.graphql
