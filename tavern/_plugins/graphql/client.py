@@ -159,6 +159,7 @@ class GraphQLClient:
             """Close all active subscription generators."""
             await asyncio.gather(*(s.aclose() for s in self._subscriptions.values()))
             await asyncio.gather(*(s.aclose() for s in self._to_close))
+            await asyncio.gather(*(s.close() for s in self._transport_cache.values()))
 
         # Schedule the closing of subscriptions in the event loop
         future = asyncio.run_coroutine_threadsafe(_close_subscriptions(), self._loop)
@@ -168,10 +169,6 @@ class GraphQLClient:
             future.result(timeout=5.0)  # 5 second timeout
         except TimeoutError:
             logger.warning("Timed out waiting for subscriptions to close")
-
-        # Close cached HTTP transports
-        for transport in self._transport_cache.values():
-            transport.close()
 
         # Signal the event loop thread to shut down
         self._shutdown_event.set()
