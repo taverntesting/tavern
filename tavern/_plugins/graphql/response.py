@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from typing import Any
 
@@ -119,12 +118,15 @@ class GraphQLResponse(CommonResponse):
         ]
         # Process subscription responses
         if sub_responses_list:
-            saved.update(
-                asyncio.run_coroutine_threadsafe(
+            try:
+                to_save: dict = self.session._threaded_async_loop.run_coroutine(
                     self._handle_subscription_responses(sub_responses_list),
-                    self.session._loop,
-                ).result()
-            )
+                    timeout=30.0,
+                )
+            except TimeoutError as e:
+                self._adderr(f"Timed out waiting for subscription responses: {e}")
+            else:
+                saved.update(to_save)
 
         if self.errors:
             raise exceptions.TestFailError(

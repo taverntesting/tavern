@@ -1,7 +1,6 @@
 import asyncio
 import json
 import logging
-import threading
 from collections.abc import AsyncGenerator
 from dataclasses import dataclass, field
 from typing import Any, Optional, Union
@@ -12,6 +11,7 @@ from gql.transport.exceptions import TransportQueryError, TransportServerError
 from gql.transport.websockets import WebsocketsTransport
 from graphql import ExecutionResult
 
+from tavern._core.asyncio import ThreadedAsyncLoop
 from tavern._plugins.common.response import ResponseLike
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -99,15 +99,6 @@ class GraphQLClient:
     _to_close: list[AsyncGenerator]
     """List of subscription generators to close when the client is closed."""
 
-    _loop: asyncio.AbstractEventLoop
-    """Loop run in a separate thread to avoid blocking the main thread and avoid problems with nested async"""
-
-    _shutdown_event: threading.Event
-    """Event used to signal the event loop thread to shut down"""
-
-    _async_thread: threading.Thread
-    """Thread running the event loop"""
-
     _gql_client_cache: dict[ClientCacheKey, Client]
     """Cache of GraphQL clients to avoid creating new ones for the same URL."""
 
@@ -124,24 +115,7 @@ class GraphQLClient:
         self._gql_client_cache = {}
         self._transport_cache = {}
 
-        self._loop = asyncio.new_event_loop()
-        if logger.getEffectiveLevel() <= logging.DEBUG:
-            # Sort of hacky, but enable debug loop if debug logging is enabled
-            self._loop.set_debug(True)
-
-        # Flag to signal shutdown
-        self._shutdown_event = threading.Event()
-
-        def run_loop_in_thread():
-            asyncio.set_event_loop(self._loop)
-            while not self._shutdown_event.is_set():
-                # Run the loop for a short period, then check shutdown flag
-                self._loop.run_until_complete(asyncio.sleep(0.1))
-            # Close the loop after shutdown
-            if self._loop.is_running():
-                self._loop.stop()
-
-        self._async_thread = threading.Thread(target=run_loop_in_thread)
+        self._threaded_async_loop = ThreadedAsyncLoop()
 
     def __enter__(self):
         """Enter the context manager.
@@ -149,7 +123,7 @@ class GraphQLClient:
         Returns:
             The GraphQLClient instance.
         """
-        self._async_thread.start()
+        self._threaded_async_loop.__enter__()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -161,24 +135,15 @@ class GraphQLClient:
             await asyncio.gather(*(s.aclose() for s in self._to_close))
             await asyncio.gather(*(s.close() for s in self._transport_cache.values()))
 
-        # Schedule the closing of subscriptions in the event loop
-        future = asyncio.run_coroutine_threadsafe(_close_subscriptions(), self._loop)
-
-        # Wait for the closing operations to complete with a timeout
         try:
-            future.result(timeout=5.0)  # 5 second timeout
+            # Schedule the closing of subscriptions in the event loop and
+            # wait for the closing operations to complete with a timeout
+            self._threaded_async_loop.run_coroutine(_close_subscriptions(), timeout=5.0)
         except TimeoutError:
             logger.warning("Timed out waiting for subscriptions to close")
 
-        # Signal the event loop thread to shut down
-        self._shutdown_event.set()
-
         # Join the thread with a timeout to prevent indefinite blocking
-        self._async_thread.join(timeout=5.0)
-
-        # Check if thread is still alive after timeout
-        if self._async_thread.is_alive():
-            logger.warning("GraphQL client thread did not terminate within timeout")
+        self._threaded_async_loop.__exit__(exc_type, exc_val, exc_tb)
 
     def make_request(
         self,
@@ -306,9 +271,10 @@ class GraphQLClient:
             async def _create_subscription():
                 self._subscriptions[operation_name] = subscribe_async_wrapper()
 
-            asyncio.run_coroutine_threadsafe(
-                _create_subscription(), self._loop
-            ).result()
+            self._threaded_async_loop.run_coroutine(
+                _create_subscription(),
+                timeout=5.0,
+            )
 
             logger.debug(f"Started subscription {operation_name}")
             # Return the generator to allow iterating through subscription messages
