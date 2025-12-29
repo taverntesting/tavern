@@ -269,7 +269,7 @@ class AuthenticatedGraphqlRouter(GraphQLRouter):
 
         # This feels like a terrible hack but I dont think strawberry provides another way to do this
         if check_has_right_header(request.headers) is None:
-            from lia import HTTPException
+            from cross_web import HTTPException
 
             raise HTTPException(401, "Unauthorized")
 

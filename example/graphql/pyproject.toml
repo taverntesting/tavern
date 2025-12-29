@@ -11,6 +11,7 @@ dependencies = [
     "starlette",
     "strawberry-graphql[fastapi]",
     "strawberry-sqlalchemy-mapper",
+    "cross-web",
     "sqlalchemy>=2,<3"
 ]
 

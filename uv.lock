@@ -2710,6 +2710,7 @@ name = "tavern-graphql-example"
 version = "0.1.0"
 source = { editable = "example/graphql" }
 dependencies = [
+    { name = "cross-web" },
     { name = "fastapi" },
     { name = "sqlalchemy" },
     { name = "starlette" },
@@ -2721,6 +2722,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "cross-web" },
     { name = "fastapi" },
     { name = "sqlalchemy", specifier = ">=2,<3" },
     { name = "starlette" },
