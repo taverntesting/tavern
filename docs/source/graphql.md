@@ -356,7 +356,6 @@ Non-200 status codes indicate HTTP-level problems (authentication, network issue
 
 ### Current Limitations
 
-- **No WebSocket Support**: GraphQL subscriptions over WebSocket are not supported yet
 - **Query Formatting**: Cannot use `{variable}` formatting in GraphQL queries themselves - use GraphQL variables instead
 - **Streaming**: No support for streaming responses (defer/stream directives)
 
