@@ -26,7 +26,7 @@ stages:
 
 ---
 
-test_name: GraphQL authentication - Query with authorization header
+test_name: GraphQL authentication - Query with authorization header in default client settings
 
 includes:
   - !include graphql_config.yaml
