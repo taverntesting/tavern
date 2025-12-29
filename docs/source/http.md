@@ -427,7 +427,7 @@ stages:
           content_encoding: "UTF16"
 ```
 
-To specify the same file multiple times with with a different form field name, use a list for the files:
+To specify the same file multiple times with a different form field name, use a list for the files:
 
 ```yaml
 ---
