@@ -36,7 +36,7 @@ _graphql_includes = TestConfig(
     strict=StrictLevel.all_on(),
     tavern_internal=TavernInternalConfig(
         pytest_hook_caller=Mock(),
-        backends={"graphql": "graphql"},
+        backends={"graphql": "gql"},
     ),
     follow_redirects=False,
     stages=[],
