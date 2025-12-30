@@ -1,6 +1,7 @@
 """Simple GraphQL test server for integration testing using SQLite and strawberry-graphql with subscriptions"""
 
 import asyncio
+import csv
 import logging
 from collections.abc import AsyncGenerator
 
@@ -97,6 +98,24 @@ class Query:
         if not posts_by_author:
             raise Exception("No posts found for that author")
         return posts_by_author
+
+    @strawberry.field
+    async def users_from_csv(
+        self, csv_file: Upload, info: strawberry.Info
+    ) -> list[User]:
+        content = (await csv_file.read()).decode("utf-8")
+        csv_reader = csv.reader(content.splitlines())
+        first_column_values = [row[0] for row in csv_reader if row]
+
+        matching_users = []
+        for name in first_column_values:
+            user = global_db_session.execute(
+                select(models.User).where(models.User.name == name)
+            ).scalars().first()
+            if user:
+                matching_users.append(user)
+
+        return matching_users
 
 
 @strawberry.type

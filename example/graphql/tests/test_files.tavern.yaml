@@ -1,6 +1,58 @@
 ---
 
-test_name: GraphQL files - upload a file
+test_name: GraphQL files - query with a file
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Create user with CSV test name
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        mutation CreateUser($name: String!, $email: String!) {
+          createUser(name: $name, email: $email) {
+            id
+            name
+            email
+          }
+        }
+      variables:
+        name: "Alice Johnson"
+        email: "alice@example.com"
+    graphql_response:
+      data:
+        createUser:
+          id: !anyint
+          name: "Alice Johnson"
+          email: "alice@example.com"
+      save:
+        data:
+          alice_id: data.createUser.id
+
+  - name: Upload CSV and query users
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        query UploadCSV($csvFile: Upload!) {
+          usersFromCsv(csvFile: $csvFile) {
+            id
+            name
+            email
+          }
+        }
+      files:
+        csvFile: testdata/test_users.csv
+    graphql_response:
+      data:
+        usersFromCsv:
+          - id: !anyint
+            name: "Alice Johnson"
+            email: "alice@example.com"
+
+---
+
+test_name: GraphQL files - mutation with a file
 
 includes:
   - !include graphql_config.yaml
