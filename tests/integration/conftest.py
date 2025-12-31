@@ -1,4 +1,5 @@
 import logging
+import random
 from collections.abc import Iterable
 
 import pytest
@@ -37,6 +38,11 @@ def fixture_echo_url():
 @pytest.fixture(scope="session", autouse=True, name="autouse_thing_named")
 def second(autouse_thing):
     return autouse_thing
+
+
+@pytest.fixture()
+def random_session_id():
+    return random.randint(0, 1000000)
 
 
 def pytest_tavern_beta_before_every_request(request_args: Box):

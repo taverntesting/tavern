@@ -382,6 +382,37 @@ definitions:
         description: Number of times to retry this request
         default: 0
 
+      retry_if:
+        type: array
+        description: List of response conditions that should trigger a retry
+        items:
+          type: object
+          description: Response condition that should trigger a retry
+          properties:
+            response:
+              $ref: "#/definitions/http_response"
+          required:
+            - response
+
+      retry_opts:
+        type: object
+        description: Options for retry behavior
+        properties:
+          delay:
+            type: number
+            description: Delay in seconds between retries
+            default: 1.0
+          max_delay:
+            type: number
+            description: Maximum delay in seconds between retries (for exponential backoff)
+          backoff:
+            type: number
+            description: Multiplier for exponential backoff
+            default: 1.0
+          timeout:
+            type: number
+            description: Maximum total time to spend retrying in seconds
+
       skip:
         oneOf:
           - type: boolean

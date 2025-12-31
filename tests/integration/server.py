@@ -505,3 +505,28 @@ def get_jwt():
     token = jwt.encode(payload, secret, algorithm="HS256")
 
     return jsonify({"jwt": token})
+
+
+@app.route("/status", methods=["GET"])
+def get_status():
+    if not hasattr(get_status, "status_counter"):
+        get_status.status_counter = {}
+
+    session_id = request.args.get("session_id")
+    if not session_id:
+        return jsonify({"status": "ERROR"}), 400
+
+    # Return different statuses based on how many times the endpoint has been called
+    if session_id not in get_status.status_counter:
+        get_status.status_counter[session_id] = 0
+        # First two calls return "QUEUED"
+        response_data = {"status": "QUEUED"}
+    elif get_status.status_counter[session_id] <= 4:
+        get_status.status_counter[session_id] += 1
+        # Next two calls return "IN_PROGRESS"
+        response_data = {"status": "IN_PROGRESS"}
+    else:
+        # After that, return "SUCCESS"
+        response_data = {"status": "SUCCESS"}
+
+    return jsonify(response_data)

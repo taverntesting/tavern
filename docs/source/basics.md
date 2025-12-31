@@ -1753,6 +1753,66 @@ MQTT tests can be retried as well, but you should think whether this
 is what you want - you could also try increasing the timeout on an expected MQTT
 response to achieve something similar.
 
+### 'Retry until' functionality
+
+Tavern supports retrying requests based on response conditions. You can specify conditions under which a request should
+be retried, as well as general retry options.
+
+Example with retry_if:
+
+```yaml
+stages:
+  - name: get status
+    request:
+      url: "{host}/status"
+    retry_if:
+      - response:
+          status_code: 200
+          json:
+            status: QUEUED
+      - response:
+          status_code: 200
+          json:
+            status: IN_PROGRESS
+    retry_opts:
+      delay: 2.0          # Delay between retries in seconds (default: 1.0)
+      max_delay: 10.0     # Maximum delay between retries (for exponential backoff)
+      backoff: 1.5        # Multiplier for exponential backoff (default: 1.0)
+      timeout: 300        # Maximum total time to spend retrying in seconds
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+```
+
+In this example, the request will be retried if the response has status code 200 and the JSON contains `status: QUEUED`
+or `status: IN_PROGRESS`. The test will continue until the response contains `status: SUCCESS` or the maximum number of
+retries or timeout is reached.
+
+The `retry_opts` section allows you to configure:
+
+- `delay`: Initial delay between retries (default: 1.0 second)
+- `max_delay`: Maximum delay between retries (for exponential backoff)
+- `backoff`: Multiplier for exponential backoff (default: 1.0, meaning no backoff)
+- `timeout`: Maximum total time to spend retrying in seconds
+
+### Backward compatibility
+
+The existing `max_retries` functionality continues to work as before, retrying only on exceptions:
+
+```yaml
+stages:
+  - name: polling
+    max_retries: 3
+    request:
+      url: "{host}/poll"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: ready
+```
+
 ## Marking tests
 
 Since 0.11.0, it is possible to 'mark' tests. This uses Pytest behind the
@@ -1878,10 +1938,12 @@ stages:
 
 ##### Skipping stages with simpleeval expressions
 
-Stages can be skipped by using a `skip` key that contains a [simpleeval](https://pypi.org/project/simpleeval/) expression. 
+Stages can be skipped by using a `skip` key that contains a [simpleeval](https://pypi.org/project/simpleeval/)
+expression.
 This allows for more complex conditional logic to determine if a stage should be skipped.
 
 Example:
+
 ```yaml
 stages:
   - name: Skip based on variable value

@@ -3,9 +3,11 @@ import dataclasses
 import functools
 import logging
 import pathlib
+import time
 from collections.abc import Mapping, MutableMapping
 from contextlib import ExitStack
 from copy import deepcopy
+from typing import Any
 
 import box
 
@@ -309,6 +311,45 @@ def _calculate_stage_strictness(
     return new_strict
 
 
+def _should_retry_based_on_response(
+    stage: dict,
+    response,
+    retry_if_conditions: list,
+    stage_config: TestConfig,
+    sessions: Mapping,
+):
+    """Check if the response matches any of the retry_if conditions"""
+
+    for condition in retry_if_conditions:
+        # Get the response part to check
+        # TODO: Make this agnostic for grpc responses, etc.
+        response_condition = condition["response"]
+
+        # Get the expected response format for this type
+        stage_copy = copy.deepcopy(stage)
+        stage_copy["response"] = response_condition
+
+        expected_for_condition = get_expected(stage_copy, stage_config, sessions)
+        verifiers_for_condition = get_verifiers(
+            stage_copy, stage_config, sessions, expected_for_condition
+        )
+
+        # Check if the actual response matches the condition
+        for _, response_verifiers in verifiers_for_condition.items():
+            for v in response_verifiers:
+                try:
+                    # Try to verify the response against the condition
+                    # If it doesn't raise an exception, it means the response matches the condition
+                    v.verify(response)
+                    # If verification passes, we should retry
+                    return True
+                except exceptions.TestFailError:
+                    # If verification fails, continue to next condition
+                    continue
+
+    return False
+
+
 @dataclasses.dataclass(frozen=True)
 class _TestRunner:
     default_global_strictness: StrictLevel
@@ -325,33 +366,127 @@ class _TestRunner:
         stage_config = stage_config.with_strictness(
             _calculate_stage_strictness(stage, stage_config, self.test_spec)
         )
-        # Wrap run_stage with retry helper
-        run_stage_with_retries = retry(stage, stage_config)(self.wrapped_run_stage)
-        partial = functools.partial(
-            run_stage_with_retries, stage, stage_config, tinctures
-        )
-        allure_name = "Stage {}: {}".format(
-            idx, format_keys(stage["name"], stage_config.variables)
-        )
-        step = wrap_step(allure_name, partial)
 
-        try:
-            step()
-        except exceptions.TavernException as e:
-            e.stage = stage
-            e.test_block_config = stage_config
-            e.is_final = is_final
-            raise
+        # Handle retry_if logic directly in run_stage
+        retry_if_conditions = stage.get("retry_if", [])
+
+        if retry_if_conditions:
+            # If retry_if conditions exist, handle retry logic here
+            retry_opts = stage.get("retry_opts", {})
+            self._run_stage_with_retry_logic(
+                stage, stage_config, tinctures, retry_if_conditions, retry_opts
+            )
+        else:
+            # Use the original retry wrapper for max_retries only
+            run_stage_with_retries = retry(stage, stage_config)(self.wrapped_run_stage)
+            partial = functools.partial(
+                run_stage_with_retries, stage, stage_config, tinctures
+            )
+            allure_name = "Stage {}: {}".format(
+                idx, format_keys(stage["name"], stage_config.variables)
+            )
+            step = wrap_step(allure_name, partial)
+
+            try:
+                step()
+            except exceptions.TavernException as e:
+                e.stage = stage
+                e.test_block_config = stage_config
+                e.is_final = is_final
+                raise
+
+    def _run_stage_with_retry_logic(
+        self,
+        stage: dict,
+        stage_config: TestConfig,
+        tinctures: Tinctures,
+        retry_if_conditions: list,
+        retry_opts: Mapping[str, Any],
+    ):
+        """Run stage with retry_if logic.
+
+        This is a specification of the old 'max_retries' logic."""
+
+        max_retries = stage.get("max_retries", 0)
+        if isinstance(max_retries, str):
+            max_retries = int(format_keys(max_retries, stage_config.variables))
+
+        # Get retry options
+        delay_time = retry_opts.get("delay", 1.0)
+        max_delay = retry_opts.get("max_delay", float("inf"))
+        backoff = retry_opts.get("backoff", 1.0)
+        timeout = retry_opts.get("timeout", float("inf"))
+
+        start_time = time.time()
+        current_delay = delay_time
+
+        for attempt in range(max_retries + 1):
+            try:
+                # Run the stage normally
+                response = self.wrapped_run_stage(stage, stage_config, tinctures)
+
+                # Check if response matches any retry condition
+                if _should_retry_based_on_response(
+                    stage, response, retry_if_conditions, stage_config, self.sessions
+                ):
+                    # If we haven't exceeded max attempts and time limit, retry
+                    if attempt < max_retries and (time.time() - start_time) < timeout:
+                        logger.info(
+                            "Response matches retry condition, retrying stage '%s' (attempt %d/%d)",
+                            stage["name"],
+                            attempt + 1,
+                            max_retries,
+                        )
+                        time.sleep(current_delay)
+                        current_delay = min(current_delay * backoff, max_delay)
+                        continue
+                    else:
+                        # We've reached max retries or timeout, but the response still matches retry condition
+                        raise exceptions.TestFailError(
+                            f"Stage '{stage['name']}' reached max retries or timeout but response still matches retry condition"
+                        )
+
+                # If response doesn't match retry condition, we're done
+                break
+
+            except exceptions.BadSchemaError:
+                raise
+            except exceptions.TavernException:
+                # Handle exceptions - if we have retries left, continue
+                if attempt < max_retries and (time.time() - start_time) < timeout:
+                    logger.info(
+                        "Stage '%s' failed (attempt %d/%d), retrying.",
+                        stage["name"],
+                        attempt + 1,
+                        max_retries,
+                    )
+                    time.sleep(current_delay)
+                    current_delay = min(current_delay * backoff, max_delay)
+                else:
+                    logger.error(
+                        "Stage '%s' did not succeed in %i retries.",
+                        stage["name"],
+                        max_retries,
+                    )
+                    raise
+
+        logger.debug(
+            "Stage '%s' completed after %i attempts.", stage["name"], attempt + 1
+        )
 
     def wrapped_run_stage(
         self, stage: dict, stage_config: TestConfig, tinctures: Tinctures
-    ) -> None:
+    ):
         """Run one stage from the test
 
         Args:
             stage: specification of stage to be run
             stage_config: available variables for test
             tinctures: tinctures for this stage/test
+
+        Returns:
+            The response _from the initial request_. If there are multiple responses like
+            with MQTT, then only the response for the 'publish' is returned.
         """
         stage = copy.deepcopy(stage)
         name = stage["name"]
@@ -391,3 +526,5 @@ class _TestRunner:
 
         tavern_box.pop("request_vars")
         delay(stage, "after", stage_config.variables)
+
+        return response

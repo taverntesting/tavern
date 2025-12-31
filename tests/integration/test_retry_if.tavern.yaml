@@ -1,0 +1,70 @@
+---
+test_name: Test retry_if functionality
+
+marks:
+  - usefixtures:
+      - random_session_id
+
+stages:
+  - name: get status with retry
+    request:
+      url: "{global_host}/status"
+      method: GET
+      params:
+        session_id: "{random_session_id}"
+    retry_if:
+      - response:
+          status_code: 200
+          json:
+            status: "QUEUED"
+      - response:
+          status_code: 200
+          json:
+            status: "IN_PROGRESS"
+    retry_opts:
+      delay: 0.1
+      max_delay: 1.0
+      backoff: 1.0
+      timeout: 10
+    max_retries: 10
+    response:
+      status_code: 200
+      json:
+        status: "SUCCESS"
+
+---
+test_name: Test retry_if functionality - never succeeds
+
+marks:
+  - usefixtures:
+      - random_session_id
+
+stages:
+  - name: get status with retry
+    request:
+      url: "{global_host}/status"
+      method: GET
+      params:
+        session_id: "{random_session_id}"
+    retry_if:
+      - response:
+          status_code: 200
+          json:
+            status: "QUEUED"
+      - response:
+          status_code: 200
+          json:
+            status: "IN_PROGRESS"
+    retry_opts:
+      delay: 0.1
+      max_delay: 1.0
+      backoff: 1.0
+      timeout: 10
+    max_retries: 2
+    response:
+      status_code: 200
+      json:
+        status: "SUCCESS"
+
+_xfail:
+  run: actual["status"] = 'IN_PROGRESS'
