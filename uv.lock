@@ -13,6 +13,7 @@ members = [
     "tavern-http-example",
     "tavern-mqtt-example",
 ]
+constraints = [{ name = "ruamel-yaml", specifier = "<0.19.0" }]
 
 [[package]]
 name = "alabaster"
@@ -1677,7 +1678,6 @@ dependencies = [
     { name = "python-box" },
     { name = "pyyaml" },
     { name = "requests" },
-    { name = "ruamel-yaml" },
     { name = "simpleeval" },
     { name = "stevedore" },
 ]
@@ -1753,7 +1753,6 @@ requires-dist = [
     { name = "python-box", specifier = ">=6,<7" },
     { name = "pyyaml", specifier = ">=6.0.1,<7" },
     { name = "requests", specifier = ">=2.22.0,<3" },
-    { name = "ruamel-yaml", specifier = "<0.19.0" },
     { name = "simpleeval", specifier = ">=1.0.3" },
     { name = "stevedore", specifier = ">=4,<5" },
 ]

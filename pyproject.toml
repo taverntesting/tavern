@@ -34,7 +34,6 @@ dependencies = [
     "requests>=2.22.0,<3",
     "simpleeval>=1.0.3",
     "stevedore>=4,<5",
-    "ruamel-yaml<0.19.0"
 ]
 
 requires-python = ">=3.11"
@@ -256,6 +255,9 @@ runner = "uv-venv-lock-runner"
 skip_missing_interpreters = true
 isolated_build = true
 base_python = "3.11"
+
+[tool.uv]
+constraint-dependencies = ["ruamel-yaml<0.19.0"]
 
 [tool.uv.workspace]
 members = [
