@@ -13,3 +13,6 @@ dependencies = [
 
 [project.entry-points.tavern_http]
 requests = "tavern._plugins.rest.tavernhook:TavernRestPlugin"
+
+[tool.uv]
+constraint-dependencies = ["ruamel-yaml<0.19.0"]
