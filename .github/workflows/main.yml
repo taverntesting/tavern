@@ -9,7 +9,10 @@ on:
   pull_request:
     branches:
       - master
-      - feat/3.0-release
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   simple-checks:
