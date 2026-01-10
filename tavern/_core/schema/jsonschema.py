@@ -194,6 +194,7 @@ def verify_jsonschema(to_verify: Mapping, schema: Mapping) -> None:
         "stages[*].request.method[]": validate_http_method,
         "stages[*].request.save[]": validate_json_with_ext,
         "stages[*].request.files[]": validate_file_spec,
+        "stages[*].graphql_request.files[]": validate_file_spec,
         "marks[*].parametrize[]": check_parametrize_marks,
         "stages[*].response.strict[]": validate_json_with_ext,
         "stages[*].max_retries[]": retry_variable,

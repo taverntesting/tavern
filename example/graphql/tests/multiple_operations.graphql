@@ -1,0 +1,41 @@
+query GetUser($id: ID!) {
+  user(id: $id) {
+    id
+    name
+    email
+  }
+}
+
+query GetUsers {
+  users {
+    id
+    name
+    email
+  }
+}
+
+mutation CreateUser($name: String!, $email: String!) {
+  createUser(name: $name, email: $email) {
+    id
+    name
+    email
+  }
+}
+
+mutation CreatePost($title: String!, $content: String!, $authorId: String!) {
+  createPost(title: $title, content: $content, authorId: $authorId) {
+    id
+    title
+    content
+    authorId
+  }
+}
+
+query GetUserPosts($authorId: ID!) {
+  userPosts(authorId: $authorId) {
+    id
+    title
+    content
+    authorId
+  }
+}

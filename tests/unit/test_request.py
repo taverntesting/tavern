@@ -12,11 +12,12 @@ from requests.cookies import RequestsCookieJar
 
 from tavern._core import exceptions
 from tavern._core.extfunctions import update_from_ext
-from tavern._plugins.rest.files import get_file_arguments
+from tavern._core.files import FileSendSpec
 from tavern._plugins.rest.request import (
     RestRequest,
     _check_allow_redirects,
     _read_expected_cookies,
+    get_file_arguments,
     get_request_args,
 )
 
@@ -420,8 +421,8 @@ class TestGetFiles:
             file_spec = get_file_arguments(request_args, mock_stack, includes)
 
         file = file_spec["files"]["file1"]
-        assert file[0] == os.path.basename(tfile.name)
-        assert file[2] == "application/json"
+        assert file.filename == os.path.basename(tfile.name)
+        assert file.content_type == "application/json"
 
     def test_use_long_form_content_type(self, mock_stack, includes):
         """Use custom content type"""
@@ -440,9 +441,9 @@ class TestGetFiles:
             file_spec = get_file_arguments(request_args, mock_stack, includes)
 
         file = file_spec["files"]["file1"]
-        assert file[0] == os.path.basename(tfile.name)
-        assert file[2] == "abc123"
-        assert file[3] == {"Content-Encoding": "def456"}
+        assert file.filename == os.path.basename(tfile.name)
+        assert file.content_type == "abc123"
+        assert file.content_encoding == {"Content-Encoding": "def456"}
 
     @pytest.mark.parametrize(
         "file_args",
@@ -495,7 +496,7 @@ class TestGetFiles:
                 "files": [
                     (
                         "input_files",
-                        (
+                        FileSendSpec(
                             os.path.basename(tfile.name),
                             mock_stack.enter_context.return_value,
                             "application/customtype",
@@ -504,7 +505,7 @@ class TestGetFiles:
                     ),
                     (
                         "input_files",
-                        (
+                        FileSendSpec(
                             os.path.basename(tfile.name),
                             mock_stack.enter_context.return_value,
                             "application/json",

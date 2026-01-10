@@ -1,0 +1,161 @@
+---
+
+test_name: GraphQL files - query with a file
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Create user with CSV test name
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        mutation CreateUser($name: String!, $email: String!) {
+          createUser(name: $name, email: $email) {
+            id
+            name
+            email
+          }
+        }
+      variables:
+        name: "Alice Johnson"
+        email: "alice@example.com"
+    graphql_response:
+      data:
+        createUser:
+          id: !anyint
+          name: "Alice Johnson"
+          email: "alice@example.com"
+      save:
+        data:
+          alice_id: data.createUser.id
+
+  - name: Upload CSV and query users
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        query UploadCSV($csvFile: Upload!) {
+          usersFromCsv(csvFile: $csvFile) {
+            id
+            name
+            email
+          }
+        }
+      files:
+        csvFile: testdata/test_users.csv
+    graphql_response:
+      data:
+        usersFromCsv:
+          - id: !anyint
+            name: "Alice Johnson"
+            email: "alice@example.com"
+
+---
+
+test_name: GraphQL files - mutation with a file
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Create user
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        mutation CreateUser($name: String!, $email: String!) {
+          createUser(name: $name, email: $email) {
+            id
+            name
+            email
+          }
+        }
+      variables:
+        name: "Test User"
+        email: "test@example.com"
+    graphql_response:
+      data:
+        createUser:
+          id: !anyint
+          name: "Test User"
+          email: "test@example.com"
+      save:
+        data:
+          user_id: data.createUser.id
+
+  - name: Create post 1 for user from a file
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        mutation CreatePostFromFile($title: String!, $myFileName: Upload!, $authorId: String!) {
+          createPostFromFile(title: $title, myFileName: $myFileName, authorId: $authorId) {
+            id
+            title
+            content
+            authorId
+          }
+        }
+      variables:
+        title: "First Test Post"
+        authorId: "{user_id}"
+      files:
+        myFileName: testdata/test_file_content.txt
+    graphql_response:
+      data:
+        createPostFromFile:
+          id: !anyint
+          title: "First Test Post"
+          content: Lorem Ipsum etc.
+          authorId: !int "{user_id}"
+
+  - name: Create post 2 for user from a file using long format
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        mutation CreatePostFromFile($title: String!, $myFileName: Upload!, $authorId: String!) {
+          createPostFromFile(title: $title, myFileName: $myFileName, authorId: $authorId) {
+            id
+            title
+            content
+            authorId
+          }
+        }
+      variables:
+        title: "Second Test Post"
+        authorId: "{user_id}"
+      files:
+        myFileName:
+          file_path: testdata/test_file_content.txt
+          content_type: text/plain
+    graphql_response:
+      data:
+        createPostFromFile:
+          id: !anyint
+          title: "Second Test Post"
+          content: Lorem Ipsum etc.
+          authorId: !int "{user_id}"
+
+  - name: Get posts for the user
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        query GetPosts($authorId: ID!) {
+          userPosts(authorId: $authorId) {
+            id
+            title
+            content
+            authorId
+          }
+        }
+      variables:
+        authorId: "{user_id}"
+    graphql_response:
+      data:
+        userPosts:
+          - id: !anyint
+            title: "First Test Post"
+            content: Lorem Ipsum etc.
+            authorId: !int "{user_id}"
+          - id: !anyint
+            title: "Second Test Post"
+            content: Lorem Ipsum etc.
+            authorId: !int "{user_id}"
