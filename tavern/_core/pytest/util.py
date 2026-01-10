@@ -264,6 +264,7 @@ def get_option_generic(
     if ini := pytest_config.getini(ini_flag):
         if isinstance(default, list):
             if isinstance(ini, list):
+                use = default[:]  # type:ignore
                 use.extend(ini)  # type:ignore
             else:
                 raise ValueError(
