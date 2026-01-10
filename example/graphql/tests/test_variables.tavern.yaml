@@ -1,0 +1,57 @@
+---
+test_name: GraphQL mutation create user with multiple variables
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Create user with multiple variables
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        mutation CreateUser($name: String!, $email: String!) {
+          createUser(name: $name, email: $email) {
+            id
+            name
+            email
+          }
+        }
+      variables:
+        name: "{user_name}"
+        email: "{user_email}"
+    graphql_response:
+      data:
+        createUser:
+          id: !anyint
+          name: "{user_name}"
+          email: "{user_email}"
+---
+test_name: GraphQL mutation create post with mixed variables
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Create post with mixed variables
+    graphql_request:
+      url: "{graphql_server_url}/graphql"
+      query: |
+        mutation CreatePost($title: String!, $content: String!, $authorId: String!) {
+          createPost(title: $title, content: $content, authorId: $authorId) {
+            id
+            title
+            content
+            authorId
+          }
+        }
+      variables:
+        title: "{post_title}"
+        content: "{post_content}"
+        authorId: "{user_id}"
+    graphql_response:
+      data:
+        createPost:
+          id: !anyint
+          title: "{post_title}"
+          content: "{post_content}"
+          authorId: !int "{user_id}"

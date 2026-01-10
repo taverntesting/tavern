@@ -1,0 +1,120 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+
+title: GraphQL schema
+description: Schema for GraphQL API testing
+
+###
+
+type: object
+additionalProperties: false
+
+definitions:
+  graphql_request:
+    type: object
+    description: GraphQL request to perform as part of stage
+    additionalProperties: false
+    required:
+      - url
+      - query
+
+    properties:
+      url:
+        description: URL to make GraphQL request to
+        oneOf:
+          - type: string
+          - type: object
+            properties:
+              "$ext":
+                $ref: "#/definitions/verify_block"
+
+      query:
+        type: string
+        description: GraphQL query string
+
+      variables:
+        description: Variables for GraphQL query
+        oneOf:
+          - type: object
+          - type: array
+          - type: string
+          - type: number
+          - type: boolean
+
+      files:
+        type: object
+        description: Files to send as part of the request. Mapping of graphql variable name to file path, or to 'long form' files
+
+      headers:
+        description: Headers for GraphQL request
+        type: object
+
+      operation_name:
+        description: Operation name for GraphQL request
+        type: string
+
+  graphql_response:
+    type: object
+    description: Expected GraphQL response
+    additionalProperties: false
+
+    properties:
+      data:
+        description: The data returned by the GraphQL query
+        type: object
+
+      errors:
+        description: Errors returned by the GraphQL query
+        type: array
+        items:
+          type: object
+
+      verify_response_with:
+        oneOf:
+          - $ref: "#/definitions/verify_block"
+          - type: array
+            items:
+              $ref: "#/definitions/verify_block"
+
+      save:
+        type: object
+        description: Which objects to save from response
+
+      subscription:
+        description: Name of subscription that the response is expected for
+        type: string
+
+      timeout:
+        type: number
+        description: Request timeout in seconds
+        default: 5
+
+  stage:
+    properties:
+      graphql_publish:
+        $ref: "#/definitions/graphql_publish"
+
+      graphql_response:
+        oneOf:
+          - $ref: "#/definitions/graphql_response"
+          - type: array
+            items:
+              $ref: "#/definitions/graphql_response"
+
+properties:
+  gql:
+    description: Arguments to pass to the GQL HTTP transport constructor
+
+    type: object
+    additionalProperties: false
+
+    properties:
+      timeout:
+        type: number
+        description: Request timeout in seconds
+        default: 30
+
+      headers:
+        type: object
+        description: Default headers to include in all requests
+        additionalProperties:
+          type: string

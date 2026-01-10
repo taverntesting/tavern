@@ -470,3 +470,7 @@ This is technically not a operational change but I'm adding a new tag so it can 
 #  3.0.0           release 3.0.0 (2025-10-11)
 
 ##  3.0.1           support pytest 9 (2025-11-15)
+
+##  3.0.2           fix pytest 9 warning (2025-11-21)
+
+##  3.1.0rc1        graphql support (2025-12-29)

@@ -147,6 +147,9 @@ class BaseResponse:
         if mqtt_responses := response_block.get("mqtt_responses"):
             for mqtt_response in mqtt_responses:
                 check_ext_functions(mqtt_response.get("verify_response_with", None))
+        elif graphql_responses := response_block.get("graphql_responses"):
+            for graphql_response in graphql_responses:
+                check_ext_functions(graphql_response.get("verify_response_with", None))
         else:
             check_ext_functions(response_block.get("verify_response_with", None))
 

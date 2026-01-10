@@ -1,0 +1,34 @@
+[project]
+name = "tavern_graphql_example"
+version = "0.1.0"
+description = "Tavern GraphQL example project"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "tavern[graphql]",
+    "uvicorn[standard]",
+    "fastapi",
+    "starlette",
+    "strawberry-graphql[fastapi]",
+    "strawberry-sqlalchemy-mapper",
+    "cross-web",
+    "sqlalchemy>=2,<3"
+]
+
+[project.entry-points.tavern_graphql]
+gql = "tavern._plugins.graphql.tavernhook"
+
+[tool.pytest.ini_options]
+norecursedirs = [
+    "tavern_graphql_example",
+]
+
+addopts = [
+    "-vv",
+    "--strict-markers",
+    "--tb=short",
+    "--color=yes",
+]
+
+[tool.setuptools.packages.find]
+include = ["tavern_graphql_example"]

@@ -1,0 +1,89 @@
+---
+test_name: GraphQL authentication - Query with authorization header
+
+includes:
+  - !include graphql_config.yaml
+
+stages:
+  - name: Query with authorization header
+    graphql_request:
+      url: "{graphql_server_url}/graphql_authenticated"
+      query: |
+        query GetUser($id: ID!) {
+          user(id: $id) {
+            id
+            name
+            email
+          }
+        }
+      variables:
+        id: "1"
+      headers:
+        Authorization: "Bearer test-token"
+    graphql_response:
+      errors:
+        - message: User not found
+
+---
+
+test_name: GraphQL authentication - Query with authorization header in default client settings
+
+includes:
+  - !include graphql_config.yaml
+
+gql:
+  headers:
+    Authorization: "Bearer test-token"
+
+stages:
+  - name: Query with authorization header
+    graphql_request:
+      url: "{graphql_server_url}/graphql_authenticated"
+      query: |
+        query GetUser($id: ID!) {
+          user(id: $id) {
+            id
+            name
+            email
+          }
+        }
+      variables:
+        id: "1"
+    graphql_response:
+      errors:
+        - message: User not found
+
+---
+
+test_name: GraphQL authentication - Query with incorrect authorization header
+
+includes:
+  - !include graphql_config.yaml
+
+# This is distinct from a graphql 'error' which returns 200 but 'errors' in the response.
+# This is basically testing the HTTP transport layer.
+# TODO: Maybe allow status_code in the response to be checked?
+_xfail: run
+
+stages:
+  - name: Query with authorization header
+    graphql_request:
+      url: "{graphql_server_url}/graphql_authenticated"
+      query: |
+        query GetUser($id: ID!) {
+          user(id: $id) {
+            id
+            name
+            email
+          }
+        }
+      variables:
+        id: "1"
+      headers:
+        Authorization: "Bearer wrong-token"
+    graphql_response:
+      data:
+        user:
+          id: !anyint
+          name: "John Doe"
+          email: "john@example.com"

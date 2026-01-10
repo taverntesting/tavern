@@ -427,6 +427,28 @@ stages:
           content_encoding: "UTF16"
 ```
 
+To specify the same file multiple times with a different form field name, use a list for the files:
+
+```yaml
+---
+
+test_name: Test reusing the same file name multiple times
+
+stages:
+  - name: Upload multiple files
+    request:
+      url: "{host}/fake_upload_file"
+      method: POST
+      files:
+        - form_field_name: group_2
+          file_path: OK.txt
+        - form_field_name: group_1
+          file_path: OK.txt
+        - form_field_name: group_1
+          file_path: OK.json.gz
+          content_encoding: gzip
+```
+
 ## Timeout on requests
 
 If you want to specify a timeout for a request, this can be done using the

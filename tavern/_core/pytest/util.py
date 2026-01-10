@@ -42,6 +42,11 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
         default="grpc" if with_defaults else None,
     )
     parser_addoption(
+        "--tavern-graphql-backend",
+        help="Which graphql backend to use",
+        default="gql" if with_defaults else None,
+    )
+    parser_addoption(
         "--tavern-strict",
         help="Default response matching strictness",
         default=None,
@@ -106,6 +111,11 @@ def add_ini_options(parser: pytest.Parser) -> None:
         "tavern-grpc-backend",
         help="Which grpc backend to use",
         default="grpc",
+    )
+    parser.addini(
+        "tavern-graphql-backend",
+        help="Which graphql backend to use",
+        default="gql",
     )
     parser.addini(
         "tavern-strict",
