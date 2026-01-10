@@ -90,8 +90,8 @@ definitions:
 
   stage:
     properties:
-      graphql_publish:
-        $ref: "#/definitions/graphql_publish"
+      graphql_request:
+        $ref: "#/definitions/graphql_request"
 
       graphql_response:
         oneOf:
