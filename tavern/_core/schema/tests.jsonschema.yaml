@@ -563,6 +563,19 @@ properties:
             skipif:
               type: string
 
+            xfail:
+              oneOf:
+                - type: string
+                - type: object
+                  additionalProperties: false
+                  properties:
+                    reason:
+                      type: string
+                    strict:
+                      type: boolean
+                    raises:
+                      type: string
+
             usefixtures:
               type: array
               items:
