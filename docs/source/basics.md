@@ -395,10 +395,8 @@ An external function must return a dict where each key either points to a single
 to an object which is accessible using dot notation. The easiest way to do this
 is to return a [Box](https://pypi.python.org/pypi/python-box/) object.
 
-**Note**: Functions used in the `verify_response_with` block in the
-_response_ block take the response as the first argument. Functions used
-anywhere else should take _no_ arguments. This might be changed in future to be
-less confusing.
+**Note**: Functions used with `verify_response_with` or `save` in the
+`response` block should always take the response as the first argument.
 
 #### Injecting external data into a request
 
