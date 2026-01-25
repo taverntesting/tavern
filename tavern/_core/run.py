@@ -1,3 +1,4 @@
+import contextlib
 import copy
 import dataclasses
 import functools
@@ -8,6 +9,7 @@ from contextlib import ExitStack
 from copy import deepcopy
 
 import box
+import pytest
 
 from tavern._core import exceptions
 from tavern._core.plugins import (
@@ -224,7 +226,16 @@ def run_test(
                 if has_only and not getonly(stage):
                     continue
 
-                runner.run_stage(idx, stage)
+                try:
+                    subtest_fixture: pytest.Subtests = test_block_config.variables[
+                        "__subtests"
+                    ]
+                    subtests = subtest_fixture.test(stage["name"])
+                except KeyError:
+                    subtests = contextlib.nullcontext()
+
+                with subtests:
+                    runner.run_stage(idx, stage)
 
                 if getonly(stage):
                     break

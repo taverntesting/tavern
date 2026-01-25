@@ -2,6 +2,7 @@ import dataclasses
 import logging
 import pathlib
 from collections.abc import Callable, Iterable, MutableMapping
+from contextlib import nullcontext
 
 import pytest
 import yaml
@@ -232,6 +233,23 @@ class YamlItem(pytest.Item):
 
             mark_values = {name: self.funcargs[name]}
             values.update(mark_values)
+
+        def subtests(request):
+            """Provides subtests functionality.
+
+            Copied from internal pytest because they don't export it
+            """
+            capmam = request.node.config.pluginmanager.get_plugin("capturemanager")
+            suspend_capture_ctx = (
+                capmam.global_and_fixture_disabled
+                if capmam is not None
+                else nullcontext
+            )
+            return pytest.Subtests(
+                request.node.ihook, suspend_capture_ctx, request, _ispytest=True
+            )
+
+        values.update({"__subtests": subtests(self._request)})
 
         return values
 
