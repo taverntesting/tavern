@@ -205,3 +205,14 @@ class TestBadSchemaAtCollect:
         with TestBadSchemaAtCollect.wrapfile_nondict(text) as filename:
             with pytest.raises(BadSchemaError):
                 load_single_document_yaml(filename)
+
+
+def test_missing_required_key_includes_stage_context(test_dict):
+    test_dict["stages"][0].pop("request")
+
+    with pytest.raises(BadSchemaError) as exc:
+        verify_tests(test_dict)
+
+    msg = str(exc.value)
+    assert "stage: Make sure number is returned correctly" in msg
+    assert "path: stages[0].request" in msg

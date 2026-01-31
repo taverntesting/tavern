@@ -1,6 +1,7 @@
 import dataclasses
 import logging
 import pathlib
+import time
 from collections.abc import Callable, Iterable, MutableMapping
 
 import pytest
@@ -236,6 +237,7 @@ class YamlItem(pytest.Item):
         return values
 
     def runtest(self) -> None:
+        start_time = time.perf_counter()
         self.global_cfg = load_global_cfg(self.config)
 
         load_plugins(self.global_cfg)
@@ -296,6 +298,12 @@ class YamlItem(pytest.Item):
             if xfail:
                 raise Exception(f"internal: xfail test did not fail '{xfail}'")
         finally:
+            duration = time.perf_counter() - start_time
+            logger.info(
+                "tavern.test_duration_seconds=%0.3f test=%s",
+                duration,
+                self.name,
+            )
             call_hook(
                 self.global_cfg,
                 "pytest_tavern_beta_after_every_test_run",
