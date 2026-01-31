@@ -445,47 +445,49 @@ class YamlFile(pytest.File):
         except yaml.parser.ParserError as e:
             raise exceptions.BadSchemaError from e
 
-        merge_down = None
-        # Iterate over yaml documents and tests
+        defaults_doc = None
+
         for document_idx, test_spec in enumerate(all_tests):
             if not test_spec:
                 logger.warning("Empty document in input file '%s'", self.path)
                 continue
 
-            # Check if this document has the explicit 'defaults' marker
-            has_defaults_marker: bool = test_spec.pop("is_defaults", False)
+            # Check for explicit defaults marker and validate position
+            is_defaults: bool = test_spec.pop("is_defaults", False)
 
-            # Validate that 'defaults' marker is only used in the first document
-            if has_defaults_marker and document_idx > 0:
+            if is_defaults and document_idx > 0:
                 raise exceptions.BadSchemaError(
-                    f"'defaults' marker can only be used in the first YAML document, but found it in document {document_idx + 1} of '{self.path}'"
+                    f"'is_defaults' can only be used in the first YAML document, "
+                    f"but found it in document {document_idx + 1} of '{self.path}'"
                 )
 
-            missing_stages_and_name = (
-                "stages" not in test_spec or "test_name" not in test_spec
-            )
-            if document_idx == 0:
-                if has_defaults_marker:
-                    logger.info(
-                        "Found explicit defaults marker in first document from %s",
-                        self.path,
-                    )
-                    merge_down = test_spec
-                    continue
-                elif missing_stages_and_name:
-                    # Has a name but no stages - this is an error
+            # Determine if this document is a test or defaults
+            is_test_doc = "test_name" in test_spec and "stages" in test_spec
+
+            if document_idx == 0 and is_defaults:
+                # First document is explicitly marked as defaults
+                logger.info(
+                    "Using first document as defaults for %s",
+                    self.path,
+                )
+                defaults_doc = test_spec
+                continue
+            elif not is_test_doc:
+                # Document is neither a valid test nor valid defaults
+                if document_idx == 0:
                     raise exceptions.BadSchemaError(
-                        f"First document in '{self.path}' has a name but no stages. "
-                        f"If this is meant to be defaults for the file, add 'defaults: true'. "
-                        f"If this is meant to be a test, add a 'stages' section."
+                        f"First document in '{self.path}' is missing 'test_name' or 'stages'. "
+                        f"If this is meant to be defaults for the file, add 'is_defaults: true'. "
+                        f"If this is meant to be a test, add both 'test_name' and 'stages'."
                     )
-            elif missing_stages_and_name:
-                raise exceptions.BadSchemaError(
-                    f"Document {document_idx + 1} in '{self.path}' does not have a 'test_name' or 'stages' section"
-                )
+                else:
+                    raise exceptions.BadSchemaError(
+                        f"Document {document_idx + 1} in '{self.path}' is missing 'test_name' or 'stages'"
+                    )
 
-            if merge_down:
-                test_spec = deep_dict_merge(test_spec, merge_down)
+            # Merge defaults into test spec if defaults were defined
+            if defaults_doc:
+                test_spec = deep_dict_merge(test_spec, defaults_doc)
 
             try:
                 for i in self._generate_items(test_spec):
