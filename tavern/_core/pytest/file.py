@@ -465,6 +465,11 @@ class YamlFile(pytest.File):
             is_test_doc = "test_name" in test_spec and "stages" in test_spec
 
             if document_idx == 0 and is_defaults:
+                if is_test_doc:
+                    raise exceptions.BadSchemaError(
+                        f"First document in '{self.path}' is marked as defaults but also contains a 'test_name' and 'stages'"
+                    )
+
                 # First document is explicitly marked as defaults
                 logger.info(
                     "Using first document as defaults for %s",
