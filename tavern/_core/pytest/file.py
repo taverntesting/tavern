@@ -492,7 +492,7 @@ class YamlFile(pytest.File):
 
             # Merge defaults into test spec if defaults were defined
             if defaults_doc:
-                test_spec = deep_dict_merge(test_spec, defaults_doc)
+                test_spec = deep_dict_merge(defaults_doc, test_spec)
 
             try:
                 for i in self._generate_items(test_spec):
