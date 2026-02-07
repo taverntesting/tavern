@@ -15,13 +15,8 @@ stages:
     response:
       status_code: 200
 ---
-test_name: Test redirecting loops in another test
+test_name: Using a shared stage from common.yaml
 
 stages:
-  - name: Expect a 302 without setting the flag
-    max_retries: 2
-    request:
-      follow_redirects: true
-      url: "{host}/redirect/loop"
-    response:
-      status_code: 200
+  - type: ref
+    id: typetoken-anything-match

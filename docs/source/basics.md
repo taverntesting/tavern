@@ -1158,18 +1158,14 @@ stages:
       url: "{host}/redirect/loop"
     response:
       status_code: 200
+
 ---
 
-test_name: Test redirecting loops in another test
+test_name: Using a shared stage from common.yaml
 
 stages:
-  - name: Expect a 302 without setting the flag
-    max_retries: 2
-    request:
-      follow_redirects: true
-      url: "{host}/redirect/loop"
-    response:
-      status_code: 200
+  - type: ref
+    id: typetoken-anything-match
 ```
 
 Both tests automatically include the shared configuration from `common.yaml` without needing to specify it individually.
@@ -1983,10 +1979,12 @@ stages:
 
 ##### Skipping stages with simpleeval expressions
 
-Stages can be skipped by using a `skip` key that contains a [simpleeval](https://pypi.org/project/simpleeval/) expression. 
+Stages can be skipped by using a `skip` key that contains a [simpleeval](https://pypi.org/project/simpleeval/)
+expression.
 This allows for more complex conditional logic to determine if a stage should be skipped.
 
 Example:
+
 ```yaml
 stages:
   - name: Skip based on variable value
