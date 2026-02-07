@@ -247,7 +247,7 @@ def deep_dict_merge(initial_dct: dict, merge_dct: Mapping) -> dict:
     """
     initial_box = Box(initial_dct)
     initial_box.merge_update(merge_dct)
-    return dict(initial_box)
+    return initial_box.to_dict()
 
 
 _CanCheck = Sequence | Mapping | set | Collection
