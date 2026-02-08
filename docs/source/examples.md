@@ -2,7 +2,8 @@
 
 This page contains some examples of how to use Tavern with an example HTTP server.
 
-More examples are available in the source code:
+There some self-contained example projects in the examples folder in the repository, including examples of
+pyproject.toml files, project layout, and more.
 
 - More advanced HTTP examples: https://github.com/taverntesting/tavern/tree/master/example/http
 - MQTT examples: https://github.com/taverntesting/tavern/tree/master/example/mqtt
