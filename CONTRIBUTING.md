@@ -32,13 +32,13 @@ If on Windows, you should be able to just run the 'tox' commands in that file.
 1. Update lock file
 
 ```shell
-uv lock
+uv lock --upgrade
 ```
 
 1. Sync venv
 
 ```shell
-uv sync --all-extras
+uv sync --all-extras --all-packages --all-groups
 ```
 
 1. Run tests as above
@@ -76,7 +76,8 @@ Run every so often to update the pre-commit hooks
 
 ## Building the documentation
 
-```shell
-mkdir -p dist/
-sphinx-build docs/source/ dist/
+FIXME: https://github.com/jupyter-book/mystmd/issues/2082
+
+```bash
+uv tool run --from  mystmd myst  build --html
 ```
