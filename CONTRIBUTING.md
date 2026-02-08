@@ -81,3 +81,11 @@ FIXME: https://github.com/jupyter-book/mystmd/issues/2082
 ```bash
 uv tool run --from  mystmd myst  build --html
 ```
+
+### Watching for changes
+
+To automatically rebuild when files in the `docs/` folder change:
+
+```bash
+uv tool run watchfiles "uv tool run --from mystmd myst build --html" --filter all docs myst.yml
+```
