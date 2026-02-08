@@ -1,4 +1,4 @@
-# Basic Concepts
+# Core Concepts
 
 ## Anatomy of a test
 
