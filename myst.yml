@@ -15,12 +15,12 @@ project:
     - file: docs/source/examples.md
     - file: docs/source/basics.md
       children:
-        - file: docs/source/marks.md
-        - file: docs/source/types.md
-        - file: docs/source/external_code.md
-        - file: docs/source/config.md
-        - file: docs/source/flow.md
-        - file: docs/source/reports.md
+        - file: docs/source/core_concepts/marks.md
+        - file: docs/source/core_concepts/types.md
+        - file: docs/source/core_concepts/external_code.md
+        - file: docs/source/core_concepts/config.md
+        - file: docs/source/core_concepts/flow.md
+        - file: docs/source/core_concepts/reports.md
     - title: Backend specific behaviour
       children:
         - file: docs/source/http.md
