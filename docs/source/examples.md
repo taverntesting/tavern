@@ -10,6 +10,9 @@ pyproject.toml files, project layout, and more.
 - GraphQL examples: https://github.com/taverntesting/tavern/tree/master/example/graphql
 - gRPC examples: https://github.com/taverntesting/tavern/tree/master/example/grpc
 
+For a deeper dive, there is also the
+Tavern [integration tests](https://github.com/taverntesting/tavern/tree/master/tests/integration).
+
 ## 1) The simplest possible test
 
 To show you just how simple a Tavern test can be, here's one which uses the JSON Placeholder API
