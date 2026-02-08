@@ -11,7 +11,9 @@ More examples are available in the source code:
 
 ## 1) The simplest possible test
 
-To show you just how simple a Tavern test can be, here's one which uses the JSON Placeholder API at [jsonplaceholder.typicode.com](https://jsonplaceholder.typicode.com/). To try it, create a new file called `test_minimal.tavern.yaml` with the following:
+To show you just how simple a Tavern test can be, here's one which uses the JSON Placeholder API
+at [jsonplaceholder.typicode.com](https://jsonplaceholder.typicode.com/). To try it, create a new file called
+`test_minimal.tavern.yaml` with the following:
 
 ```yaml
 test_name: Get some fake data from the JSON placeholder API
@@ -36,7 +38,8 @@ Next, install Tavern if you have not already:
 $ pip install tavern
 ```
 
-In most circumstances you will be using Tavern with pytest but you can also run it using the Tavern command-line interface, `tavern-ci`, which is installed along with Tavern:
+In most circumstances you will be using Tavern with pytest but you can also run it using the Tavern command-line
+interface, `tavern-ci`, which is installed along with Tavern:
 
 ```bash
 $ tavern-ci test_minimal.tavern.yaml
@@ -44,11 +47,13 @@ $ tavern-ci test_minimal.tavern.yaml
 
 Run `tavern-ci --help` for more usage information.
 
-Note that Tavern will only run tests from files whose names follow the pattern `test_*.tavern.yaml` (or `test_*.tavern.yml`) - for example, `test_minimal.tavern.yaml`, `test_another.tavern.yml`.
+Note that Tavern will only run tests from files whose names follow the pattern `test_*.tavern.yaml` (or
+`test_*.tavern.yml`) - for example, `test_minimal.tavern.yaml`, `test_another.tavern.yml`.
 
 ## 2) Testing a simple server
 
-In this example we will create a server with a single route which doubles any number you pass it, and write some simple tests for it. You'll see how simple the YAML-based syntax can be, and the three different ways you can run Tavern tests.
+In this example we will create a server with a single route which doubles any number you pass it, and write some simple
+tests for it. You'll see how simple the YAML-based syntax can be, and the three different ways you can run Tavern tests.
 
 Here's what such a server might look like:
 
@@ -56,7 +61,9 @@ Here's what such a server might look like:
 # server.py
 
 from flask import Flask, jsonify, request
+
 app = Flask(__name__)
+
 
 @app.route("/double", methods=["POST"])
 def double_number():
@@ -68,7 +75,7 @@ def double_number():
         return jsonify({"error": "no number passed"}), 400
 
     try:
-        double = int(number)*2
+        double = int(number) * 2
     except ValueError:
         return jsonify({"error": "a number was not passed"}), 400
 
@@ -141,9 +148,12 @@ stages:
         error: no number passed
 ```
 
-The tests can be run in three different ways: from Python code, from the command line, or with pytest. The most common way is to use pytest. All three require Tavern to be installed.
+The tests can be run in three different ways: from Python code, from the command line, or with pytest. The most common
+way is to use pytest. All three require Tavern to be installed.
 
-If you run pytest in a folder containing `test_server.tavern.yaml` it will automatically find the file and run the tests. Otherwise, you will need to point it to the folder containing the integration tests or add it to `setup.cfg/tox.ini/etc` so that Pytest's collection mechanism knows where to look.
+If you run pytest in a folder containing `test_server.tavern.yaml` it will automatically find the file and run the
+tests. Otherwise, you will need to point it to the folder containing the integration tests or add it to
+`setup.cfg/tox.ini/etc` so that Pytest's collection mechanism knows where to look.
 
 ```bash
 $ py.test
@@ -158,7 +168,8 @@ test_server.tavern.yaml ..
 ===================== 2 passed, 2 skipped in 0.07 seconds ======================
 ```
 
-The command line tool is useful for bash scripting, for example if you want to verify that an API is works before deploying it, or for cron jobs.
+The command line tool is useful for bash scripting, for example if you want to verify that an API is works before
+deploying it, or for cron jobs.
 
 ```bash
 $ tavern-ci test_server.tavern.yaml
@@ -166,7 +177,8 @@ $ echo $?
 0
 ```
 
-The Python library allows you to include Tavern tests in deploy scripts written in Python, or for use with a continuous integration setup:
+The Python library allows you to include Tavern tests in deploy scripts written in Python, or for use with a continuous
+integration setup:
 
 ```python
 from tavern.core import run
@@ -183,11 +195,14 @@ argument.
 
 ## 3) Multi-stage tests
 
-The final example uses a more complex test server which requires the user to log in, save the token it returns and use it for all future requests. It also has a simple database so we can check that data we send to it is successfully returned.
+The final example uses a more complex test server which requires the user to log in, save the token it returns and use
+it for all future requests. It also has a simple database so we can check that data we send to it is successfully
+returned.
 
 [Here is the example server we will be using.](/server)
 
-To test this behaviour we can use multiple tests in a row, keeping track of variables between them, and ensuring the server state has been updated as expected.
+To test this behaviour we can use multiple tests in a row, keeping track of variables between them, and ensuring the
+server state has been updated as expected.
 
 ```yaml
 test_name: Make sure server saves and returns a number correctly
@@ -232,7 +247,7 @@ stages:
     response:
       status_code: 201
       json:
-        {}
+        { }
       headers:
         content-type: application/json
 
@@ -253,10 +268,10 @@ stages:
         content-type: application/json
 ```
 
-This example illustrates three major parts of the Tavern syntax: saving data, using that data in later requests and using validation functions.
+This example illustrates three major parts of the Tavern syntax: saving data, using that data in later requests and
+using validation functions.
 
 ## Further reading
 
-There are more examples in the [examples](https://github.com/taverntesting/tavern/tree/master/example) folder on Github, showing how to do some more advanced testing, including how to test using MQTT. Tavern also has a lot of integration tests that show its behaviour - you might find it useful to check out the [integration tests](https://github.com/taverntesting/tavern/tree/master/tests/integration) folder for some more examples.
-
-To see the source code, suggest improvements or even contribute a pull request check out the [GitHub repository](https://github.com/taverntesting/tavern).
+To see the source code, suggest improvements or even contribute a pull request check out
+the [GitHub repository](https://github.com/taverntesting/tavern).

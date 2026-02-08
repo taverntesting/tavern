@@ -14,6 +14,7 @@ project:
       title: Home
     - title: Documentation
       children:
+        - file: docs/source/examples.md
         - file: docs/source/basics.md
         - title: Backend specific behaviour
           children:
@@ -23,7 +24,6 @@ project:
             - file: docs/source/mqtt.md
         - file: docs/source/debugging.md
         - file: docs/source/cookbook.md
-        - file: docs/source/examples.md
         - file: docs/source/plugins.md
     - file: CONTRIBUTING.md
     - file: CHANGELOG.md
