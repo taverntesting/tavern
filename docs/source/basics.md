@@ -171,56 +171,6 @@ For a more formal definition of the schema that the tests are validated against,
 check [tests schema](https://github.com/taverntesting/tavern/blob/master/tavern/schemas/tests.schema.yaml) in the main
 Tavern repository.
 
-## Using the run() function
-
-Because the `run()` function (see [examples](/examples)) calls directly into the
-library, there is no nice way to control which global configuration to use - for
-this reason, you can pass a dictionary into `run()` which will then be used as
-global configuration. This should have the same structure as any other global
-configuration file:
-
-```python
-from tavern.core import run
-
-extra_cfg = {
-    "variables": {
-        "key_1": "value",
-        "key_2": 123,
-    }
-}
-
-success = run("test_server.tavern.yaml", extra_cfg)
-```
-
-An absolute filepath to a configuration file can also be passed.
-
-This is also how things such as strict key checking is controlled via the
-`run()` function. Extra keyword arguments that are taken by this function:
-
-- `tavern_strict` - Controls strict key checking (see section on strict key
-  checking for details)
-- `tavern_mqtt_backend` and `tavern_http_backend` controls which backend to use
-  for those requests (see [plugins](/plugins) for details)
-- `pytest_args` - A list of any extra arguments you want to pass directly
-  through to Pytest.
-
-An example of using `pytest_args` to exit on the first failure:
-
-```python
-from tavern.core import run
-
-success = run("test_server.tavern.yaml", pytest_args=["-x"])
-```
-
-`run()` will use a Pytest instance to actually run the tests, so these values
-can also be controlled just by putting them in the appropriate Pytest
-configuration file (such as your `setup.cfg` or `pytest.ini`).
-
-Under the hood, the `run` function calls `pytest.main` to start the test
-run, and will pass the return code back to the caller. At the time of
-writing, this means it will return a `0` if all tests are successful,
-and a nonzero result if one or more tests failed (or there was some
-other error while running or collecting the tests).
 
 ## Variable formatting
 

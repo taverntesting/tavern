@@ -21,6 +21,7 @@ project:
         - file: docs/source/core_concepts/config.md
         - file: docs/source/core_concepts/flow.md
         - file: docs/source/core_concepts/reports.md
+        - file: docs/source/core_concepts/from_python.md
     - title: Backend specific behaviour
       children:
         - file: docs/source/http.md
