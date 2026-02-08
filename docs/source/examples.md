@@ -1,5 +1,14 @@
 # Examples
 
+This page contains some examples of how to use Tavern with an example HTTP server.
+
+More examples are available in the source code:
+
+- More advanced HTTP examples: https://github.com/taverntesting/tavern/tree/master/example/http
+- MQTT examples: https://github.com/taverntesting/tavern/tree/master/example/mqtt
+- GraphQL examples: https://github.com/taverntesting/tavern/tree/master/example/graphql
+- gRPC examples: https://github.com/taverntesting/tavern/tree/master/example/grpc
+
 ## 1) The simplest possible test
 
 To show you just how simple a Tavern test can be, here's one which uses the JSON Placeholder API at [jsonplaceholder.typicode.com](https://jsonplaceholder.typicode.com/). To try it, create a new file called `test_minimal.tavern.yaml` with the following:
