@@ -1,8 +1,8 @@
+# Easier API testing with Tavern
+
 [![pypi](https://img.shields.io/pypi/v/tavern.svg)](https://pypi.org/project/tavern/)
 [![docs](https://readthedocs.org/projects/pip/badge/?version=latest&style=flat)](https://tavern.readthedocs.io/en/latest/)
 ![workflow](https://github.com/taverntesting/tavern/actions/workflows/main.yml/badge.svg?branch=master)
-
-# Easier API testing with Tavern
 
 Tavern is a pytest plugin, command-line tool, and Python library for
 automated testing of APIs, with a simple, concise, and flexible

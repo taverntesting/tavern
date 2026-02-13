@@ -22,7 +22,7 @@ project:
         - file: docs/source/core_concepts/flow.md
         - file: docs/source/core_concepts/reports.md
         - file: docs/source/core_concepts/from_python.md
-    - title: Backend specific behaviour
+    - title: Request backends
       children:
         - file: docs/source/http.md
         - file: docs/source/graphql.md

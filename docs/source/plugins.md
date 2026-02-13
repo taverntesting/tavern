@@ -1,21 +1,23 @@
 # Plugins
 
 Since 0.10.0, Tavern has a simple plugin system which lets you change how
-requests are made. By default, all HTTP tests use the
-[requests](http://docs.python-requests.org/en/master/) library and all MQTT
-tests use the [paho-mqtt](https://www.eclipse.org/paho/clients/python/docs/)
-library.
+requests are made. By default, backends are handled by:
+
+- HTTP: [requests](http://docs.python-requests.org/en/master/)
+- MQTT: [paho-mqtt](https://www.eclipse.org/paho/clients/python/docs/)
+- gRPC: [grpcio](https://grpc.github.io/grpc/python/)
+- GraphQL: [gql](https://github.com/graphql-python/gql) 
 
 However, there are some situations where you might not want to run tests against
 something other than a live server, or maybe you just want to use curl to
 extract some better usage statistics out of your requests. Tavern's plugin
-system can be used to override this default behaviour (note however that it
-still ONLY supports HTTP and MQTT requests at the time of writing).
+system can be used to override this default behaviour.
 
 The best way to introduce the concepts for making a plugin is by using an
 example. For this we will be looking at a plugin used to run tests against a
 local flask server called [tavern_flask](https://github.com/taverntesting/tavern-flask)
-or another plugin used to run tests against FastAPI/Starlette `TestClient` called [tavern_fastapi](https://github.com/zaghaghi/tavern-fastapi).
+or another plugin used to run tests against FastAPI/Starlette `TestClient`
+called [tavern_fastapi](https://github.com/zaghaghi/tavern-fastapi).
 
 ## The entry point
 
@@ -63,7 +65,8 @@ Examples:
 
 If your plugin needs extra metadata in each test to be able to make a request,
 extra schema data can be added with a `schema` key in your entry point. This
-should be a dictionary which is just merged into the [base schema](https://github.com/taverntesting/tavern/blob/master/tavern/schemas/tests.schema.yaml)
+should be a dictionary which is just merged into
+the [base schema](https://github.com/taverntesting/tavern/blob/master/tavern/schemas/tests.schema.yaml)
 for tests.
 
 There is currently only one key supported in the schema dictionary,
@@ -89,17 +92,18 @@ used throughout the entire test. It should be a class that fulfils two
 requirements:
 
 1. It must take the same keyword arguments as the 'base' session object to
-create an instance for testing. For
-HTTP tests this is the same arguments as a
-[requests.Session](http://docs.python-requests.org/en/master/user/advanced/#session-objects)
-object, and for MQTT tests it is the same arguments as specified in the
-[MQTT documentation](https://taverntesting.github.io/documentation#mqtt-connection-options).
-If your plugin does not support some of these arguments, raise a
-`NotImplementedError` which a short message explaining that it is not supported.
+   create an instance for testing. For
+   HTTP tests this is the same arguments as a
+   [requests.Session](http://docs.python-requests.org/en/master/user/advanced/#session-objects)
+   object, and for MQTT tests it is the same arguments as specified in the
+   [MQTT documentation](https://taverntesting.github.io/documentation#mqtt-connection-options).
+   If your plugin does not support some of these arguments, raise a
+   `NotImplementedError` which a short message explaining that it is not supported.
 
-2. After creating the instance, it must be able to be used as a [context manager](https://docs.python.org/3/library/stdtypes.html#typecontextmanager).
-If you don't need any functionality provided by this, you can define empty
-`__enter__` and `__exit__` methods on your class like so:
+2. After creating the instance, it must be able to be used as
+   a [context manager](https://docs.python.org/3/library/stdtypes.html#typecontextmanager).
+   If you don't need any functionality provided by this, you can define empty
+   `__enter__` and `__exit__` methods on your class like so:
 
 ```python
 class MySession:
@@ -130,7 +134,8 @@ plugin. It takes 3 arguments:
 - `rspec` is a dictionary corresponding to the request at that stage. If you are
   writing a HTTP plugin, the dictionary will contain the keys as described in
   the [http request documentation](https://taverntesting.github.io/documentation#request). If it
-  is an MQTT plugin, it will contain keys described in the [MQTT publish documentation](https://taverntesting.github.io/documentation#mqtt-publishing-options).
+  is an MQTT plugin, it will contain keys described in
+  the [MQTT publish documentation](https://taverntesting.github.io/documentation#mqtt-publishing-options).
 
 - `test_block_config` is the global configuration for that test. At a minimum it
   will contain a key called `variables`, which contains all of the current

@@ -1,23 +1,31 @@
 # gRPC integration testing
 
-## Current limitations / future plans
+## Example
 
-- Should be able to specify channel credentials.
-- Currently there is no way of doing custom TLS options (like with rest/mqtt)
-- Better syntax around importing modules
-- Some way of representing streaming RPCs? This is pretty niche and Tavern is built around a core of only making 1
-  request which doesn't work well with streaming request RPCs, but streaming response RPCs could be handled like
-  multiple MQTT responses.
-- Much like the tavern-flask plugin it wouldn't be too difficult to write a plugin which started a Python gRPC server
-  in-process and ran tests against that instead of having to use a remote server
-- Fix comparing results - currently it serialises with
+An example of a simple gRPC test which loads the compiled protobuf stubs from a module:
 
-      always_print_fields_with_no_presence=True,
-      preserving_proto_field_name=True,
+```yaml
+test_name: Test grpc connection without the 'connect' block
 
-  Which formats a field like `my_field_name` as `my_field_name` and not `myFieldName` which is what protojson in Go
-  converts it to for example, need to provide a way to allow people to write tests using either one
-- protos are compiled into a folder based on `tempfile.gettempdir()`, this could be configurable
+includes:
+  - !include common.yaml
+
+grpc:
+  proto:
+    module: helloworld_v1_precompiled_pb2_grpc
+
+stages:
+  - name: Echo text
+    grpc_request:
+      host: "{grpc_host}:{grpc_port}"
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+```
 
 ## Connection
 
@@ -170,3 +178,22 @@ the `grpc` block:
 grpc:
   attempt_reflection: true
 ```
+
+## Current limitations / future plans
+
+- Should be able to specify channel credentials.
+- Currently there is no way of doing custom TLS options (like with rest/mqtt)
+- Better syntax around importing modules
+- Some way of representing streaming RPCs? This is pretty niche and Tavern is built around a core of only making 1
+  request which doesn't work well with streaming request RPCs, but streaming response RPCs could be handled like
+  multiple MQTT responses.
+- Much like the tavern-flask plugin it wouldn't be too difficult to write a plugin which started a Python gRPC server
+  in-process and ran tests against that instead of having to use a remote server
+- Fix comparing results - currently it serialises with
+
+      always_print_fields_with_no_presence=True,
+      preserving_proto_field_name=True,
+
+  Which formats a field like `my_field_name` as `my_field_name` and not `myFieldName` which is what protojson in Go
+  converts it to for example, need to provide a way to allow people to write tests using either one
+- protos are compiled into a folder based on `tempfile.gettempdir()`, this could be configurable
