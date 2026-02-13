@@ -226,7 +226,7 @@ It should also define a couple of methods:
 
 - `__str__` should return a human-readable string describing the response. This
   is mainly for debugging, and should only give as much information as you think
-  is required. For example, a HTTP response might be printed as (
+  is required. For example, a HTTP response might be printed as "HTTP 200 OK".
 
 Like with a request, Tavern knows which verifier to use by looking at the
 `response_block_name` key.
