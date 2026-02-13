@@ -6,7 +6,7 @@ All configuration for the project should be put into `pyproject.toml`.
 
 1. Create a virtualenv using whatever method you like (
    eg, [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/))
-   
+
 ```shell
 uv venv
 ```
@@ -14,7 +14,7 @@ uv venv
 1. Sync venv
 
 ```shell
-uv sync --all-extras
+uv sync --all-extras --all-packages --all-groups
 ```
 
 ## Running tests locally
@@ -45,30 +45,39 @@ uv sync --all-extras --all-packages --all-groups
 
 ## Pre-commit
 
-Basic checks (formatting, import order) is done with pre-commit and is controlled by [the yaml file](/.pre-commit-config.yaml).
+Basic checks (formatting, import order) are done with pre-commit and are controlled
+by [the yaml file](/.pre-commit-config.yaml).
 
 After installing dependencies, Run
 
-    # check it works
-    pre-commit run --all-files
-    pre-commit install
+```bash
+# check it works
+pre-commit run --all-files
+pre-commit install
+```
 
 Run every so often to update the pre-commit hooks
 
-    pre-commit autoupdate
+```bash
+pre-commit autoupdate
+```
 
-### Fixing Python formatting issue
+### Fixing Python formatting issues
 
-    ruff format tavern/ tests/
-    ruff --fix tavern/ tests/
+```bash
+ruff format tavern/ tests/
+ruff --fix tavern/ tests/
+```
 
 ### Fix yaml formatting issues
 
-    pre-commit run --all-files
+```bash
+pre-commit run --all-files
+```
 
 ## Creating a new release
 
-1. Setup `~/.pypirc`
+1. Setup `~/.pypirc` according to the [official instructions](https://packaging.python.org/en/latest/specifications/pypirc/) 
 
 1. Tag and push to git with `tbump <new-tag> --tag-message "<tag-message>"`
 
@@ -76,10 +85,10 @@ Run every so often to update the pre-commit hooks
 
 ## Building the documentation
 
-FIXME: https://github.com/jupyter-book/mystmd/issues/2082
+Run this standalone for now: https://github.com/jupyter-book/mystmd/issues/2082
 
 ```bash
-uv tool run --from  mystmd myst  build --html
+uv tool run --from mystmd myst build --html
 ```
 
 ### Watching for changes
