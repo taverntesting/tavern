@@ -378,7 +378,7 @@ calling run() directly will now cause a pytest isntance to be run in the backgro
 
 # 0.10.0          Add basic plugin system (2018-05-29)
 
-# 0.9.10          Add new tag to match floating point numbers approximately in responses (2018-05-29)
+## 0.9.10          Add new tag to match floating point numbers approximately in responses (2018-05-29)
 
 ## 0.9.9           Allow nesting of variables in included files that can be access using dot notation (2018-05-29)
 

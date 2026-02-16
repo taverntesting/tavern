@@ -63,9 +63,10 @@ def print_changelog():
     for current_tag in tags:
         tag_date = get_tag_date(current_tag)
 
-        # Determine header level
+        # Determine header level - minor releases (patch == 0) get '#', patch releases get '##'
         hashes = "##"
-        if current_tag.endswith("0"):
+        parts = current_tag.split(".")
+        if len(parts) >= 3 and parts[2] == "0":
             hashes = "#"
 
         tag_name = get_tag_name(current_tag)
