@@ -1,5 +1,4 @@
-
-## Strict key checking
+# Strict key checking
 
 'Strict' key checking can be enabled or disabled globally, per test, or per
 stage. 'Strict' key checking refers to whether extra keys in the response should
