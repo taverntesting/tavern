@@ -204,6 +204,9 @@ request:
     graphql_query: "{%raw%}{{ user(id: 123) {{ first_name }} }}{%endraw%}"
 ```
 
+**NOTE**: This is a toy example, if you want to use GraphQL with tavern then 
+head over to the [GraphQL docs](./graphql.md).
+
 Since `0.5.0`, Tavern also has some 'magic' variables available in the `tavern`
 key for formatting.
 
