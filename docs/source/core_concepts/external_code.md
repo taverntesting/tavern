@@ -1,5 +1,22 @@
 # Using Python functions in Tavern
 
+Tavern provides several ways, documented below, to integrate Python code with your tests. Each approach has different
+strengths and is suited to different scenarios.
+
+| **Approach**                       | **Benefits**                                                                                                                                                                                                                 | **Downsides**                                                                                                                    | **Best Used When**                                                                                                                                                                                            |
+|------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **External Functions** (`$ext`)    | • Flexible placement (request, response, save blocks)<br>• Can inject dynamic data or save custom data for validation in Python<br>• Can express complex logic specific to one test<br>• No special decorators needed        | • Functions must be in Python path                                                                                               | • Need dynamic data injection (e.g., calculated auth tokens)<br>• Custom response validation beyond key checking<br>• Extracting/transforming specific data from responses<br>• One-off test-specific logic   |
+| **Pytest Fixtures**                | • Integrates with pytest ecosystem<br>• Automatic discovery via conftest.py<br>• Can use `autouse` for implicit availability<br>• Session-scoped fixtures compute once and reuse<br>• Return values available for formatting | • Limited to function/session scope fixtures (not per-stage)                                                                     | • Sharing setup data across entire test<br>• Loading configuration/credentials once<br>• Timing/logging entire test execution<br>• Leveraging existing pytest fixtures<br>• Need session-wide computed values |
+| **Tinctures**                      | • **Can run per-stage or per-test**<br>• Can introspect both request and response<br>• Access to stage dictionary                                                                                                            | • Less powerful than fixtures                                                                                                    | • Wrapping stage execution with setup/teardown<br>• Per-stage validation or logging<br>• Need access to both expected and actual response<br>• Reusable stage-level logic                                     |
+| **Hooks** (`pytest_tavern_beta_*`) | • Suite-wide automatic execution<br>• Multiple hook points (before test, after response, etc.)<br>• No explicit test modification needed<br>• Good for cross-cutting concerns                                                | • **'Beta'/unstable API** (names may change in future)<br>• Runs for ALL tests (less granular)<br>• Can't be turned off per-test | • Suite-wide logging/monitoring<br>• Global cleanup operations<br>• Recording all responses for debugging<br>• Adding test-wide configuration                                                                 |
+
+**Quick Selection Guide:**
+
+- **Need it for just one test?** → External Functions or Tinctures
+- **Need pytest integration or session-wide data?** → Fixtures
+- **Need per-stage execution with timing/wrapping?** → Tinctures or Hooks
+- **Need it automatically for every test?** → Hooks or Fixtures
+
 ## Calling external functions
 
 Not every response can be validated simply by checking the values of keys, so with
@@ -446,3 +463,110 @@ response object will be different for MQTT and HTTP tests!
 
 If you need to run something before _every_ stage or after _every_ response in your test suite, look at using
 the [hooks](#hooks) instead.
+
+## Pytest fixtures
+
+There is some support for Pytest
+[fixtures](https://docs.pytest.org/en/latest/fixture.html) in Tavern tests. This
+is done by using the `usefixtures` mark (see the documentation about
+[using Pytest marks](./marks.md#using-marks-with-fixtures) for more information about marks).
+The return (or `yield`ed) values of any
+fixtures will be available to use in formatting, using the name of the fixture.
+
+An example of how this can be used in a test:
+
+```python
+# conftest.py
+
+import pytest
+import logging
+import time
+
+
+@pytest.fixture
+def server_password():
+    with open("/path/to/password/file", "r") as pfile:
+        password = pfile.read().strip()
+
+    return password
+
+
+@pytest.fixture(name="time_request")
+def fix_time_request():
+    t0 = time.time()
+
+    yield
+
+    t1 = time.time()
+
+    logging.info("Test took %s seconds", t1 - t0)
+```
+
+```yaml
+---
+test_name: Make sure server can handle a big query
+
+marks:
+  - usefixtures:
+      - time_request
+      - server_password
+
+stages:
+  - name: Do big query
+    request:
+      url: "{host}/users"
+      method: GET
+      params:
+        n_items: 1000
+      headers:
+        authorization: "Basic {server_password}"
+    response:
+      status_code: 200
+      json:
+        ...
+```
+
+The above example will load basic auth credentials from a file, which will be
+used to authenticate against the server. It will also time how long the test
+took and log it.
+
+`usefixtures` expects a list of fixture names which are then loaded by Pytest -
+look at their documentation to see how discovery etc. works.
+
+There are some limitations on fixtures:
+
+- Fixtures are per _test_, not per stage. The above example of timing a test
+  will include the (small) overhead of doing validation on the responses,
+  setting up the requests session, etc. If the test consists of more than one
+  stage, it will time how long both stages took.
+- Fixtures should be 'function' or 'session' scoped. 'module' scoped fixtures
+  will raise an error and 'class' scoped fixtures may not behave as you expect.
+- Parametrizing fixtures does not work - this is a limitation in Pytest.
+
+Fixtures which are specified as `autouse` can also be used without explicitly
+using `usefixtures` in a test. This is a good way to essentially precompute a
+format variable without also having to use an external function or specify a
+`usefixtures` block in every test where you need it.
+
+To do this, just pass the `autouse=True` parameter to your fixtures along with
+the relevant scope. Using 'session' will evalute the fixture once at the beginning
+of your test run and reuse the return value everywhere else it is used:
+
+```python
+@pytest.fixture(scope="session", autouse=True)
+def a_thing():
+    return "abc"
+```
+
+```yaml
+---
+test_name: Test autouse fixture
+
+stages:
+  - name: do something with fixture value
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{a_thing}"
+```
