@@ -168,9 +168,8 @@ an array was done like `thing.nested.0`. This will be deprecated in the
 It is also possible to save data using function calls, [explained below](#saving-data-from-a-response).
 
 For a more formal definition of the schema that the tests are validated against,
-check [tests schema](https://github.com/taverntesting/tavern/blob/master/tavern/schemas/tests.schema.yaml) in the main
-Tavern repository.
-
+check [tests schema](https://github.com/taverntesting/tavern/blob/5e2597ae4c0d7023f08e7c8e793c6db57ee546cf/tavern/_core/schema/tests.jsonschema.yaml)
+in the main Tavern repository.
 
 ## Variable formatting
 
