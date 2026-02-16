@@ -109,6 +109,9 @@ dev = [
     "pytest-asyncio>=1.3.0",
 ]
 
+# When this is fixed, enable this https://github.com/jupyter-book/mystmd/issues/2082
+# docs = ["mystmd"]
+
 [project.scripts]
 
 tavern-ci = "tavern.entry:main"
