@@ -191,35 +191,19 @@ If you want to add a feature to get merged back into mainline Tavern:
       input YAML, it might also be useful to add some integration tests. At the
       time of writing, this is done by adding an example flask endpoint in
       `tests/integration/server.py` and a corresponding Tavern YAML test file in
-      the same directory. This will be cleaned up a bit once we have a proper
-      plugin system implemented.
+      the same directory.
 - Open a [pull request](https://github.com/taverntesting/tavern/pulls).
 
 See [CONTRIBUTING.md](/CONTRIBUTING.md) for more details.
-
-## Acknowledgements
-
-Tavern supports testing of different API types:
-
-- **RESTful APIs**: Using the [requests](http://docs.python-requests.org/en/master/) library
-- **MQTT services**: Using the [paho-mqtt](https://github.com/eclipse/paho.mqtt.python) library  
-- **gRPC services**: Using native gRPC protocol support with protobuf definitions
-
-Tavern makes use of several excellent open-source projects:
-
-- [pytest](https://docs.pytest.org/en/latest/), the testing
-  framework Tavern integrates with
-- [YAML](http://yaml.org/) and
-  [pyyaml](https://github.com/yaml/pyyaml), for the test syntax
-- [pykwalify](https://github.com/Grokzen/pykwalify), for YAML schema
-  validation
-- [pyjwt](https://github.com/jpadilla/pyjwt), for decoding JSON Web
-  Tokens
-- [colorlog](https://github.com/borntyping/python-colorlog), for
-  formatting terminal outputs
 
 ## Maintenance
 
 Tavern is currently maintained by
 
 - [@michaelboulton](https://www.github.com/michaelboulton)
+
+[//]: # (Note: Myst is hardcoded to look for a subheader with this name 🤷)
+
+## Acknowledgements
+
+[pytest](https://docs.pytest.org/en/latest/): the testing framework Tavern integrates with
