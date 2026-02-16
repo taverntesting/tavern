@@ -109,15 +109,8 @@ dev = [
     "pytest-asyncio>=1.3.0",
 ]
 
-docs = [
-    "sphinx>=7,<8",
-    "sphinx_rtd_theme",
-    "recommonmark",
-    "commonmark",
-    "docutils",
-    "pygments",
-    "sphinx-markdown-tables",
-]
+# When this is fixed, enable this https://github.com/jupyter-book/mystmd/issues/2082
+# docs = ["mystmd"]
 
 [project.scripts]
 
@@ -210,6 +203,7 @@ select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM10
 [tool.ruff.lint.per-file-ignores]
 "example/*" = ["S", "RUF", "T", "E", "PLW", "B"]
 "tests/*" = ["S", "RUF"]
+"scripts/*" = ["S603", "S607"]
 "tests/unit/tavern_grpc/test_grpc.py" = ["E402"]
 
 [tool.ruff.lint.isort]
@@ -241,13 +235,10 @@ src = "tavern/__init__.py"
 [[tool.tbump.file]]
 src = "pyproject.toml"
 
-[[tool.tbump.file]]
-src = "docs/source/conf.py"
-
 
 [[tool.tbump.before_commit]]
 name = "Update changelog"
-cmd = "./scripts/update-changelog.bash"
+cmd = "./scripts/update_changelog.py"
 [[tool.tbump.before_commit]]
 name = "Update lock"
 cmd = "uv lock"

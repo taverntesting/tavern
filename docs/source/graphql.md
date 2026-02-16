@@ -327,7 +327,7 @@ stages:
 
 ## Strictness
 
-As described in the [strict key checking](./basics.md#strict-key-checking) section in the basics, GraphQL responses
+As described in the [strict key checking](./core_concepts/types.md#strict-key-checking) section in the basics, GraphQL responses
 can use the `strict` key to check that the response contains all or some of the expected keys. See that section
 for more details. The `json` strictness setting is reused for the `data` key in GraphQL responses.
 

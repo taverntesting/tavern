@@ -125,3 +125,6 @@ bazel-tavern
 bazel-testlogs
 
 example/grpc/proto
+
+# MyST build outputs
+_build
