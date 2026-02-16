@@ -235,9 +235,6 @@ src = "tavern/__init__.py"
 [[tool.tbump.file]]
 src = "pyproject.toml"
 
-[[tool.tbump.file]]
-src = "docs/source/conf.py"
-
 
 [[tool.tbump.before_commit]]
 name = "Update changelog"
