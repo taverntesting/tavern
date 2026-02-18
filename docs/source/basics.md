@@ -216,7 +216,7 @@ This currently includes all request variables and is available under the
 `request_vars` key. Say we want to test a server that updates a user's profile
 and returns the change:
 
-```
+```yaml
 ---
 test_name: Check server responds with updated data
 
@@ -246,7 +246,7 @@ being tested against requires a password, bearer token, or some other form of
 authorisation that you don't want to ship alongside the test code, it can be
 accessed via this key (for example, in CI).
 
-```
+```yaml
 ---
 test_name: Test getting user information requires auth
 
@@ -272,3 +272,105 @@ stages:
         name: "Joe Bloggs"
 ```
 
+### Default document merge-down
+
+When multiple tests are defined in a single Tavern file, you may want to share common configuration across all tests
+without repeating it. Tavern supports this via the `is_defaults: true` flag in a top-level document. Any document with
+this flag set will have its contents merged into all subsequent test documents in the same file.
+
+This is useful for:
+
+- Shared includes (common variables, stages, or configuration)
+- Default MQTT connection settings
+- Common authentication or headers
+- Shared test setup stages
+
+#### Example: Shared includes and configuration
+
+```yaml
+---
+is_defaults: true
+
+includes:
+  - !include common.yaml
+
+paho-mqtt:
+  auth:
+    username: tavern
+    password: tavern
+  connect:
+    host: localhost
+    port: 9001
+  client:
+    transport: websockets
+---
+
+test_name: Test mqtt message echo json
+
+stages:
+  - name: Echo json
+    mqtt_publish:
+      topic: /device/test/echo
+      json:
+        message: hello world
+    mqtt_response:
+      topic: /device/test/echo/response
+      json:
+        message: hello world
+      timeout: 5
+---
+
+test_name: Test mqtt message echo binary
+
+stages:
+  - name: Echo binary
+    mqtt_publish:
+      topic: /device/test/echo
+      payload: hello world
+    mqtt_response:
+      topic: /device/test/echo/response
+      payload: hello world
+      timeout: 5
+```
+
+In this example, both tests inherit the MQTT connection settings and includes from the defaults document, avoiding
+duplication.
+
+#### Example: Shared HTTP test configuration
+
+```yaml
+---
+is_defaults: true
+
+includes:
+  - !include common.yaml
+---
+
+test_name: Test redirecting loops
+
+stages:
+  - name: Expect a 302 without setting the flag
+    max_retries: 2
+    request:
+      follow_redirects: true
+      url: "{host}/redirect/loop"
+    response:
+      status_code: 200
+
+---
+
+test_name: Using a shared stage from common.yaml
+
+stages:
+  - type: ref
+    id: typetoken-anything-match
+```
+
+Both tests automatically include the shared configuration from `common.yaml` without needing to specify it individually.
+
+Note:
+
+- Only the first document in a file can use `is_defaults: true`
+- The defaults document cannot contain test definitions (no `test_name` or `stages`)
+- Values in the defaults document are merged with subsequent documents, with the test document taking precedence for
+  conflicting keys

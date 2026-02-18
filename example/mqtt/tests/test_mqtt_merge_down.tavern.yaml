@@ -1,0 +1,50 @@
+---
+is_defaults: true
+
+paho-mqtt:
+  auth:
+    username: tavern
+    password: tavern
+  # tls:
+  #   enable: true
+  connect:
+    host: localhost
+    port: 9001
+    timeout: 3
+  client:
+    transport: websockets
+    client_id: tavern-tester-{random_device_id}
+
+includes:
+  - !include common.yaml
+  - stages:
+      - id: create_test_device
+        name: create device
+        request:
+          url: "{host}/create_device"
+          method: PUT
+          json:
+            device_id: "{random_device_id}"
+            clean: True
+        response:
+          status_code: 201
+
+---
+
+test_name: Test mqtt message echo json
+
+stages:
+  - type: ref
+    id: create_test_device
+
+  - name: Echo json
+    mqtt_publish:
+      topic: /device/{random_device_id}/echo
+      json:
+        message: hello world
+    mqtt_response:
+      topic: /device/{random_device_id}/echo/response
+      json:
+        message: hello world
+      timeout: 5
+      qos: 1

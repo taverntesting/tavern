@@ -525,14 +525,16 @@ definitions:
 
 type: object
 additionalProperties: false
-required:
-  - test_name
-  - stages
 
 properties:
   test_name:
     type: string
     description: Name of test
+
+  is_defaults:
+    type: boolean
+    description: Whether this document contains default values to be merged with subsequent test documents
+    default: false
 
   _xfail:
     oneOf:
