@@ -1,16 +1,8 @@
+# Easier API testing with Tavern
+
 [![pypi](https://img.shields.io/pypi/v/tavern.svg)](https://pypi.org/project/tavern/)
 [![docs](https://readthedocs.org/projects/pip/badge/?version=latest&style=flat)](https://tavern.readthedocs.io/en/latest/)
 ![workflow](https://github.com/taverntesting/tavern/actions/workflows/main.yml/badge.svg?branch=master)
-
-## 3.0 Breaking changes
-
-- Python 3.11 is now the minimum required version - upgrade your Python installation accordingly
-- If using gRPC support, Tavern now requires v5 of the protobuf library.
-- Tavern now requires pytest 8
-- MQTT support is now an optional extra and requires installation like `pip install tavern[mqtt]`
-- If you rely on earlier behaviour of `recurse_access_key` it might have changed
-
-# Easier API testing
 
 Tavern is a pytest plugin, command-line tool, and Python library for
 automated testing of APIs, with a simple, concise, and flexible
@@ -34,6 +26,36 @@ To learn more, check out the [examples](https://taverntesting.github.io/examples
 [documentation](https://taverntesting.github.io/documentation). If you're interested in contributing
 to the project take a look at the [GitHub
 repo](https://github.com/taverntesting/tavern).
+
+## Why Tavern
+
+Choosing an API testing framework can be tough. Tavern was started in 2017 to address some of our concerns with other
+testing frameworks.
+
+In short, we think the best things about Tavern are:
+
+### It's Lightweight.
+
+Tavern is a small codebase which uses pytest under the hood.
+
+### Easy to Write, Easy to Read and Understand.
+
+The yaml syntax allows you to abstract what you need with anchors, whilst using `pytest.mark` to organise your tests.
+Your tests should become more maintainable as a result.
+
+### Test Anything
+
+From the simplest API test through to the most complex of requests, tavern remains readable and easy to extend. We're
+aiming for developers to not need the docs open all the time!
+
+### Extensible
+
+Almost all common test usecases are covered, but for everything else it's straightforward to drop in to python/pytest to
+extend. Use fixtures, hooks, and things you already know.
+
+### Growing Ecosystem
+
+Tavern is still in active development and is used by 100s of companies.
 
 ## Quickstart
 
@@ -169,35 +191,19 @@ If you want to add a feature to get merged back into mainline Tavern:
       input YAML, it might also be useful to add some integration tests. At the
       time of writing, this is done by adding an example flask endpoint in
       `tests/integration/server.py` and a corresponding Tavern YAML test file in
-      the same directory. This will be cleaned up a bit once we have a proper
-      plugin system implemented.
+      the same directory.
 - Open a [pull request](https://github.com/taverntesting/tavern/pulls).
 
 See [CONTRIBUTING.md](/CONTRIBUTING.md) for more details.
-
-## Acknowledgements
-
-Tavern supports testing of different API types:
-
-- **RESTful APIs**: Using the [requests](http://docs.python-requests.org/en/master/) library
-- **MQTT services**: Using the [paho-mqtt](https://github.com/eclipse/paho.mqtt.python) library  
-- **gRPC services**: Using native gRPC protocol support with protobuf definitions
-
-Tavern makes use of several excellent open-source projects:
-
-- [pytest](https://docs.pytest.org/en/latest/), the testing
-  framework Tavern intergrates with
-- [YAML](http://yaml.org/) and
-  [pyyaml](https://github.com/yaml/pyyaml), for the test syntax
-- [pykwalify](https://github.com/Grokzen/pykwalify), for YAML schema
-  validation
-- [pyjwt](https://github.com/jpadilla/pyjwt), for decoding JSON Web
-  Tokens
-- [colorlog](https://github.com/borntyping/python-colorlog), for
-  formatting terminal outputs
 
 ## Maintenance
 
 Tavern is currently maintained by
 
-- @michaelboulton
+- [@michaelboulton](https://www.github.com/michaelboulton)
+
+[//]: # (Note: Myst is hardcoded to look for a subheader with this name 🤷)
+
+## Acknowledgements
+
+[pytest](https://docs.pytest.org/en/latest/): the testing framework Tavern integrates with
