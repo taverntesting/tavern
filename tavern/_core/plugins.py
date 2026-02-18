@@ -210,7 +210,7 @@ def get_extra_sessions(test_spec: Mapping, test_block_config: TestConfig) -> dic
 
     sessions = {}
 
-    plugins = load_plugins(test_block_config)
+    plugins: list[_Plugin] = load_plugins(test_block_config)
 
     for p in plugins:
         if any(
@@ -220,8 +220,8 @@ def get_extra_sessions(test_spec: Mapping, test_block_config: TestConfig) -> dic
             logger.debug(
                 "Initialising session for %s (%s)", p.name, p.plugin.session_type
             )
-            session_spec = test_spec.get(p.name, {})
-            formatted = format_keys(session_spec, test_block_config.variables)
+            session_spec: dict = test_spec.get(p.name, {})
+            formatted: dict = format_keys(session_spec, test_block_config.variables)
             sessions[p.name] = p.plugin.session_type(**formatted)
 
     return sessions
@@ -267,6 +267,7 @@ def get_request_type(
 
     # We've validated that 1 and only 1 is there, so just loop until the first
     # one is found
+    request_class: type[BaseRequest] | None = None
     for p in plugins:
         try:
             request_args = stage[p.plugin.request_block_name]
@@ -279,6 +280,9 @@ def get_request_type(
                 "Initialising request class for %s (%s)", p.name, request_class
             )
             break
+
+    if not request_class:
+        raise exceptions.MissingSettingsError("No request type found")
 
     request_maker = request_class(session, request_args, test_block_config)
 

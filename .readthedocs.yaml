@@ -1,24 +1,24 @@
-# Read the Docs configuration file for Sphinx projects
+# Read the Docs configuration file for myst
 # See https://docs.readthedocs.io/en/stable/config-file/v2.html for details
+# This file was created automatically with `myst init --readthedocs`
 
 # Required
 version: 2
 
-# Set the OS, Python version and other tools you might need
+# Set the OS, Python version, and Node.js version
+# Note: Python is included for executing code in notebooks or using Jupyter Book
 build:
   os: ubuntu-22.04
   tools:
-    python: "3.11"
-  jobs:
-    pre_create_environment:
-      - asdf plugin add uv
-      - asdf install uv latest
-      - asdf global uv latest
-    create_environment:
-      - uv venv "${READTHEDOCS_VIRTUALENV_PATH}"
-    install:
-      - UV_PROJECT_ENVIRONMENT="${READTHEDOCS_VIRTUALENV_PATH}" uv sync --frozen --group docs
-
-# Build documentation in the "docs/" directory with Sphinx
-sphinx:
-  configuration: docs/source/conf.py
+    python: "3.12"
+    nodejs: "22"
+  commands:
+    # Install myst
+    - npm install -g mystmd
+    # Build the site
+    - myst build --html
+    # Copy the output to Read the Docs expected location
+    - mkdir -p $READTHEDOCS_OUTPUT/html/
+    - cp -r _build/html/. "$READTHEDOCS_OUTPUT/html"
+    # Clean up build artifacts
+    - rm -rf _build

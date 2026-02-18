@@ -9,7 +9,7 @@ from collections.abc import Callable, Iterable, Iterator, Mapping
 from typing import Any, Union
 
 import pytest
-import yaml
+import yaml.parser
 from box import Box
 from pytest import Mark
 
@@ -445,16 +445,62 @@ class YamlFile(pytest.File):
         except yaml.parser.ParserError as e:
             raise exceptions.BadSchemaError from e
 
-        for test_spec in all_tests:
+        defaults_doc = None
+
+        for document_idx, test_spec in enumerate(all_tests):
             if not test_spec:
                 logger.warning("Empty document in input file '%s'", self.path)
                 continue
+
+            # Check for explicit defaults marker and validate position
+            is_defaults: bool = test_spec.pop("is_defaults", False)
+
+            if is_defaults and document_idx > 0:
+                raise exceptions.BadSchemaError(
+                    f"'is_defaults' can only be used in the first YAML document, "
+                    f"but found it in document {document_idx + 1} of '{self.path}'"
+                )
+
+            # Determine if this document is a test or defaults
+            is_test_doc = "test_name" in test_spec and "stages" in test_spec
+
+            if document_idx == 0 and is_defaults:
+                if is_test_doc:
+                    raise exceptions.BadSchemaError(
+                        f"First document in '{self.path}' is marked as defaults but also contains a 'test_name' and 'stages'"
+                    )
+
+                # First document is explicitly marked as defaults
+                logger.info(
+                    "Using first document as defaults for %s",
+                    self.path,
+                )
+                defaults_doc = test_spec
+                continue
+            elif not is_test_doc:
+                # Document is neither a valid test nor valid defaults
+                if document_idx == 0:
+                    raise exceptions.BadSchemaError(
+                        f"First document in '{self.path}' is missing 'test_name' or 'stages'. "
+                        f"If this is meant to be defaults for the file, add 'is_defaults: true'. "
+                        f"If this is meant to be a test, add both 'test_name' and 'stages'."
+                    )
+                else:
+                    raise exceptions.BadSchemaError(
+                        f"Document {document_idx + 1} in '{self.path}' is missing 'test_name' or 'stages'"
+                    )
+
+            # Merge defaults into test spec if defaults were defined
+            if defaults_doc:
+                test_spec = deep_dict_merge(defaults_doc, test_spec)
 
             try:
                 for i in self._generate_items(test_spec):
                     i.initialise_fixture_attrs()
                     yield i
             except (TypeError, KeyError) as e:
+                # If there was one of these errors, we can probably figure out
+                # if the error is from a bad test layout by calling verify_tests
                 try:
                     verify_tests(test_spec, with_plugins=False)
                 except Exception as e2:
