@@ -272,7 +272,7 @@ stages:
         name: "Joe Bloggs"
 ```
 
-### Default document merge-down
+## Default document merge-down
 
 When multiple tests are defined in a single Tavern file, you may want to share common configuration across all tests
 without repeating it. Tavern supports this via the `is_defaults: true` flag in a top-level document. Any document with
