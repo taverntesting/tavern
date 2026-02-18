@@ -1,4 +1,6 @@
 import contextlib
+import logging
+import pathlib
 import json
 import sys
 import tempfile
@@ -13,6 +15,7 @@ from box import Box
 from tavern._core import exceptions
 from tavern._core.dict_util import _check_and_format_values, format_keys
 from tavern._core.loader import ForceIncludeToken
+from tavern._core.pytest.config import TavernInternalConfig, TestConfig
 from tavern._core.pytest.item import YamlItem
 from tavern._core.schema.extensions import validate_file_spec
 from tavern._core.strict_util import (
@@ -458,3 +461,31 @@ class TestStrictUtils:
         level = StrictLevel.from_options([section])
 
         assert level.option_for(section).setting == StrictSetting.UNSET
+
+
+def test_logs_test_duration(caplog, monkeypatch, request):
+    spec = {"test_name": "duration", "stages": [{"name": "stage"}]}
+    item = YamlItem.from_parent(
+        name="duration", parent=request.node, spec=spec, path=pathlib.Path("test.tavern.yaml")
+    )
+    item.funcargs = {}
+    item.fixturenames = []
+
+    test_config = TestConfig(
+        variables={},
+        strict=StrictLevel(),
+        follow_redirects=False,
+        stages=[],
+        tavern_internal=TavernInternalConfig(pytest_hook_caller=Mock(), backends={}),
+    )
+
+    monkeypatch.setattr("tavern._core.pytest.item.load_global_cfg", lambda _cfg: test_config)
+    monkeypatch.setattr("tavern._core.pytest.item.load_plugins", lambda _cfg: None)
+    monkeypatch.setattr("tavern._core.pytest.item.verify_tests", lambda _spec: None)
+    monkeypatch.setattr("tavern._core.pytest.item.run_test", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr("tavern._core.pytest.item.call_hook", lambda *_args, **_kwargs: None)
+
+    with caplog.at_level(logging.INFO, logger="tavern._core.pytest.item"):
+        item.runtest()
+
+    assert any("tavern.test_duration_seconds=" in record.message for record in caplog.records)
