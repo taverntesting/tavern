@@ -23,6 +23,21 @@ def indent_err_text(err: str) -> str:
 
 @dataclasses.dataclass
 class BaseResponse:
+    """Base for all response verifiers.
+
+    Subclasses must have an __init__ method like:
+
+    def __init__(
+        self,
+        client: Any,
+        name: str,
+        expected: TestConfig,
+        test_block_config: TestConfig,
+    ) -> None:
+        super().__init__(name, expected, test_block_config)
+        # ...other setup
+    """
+
     name: str
     expected: Any
     test_block_config: TestConfig
@@ -45,7 +60,7 @@ class BaseResponse:
         self.errors += [(msg % args)]
 
     @abstractmethod
-    def verify(self, response):
+    def verify(self, response) -> Mapping:
         """Verify response against expected values and returns any values that
         we wanted to save for use in future requests
 
