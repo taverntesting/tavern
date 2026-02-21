@@ -1,6 +1,6 @@
 # Plugins
 
-Since 0.10.0, Tavern has a simple plugin system which lets you change how
+Tavern has a simple plugin system which lets you change how
 requests are made. By default, backends are handled by:
 
 - HTTP: [requests](http://docs.python-requests.org/en/master/)
@@ -15,9 +15,10 @@ system can be used to override this default behaviour.
 
 The best way to introduce the concepts for making a plugin is by using an
 example. For this we will be looking at a plugin used to run tests against a
-local flask server called [tavern_flask](https://github.com/taverntesting/tavern-flask)
-or another plugin used to run tests against FastAPI/Starlette `TestClient`
-called [tavern_fastapi](https://github.com/zaghaghi/tavern-fastapi).
+local flask server called [tavern_flask](https://github.com/taverntesting/tavern-flask).
+
+There is another plugin used to run tests against FastAPI/Starlette `TestClient`
+called [tavern_fastapi](https://github.com/zaghaghi/tavern-fastapi) which may also be of interest.
 
 ## The entry point
 
@@ -65,15 +66,9 @@ Examples:
 
 If your plugin needs extra metadata in each test to be able to make a request,
 extra schema data can be added with a `schema` key in your entry point. This
-should be a dictionary which is just merged into
-the [base schema](https://github.com/taverntesting/tavern/blob/master/tavern/schemas/tests.schema.yaml)
+should be a dictionary which is merged into
+the [base schema](https://github.com/taverntesting/tavern/blob/master/tavern/_core/schema/tests.jsonschema.yaml)
 for tests.
-
-There is currently only one key supported in the schema dictionary,
-`initialisation`. This defines a top level key in each test which your session
-or request classes can use to set up the test (see the [mqtt
-documentation](https://taverntesting.github.io/documentation#testing-with-mqtt-messages)
-for an example of how this is used to connect to an MQTT broker).
 
 Examples:
 
@@ -84,6 +79,9 @@ Examples:
 - [tavern-flask](https://github.com/taverntesting/tavern-flask/blob/master/tavern_flask/schema.yaml)
   just requires a single key that points to the flask application that will be
   used to create a test client (see below).
+- The [gRPC](https://github.com/taverntesting/tavern/blob/master/tavern/_plugins/grpc/schema.yaml) backend defines 
+  standard connection options for gRPC, such as the host and port to connect to, as well as extra options for
+  connection metadata and the protobuf source or module to load.
 
 ## Session type
 
@@ -121,6 +119,7 @@ Examples:
   is fairly simple, it just creates a flask test client from the `flask::app`
   defined for the test (see schema documentation above) and dumps the body data
   for later use when making the request.
+- The GraphQL backend initialises a new asyncio loop to run subscriptions in.
 
 ## Request
 

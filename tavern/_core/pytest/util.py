@@ -206,7 +206,17 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
 
 
 def _load_global_backends(pytest_config: pytest.Config) -> dict[str, Any]:
-    """Load which backend should be used"""
+    """Load which backend should be used
+
+    If a plugin option is passed like '--tavern-extra-backends=my_backend' then during
+    plugin loading it will attempt to load whatever the user has registered as the
+    default backend for 'my_backend'.
+
+    If it's passed like `--tavern-extra-backends=my_backend=my_plugin` then it will
+    override the default backend for 'my_backend' to use 'my_plugin' instead.
+
+    See 'is_plugin_backend_enabled' in plugins.py for more details
+    """
     backends: dict[str, str | None] = {
         b: get_option_generic(pytest_config, f"tavern-{b}-backend", None)
         for b in TestConfig.backends()
