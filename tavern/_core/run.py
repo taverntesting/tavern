@@ -280,7 +280,9 @@ def _calculate_stage_strictness(
         response_block = stage.get(response_block_name)
 
         if response_block is not None:
-            if p.plugin.has_multiple_responses and isinstance(response_block, list):
+            if getattr(p.plugin, "has_multiple_responses", None) and isinstance(
+                response_block, list
+            ):
                 # Multiple responses - check each one for strict
                 for response in response_block:
                     if response.get("strict", None) is not None:
