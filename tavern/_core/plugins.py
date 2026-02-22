@@ -392,7 +392,6 @@ def get_verifiers(
             stage["name"],
             plugin_expected,
             test_block_config,
-            has_multiple_responses=p.plugin.has_multiple_responses,
         )
         verifiers.append(verifier)
 

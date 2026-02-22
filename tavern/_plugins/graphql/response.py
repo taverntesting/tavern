@@ -27,7 +27,6 @@ class GraphQLResponse(CommonResponse):
         name: str,
         expected: dict,
         test_block_config,
-        has_multiple_responses: bool = False,
     ):
         """Initialize GraphQL response validator.
 
@@ -71,7 +70,7 @@ class GraphQLResponse(CommonResponse):
             name,
             expected,
             test_block_config,
-            has_multiple_responses=has_multiple_responses,
+            multiple_responses_block="graphql_responses",
         )
 
     def _validate_graphql_response_structure(self, body: Any) -> None:

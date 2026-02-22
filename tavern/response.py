@@ -42,7 +42,7 @@ class BaseResponse:
     expected: Any
     test_block_config: TestConfig
     response: Any | None = None
-    has_multiple_responses: bool = False
+    multiple_responses_block: str | None = None
 
     validate_functions: list[Any] = dataclasses.field(init=False, default_factory=list)
     errors: list[str] = dataclasses.field(init=False, default_factory=list)
@@ -146,16 +146,13 @@ class BaseResponse:
                 )
 
         # Check for multiple responses if the plugin supports them
-        if self.has_multiple_responses:
+        if self.multiple_responses_block:
+            responses_block = response_block.get(self.multiple_responses_block, {})
             # Look for a list of responses (e.g., mqtt_responses, graphql_responses)
-            # The key is inferred from the response block name + "_responses"
-            # TODO: pass through the response block name here and add a 's' onto it?
-            #  currently this sort of depends on the old hardcoded behaviour for mqtt_responses/graphql_responses
-            for key in response_block:
-                if key.endswith("_responses") and isinstance(response_block[key], list):
-                    for response in response_block[key]:
-                        check_ext_functions(response.get("verify_response_with", None))
-                    return
+            if isinstance(responses_block, list):
+                for response in responses_block:
+                    check_ext_functions(response.get("verify_response_with", None))
+                return
             # If we found the key but it wasn't a list, fall through to check normally
 
         # Default: check the top-level verify_response_with

@@ -50,14 +50,12 @@ class GRPCResponse(BaseResponse):
         name: str,
         expected: _GRPCExpected | Mapping,
         test_block_config: TestConfig,
-        has_multiple_responses: bool = False,
     ) -> None:
         check_expected_keys({"body", "status", "details", "save"}, expected)
         super().__init__(
             name,
             expected,
             test_block_config,
-            has_multiple_responses=has_multiple_responses,
         )
 
         self._client = client

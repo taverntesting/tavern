@@ -246,18 +246,39 @@ Examples:
   `Response` object is slightly different from the requests one, some conversion
   has to be done on the data.
 
-## Multiple Responses
+## Advanced - Multiple Responses
 
 If your plugin supports multiple responses (e.g., subscribing to multiple MQTT topics
-or GraphQL subscriptions), you can set `has_multiple_responses = True` in your plugin.
+or GraphQL subscriptions), you can:
+
+1. Set `has_multiple_responses = True` in your plugin.
+2. In `get_expected_from_request`, return a list of expected responses instead of a single one, under a new block name
+   that is distinct from the `response_block_name`. An example from the MQTT plugin:
+    ```python
+    expected = {"mqtt_responses": []}
+    if isinstance(response_block, dict):
+        response_block = [response_block]
+    
+    for response in response_block:
+        # format so we can subscribe to the right topic
+        f_expected = format_keys(response, test_block_config.variables)
+        mqtt_client = session
+        mqtt_client.subscribe(f_expected["topic"], f_expected.get("qos", 1))
+        expected["mqtt_responses"].append(f_expected)
+
+    return expected
+    ```
+3. When calling `super().__init__(...)` in your `response_type`, pass `multiple_responses_block="<name_of_block>"` where
+   `<name_of_block>` is the name of the block you used in step 2.
+
 This tells Tavern to expect a list of responses instead of a single response block.
 
 When enabled, Tavern will:
 
-- Look for a response block named `{response_block_name}s` (e.g., `mqtt_responses`,
-  `graphql_responses`) which should be a list
-- Check each response in the list for `verify_response_with` functions
-- Check each response in the list for `strict` settings
+- Check each response in the list for `strict` settings per response instead of for the whole list
+- Look for each of these multiple responses when checking for
+  any [external validation functions](./core_concepts/external_code.md#checking-the-response-using-external-functions)
+  and check each response in the list for `verify_response_with` functions.
 
 If your plugin does not support multiple responses, set `has_multiple_responses = False`
-(or omit it - it defaults to `False`).
+(or omit it - it defaults to `False`) and don't pass `multiple_responses_block` to `super().__init__`.

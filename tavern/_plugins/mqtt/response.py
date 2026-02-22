@@ -36,13 +36,12 @@ class MQTTResponse(BaseResponse):
         name: str,
         expected: TestConfig,
         test_block_config: TestConfig,
-        has_multiple_responses: bool = False,  # FIXME: REmove from here, pass it up explicitly from the response type, this doesnt need to be passed through, it only needs to be consumed by BaseResponse
     ) -> None:
         super().__init__(
             name,
             expected,
             test_block_config,
-            has_multiple_responses=has_multiple_responses,
+            multiple_responses_block="mqtt_responses",
         )
 
         self._client = client
