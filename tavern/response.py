@@ -42,6 +42,7 @@ class BaseResponse:
     expected: Any
     test_block_config: TestConfig
     response: Any | None = None
+    has_multiple_responses: bool = False
 
     validate_functions: list[Any] = dataclasses.field(init=False, default_factory=list)
     errors: list[str] = dataclasses.field(init=False, default_factory=list)
@@ -144,14 +145,21 @@ class BaseResponse:
                     "Badly formatted 'verify_response_with' block"
                 )
 
-        if mqtt_responses := response_block.get("mqtt_responses"):
-            for mqtt_response in mqtt_responses:
-                check_ext_functions(mqtt_response.get("verify_response_with", None))
-        elif graphql_responses := response_block.get("graphql_responses"):
-            for graphql_response in graphql_responses:
-                check_ext_functions(graphql_response.get("verify_response_with", None))
-        else:
-            check_ext_functions(response_block.get("verify_response_with", None))
+        # Check for multiple responses if the plugin supports them
+        if self.has_multiple_responses:
+            # Look for a list of responses (e.g., mqtt_responses, graphql_responses)
+            # The key is inferred from the response block name + "_responses"
+            # TODO: pass through the response block name here and add a 's' onto it?
+            #  currently this sort of depends on the old hardcoded behaviour for mqtt_responses/graphql_responses
+            for key in response_block:
+                if key.endswith("_responses") and isinstance(response_block[key], list):
+                    for response in response_block[key]:
+                        check_ext_functions(response.get("verify_response_with", None))
+                    return
+            # If we found the key but it wasn't a list, fall through to check normally
+
+        # Default: check the top-level verify_response_with
+        check_ext_functions(response_block.get("verify_response_with", None))
 
         def check_deprecated_validate(name):
             nfuncs = len(self.validate_functions)

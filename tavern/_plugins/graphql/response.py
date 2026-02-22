@@ -21,7 +21,14 @@ class GraphQLResponse(CommonResponse):
 
     session: GraphQLClient
 
-    def __init__(self, session, name: str, expected: dict, test_block_config):
+    def __init__(
+        self,
+        session,
+        name: str,
+        expected: dict,
+        test_block_config,
+        has_multiple_responses: bool = False,
+    ):
         """Initialize GraphQL response validator.
 
         Args:
@@ -59,7 +66,13 @@ class GraphQLResponse(CommonResponse):
 
                 expected["save"].update(save_block)
 
-        super().__init__(session, name, expected, test_block_config)
+        super().__init__(
+            session,
+            name,
+            expected,
+            test_block_config,
+            has_multiple_responses=has_multiple_responses,
+        )
 
     def _validate_graphql_response_structure(self, body: Any) -> None:
         """Validate GraphQL response structure: data or errors top-level

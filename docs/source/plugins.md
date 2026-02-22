@@ -6,7 +6,7 @@ requests are made. By default, backends are handled by:
 - HTTP: [requests](http://docs.python-requests.org/en/master/)
 - MQTT: [paho-mqtt](https://www.eclipse.org/paho/clients/python/docs/)
 - gRPC: [grpcio](https://grpc.github.io/grpc/python/)
-- GraphQL: [gql](https://github.com/graphql-python/gql) 
+- GraphQL: [gql](https://github.com/graphql-python/gql)
 
 However, there are some situations where you might not want to run tests against
 something other than a live server, or maybe you just want to use curl to
@@ -79,7 +79,7 @@ Examples:
 - [tavern-flask](https://github.com/taverntesting/tavern-flask/blob/master/tavern_flask/schema.yaml)
   just requires a single key that points to the flask application that will be
   used to create a test client (see below).
-- The [gRPC](https://github.com/taverntesting/tavern/blob/master/tavern/_plugins/grpc/schema.yaml) backend defines 
+- The [gRPC](https://github.com/taverntesting/tavern/blob/master/tavern/_plugins/grpc/schema.yaml) backend defines
   standard connection options for gRPC, such as the host and port to connect to, as well as extra options for
   connection metadata and the protobuf source or module to load.
 
@@ -245,3 +245,19 @@ Examples:
   just reuses functionality from the base verifier again. Because the flask
   `Response` object is slightly different from the requests one, some conversion
   has to be done on the data.
+
+## Multiple Responses
+
+If your plugin supports multiple responses (e.g., subscribing to multiple MQTT topics
+or GraphQL subscriptions), you can set `has_multiple_responses = True` in your plugin.
+This tells Tavern to expect a list of responses instead of a single response block.
+
+When enabled, Tavern will:
+
+- Look for a response block named `{response_block_name}s` (e.g., `mqtt_responses`,
+  `graphql_responses`) which should be a list
+- Check each response in the list for `verify_response_with` functions
+- Check each response in the list for `strict` settings
+
+If your plugin does not support multiple responses, set `has_multiple_responses = False`
+(or omit it - it defaults to `False`).

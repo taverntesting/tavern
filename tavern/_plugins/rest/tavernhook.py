@@ -22,6 +22,7 @@ class TavernRestPlugin(PluginHelperBase):
     request_block_name = "request"
 
     schema: dict
+    has_multiple_responses = False
 
     @staticmethod
     def get_expected_from_request(

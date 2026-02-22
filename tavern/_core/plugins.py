@@ -41,6 +41,7 @@ class _TavernPlugin(Protocol):
     response_block_name: str
     request_block_name: str
     schema: Mapping
+    has_multiple_responses: bool
 
     def get_expected_from_request(
         self, response_block: BaseResponse, test_block_config: TestConfig, session: Any
@@ -76,6 +77,8 @@ def is_valid_reqresp_plugin(ext: stevedore.extension.Extension) -> bool:
         "response_block_name",
         # dictionary with pykwalify schema
         "schema",
+        # whether plugin supports multiple responses (e.g., graphql_responses, mqtt_responses)
+        "has_multiple_responses",
     ]
 
     plugin: _TavernPlugin = ext.plugin
@@ -385,7 +388,11 @@ def get_verifiers(
         plugin_expected = expected[p.name]
 
         verifier = p.plugin.verifier_type(
-            session, stage["name"], plugin_expected, test_block_config
+            session,
+            stage["name"],
+            plugin_expected,
+            test_block_config,
+            has_multiple_responses=p.plugin.has_multiple_responses,
         )
         verifiers.append(verifier)
 

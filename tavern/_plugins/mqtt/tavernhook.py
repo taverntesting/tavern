@@ -45,6 +45,7 @@ def get_expected_from_request(
 
 verifier_type = MQTTResponse
 response_block_name = "mqtt_response"
+has_multiple_responses = True
 
 schema_path: str = join(abspath(dirname(__file__)), "jsonschema.yaml")
 with open(schema_path, encoding="utf-8") as schema_file:

@@ -16,6 +16,7 @@ from tavern._core.plugins import (
     get_extra_sessions,
     get_request_type,
     get_verifiers,
+    load_plugins,
 )
 from tavern._core.strict_util import StrictLevel
 
@@ -271,28 +272,32 @@ def _calculate_stage_strictness(
         logger.debug("Setting stage level strict setting: %s", new_option)
         return new_option
 
-    if stage.get("response", {}).get("strict", None) is not None:
-        stage_strictness_set = stage_options = update_stage_options(
-            stage["response"]["strict"]
-        )
+    # Load plugins to get response block names and multiple response support
+    plugins = load_plugins(test_block_config)
 
-    mqtt_response = stage.get("mqtt_response", None)
-    if mqtt_response is not None:
-        if isinstance(mqtt_response, dict):
-            if mqtt_response.get("strict", None) is not None:
-                stage_strictness_set = stage_options = update_stage_options(
-                    stage["mqtt_response"]["strict"]
-                )
-        elif isinstance(mqtt_response, list):
-            for response in mqtt_response:
-                if response.get("strict", None) is not None:
+    for p in plugins:
+        response_block_name = p.plugin.response_block_name
+        has_multiple = p.plugin.has_multiple_responses
+        response_block = stage.get(response_block_name)
+
+        if response_block is not None:
+            if has_multiple and isinstance(response_block, list):
+                # Multiple responses - check each one for strict
+                for response in response_block:
+                    if response.get("strict", None) is not None:
+                        stage_strictness_set = stage_options = update_stage_options(
+                            response["strict"]
+                        )
+                        break
+            elif isinstance(response_block, dict):
+                if response_block.get("strict", None) is not None:
                     stage_strictness_set = stage_options = update_stage_options(
-                        response["strict"]
+                        response_block["strict"]
                     )
-        else:
-            raise exceptions.BadSchemaError(
-                f"mqtt_response was invalid type {type(mqtt_response)}"
-            )
+            else:
+                raise exceptions.BadSchemaError(
+                    f"{response_block_name} was invalid type {type(response_block)}"
+                )
 
     if stage_options is not None:
         if stage_options is True:

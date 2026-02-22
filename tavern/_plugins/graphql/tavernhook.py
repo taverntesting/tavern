@@ -20,6 +20,7 @@ request_type = GraphQLRequest
 request_block_name = "graphql_request"
 verifier_type = GraphQLResponse
 response_block_name = "graphql_response"
+has_multiple_responses = True
 
 
 def get_expected_from_request(
