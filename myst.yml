@@ -28,9 +28,11 @@ project:
         - file: docs/source/graphql.md
         - file: docs/source/grpc.md
         - file: docs/source/mqtt.md
+    - file: docs/source/plugins.md
+      children:
+        - file: docs/source/plugins/custom.md
     - file: docs/source/debugging.md
     - file: docs/source/cookbook.md
-    - file: docs/source/plugins.md
     - file: CONTRIBUTING.md
     - file: CHANGELOG.md
 

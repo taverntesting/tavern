@@ -9,16 +9,20 @@ on:
   pull_request:
     branches:
       - master
-      - feat/3.0-release
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   simple-checks:
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
@@ -26,6 +30,7 @@ jobs:
 
   unit-tests:
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     needs: simple-checks
 
     env:
@@ -37,16 +42,16 @@ jobs:
         python-version: ["3.11", "3.12", "3.13", "3.14"]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         env:
           cache-name: cache-${TOXENV}
         with:
           path: .tox
           key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml') }}-${{ matrix.python-version }}
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}-${{ matrix.python-version }}
@@ -63,6 +68,7 @@ jobs:
 
   integration-tests:
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     needs: unit-tests
 
     strategy:
@@ -93,16 +99,16 @@ jobs:
       - uses: docker/setup-buildx-action@v3
         continue-on-error: true
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         env:
           cache-name: cache-${{ matrix.TOXENV }}
         with:
           path: .tox
           key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml') }}
 
-      - uses: actions/cache@v4
+      - uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
@@ -110,7 +116,7 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: "3.11"
 
@@ -127,3 +133,29 @@ jobs:
         run: |
           uv sync --all-extras --all-packages
           uvx tox -c ${TOXCFG} -e ${TOXENV}
+
+  custom-backend-tests:
+    name: Custom Backend Tests
+    needs: unit-tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Bats and bats libs
+        id: setup-bats
+        uses: bats-core/bats-action@3.0.1
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+
+      - name: Run tests
+        env:
+          BATS_LIB_PATH: ${{ steps.setup-bats.outputs.lib-path }}
+        working-directory: ./example/custom_backend
+        run: ./run_tests.sh

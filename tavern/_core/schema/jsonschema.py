@@ -112,7 +112,7 @@ def verify_jsonschema(to_verify: Mapping, schema: Mapping) -> None:
     """Verify a generic file against a given jsonschema
 
     Args:
-        to_verify: Filename of source tests to check
+        to_verify: Test in dictionary form
         schema: Schema to verify against
 
     Raises:

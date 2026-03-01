@@ -58,10 +58,28 @@ class StrictOption:
 
 
 def validate_and_parse_option(key: str) -> StrictOption:
+    """Parse and validate a strict option configuration string.
+
+    Args:
+        key: String in format "section[:setting]" where:
+            section: One of "json", "headers", or "redirect_query_params"
+            setting: Optional "on", "off" or "list_any_order"
+
+    Returns:
+        StrictOption containing the parsed section and setting
+
+    Raises:
+        InvalidConfigurationException: If the key format is invalid
+    """
     regex = re.compile(
-        "(?P<section>{sections})(:(?P<setting>{switches}))?".format(
-            sections="|".join(valid_keys), switches="|".join(valid_switches)
-        )
+        r"""
+        (?P<section>{sections})      # The section name (json/headers/redirect_query_params)
+        (?:                          # Optional non-capturing group for setting
+            :                        # Literal colon separator
+            (?P<setting>{switches})  # The setting value (on/off/list_any_order)
+        )?                          # End optional group
+        """.format(sections="|".join(valid_keys), switches="|".join(valid_switches)),
+        re.X,
     )
 
     match = regex.fullmatch(key)

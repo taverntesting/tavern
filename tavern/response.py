@@ -23,10 +23,26 @@ def indent_err_text(err: str) -> str:
 
 @dataclasses.dataclass
 class BaseResponse:
+    """Base for all response verifiers.
+
+    Subclasses must have an __init__ method like:
+
+    def __init__(
+        self,
+        client: Any,
+        name: str,
+        expected: TestConfig,
+        test_block_config: TestConfig,
+    ) -> None:
+        super().__init__(name, expected, test_block_config)
+        # ...other setup
+    """
+
     name: str
     expected: Any
     test_block_config: TestConfig
     response: Any | None = None
+    multiple_responses_block: str | None = None
 
     validate_functions: list[Any] = dataclasses.field(init=False, default_factory=list)
     errors: list[str] = dataclasses.field(init=False, default_factory=list)
@@ -45,7 +61,7 @@ class BaseResponse:
         self.errors += [(msg % args)]
 
     @abstractmethod
-    def verify(self, response):
+    def verify(self, response) -> Mapping:
         """Verify response against expected values and returns any values that
         we wanted to save for use in future requests
 
@@ -129,14 +145,18 @@ class BaseResponse:
                     "Badly formatted 'verify_response_with' block"
                 )
 
-        if mqtt_responses := response_block.get("mqtt_responses"):
-            for mqtt_response in mqtt_responses:
-                check_ext_functions(mqtt_response.get("verify_response_with", None))
-        elif graphql_responses := response_block.get("graphql_responses"):
-            for graphql_response in graphql_responses:
-                check_ext_functions(graphql_response.get("verify_response_with", None))
-        else:
-            check_ext_functions(response_block.get("verify_response_with", None))
+        # Check for multiple responses if the plugin supports them
+        if self.multiple_responses_block:
+            responses_block = response_block.get(self.multiple_responses_block, {})
+            # Look for a list of responses (e.g., mqtt_responses, graphql_responses)
+            if isinstance(responses_block, list):
+                for response in responses_block:
+                    check_ext_functions(response.get("verify_response_with", None))
+                return
+            # If we found the key but it wasn't a list, fall through to check normally
+
+        # Default: check the top-level verify_response_with
+        check_ext_functions(response_block.get("verify_response_with", None))
 
         def check_deprecated_validate(name):
             nfuncs = len(self.validate_functions)

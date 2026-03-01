@@ -37,7 +37,12 @@ class MQTTResponse(BaseResponse):
         expected: TestConfig,
         test_block_config: TestConfig,
     ) -> None:
-        super().__init__(name, expected, test_block_config)
+        super().__init__(
+            name,
+            expected,
+            test_block_config,
+            multiple_responses_block="mqtt_responses",
+        )
 
         self._client = client
 

@@ -34,9 +34,15 @@ class CommonResponse(BaseResponse):
         expected: dict[str, Any],
         test_block_config: TestConfig,
         default_status_code: int = 200,
+        multiple_responses_block: str | None = None,
     ) -> None:
         defaults = {"status_code": default_status_code}
-        super().__init__(name, deep_dict_merge(defaults, expected), test_block_config)
+        super().__init__(
+            name,
+            deep_dict_merge(defaults, expected),
+            test_block_config,
+            multiple_responses_block=multiple_responses_block,
+        )
 
         def check_code(code: int) -> None:
             if int(code) not in _codes:

@@ -5,6 +5,7 @@ from typing import Any, Optional, TypeVar, Union
 
 import pytest
 
+from tavern._core import exceptions
 from tavern._core.dict_util import format_keys, get_tavern_box
 from tavern._core.general import load_global_config
 from tavern._core.pytest.config import TavernInternalConfig, TestConfig
@@ -76,6 +77,13 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
         default=False,
         action="store_true",
     )
+    parser_addoption(
+        "--tavern-extra-backends",
+        help="list of extra backends to register",
+        default="",
+        type=str,
+        action="store",
+    )
 
 
 def add_ini_options(parser: pytest.Parser) -> None:
@@ -90,13 +98,19 @@ def add_ini_options(parser: pytest.Parser) -> None:
         default=[],
     )
     parser.addini(
-        "tavern-http-backend", help="Which http backend to use", default="requests"
+        "tavern-http-backend",
+        help="Which http backend to use",
+        default="requests",
     )
     parser.addini(
-        "tavern-mqtt-backend", help="Which mqtt backend to use", default="paho-mqtt"
+        "tavern-mqtt-backend",
+        help="Which mqtt backend to use",
+        default="paho-mqtt",
     )
     parser.addini(
-        "tavern-grpc-backend", help="Which grpc backend to use", default="grpc"
+        "tavern-grpc-backend",
+        help="Which grpc backend to use",
+        default="grpc",
     )
     parser.addini(
         "tavern-graphql-backend",
@@ -132,6 +146,12 @@ def add_ini_options(parser: pytest.Parser) -> None:
         help="Set up a simple logger for tavern initialisation. Only for internal use and debugging, may be removed in future with no warning.",
         type="bool",
         default=False,
+    )
+    parser.addini(
+        "tavern-extra-backends",
+        help="list of extra backends to register",
+        type="args",
+        default=[],
     )
 
 
@@ -186,11 +206,38 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
 
 
 def _load_global_backends(pytest_config: pytest.Config) -> dict[str, Any]:
-    """Load which backend should be used"""
-    return {
+    """Load which backend should be used
+
+    If a plugin option is passed like '--tavern-extra-backends=my_backend' then during
+    plugin loading it will attempt to load whatever the user has registered as the
+    default backend for 'my_backend'.
+
+    If it's passed like `--tavern-extra-backends=my_backend=my_plugin` then it will
+    override the default backend for 'my_backend' to use 'my_plugin' instead.
+
+    See 'is_plugin_backend_enabled' in plugins.py for more details
+    """
+    backends: dict[str, str | None] = {
         b: get_option_generic(pytest_config, f"tavern-{b}-backend", None)
         for b in TestConfig.backends()
     }
+
+    extra_backends: list[str] = get_option_generic(
+        pytest_config, "tavern-extra-backends", []
+    )
+    for backend in extra_backends:
+        split = backend.split("=")
+        if len(split) == 1:
+            backends[split[0]] = None
+        elif len(split) == 2:
+            key, value = split
+            backends[key] = value
+        else:
+            raise exceptions.BadSchemaError(
+                f"extra backends must be in the form 'name' or 'name=value', got '{backend}'"
+            )
+
+    return backends
 
 
 def _load_global_strictness(pytest_config: pytest.Config) -> StrictLevel:
@@ -224,11 +271,24 @@ def get_option_generic(
     use = default
 
     # Middle priority
-    if pytest_config.getini(ini_flag) is not None:
-        use = pytest_config.getini(ini_flag)
+    if ini := pytest_config.getini(ini_flag):
+        if isinstance(default, list):
+            if isinstance(ini, list):
+                use = default[:]  # type:ignore
+                use.extend(ini)  # type:ignore
+            else:
+                raise ValueError(
+                    f"Expected list for {ini_flag} option, got {ini} of type {type(ini)}"
+                )
+        else:
+            use = ini
 
     # Top priority
-    if pytest_config.getoption(cli_flag) is not None:
-        use = pytest_config.getoption(cli_flag)
+    if cli := pytest_config.getoption(cli_flag):
+        if isinstance(default, list):
+            cli = cli.split(",")
+            use.extend(cli)  # type:ignore
+        else:
+            use = cli
 
     return use
