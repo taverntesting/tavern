@@ -17,6 +17,7 @@ concurrency:
 jobs:
   simple-checks:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v5
@@ -29,6 +30,7 @@ jobs:
 
   unit-tests:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     needs: simple-checks
 
     env:
@@ -66,6 +68,7 @@ jobs:
 
   integration-tests:
     runs-on: ubuntu-24.04
+    timeout-minutes: 30
     needs: unit-tests
 
     strategy:
@@ -135,6 +138,7 @@ jobs:
     name: Custom Backend Tests
     needs: unit-tests
     runs-on: ubuntu-latest
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v5
