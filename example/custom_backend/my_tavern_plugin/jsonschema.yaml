@@ -1,0 +1,39 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+
+title: file touch schema
+description: Schema for touching files
+
+###
+
+definitions:
+  touch_file:
+    type: object
+    description: touch a file
+    additionalProperties: false
+    required:
+      - filename
+
+    properties:
+      filename:
+        type: string
+        description: Name of file to touch
+
+  file_exists:
+    type: object
+    description: name of file which should exist
+    additionalProperties: false
+    required:
+      - filename
+
+    properties:
+      filename:
+        type: string
+        description: Name of file to check for
+
+  stage:
+    properties:
+      touch_file:
+        $ref: "#/definitions/touch_file"
+
+      file_exists:
+        $ref: "#/definitions/file_exists"

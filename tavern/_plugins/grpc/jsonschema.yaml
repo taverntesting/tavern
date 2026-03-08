@@ -9,6 +9,59 @@ additionalProperties: false
 required:
   - grpc
 
+definitions:
+  grpc_request:
+    type: object
+    required:
+      - service
+    properties:
+      host:
+        type: string
+
+      service:
+        type: string
+
+      body:
+        type: object
+
+      json:
+        type: object
+
+      retain:
+        type: boolean
+
+  grpc_response:
+    type: object
+    properties:
+      status:
+        oneOf:
+          - type: string
+          - type: integer
+
+      details:
+        type: object
+
+      proto_body:
+        type: object
+
+      timeout:
+        type: number
+
+      verify_response_with:
+        oneOf:
+          - $ref: "#/definitions/verify_block"
+          - type: array
+            items:
+              $ref: "#/definitions/verify_block"
+
+  stage:
+    properties:
+      grpc_request:
+        $ref: "#/definitions/grpc_request"
+
+      grpc_response:
+        $ref: "#/definitions/grpc_response"
+
 properties:
   grpc:
     type: object
