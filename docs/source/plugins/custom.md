@@ -35,7 +35,3 @@ Or the equivalent in pyproject.toml or pytest.ini. Note:
 This is because Tavern by default only tries to load "grpc", "http" and "mqtt" backends. The flag registers the custom
 backend with Tavern, which can then tell [stevedore](https://github.com/openstack/stevedore) to load the plugin from the
 entrypoint.
-
-## Future work
-
-- Currently only the builtin tavern backends can have multiple responses to a request.
