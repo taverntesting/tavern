@@ -1,7 +1,6 @@
 import concurrent
 import concurrent.futures
 import contextlib
-import itertools
 import json
 import logging
 import time
@@ -78,9 +77,10 @@ class MQTTResponse(BaseResponse):
         # Get into class with metadata attached
         expected = self.expected["mqtt_responses"]
 
-        by_topic = {
-            m: list(v) for m, v in itertools.groupby(expected, lambda x: x["topic"])
-        }
+        # Group by topic using a dict of lists, preserving ALL expectations
+        by_topic: dict[str, list[dict]] = {}
+        for item in expected:
+            by_topic.setdefault(item["topic"], []).append(item)
 
         correct_messages: list[_ReturnedMessage] = []
         warnings: list[str] = []
