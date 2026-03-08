@@ -6,6 +6,7 @@ import pathlib
 from collections.abc import Mapping, MutableMapping
 from contextlib import ExitStack
 from copy import deepcopy
+from typing import Any
 
 import box
 
@@ -256,17 +257,24 @@ def _calculate_stage_strictness(
     Can be overridden per stage, or per test
 
     Priority is global (see pytest _core.util file) <= test <= stage
+
+    Todo: Does this actually need to enforce one strictness for all responses? seems like it could be done for each one?
+
+    Raises:
+        exceptions.DuplicateStrictError: If strictness is set for multiple responses.
     """
-    stage_options = None
+    # What to use as the strictness for this stage
+    stage_strictness: str | bool | None = None
     new_strict = test_block_config.strict
 
     if test_spec.get("strict", None) is not None:
-        stage_options = test_spec["strict"]
-        logger.debug("Getting test level strict setting: %s", stage_options)
+        stage_strictness = test_spec["strict"]
+        logger.debug("Getting test level strict setting: %s", stage_strictness)
 
-    stage_strictness_set = None
+    # Whether the strictness has been set for a particular response, out of possible multiple responses.
+    stage_strictness_set: Any | None = None
 
-    def update_stage_options(new_option):
+    def update_stage_options(new_option: str) -> str:
         if stage_strictness_set:
             raise exceptions.DuplicateStrictError
         logger.debug("Setting stage level strict setting: %s", new_option)
@@ -283,16 +291,21 @@ def _calculate_stage_strictness(
             if getattr(p.plugin, "has_multiple_responses", None) and isinstance(
                 response_block, list
             ):
-                # Multiple responses - check each one for strict
-                for response in response_block:
-                    if response.get("strict", None) is not None:
-                        stage_strictness_set = stage_options = update_stage_options(
-                            response["strict"]
-                        )
-                        break
+                strict_values = [
+                    response["strict"]
+                    for response in response_block
+                    if response.get("strict", None) is not None
+                ]
+                if len(strict_values) > 1:
+                    raise exceptions.DuplicateStrictError
+
+                if strict_values:
+                    stage_strictness_set = stage_strictness = update_stage_options(
+                        strict_values[0]
+                    )
             elif isinstance(response_block, dict):
                 if response_block.get("strict", None) is not None:
-                    stage_strictness_set = stage_options = update_stage_options(
+                    stage_strictness_set = stage_strictness = update_stage_options(
                         response_block["strict"]
                     )
             else:
@@ -300,13 +313,13 @@ def _calculate_stage_strictness(
                     f"{response_block_name} was invalid type {type(response_block)}"
                 )
 
-    if stage_options is not None:
-        if stage_options is True:
+    if stage_strictness is not None:
+        if stage_strictness is True:
             new_strict = StrictLevel.all_on()
-        elif stage_options is False:
+        elif stage_strictness is False:
             new_strict = StrictLevel.all_off()
         else:
-            new_strict = StrictLevel.from_options(stage_options)
+            new_strict = StrictLevel.from_options(stage_strictness)
     else:
         logger.debug("Global default strictness used for this stage")
 
