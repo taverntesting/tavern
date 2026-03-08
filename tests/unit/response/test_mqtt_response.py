@@ -3,7 +3,10 @@ import re
 import threading
 from unittest.mock import Mock, patch
 
+import hypothesis
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from tavern._core import exceptions
 from tavern._core.loader import ANYTHING
@@ -197,8 +200,12 @@ class TestResponse:
         assert len(verifier.received_messages) == 1
         assert verifier.received_messages[0].topic == fake_message.topic
 
-    @pytest.mark.parametrize("r", range(10))
-    def test_multiple_messages(self, includes, r):
+    @given(st.permutations([0, 1, 2]))
+    @settings(
+        max_examples=10,
+        suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+    )
+    def test_multiple_messages(self, includes, perm: list[int]):
         """One wrong message, two correct ones"""
 
         expected = [
@@ -210,8 +217,8 @@ class TestResponse:
         fake_message_good_2 = FakeMessage(expected[1])
         fake_message_bad = FakeMessage({"topic": "/a/b/c", "payload": "goodbye"})
 
-        messages = [fake_message_bad, fake_message_good_1, fake_message_good_2]
-        random.shuffle(messages)
+        base_messages = [fake_message_bad, fake_message_good_1, fake_message_good_2]
+        messages = [base_messages[i] for i in perm]
 
         verifier = self._get_fake_verifier(
             expected,
@@ -226,8 +233,12 @@ class TestResponse:
         assert fake_message_good_1.topic in received_topics
         assert fake_message_good_2.topic in received_topics
 
-    @pytest.mark.parametrize("r", range(10))
-    def test_different_order(self, includes, r):
+    @given(st.permutations([0, 1]))
+    @settings(
+        max_examples=10,
+        suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+    )
+    def test_different_order(self, includes, perm):
         """Messages coming in a different order"""
 
         expected = [
@@ -238,8 +249,8 @@ class TestResponse:
         fake_message_good_1 = FakeMessage(expected[0])
         fake_message_good_2 = FakeMessage(expected[1])
 
-        messages = [fake_message_good_2, fake_message_good_1]
-        random.shuffle(messages)
+        base_messages = [fake_message_good_1, fake_message_good_2]
+        messages = [base_messages[i] for i in perm]
 
         verifier = self._get_fake_verifier(expected, messages, includes)
 
@@ -269,8 +280,12 @@ class TestResponse:
             ),
         ),
     )
-    @pytest.mark.parametrize("r", range(10))
-    def test_same_topic(self, includes, r, payload):
+    @given(st.permutations([0, 1]))
+    @settings(
+        max_examples=10,
+        suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+    )
+    def test_same_topic(self, includes, payload, perm):
         """Messages coming in a different order"""
 
         expected = [
@@ -281,8 +296,8 @@ class TestResponse:
         fake_message_good_1 = FakeMessage(expected[0])
         fake_message_good_2 = FakeMessage(expected[1])
 
-        messages = [fake_message_good_2, fake_message_good_1]
-        random.shuffle(messages)
+        base_messages = [fake_message_good_1, fake_message_good_2]
+        messages = [base_messages[i] for i in perm]
 
         verifier = self._get_fake_verifier(expected, messages, includes)
 
