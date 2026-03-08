@@ -146,8 +146,7 @@ class BaseResponse:
                 )
 
         # Check for multiple responses if the plugin supports them
-        if self.multiple_responses_block:
-            responses_block = response_block.get(self.multiple_responses_block, {})
+        if responses_block := response_block.get(self.multiple_responses_block, {}):
             # Look for a list of responses (e.g., mqtt_responses, graphql_responses)
             if isinstance(responses_block, list):
                 for response in responses_block:
