@@ -69,6 +69,8 @@ request_block_name = "touch_file"
 verifier_type = Response
 response_block_name = "file_exists"
 
+has_multiple_responses = False
+
 
 def get_expected_from_request(
     response_block: Union[dict, Iterable[dict]],
