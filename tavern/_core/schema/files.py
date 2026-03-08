@@ -58,6 +58,9 @@ class SchemaCache:
                     if key not in plugin_schema:
                         continue
 
+                    if key not in base_schema:
+                        base_schema[key] = box.Box()
+
                     value = box.Box(plugin_schema[key])
                     value.merge_update(base_schema[key])
                     base_schema[key] = value
