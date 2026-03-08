@@ -1,7 +1,7 @@
 # Tavern Custom Backend Plugin
 
 This example demonstrates how to create a custom backend plugin for Tavern, a pytest plugin for API testing.
-Custom backends allows you to extend Tavern's functionality with your own request/response handling logic.
+Custom backends allow you to extend Tavern's functionality with your own request/response handling logic.
 
 ## Overview
 
