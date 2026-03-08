@@ -286,8 +286,12 @@ def get_option_generic(
     # Top priority
     if cli := pytest_config.getoption(cli_flag):
         if isinstance(default, list):
-            cli = cli.split(",")
-            use.extend(cli)  # type:ignore
+            if isinstance(cli, list):
+                cli_list = cli
+            else:
+                cli_list = cli.split(",")
+            use = list(use)  # type:ignore
+            use.extend(cli_list)  # type:ignore
         else:
             use = cli
 
