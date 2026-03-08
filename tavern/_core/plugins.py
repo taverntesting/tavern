@@ -179,7 +179,20 @@ class _PluginCache:
             )
             manager.propagate_map_exceptions = True
 
-            manager.map(is_valid_reqresp_plugin)
+            validation_results = manager.map(is_valid_reqresp_plugin)
+            invalid_plugins = [
+                ext.name
+                for ext, is_valid in zip(manager.extensions, validation_results)
+                if not is_valid
+            ]
+            if invalid_plugins:
+                raise exceptions.PluginLoadError(
+                    f"Plugin(s) {invalid_plugins} failed validation: "
+                    f"missing required 'has_multiple_responses' field or other required attributes. "
+                    f"Required fields: session_type, request_type, request_block_name, "
+                    f"get_expected_from_request, verifier_type, response_block_name, schema, "
+                    f"has_multiple_responses"
+                )
 
             if len(manager.extensions) != 1:
                 raise exceptions.MissingSettingsError(
