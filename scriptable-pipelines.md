@@ -133,7 +133,7 @@ It may be easier to restrict this to only being able to reference stages by id.
    the pass/fail state, tavern variables, etc.
 3. As well as running `!include` to include other files, it uses the starlark `load` function to load other files (and
    maybe other functions?).
-4. A new flag `--experimental-starlark-pipeline` is added to the CLI to enable this. If enabled, it looks for
+4. A new flag `--tavern-experimental-starlark-pipeline` is added to the CLI to enable this. If enabled, it looks for
    `*.tavern.star` files instead of `*.tavern.yaml`. Each of these files is still run as a single pytest test, allowing
    all the other pytest plugins to still work.
 5. It would ideally be possible to 'render' each starlark file to a normal tavern yaml file, by replacing all the

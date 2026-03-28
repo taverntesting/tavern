@@ -85,7 +85,7 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
         action="store",
     )
     parser_addoption(
-        "--experimental-starlark-pipeline",
+        "--tavern-experimental-starlark-pipeline",
         action="store_true",
         default=False,
         help="Enable experimental starlark pipeline support (*.tavern.star files)",

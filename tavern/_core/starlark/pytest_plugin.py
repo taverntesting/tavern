@@ -22,7 +22,7 @@ def pytest_collect_file(parent, file_path: pathlib.Path) -> Optional["YamlItem"]
     """Collect starlark pipeline files (*.tavern.star).
 
     This hook is called by pytest to collect files. It checks if the
-    --experimental-starlark-pipeline flag is enabled and if the file
+    --tavern-experimental-starlark-pipeline flag is enabled and if the file
     matches the starlark pattern.
     """
     # Check if starlark is enabled
