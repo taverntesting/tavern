@@ -81,6 +81,7 @@ def run_stage(
         runner.wrapped_run_stage(stage, stage_config, tinctures)
 
         # If we get here, the stage succeeded
+        # IMPORTANT: test_config has been mutated - capture the updated variables
         response_dict = _extract_response_data(stage)
 
         return StageResponse(
@@ -93,6 +94,7 @@ def run_stage(
 
     except Exception as e:
         logger.warning("Stage '%s' failed: %s", stage_name, str(e))
+        # Even on failure, test_config may have partial updates
         return StageResponse(
             success=False,
             failure=True,

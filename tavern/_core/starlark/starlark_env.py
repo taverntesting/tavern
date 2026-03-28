@@ -1,5 +1,6 @@
 """Starlark environment setup for Tavern pipelines."""
 
+import dataclasses
 import logging
 from contextlib import ExitStack
 from typing import Any
@@ -13,6 +14,22 @@ from tavern._core.starlark.runner import StageResponse
 from tavern._core.starlark.runner import run_stage as _run_stage
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+@dataclasses.dataclass
+class PipelineContext:
+    """Context object passed between stages in starlark pipelines.
+
+    This object carries the test configuration and sessions from one stage
+    to the next, allowing users to explicitly manage the pipeline state.
+
+    Attributes:
+        test_config: The TestConfig with current variables
+        sessions: Dictionary of session contexts
+    """
+
+    test_config: TestConfig
+    sessions: dict[str, Any]
 
 
 class StarlarkPipelineRunner:
@@ -68,6 +85,9 @@ class StarlarkPipelineRunner:
         # Add fail function
         self._setup_fail(module)
 
+        # Add context function to create initial context
+        self._setup_context(module)
+
         # Parse the script
         dialect = Dialect.standard()
 
@@ -97,6 +117,25 @@ class StarlarkPipelineRunner:
     def _setup_builtins(self, module: Module) -> None:
         """Set up built-in functions available in starlark scripts."""
 
+    def _setup_context(self, module: Module) -> None:
+        """Set up the context function to create initial context."""
+
+        def create_context() -> PipelineContext:
+            """Create an initial pipeline context.
+
+            This returns a context object that must be passed to run_stage.
+            The context carries the test configuration and sessions.
+
+            Returns:
+                A PipelineContext with the initial test config and sessions
+            """
+            return PipelineContext(
+                test_config=self.test_config,
+                sessions=self.sessions,
+            )
+
+        module.add_callable("context", create_context)
+
     def _setup_include(self, module: Module) -> None:
         """Set up the include function for loading YAML files."""
 
@@ -120,21 +159,35 @@ class StarlarkPipelineRunner:
     def _setup_run_stage(self, module: Module) -> None:
         """Set up the run_stage function for executing test stages."""
 
-        def run_stage(stage: dict[str, Any]) -> tuple[dict[str, Any], StageResponse]:
-            """Run a single test stage and return the response.
+        def run_stage(ctx: PipelineContext, stage: dict[str, Any]) -> tuple[PipelineContext, StageResponse]:
+            """Run a single test stage and return the updated context.
 
             Args:
+                ctx: The PipelineContext from previous stage execution
                 stage: A dictionary containing the stage specification
                    - name: Human readable name
                    - request: Request specification (url, method, etc.)
                    - response: Expected response (status_code, etc.)
 
             Returns:
-                A tuple of (updated variables dict, StageResponse with success/failure and response data)
+                A tuple of (updated PipelineContext, StageResponse with success/failure and response data)
             """
-            response = _run_stage(stage, self.test_config, self.sessions)
-            # Return tuple of (test_config.variables, response)
-            return (self.test_config.variables, response)
+            # Get test_config and sessions from the context
+            # The test_config reference is mutated in place during stage execution
+            test_config = ctx.test_config
+            sessions = ctx.sessions
+
+            # Run the stage - this mutates test_config.variables in place
+            response = _run_stage(stage, test_config, sessions)
+
+            # Create a new context with updated test_config
+            # This ensures Starlark sees the updated state
+            new_ctx = PipelineContext(
+                test_config=test_config,
+                sessions=sessions,
+            )
+
+            return (new_ctx, response)
 
         module.add_callable("run_stage", run_stage)
 

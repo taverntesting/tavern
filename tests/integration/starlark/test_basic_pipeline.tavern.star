@@ -5,6 +5,9 @@
 config_file = include("stages.yaml")
 stages = config_file["stages"]
 
+# Create an initial context
+ctx = context()
+
 # Create a dictionary of stages by id
 stages_by_id = {}
 for stage in stages:
@@ -16,21 +19,21 @@ def run_pipeline(ctx):
     """Main pipeline function that runs the test stages.
 
     Args:
-        ctx: Variables dict (updated with values from previous stages)
+        ctx: The PipelineContext object
 
     Returns:
         Optional return value indicating test result
     """
 
-    # First get a cookie - run_stage returns (variables, response)
-    variables, resp = run_stage(stages_by_id["get-cookie"])
+    # First get a cookie - run_stage returns (updated_ctx, response)
+    ctx, resp = run_stage(ctx, stages_by_id["get-cookie"])
 
     # Check if the stage succeeded
     if resp.failure:
         fail("Get cookie stage failed")
 
-    # Echo a value back using updated variables
-    variables, resp = run_stage(stages_by_id["echo-value"])
+    # Echo a value back using updated context
+    ctx, resp = run_stage(ctx, stages_by_id["echo-value"])
 
     # Check if the stage succeeded
     if resp.failure:
