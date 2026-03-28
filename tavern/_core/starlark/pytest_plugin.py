@@ -36,8 +36,6 @@ def pytest_collect_file(parent, file_path: pathlib.Path) -> Optional["YamlItem"]
     except ValueError:
         starlark_enabled = False
 
-    logger.debug("Starlark enabled: %s", starlark_enabled)
-
     if not starlark_enabled:
         return None
 
