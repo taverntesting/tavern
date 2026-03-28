@@ -59,7 +59,7 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
 
       - name: run tests
         run: |
@@ -121,7 +121,7 @@ jobs:
           python-version: "3.11"
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
 
       - name: Install Protoc
         if: ${{ contains(matrix.TOXENV, 'grpc') }}
