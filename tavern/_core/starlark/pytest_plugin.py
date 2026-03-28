@@ -1,6 +1,7 @@
 """Pytest plugin integration for starlark pipeline files."""
 
 import logging
+import os
 import pathlib
 import typing
 from typing import Optional
@@ -15,9 +16,6 @@ from tavern._core.pytest.util import get_option_generic, load_global_cfg
 from tavern._core.starlark.starlark_env import setup_starlark_environment
 
 logger: logging.Logger = logging.getLogger(__name__)
-
-
-pytest_funcs_to_hook = []
 
 
 def pytest_collect_file(parent, file_path: pathlib.Path) -> Optional["YamlItem"]:
@@ -85,7 +83,7 @@ class StarlarkYamlFile(pytest.File):
             from starlark import Dialect
 
             dialect = Dialect.standard()
-            ast = starlark.parse(script_content, dialect=dialect)
+            _ = starlark.parse(os.fspath(self.path), script_content, dialect=dialect)
             logger.debug("Successfully parsed starlark script at %s", self.path)
         except starlark.Error as e:
             logger.error("Failed to parse starlark script at %s: %s", self.path, e)

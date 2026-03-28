@@ -159,7 +159,9 @@ class StarlarkPipelineRunner:
     def _setup_run_stage(self, module: Module) -> None:
         """Set up the run_stage function for executing test stages."""
 
-        def run_stage(ctx: PipelineContext, stage: dict[str, Any]) -> tuple[PipelineContext, StageResponse]:
+        def run_stage(
+            ctx: PipelineContext, stage: dict[str, Any]
+        ) -> tuple[PipelineContext, StageResponse]:
             """Run a single test stage and return the updated context.
 
             Args:
