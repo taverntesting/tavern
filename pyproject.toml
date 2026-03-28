@@ -156,7 +156,7 @@ tavern = [
     ".tox/py311-mqtt/lib/python3.11/site-packages/tavern",
 ]
 
-[pytest]
+[tool.pytest]
 testpaths = ["tavern", "tests/unit"]
 addopts = [
     "--doctest-modules",
