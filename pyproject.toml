@@ -33,6 +33,7 @@ dependencies = [
     "python-box>=6,<7",
     "requests>=2.22.0,<3",
     "simpleeval>=1.0.3",
+    "starlark-pyo3>=2025.2.5",
     "stevedore>=4,<5",
 ]
 
