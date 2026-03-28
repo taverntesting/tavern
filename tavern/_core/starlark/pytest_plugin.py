@@ -17,16 +17,6 @@ from tavern._core.starlark.starlark_env import setup_starlark_environment
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def _add_starlark_parser_option(parser: pytest.Parser) -> None:
-    """Add the experimental starlark pipeline command line option."""
-    parser.addoption(
-        "--experimental-starlark-pipeline",
-        action="store_true",
-        default=False,
-        help="Enable experimental starlark pipeline support (*.tavern.star files)",
-    )
-
-
 pytest_funcs_to_hook = []
 
 

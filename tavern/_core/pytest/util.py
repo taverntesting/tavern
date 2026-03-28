@@ -84,6 +84,12 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
         type=str,
         action="store",
     )
+    parser_addoption(
+        "--experimental-starlark-pipeline",
+        action="store_true",
+        default=False,
+        help="Enable experimental starlark pipeline support (*.tavern.star files)",
+    )
 
 
 def add_ini_options(parser: pytest.Parser) -> None:
