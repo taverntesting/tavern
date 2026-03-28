@@ -30,6 +30,7 @@ def get_expected_from_request(
 
 verifier_type = GRPCResponse
 response_block_name = "grpc_response"
+has_multiple_responses = False
 
 schema_path: str = join(abspath(dirname(__file__)), "jsonschema.yaml")
 with open(schema_path) as schema_file:

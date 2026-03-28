@@ -5,6 +5,7 @@ import os
 import tempfile
 from collections.abc import Mapping
 
+import box
 import pykwalify
 import yaml
 from pykwalify import core
@@ -53,7 +54,16 @@ class SchemaCache:
                 # Don't require a schema
                 logger.debug("No schema defined for %s", p.name)
             else:
-                base_schema["properties"].update(plugin_schema.get("properties", {}))
+                for key in ["properties", "definitions"]:
+                    if key not in plugin_schema:
+                        continue
+
+                    if key not in base_schema:
+                        base_schema[key] = box.Box()
+
+                    value = box.Box(plugin_schema[key])
+                    value.merge_update(base_schema[key])
+                    base_schema[key] = value
 
         self._loaded[mangled] = base_schema
         return self._loaded[mangled]

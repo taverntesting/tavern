@@ -3,7 +3,10 @@ import re
 import threading
 from unittest.mock import Mock, patch
 
+import hypothesis
 import pytest
+from hypothesis import given, settings
+from hypothesis import strategies as st
 
 from tavern._core import exceptions
 from tavern._core.loader import ANYTHING
@@ -197,8 +200,12 @@ class TestResponse:
         assert len(verifier.received_messages) == 1
         assert verifier.received_messages[0].topic == fake_message.topic
 
-    @pytest.mark.parametrize("r", range(10))
-    def test_multiple_messages(self, includes, r):
+    @given(st.permutations([0, 1, 2]))
+    @settings(
+        max_examples=10,
+        suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+    )
+    def test_multiple_messages(self, includes, perm: list[int]):
         """One wrong message, two correct ones"""
 
         expected = [
@@ -210,8 +217,8 @@ class TestResponse:
         fake_message_good_2 = FakeMessage(expected[1])
         fake_message_bad = FakeMessage({"topic": "/a/b/c", "payload": "goodbye"})
 
-        messages = [fake_message_bad, fake_message_good_1, fake_message_good_2]
-        random.shuffle(messages)
+        base_messages = [fake_message_bad, fake_message_good_1, fake_message_good_2]
+        messages = [base_messages[i] for i in perm]
 
         verifier = self._get_fake_verifier(
             expected,
@@ -226,8 +233,12 @@ class TestResponse:
         assert fake_message_good_1.topic in received_topics
         assert fake_message_good_2.topic in received_topics
 
-    @pytest.mark.parametrize("r", range(10))
-    def test_different_order(self, includes, r):
+    @given(st.permutations([0, 1]))
+    @settings(
+        max_examples=10,
+        suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+    )
+    def test_different_order(self, includes, perm):
         """Messages coming in a different order"""
 
         expected = [
@@ -238,8 +249,8 @@ class TestResponse:
         fake_message_good_1 = FakeMessage(expected[0])
         fake_message_good_2 = FakeMessage(expected[1])
 
-        messages = [fake_message_good_2, fake_message_good_1]
-        random.shuffle(messages)
+        base_messages = [fake_message_good_1, fake_message_good_2]
+        messages = [base_messages[i] for i in perm]
 
         verifier = self._get_fake_verifier(expected, messages, includes)
 
@@ -249,8 +260,6 @@ class TestResponse:
         received_topics = [m.topic for m in verifier.received_messages]
         assert fake_message_good_1.topic in received_topics
         assert fake_message_good_2.topic in received_topics
-
-    # FIXME: Add tests for 'ext' functions are called in the right order
 
     @pytest.mark.parametrize(
         "payload",
@@ -269,8 +278,12 @@ class TestResponse:
             ),
         ),
     )
-    @pytest.mark.parametrize("r", range(10))
-    def test_same_topic(self, includes, r, payload):
+    @given(st.permutations([0, 1]))
+    @settings(
+        max_examples=10,
+        suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+    )
+    def test_same_topic(self, includes, payload, perm):
         """Messages coming in a different order"""
 
         expected = [
@@ -281,8 +294,8 @@ class TestResponse:
         fake_message_good_1 = FakeMessage(expected[0])
         fake_message_good_2 = FakeMessage(expected[1])
 
-        messages = [fake_message_good_2, fake_message_good_1]
-        random.shuffle(messages)
+        base_messages = [fake_message_good_1, fake_message_good_2]
+        messages = [base_messages[i] for i in perm]
 
         verifier = self._get_fake_verifier(expected, messages, includes)
 
@@ -296,3 +309,76 @@ class TestResponse:
         received_topics = [m.topic for m in verifier.received_messages]
         assert fake_message_good_1.topic in received_topics
         assert fake_message_good_2.topic in received_topics
+
+    @given(st.permutations([0, 1, 2]))
+    @settings(
+        max_examples=20,
+        suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+    )
+    def test_repeated_topic_three_expectations(self, includes, perm):
+        """[a, b, a] sequence – both 'a' messages must be individually verified"""
+
+        expected = [
+            {"topic": "/a/b/c", "payload": "first"},
+            {"topic": "/d/e/f", "payload": "middle"},
+            {"topic": "/a/b/c", "payload": "second"},
+        ]
+
+        fake_message_a1 = FakeMessage({"topic": "/a/b/c", "payload": "first"})
+        fake_message_b = FakeMessage({"topic": "/d/e/f", "payload": "middle"})
+        fake_message_a2 = FakeMessage({"topic": "/a/b/c", "payload": "second"})
+
+        base_messages = [fake_message_a1, fake_message_b, fake_message_a2]
+        messages = [base_messages[i] for i in perm]
+
+        verifier = self._get_fake_verifier(expected, messages, includes)
+        verifier.verify(expected)
+
+        assert len(verifier.received_messages) == 3
+        received_payloads = [m.payload for m in verifier.received_messages]
+        assert "first" in received_payloads
+        assert "middle" in received_payloads
+        assert "second" in received_payloads
+
+    def test_repeated_topic_wrong_payload_fails(self, includes):
+        """[a, b, a] – delivering only one 'a' payload must fail"""
+
+        expected = [
+            {"topic": "/a/b/c", "payload": "first"},
+            {"topic": "/d/e/f", "payload": "middle"},
+            {"topic": "/a/b/c", "payload": "second"},
+        ]
+
+        fake_message_a_only = FakeMessage({"topic": "/a/b/c", "payload": "first"})
+        fake_message_b = FakeMessage({"topic": "/d/e/f", "payload": "middle"})
+
+        verifier = self._get_fake_verifier(
+            expected, [fake_message_a_only, fake_message_b], includes
+        )
+
+        with pytest.raises(exceptions.TestFailError):
+            verifier.verify(expected)
+
+    def test_repeated_topic_regression_dict_keying(self, includes):
+        """
+        Regression: old itertools.groupby+dict approach for by_topic would
+        produce only 1 entry for topic '/a/b/c' instead of 2, silently
+        dropping the first expectation.  Verify both expectations are checked.
+        """
+
+        expected = [
+            {"topic": "/a/b/c", "payload": "msg-one"},
+            {"topic": "/x/y/z", "payload": "unrelated"},
+            {"topic": "/a/b/c", "payload": "msg-two"},
+        ]
+
+        fake_a1 = FakeMessage({"topic": "/a/b/c", "payload": "msg-one"})
+        fake_x = FakeMessage({"topic": "/x/y/z", "payload": "unrelated"})
+        fake_a2 = FakeMessage({"topic": "/a/b/c", "payload": "msg-two"})
+
+        verifier = self._get_fake_verifier(
+            expected, [fake_a1, fake_x, fake_a2], includes
+        )
+        verifier.verify(expected)
+
+        assert len(verifier.received_messages) == 3
