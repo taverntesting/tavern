@@ -4,6 +4,7 @@ import dataclasses
 import logging
 from typing import Any
 
+from tavern._core.exceptions import TavernException
 from tavern._core.pytest.config import TestConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -92,7 +93,8 @@ def run_stage(
             stage_name=stage_name,
         )
 
-    except Exception as e:
+    except TavernException as e:
+        # Only catch tavern exceptions here - any other exception should be raised
         logger.warning("Stage '%s' failed: %s", stage_name, str(e))
         # Even on failure, test_config may have partial updates
         return StageResponse(

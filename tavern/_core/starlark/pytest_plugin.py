@@ -104,12 +104,6 @@ class StarlarkYamlFile(pytest.File):
         yield item
 
 
-# For backwards compatibility
-def pytest_tavern_beta_before_every_request(request_args) -> None:
-    """Hook called before every request (no-op for starlark)."""
-    pass
-
-
 def starlark_collect_file(parent, file_path: pathlib.Path):
     """Collect starlark pipeline files.
 
