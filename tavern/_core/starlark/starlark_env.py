@@ -89,7 +89,7 @@ class StarlarkPipelineRunner:
         self._setup_context(module)
 
         # Parse the script
-        dialect = Dialect.standard()
+        dialect = Dialect.extended()
 
         try:
             ast = starlark.parse(str(self.test_path), script, dialect=dialect)

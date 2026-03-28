@@ -85,7 +85,7 @@ class StarlarkYamlFile(pytest.File):
 
         # Try to parse the script first to check for syntax errors
         try:
-            dialect = Dialect.standard()
+            dialect = Dialect.extended()
             _ = starlark.parse(os.fspath(self.path), script_content, dialect=dialect)
             logger.debug("Successfully parsed starlark script at %s", self.path)
         except starlark.Error as e:
@@ -107,4 +107,4 @@ class StarlarkYamlFile(pytest.File):
         yield item
 
     def collect(self) -> Iterable[Item | Collector]:
-        raise NotImplementedError("TODO")
+        return self._generate_items()
