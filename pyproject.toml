@@ -121,6 +121,7 @@ tavern-ci = "tavern.entry:main"
 [project.entry-points.pytest11]
 
 tavern = "tavern._core.pytest"
+tavern_starlark = "tavern._core.starlark"
 
 [project.entry-points.tavern_http]
 requests = "tavern._plugins.rest.tavernhook:TavernRestPlugin"
@@ -155,7 +156,7 @@ tavern = [
     ".tox/py311-mqtt/lib/python3.11/site-packages/tavern",
 ]
 
-[tool.pytest.ini_options]
+[pytest]
 testpaths = ["tavern", "tests/unit"]
 addopts = [
     "--doctest-modules",

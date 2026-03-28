@@ -159,6 +159,12 @@ def add_ini_options(parser: pytest.Parser) -> None:
         type="args",
         default=[],
     )
+    parser.addini(
+        "tavern-experimental-starlark-pipeline",
+        help="Enable experimental starlark pipeline support (*.tavern.star files)",
+        type="bool",
+        default=False,
+    )
 
 
 def load_global_cfg(pytest_config: pytest.Config) -> TestConfig:

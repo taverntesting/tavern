@@ -4,10 +4,13 @@ import logging
 import os
 import pathlib
 import typing
+from collections.abc import Iterable
 from typing import Optional
 
 import pytest
 import starlark
+from _pytest.nodes import Collector, Item
+from starlark import Dialect
 
 from tavern._core import exceptions
 from tavern._core.pytest.config import TestConfig
@@ -28,10 +31,12 @@ def pytest_collect_file(parent, file_path: pathlib.Path) -> Optional["YamlItem"]
     # Check if starlark is enabled
     try:
         starlark_enabled = get_option_generic(
-            parent.config, "experimental_starlark_pipeline", False
+            parent.config, "tavern-experimental-starlark-pipeline", False
         )
     except ValueError:
         starlark_enabled = False
+
+    logger.debug("Starlark enabled: %s", starlark_enabled)
 
     if not starlark_enabled:
         return None
@@ -80,8 +85,6 @@ class StarlarkYamlFile(pytest.File):
 
         # Try to parse the script first to check for syntax errors
         try:
-            from starlark import Dialect
-
             dialect = Dialect.standard()
             _ = starlark.parse(os.fspath(self.path), script_content, dialect=dialect)
             logger.debug("Successfully parsed starlark script at %s", self.path)
@@ -103,25 +106,5 @@ class StarlarkYamlFile(pytest.File):
 
         yield item
 
-
-def starlark_collect_file(parent, file_path: pathlib.Path):
-    """Collect starlark pipeline files.
-
-    Wrapper function to be called from the main pytest plugin.
-    """
-    # Check if starlark is enabled
-    try:
-        starlark_enabled = get_option_generic(
-            parent.config, "experimental_starlark_pipeline", False
-        )
-    except ValueError:
-        starlark_enabled = False
-
-    if not starlark_enabled:
-        return None
-
-    # Check if this is a starlark pipeline file
-    if str(file_path).endswith(".tavern.star"):
-        return StarlarkYamlFile.from_parent(parent, path=file_path)
-
-    return None
+    def collect(self) -> Iterable[Item | Collector]:
+        raise NotImplementedError("TODO")
