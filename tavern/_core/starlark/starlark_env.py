@@ -1,14 +1,16 @@
 """Starlark environment setup for Tavern pipelines."""
 
 import logging
+from contextlib import ExitStack
 from typing import Any
 
 import starlark
-from starlark import Dialect, Module
+from starlark import Dialect, Globals, Module
 
 from tavern._core.loader import load_single_document_yaml
 from tavern._core.pytest.config import TestConfig
 from tavern._core.starlark.runner import StageResponse
+from tavern._core.starlark.runner import run_stage as _run_stage
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -29,13 +31,24 @@ class StarlarkPipelineRunner:
         """
         self.test_config = test_config
         self.test_path = test_path
-        self.globals: dict[str, Any] = {}
+        self.globals = Globals.standard()
+        self.sessions: dict[str, Any] = {}
 
-    def load_and_run(self, script: str) -> Any:
+    def get_sessions(self, test_spec: dict[str, Any]) -> dict[str, Any]:
+        """Get extra sessions from test spec.
+
+        This mirrors the logic in tavern/_core/run.py for getting sessions.
+        """
+        from tavern._core.run import get_extra_sessions
+
+        return get_extra_sessions(test_spec, self.test_config)
+
+    def load_and_run(self, script: str, test_spec: dict[str, Any]) -> Any:
         """Load and run a starlark pipeline script.
 
         Args:
             script: The starlark script content
+            test_spec: The test specification dictionary
 
         Returns:
             The return value of the script, if any
@@ -43,43 +56,48 @@ class StarlarkPipelineRunner:
         # Create the starlark module
         module = Module()
 
-        # Set up globals with builtin functions
-        self.globals = {"global": {}}
-
-        # Add built-in functions
-        self._setup_builtins(module.globals)
+        # Add built-in functions to module
+        self._setup_builtins(module)
 
         # Add include function
-        self._setup_include(module.globals)
+        self._setup_include(module)
 
         # Add run_stage function
-        self._setup_run_stage(module.globals)
+        self._setup_run_stage(module)
 
         # Add fail function
-        self._setup_fail(module.globals)
+        self._setup_fail(module)
 
         # Parse the script
         dialect = Dialect.standard()
 
         try:
-            ast = starlark.parse(script, dialect=dialect)
+            ast = starlark.parse(str(self.test_path), script, dialect=dialect)
         except starlark.Error as e:
             logger.error("Failed to parse starlark script: %s", e)
             raise ValueError(f"Failed to parse starlark script: {e}") from e
 
-        # Evaluate the script
-        try:
-            result = starlark.eval(ast, self.globals, module=module)
-        except starlark.StarlarkError as e:
-            logger.error("Failed to evaluate starlark script: %s", e)
-            raise RuntimeError(f"Failed to evaluate starlark script: {e}") from e
+        # Use ExitStack to manage session context like in run.py
+        with ExitStack() as stack:
+            self.sessions = self.get_sessions(test_spec)
+
+            for name, session in self.sessions.items():
+                logger.debug("Entering context for %s", name)
+                stack.enter_context(session)
+
+            # Evaluate the script
+            try:
+                result = starlark.eval(module, ast, self.globals)  # type: ignore[arg-type]
+            except starlark.StarlarkError as e:
+                logger.error("Failed to evaluate starlark script: %s", e)
+                raise RuntimeError(f"Failed to evaluate starlark script: {e}") from e
 
         return result
 
-    def _setup_builtins(self, globals: dict[str, Any]) -> None:
+    def _setup_builtins(self, module: Module) -> None:
         """Set up built-in functions available in starlark scripts."""
 
-    def _setup_include(self, globals: dict[str, Any]) -> None:
+    def _setup_include(self, module: Module) -> None:
         """Set up the include function for loading YAML files."""
 
         def include(filename: str) -> dict[str, Any]:
@@ -91,16 +109,15 @@ class StarlarkPipelineRunner:
             Returns:
                 The parsed YAML contents as a dictionary
             """
-
             try:
                 return load_single_document_yaml(filename)
             except Exception as e:
                 logger.error("Failed to include '%s': %s", filename, e)
                 raise ValueError(f"Failed to include '{filename}': {e}") from e
 
-        globals["include"] = include
+        module.add_callable("include", include)
 
-    def _setup_run_stage(self, globals: dict[str, Any]) -> None:
+    def _setup_run_stage(self, module: Module) -> None:
         """Set up the run_stage function for executing test stages."""
 
         def run_stage(stage: dict[str, Any]) -> StageResponse:
@@ -115,14 +132,22 @@ class StarlarkPipelineRunner:
             Returns:
                 StageResponse with success/failure and response data
             """
-            return run_stage(stage, self.test_config)
+            return _run_stage(stage, self.test_config, self.sessions)
 
-        globals["run_stage"] = run_stage
+        module.add_callable("run_stage", run_stage)
 
-    def _setup_fail(self, globals: dict[str, Any]) -> None:
-        """Set up the fail function (also added in _setup_builtins for consistency)."""
-        # Already added in _setup_builtins, but kept for explicit hiding
-        pass
+    def _setup_fail(self, module: Module) -> None:
+        """Set up the fail function to stop execution."""
+
+        def fail(msg: str = "test failed") -> None:
+            """Stop execution immediately with an optional message.
+
+            Args:
+                msg: Optional message describing why execution stopped
+            """
+            raise RuntimeError(msg)
+
+        module.add_callable("fail", fail)
 
 
 def setup_starlark_environment(

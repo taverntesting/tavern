@@ -28,12 +28,18 @@ class StageResponse:
     stage_name: str
 
 
-def run_stage(stage: dict[str, Any], test_config: TestConfig) -> StageResponse:
+def run_stage(
+    stage: dict[str, Any],
+    test_config: TestConfig,
+    sessions: dict[str, Any] | None = None,
+) -> StageResponse:
     """Run a single stage and return the response.
 
     Args:
         stage: The stage specification dictionary
         test_config: The test configuration with available variables
+        sessions: Optional dictionary of session contexts to use for the stage.
+                  If None, creates an empty sessions dict.
 
     Returns:
         StageResponse with the result of running the stage
@@ -52,8 +58,9 @@ def run_stage(stage: dict[str, Any], test_config: TestConfig) -> StageResponse:
     # Create a minimal test spec
     test_spec = {"test_name": "starlark-pipeline", "stages": [stage]}
 
-    # Create mock sessions dict
-    sessions = {}
+    # Use provided sessions or create empty dict
+    if sessions is None:
+        sessions = {}
 
     # Create runner
     runner = _TestRunner(
