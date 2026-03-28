@@ -281,6 +281,7 @@ stages = {
 # my_test.tavern.star
 stages = include("stages.star")
 
+
 def run_pipeline(ctx):
     ctx, resp = run_stage(ctx, stages["get-cookie"])
     ...
@@ -291,4 +292,76 @@ def run_pipeline(ctx):
 - Starlark spec: https://github.com/google/starlark-go/blob/master/doc/spec.md This is almost identical to python.
 - The way starlark-python works, all objects must be serialised to JSON before being passed to any function.
 - POSSIBLE EXTENSION: Allow users to register their own functions in the starlark environment. This would allow users to
-  write their own functions to do things like 'fetch a token' but it introduces a security risk. 
+  write their own functions to do things like 'fetch a token' but it introduces a security risk.
+
+## Edge Cases and Implementation Details
+
+### Response Object
+
+The `run_stage` function returns a response object with the following structure:
+
+```python
+@dataclasses.dataclass
+class StageResponse:
+    """Response from running a stage"""
+    success: bool  # True if all verifications passed
+    failure: bool  # True if any verification failed
+    response: dict  # The response body/headers/cookies
+    request_vars: dict  # Any variables captured during the request
+```
+
+### TestConfig Object
+
+The `TestConfig` object passed to `run_pipeline` has the following structure (from `tavern/_core/pytest/config.py`):
+
+```python
+@dataclasses.dataclass(frozen=True)
+class TestConfig:
+    variables: dict  # Available format variables
+    strict: StrictLevel  # Strictness setting for response validation
+    follow_redirects: bool  # Whether to follow HTTP redirects
+    stages: list  # Available stages from includes
+    tavern_internal: TavernInternalConfig  # Internal tavern config
+```
+
+### Fixtures and Marks
+
+Fixtures are handled before `run_pipeline` is called. The starlark environment should provide:
+
+1. `setup_fixtures()` - Optional function called before pipeline execution to set up any pytest fixtures
+2. `setup_marks()` - Optional function that can return marks to be applied to the test
+
+### File Loading
+
+The `include` function loads YAML files and returns them as dictionaries. This uses the same `load_single_document_yaml`
+function from `tavern/_core/loader.py`.
+
+The `load` function is the standard starlark module loading mechanism and can be used to load other `.star` files.
+
+### Variable Formatting
+
+All variable formatting (`{variable}` syntax) happens transparently in Python before the stage runs. The `run_stage`
+function receives a dictionary that has already had formatting applied.
+
+### Error Handling
+
+If a stage fails (verification does not match), the `StageResponse.failure` will be `True`. It is up to the user's
+starlark code to decide whether to continue or call `fail()` to stop execution.
+
+The `fail` function is a builtin that stops execution immediately with an optional message.
+
+### YAML Stage Format
+
+Stages can be defined directly in YAML files loaded via `include`, or inline in the starlark code. Each stage must have:
+
+- `id`: Unique identifier for the stage (used for `type: ref` stages)
+- `name`: Human-readable name
+- `request`: Request specification (url, method, headers, json, etc.)
+- `response`: Response validation (status_code, cookies, json, etc.)
+
+### Limitations
+
+1. **No exceptions in Starlark**: Starlark does not have exceptions. Use the `fail()` function to stop execution.
+2. **JSON serialization**: All objects passed to starlark functions must be JSON-serializable.
+3. **Single-threaded**: Starlark is single-threaded; no parallel stage execution.
+4. **No arbitrary Python**: Only exposed functions are available in the starlark environment. 
