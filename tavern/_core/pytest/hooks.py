@@ -32,6 +32,14 @@ def pytest_addoption(parser: pytest.Parser) -> None:
     add_parser_options(parser.addoption, with_defaults=False)
     add_ini_options(parser)
 
+    # Add experimental starlark pipeline option
+    parser.addoption(
+        "--experimental-starlark-pipeline",
+        action="store_true",
+        default=False,
+        help="Enable experimental starlark pipeline support (*.tavern.star files)",
+    )
+
 
 def _pytest_collect_file(parent, file_path: pathlib.Path) -> Optional["YamlFile"]:
     """On collecting files, get any files that end in .tavern.yaml or .tavern.yml as tavern
