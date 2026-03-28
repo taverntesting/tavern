@@ -120,7 +120,7 @@ class StarlarkPipelineRunner:
     def _setup_run_stage(self, module: Module) -> None:
         """Set up the run_stage function for executing test stages."""
 
-        def run_stage(stage: dict[str, Any]) -> StageResponse:
+        def run_stage(stage: dict[str, Any]) -> tuple[dict[str, Any], StageResponse]:
             """Run a single test stage and return the response.
 
             Args:
@@ -130,9 +130,11 @@ class StarlarkPipelineRunner:
                    - response: Expected response (status_code, etc.)
 
             Returns:
-                StageResponse with success/failure and response data
+                A tuple of (updated variables dict, StageResponse with success/failure and response data)
             """
-            return _run_stage(stage, self.test_config, self.sessions)
+            response = _run_stage(stage, self.test_config, self.sessions)
+            # Return tuple of (test_config.variables, response)
+            return (self.test_config.variables, response)
 
         module.add_callable("run_stage", run_stage)
 
