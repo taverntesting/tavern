@@ -49,7 +49,7 @@ class BaseTavernItem(pytest.Item):
     def __init__(
         self, *, name: str, parent, spec: MutableMapping, path: pathlib.Path, **kwargs
     ) -> None:
-        super().__init__(name, parent, spec=spec, path=path, **kwargs)
+        super().__init__(name, parent, path=path, **kwargs)
         self.path = path
         self.spec = spec
 
