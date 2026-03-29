@@ -12,6 +12,7 @@ from starlark import Dialect, Globals, Module
 
 from tavern._core.loader import get_include_dirs, load_single_document_yaml
 from tavern._core.pytest.config import TestConfig
+from tavern._core.run import get_extra_sessions
 from tavern._core.starlark.runner import StageResponse
 from tavern._core.starlark.runner import run_stage as _run_stage
 
@@ -41,31 +42,33 @@ class StarlarkPipelineRunner:
     control the flow of test execution.
     """
 
-    def __init__(self, test_config: TestConfig, test_path: str):
+    def __init__(self, test_path: str):
         """Initialize the pipeline runner.
 
         Args:
-            test_config: The test configuration with variables
             test_path: Path to the .tavern.star file being run
         """
-        self.test_config = test_config
         self.test_path = test_path
         self.globals = Globals.standard()
         self.sessions: dict[str, Any] = {}
 
-    def get_sessions(self, test_spec: dict[str, Any]) -> dict[str, Any]:
+    def get_sessions(
+        self, test_config: TestConfig, test_spec: dict[str, Any]
+    ) -> dict[str, Any]:
         """Get extra sessions from test spec.
 
         This mirrors the logic in tavern/_core/run.py for getting sessions.
         """
-        from tavern._core.run import get_extra_sessions
 
-        return get_extra_sessions(test_spec, self.test_config)
+        return get_extra_sessions(test_spec, test_config)
 
-    def load_and_run(self, script: str, test_spec: dict[str, Any]) -> Any:
+    def load_and_run(
+        self, test_config: TestConfig, script: str, test_spec: dict[str, Any]
+    ) -> Any:
         """Load and run a starlark pipeline script.
 
         Args:
+            test_config: The test configuration with variables
             script: The starlark script content
             test_spec: The test specification dictionary
 
@@ -89,7 +92,10 @@ class StarlarkPipelineRunner:
 
         # Use ExitStack to manage session context like in run.py
         with ExitStack() as stack:
-            self.sessions = self.get_sessions(test_spec)
+            self.sessions = self.get_sessions(
+                test_config,
+                test_spec,
+            )
 
             for name, session in self.sessions.items():
                 logger.debug("Entering context for %s", name)
@@ -98,6 +104,8 @@ class StarlarkPipelineRunner:
             # Evaluate the script
             try:
                 result = starlark.eval(module, ast, self.globals)  # type: ignore[arg-type]
+                logger.error(module["stages_by_id"])
+                module.freeze().call("run_pipeline", test_config)
             except starlark.StarlarkError as e:
                 logger.error("Failed to evaluate starlark script: %s", e)
                 raise RuntimeError("Failed to evaluate starlark script") from e

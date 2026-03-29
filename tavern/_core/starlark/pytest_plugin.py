@@ -81,7 +81,9 @@ class StarlarkItem(BaseTavernItem):
             test_spec = dict(self.spec)
 
             # Run the starlark pipeline
-            self.starlark_runner.load_and_run(self.starlark_script, test_spec)
+            self.starlark_runner.load_and_run(
+                self.global_cfg, self.starlark_script, test_spec
+            )
 
         except exceptions.BadSchemaError:
             if xfail == "verify":
@@ -173,9 +175,6 @@ class StarlarkFile(pytest.File):
         """Generate test items from the starlark file."""
         # Read the starlark script
         script_content = self.path.read_text(encoding="utf-8")
-
-        # Create test config
-        test_config = self._create_test_config()
 
         # Set up the starlark environment
         runner = StarlarkPipelineRunner(str(self.path))
