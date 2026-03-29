@@ -25,31 +25,6 @@ from tavern._core.starlark.starlark_env import setup_starlark_environment
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def pytest_collect_file(parent, file_path: pathlib.Path) -> Optional["StarlarkItem"]:
-    """Collect starlark pipeline files (*.tavern.star).
-
-    This hook is called by pytest to collect files. It checks if the
-    --tavern-experimental-starlark-pipeline flag is enabled and if the file
-    matches the starlark pattern.
-    """
-    # Check if starlark is enabled
-    try:
-        starlark_enabled = get_option_generic(
-            parent.config, "tavern-experimental-starlark-pipeline", False
-        )
-    except ValueError:
-        starlark_enabled = False
-
-    if not starlark_enabled:
-        return None
-
-    # Check if this is a starlark pipeline file
-    if str(file_path).endswith(".tavern.star"):
-        return StarlarkFile.from_parent(parent, path=file_path)
-
-    return None
-
-
 class StarlarkItem(BaseTavernItem):
     """A starlark pipeline test item."""
 
@@ -237,3 +212,28 @@ class StarlarkFile(pytest.File):
 
     def collect(self) -> Iterable[Item | Collector]:
         return self._generate_items()
+
+
+def pytest_collect_file(parent, file_path: pathlib.Path) -> Optional["StarlarkItem"]:
+    """Collect starlark pipeline files (*.tavern.star).
+
+    This hook is called by pytest to collect files. It checks if the
+    --tavern-experimental-starlark-pipeline flag is enabled and if the file
+    matches the starlark pattern.
+    """
+    # Check if starlark is enabled
+    try:
+        starlark_enabled = get_option_generic(
+            parent.config, "tavern-experimental-starlark-pipeline", False
+        )
+    except ValueError:
+        starlark_enabled = False
+
+    if not starlark_enabled:
+        return None
+
+    # Check if this is a starlark pipeline file
+    if str(file_path).endswith(".tavern.star"):
+        return StarlarkFile.from_parent(parent, path=file_path)
+
+    return None
