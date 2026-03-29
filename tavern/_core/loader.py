@@ -7,6 +7,7 @@ import re
 import typing
 import uuid
 from abc import abstractmethod
+from collections.abc import Iterable
 from itertools import chain
 from typing import Optional
 
@@ -129,9 +130,26 @@ class IncludeLoader(
     env_var_name = "TAVERN_INCLUDE"
 
 
-def _get_include_dirs(loader):
-    loader_list = [loader._root]
+def get_include_dirs(loader_list: list[str]) -> Iterable[str]:
+    """Get the list of directories to search for include files.
 
+    Initializes and retrieves the combined list of include directories from both
+    the provided loader list and the environment variable TAVERN_INCLUDE. The
+    environment variable paths are lazily loaded on first access and cached for
+    subsequent calls.
+
+    Args:
+        loader_list: A list of directory paths to search for include files.
+
+    Returns:
+        An iterable containing the combined loader_list and
+        environment-based include paths.
+
+    Note:
+        The TAVERN_INCLUDE environment variable should contain colon-separated
+        directory paths. Environment variables in the paths will be expanded
+        using os.path.expandvars().
+    """
     if IncludeLoader.env_path_list is None:
         if IncludeLoader.env_var_name in os.environ:
             IncludeLoader.env_path_list = [
@@ -146,7 +164,7 @@ def _get_include_dirs(loader):
 
 def find_include(loader, node) -> str:
     """Locate an include file and return the abs path."""
-    for directory in _get_include_dirs(loader):
+    for directory in get_include_dirs([loader._root]):
         filename = os.path.abspath(
             os.path.join(directory, loader.construct_scalar(node))
         )
@@ -154,7 +172,7 @@ def find_include(loader, node) -> str:
             return filename
 
     raise BadSchemaError(
-        f"{loader.construct_scalar(node)} not found in include path: {[str(d) for d in _get_include_dirs(loader)]}"
+        f"{loader.construct_scalar(node)} not found in include path: {[str(d) for d in get_include_dirs([loader._root])]}"
     )
 
 

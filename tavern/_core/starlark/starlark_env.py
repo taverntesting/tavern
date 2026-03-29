@@ -2,13 +2,14 @@
 
 import dataclasses
 import logging
+import os
 from contextlib import ExitStack
 from typing import Any
 
 import starlark
 from starlark import Dialect, Globals, Module
 
-from tavern._core.loader import load_single_document_yaml
+from tavern._core.loader import get_include_dirs, load_single_document_yaml
 from tavern._core.pytest.config import TestConfig
 from tavern._core.starlark.runner import StageResponse
 from tavern._core.starlark.runner import run_stage as _run_stage
@@ -115,7 +116,13 @@ class StarlarkPipelineRunner:
                 The parsed YAML contents as a dictionary
             """
             try:
-                return load_single_document_yaml(filename)
+                for directory in get_include_dirs([self.test_path]):
+                    abs_filename = os.path.abspath(os.path.join(directory, filename))
+                    if os.access(filename, os.R_OK):
+                        logger.debug("Including '%s'", abs_filename)
+                        return load_single_document_yaml(abs_filename)
+
+                raise ValueError(f"Failed to include '{filename}'")
             except Exception as e:
                 logger.error("Failed to include '%s': %s", filename, e)
                 raise ValueError(f"Failed to include '{filename}'") from e
