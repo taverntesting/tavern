@@ -76,18 +76,6 @@ class StarlarkPipelineRunner:
         # Add built-in functions to module
         self._setup_builtins(module)
 
-        # Add include function
-        self._setup_include(module)
-
-        # Add run_stage function
-        self._setup_run_stage(module)
-
-        # Add fail function
-        self._setup_fail(module)
-
-        # Add context function to create initial context
-        self._setup_context(module)
-
         # Parse the script
         dialect = Dialect.extended()
 
@@ -117,28 +105,6 @@ class StarlarkPipelineRunner:
     def _setup_builtins(self, module: Module) -> None:
         """Set up built-in functions available in starlark scripts."""
 
-    def _setup_context(self, module: Module) -> None:
-        """Set up the context function to create initial context."""
-
-        def create_context() -> PipelineContext:
-            """Create an initial pipeline context.
-
-            This returns a context object that must be passed to run_stage.
-            The context carries the test configuration and sessions.
-
-            Returns:
-                A PipelineContext with the initial test config and sessions
-            """
-            return PipelineContext(
-                test_config=self.test_config,
-                sessions=self.sessions,
-            )
-
-        module.add_callable("context", create_context)
-
-    def _setup_include(self, module: Module) -> None:
-        """Set up the include function for loading YAML files."""
-
         def include(filename: str) -> dict[str, Any]:
             """Load a YAML file and return its contents.
 
@@ -155,9 +121,6 @@ class StarlarkPipelineRunner:
                 raise ValueError(f"Failed to include '{filename}'") from e
 
         module.add_callable("include", include)
-
-    def _setup_run_stage(self, module: Module) -> None:
-        """Set up the run_stage function for executing test stages."""
 
         def run_stage(
             ctx: PipelineContext, stage: dict[str, Any]
@@ -192,19 +155,6 @@ class StarlarkPipelineRunner:
             return (new_ctx, response)
 
         module.add_callable("run_stage", run_stage)
-
-    def _setup_fail(self, module: Module) -> None:
-        """Set up the fail function to stop execution."""
-
-        def fail(msg: str = "test failed") -> None:
-            """Stop execution immediately with an optional message.
-
-            Args:
-                msg: Optional message describing why execution stopped
-            """
-            raise RuntimeError(msg)
-
-        module.add_callable("fail", fail)
 
 
 def setup_starlark_environment(
