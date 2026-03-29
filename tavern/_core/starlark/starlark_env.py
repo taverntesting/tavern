@@ -1,11 +1,10 @@
 """Starlark environment setup for Tavern pipelines."""
 
-import dataclasses
 import logging
 import os
 import pathlib
 from contextlib import ExitStack
-from typing import Any
+from typing import Any, TypedDict
 
 import starlark
 from starlark import Dialect, Globals, Module
@@ -19,8 +18,7 @@ from tavern._core.starlark.runner import run_stage as _run_stage
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@dataclasses.dataclass
-class PipelineContext:
+class PipelineContext(TypedDict):
     """Context object passed between stages in starlark pipelines.
 
     This object carries the test configuration and sessions from one stage
@@ -105,7 +103,13 @@ class StarlarkPipelineRunner:
             try:
                 result = starlark.eval(module, ast, self.globals)  # type: ignore[arg-type]
                 logger.error(module["stages_by_id"])
-                module.freeze().call("run_pipeline", test_config)
+                ctx = PipelineContext(
+                    {
+                        "test_config": test_config.to_starlark(),
+                        "sessions": starlark.OpaquePythonObject(self.sessions),
+                    }
+                )
+                module.freeze().call("run_pipeline", ctx)
             except starlark.StarlarkError as e:
                 logger.error("Failed to evaluate starlark script: %s", e)
                 raise RuntimeError("Failed to evaluate starlark script") from e
@@ -157,8 +161,8 @@ class StarlarkPipelineRunner:
             """
             # Get test_config and sessions from the context
             # The test_config reference is mutated in place during stage execution
-            test_config = ctx.test_config
-            sessions = ctx.sessions
+            test_config = TestConfig.from_starlark(ctx["test_config"])
+            sessions = ctx["sessions"]
 
             # Run the stage - this mutates test_config.variables in place
             response = _run_stage(stage, test_config, sessions)
@@ -166,8 +170,10 @@ class StarlarkPipelineRunner:
             # Create a new context with updated test_config
             # This ensures Starlark sees the updated state
             new_ctx = PipelineContext(
-                test_config=test_config,
-                sessions=sessions,
+                {
+                    "test_config": test_config.to_starlark(),
+                    "sessions": starlark.OpaquePythonObject(self.sessions),
+                }
             )
 
             return (new_ctx, response)
