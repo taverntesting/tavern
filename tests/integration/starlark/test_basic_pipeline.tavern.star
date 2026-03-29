@@ -5,9 +5,6 @@
 config_file = include("stages.yaml")
 stages = config_file["stages"]
 
-# Create an initial context
-ctx = context()
-
 # Create a dictionary of stages by id
 stages_by_id = {}
 for stage in stages:
