@@ -3,6 +3,7 @@
 import dataclasses
 import logging
 import os
+import pathlib
 from contextlib import ExitStack
 from typing import Any
 
@@ -116,10 +117,12 @@ class StarlarkPipelineRunner:
                 The parsed YAML contents as a dictionary
             """
             try:
-                for directory in get_include_dirs([self.test_path]):
+                for directory in get_include_dirs(
+                    [pathlib.Path(self.test_path).parent]
+                ):
                     abs_filename = os.path.abspath(os.path.join(directory, filename))
-                    if os.access(filename, os.R_OK):
-                        logger.debug("Including '%s'", abs_filename)
+                    logger.debug("Trying to include '%s'", abs_filename)
+                    if os.access(abs_filename, os.R_OK):
                         return load_single_document_yaml(abs_filename)
 
                 raise ValueError(f"Failed to include '{filename}'")

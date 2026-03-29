@@ -130,7 +130,7 @@ class IncludeLoader(
     env_var_name = "TAVERN_INCLUDE"
 
 
-def get_include_dirs(loader_list: list[str]) -> Iterable[str]:
+def get_include_dirs(loader_list: list[os.PathLike]) -> Iterable[str]:
     """Get the list of directories to search for include files.
 
     Initializes and retrieves the combined list of include directories from both
