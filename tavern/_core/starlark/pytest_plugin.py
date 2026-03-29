@@ -20,7 +20,9 @@ from tavern._core.pytest.config import TestConfig
 from tavern._core.pytest.error import ReprdError
 from tavern._core.pytest.item import BaseTavernItem
 from tavern._core.pytest.util import get_option_generic, load_global_cfg
-from tavern._core.starlark.starlark_env import setup_starlark_environment
+from tavern._core.starlark.starlark_env import (
+    StarlarkPipelineRunner,
+)
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -176,7 +178,7 @@ class StarlarkFile(pytest.File):
         test_config = self._create_test_config()
 
         # Set up the starlark environment
-        runner = setup_starlark_environment(test_config, str(self.path))
+        runner = StarlarkPipelineRunner(str(self.path))
 
         # Try to parse the script first to check for syntax errors
         try:

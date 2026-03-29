@@ -165,19 +165,3 @@ class StarlarkPipelineRunner:
             return (new_ctx, response)
 
         module.add_callable("run_stage", run_stage)
-
-
-def setup_starlark_environment(
-    test_config: TestConfig,
-    test_path: str,
-) -> StarlarkPipelineRunner:
-    """Set up a starlark environment for running pipeline scripts.
-
-    Args:
-        test_config: The test configuration with variables
-        test_path: Path to the .tavern.star file being run
-
-    Returns:
-        A StarlarkPipelineRunner instance ready to execute scripts
-    """
-    return StarlarkPipelineRunner(test_config, test_path)
