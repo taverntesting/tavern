@@ -30,10 +30,16 @@ def _wrap_callable(fn):
 
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
+        logger.critical(
+            "%s was called with args %s and kwargs %s",
+            fn,
+            args,
+            kwargs,
+        )
         converted_args = [from_starlark(a) for a in args]
         converted_kwargs = {k: from_starlark(v) for k, v in kwargs.items()}
         logger.critical(
-            "Calling %s with args %s and kwargs %s",
+            "%s was called with args %s and kwargs %s",
             fn,
             converted_args,
             converted_kwargs,
@@ -198,6 +204,9 @@ class StarlarkPipelineRunner:
         # Create the starlark module
         module = Module()
 
+        test_config.variables.pop("event_loop_policy")
+        test_config.variables.pop("_session_faker")
+
         # Add built-in functions to module
         self._setup_builtins(module)
 
@@ -300,7 +309,7 @@ class StarlarkPipelineRunner:
                     "sessions": sessions,
                 }
             )
-            return new_ctx, dataclasses.asdict(response)
+            return new_ctx, response
 
         module.add_callable("run_stage", run_stage)
 
