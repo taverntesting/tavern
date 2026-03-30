@@ -82,6 +82,23 @@ class StageResponse:
     request_vars: dict[str, Any]
     stage_name: str
 
+    def to_starlark(self) -> dict:
+        return {
+            "success": self.success,
+            "response": to_starlark(self.response),
+            "request_vars": to_starlark(self.request_vars),
+            "stage_name": self.stage_name,
+        }
+
+    @classmethod
+    def from_starlark(cls, obj: dict) -> "StageResponse":
+        return cls(
+            success=obj["success"],
+            response=from_starlark(obj["response"]),
+            request_vars=from_starlark(obj["request_vars"]),
+            stage_name=obj["stage_name"],
+        )
+
 
 def _run_stage(
     stage: dict[str, Any],
