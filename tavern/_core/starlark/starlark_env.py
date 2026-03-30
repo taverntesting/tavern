@@ -56,7 +56,7 @@ class PipelineContext(TypedDict):
         sessions: Dictionary of session contexts
     """
 
-    test_config: dict[str, Any]
+    test_config: TestConfig
     sessions: dict[str, Any]
 
 
@@ -222,10 +222,10 @@ class StarlarkPipelineRunner:
             try:
                 result = starlark.eval(module, ast, self.globals)  # type: ignore[arg-type]
                 logger.error(module["stages_by_id"])
-                ctx = PipelineContext(
-                    **{
-                        "test_config": test_config.to_starlark(),
-                        "sessions": starlark.OpaquePythonObject(self.sessions),
+                ctx = to_starlark(
+                    {
+                        "test_config": test_config,
+                        "sessions": self.sessions,
                     }
                 )
                 module.freeze().call("run_pipeline", ctx)
@@ -282,7 +282,7 @@ class StarlarkPipelineRunner:
             """
             # Get test_config and sessions from the context
             # The test_config reference is mutated in place during stage execution
-            test_config = TestConfig.from_starlark(ctx["test_config"])
+            test_config = ctx["test_config"]
             sessions = ctx["sessions"]
 
             # Run the stage - this mutates test_config.variables in place
@@ -294,13 +294,12 @@ class StarlarkPipelineRunner:
 
             # Create a new context with updated test_config
             # This ensures Starlark sees the updated state
-            new_ctx = PipelineContext(
-                **{
-                    "test_config": test_config.to_starlark(),
-                    "sessions": starlark.OpaquePythonObject(self.sessions),
+            new_ctx = to_starlark(
+                {
+                    "test_config": test_config,
+                    "sessions": sessions,
                 }
             )
-
             return new_ctx, dataclasses.asdict(response)
 
         module.add_callable("run_stage", run_stage)
