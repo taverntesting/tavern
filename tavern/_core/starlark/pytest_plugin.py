@@ -32,7 +32,7 @@ class StarlarkItem(BaseTavernItem):
     def __init__(
         self, *, name: str, parent, spec: dict[str, Any], path: pathlib.Path, **kwargs
     ) -> None:
-        super().__init__(name=name, parent=parent, spec=spec, path=path, **kwargs)
+        super().__init__(name=name, parent=parent, spec=spec, path=str(path), **kwargs)  # type:ignore
         self.starlark_runner: Any = None
         self.starlark_script: str = ""
 
