@@ -71,7 +71,7 @@ class TestConfig:
 
         return available_backends
 
-    def to_starlark(self) -> object:
+    def to_starlark(self) -> dict[str, Any]:
         dumped = {
             "variables": starlark.OpaquePythonObject(self.variables),
             "follow_redirects": self.follow_redirects,

@@ -32,7 +32,7 @@ class PipelineContext(TypedDict):
         sessions: Dictionary of session contexts
     """
 
-    test_config: TestConfig
+    test_config: dict[str, Any]
     sessions: dict[str, Any]
 
 
@@ -203,7 +203,7 @@ class StarlarkPipelineRunner:
                 result = starlark.eval(module, ast, self.globals)  # type: ignore[arg-type]
                 logger.error(module["stages_by_id"])
                 ctx = PipelineContext(
-                    {
+                    **{
                         "test_config": test_config.to_starlark(),
                         "sessions": starlark.OpaquePythonObject(self.sessions),
                     }
@@ -275,7 +275,7 @@ class StarlarkPipelineRunner:
             # Create a new context with updated test_config
             # This ensures Starlark sees the updated state
             new_ctx = PipelineContext(
-                {
+                **{
                     "test_config": test_config.to_starlark(),
                     "sessions": starlark.OpaquePythonObject(self.sessions),
                 }
