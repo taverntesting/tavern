@@ -4,8 +4,6 @@ import logging
 from importlib.util import find_spec
 from typing import Any
 
-import starlark
-
 from tavern._core.strict_util import StrictLevel
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -70,26 +68,6 @@ class TestConfig:
         logger.debug(f"available request backends: {available_backends}")
 
         return available_backends
-
-    def to_starlark(self) -> dict[str, Any]:
-        dumped = {
-            "variables": starlark.OpaquePythonObject(self.variables),
-            "follow_redirects": self.follow_redirects,
-            "stages": self.stages,
-            "strict": starlark.OpaquePythonObject(self.strict),
-            "tavern_internal": starlark.OpaquePythonObject(self.tavern_internal),
-        }
-        return dumped
-
-    @classmethod
-    def from_starlark(cls, starlark_dict: dict) -> "TestConfig":
-        return cls(
-            variables=starlark_dict["variables"],
-            follow_redirects=starlark_dict["follow_redirects"],
-            stages=starlark_dict["stages"],
-            strict=starlark_dict["strict"],
-            tavern_internal=starlark_dict["tavern_internal"],
-        )
 
 
 def has_module(module: str) -> bool:

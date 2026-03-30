@@ -23,6 +23,7 @@ def run_pipeline(ctx):
     """
 
     # First get a cookie - run_stage returns (updated_ctx, response)
+    log(stages_by_id)
     ctx, resp = run_stage(ctx, stages_by_id["get-cookie"])
 
     # Check if the stage succeeded

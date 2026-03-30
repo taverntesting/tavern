@@ -1,6 +1,7 @@
 """Starlark environment setup for Tavern pipelines."""
 
 import dataclasses
+import functools
 import logging
 import os
 import pathlib
@@ -18,7 +19,30 @@ from tavern._core.run import _TestRunner, get_extra_sessions
 from tavern._core.strict_util import StrictLevel
 from tavern._core.tincture import get_stage_tinctures
 
+from .types import from_starlark, to_starlark
+
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+def _wrap_callable(fn):
+    """Decorator that converts all arguments from starlark→Python before
+    calling *fn*, and converts the return value from Python→starlark."""
+
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        converted_args = [from_starlark(a) for a in args]
+        converted_kwargs = {k: from_starlark(v) for k, v in kwargs.items()}
+        logger.critical(
+            "Calling %s with args %s and kwargs %s",
+            fn,
+            converted_args,
+            converted_kwargs,
+        )
+        result = fn(*converted_args, **converted_kwargs)
+        logger.critical("Result of %s: %s", fn, result)
+        return to_starlark(result)
+
+    return wrapper
 
 
 class PipelineContext(TypedDict):
@@ -214,6 +238,7 @@ class StarlarkPipelineRunner:
     def _setup_builtins(self, module: Module) -> None:
         """Set up built-in functions available in starlark scripts."""
 
+        @_wrap_callable
         def include(filename: str) -> dict[str, Any]:
             """Load a YAML file and return its contents.
 
@@ -239,9 +264,10 @@ class StarlarkPipelineRunner:
 
         module.add_callable("include", include)
 
+        @_wrap_callable
         def run_stage(
             ctx: PipelineContext, stage: dict[str, Any]
-        ) -> tuple[PipelineContext, StageResponse]:
+        ) -> tuple[PipelineContext, object]:
             """Run a single test stage and return the updated context.
 
             Args:
@@ -259,8 +285,6 @@ class StarlarkPipelineRunner:
             test_config = TestConfig.from_starlark(ctx["test_config"])
             sessions = ctx["sessions"]
 
-            logger.info(sessions)
-
             # Run the stage - this mutates test_config.variables in place
             try:
                 response = _run_stage(stage, test_config, sessions)
@@ -277,6 +301,13 @@ class StarlarkPipelineRunner:
                 }
             )
 
-            return new_ctx, response
+            return new_ctx, dataclasses.asdict(response)
 
         module.add_callable("run_stage", run_stage)
+
+        @_wrap_callable
+        def log(s: str) -> None:
+            """log a string to stdout."""
+            logger.info(s)
+
+        module.add_callable("log", log)
