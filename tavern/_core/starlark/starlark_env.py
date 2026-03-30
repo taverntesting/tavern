@@ -30,22 +30,9 @@ def _wrap_callable(fn):
 
     @functools.wraps(fn)
     def wrapper(*args, **kwargs):
-        logger.critical(
-            "%s was called with args %s and kwargs %s",
-            fn,
-            args,
-            kwargs,
-        )
         converted_args = [from_starlark(a) for a in args]
         converted_kwargs = {k: from_starlark(v) for k, v in kwargs.items()}
-        logger.critical(
-            "%s was called with args %s and kwargs %s",
-            fn,
-            converted_args,
-            converted_kwargs,
-        )
         result = fn(*converted_args, **converted_kwargs)
-        logger.critical("Result of %s: %s", fn, result)
         return to_starlark(result)
 
     return wrapper
@@ -250,15 +237,14 @@ class StarlarkPipelineRunner:
 
             # Evaluate the script
             try:
-                result = starlark.eval(module, ast, self.globals)  # type: ignore[arg-type]
-                logger.error(module["stages_by_id"])
+                starlark.eval(module, ast, self.globals)  # type: ignore[arg-type]
                 ctx = to_starlark(
                     {
                         "test_config": test_config,
                         "sessions": self.sessions,
                     }
                 )
-                module.freeze().call("run_pipeline", ctx)
+                result = module.freeze().call("run_pipeline", ctx)
             except starlark.StarlarkError as e:
                 logger.error("Failed to evaluate starlark script: %s", e)
                 raise RuntimeError("Failed to evaluate starlark script") from e
