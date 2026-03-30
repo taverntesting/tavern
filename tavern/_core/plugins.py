@@ -292,7 +292,13 @@ def get_request_type(
         except KeyError:
             pass
         else:
-            session = sessions[p.name]
+            try:
+                session = sessions[p.name]
+            except KeyError as e:
+                raise exceptions.MissingSettingsError(
+                    f"expected session {p.name} but none found"
+                ) from e
+
             request_class = p.plugin.request_type
             logger.debug(
                 "Initialising request class for %s (%s)", p.name, request_class
