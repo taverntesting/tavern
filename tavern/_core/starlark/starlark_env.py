@@ -281,6 +281,6 @@ class StarlarkPipelineRunner:
                 }
             )
 
-            return (new_ctx, response)
+            return new_ctx, response
 
         module.add_callable("run_stage", run_stage)
