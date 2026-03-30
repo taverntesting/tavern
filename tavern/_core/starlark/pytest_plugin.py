@@ -16,7 +16,6 @@ from starlark import Dialect
 from tavern._core import exceptions
 from tavern._core.plugins import load_plugins
 from tavern._core.pytest import call_hook
-from tavern._core.pytest.config import TestConfig
 from tavern._core.pytest.error import ReprdError
 from tavern._core.pytest.item import BaseTavernItem
 from tavern._core.pytest.util import get_option_generic, load_global_cfg
@@ -158,19 +157,6 @@ class StarlarkFile(pytest.File):
 
         self.obj = FakeObj
 
-    def _create_test_config(self) -> TestConfig:
-        """Create a TestConfig for running starlark pipelines."""
-
-        global_cfg = load_global_cfg(self.config)
-
-        return TestConfig(
-            variables=global_cfg.variables.copy(),
-            strict=global_cfg.strict,
-            follow_redirects=global_cfg.follow_redirects,
-            stages=global_cfg.stages,
-            tavern_internal=global_cfg.tavern_internal,
-        )
-
     def _generate_items(self) -> typing.Iterator[StarlarkItem]:
         """Generate test items from the starlark file."""
         # Read the starlark script
@@ -182,7 +168,8 @@ class StarlarkFile(pytest.File):
         # Try to parse the script first to check for syntax errors
         try:
             dialect = Dialect.extended()
-            _ = starlark.parse(os.fspath(self.path), script_content, dialect=dialect)
+            ast = starlark.parse(os.fspath(self.path), script_content, dialect=dialect)
+            ast.lint()
             logger.debug("Successfully parsed starlark script at %s", self.path)
         except starlark.Error as e:
             logger.error("Failed to parse starlark script at %s: %s", self.path, e)

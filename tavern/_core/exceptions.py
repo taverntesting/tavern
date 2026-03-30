@@ -176,3 +176,7 @@ class ConcurrentError(TavernException):
 class UnexpectedExceptionError(TavernException):
     """We expected a certain kind of exception in check_exception_raised but it was something
     else"""
+
+
+class StarlarkError(TavernException):
+    """Exception when running a starlark stage, should only ever wrap another TavernException."""

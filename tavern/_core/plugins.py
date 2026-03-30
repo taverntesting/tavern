@@ -228,6 +228,8 @@ def get_extra_sessions(test_spec: Mapping, test_block_config: TestConfig) -> dic
 
     plugins: list[_Plugin] = load_plugins(test_block_config)
 
+    logger.debug("Available plugins: %s", [p.name for p in plugins])
+
     for p in plugins:
         if any(
             (p.plugin.request_block_name in i or p.plugin.response_block_name in i)
