@@ -38,7 +38,7 @@ def to_starlark(obj: Any) -> Any:
         return obj  # already wrapped
     if dataclasses.is_dataclass(obj):
         logger.error(obj)
-        return to_starlark(dataclasses.asdict(obj))
+        return to_starlark(dataclasses.asdict(obj))  # type:ignore
     if isinstance(obj, dict):
         return {k: to_starlark(v) for k, v in obj.items()}
     if isinstance(obj, (list, tuple)):

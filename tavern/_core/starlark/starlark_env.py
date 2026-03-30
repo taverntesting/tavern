@@ -202,7 +202,11 @@ class StarlarkPipelineRunner:
             test_path: Path to the .tavern.star file being run
         """
         self.test_path = test_path
-        self.globals = Globals.standard()
+        self.globals = Globals.standard().extended_by(
+            [
+                starlark.LibraryExtension.StructType,
+            ]
+        )
         self.sessions: dict[str, Any] = {}
 
     def load_and_run(
@@ -308,7 +312,7 @@ class StarlarkPipelineRunner:
             """
             # Get test_config and sessions from the context
             # The test_config reference is mutated in place during stage execution
-            test_config = ctx["test_config"]
+            test_config = TestConfig.from_starlark(ctx["test_config"])  # type:ignore
             sessions = ctx["sessions"]
 
             # Run the stage - this mutates test_config.variables in place
