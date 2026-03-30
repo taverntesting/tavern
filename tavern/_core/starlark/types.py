@@ -1,8 +1,26 @@
-from typing import Any
+import dataclasses
+import logging
+from typing import Any, Protocol, runtime_checkable
 
 import starlark
 
 _STARLARK_PRIMITIVES = (str, int, float, bool, type(None))
+
+logger = logging.getLogger(__name__)
+
+
+@runtime_checkable
+class StarlarkConvertible(Protocol):
+    """Protocol for objects that know how to convert themselves to/from Starlark."""
+
+    def to_starlark(self) -> Any:
+        """Convert this object to a Starlark-safe value."""
+        ...
+
+    @classmethod
+    def from_starlark(cls, obj: Any) -> "StarlarkConvertible":
+        """Reconstruct an instance from a Starlark value."""
+        ...
 
 
 def to_starlark(obj: Any) -> Any:
@@ -12,10 +30,15 @@ def to_starlark(obj: Any) -> Any:
     Everything else is wrapped in an ``OpaquePythonObject`` so it can be passed
     through Starlark without triggering JSON serialisation.
     """
+    if isinstance(obj, StarlarkConvertible):
+        return obj.to_starlark()
     if isinstance(obj, _STARLARK_PRIMITIVES):
         return obj
     if isinstance(obj, starlark.OpaquePythonObject):
         return obj  # already wrapped
+    if dataclasses.is_dataclass(obj):
+        logger.error(obj)
+        return to_starlark(dataclasses.asdict(obj))
     if isinstance(obj, dict):
         return {k: to_starlark(v) for k, v in obj.items()}
     if isinstance(obj, (list, tuple)):
@@ -32,10 +55,10 @@ def from_starlark(obj: Any) -> Any:
     if isinstance(obj, _STARLARK_PRIMITIVES):
         return obj
     if isinstance(obj, starlark.OpaquePythonObject):
-        # When starlark-pyo3 passes an OpaquePythonObject back to Python the
-        # original object reappears automatically, but if we receive the
-        # wrapper type itself we just return it as-is (it *is* the original).
-        return obj
+        inner = obj  # unwrap: the original object reappears
+        if isinstance(inner, StarlarkConvertible):
+            return inner.from_starlark(inner)
+        return inner
     if isinstance(obj, dict):
         return {k: from_starlark(v) for k, v in obj.items()}
     if isinstance(obj, (list, tuple)):
