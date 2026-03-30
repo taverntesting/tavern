@@ -42,14 +42,12 @@ class StageResponse:
 
     Attributes:
         success: True if all verifications passed
-        failure: True if any verification failed
         response: The response body/headers/cookies/status_code
         request_vars: Any variables captured during the request
         stage_name: Name of the stage that was run
     """
 
     success: bool
-    failure: bool
     response: dict[str, Any]
     request_vars: dict[str, Any]
     stage_name: str
@@ -108,7 +106,6 @@ def _run_stage(
 
         return StageResponse(
             success=True,
-            failure=False,
             response=response_dict,
             request_vars=test_config.variables,
             stage_name=stage_name,
@@ -120,7 +117,6 @@ def _run_stage(
         # Even on failure, test_config may have partial updates
         return StageResponse(
             success=False,
-            failure=True,
             response={"error": str(e)},
             request_vars=test_config.variables,
             stage_name=stage_name,
