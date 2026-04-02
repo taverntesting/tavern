@@ -1,0 +1,118 @@
+---
+test_name: Test plain text response matching
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match simple text response
+    request:
+      url: "{host}/text_response"
+      method: GET
+    response:
+      status_code: 200
+      text: "Hello, World!"
+
+---
+test_name: Test ASCII table response matching
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match ASCII table response
+    request:
+      url: "{host}/ascii_table"
+      method: GET
+    response:
+      status_code: 200
+      text: |
+        +----+----------+-------+
+        | id | name     | score |
+        +----+----------+-------+
+        |  1 | Alice    |    95 |
+        |  2 | Bob      |    87 |
+        |  3 | Charlie  |    92 |
+        +----+----------+-------+
+
+---
+test_name: Test text response with strict mode
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match text response with strict text on
+    request:
+      url: "{host}/text_response"
+      method: GET
+    response:
+      status_code: 200
+      strict:
+        - text:on
+      text: "Hello, World!"
+
+---
+test_name: Test text response mismatch fails
+
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Mismatched text should fail
+    request:
+      url: "{host}/text_response"
+      method: GET
+    response:
+      status_code: 200
+      text: "Goodbye, World!"
+
+---
+test_name: Test file_body_response matching
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Match response against file content
+    request:
+      url: "{host}/ascii_table"
+      method: GET
+    response:
+      status_code: 200
+      file_body_response: "expected_table.txt"
+
+---
+test_name: Test file_body_response mismatch fails
+
+_xfail: run
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Mismatched file content should fail
+    request:
+      url: "{host}/text_response"
+      method: GET
+    response:
+      status_code: 200
+      file_body_response: "expected_wrong.txt"
+
+---
+test_name: Test echo plain text with POST
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: POST text and verify echo
+    request:
+      url: "{host}/expected_text"
+      method: POST
+      data: "test data to echo"
+    response:
+      status_code: 200
+      text: "test data to echo"

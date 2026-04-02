@@ -129,6 +129,62 @@ class CommonResponse(BaseResponse):
 
         self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
 
+    def _validate_text(self, response_text: str) -> None:
+        """Validate response body as plain text
+
+        Args:
+            response_text: The actual response text (response.text)
+        """
+        expected_text = self.expected.get("text")
+        if expected_text is None:
+            return
+
+        logger.debug("Validating response text against expected text")
+        test_strictness = self.test_block_config.strict
+        block_strictness = test_strictness.option_for("text")
+
+        self.recurse_check_key_match(
+            expected_text, response_text, "text", block_strictness
+        )
+
+    def _validate_file_body_response(self, response_text: str) -> None:
+        """Validate response body against contents of a file
+
+        Args:
+            response_text: The actual response text (response.text)
+        """
+        file_path = self.expected.get("file_body_response")
+        if file_path is None:
+            return
+
+        logger.debug("Validating response text against file: %s", file_path)
+
+        try:
+            with open(file_path, encoding="utf-8") as f:
+                expected_content = f.read()
+        except FileNotFoundError as e:
+            self._adderr(
+                "Expected response file '%s' not found",
+                file_path,
+                e=e,
+            )
+            return
+        except OSError as e:
+            self._adderr(
+                "Error reading expected response file '%s': %s",
+                file_path,
+                str(e),
+                e=e,
+            )
+            return
+
+        test_strictness = self.test_block_config.strict
+        block_strictness = test_strictness.option_for("file_body_response")
+
+        self.recurse_check_key_match(
+            expected_content, response_text, "file_body_response", block_strictness
+        )
+
     def _common_verify_save(
         self,
         body: Any,
