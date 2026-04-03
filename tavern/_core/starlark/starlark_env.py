@@ -5,7 +5,6 @@ import functools
 import logging
 import os
 import pathlib
-import tempfile
 from typing import Any, TypedDict
 
 import requests
@@ -153,24 +152,26 @@ class StarlarkPipelineRunner:
 
         # Parse the script
         dialect = Dialect.extended()
+        dialect.enable_keyword_only_arguments = True
 
         try:
-            with tempfile.TemporaryDirectory() as tmpdir:
-                total = _STARLARK_BUILTINS + script
-                with tempfile.NamedTemporaryFile(
-                    delete=False, dir=tmpdir, suffix=".star"
-                ) as f:
-                    f.write(total.encode("utf-8"))
-                    f.close()
-                    logger.debug("Starlark script written to temporary file %s", f.name)
-                ast = starlark.parse(f.name, total, dialect=dialect)
+            ast = starlark.parse(self.test_path, script, dialect=dialect)
         except starlark.StarlarkError as e:
             logger.error("Failed to parse starlark script: %s", e)
             raise ValueError("Failed to parse starlark script") from e
 
+        def load(filename: str) -> starlark.FrozenModule:
+            if filename == "@tavern_helpers.star":
+                ast = starlark.parse(filename, _STARLARK_BUILTINS, dialect=dialect)
+                mod = starlark.Module()
+                self._setup_builtins(mod)
+                starlark.eval(mod, ast, self.globals)
+                return mod.freeze()
+            raise FileNotFoundError(filename)
+
         # Evaluate the script
         try:
-            starlark.eval(module, ast, self.globals)  # type: ignore[arg-type]
+            starlark.eval(module, ast, self.globals, starlark.FileLoader(load))  # type: ignore[arg-type]
             # result = module.freeze().call("run_pipeline")
         except starlark.StarlarkError as e:
             logger.error("Failed to evaluate starlark script: %s", e)

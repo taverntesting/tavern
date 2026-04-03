@@ -31,6 +31,9 @@ stages:
 
 # Inline Starlark script that controls execution order
 control_flow: |
+  # Load the stage runner
+  load("@tavern_helpers.star", "run_stage")
+
   # First run the get_cookie stage
   resp = run_stage("get_cookie")
 
