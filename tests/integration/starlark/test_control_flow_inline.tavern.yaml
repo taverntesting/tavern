@@ -8,7 +8,7 @@ stages:
   - name: Get cookie
     id: get_cookie
     request:
-      url: "{host}/get_cookie"
+      url: "{global_host}/get_cookie"
       method: POST
       json:
         cookie_name: test-cookie
@@ -20,7 +20,7 @@ stages:
   - name: Echo a value
     id: echo_value
     request:
-      url: "{host}/echo"
+      url: "{global_host}/echo"
       method: POST
       json:
         value: "hello"
