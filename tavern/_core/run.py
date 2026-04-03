@@ -243,7 +243,11 @@ def run_test(
 
         if "control_flow" in test_spec:
             return _run_with_starlark_control_flow(
-                in_file, test_spec, test_block_config, sessions, included_stages
+                in_file,
+                test_spec,
+                test_block_config,
+                sessions,
+                available_stages + included_stages,
             )
 
         def getonly(stage):

@@ -71,3 +71,14 @@ control_flow: |
   if resp.status_code == 200:
     fail("Expected failure")
   fail(resp.status_code)
+
+---
+test_name: Test control_flow with inline Starlark - globally included stages
+
+# Inline Starlark script that controls execution order
+control_flow: |
+  # Load the stage runner
+  load("@tavern_helpers.star", "run_stage")
+
+  # run a stage defined in the global_cfg.yaml file
+  run_stage("finally-nothing-check")
