@@ -230,16 +230,18 @@ def run_test(
     logger.info("Running test : %s", test_block_name)
 
     with ExitStack() as stack:
-        sessions = get_extra_sessions(test_spec, test_block_config)
+        http_plugin = test_block_config.tavern_internal.backends.get("http", "requests")
+        sessions = get_extra_sessions(
+            test_spec,
+            test_block_config,
+            [http_plugin] if "control_flow" in test_spec else None,
+        )
 
         for name, session in sessions.items():
             logger.debug("Entering context for %s", name)
             stack.enter_context(session)
 
         if "control_flow" in test_spec:
-            # FIXME: If the only stages are included stages, then get_extra_sessions will always return empty.
-            # As we only support rest/http with starlark currently, always initialise the http backend/plugin
-            # and pass it here.
             return _run_with_starlark_control_flow(
                 in_file, test_spec, test_block_config, sessions, included_stages
             )
