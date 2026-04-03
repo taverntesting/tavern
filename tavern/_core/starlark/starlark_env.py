@@ -134,6 +134,7 @@ class StarlarkPipelineRunner:
         self._stage_registry = StageRegistry(stages) if stages else StageRegistry([])
         self._test_config: TestConfig = test_config
         self._sessions: dict[str, Any] = sessions
+        self._python_error: BaseException | None = None
 
     def load_and_run(self, script: str) -> Any:
         """Load and run a starlark pipeline script.
@@ -174,7 +175,10 @@ class StarlarkPipelineRunner:
             starlark.eval(module, ast, self.globals, starlark.FileLoader(load))  # type: ignore[arg-type]
         except starlark.StarlarkError as e:
             logger.error("Failed to evaluate starlark script: %s", e)
-            raise RuntimeError("Failed to evaluate starlark script") from e
+            raise exceptions.MultiContextError(
+                "Failed to evaluate starlark script",
+                [self._python_error],
+            ) from e
 
         return None
 
@@ -283,6 +287,7 @@ class StarlarkPipelineRunner:
                 return self._create_response_struct(stage_response)
             except Exception as e:
                 logger.exception("Failed to convert stage response to struct")
+                self._python_error = e
                 raise exceptions.StarlarkError(
                     "Failed to convert stage response to struct"
                 ) from e
@@ -311,6 +316,7 @@ class StarlarkPipelineRunner:
                 raise ValueError(f"Failed to include '{filename}'")
             except Exception as e:
                 logger.error("Failed to include '%s': %s", filename, e)
+                self._python_error = e
                 raise ValueError(f"Failed to include '{filename}'") from e
 
         module.add_callable("include", include)
