@@ -89,8 +89,8 @@ class StageResponse:
 
 
 _STARLARK_BUILTINS = """
-def run_stage(name, *, continue_on_fail=False):
-    resp = __run_stage(name, continue_on_fail)
+def run_stage(name, *, continue_on_fail=False, extra_vars=None):
+    resp = __run_stage(name, continue_on_fail, extra_vars)
 
     # Convert the dict to a starlark object
     return struct(
@@ -189,6 +189,7 @@ class StarlarkPipelineRunner:
         self,
         stage: dict[str, Any],
         continue_on_fail: bool,
+        extra_vars: dict | None = None,
     ) -> StageResponse:
         """Run a single stage and return the response.
 
@@ -196,6 +197,7 @@ class StarlarkPipelineRunner:
             stage: The stage specification dictionary
             continue_on_fail: if True, swallow TavernExceptions and return a
                               failed StageResponse instead of re-raising
+            extra_vars: Additional variables to merge into test config for this stage
 
         Returns:
             StageResponse with the result of running the stage
@@ -206,22 +208,28 @@ class StarlarkPipelineRunner:
         default_strictness = StrictLevel.all_on()
         test_spec = {"test_name": "starlark-pipeline", "stages": [stage]}
 
+        if extra_vars:
+            test_config = self._test_config.with_new_variables()
+            test_config.variables.update(extra_vars)
+        else:
+            test_config = self._test_config
+
         runner = _TestRunner(
             default_global_strictness=default_strictness,
             sessions=self._sessions,
-            test_block_config=self._test_config,
+            test_block_config=test_config,
             test_spec=test_spec,
         )
 
         try:
             tinctures = get_stage_tinctures(stage, test_spec)
-            stage_config = self._test_config.with_strictness(default_strictness)
+            stage_config = test_config.with_strictness(default_strictness)
             response = runner.wrapped_run_stage(stage, stage_config, tinctures)
 
             return StageResponse(
                 success=True,
                 response=response,
-                request_vars=self._test_config.variables,
+                request_vars=test_config.variables,
                 stage_name=stage_name,
             )
 
@@ -234,7 +242,7 @@ class StarlarkPipelineRunner:
             return StageResponse(
                 success=False,
                 response=None,
-                request_vars=self._test_config.variables,
+                request_vars=test_config.variables,
                 stage_name=stage_name,
             )
 
@@ -323,16 +331,9 @@ class StarlarkPipelineRunner:
             module[stage_id] = stage
 
         @_wrap_callable
-        def run_stage_binding(stage_id: str, continue_on_fail: bool) -> Any:
-            """Run a stage by its ID string.
-
-            Args:
-                stage_id: The ID of the stage to run
-                continue_on_fail: if True, don't re-raise exceptions from stages that fail
-
-            Returns:
-                A Starlark struct with status_code, failed, success, response, etc.
-            """
+        def run_stage_binding(
+            stage_id: str, continue_on_fail: bool, extra_vars: dict | None
+        ) -> Any:
             stage = self._stage_registry.get_stage(stage_id)
             if stage is None:
                 raise exceptions.StarlarkError(
@@ -342,7 +343,7 @@ class StarlarkPipelineRunner:
             if self._test_config is None:
                 raise exceptions.StarlarkError("Test config not initialized")
 
-            stage_response = self._run_stage(stage, continue_on_fail)
+            stage_response = self._run_stage(stage, continue_on_fail, extra_vars)
             try:
                 return self._create_response_struct(stage_response)
             except Exception as e:
