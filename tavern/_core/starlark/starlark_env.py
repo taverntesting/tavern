@@ -175,10 +175,13 @@ class StarlarkPipelineRunner:
             starlark.eval(module, ast, self.globals, starlark.FileLoader(load))  # type: ignore[arg-type]
         except starlark.StarlarkError as e:
             logger.error("Failed to evaluate starlark script: %s", e)
-            raise exceptions.MultiContextError(
-                "Failed to evaluate starlark script",
-                [self._python_error],
-            ) from e
+            if self._python_error is not None:
+                raise exceptions.MultiContextError(
+                    "Failed to evaluate starlark script",
+                    [self._python_error],  # type:ignore
+                ) from e
+
+            raise exceptions.StarlarkError("Failed to evaluate starlark script") from e
 
         return None
 
