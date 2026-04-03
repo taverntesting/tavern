@@ -27,14 +27,14 @@ def run_pipeline(ctx):
     ctx, resp = run_stage(ctx, stages_by_id["get-cookie"])
 
     # Check if the stage succeeded
-    if resp.failure:
+    if resp["success"]:
         fail("Get cookie stage failed")
 
     # Echo a value back using updated context
     ctx, resp = run_stage(ctx, stages_by_id["echo-value"])
 
     # Check if the stage succeeded
-    if resp.failure:
+    if resp["success"]:
         fail("Echo stage failed")
 
     # All done - test passed
