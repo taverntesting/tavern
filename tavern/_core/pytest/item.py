@@ -242,7 +242,7 @@ class YamlItem(BaseTavernItem):
     @property
     def obj(self):
         stages = []
-        for i, stage in enumerate(self.spec["stages"]):
+        for i, stage in enumerate(self.spec.get("stages", [])):
             name = "<unknown>"
             if "name" in stage:
                 name = stage["name"]
@@ -282,7 +282,7 @@ class YamlItem(BaseTavernItem):
 
             verify_tests(self.spec)
 
-            for stage in self.spec["stages"]:
+            for stage in self.spec.get("stages", []):
                 if not stage.get("name"):
                     if not stage.get("id"):
                         # Should never actually reach here, should be caught at schema check time

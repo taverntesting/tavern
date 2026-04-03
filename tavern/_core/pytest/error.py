@@ -214,8 +214,12 @@ class ReprdError(TerminalRepr):
             # Fallback, we don't know which stage it is
             stages = self.item.spec["stages"]
 
-            first_line = start_mark(stages[0]).line - 1
-            last_line = end_mark(stages[-1]).line
+            try:
+                first_line = start_mark(stages[0]).line - 1
+                last_line = end_mark(stages[-1]).line
+            except IndexError:
+                first_line = 0
+                last_line = 0
 
             line_start = None
         else:
@@ -230,9 +234,12 @@ class ReprdError(TerminalRepr):
         tw.line("")
 
         if not stage:
-            tw.line(
-                "[Could not determine which stage was running]", red=True, bold=True
-            )
+            if first_line == last_line == 0:
+                tw.line("[Only included stages were present]", red=True, bold=True)
+            else:
+                tw.line(
+                    "[Could not determine which stage was running]", red=True, bold=True
+                )
         elif missing_format_vars:
             tw.line("Missing format vars for stage", red=True, bold=True)
         else:

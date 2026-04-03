@@ -46,3 +46,28 @@ control_flow: |
   if resp.status_code == 200:
     fail("Expected failure")
   fail(resp.status_code)
+
+---
+test_name: Test control_flow with inline Starlark - included stages
+
+includes:
+  # Contains stages with an 'id'
+  - !include stages.yaml
+
+# Inline Starlark script that controls execution order
+control_flow: |
+  # Load the stage runner
+  load("@tavern_helpers.star", "run_stage")
+
+  # First run the get_cookie stage
+  resp = run_stage("get-cookie-included")
+
+  # Then run the echo_value stage
+  resp = run_stage("echo-value-included")
+
+  # success
+  if resp.failed:
+    fail("echoing did not succeed")
+  if resp.status_code == 200:
+    fail("Expected failure")
+  fail(resp.status_code)

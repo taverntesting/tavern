@@ -38,6 +38,7 @@ def _run_with_starlark_control_flow(
     test_spec: MutableMapping,
     global_cfg: TestConfig,
     sessions: dict[str, Any],
+    included_stages: list[dict],
 ) -> None:
     """
     Executes a test using Starlark-based control flow. This function integrates
@@ -53,6 +54,7 @@ def _run_with_starlark_control_flow(
             settings and variables used across multiple tests.
         sessions: A dictionary containing session-related data (e.g., session
             state or objects) that may be required during the test execution.
+        included_stages: A list of stages included in the test using !include
     """
     # Local import to avoid circular dependency
     from tavern._core.starlark.starlark_env import StarlarkPipelineRunner
@@ -70,7 +72,7 @@ def _run_with_starlark_control_flow(
 
     runner = StarlarkPipelineRunner(
         test_path=str(in_file),
-        stages=test_spec.get("stages", []),
+        stages=test_spec.get("stages", []) + included_stages,
         test_config=test_block_config,
         sessions=sessions,
     )
@@ -218,7 +220,7 @@ def run_test(
         tavern_box, test_block_config, test_spec, available_stages
     )
     all_stages = {s["id"]: s for s in available_stages + included_stages}
-    test_spec["stages"] = _resolve_test_stages(test_spec["stages"], all_stages)
+    test_spec["stages"] = _resolve_test_stages(test_spec.get("stages", []), all_stages)
     finally_stages = _resolve_test_stages(test_spec.get("finally", []), all_stages)
 
     test_block_config.variables["tavern"] = tavern_box["tavern"]
@@ -235,8 +237,11 @@ def run_test(
             stack.enter_context(session)
 
         if "control_flow" in test_spec:
+            # FIXME: If the only stages are included stages, then get_extra_sessions will always return empty.
+            # As we only support rest/http with starlark currently, always initialise the http backend/plugin
+            # and pass it here.
             return _run_with_starlark_control_flow(
-                in_file, test_spec, test_block_config, sessions
+                in_file, test_spec, test_block_config, sessions, included_stages
             )
 
         def getonly(stage):

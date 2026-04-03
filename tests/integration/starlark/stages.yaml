@@ -2,7 +2,7 @@
 # Sample stages file for starlark pipeline tests
 
 stages:
-  - id: get-cookie
+  - id: get-cookie-included
     name: Get tavern-cookie-1
     request:
       url: "{host}/get_cookie"
@@ -14,7 +14,7 @@ stages:
       cookies:
         - tavern-cookie-1
 
-  - id: echo-value
+  - id: echo-value-included
     name: Echo a value back
     request:
       url: "{host}/echo"
