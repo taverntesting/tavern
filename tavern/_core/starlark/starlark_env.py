@@ -176,12 +176,15 @@ class StarlarkPipelineRunner:
         except starlark.StarlarkError as e:
             logger.error("Failed to evaluate starlark script: %s", e)
             if self._python_error is not None:
-                raise exceptions.MultiContextError(
+                exc = exceptions.MultiContextError(
                     "Failed to evaluate starlark script",
                     [self._python_error],  # type:ignore
-                ) from e
+                )
+                exc.stage = self._python_error.stage  # type:ignore
+            else:
+                exc = exceptions.StarlarkError("Failed to evaluate starlark script")  # type:ignore
 
-            raise exceptions.StarlarkError("Failed to evaluate starlark script") from e
+            raise exc from e
 
         return None
 
@@ -228,6 +231,7 @@ class StarlarkPipelineRunner:
         except TavernException as e:
             logger.error("Stage '%s' failed: %s", stage_name, str(e), exc_info=True)
             if not continue_on_fail:
+                e.stage = stage
                 raise
             return StageResponse(
                 success=False,
@@ -291,6 +295,7 @@ class StarlarkPipelineRunner:
             except Exception as e:
                 logger.exception("Failed to convert stage response to struct")
                 self._python_error = e
+                self._python_error.stage = stage  # type:ignore
                 raise exceptions.StarlarkError(
                     "Failed to convert stage response to struct"
                 ) from e
