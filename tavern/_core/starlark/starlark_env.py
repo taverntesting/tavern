@@ -269,7 +269,56 @@ class StarlarkPipelineRunner:
         )
 
     def _setup_builtins(self, module: Module) -> None:
-        """Set up built-in functions available in starlark scripts."""
+        """Set up built-in functions available in starlark scripts.
+
+        Only a basic subset of types can be passed into starlark (anything that can be dumped to json).
+        To create a simple wrapper script, define the function in the _STARLARK_BUILTINS string.
+
+            def add(a, b):
+                return a + b
+
+        This can then be used easily from a 'control_flow' script:
+
+            load("@tavern_helpers.star", "add")
+
+            result = add(1, 2)
+            log(result)  # logs '3'
+
+        To create a more advanced wrapper, such as a 'library' module:
+
+        1. create the basic wrapper functions and a global 'struct' in the _STARLARK_BUILTINS string.
+
+            def _re_match(pattern, s):
+                return __re_match(pattern, s)
+
+            def _re_sub(pattern, repl, s):
+                return __re_sub(pattern, repl, s)
+
+            re = struct(match=_re_match, sub=_re_sub)
+
+        2. Add a wrapper function into this function and add it with module.add_callable.
+           dunder names are used to 'hide' the original function from the user.
+
+            @_wrap_callable
+            def re_match(pattern, s):
+                return re.match(pattern, s)
+
+            @_wrap_callable
+            def re_sub(pattern, repl, s):
+                return re.sub(pattern, repl, s)
+
+            module.add_callable("__re_match", re_match)
+            module.add_callable("__re_sub", re_sub)
+
+        3. Use from starlark by loading as before:
+
+            load("@tavern_helpers.star", "re")
+
+            resp = run_stage("my_stage")
+
+            if not re.match("(one_thing|another_thing)", resp.json["key"]):
+                fail("No match found")
+        """
         for stage_id, stage in self._stage_registry.get_all_stages().items():
             module[stage_id] = stage
 
