@@ -38,3 +38,8 @@ control_flow: |
   resp = run_stage("echo_value")
 
   # success
+  if resp.failed:
+    fail("echoing did not succeed")
+  if resp.status_code == 200:
+    fail("Expected failure")
+  fail(resp.status_code)

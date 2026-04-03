@@ -37,12 +37,31 @@ def _run_with_starlark_control_flow(
     in_file: pathlib.Path,
     test_spec: MutableMapping,
     global_cfg: TestConfig,
+    sessions: dict[str, Any],
 ) -> None:
-    """Run test with Starlark control_flow script."""
+    """
+    Executes a test using Starlark-based control flow. This function integrates
+    a control flow script specified in the `test_spec` with the provided
+    configuration, running it against an instance of `StarlarkPipelineRunner`.
+    Logs progress and raises any execution errors encountered.
+
+    Args:
+        in_file: The path to the input test file containing test definitions.
+        test_spec: A mutable mapping containing details of the test case,
+            including control flow script and other test-related configurations.
+        global_cfg: The global test configuration object, which contains shared
+            settings and variables used across multiple tests.
+        sessions: A dictionary containing session-related data (e.g., session
+            state or objects) that may be required during the test execution.
+    """
+    # Local import to avoid circular dependency
     from tavern._core.starlark.starlark_env import StarlarkPipelineRunner
 
     test_block_config = global_cfg.copy()
     test_block_config.variables["tavern"] = get_tavern_box()["tavern"]
+
+    test_block_config.variables.pop("event_loop_policy")
+    test_block_config.variables.pop("_session_faker")
 
     control_flow_script = test_spec["control_flow"]
     test_block_name = test_spec["test_name"]
@@ -52,11 +71,12 @@ def _run_with_starlark_control_flow(
     runner = StarlarkPipelineRunner(
         test_path=str(in_file),
         stages=test_spec.get("stages", []),
+        test_config=test_block_config,
+        sessions=sessions,
     )
 
     try:
         runner.load_and_run(
-            test_config=test_block_config,
             script=control_flow_script,
             test_spec=dict(test_spec),
         )
@@ -184,9 +204,6 @@ def run_test(
         TavernException: If any of the tests failed
     """
 
-    if "control_flow" in test_spec:
-        return _run_with_starlark_control_flow(in_file, test_spec, global_cfg)
-
     # Initialise test config for this test with the global configuration before
     # starting
     test_block_config = global_cfg.copy()
@@ -219,6 +236,11 @@ def run_test(
         for name, session in sessions.items():
             logger.debug("Entering context for %s", name)
             stack.enter_context(session)
+
+        if "control_flow" in test_spec:
+            return _run_with_starlark_control_flow(
+                in_file, test_spec, test_block_config, sessions
+            )
 
         def getonly(stage):
             o = stage.get("only")
@@ -399,13 +421,16 @@ class _TestRunner:
 
     def wrapped_run_stage(
         self, stage: dict, stage_config: TestConfig, tinctures: Tinctures
-    ) -> None:
+    ) -> Any:
         """Run one stage from the test
 
         Args:
             stage: specification of stage to be run
             stage_config: available variables for test
             tinctures: tinctures for this stage/test
+
+        Returns:
+            The response from the request. This could be any type of response, depending on the request type.
         """
         stage = copy.deepcopy(stage)
         name = stage["name"]
@@ -445,3 +470,5 @@ class _TestRunner:
 
         tavern_box.pop("request_vars")
         delay(stage, "after", stage_config.variables)
+
+        return response
