@@ -76,10 +76,7 @@ def _run_with_starlark_control_flow(
     )
 
     try:
-        runner.load_and_run(
-            script=control_flow_script,
-            test_spec=dict(test_spec),
-        )
+        runner.load_and_run(script=control_flow_script)
     except Exception as e:
         logger.error("Starlark control_flow failed: %s", e)
         raise

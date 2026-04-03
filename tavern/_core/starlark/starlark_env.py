@@ -136,19 +136,15 @@ class StarlarkPipelineRunner:
         self._test_config: TestConfig = test_config
         self._sessions: dict[str, Any] = sessions
 
-    def load_and_run(self, script: str, test_spec: dict[str, Any]) -> Any:
+    def load_and_run(self, script: str) -> Any:
         """Load and run a starlark pipeline script.
 
         Args:
             script: The starlark script content
-            test_spec: The test specification dictionary
 
         Returns:
             The return value of the script, if any
         """
-        stages = test_spec.get("stages", [])
-        self._stage_registry = StageRegistry(stages)
-
         # Create the starlark module
         module = Module()
 
