@@ -172,7 +172,6 @@ class StarlarkPipelineRunner:
         # Evaluate the script
         try:
             starlark.eval(module, ast, self.globals, starlark.FileLoader(load))  # type: ignore[arg-type]
-            # result = module.freeze().call("run_pipeline")
         except starlark.StarlarkError as e:
             logger.error("Failed to evaluate starlark script: %s", e)
             raise RuntimeError("Failed to evaluate starlark script") from e
@@ -280,7 +279,13 @@ class StarlarkPipelineRunner:
                 raise exceptions.StarlarkError("Test config not initialized")
 
             stage_response = self._run_stage(stage, continue_on_fail)
-            return self._create_response_struct(stage_response)
+            try:
+                return self._create_response_struct(stage_response)
+            except Exception as e:
+                logger.exception("Failed to convert stage response to struct")
+                raise exceptions.StarlarkError(
+                    "Failed to convert stage response to struct"
+                ) from e
 
         module.add_callable("__run_stage", run_stage_binding)
 
