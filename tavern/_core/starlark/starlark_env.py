@@ -3,8 +3,6 @@
 import dataclasses
 import functools
 import logging
-import os
-import pathlib
 from typing import Any, TypedDict
 
 import requests
@@ -13,7 +11,6 @@ from starlark import Dialect, Globals, Module
 
 from tavern._core import exceptions
 from tavern._core.exceptions import TavernException
-from tavern._core.loader import get_include_dirs, load_single_document_yaml
 from tavern._core.pytest.config import TestConfig
 from tavern._core.run import _TestRunner
 from tavern._core.strict_util import StrictLevel
@@ -356,32 +353,32 @@ class StarlarkPipelineRunner:
 
         module.add_callable("__run_stage", run_stage_binding)
 
-        @_wrap_callable
-        def include(filename: str) -> dict[str, Any]:
-            """Load a YAML file and return its contents.
-
-            Args:
-                filename: Path to the YAML file to include
-
-            Returns:
-                The parsed YAML contents as a dictionary
-            """
-            try:
-                for directory in get_include_dirs(
-                    [pathlib.Path(self.test_path).parent]
-                ):
-                    abs_filename = os.path.abspath(os.path.join(directory, filename))
-                    logger.debug("Trying to include '%s'", abs_filename)
-                    if os.access(abs_filename, os.R_OK):
-                        return load_single_document_yaml(abs_filename)
-
-                raise ValueError(f"Failed to include '{filename}'")
-            except Exception as e:
-                logger.error("Failed to include '%s': %s", filename, e)
-                self._python_error = e
-                raise ValueError(f"Failed to include '{filename}'") from e
-
-        module.add_callable("include", include)
+        # @_wrap_callable
+        # def include(filename: str) -> dict[str, Any]:
+        #     """Load a YAML file and return its contents.
+        #
+        #     Args:
+        #         filename: Path to the YAML file to include
+        #
+        #     Returns:
+        #         The parsed YAML contents as a dictionary
+        #     """
+        #     try:
+        #         for directory in get_include_dirs(
+        #             [pathlib.Path(self.test_path).parent]
+        #         ):
+        #             abs_filename = os.path.abspath(os.path.join(directory, filename))
+        #             logger.debug("Trying to include '%s'", abs_filename)
+        #             if os.access(abs_filename, os.R_OK):
+        #                 return load_single_document_yaml(abs_filename)
+        #
+        #         raise ValueError(f"Failed to include '{filename}'")
+        #     except Exception as e:
+        #         logger.error("Failed to include '%s': %s", filename, e)
+        #         self._python_error = e
+        #         raise ValueError(f"Failed to include '{filename}'") from e
+        #
+        # module.add_callable("include", include)
 
         @_wrap_callable
         def log(s: str) -> None:
