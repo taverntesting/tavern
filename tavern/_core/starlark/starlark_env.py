@@ -19,6 +19,7 @@ from tavern._core.run import _TestRunner, get_extra_sessions
 from tavern._core.strict_util import StrictLevel
 from tavern._core.tincture import get_stage_tinctures
 
+from .stage_registry import StageRegistry
 from .types import from_starlark, to_starlark
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -182,11 +183,12 @@ class StarlarkPipelineRunner:
     control the flow of test execution.
     """
 
-    def __init__(self, test_path: str):
+    def __init__(self, test_path: str, stages: list[dict] | None = None):
         """Initialize the pipeline runner.
 
         Args:
             test_path: Path to the .tavern.star file being run
+            stages: Optional list of stage dictionaries to register
         """
         self.test_path = test_path
         self.globals = Globals.standard().extended_by(
@@ -195,6 +197,9 @@ class StarlarkPipelineRunner:
             ]
         )
         self.sessions: dict[str, Any] = {}
+        self._stage_registry = StageRegistry(stages) if stages else StageRegistry([])
+        self._test_config: TestConfig | None = None
+        self._sessions: dict[str, Any] | None = None
 
     def load_and_run(
         self, test_config: TestConfig, script: str, test_spec: dict[str, Any]
@@ -209,6 +214,11 @@ class StarlarkPipelineRunner:
         Returns:
             The return value of the script, if any
         """
+        stages = test_spec.get("stages", [])
+        self._stage_registry = StageRegistry(stages)
+        self._test_config = test_config
+        self._sessions = {}
+
         # Create the starlark module
         module = Module()
 
@@ -230,6 +240,7 @@ class StarlarkPipelineRunner:
         # Use ExitStack to manage session context like in run.py
         with ExitStack() as stack:
             self.sessions = get_extra_sessions(test_spec, test_config)
+            self._sessions = self.sessions
 
             for name, session in self.sessions.items():
                 logger.debug("Entering context for %s", name)
@@ -238,21 +249,59 @@ class StarlarkPipelineRunner:
             # Evaluate the script
             try:
                 starlark.eval(module, ast, self.globals)  # type: ignore[arg-type]
-                ctx = to_starlark(
-                    {
-                        "test_config": test_config,
-                        "sessions": self.sessions,
-                    }
-                )
-                result = module.freeze().call("run_pipeline", ctx)
+                result = module.freeze().call("run_pipeline")
             except starlark.StarlarkError as e:
                 logger.error("Failed to evaluate starlark script: %s", e)
                 raise RuntimeError("Failed to evaluate starlark script") from e
 
         return result
 
+    def run_stage(self, stage_id: str) -> Any:
+        """Run a stage by its ID string.
+
+        Args:
+            stage_id: The ID of the stage to run
+
+        Returns:
+            A Starlark struct with status_code, failed, success, response, etc.
+        """
+        stage = self._stage_registry.get_stage(stage_id)
+        if stage is None:
+            raise exceptions.StarlarkError(f"Stage with id '{stage_id}' not found")
+
+        if self._test_config is None:
+            raise exceptions.StarlarkError("Test config not initialized")
+
+        stage_response = _run_stage(stage, self._test_config, self._sessions)
+        return self._create_response_struct(stage_response)
+
+    def _create_response_struct(self, stage_response: StageResponse) -> Any:
+        """Convert StageResponse to Starlark struct."""
+        response_data = stage_response.response
+        return starlark.struct(
+            status_code=response_data.get("status_code", 0),
+            failed=not stage_response.success,
+            success=stage_response.success,
+            body=response_data.get("body"),
+            headers=response_data.get("headers", {}),
+            cookies=response_data.get("cookies", {}),
+            request_vars=stage_response.request_vars,
+            stage_name=stage_response.stage_name,
+        )
+
+    def _create_run_stage_binding(self):
+        @_wrap_callable
+        def run_stage_binding(stage_id: str) -> Any:
+            return self.run_stage(stage_id)
+
+        return run_stage_binding
+
     def _setup_builtins(self, module: Module) -> None:
         """Set up built-in functions available in starlark scripts."""
+        for stage_id, stage in self._stage_registry.get_all_stages().items():
+            module.set(stage_id, stage)
+
+        module.add_callable("run_stage", self._create_run_stage_binding())
 
         @_wrap_callable
         def include(filename: str) -> dict[str, Any]:
@@ -279,46 +328,6 @@ class StarlarkPipelineRunner:
                 raise ValueError(f"Failed to include '{filename}'") from e
 
         module.add_callable("include", include)
-
-        @_wrap_callable
-        def run_stage(
-            ctx: PipelineContext, stage: dict[str, Any]
-        ) -> tuple[PipelineContext, object]:
-            """Run a single test stage and return the updated context.
-
-            Args:
-                ctx: The PipelineContext from previous stage execution
-                stage: A dictionary containing the stage specification
-                   - name: Human readable name
-                   - request: Request specification (url, method, etc.)
-                   - response: Expected response (status_code, etc.)
-
-            Returns:
-                A tuple of (updated PipelineContext, StageResponse with success/failure and response data)
-            """
-            # Get test_config and sessions from the context
-            # The test_config reference is mutated in place during stage execution
-            test_config = TestConfig.from_starlark(ctx["test_config"])  # type:ignore
-            sessions = ctx["sessions"]
-
-            # Run the stage - this mutates test_config.variables in place
-            try:
-                response = _run_stage(stage, test_config, sessions)
-            except Exception as e:
-                logger.exception("Failed to run stage")
-                raise exceptions.StarlarkError("Failed to run stage") from e
-
-            # Create a new context with updated test_config
-            # This ensures Starlark sees the updated state
-            new_ctx = to_starlark(
-                {
-                    "test_config": test_config,
-                    "sessions": sessions,
-                }
-            )
-            return new_ctx, response
-
-        module.add_callable("run_stage", run_stage)
 
         @_wrap_callable
         def log(s: str) -> None:

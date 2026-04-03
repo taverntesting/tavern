@@ -400,3 +400,19 @@ mapping:
     sequence:
       - include: stage
       - include: stage_ref
+
+  finally:
+    type: seq
+    required: false
+    sequence:
+      - include: stage
+      - include: stage_ref
+
+  control_flow:
+    type: str
+    required: false
+    desc: |
+      Starlark script that controls the execution order of stages.
+      When present, stages are NOT executed sequentially - instead,
+      the Starlark script calls run_stage(stage_id) to execute stages.
+      Stages must have an 'id' field to be callable from Starlark.

@@ -33,6 +33,38 @@ from .tincture import Tinctures, get_stage_tinctures
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+def _run_with_starlark_control_flow(
+    in_file: pathlib.Path,
+    test_spec: MutableMapping,
+    global_cfg: TestConfig,
+) -> None:
+    """Run test with Starlark control_flow script."""
+    from tavern._core.starlark.starlark_env import StarlarkPipelineRunner
+
+    test_block_config = global_cfg.copy()
+    test_block_config.variables["tavern"] = get_tavern_box()["tavern"]
+
+    control_flow_script = test_spec["control_flow"]
+    test_block_name = test_spec["test_name"]
+
+    logger.info("Running test with Starlark control_flow: %s", test_block_name)
+
+    runner = StarlarkPipelineRunner(
+        test_path=str(in_file),
+        stages=test_spec.get("stages", []),
+    )
+
+    try:
+        runner.load_and_run(
+            test_config=test_block_config,
+            script=control_flow_script,
+            test_spec=dict(test_spec),
+        )
+    except Exception as e:
+        logger.error("Starlark control_flow failed: %s", e)
+        raise
+
+
 def _resolve_test_stages(
     stages: list[Mapping], available_stages: Mapping
 ) -> list[Mapping]:
@@ -151,6 +183,9 @@ def run_test(
     Raises:
         TavernException: If any of the tests failed
     """
+
+    if "control_flow" in test_spec:
+        return _run_with_starlark_control_flow(in_file, test_spec, global_cfg)
 
     # Initialise test config for this test with the global configuration before
     # starting

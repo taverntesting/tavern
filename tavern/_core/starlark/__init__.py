@@ -1,6 +1,6 @@
 """Starlark pipeline support for Tavern."""
 
-from .pytest_plugin import pytest_collect_file
+from .stage_registry import StageRegistry
 from .starlark_env import (
     PipelineContext,
     StarlarkPipelineRunner,
@@ -8,6 +8,6 @@ from .starlark_env import (
 
 __all__ = [
     "PipelineContext",
+    "StageRegistry",
     "StarlarkPipelineRunner",
-    "pytest_collect_file",
 ]
