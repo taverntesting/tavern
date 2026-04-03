@@ -9,6 +9,7 @@ from unittest.mock import Mock, patch
 
 import pytest
 import requests
+import starlark
 
 from tavern._core.exceptions import TavernException
 from tavern._core.starlark.stage_registry import StageRegistry
@@ -102,6 +103,19 @@ class TestWrapCallable:
 
         result = get_dict()
         assert result == {"key": "value"}
+
+    def test_wrap_callable_converts_opaque_return_to_starlark(self):
+        """Test that _wrap_callable converts opaque return value to starlark format."""
+
+        class _boobllb:
+            pass
+
+        @_wrap_callable
+        def get_dict():
+            return _boobllb
+
+        result = get_dict()
+        assert isinstance(result, starlark.OpaquePythonObject)
 
 
 # ==============================================================================
