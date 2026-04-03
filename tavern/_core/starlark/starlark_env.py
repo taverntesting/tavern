@@ -89,71 +89,9 @@ class StageResponse:
         )
 
 
-def _run_stage(
-    stage: dict[str, Any],
-    test_config: TestConfig,
-    sessions: dict[str, Any],
-) -> StageResponse:
-    """Run a single stage and return the response.
-
-    Args:
-        stage: The stage specification dictionary
-        test_config: The test configuration with available variables
-        sessions: Optional dictionary of session contexts to use for the stage.
-                  If None, creates an empty sessions dict.
-
-    Returns:
-        StageResponse with the result of running the stage
-    """
-    stage = dict(stage)  # Make a copy to avoid mutating the original
-    stage_name = stage.get("name", "unnamed-stage")
-
-    # Get default strictness (use all_on as default)
-    default_strictness = StrictLevel.all_on()
-
-    # Create a minimal test spec
-    test_spec = {"test_name": "starlark-pipeline", "stages": [stage]}
-
-    # Create runner
-    runner = _TestRunner(
-        default_global_strictness=default_strictness,
-        sessions=sessions,
-        test_block_config=test_config,
-        test_spec=test_spec,
-    )
-
-    try:
-        # Get tinctures for this stage
-        tinctures = get_stage_tinctures(stage, test_spec)
-
-        # Create stage config with strictness
-        stage_config = test_config.with_strictness(default_strictness)
-
-        # Run the stage using the internal wrapped method
-        response = runner.wrapped_run_stage(stage, stage_config, tinctures)
-
-        return StageResponse(
-            success=True,
-            response=response,
-            request_vars=test_config.variables,
-            stage_name=stage_name,
-        )
-
-    except TavernException as e:
-        # Only catch tavern exceptions here - any other exception should be raised
-        logger.error("Stage '%s' failed: %s", stage_name, str(e), exc_info=True)
-        # Even on failure, test_config may have partial updates
-        return StageResponse(
-            success=False,
-            response=None,
-            request_vars=test_config.variables,
-            stage_name=stage_name,
-        )
-
-
 _STARLARK_BUILTINS = """
-def run_stage(name):
-    resp = __run_stage(name)
+def run_stage(name, *, continue_on_fail=False):
+    resp = __run_stage(name, continue_on_fail)
 
     # Convert the dict to a starlark object
     return struct(
@@ -244,24 +182,56 @@ class StarlarkPipelineRunner:
 
         return None
 
-    def run_stage(self, stage_id: str) -> dict[str, Any]:
-        """Run a stage by its ID string.
+    def _run_stage(
+        self,
+        stage: dict[str, Any],
+        continue_on_fail: bool,
+    ) -> StageResponse:
+        """Run a single stage and return the response.
 
         Args:
-            stage_id: The ID of the stage to run
+            stage: The stage specification dictionary
+            continue_on_fail: if True, swallow TavernExceptions and return a
+                              failed StageResponse instead of re-raising
 
         Returns:
-            A Starlark struct with status_code, failed, success, response, etc.
+            StageResponse with the result of running the stage
         """
-        stage = self._stage_registry.get_stage(stage_id)
-        if stage is None:
-            raise exceptions.StarlarkError(f"Stage with id '{stage_id}' not found")
+        stage = dict(stage)  # Make a copy to avoid mutating the original
+        stage_name = stage.get("name", "unnamed-stage")
 
-        if self._test_config is None:
-            raise exceptions.StarlarkError("Test config not initialized")
+        default_strictness = StrictLevel.all_on()
+        test_spec = {"test_name": "starlark-pipeline", "stages": [stage]}
 
-        stage_response = _run_stage(stage, self._test_config, self._sessions)
-        return self._create_response_struct(stage_response)
+        runner = _TestRunner(
+            default_global_strictness=default_strictness,
+            sessions=self._sessions,
+            test_block_config=self._test_config,
+            test_spec=test_spec,
+        )
+
+        try:
+            tinctures = get_stage_tinctures(stage, test_spec)
+            stage_config = self._test_config.with_strictness(default_strictness)
+            response = runner.wrapped_run_stage(stage, stage_config, tinctures)
+
+            return StageResponse(
+                success=True,
+                response=response,
+                request_vars=self._test_config.variables,
+                stage_name=stage_name,
+            )
+
+        except TavernException as e:
+            logger.error("Stage '%s' failed: %s", stage_name, str(e), exc_info=True)
+            if not continue_on_fail:
+                raise
+            return StageResponse(
+                success=False,
+                response=None,
+                request_vars=self._test_config.variables,
+                stage_name=stage_name,
+            )
 
     def _create_response_struct(self, stage_response: StageResponse) -> dict[str, Any]:
         """Convert StageResponse to dict that starlark converts to struct."""
@@ -295,8 +265,25 @@ class StarlarkPipelineRunner:
             module[stage_id] = stage
 
         @_wrap_callable
-        def run_stage_binding(stage_id: str) -> Any:
-            return self.run_stage(stage_id)
+        def run_stage_binding(stage_id: str, continue_on_fail: bool) -> Any:
+            """Run a stage by its ID string.
+
+            Args:
+                stage_id: The ID of the stage to run
+                continue_on_fail: if True, don't re-raise exceptions from stages that fail
+
+            Returns:
+                A Starlark struct with status_code, failed, success, response, etc.
+            """
+            stage = self._stage_registry.get_stage(stage_id)
+            if stage is None:
+                raise exceptions.StarlarkError(f"Stage with id '{stage_id}' not found")
+
+            if self._test_config is None:
+                raise exceptions.StarlarkError("Test config not initialized")
+
+            stage_response = self._run_stage(stage, continue_on_fail)
+            return self._create_response_struct(stage_response)
 
         module.add_callable("__run_stage", run_stage_binding)
 
