@@ -252,10 +252,14 @@ class StarlarkPipelineRunner:
             return base_dict
         elif isinstance(stage_response.response, requests.Response):
             rest_response = stage_response.response
+            content_type = rest_response.headers.get("Content-Type", "")
+
             base_dict.update(
                 {
                     "status_code": rest_response.status_code,
-                    "body": rest_response.json(),
+                    "body": rest_response.json()
+                    if "application/json" in content_type
+                    else rest_response.content,
                     "headers": rest_response.headers,
                     "cookies": rest_response.cookies,
                 }
