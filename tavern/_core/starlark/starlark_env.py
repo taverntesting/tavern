@@ -176,15 +176,12 @@ class StarlarkPipelineRunner:
         except starlark.StarlarkError as e:
             logger.error("Failed to evaluate starlark script: %s", e)
             if self._python_error is not None:
-                exc = exceptions.MultiContextError(
-                    "Failed to evaluate starlark script",
-                    [self._python_error],  # type:ignore
-                )
+                exc = exceptions.StarlarkError("Failed to evaluate starlark script")
                 exc.stage = self._python_error.stage  # type:ignore
+                raise self._python_error from exc
             else:
                 exc = exceptions.StarlarkError("Failed to evaluate starlark script")  # type:ignore
-
-            raise exc from e
+                raise exc from e
 
         return None
 
@@ -231,7 +228,8 @@ class StarlarkPipelineRunner:
         except TavernException as e:
             logger.error("Stage '%s' failed: %s", stage_name, str(e), exc_info=True)
             if not continue_on_fail:
-                e.stage = stage
+                self._python_error = e
+                self._python_error.stage = stage
                 raise
             return StageResponse(
                 success=False,
