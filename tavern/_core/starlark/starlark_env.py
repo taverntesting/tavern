@@ -288,7 +288,9 @@ class StarlarkPipelineRunner:
             """
             stage = self._stage_registry.get_stage(stage_id)
             if stage is None:
-                raise exceptions.StarlarkError(f"Stage with id '{stage_id}' not found")
+                raise exceptions.StarlarkError(
+                    f"Stage with id '{stage_id}' not found (had {list(self._stage_registry.get_all_stages().keys())})"
+                )
 
             if self._test_config is None:
                 raise exceptions.StarlarkError("Test config not initialized")
