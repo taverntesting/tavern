@@ -121,7 +121,6 @@ tavern-ci = "tavern.entry:main"
 [project.entry-points.pytest11]
 
 tavern = "tavern._core.pytest"
-tavern_starlark = "tavern._core.starlark"
 
 [project.entry-points.tavern_http]
 requests = "tavern._plugins.rest.tavernhook:TavernRestPlugin"
