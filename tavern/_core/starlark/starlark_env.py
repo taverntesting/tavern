@@ -233,7 +233,7 @@ class StarlarkPipelineRunner:
 
         try:
             ast = starlark.parse(str(self.test_path), script, dialect=dialect)
-        except starlark.Error as e:
+        except starlark.StarlarkError as e:
             logger.error("Failed to parse starlark script: %s", e)
             raise ValueError("Failed to parse starlark script") from e
 
@@ -299,7 +299,7 @@ class StarlarkPipelineRunner:
     def _setup_builtins(self, module: Module) -> None:
         """Set up built-in functions available in starlark scripts."""
         for stage_id, stage in self._stage_registry.get_all_stages().items():
-            module.set(stage_id, stage)
+            module[stage_id] = stage
 
         module.add_callable("run_stage", self._create_run_stage_binding())
 

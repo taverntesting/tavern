@@ -1,0 +1,40 @@
+---
+# Test for inline control_flow Starlark script
+# This test demonstrates the new YAML+control_flow format
+
+test_name: Test control_flow with inline Starlark - basic sequential
+
+stages:
+  - name: Get cookie
+    id: get_cookie
+    request:
+      url: "{host}/get_cookie"
+      method: POST
+      json:
+        cookie_name: test-cookie
+    response:
+      status_code: 200
+      cookies:
+        - test-cookie
+
+  - name: Echo a value
+    id: echo_value
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "hello"
+    response:
+      status_code: 200
+      json:
+        value: "hello"
+
+# Inline Starlark script that controls execution order
+control_flow: |
+  # First run the get_cookie stage
+  resp = run_stage("get_cookie")
+
+  # Then run the echo_value stage
+  resp = run_stage("echo_value")
+
+  # success
