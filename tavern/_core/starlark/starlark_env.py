@@ -275,19 +275,19 @@ class StarlarkPipelineRunner:
         stage_response = _run_stage(stage, self._test_config, self._sessions)
         return self._create_response_struct(stage_response)
 
-    def _create_response_struct(self, stage_response: StageResponse) -> Any:
-        """Convert StageResponse to Starlark struct."""
+    def _create_response_struct(self, stage_response: StageResponse) -> dict:
+        """Convert StageResponse to dict that starlark converts to struct."""
         response_data = stage_response.response
-        return starlark.struct(
-            status_code=response_data.get("status_code", 0),
-            failed=not stage_response.success,
-            success=stage_response.success,
-            body=response_data.get("body"),
-            headers=response_data.get("headers", {}),
-            cookies=response_data.get("cookies", {}),
-            request_vars=stage_response.request_vars,
-            stage_name=stage_response.stage_name,
-        )
+        return {
+            "status_code": response_data.get("status_code", 0),
+            "failed": not stage_response.success,
+            "success": stage_response.success,
+            "body": response_data.get("body"),
+            "headers": response_data.get("headers", {}),
+            "cookies": response_data.get("cookies", {}),
+            "request_vars": stage_response.request_vars,
+            "stage_name": stage_response.stage_name,
+        }
 
     def _create_run_stage_binding(self):
         @_wrap_callable
