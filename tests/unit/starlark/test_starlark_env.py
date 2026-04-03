@@ -1,0 +1,878 @@
+"""Unit tests for the starlark_env module.
+
+These tests verify the StarlarkPipelineRunner and related functionality,
+including run_stage behavior and extra_vars formatting.
+"""
+
+import copy
+from unittest.mock import Mock, patch
+
+import pytest
+import requests
+
+from tavern._core.exceptions import TavernException
+from tavern._core.pytest.config import TavernInternalConfig, TestConfig
+from tavern._core.starlark.stage_registry import StageRegistry
+from tavern._core.starlark.starlark_env import (
+    StageResponse,
+    StarlarkPipelineRunner,
+    _wrap_callable,
+)
+from tavern._core.strict_util import StrictLevel
+from tavern._core.tincture import Tinctures
+
+# ==============================================================================
+# Fixtures
+# ==============================================================================
+
+
+@pytest.fixture
+def mock_tavern_internal():
+    """Create a mock TavernInternalConfig."""
+    return TavernInternalConfig(pytest_hook_caller=Mock(), backends={})
+
+
+@pytest.fixture
+def mock_test_config(mock_tavern_internal):
+    """Create a mock TestConfig with sensible defaults."""
+    config = Mock(spec=TestConfig)
+    config.variables = {"base_url": "http://test.example.com", "tavern": Mock()}
+    config.strict = StrictLevel.all_on()
+    config.tavern_internal = mock_tavern_internal
+    config.follow_redirects = False
+    config.stages = []
+    # Create a copy for with_new_variables
+    config_copy = Mock(spec=TestConfig)
+    config_copy.variables = {"base_url": "http://test.example.com", "tavern": Mock()}
+    config_copy.strict = StrictLevel.all_on()
+    config_copy.tavern_internal = mock_tavern_internal
+    config_copy.follow_redirects = False
+    config_copy.stages = []
+    config_copy.with_strictness = Mock(return_value=config_copy)
+    config.with_new_variables = Mock(return_value=config_copy)
+    config.with_strictness = Mock(return_value=config)
+    return config
+
+
+@pytest.fixture
+def mock_response():
+    """Create a mock requests.Response for HTTP responses."""
+    response = Mock(spec=requests.Response)
+    response.status_code = 200
+    response.headers = {"Content-Type": "application/json"}
+    response.json.return_value = {"result": "success"}
+    response.cookies = {}
+    response.content = b'{"result": "success"}'
+    return response
+
+
+@pytest.fixture
+def mock_test_runner(mock_response):
+    """Create a mock _TestRunner that returns a response."""
+    runner = Mock()
+    runner.wrapped_run_stage = Mock(return_value=mock_response)
+    return runner
+
+
+@pytest.fixture
+def mock_tinctures():
+    """Create a mock Tinctures object."""
+    tinctures = Mock(spec=Tinctures)
+    tinctures.start_tinctures = Mock()
+    tinctures.end_tinctures = Mock()
+    tinctures.tinctures = []
+    return tinctures
+
+
+@pytest.fixture
+def sample_stage():
+    """Create a sample stage dict."""
+    return {
+        "id": "test_stage",
+        "name": "Test Stage",
+        "request": {"url": "http://test.example.com/api", "method": "GET"},
+        "response": {"status_code": 200},
+    }
+
+
+@pytest.fixture
+def sample_stages():
+    """Create a list of sample stages."""
+    return [
+        {
+            "id": "get_cookie",
+            "name": "Get Cookie",
+            "request": {"url": "http://test.example.com/cookie", "method": "POST"},
+            "response": {"status_code": 200},
+        },
+        {
+            "id": "echo_value",
+            "name": "Echo Value",
+            "request": {"url": "http://test.example.com/echo", "method": "POST"},
+            "response": {"status_code": 201},
+        },
+    ]
+
+
+@pytest.fixture
+def basic_runner(mock_test_config):
+    """Create a basic StarlarkPipelineRunner for testing."""
+    return StarlarkPipelineRunner(
+        test_path="/test/path.tavern.star",
+        stages=[],
+        test_config=mock_test_config,
+        sessions={},
+    )
+
+
+# ==============================================================================
+# Test _wrap_callable
+# ==============================================================================
+
+
+class TestWrapCallable:
+    """Tests for the _wrap_callable decorator."""
+
+    def test_wrap_callable_converts_args_to_starlark(self):
+        """Test that _wrap_callable converts Python args to starlark format."""
+
+        @_wrap_callable
+        def add(a, b):
+            return a + b
+
+        # The decorator wraps the function, converting arguments
+        result = add(1, 2)
+        assert result == 3
+
+    def test_wrap_callable_converts_kwargs_to_starlark(self):
+        """Test that _wrap_callable converts Python kwargs to starlark format."""
+
+        @_wrap_callable
+        def format_url(base, path=""):
+            return f"{base}{path}"
+
+        result = format_url("http://example.com", path="/api")
+        assert result == "http://example.com/api"
+
+    def test_wrap_callable_converts_return_to_starlark(self):
+        """Test that _wrap_callable converts return value to starlark format."""
+
+        @_wrap_callable
+        def get_dict():
+            return {"key": "value"}
+
+        result = get_dict()
+        assert result == {"key": "value"}
+
+
+# ==============================================================================
+# Test StarlarkPipelineRunner.__init__
+# ==============================================================================
+
+
+class TestStarlarkPipelineRunnerInit:
+    """Tests for StarlarkPipelineRunner initialization."""
+
+    def test_init_with_stages(self, mock_test_config, sample_stages):
+        """Test initialization with a list of stages."""
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=sample_stages,
+            test_config=mock_test_config,
+            sessions={},
+        )
+        assert runner._stage_registry is not None
+        assert runner._stage_registry.has_stage("get_cookie")
+        assert runner._stage_registry.has_stage("echo_value")
+
+    def test_init_without_stages(self, mock_test_config):
+        """Test initialization with an empty stages list."""
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[],
+            test_config=mock_test_config,
+            sessions={},
+        )
+        assert runner._stage_registry is not None
+        assert runner._stage_registry.get_all_stages() == {}
+
+    def test_init_stores_test_config(self, mock_test_config):
+        """Test that test_config is stored."""
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[],
+            test_config=mock_test_config,
+            sessions={},
+        )
+        assert runner._test_config is mock_test_config
+
+    def test_init_stores_sessions(self, mock_test_config):
+        """Test that sessions dict is stored."""
+        sessions = {"http": Mock()}
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[],
+            test_config=mock_test_config,
+            sessions=sessions,
+        )
+        assert runner._sessions is sessions
+
+
+# ==============================================================================
+# Test StageResponse
+# ==============================================================================
+
+
+class TestStageResponseToStarlark:
+    """Tests for StageResponse.to_starlark method."""
+
+    def test_to_starlark_success_true(self):
+        """Test to_starlark with success=True."""
+        response = StageResponse(
+            success=True,
+            response=None,
+            request_vars={"key": "value"},
+            stage_name="test_stage",
+        )
+        result = response.to_starlark()
+        assert result["success"] is True
+        assert result["request_vars"] == {"key": "value"}
+        assert result["stage_name"] == "test_stage"
+
+    def test_to_starlark_success_false(self):
+        """Test to_starlark with success=False."""
+        response = StageResponse(
+            success=False,
+            response=None,
+            request_vars={},
+            stage_name="failed_stage",
+        )
+        result = response.to_starlark()
+        assert result["success"] is False
+
+    def test_from_starlark_roundtrip(self):
+        """Test from_starlark creates equivalent object."""
+        original = StageResponse(
+            success=True,
+            response={"status_code": 200},
+            request_vars={"token": "abc"},
+            stage_name="test",
+        )
+        starlark_dict = original.to_starlark()
+        reconstructed = StageResponse.from_starlark(starlark_dict)
+        assert reconstructed.success == original.success
+        assert reconstructed.request_vars == original.request_vars
+        assert reconstructed.stage_name == original.stage_name
+
+
+# ==============================================================================
+# Test _run_stage method
+# ==============================================================================
+
+
+class TestRunStageMethod:
+    """Tests for the internal _run_stage method."""
+
+    def test_run_stage_success(
+        self,
+        mock_test_config,
+        sample_stage,
+        mock_test_runner,
+        mock_tinctures,
+    ):
+        """Test successful stage execution."""
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[sample_stage],
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        with patch(
+            "tavern._core.starlark.starlark_env._TestRunner",
+            return_value=mock_test_runner,
+        ):
+            with patch(
+                "tavern._core.starlark.starlark_env.get_stage_tinctures",
+                return_value=mock_tinctures,
+            ):
+                response = runner._run_stage(sample_stage, continue_on_fail=False)
+
+        assert response.success is True
+        assert response.stage_name == sample_stage["name"]
+
+    def test_run_stage_with_extra_vars(
+        self,
+        mock_test_config,
+        sample_stage,
+        mock_test_runner,
+        mock_tinctures,
+    ):
+        """Test that extra_vars are merged into test_config variables."""
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[sample_stage],
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        extra_vars = {"extra_key": "extra_value"}
+
+        with patch(
+            "tavern._core.starlark.starlark_env._TestRunner",
+            return_value=mock_test_runner,
+        ):
+            with patch(
+                "tavern._core.starlark.starlark_env.get_stage_tinctures",
+                return_value=mock_tinctures,
+            ):
+                response = runner._run_stage(
+                    sample_stage, continue_on_fail=False, extra_vars=extra_vars
+                )
+
+        assert response.success is True
+        # Verify that with_new_variables was called
+        mock_test_config.with_new_variables.assert_called_once()
+
+    def test_run_stage_tavern_exception_raises(
+        self,
+        mock_test_config,
+        sample_stage,
+        mock_tinctures,
+    ):
+        """Test that TavernException is re-raised when continue_on_fail=False."""
+        mock_runner = Mock()
+        exc = TavernException("Stage failed")
+        exc.stage = sample_stage
+        mock_runner.wrapped_run_stage = Mock(side_effect=exc)
+
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[sample_stage],
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        with patch(
+            "tavern._core.starlark.starlark_env._TestRunner", return_value=mock_runner
+        ):
+            with patch(
+                "tavern._core.starlark.starlark_env.get_stage_tinctures",
+                return_value=mock_tinctures,
+            ):
+                with pytest.raises(TavernException):
+                    runner._run_stage(sample_stage, continue_on_fail=False)
+
+    def test_run_stage_tavern_exception_returns_failed(
+        self,
+        mock_test_config,
+        sample_stage,
+        mock_tinctures,
+    ):
+        """Test that TavernException returns failed response when continue_on_fail=True."""
+        mock_runner = Mock()
+        exc = TavernException("Stage failed")
+        exc.stage = sample_stage
+        mock_runner.wrapped_run_stage = Mock(side_effect=exc)
+
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[sample_stage],
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        with patch(
+            "tavern._core.starlark.starlark_env._TestRunner", return_value=mock_runner
+        ):
+            with patch(
+                "tavern._core.starlark.starlark_env.get_stage_tinctures",
+                return_value=mock_tinctures,
+            ):
+                response = runner._run_stage(sample_stage, continue_on_fail=True)
+
+        assert response.success is False
+        assert response.stage_name == sample_stage["name"]
+
+    def test_run_stage_copies_stage_dict(
+        self,
+        mock_test_config,
+        sample_stage,
+        mock_test_runner,
+        mock_tinctures,
+    ):
+        """Test that original stage dict is not mutated."""
+        original_stage = copy.deepcopy(sample_stage)
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[sample_stage],
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        with patch(
+            "tavern._core.starlark.starlark_env._TestRunner",
+            return_value=mock_test_runner,
+        ):
+            with patch(
+                "tavern._core.starlark.starlark_env.get_stage_tinctures",
+                return_value=mock_tinctures,
+            ):
+                runner._run_stage(sample_stage, continue_on_fail=False)
+
+        # Original stage should not be modified
+        assert sample_stage == original_stage
+
+
+# ==============================================================================
+# Test run_stage binding (Starlark callable)
+# ==============================================================================
+
+
+class TestRunStageBinding:
+    """Tests for the run_stage function exposed to Starlark."""
+
+    def test_run_stage_binding_success(
+        self,
+        basic_runner,
+        sample_stage,
+        mock_test_runner,
+        mock_tinctures,
+    ):
+        """Test that run_stage binding returns success response."""
+        basic_runner._stage_registry = StageRegistry([sample_stage])
+
+        with patch(
+            "tavern._core.starlark.starlark_env._TestRunner",
+            return_value=mock_test_runner,
+        ):
+            with patch(
+                "tavern._core.starlark.starlark_env.get_stage_tinctures",
+                return_value=mock_tinctures,
+            ):
+                result = basic_runner._create_response_struct(
+                    StageResponse(
+                        success=True,
+                        response=Mock(
+                            spec=requests.Response,
+                            status_code=200,
+                            headers={},
+                            cookies={},
+                        ),
+                        request_vars={},
+                        stage_name="test_stage",
+                    )
+                )
+
+        assert result["success"] is True
+        assert result["failed"] is False
+
+    def test_run_stage_binding_stage_not_found(
+        self,
+        mock_test_config,
+        sample_stages,
+    ):
+        """Test that requesting nonexistent stage raises StarlarkError."""
+        from tavern._core import exceptions
+
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[],  # Empty registry - no stages
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        script = """
+load("@tavern_helpers.star", "run_stage")
+resp = run_stage("nonexistent_stage")
+"""
+
+        with pytest.raises(exceptions.StarlarkError):
+            runner.load_and_run(script)
+
+    def test_run_stage_binding_with_requests_response(
+        self,
+        mock_test_config,
+        mock_response,
+    ):
+        """Test that requests.Response is properly converted in response struct."""
+        response = StageResponse(
+            success=True,
+            response=mock_response,
+            request_vars={"token": "abc"},
+            stage_name="http_stage",
+        )
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[],
+            test_config=mock_test_config,
+            sessions={},
+        )
+        result = runner._create_response_struct(response)
+
+        assert "status_code" in result
+        assert result["status_code"] == 200
+        assert "body" in result
+        assert result["body"] == {"result": "success"}
+
+
+# ==============================================================================
+# Test load_and_run
+# ==============================================================================
+
+
+class TestLoadAndRun:
+    """Tests for loading and running Starlark scripts."""
+
+    def test_load_and_run_parses_valid_script(self, basic_runner):
+        """Test that a valid Starlark script parses without errors."""
+        script = """
+def my_func():
+    return 42
+"""
+        # Should not raise
+        basic_runner.load_and_run(script)
+
+    def test_load_and_run_invalid_script_raises(self, basic_runner):
+        """Test that an invalid Starlark script raises ValueError."""
+        script = """
+def broken_func(
+    # Missing closing parenthesis
+"""
+        with pytest.raises(ValueError, match="Failed to parse starlark script"):
+            basic_runner.load_and_run(script)
+
+    def test_load_and_run_calls_setup_builtins(self, basic_runner):
+        """Test that setup_builtins is called during script execution."""
+        script = """
+# Load the builtins
+load("@tavern_helpers.star", "log")
+log("test message")
+"""
+        # Should not raise - log function should be available
+        basic_runner.load_and_run(script)
+
+    def test_load_and_run_can_access_stages(self, basic_runner, sample_stages):
+        """Test that stages are accessible in Starlark script."""
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=sample_stages,
+            test_config=basic_runner._test_config,
+            sessions={},
+        )
+
+        # Verify stages are in registry
+        assert "get_cookie" in runner._stage_registry.get_all_stages()
+        assert "echo_value" in runner._stage_registry.get_all_stages()
+
+
+# ==============================================================================
+# Test _setup_builtins
+# ==============================================================================
+
+
+class TestSetupBuiltins:
+    """Tests for the _setup_builtins method."""
+
+    def test_setup_builtins_adds_run_stage(self, basic_runner):
+        """Test that __run_stage is callable from starlark."""
+        script = """
+load("@tavern_helpers.star", "run_stage")
+# run_stage function should be available
+"""
+        basic_runner.load_and_run(script)
+
+    def test_setup_builtins_adds_log(self, basic_runner, caplog):
+        """Test that log function works in starlark."""
+        script = """
+load("@tavern_helpers.star", "log")
+log("test log message")
+"""
+        with caplog.at_level("INFO"):
+            basic_runner.load_and_run(script)
+
+        assert "test log message" in caplog.text
+
+    def test_setup_builtins_adds_stages_to_module(self, basic_runner, sample_stages):
+        """Test that stages are registered properly."""
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=sample_stages,
+            test_config=basic_runner._test_config,
+            sessions={},
+        )
+
+        # Verify stages are in the registry
+        assert runner._stage_registry.has_stage("get_cookie")
+        assert runner._stage_registry.has_stage("echo_value")
+
+
+# ==============================================================================
+# Test _create_response_struct
+# ==============================================================================
+
+
+class TestCreateResponseStruct:
+    """Tests for the _create_response_struct method."""
+
+    def test_create_response_struct_with_success(self, mock_test_config):
+        """Test response struct creation with successful response."""
+        mock_response = Mock(spec=requests.Response)
+        mock_response.status_code = 200
+        mock_response.headers = {"Content-Type": "application/json"}
+        mock_response.json.return_value = {"data": "test"}
+        mock_response.cookies = {}
+
+        stage_response = StageResponse(
+            success=True,
+            response=mock_response,
+            request_vars={"key": "value"},
+            stage_name="success_stage",
+        )
+
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[],
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        result = runner._create_response_struct(stage_response)
+
+        assert result["success"] is True
+        assert result["failed"] is False
+        assert result["status_code"] == 200
+        assert result["body"] == {"data": "test"}
+        assert result["request_vars"] == {"key": "value"}
+        assert result["stage_name"] == "success_stage"
+
+    def test_create_response_struct_with_failure(self, mock_test_config):
+        """Test response struct creation with failed response."""
+        stage_response = StageResponse(
+            success=False,
+            response=None,
+            request_vars={},
+            stage_name="failed_stage",
+        )
+
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[],
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        result = runner._create_response_struct(stage_response)
+
+        assert result["success"] is False
+        assert result["failed"] is True
+        assert "stage_name" in result
+
+    def test_create_response_struct_none_response(self, mock_test_config):
+        """Test response struct creation when response is None."""
+        stage_response = StageResponse(
+            success=True,
+            response=None,
+            request_vars={},
+            stage_name="no_response_stage",
+        )
+
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[],
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        result = runner._create_response_struct(stage_response)
+
+        assert result["success"] is True
+        assert result["failed"] is False
+        # When response is None, status_code should not be in result
+        assert "status_code" not in result
+
+    def test_create_response_struct_unsupported_type_raises(self, mock_test_config):
+        """Test that unsupported response types raise NotImplementedError."""
+        # Use an object that's not requests.Response
+        unsupported_response = {"type": "grpc"}
+
+        stage_response = StageResponse(
+            success=True,
+            response=unsupported_response,
+            request_vars={},
+            stage_name="grpc_stage",
+        )
+
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[],
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        with pytest.raises(NotImplementedError, match="gRPC, MQTT"):
+            runner._create_response_struct(stage_response)
+
+
+# ==============================================================================
+# Integration-style tests with actual Starlark execution
+# ==============================================================================
+
+
+class TestStarlarkExecution:
+    """Tests that execute actual Starlark scripts."""
+
+    def test_log_function_executes(
+        self,
+        basic_runner,
+        caplog,
+    ):
+        """Test that log function writes to logger."""
+        script = """
+load("@tavern_helpers.star", "log")
+log("Hello from starlark")
+"""
+        with caplog.at_level("INFO"):
+            basic_runner.load_and_run(script)
+
+        assert "Hello from starlark" in caplog.text
+
+    def test_run_stage_in_script(
+        self,
+        mock_test_config,
+        sample_stages,
+        mock_test_runner,
+        mock_tinctures,
+    ):
+        """Test that run_stage can be called from Starlark script."""
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=sample_stages,
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        script = """
+load("@tavern_helpers.star", "run_stage")
+resp = run_stage("get_cookie")
+"""
+
+        with patch(
+            "tavern._core.starlark.starlark_env._TestRunner",
+            return_value=mock_test_runner,
+        ):
+            with patch(
+                "tavern._core.starlark.starlark_env.get_stage_tinctures",
+                return_value=mock_tinctures,
+            ):
+                runner.load_and_run(script)
+
+        # Verify wrapped_run_stage was called
+        mock_test_runner.wrapped_run_stage.assert_called_once()
+
+    def test_run_stage_with_extra_vars(
+        self,
+        mock_test_config,
+        sample_stages,
+        mock_test_runner,
+        mock_tinctures,
+    ):
+        """Test that extra_vars can be passed to run_stage from Starlark."""
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=sample_stages,
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        script = """
+load("@tavern_helpers.star", "run_stage")
+resp = run_stage("get_cookie", extra_vars={"custom_var": "custom_value"})
+"""
+
+        with patch(
+            "tavern._core.starlark.starlark_env._TestRunner",
+            return_value=mock_test_runner,
+        ):
+            with patch(
+                "tavern._core.starlark.starlark_env.get_stage_tinctures",
+                return_value=mock_tinctures,
+            ):
+                runner.load_and_run(script)
+
+        # Verify that with_new_variables was called (for extra_vars merging)
+        mock_test_config.with_new_variables.assert_called()
+
+    def test_run_stage_continue_on_fail(
+        self,
+        mock_test_config,
+        sample_stages,
+        mock_tinctures,
+    ):
+        """Test that continue_on_fail parameter prevents exception propagation."""
+        mock_runner = Mock()
+        exc = TavernException("Stage failed")
+        exc.stage = sample_stages[0]
+        mock_runner.wrapped_run_stage = Mock(side_effect=exc)
+
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=sample_stages,
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        script = """
+load("@tavern_helpers.star", "run_stage")
+# continue_on_fail=True should catch the exception
+resp = run_stage("get_cookie", continue_on_fail=True)
+# Script should continue without raising
+"""
+
+        with patch(
+            "tavern._core.starlark.starlark_env._TestRunner", return_value=mock_runner
+        ):
+            with patch(
+                "tavern._core.starlark.starlark_env.get_stage_tinctures",
+                return_value=mock_tinctures,
+            ):
+                # Should not raise
+                runner.load_and_run(script)
+
+    def test_run_stage_failure_propagates(
+        self,
+        mock_test_config,
+        sample_stages,
+        mock_tinctures,
+    ):
+        """Test that failed stage propagates exception when continue_on_fail=False."""
+        mock_runner = Mock()
+        exc = TavernException("Stage failed")
+        exc.stage = sample_stages[0]
+        mock_runner.wrapped_run_stage = Mock(side_effect=exc)
+
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=sample_stages,
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        script = """
+load("@tavern_helpers.star", "run_stage")
+# continue_on_fail is False by default
+resp = run_stage("get_cookie")
+"""
+
+        from tavern._core import exceptions
+
+        with patch(
+            "tavern._core.starlark.starlark_env._TestRunner", return_value=mock_runner
+        ):
+            with patch(
+                "tavern._core.starlark.starlark_env.get_stage_tinctures",
+                return_value=mock_tinctures,
+            ):
+                # Should raise StarlarkError (wrapping TavernException)
+                with pytest.raises((exceptions.StarlarkError, TavernException)):
+                    runner.load_and_run(script)
