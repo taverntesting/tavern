@@ -1,8 +1,3 @@
-Currently the starlark tests work like in tests/integration/starlark/test_basic_pipeline.tavern.star
-where the entire test run is described using the script including loading stages, adding marks and fixtures, etc.
-
-This is a problem because a lot of tavern assumes that tests are always loaded from a yaml file.
-
 The starlark integration should be changed so that the test stages are still loaded from a yaml file, but the actual
 order of text execution can be defined in an inline starlark script.
 
@@ -191,5 +186,28 @@ it should all be handles in Python. Starlark is just a script controlling the ex
 
 ## Implementation
 
-The entry point for all this would be in tavern/_core/run.py, instead of having to define a separate pytest entrypoint,
-test runner, etc. like is currently done.
+The place this is all controlled from would be in tavern/_core/run.py, instead of having to define a separate pytest
+entrypoint, test runner, etc.
+
+1. Final Goal: Refactor the Starlark integration in the Tavern testing framework so that:
+    - Test stages are loaded from YAML files as usual (via normal Tavern YAML loading)
+    - A new control_flow field in the YAML contains an inline Starlark script
+    - Stages with id fields are automatically injected as global variables in the Starlark module
+    - run_stage(stage_id) is callable by string ID — no need to pass full stage dicts or context
+    - Results returned as a nice object with status_code, failed, etc.
+    - Remove the ctx (PipelineContext) parameter — Starlark just controls execution flow, Python handles all state
+    - Entry point is in tavern/_core/run.py instead of a separate pytest entrypoint
+
+2. Work Completed:
+    - Phase 1 (DONE): Added control_flow field to tests.schema.yaml as optional string field, and also added missing
+      finally field
+    - Codebase exploration (DONE): Read all starlark files, run.py, schema files, test files, AGENTS.md files
+
+3. Remaining Tasks
+    - Phase 2-5 (IN PENDING): Refactor starlark_env.py
+    - Phase 6 (PENDING): Integrate with run.py — detect control_flow field in test spec, delegate to
+      StarlarkPipelineRunner instead of sequential stage execution
+    - Phase 7 (PENDING): Create new integration test YAML file with control_flow
+    - Phase 8 (PENDING): Update existing test_basic_pipeline.tavern.star to new YAML+control_flow format
+    - Phase 9 (PENDING): Run unit tests and verify no regressions
+    - Phase 10 (PENDING): Run integration tests and manual QA verification
