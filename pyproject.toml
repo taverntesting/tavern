@@ -162,7 +162,6 @@ addopts = [
     "-r", "xs",
     "-vv",
     "--strict-markers",
-    "-p", "no:logging",
     "--tb=short",
     "--color=yes",
     "-m", "not do_not_run"
