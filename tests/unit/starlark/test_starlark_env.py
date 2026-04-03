@@ -11,64 +11,17 @@ import pytest
 import requests
 
 from tavern._core.exceptions import TavernException
-from tavern._core.pytest.config import TavernInternalConfig, TestConfig
 from tavern._core.starlark.stage_registry import StageRegistry
 from tavern._core.starlark.starlark_env import (
     StageResponse,
     StarlarkPipelineRunner,
     _wrap_callable,
 )
-from tavern._core.strict_util import StrictLevel
 from tavern._core.tincture import Tinctures
-
-# ==============================================================================
-# Fixtures
-# ==============================================================================
-
-
-@pytest.fixture
-def mock_tavern_internal():
-    """Create a mock TavernInternalConfig."""
-    return TavernInternalConfig(pytest_hook_caller=Mock(), backends={})
-
-
-@pytest.fixture
-def mock_test_config(mock_tavern_internal):
-    """Create a mock TestConfig with sensible defaults."""
-    config = Mock(spec=TestConfig)
-    config.variables = {"base_url": "http://test.example.com", "tavern": Mock()}
-    config.strict = StrictLevel.all_on()
-    config.tavern_internal = mock_tavern_internal
-    config.follow_redirects = False
-    config.stages = []
-    # Create a copy for with_new_variables
-    config_copy = Mock(spec=TestConfig)
-    config_copy.variables = {"base_url": "http://test.example.com", "tavern": Mock()}
-    config_copy.strict = StrictLevel.all_on()
-    config_copy.tavern_internal = mock_tavern_internal
-    config_copy.follow_redirects = False
-    config_copy.stages = []
-    config_copy.with_strictness = Mock(return_value=config_copy)
-    config.with_new_variables = Mock(return_value=config_copy)
-    config.with_strictness = Mock(return_value=config)
-    return config
-
-
-@pytest.fixture
-def mock_response():
-    """Create a mock requests.Response for HTTP responses."""
-    response = Mock(spec=requests.Response)
-    response.status_code = 200
-    response.headers = {"Content-Type": "application/json"}
-    response.json.return_value = {"result": "success"}
-    response.cookies = {}
-    response.content = b'{"result": "success"}'
-    return response
 
 
 @pytest.fixture
 def mock_test_runner(mock_response):
-    """Create a mock _TestRunner that returns a response."""
     runner = Mock()
     runner.wrapped_run_stage = Mock(return_value=mock_response)
     return runner
@@ -76,7 +29,6 @@ def mock_test_runner(mock_response):
 
 @pytest.fixture
 def mock_tinctures():
-    """Create a mock Tinctures object."""
     tinctures = Mock(spec=Tinctures)
     tinctures.start_tinctures = Mock()
     tinctures.end_tinctures = Mock()
@@ -86,7 +38,6 @@ def mock_tinctures():
 
 @pytest.fixture
 def sample_stage():
-    """Create a sample stage dict."""
     return {
         "id": "test_stage",
         "name": "Test Stage",
@@ -97,7 +48,6 @@ def sample_stage():
 
 @pytest.fixture
 def sample_stages():
-    """Create a list of sample stages."""
     return [
         {
             "id": "get_cookie",
@@ -112,17 +62,6 @@ def sample_stages():
             "response": {"status_code": 201},
         },
     ]
-
-
-@pytest.fixture
-def basic_runner(mock_test_config):
-    """Create a basic StarlarkPipelineRunner for testing."""
-    return StarlarkPipelineRunner(
-        test_path="/test/path.tavern.star",
-        stages=[],
-        test_config=mock_test_config,
-        sessions={},
-    )
 
 
 # ==============================================================================

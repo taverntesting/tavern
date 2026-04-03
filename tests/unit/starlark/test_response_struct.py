@@ -1,40 +1,4 @@
-from unittest.mock import Mock
-
-import pytest
-import requests
-
-from tavern._core.pytest.config import TavernInternalConfig, TestConfig
-from tavern._core.starlark.starlark_env import StageResponse, StarlarkPipelineRunner
-from tavern._core.strict_util import StrictLevel
-
-
-@pytest.fixture
-def mock_tavern_internal():
-    return TavernInternalConfig(pytest_hook_caller=Mock(), backends={})
-
-
-@pytest.fixture
-def mock_test_config(mock_tavern_internal):
-    config = Mock(spec=TestConfig)
-    config.variables = {}
-    config.strict = StrictLevel.all_on()
-    config.tavern_internal = mock_tavern_internal
-    config.follow_redirects = False
-    config.stages = []
-    config.tinctures = []
-    return config
-
-
-@pytest.fixture
-def mock_response():
-    """Create a mock requests.Response for HTTP responses."""
-    response = Mock(spec=requests.Response)
-    response.status_code = 200
-    response.headers = {"Content-Type": "application/json"}
-    response.json.return_value = {"foo": "bar"}
-    response.cookies = {}
-    response.content = b'{"foo": "bar"}'
-    return response
+from tavern._core.starlark.starlark_env import StageResponse
 
 
 class TestStageResponseStruct:
@@ -87,16 +51,6 @@ class TestStageResponseStruct:
         )
         starlark_obj = response.to_starlark()
         assert "request_vars" in starlark_obj
-
-
-@pytest.fixture
-def basic_runner(mock_test_config):
-    return StarlarkPipelineRunner(
-        test_path="/fake/path",
-        stages=[],
-        test_config=mock_test_config,
-        sessions={},
-    )
 
 
 class TestCreateResponseStruct:
