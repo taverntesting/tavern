@@ -5,7 +5,7 @@ stages:
   - id: get-cookie-included
     name: Get tavern-cookie-1
     request:
-      url: "{host}/get_cookie"
+      url: "{global_host}/get_cookie"
       method: POST
       json:
         cookie_name: tavern-cookie-1
@@ -17,7 +17,7 @@ stages:
   - id: echo-value-included
     name: Echo a value back
     request:
-      url: "{host}/echo"
+      url: "{global_host}/echo"
       method: POST
       json:
         value: "123"
