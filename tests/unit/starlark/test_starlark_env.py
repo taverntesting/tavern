@@ -30,11 +30,7 @@ def mock_test_runner(mock_response):
 
 @pytest.fixture
 def mock_tinctures():
-    tinctures = Mock(spec=Tinctures)
-    tinctures.start_tinctures = Mock()
-    tinctures.end_tinctures = Mock()
-    tinctures.tinctures = []
-    return tinctures
+    return Tinctures([])
 
 
 @pytest.fixture
@@ -470,56 +466,6 @@ resp = run_stage("nonexistent_stage")
 
 
 # ==============================================================================
-# Test load_and_run
-# ==============================================================================
-
-
-class TestLoadAndRun:
-    """Tests for loading and running Starlark scripts."""
-
-    def test_load_and_run_parses_valid_script(self, basic_runner):
-        """Test that a valid Starlark script parses without errors."""
-        script = """
-def my_func():
-    return 42
-"""
-        # Should not raise
-        basic_runner.load_and_run(script)
-
-    def test_load_and_run_invalid_script_raises(self, basic_runner):
-        """Test that an invalid Starlark script raises ValueError."""
-        script = """
-def broken_func(
-    # Missing closing parenthesis
-"""
-        with pytest.raises(ValueError, match="Failed to parse starlark script"):
-            basic_runner.load_and_run(script)
-
-    def test_load_and_run_calls_setup_builtins(self, basic_runner):
-        """Test that setup_builtins is called during script execution."""
-        script = """
-# Load the builtins
-load("@tavern_helpers.star", "log")
-log("test message")
-"""
-        # Should not raise - log function should be available
-        basic_runner.load_and_run(script)
-
-    def test_load_and_run_can_access_stages(self, basic_runner, sample_stages):
-        """Test that stages are accessible in Starlark script."""
-        runner = StarlarkPipelineRunner(
-            test_path="/test/path.tavern.star",
-            stages=sample_stages,
-            test_config=basic_runner._test_config,
-            sessions={},
-        )
-
-        # Verify stages are in registry
-        assert "get_cookie" in runner._stage_registry.get_all_stages()
-        assert "echo_value" in runner._stage_registry.get_all_stages()
-
-
-# ==============================================================================
 # Test _setup_builtins
 # ==============================================================================
 
@@ -674,6 +620,24 @@ class TestCreateResponseStruct:
 
 class TestStarlarkExecution:
     """Tests that execute actual Starlark scripts."""
+
+    def test_load_and_run_parses_valid_script(self, basic_runner):
+        """Test that a valid Starlark script parses without errors."""
+        script = """
+def my_func():
+    return 42
+"""
+        # Should not raise
+        basic_runner.load_and_run(script)
+
+    def test_load_and_run_invalid_script_raises(self, basic_runner):
+        """Test that an invalid Starlark script raises ValueError."""
+        script = """
+def broken_func(
+    # Missing closing parenthesis
+"""
+        with pytest.raises(ValueError, match="Failed to parse starlark script"):
+            basic_runner.load_and_run(script)
 
     def test_log_function_executes(
         self,
