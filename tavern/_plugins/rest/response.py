@@ -101,6 +101,9 @@ class RestResponse(CommonResponse):
 
         self._validate_block("redirect_query_params", redirect_query_params)
 
+        self._validate_text(response.text)
+        self._validate_file_body_response(response.text)
+
         attach_yaml(
             {
                 "status_code": response.status_code,

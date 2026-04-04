@@ -505,3 +505,30 @@ def get_jwt():
     token = jwt.encode(payload, secret, algorithm="HS256")
 
     return jsonify({"jwt": token})
+
+
+@app.route("/text_response", methods=["GET"])
+def text_response():
+    """Returns a plain text response (not JSON)"""
+    return Response("Hello, World!", content_type="text/plain")
+
+
+@app.route("/ascii_table", methods=["GET"])
+def ascii_table():
+    """Returns an ASCII table as plain text"""
+    table = """\
++----+----------+-------+
+| id | name     | score |
++----+----------+-------+
+|  1 | Alice    |    95 |
+|  2 | Bob      |    87 |
+|  3 | Charlie  |    92 |
++----+----------+-------+
+"""
+    return Response(table, content_type="text/plain")
+
+
+@app.route("/expected_text", methods=["POST"])
+def expected_text():
+    """Echoes back plain text from request body"""
+    return Response(request.get_data(as_text=True), content_type="text/plain")

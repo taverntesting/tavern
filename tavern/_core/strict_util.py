@@ -19,7 +19,7 @@ class StrictSetting(enum.Enum):
     LIST_ANY_ORDER = 4
 
 
-valid_keys = ["json", "headers", "redirect_query_params"]
+valid_keys = ["json", "headers", "redirect_query_params", "text", "file_body_response"]
 
 valid_switches = ["on", "off", "list_any_order"]
 
@@ -115,6 +115,12 @@ class StrictLevel:
     )
     redirect_query_params: StrictOption = dataclasses.field(
         default=StrictOption("redirect_query_params", strict_setting_factory(None))
+    )
+    text: StrictOption = dataclasses.field(
+        default=StrictOption("text", strict_setting_factory(None))
+    )
+    file_body_response: StrictOption = dataclasses.field(
+        default=StrictOption("file_body_response", strict_setting_factory(None))
     )
 
     @classmethod

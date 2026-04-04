@@ -311,6 +311,7 @@ class TestFull:
         class FakeResponse:
             headers = example_response["headers"]
             content = b"test"
+            text = "test"
 
             def json(self):
                 return example_response["json"]
@@ -328,6 +329,7 @@ class TestFull:
         class FakeResponse:
             headers = example_response["headers"]
             content = b"test"
+            text = "test"
 
             def json(self):
                 return example_response["json"]
@@ -350,6 +352,7 @@ class TestFull:
         class FakeResponse:
             headers = nested_response["headers"]
             content = b"test"
+            text = "test"
 
             def json(self):
                 return nested_response["json"]
@@ -368,6 +371,7 @@ class TestFull:
         class FakeResponse:
             headers = example_response["headers"]
             content = b"test"
+            text = "test"
 
             def json(self):
                 return value
@@ -385,3 +389,196 @@ def test_status_code_warns(example_response, includes):
         RestResponse(Mock(), "Test 1", example_response, includes)
 
     assert wmock.called
+
+
+class TestTextValidation:
+    def test_validate_text_matches(self, example_response, includes):
+        """Text validation passes when response text matches expected"""
+        del example_response["json"]
+        example_response["text"] = "Hello, World!"
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        class FakeResponse:
+            headers = example_response["headers"]
+            content = b"Hello, World!"
+            text = "Hello, World!"
+
+            def json(self):
+                raise ValueError("No JSON")
+
+            status_code = example_response["status_code"]
+
+        r.verify(FakeResponse())
+
+        assert not r.errors
+
+    def test_validate_text_mismatch(self, example_response, includes):
+        """Text validation fails when response text doesn't match expected"""
+        del example_response["json"]
+        example_response["text"] = "Hello, World!"
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        class FakeResponse:
+            headers = example_response["headers"]
+            content = b"Goodbye!"
+            text = "Goodbye!"
+
+            def json(self):
+                raise ValueError("No JSON")
+
+            status_code = example_response["status_code"]
+
+        with pytest.raises(exceptions.TestFailError):
+            r.verify(FakeResponse())
+
+        assert r.errors
+
+    def test_validate_text_multiline(self, example_response, includes):
+        """Text validation works with multiline strings like ASCII tables"""
+        del example_response["json"]
+        expected_text = """\
++---+---+
+| A | B |
++---+---+
+| 1 | 2 |
+| 3 | 4 |
++---+---+"""
+
+        example_response["text"] = expected_text
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        class FakeResponse:
+            headers = example_response["headers"]
+            content = expected_text.encode()
+            text = expected_text
+
+            def json(self):
+                raise ValueError("No JSON")
+
+            status_code = example_response["status_code"]
+
+        r.verify(FakeResponse())
+
+        assert not r.errors
+
+    def test_no_text_block_no_error(self, example_response, includes):
+        """No error when text block is not specified"""
+        del example_response["json"]
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        class FakeResponse:
+            headers = example_response["headers"]
+            content = b"anything"
+            text = "anything"
+
+            def json(self):
+                raise ValueError("No JSON")
+
+            status_code = example_response["status_code"]
+
+        r.verify(FakeResponse())
+
+        assert not r.errors
+
+
+class TestFileBodyResponseValidation:
+    def test_validate_file_body_response_matches(
+        self, example_response, includes, tmp_path
+    ):
+        """File body response validation passes when response text matches file content"""
+        del example_response["json"]
+        expected_file = tmp_path / "expected.txt"
+        expected_file.write_text("Hello, World!")
+
+        example_response["file_body_response"] = str(expected_file)
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        class FakeResponse:
+            headers = example_response["headers"]
+            content = b"Hello, World!"
+            text = "Hello, World!"
+
+            def json(self):
+                raise ValueError("No JSON")
+
+            status_code = example_response["status_code"]
+
+        r.verify(FakeResponse())
+
+        assert not r.errors
+
+    def test_validate_file_body_response_mismatch(
+        self, example_response, includes, tmp_path
+    ):
+        """File body response validation fails when response text doesn't match file"""
+        del example_response["json"]
+        expected_file = tmp_path / "expected.txt"
+        expected_file.write_text("Hello, World!")
+
+        example_response["file_body_response"] = str(expected_file)
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        class FakeResponse:
+            headers = example_response["headers"]
+            content = b"Goodbye!"
+            text = "Goodbye!"
+
+            def json(self):
+                raise ValueError("No JSON")
+
+            status_code = example_response["status_code"]
+
+        with pytest.raises(exceptions.TestFailError):
+            r.verify(FakeResponse())
+
+        assert r.errors
+
+    def test_validate_file_body_response_not_found(
+        self, example_response, includes, tmp_path
+    ):
+        """File body response validation fails when file doesn't exist"""
+        del example_response["json"]
+        missing_file = tmp_path / "nonexistent.txt"
+
+        example_response["file_body_response"] = str(missing_file)
+
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        class FakeResponse:
+            headers = example_response["headers"]
+            content = b"Hello, World!"
+            text = "Hello, World!"
+
+            def json(self):
+                raise ValueError("No JSON")
+
+            status_code = example_response["status_code"]
+
+        with pytest.raises(exceptions.TestFailError):
+            r.verify(FakeResponse())
+
+        assert r.errors
+
+    def test_no_file_body_response_block_no_error(self, example_response, includes):
+        """No error when file_body_response block is not specified"""
+        del example_response["json"]
+        r = RestResponse(Mock(), "Test 1", example_response, includes)
+
+        class FakeResponse:
+            headers = example_response["headers"]
+            content = b"anything"
+            text = "anything"
+
+            def json(self):
+                raise ValueError("No JSON")
+
+            status_code = example_response["status_code"]
+
+        r.verify(FakeResponse())
+
+        assert not r.errors
