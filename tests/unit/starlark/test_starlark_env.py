@@ -576,8 +576,12 @@ resp = run_stage("get_cookie", extra_vars={"custom_var": "custom_value"})
             ):
                 runner.load_and_run(script)
 
-        # Verify that with_new_variables was called (for extra_vars merging)
-        mock_test_config.with_new_variables.assert_called()
+        # Verify extra_vars were passed to stage_config (positional arg at index 1)
+        call_args = mock_test_runner.wrapped_run_stage.call_args
+        stage_config = call_args[0][1]  # Second positional argument
+        extra_vars_in_request = stage_config.variables
+        assert "custom_var" in extra_vars_in_request
+        assert extra_vars_in_request["custom_var"] == "custom_value"
 
     def test_run_stage_continue_on_fail(
         self,
