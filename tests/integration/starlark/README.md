@@ -34,4 +34,4 @@ docker-compose down
 
 ## Test Files
 
-- `test_basic_pipeline.tavern.star` - Basic pipeline test using include and run_stage
+- `test_control_flow_inline.tavern.yaml` - Basic pipeline test
