@@ -180,7 +180,3 @@ class UnexpectedExceptionError(TavernException):
 
 class StarlarkError(TavernException):
     """Exception when running a starlark stage, should only ever wrap another TavernException."""
-
-
-class MultiContextError(TavernException, ExceptionGroup):
-    """Used to wrap multiple exceptions that occurred in the same context."""
