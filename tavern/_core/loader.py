@@ -187,6 +187,8 @@ def construct_include(loader, node):
         return load_single_document_yaml(filename)
     elif extension == "graphql":
         return resolved_path.read_text(encoding="utf-8")
+    elif extension == "star":
+        return resolved_path.read_text(encoding="utf-8")
 
     raise BadSchemaError(
         f"Unknown filetype '{filename}' (included files must be in YAML, JSON, or GraphQL format with extensions .yaml, .yml, .json, or .graphql)"

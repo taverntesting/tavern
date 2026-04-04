@@ -164,3 +164,29 @@ control_flow: |
 
   if i >= 3:
       fail("polling stage failed")
+
+---
+test_name: Test including a generic script
+
+control_flow: !include correct.star
+
+---
+test_name: Test including a script that will fail at runtime
+
+_xfail: run
+
+control_flow: !include fail.star
+
+---
+test_name: Test including YAML
+
+_xfail: verify
+
+control_flow: !include stages.yaml
+
+---
+test_name: Test including a completely invalid script
+
+_xfail: verify
+
+control_flow: !include badsyntax.star

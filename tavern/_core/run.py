@@ -2,6 +2,7 @@ import copy
 import dataclasses
 import functools
 import logging
+import os
 import pathlib
 from collections.abc import Mapping, MutableMapping
 from contextlib import ExitStack
@@ -9,6 +10,7 @@ from copy import deepcopy
 from typing import Any
 
 import box
+import starlark
 
 from tavern._core import exceptions
 from tavern._core.plugins import (
@@ -58,6 +60,13 @@ def _run_with_starlark_control_flow(
     """
     # Local import to avoid circular dependency
     from tavern._core.starlark.starlark_env import StarlarkPipelineRunner
+
+    dialect = starlark.Dialect.extended()
+    dialect.enable_keyword_only_arguments = True
+    try:
+        starlark.parse(os.fspath(in_file), test_spec["control_flow"], dialect=dialect)
+    except starlark.StarlarkError as e:
+        raise exceptions.BadSchemaError("Failed to parse starlark script") from e
 
     test_block_config = global_cfg.copy()
     test_block_config.variables["tavern"] = get_tavern_box()["tavern"]
