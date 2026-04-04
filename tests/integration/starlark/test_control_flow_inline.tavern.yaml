@@ -43,9 +43,6 @@ control_flow: |
   # success
   if resp.failed:
     fail("echoing did not succeed")
-  if resp.status_code == 200:
-    fail("Expected failure")
-  fail(resp.status_code)
 
 ---
 test_name: Test control_flow with inline Starlark - included stages
@@ -68,9 +65,6 @@ control_flow: |
   # success
   if resp.failed:
     fail("echoing did not succeed")
-  if resp.status_code == 200:
-    fail("Expected failure")
-  fail(resp.status_code)
 
 ---
 test_name: Test control_flow with inline Starlark - globally included stages
