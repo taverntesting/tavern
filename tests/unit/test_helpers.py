@@ -21,7 +21,36 @@ from tavern._core.strict_util import (
     validate_and_parse_option,
 )
 from tavern.core import run
-from tavern.helpers import validate_content, validate_pykwalify, validate_regex
+from tavern.helpers import (
+    validate_content,
+    validate_pydantic,
+    validate_pykwalify,
+    validate_regex,
+)
+
+# Pydantic models for testing validate_pydantic
+# Defined at module level so they can be imported dynamically
+try:
+    from pydantic import BaseModel
+
+    class PydanticTestModel(BaseModel):
+        name: str
+        value: int
+
+    class PydanticTestModelWithRequired(BaseModel):
+        name: str
+        required_field: int
+
+    class PydanticInnerModel(BaseModel):
+        inner_value: str
+
+    class PydanticOuterModel(BaseModel):
+        outer_name: str
+        nested: "PydanticInnerModel"
+
+except ImportError:
+    # pydantic not installed, tests will be skipped
+    pass
 
 
 class FakeResponse:
@@ -458,3 +487,75 @@ class TestStrictUtils:
         level = StrictLevel.from_options([section])
 
         assert level.option_for(section).setting == StrictSetting.UNSET
+
+
+class TestPydanticValidation:
+    """Tests for validate_pydantic function"""
+
+    @pytest.fixture(autouse=True)
+    def pydantic_available(self):
+        """Skip tests if pydantic is not installed"""
+        pytest.importorskip("pydantic")
+
+    def test_valid_model_validation(self):
+        """Test successful validation against a pydantic model"""
+
+        class ValidResponse:
+            def json(self):
+                return {"name": "test", "value": 42}
+
+        # Should not raise any exception
+        validate_pydantic(ValidResponse(), "tests.unit.test_helpers:PydanticTestModel")
+
+    def test_invalid_model_validation(self):
+        """Test validation failure against a pydantic model"""
+
+        class InvalidResponse:
+            def json(self):
+                return {"name": "test", "value": "not_an_int"}
+
+        with pytest.raises(exceptions.BadSchemaError) as exc_info:
+            validate_pydantic(
+                InvalidResponse(), "tests.unit.test_helpers:PydanticTestModel"
+            )
+
+        assert "pydantic validation" in str(exc_info.value).lower()
+
+    def test_non_json_response(self):
+        """Test validation fails when response is not JSON"""
+
+        class NonJsonResponse:
+            def json(self):
+                raise TypeError("Not JSON")
+
+        with pytest.raises(exceptions.BadSchemaError) as exc_info:
+            validate_pydantic(
+                NonJsonResponse(), "tests.unit.test_helpers:PydanticTestModel"
+            )
+
+        assert "not JSON" in str(exc_info.value)
+
+    def test_missing_required_field(self):
+        """Test validation fails when required field is missing"""
+
+        class MissingFieldResponse:
+            def json(self):
+                return {"name": "test"}
+
+        with pytest.raises(exceptions.BadSchemaError):
+            validate_pydantic(
+                MissingFieldResponse(),
+                "tests.unit.test_helpers:PydanticTestModelWithRequired",
+            )
+
+    def test_nested_model_validation(self):
+        """Test validation with nested pydantic models"""
+
+        class NestedResponse:
+            def json(self):
+                return {"outer_name": "test", "nested": {"inner_value": "hello"}}
+
+        # Should not raise any exception
+        validate_pydantic(
+            NestedResponse(), "tests.unit.test_helpers:PydanticOuterModel"
+        )

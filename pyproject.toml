@@ -108,6 +108,8 @@ dev = [
     "tox-uv>=1.28.0",
     "pytest-asyncio>=1.3.0",
     "hypothesis>=6,<7",
+    # for validate_pydantic tests
+    "pydantic",
 ]
 
 # When this is fixed, enable this https://github.com/jupyter-book/mystmd/issues/2082
