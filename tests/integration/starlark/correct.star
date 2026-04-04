@@ -1,2 +1,2 @@
-def f(x):
-    return x + 1
+load("@tavern_helpers.star", "run_stage")
+run_stage("finally-nothing-check")

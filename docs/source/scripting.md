@@ -116,6 +116,8 @@ Notes about the execution model:
 - All existing Tavern functionality remains the same. Pytest fixtures and marks are applied (including `parametrize`),
   tinctures are run between stages, Tavern hooks are called.
 - [`finally` stages](./core_concepts/flow.md#finalising-stages) are _not_ run.
+- If `run_stage()` is not called, an exception will be raised. This mirrors Pytest's default behaviour, where it will
+  exit with exit code 1 if no tests were run.
 
 ### Stage Requirements
 

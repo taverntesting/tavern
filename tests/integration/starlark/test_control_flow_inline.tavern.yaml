@@ -171,6 +171,13 @@ test_name: Test including a generic script
 control_flow: !include correct.star
 
 ---
+test_name: Test including a empty script (or one which runs no stages) fails
+
+_xfail: run
+
+control_flow: !include nothingrun.star
+
+---
 test_name: Test including a script that will fail at runtime
 
 _xfail: run

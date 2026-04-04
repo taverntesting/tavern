@@ -92,6 +92,11 @@ def _run_with_starlark_control_flow(
         logger.error("Starlark control_flow failed: %s", e)
         raise
 
+    if not runner.stage_run:
+        raise exceptions.StarlarkError(
+            "No stages were run in Starlark control_flow - invalid script?"
+        )
+
 
 def _resolve_test_stages(
     stages: list[Mapping], available_stages: Mapping

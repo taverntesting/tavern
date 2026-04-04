@@ -154,6 +154,7 @@ class StarlarkPipelineRunner:
         self._test_config: TestConfig = test_config
         self._sessions: dict[str, Any] = sessions
         self._python_error: BaseException | None = None
+        self.stage_run = False
 
     def load_and_run(self, script: str) -> Any:
         """Load and run a starlark pipeline script.
@@ -221,6 +222,9 @@ class StarlarkPipelineRunner:
         Returns:
             StageResponse with the result of running the stage
         """
+
+        self.stage_run = True
+
         stage = dict(stage)  # Make a copy to avoid mutating the original
         stage_name = stage.get("name", "unnamed-stage")
 
