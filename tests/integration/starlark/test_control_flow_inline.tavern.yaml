@@ -88,11 +88,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      json:
-        version: "v2.5.1"
-        token: "TKN-a1b2c3d4e5f6"
-        status: "status-code-200"
-        message: "Server-PROD-01 is running"
+      # Don't check the exact value of the response body, just that it matches the regex below
 
   - name: Verify extracted values
     id: verify_extracted
@@ -100,6 +96,7 @@ stages:
       url: "{global_host}/verify_extracted"
       method: POST
       json:
+        # These variables will be extracted from the response body using regex
         major_version: "{major_version}"
         token_id: "{token_id}"
         server_name: "{server_name}"
@@ -117,19 +114,19 @@ control_flow: |
     fail("get_regex_data stage failed")
 
   # Extract version number using regex: v2.5.1 -> capture major version
-  version_match = re.match("v(\\d+)\\.", resp.body["version"])
+  version_match = re.search("v(\\d+)\\.", resp.body)
   if version_match == None:
     fail("Failed to match version pattern")
   major_version = version_match.groups[0]
 
   # Extract token ID: TKN-a1b2c3d4e5f6 -> capture the ID part
-  token_match = re.match("TKN-(.+)", resp.body["token"])
+  token_match = re.search("\"TKN-(.+)\"", resp.body)
   if token_match == None:
-    fail("Failed to match token pattern TKN-+ from " + resp.body["token"])
+    fail("Failed to match token pattern TKN-+ from " + resp.body)
   token_id = token_match.groups[0]
 
   # Extract server name from message: Server-PROD-01 -> capture PROD-01
-  server_match = re.match("Server-(\\w+-\\w+)\\s", resp.body["message"])
+  server_match = re.search("Server-(\\w+-\\w+)\\s", resp.body)
   if server_match == None:
     fail("Failed to match server pattern")
   server_name = server_match.groups[0]

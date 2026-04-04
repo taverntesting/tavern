@@ -511,19 +511,19 @@ def get_jwt():
 def get_regex_data():
     """Endpoint for testing regex extraction in Starlark.
 
-    Returns structured data with patterns for regex testing:
+    Returns data with patterns for regex testing:
     - version: version string like "v1.2.3"
     - token: alphanumeric token with prefix
     - status: status string with code
     """
-    return jsonify(
-        {
-            "version": "v2.5.1",
-            "token": "TKN-a1b2c3d4e5f6",
-            "status": "status-code-200",
-            "message": "Server-PROD-01 is running",
-        }
-    ), 200
+    return (
+        """
+        server version: v2.5.1
+        server status: Server-PROD-01 is running
+        token "TKN-a1b2c3d4e5f6"
+    """,
+        200,
+    )
 
 
 @app.route("/verify_extracted", methods=["POST"])
