@@ -2612,7 +2612,6 @@ dependencies = [
     { name = "pyyaml" },
     { name = "requests" },
     { name = "simpleeval" },
-    { name = "starlark-pyo3" },
     { name = "stevedore" },
 ]
 
@@ -2632,6 +2631,9 @@ grpc = [
 ]
 mqtt = [
     { name = "paho-mqtt" },
+]
+scriptable = [
+    { name = "starlark-pyo3" },
 ]
 
 [package.dev-dependencies]
@@ -2689,11 +2691,11 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0.1,<7" },
     { name = "requests", specifier = ">=2.22.0,<3" },
     { name = "simpleeval", specifier = ">=1.0.3" },
-    { name = "starlark-pyo3", specifier = ">=2025.2.5" },
+    { name = "starlark-pyo3", marker = "extra == 'scriptable'", specifier = ">=2025.2.5" },
     { name = "stevedore", specifier = ">=4,<5" },
     { name = "websockets", marker = "extra == 'graphql'" },
 ]
-provides-extras = ["grpc", "mqtt", "graphql"]
+provides-extras = ["grpc", "mqtt", "scriptable", "graphql"]
 
 [package.metadata.requires-dev]
 dev = [

@@ -10,7 +10,6 @@ from copy import deepcopy
 from typing import Any
 
 import box
-import starlark
 
 from tavern._core import exceptions
 from tavern._core.plugins import (
@@ -59,6 +58,13 @@ def _run_with_starlark_control_flow(
         included_stages: A list of stages included in the test using !include
     """
     # Local import to avoid circular dependency
+    try:
+        import starlark
+    except ImportError as e:
+        raise exceptions.DependencyMissingError(
+            "starlark", "pip install tavern[starlark]"
+        ) from e
+
     from tavern._core.starlark.starlark_env import StarlarkPipelineRunner
 
     dialect = starlark.Dialect.extended()

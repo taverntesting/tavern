@@ -180,3 +180,7 @@ class UnexpectedExceptionError(TavernException):
 
 class StarlarkError(TavernException):
     """Exception when running a starlark stage, should only ever wrap another TavernException."""
+
+
+class DependencyMissingError(TavernException):
+    """Tried to use some functionality for which the 'extra' had not been installed."""

@@ -4,8 +4,6 @@ import logging
 from importlib.util import find_spec
 from typing import Any
 
-import starlark
-
 from tavern._core.strict_util import StrictLevel
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -72,6 +70,8 @@ class TestConfig:
         return available_backends
 
     def to_starlark(self) -> dict[str, Any]:
+        import starlark
+
         dumped = {
             "variables": starlark.OpaquePythonObject(self.variables),
             "follow_redirects": self.follow_redirects,
