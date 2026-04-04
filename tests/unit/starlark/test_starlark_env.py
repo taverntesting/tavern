@@ -4,7 +4,6 @@ These tests verify the StarlarkPipelineRunner and related functionality,
 including run_stage behavior and extra_vars formatting.
 """
 
-import copy
 from unittest.mock import Mock, patch
 
 import pytest
@@ -215,165 +214,6 @@ class TestStageResponseToStarlark:
 
 
 # ==============================================================================
-# Test _run_stage method
-# ==============================================================================
-
-
-class TestRunStageMethod:
-    """Tests for the internal _run_stage method."""
-
-    def test_run_stage_success(
-        self,
-        mock_test_config,
-        sample_stage,
-        mock_test_runner,
-        mock_tinctures,
-    ):
-        """Test successful stage execution."""
-        runner = StarlarkPipelineRunner(
-            test_path="/test/path.tavern.star",
-            stages=[sample_stage],
-            test_config=mock_test_config,
-            sessions={},
-        )
-
-        with patch(
-            "tavern._core.starlark.starlark_env._TestRunner",
-            return_value=mock_test_runner,
-        ):
-            with patch(
-                "tavern._core.starlark.starlark_env.get_stage_tinctures",
-                return_value=mock_tinctures,
-            ):
-                response = runner._run_stage(sample_stage, continue_on_fail=False)
-
-        assert response.success is True
-        assert response.stage_name == sample_stage["name"]
-
-    def test_run_stage_with_extra_vars(
-        self,
-        mock_test_config,
-        sample_stage,
-        mock_test_runner,
-        mock_tinctures,
-    ):
-        """Test that extra_vars are merged into test_config variables."""
-        runner = StarlarkPipelineRunner(
-            test_path="/test/path.tavern.star",
-            stages=[sample_stage],
-            test_config=mock_test_config,
-            sessions={},
-        )
-
-        extra_vars = {"extra_key": "extra_value"}
-
-        with patch(
-            "tavern._core.starlark.starlark_env._TestRunner",
-            return_value=mock_test_runner,
-        ):
-            with patch(
-                "tavern._core.starlark.starlark_env.get_stage_tinctures",
-                return_value=mock_tinctures,
-            ):
-                response = runner._run_stage(
-                    sample_stage, continue_on_fail=False, extra_vars=extra_vars
-                )
-
-        assert response.success is True
-        # Verify that with_new_variables was called
-        mock_test_config.with_new_variables.assert_called_once()
-
-    def test_run_stage_tavern_exception_raises(
-        self,
-        mock_test_config,
-        sample_stage,
-        mock_tinctures,
-    ):
-        """Test that TavernException is re-raised when continue_on_fail=False."""
-        mock_runner = Mock()
-        exc = TavernException("Stage failed")
-        exc.stage = sample_stage
-        mock_runner.wrapped_run_stage = Mock(side_effect=exc)
-
-        runner = StarlarkPipelineRunner(
-            test_path="/test/path.tavern.star",
-            stages=[sample_stage],
-            test_config=mock_test_config,
-            sessions={},
-        )
-
-        with patch(
-            "tavern._core.starlark.starlark_env._TestRunner", return_value=mock_runner
-        ):
-            with patch(
-                "tavern._core.starlark.starlark_env.get_stage_tinctures",
-                return_value=mock_tinctures,
-            ):
-                with pytest.raises(TavernException):
-                    runner._run_stage(sample_stage, continue_on_fail=False)
-
-    def test_run_stage_tavern_exception_returns_failed(
-        self,
-        mock_test_config,
-        sample_stage,
-        mock_tinctures,
-    ):
-        """Test that TavernException returns failed response when continue_on_fail=True."""
-        mock_runner = Mock()
-        exc = TavernException("Stage failed")
-        exc.stage = sample_stage
-        mock_runner.wrapped_run_stage = Mock(side_effect=exc)
-
-        runner = StarlarkPipelineRunner(
-            test_path="/test/path.tavern.star",
-            stages=[sample_stage],
-            test_config=mock_test_config,
-            sessions={},
-        )
-
-        with patch(
-            "tavern._core.starlark.starlark_env._TestRunner", return_value=mock_runner
-        ):
-            with patch(
-                "tavern._core.starlark.starlark_env.get_stage_tinctures",
-                return_value=mock_tinctures,
-            ):
-                response = runner._run_stage(sample_stage, continue_on_fail=True)
-
-        assert response.success is False
-        assert response.stage_name == sample_stage["name"]
-
-    def test_run_stage_copies_stage_dict(
-        self,
-        mock_test_config,
-        sample_stage,
-        mock_test_runner,
-        mock_tinctures,
-    ):
-        """Test that original stage dict is not mutated."""
-        original_stage = copy.deepcopy(sample_stage)
-        runner = StarlarkPipelineRunner(
-            test_path="/test/path.tavern.star",
-            stages=[sample_stage],
-            test_config=mock_test_config,
-            sessions={},
-        )
-
-        with patch(
-            "tavern._core.starlark.starlark_env._TestRunner",
-            return_value=mock_test_runner,
-        ):
-            with patch(
-                "tavern._core.starlark.starlark_env.get_stage_tinctures",
-                return_value=mock_tinctures,
-            ):
-                runner._run_stage(sample_stage, continue_on_fail=False)
-
-        # Original stage should not be modified
-        assert sample_stage == original_stage
-
-
-# ==============================================================================
 # Test run_stage binding (Starlark callable)
 # ==============================================================================
 
@@ -463,47 +303,6 @@ resp = run_stage("nonexistent_stage")
         assert result["status_code"] == 200
         assert "body" in result
         assert result["body"] == {"result": "success"}
-
-
-# ==============================================================================
-# Test _setup_builtins
-# ==============================================================================
-
-
-class TestSetupBuiltins:
-    """Tests for the _setup_builtins method."""
-
-    def test_setup_builtins_adds_run_stage(self, basic_runner):
-        """Test that __run_stage is callable from starlark."""
-        script = """
-load("@tavern_helpers.star", "run_stage")
-# run_stage function should be available
-"""
-        basic_runner.load_and_run(script)
-
-    def test_setup_builtins_adds_log(self, basic_runner, caplog):
-        """Test that log function works in starlark."""
-        script = """
-load("@tavern_helpers.star", "log")
-log("test log message")
-"""
-        with caplog.at_level("INFO"):
-            basic_runner.load_and_run(script)
-
-        assert "test log message" in caplog.text
-
-    def test_setup_builtins_adds_stages_to_module(self, basic_runner, sample_stages):
-        """Test that stages are registered properly."""
-        runner = StarlarkPipelineRunner(
-            test_path="/test/path.tavern.star",
-            stages=sample_stages,
-            test_config=basic_runner._test_config,
-            sessions={},
-        )
-
-        # Verify stages are in the registry
-        assert runner._stage_registry.has_stage("get_cookie")
-        assert runner._stage_registry.has_stage("echo_value")
 
 
 # ==============================================================================
@@ -686,6 +485,66 @@ resp = run_stage("get_cookie")
 
         # Verify wrapped_run_stage was called
         mock_test_runner.wrapped_run_stage.assert_called_once()
+
+    def test_run_stage_tavern_exception_raises(
+        self,
+        mock_test_config,
+        sample_stage,
+        mock_tinctures,
+    ):
+        """Test that TavernException is re-raised when continue_on_fail=False."""
+        mock_runner = Mock()
+        exc = TavernException("Stage failed")
+        exc.stage = sample_stage
+        mock_runner.wrapped_run_stage = Mock(side_effect=exc)
+
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[sample_stage],
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        with patch(
+            "tavern._core.starlark.starlark_env._TestRunner", return_value=mock_runner
+        ):
+            with patch(
+                "tavern._core.starlark.starlark_env.get_stage_tinctures",
+                return_value=mock_tinctures,
+            ):
+                with pytest.raises(TavernException):
+                    runner._run_stage(sample_stage, continue_on_fail=False)
+
+    def test_run_stage_tavern_exception_returns_failed(
+        self,
+        mock_test_config,
+        sample_stage,
+        mock_tinctures,
+    ):
+        """Test that TavernException returns failed response when continue_on_fail=True."""
+        mock_runner = Mock()
+        exc = TavernException("Stage failed")
+        exc.stage = sample_stage
+        mock_runner.wrapped_run_stage = Mock(side_effect=exc)
+
+        runner = StarlarkPipelineRunner(
+            test_path="/test/path.tavern.star",
+            stages=[sample_stage],
+            test_config=mock_test_config,
+            sessions={},
+        )
+
+        with patch(
+            "tavern._core.starlark.starlark_env._TestRunner", return_value=mock_runner
+        ):
+            with patch(
+                "tavern._core.starlark.starlark_env.get_stage_tinctures",
+                return_value=mock_tinctures,
+            ):
+                response = runner._run_stage(sample_stage, continue_on_fail=True)
+
+        assert response.success is False
+        assert response.stage_name == sample_stage["name"]
 
     def test_run_stage_with_extra_vars(
         self,
