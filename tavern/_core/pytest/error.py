@@ -46,7 +46,13 @@ class ReprdError(TerminalRepr):
             keys = self.exce._excinfo[1].test_block_config.variables
         except AttributeError:
             logger.warning("Unable to read stage variables - error output may be wrong")
-            keys = self.item.global_cfg.variables
+            try:
+                keys = self.item.global_cfg.variables
+            except AttributeError:
+                logger.warning(
+                    "Unable to read global variables - error output may be wrong"
+                )
+                keys = {}
 
         return keys
 
@@ -212,7 +218,7 @@ class ReprdError(TerminalRepr):
         except AttributeError:
             stage = None
             # Fallback, we don't know which stage it is
-            stages = self.item.spec["stages"]
+            stages = self.item.spec.get("stages", [])
 
             try:
                 first_line = start_mark(stages[0]).line - 1
