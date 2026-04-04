@@ -107,11 +107,18 @@ def _re_match(pattern, s):
     return struct(group0=m["group0"], groups=m["groups"], start=m["start"], end=m["end"])
 
 
+def _re_search(pattern, s):
+    m = __re_search(pattern, s)
+    if m == None:
+        return None
+    return struct(group0=m["group0"], groups=m["groups"], start=m["start"], end=m["end"])
+
+
 def _re_sub(pattern, repl, s):
     return __re_sub(pattern, repl, s)
 
 
-re = struct(match=_re_match, sub=_re_sub)
+re = struct(match=_re_match, search=_re_search, sub=_re_sub)
 """
 
 
@@ -376,7 +383,9 @@ class StarlarkPipelineRunner:
         module.add_callable("log", log)
 
         @_wrap_callable
-        def re_match(pattern: str, string: str) -> dict | None:
+        def re_match(pattern: str, string: str | bytes) -> dict | None:
+            if isinstance(string, bytes):
+                string = string.decode("utf-8")
             result = re.match(pattern, string)
             if result is None:
                 return None
@@ -390,7 +399,25 @@ class StarlarkPipelineRunner:
         module.add_callable("__re_match", re_match)
 
         @_wrap_callable
-        def re_sub(pattern: str, repl: str, string: str) -> str:
+        def re_search(pattern: str, string: str | bytes) -> dict | None:
+            if isinstance(string, bytes):
+                string = string.decode("utf-8")
+            result = re.search(pattern, string)
+            if result is None:
+                return None
+            return {
+                "group0": result.group(0),
+                "groups": list(result.groups()),
+                "start": result.start(),
+                "end": result.end(),
+            }
+
+        module.add_callable("__re_search", re_search)
+
+        @_wrap_callable
+        def re_sub(pattern: str, repl: str, string: str | bytes) -> str:
+            if isinstance(string, bytes):
+                string = string.decode("utf-8")
             return re.sub(pattern, repl, string)
 
         module.add_callable("__re_sub", re_sub)
