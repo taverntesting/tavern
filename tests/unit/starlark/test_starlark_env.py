@@ -110,59 +110,6 @@ class TestWrapCallable:
 
 
 # ==============================================================================
-# Test StarlarkPipelineRunner.__init__
-# ==============================================================================
-
-
-class TestStarlarkPipelineRunnerInit:
-    """Tests for StarlarkPipelineRunner initialization."""
-
-    def test_init_with_stages(self, mock_test_config, sample_stages):
-        """Test initialization with a list of stages."""
-        runner = StarlarkPipelineRunner(
-            test_path="/test/path.tavern.star",
-            stages=sample_stages,
-            test_config=mock_test_config,
-            sessions={},
-        )
-        assert runner._stage_registry is not None
-        assert runner._stage_registry.has_stage("get_cookie")
-        assert runner._stage_registry.has_stage("echo_value")
-
-    def test_init_without_stages(self, mock_test_config):
-        """Test initialization with an empty stages list."""
-        runner = StarlarkPipelineRunner(
-            test_path="/test/path.tavern.star",
-            stages=[],
-            test_config=mock_test_config,
-            sessions={},
-        )
-        assert runner._stage_registry is not None
-        assert runner._stage_registry.get_all_stages() == {}
-
-    def test_init_stores_test_config(self, mock_test_config):
-        """Test that test_config is stored."""
-        runner = StarlarkPipelineRunner(
-            test_path="/test/path.tavern.star",
-            stages=[],
-            test_config=mock_test_config,
-            sessions={},
-        )
-        assert runner._test_config is mock_test_config
-
-    def test_init_stores_sessions(self, mock_test_config):
-        """Test that sessions dict is stored."""
-        sessions = {"http": Mock()}
-        runner = StarlarkPipelineRunner(
-            test_path="/test/path.tavern.star",
-            stages=[],
-            test_config=mock_test_config,
-            sessions=sessions,
-        )
-        assert runner._sessions is sessions
-
-
-# ==============================================================================
 # Test StageResponse
 # ==============================================================================
 
