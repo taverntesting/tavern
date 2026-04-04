@@ -3,6 +3,7 @@
 import dataclasses
 import functools
 import logging
+import re
 from typing import Any, TypedDict
 
 import requests
@@ -97,6 +98,20 @@ def run_stage(name, *, continue_on_fail=False, extra_vars=None):
         # - variables (some may be opaque and unusable!)
         **resp
     )
+
+
+def _re_match(pattern, s):
+    m = __re_match(pattern, s)
+    if m == None:
+        return None
+    return struct(group0=m["group0"], groups=m["groups"], start=m["start"], end=m["end"])
+
+
+def _re_sub(pattern, repl, s):
+    return __re_sub(pattern, repl, s)
+
+
+re = struct(match=_re_match, sub=_re_sub)
 """
 
 
@@ -359,3 +374,23 @@ class StarlarkPipelineRunner:
             logger.info(s)
 
         module.add_callable("log", log)
+
+        @_wrap_callable
+        def re_match(pattern: str, string: str) -> dict | None:
+            result = re.match(pattern, string)
+            if result is None:
+                return None
+            return {
+                "group0": result.group(0),
+                "groups": list(result.groups()),
+                "start": result.start(),
+                "end": result.end(),
+            }
+
+        module.add_callable("__re_match", re_match)
+
+        @_wrap_callable
+        def re_sub(pattern: str, repl: str, string: str) -> str:
+            return re.sub(pattern, repl, string)
+
+        module.add_callable("__re_sub", re_sub)

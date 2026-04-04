@@ -82,3 +82,71 @@ control_flow: |
 
   # run a stage defined in the global_cfg.yaml file
   run_stage("finally-nothing-check")
+
+---
+test_name: Test regex functions with inline Starlark
+
+stages:
+  - name: Get regex test data
+    id: get_regex_data
+    request:
+      url: "{global_host}/regex_data"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        version: "v2.5.1"
+        token: "TKN-a1b2c3d4e5f6"
+        status: "status-code-200"
+        message: "Server-PROD-01 is running"
+
+  - name: Verify extracted values
+    id: verify_extracted
+    request:
+      url: "{global_host}/verify_extracted"
+      method: POST
+      json:
+        major_version: "{major_version}"
+        token_id: "{token_id}"
+        server_name: "{server_name}"
+    response:
+      status_code: 200
+      json:
+        status: "verified"
+
+control_flow: |
+  load("@tavern_helpers.star", "run_stage", "re")
+
+  # Get regex test data
+  resp = run_stage("get_regex_data")
+  if resp.failed:
+    fail("get_regex_data stage failed")
+  log(resp)
+  log(resp.body)
+
+  # Extract version number using regex: v2.5.1 -> capture major version
+  version_match = re.match("v(\\d+)\\.", resp.body["version"])
+  if version_match == None:
+    fail("Failed to match version pattern")
+  major_version = version_match.groups[0]
+
+  # Extract token ID: TKN-a1b2c3d4e5f6 -> capture the ID part
+  token_match = re.match("TKN-(.+)", resp.body["token"])
+  if token_match == None:
+    fail("Failed to match token pattern TKN-+ from " + resp.body["token"])
+  token_id = token_match.groups[0]
+
+  # Extract server name from message: Server-PROD-01 -> capture PROD-01
+  server_match = re.match("Server-(\\w+-\\w+)\\s", resp.body["message"])
+  if server_match == None:
+    fail("Failed to match server pattern")
+  server_name = server_match.groups[0]
+
+  # Use extracted values in next stage via extra_vars
+  resp = run_stage("verify_extracted", extra_vars={
+    "major_version": major_version,
+    "token_id": token_id,
+    "server_name": server_name
+  })
+  if resp.failed:
+    fail("verify_extracted stage failed")
