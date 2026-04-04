@@ -115,8 +115,6 @@ control_flow: |
   resp = run_stage("get_regex_data")
   if resp.failed:
     fail("get_regex_data stage failed")
-  log(resp)
-  log(resp.body)
 
   # Extract version number using regex: v2.5.1 -> capture major version
   version_match = re.match("v(\\d+)\\.", resp.body["version"])
