@@ -78,7 +78,7 @@ def _parse_func_mark(fmt_vars: Mapping, m: str) -> pytest.Mark:
     """
     try:
         # Extract mark name and arguments string
-        mark_name = m.split("(")[0]
+        mark_name = m.split("(", maxsplit=1)[0]
         args_str = m[len(mark_name) + 1 : -1]
 
         # Format the arguments string
@@ -485,7 +485,7 @@ class YamlFile(pytest.File):
                         f"If this is meant to be defaults for the file, add 'is_defaults: true'. "
                         f"If this is meant to be a test, add both 'test_name' and 'stages'."
                     )
-                else:
+                elif "control_flow" not in test_spec:
                     raise exceptions.BadSchemaError(
                         f"Document {document_idx + 1} in '{self.path}' is missing 'test_name' or 'stages'"
                     )

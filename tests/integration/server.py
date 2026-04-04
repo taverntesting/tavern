@@ -505,3 +505,54 @@ def get_jwt():
     token = jwt.encode(payload, secret, algorithm="HS256")
 
     return jsonify({"jwt": token})
+
+
+@app.route("/regex_data", methods=["GET"])
+def get_regex_data():
+    """Endpoint for testing regex extraction in Starlark.
+
+    Returns data with patterns for regex testing:
+    - version: version string like "v1.2.3"
+    - token: alphanumeric token with prefix
+    - status: status string with code
+    """
+    return (
+        """
+        server version: v2.5.1
+        server status: Server-PROD-01 is running
+        token "TKN-a1b2c3d4e5f6"
+    """,
+        200,
+    )
+
+
+@app.route("/verify_extracted", methods=["POST"])
+def verify_extracted():
+    """Verify that extracted values were passed correctly.
+
+    Expects JSON body with:
+    - major_version: extracted major version number
+    - token_id: extracted token ID part
+    - server_name: extracted server name from message
+    """
+    body = request.get_json()
+
+    major = body.get("major_version")
+    token_id = body.get("token_id")
+    server_name = body.get("server_name")
+
+    errors = []
+
+    if major != "2":
+        errors.append(f"major_version expected '2', got '{major}'")
+
+    if token_id != "a1b2c3d4e5f6":
+        errors.append(f"token_id expected 'a1b2c3d4e5f6', got '{token_id}'")
+
+    if server_name != "PROD-01":
+        errors.append(f"server_name expected 'PROD-01', got '{server_name}'")
+
+    if errors:
+        return jsonify({"errors": errors}), 400
+
+    return jsonify({"status": "verified"}), 200

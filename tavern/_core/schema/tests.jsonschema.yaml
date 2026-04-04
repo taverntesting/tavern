@@ -218,3 +218,11 @@ properties:
       oneOf:
         - $ref: "#/definitions/stage"
         - $ref: "#/definitions/stage_ref"
+
+  control_flow:
+    type: string
+    desc: |
+      Starlark script that controls the execution order of stages.
+      When present, stages are NOT executed sequentially - instead,
+      the Starlark script calls run_stage(stage_id) to execute stages.
+      Stages must have an 'id' field to be callable from Starlark.

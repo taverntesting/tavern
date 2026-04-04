@@ -2,6 +2,7 @@ import copy
 import dataclasses
 import functools
 import logging
+import os
 import pathlib
 from collections.abc import Mapping, MutableMapping
 from contextlib import ExitStack
@@ -31,6 +32,76 @@ from .testhelpers import delay, retry
 from .tincture import Tinctures, get_stage_tinctures
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+
+def _run_with_starlark_control_flow(
+    in_file: pathlib.Path,
+    test_spec: MutableMapping,
+    global_cfg: TestConfig,
+    sessions: dict[str, Any],
+    included_stages: list[dict],
+) -> None:
+    """
+    Executes a test using Starlark-based control flow. This function integrates
+    a control flow script specified in the `test_spec` with the provided
+    configuration, running it against an instance of `StarlarkPipelineRunner`.
+    Logs progress and raises any execution errors encountered.
+
+    Args:
+        in_file: The path to the input test file containing test definitions.
+        test_spec: A mutable mapping containing details of the test case,
+            including control flow script and other test-related configurations.
+        global_cfg: The global test configuration object, which contains shared
+            settings and variables used across multiple tests.
+        sessions: A dictionary containing session-related data (e.g., session
+            state or objects) that may be required during the test execution.
+        included_stages: A list of stages included in the test using !include
+    """
+    # Local import to avoid circular dependency
+    try:
+        import starlark
+    except ImportError as e:
+        raise exceptions.DependencyMissingError(
+            "starlark", "pip install tavern[starlark]"
+        ) from e
+
+    from tavern._core.starlark.starlark_env import StarlarkPipelineRunner
+
+    dialect = starlark.Dialect.extended()
+    dialect.enable_keyword_only_arguments = True
+    try:
+        starlark.parse(os.fspath(in_file), test_spec["control_flow"], dialect=dialect)
+    except starlark.StarlarkError as e:
+        raise exceptions.BadSchemaError("Failed to parse starlark script") from e
+
+    test_block_config = global_cfg.copy()
+    test_block_config.variables["tavern"] = get_tavern_box()["tavern"]
+
+    test_block_config.variables.pop("event_loop_policy")
+    test_block_config.variables.pop("_session_faker")
+
+    control_flow_script = test_spec["control_flow"]
+    test_block_name = test_spec["test_name"]
+
+    logger.info("Running test with Starlark control_flow: %s", test_block_name)
+
+    runner = StarlarkPipelineRunner(
+        test_path=str(in_file),
+        stages=test_spec.get("stages", []) + included_stages,
+        test_config=test_block_config,
+        sessions=sessions,
+    )
+
+    try:
+        runner.load_and_run(script=control_flow_script)
+    except Exception as e:
+        logger.error("Starlark control_flow failed: %s", e)
+        raise
+
+    if not runner.stage_run:
+        raise exceptions.StarlarkError(
+            "No stages were run in Starlark control_flow - invalid script?"
+        )
 
 
 def _resolve_test_stages(
@@ -169,7 +240,7 @@ def run_test(
         tavern_box, test_block_config, test_spec, available_stages
     )
     all_stages = {s["id"]: s for s in available_stages + included_stages}
-    test_spec["stages"] = _resolve_test_stages(test_spec["stages"], all_stages)
+    test_spec["stages"] = _resolve_test_stages(test_spec.get("stages", []), all_stages)
     finally_stages = _resolve_test_stages(test_spec.get("finally", []), all_stages)
 
     test_block_config.variables["tavern"] = tavern_box["tavern"]
@@ -179,11 +250,25 @@ def run_test(
     logger.info("Running test : %s", test_block_name)
 
     with ExitStack() as stack:
-        sessions = get_extra_sessions(test_spec, test_block_config)
+        http_plugin = test_block_config.tavern_internal.backends.get("http", "requests")
+        sessions = get_extra_sessions(
+            test_spec,
+            test_block_config,
+            [http_plugin] if "control_flow" in test_spec else None,
+        )
 
         for name, session in sessions.items():
             logger.debug("Entering context for %s", name)
             stack.enter_context(session)
+
+        if "control_flow" in test_spec:
+            return _run_with_starlark_control_flow(
+                in_file,
+                test_spec,
+                test_block_config,
+                sessions,
+                available_stages + included_stages,
+            )
 
         def getonly(stage):
             o = stage.get("only")
@@ -364,13 +449,16 @@ class _TestRunner:
 
     def wrapped_run_stage(
         self, stage: dict, stage_config: TestConfig, tinctures: Tinctures
-    ) -> None:
+    ) -> Any:
         """Run one stage from the test
 
         Args:
             stage: specification of stage to be run
             stage_config: available variables for test
             tinctures: tinctures for this stage/test
+
+        Returns:
+            The response from the request. This could be any type of response, depending on the request type.
         """
         stage = copy.deepcopy(stage)
         name = stage["name"]
@@ -410,3 +498,5 @@ class _TestRunner:
 
         tavern_box.pop("request_vars")
         delay(stage, "after", stage_config.variables)
+
+        return response

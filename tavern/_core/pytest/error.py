@@ -46,7 +46,13 @@ class ReprdError(TerminalRepr):
             keys = self.exce._excinfo[1].test_block_config.variables
         except AttributeError:
             logger.warning("Unable to read stage variables - error output may be wrong")
-            keys = self.item.global_cfg.variables
+            try:
+                keys = self.item.global_cfg.variables
+            except AttributeError:
+                logger.warning(
+                    "Unable to read global variables - error output may be wrong"
+                )
+                keys = {}
 
         return keys
 
@@ -212,10 +218,14 @@ class ReprdError(TerminalRepr):
         except AttributeError:
             stage = None
             # Fallback, we don't know which stage it is
-            stages = self.item.spec["stages"]
+            stages = self.item.spec.get("stages", [])
 
-            first_line = start_mark(stages[0]).line - 1
-            last_line = end_mark(stages[-1]).line
+            try:
+                first_line = start_mark(stages[0]).line - 1
+                last_line = end_mark(stages[-1]).line
+            except IndexError:
+                first_line = 0
+                last_line = 0
 
             line_start = None
         else:
@@ -230,9 +240,12 @@ class ReprdError(TerminalRepr):
         tw.line("")
 
         if not stage:
-            tw.line(
-                "[Could not determine which stage was running]", red=True, bold=True
-            )
+            if first_line == last_line == 0:
+                tw.line("[Only included stages were present]", red=True, bold=True)
+            else:
+                tw.line(
+                    "[Could not determine which stage was running]", red=True, bold=True
+                )
         elif missing_format_vars:
             tw.line("Missing format vars for stage", red=True, bold=True)
         else:
