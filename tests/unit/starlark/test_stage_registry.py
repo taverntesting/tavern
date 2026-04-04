@@ -32,23 +32,6 @@ class TestStageRegistry:
         assert registry.get_stage("stage_with_id") is not None
         assert registry.get_stage("Stage without ID") is None
 
-    def test_registry_allows_string_id_lookup(self):
-        stages = [
-            {
-                "id": "login",
-                "name": "Login",
-                "request": {"url": "http://example.com/login"},
-            },
-            {
-                "id": "get_user",
-                "name": "Get User",
-                "request": {"url": "http://example.com/user"},
-            },
-        ]
-        registry = StageRegistry(stages)
-        assert registry.has_stage("login")
-        assert registry.has_stage("get_user")
-
     def test_registry_raises_on_invalid_id(self):
         stages = [
             {

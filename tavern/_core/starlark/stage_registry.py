@@ -12,8 +12,5 @@ class StageRegistry:
     def get_stage(self, stage_id: str) -> Optional[dict]:
         return self._stages.get(stage_id)
 
-    def has_stage(self, stage_id: str) -> bool:
-        return stage_id in self._stages
-
     def get_all_stages(self) -> dict[str, dict]:
         return self._stages.copy()
