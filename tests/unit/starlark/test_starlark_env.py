@@ -11,6 +11,7 @@ import requests
 import starlark
 
 from tavern._core.exceptions import TavernException
+from tavern._core.run import _TestRunner
 from tavern._core.starlark.stage_registry import StageRegistry
 from tavern._core.starlark.starlark_env import (
     StageResponse,
@@ -22,14 +23,9 @@ from tavern._core.tincture import Tinctures
 
 @pytest.fixture
 def mock_test_runner(mock_response):
-    runner = Mock()
+    runner = Mock(spec=_TestRunner)
     runner.wrapped_run_stage = Mock(return_value=mock_response)
     return runner
-
-
-@pytest.fixture
-def mock_tinctures():
-    return Tinctures([])
 
 
 @pytest.fixture
@@ -226,10 +222,10 @@ class TestRunStageBinding:
         basic_runner,
         sample_stage,
         mock_test_runner,
-        mock_tinctures,
     ):
         """Test that run_stage binding returns success response."""
         basic_runner._stage_registry = StageRegistry([sample_stage])
+        tinctures = Tinctures([])
 
         with patch(
             "tavern._core.starlark.starlark_env._TestRunner",
@@ -237,7 +233,7 @@ class TestRunStageBinding:
         ):
             with patch(
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
-                return_value=mock_tinctures,
+                return_value=tinctures,
             ):
                 result = basic_runner._create_response_struct(
                     StageResponse(
@@ -458,7 +454,6 @@ log("Hello from starlark")
         mock_test_config,
         sample_stages,
         mock_test_runner,
-        mock_tinctures,
     ):
         """Test that run_stage can be called from Starlark script."""
         runner = StarlarkPipelineRunner(
@@ -467,6 +462,7 @@ log("Hello from starlark")
             test_config=mock_test_config,
             sessions={},
         )
+        tinctures = Tinctures([])
 
         script = """
 load("@tavern_helpers.star", "run_stage")
@@ -479,7 +475,7 @@ resp = run_stage("get_cookie")
         ):
             with patch(
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
-                return_value=mock_tinctures,
+                return_value=tinctures,
             ):
                 runner.load_and_run(script)
 
@@ -490,13 +486,13 @@ resp = run_stage("get_cookie")
         self,
         mock_test_config,
         sample_stage,
-        mock_tinctures,
     ):
         """Test that TavernException is re-raised when continue_on_fail=False."""
         mock_runner = Mock()
         exc = TavernException("Stage failed")
         exc.stage = sample_stage
         mock_runner.wrapped_run_stage = Mock(side_effect=exc)
+        tinctures = Tinctures([])
 
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
@@ -510,7 +506,7 @@ resp = run_stage("get_cookie")
         ):
             with patch(
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
-                return_value=mock_tinctures,
+                return_value=tinctures,
             ):
                 with pytest.raises(TavernException):
                     runner._run_stage(sample_stage, continue_on_fail=False)
@@ -519,13 +515,13 @@ resp = run_stage("get_cookie")
         self,
         mock_test_config,
         sample_stage,
-        mock_tinctures,
     ):
         """Test that TavernException returns failed response when continue_on_fail=True."""
         mock_runner = Mock()
         exc = TavernException("Stage failed")
         exc.stage = sample_stage
         mock_runner.wrapped_run_stage = Mock(side_effect=exc)
+        tinctures = Tinctures([])
 
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
@@ -539,7 +535,7 @@ resp = run_stage("get_cookie")
         ):
             with patch(
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
-                return_value=mock_tinctures,
+                return_value=tinctures,
             ):
                 response = runner._run_stage(sample_stage, continue_on_fail=True)
 
@@ -551,7 +547,6 @@ resp = run_stage("get_cookie")
         mock_test_config,
         sample_stages,
         mock_test_runner,
-        mock_tinctures,
     ):
         """Test that extra_vars can be passed to run_stage from Starlark."""
         runner = StarlarkPipelineRunner(
@@ -560,6 +555,7 @@ resp = run_stage("get_cookie")
             test_config=mock_test_config,
             sessions={},
         )
+        tinctures = Tinctures([])
 
         script = """
 load("@tavern_helpers.star", "run_stage")
@@ -572,7 +568,7 @@ resp = run_stage("get_cookie", extra_vars={"custom_var": "custom_value"})
         ):
             with patch(
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
-                return_value=mock_tinctures,
+                return_value=tinctures,
             ):
                 runner.load_and_run(script)
 
@@ -587,13 +583,13 @@ resp = run_stage("get_cookie", extra_vars={"custom_var": "custom_value"})
         self,
         mock_test_config,
         sample_stages,
-        mock_tinctures,
     ):
         """Test that continue_on_fail parameter prevents exception propagation."""
         mock_runner = Mock()
         exc = TavernException("Stage failed")
         exc.stage = sample_stages[0]
         mock_runner.wrapped_run_stage = Mock(side_effect=exc)
+        tinctures = Tinctures([])
 
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
@@ -614,7 +610,7 @@ resp = run_stage("get_cookie", continue_on_fail=True)
         ):
             with patch(
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
-                return_value=mock_tinctures,
+                return_value=tinctures,
             ):
                 # Should not raise
                 runner.load_and_run(script)
@@ -623,13 +619,13 @@ resp = run_stage("get_cookie", continue_on_fail=True)
         self,
         mock_test_config,
         sample_stages,
-        mock_tinctures,
     ):
         """Test that failed stage propagates exception when continue_on_fail=False."""
         mock_runner = Mock()
         exc = TavernException("Stage failed")
         exc.stage = sample_stages[0]
         mock_runner.wrapped_run_stage = Mock(side_effect=exc)
+        tinctures = Tinctures([])
 
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
@@ -651,7 +647,7 @@ resp = run_stage("get_cookie")
         ):
             with patch(
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
-                return_value=mock_tinctures,
+                return_value=tinctures,
             ):
                 # Should raise StarlarkError (wrapping TavernException)
                 with pytest.raises((exceptions.StarlarkError, TavernException)):
