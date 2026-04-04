@@ -9,6 +9,7 @@ import _pytest
 import pytest
 import yaml
 from box import Box
+from pydantic import BaseModel
 
 from tavern._core import exceptions
 from tavern._core.dict_util import _check_and_format_values, format_keys
@@ -30,27 +31,25 @@ from tavern.helpers import (
 
 # Pydantic models for testing validate_pydantic
 # Defined at module level so they can be imported dynamically
-try:
-    from pydantic import BaseModel
 
-    class PydanticTestModel(BaseModel):
-        name: str
-        value: int
 
-    class PydanticTestModelWithRequired(BaseModel):
-        name: str
-        required_field: int
+class PydanticTestModel(BaseModel):
+    name: str
+    value: int
 
-    class PydanticInnerModel(BaseModel):
-        inner_value: str
 
-    class PydanticOuterModel(BaseModel):
-        outer_name: str
-        nested: "PydanticInnerModel"
+class PydanticTestModelWithRequired(BaseModel):
+    name: str
+    required_field: int
 
-except ImportError:
-    # pydantic not installed, tests will be skipped
-    pass
+
+class PydanticInnerModel(BaseModel):
+    inner_value: str
+
+
+class PydanticOuterModel(BaseModel):
+    outer_name: str
+    nested: "PydanticInnerModel"
 
 
 class FakeResponse:
