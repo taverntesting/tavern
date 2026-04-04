@@ -37,6 +37,44 @@ from tavern._core.stage_lines import (
 
 logger: logging.Logger = logging.getLogger(__name__)
 
+def _format_error_path(path):
+    parts = []
+    for item in path:
+        if isinstance(item, int):
+            if parts:
+                parts[-1] = f"{parts[-1]}[{item}]"
+            else:
+                parts.append(f"[{item}]")
+        else:
+            parts.append(str(item))
+    return ".".join(parts)
+
+
+def _extract_missing_required_key(error: ValidationError) -> str | None:
+    match = re.search(r"'(.+?)' is a required property", error.message)
+    if match:
+        return match.group(1)
+    return None
+
+
+def _format_validation_message(error: ValidationError) -> str:
+    message = error.message
+    if error.validator == "required":
+        missing_key = _extract_missing_required_key(error)
+        path = list(error.absolute_path)
+        if missing_key:
+            path.append(missing_key)
+        path_str = _format_error_path(path)
+        stage_name = None
+        if isinstance(error.instance, Mapping):
+            stage_name = error.instance.get("name") or error.instance.get("id")
+        if stage_name:
+            message = f"{message} (stage: {stage_name})"
+        if path_str:
+            message = f"{message} (path: {path_str})"
+    return message
+
+
 
 def is_str_or_bytes_or_token(checker, instance):
     return Draft7Validator.TYPE_CHECKER.is_type(instance, "string") or isinstance(
@@ -163,7 +201,7 @@ def verify_jsonschema(to_verify: Mapping, schema: Mapping) -> None:
                 content = "\n".join(list(lines))
                 real_context.append(
                     f"""
-{c.message}
+{_format_validation_message(c)}
 {filename}: line {first_line}-{last_line}:
 
 {content}
@@ -172,7 +210,7 @@ def verify_jsonschema(to_verify: Mapping, schema: Mapping) -> None:
             else:
                 real_context.append(
                     f"""
-{c.message}
+{_format_validation_message(c)}
 
 <error: unable to find input file for context>
 """
