@@ -33,10 +33,47 @@ from .util import load_global_cfg
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-class BaseTavernItem(pytest.Item):
-    """Base class for Tavern test items (YamlItem and StarlarkItem).
+class _TavernFixtureRequest(pytest.FixtureRequest):
+    def __init__(self, pyfuncitem: "YamlItem", *, _ispytest: bool = False) -> None:
+        super().__init__(
+            fixturename=None,
+            pyfuncitem=pyfuncitem,
+            arg2fixturedefs=pyfuncitem._fixtureinfo.name2fixturedefs.copy(),
+            fixture_defs={},
+            _ispytest=_ispytest,
+        )
 
-    Contains shared functionality for fixture handling, markers, and config loading.
+    def _check_scope(
+        self,
+        requested_fixturedef: FixtureDef[object] | PseudoFixtureDef[object],
+        requested_scope: Scope,
+    ) -> None:
+        pass
+
+    @property
+    def node(self):
+        return self._pyfuncitem
+
+    def addfinalizer(self, finalizer: Callable[[], object]) -> None:
+        self.node.addfinalizer(finalizer)
+
+    @property
+    def _scope(self) -> Scope:
+        return Scope.Function
+
+    def _fillfixtures(self) -> None:
+        item = self._pyfuncitem
+        for argname in item.fixturenames:
+            if argname not in item.funcargs:
+                item.funcargs[argname] = self.getfixturevalue(argname)
+
+
+class YamlItem(pytest.Item):
+    """Simple wrapper around new test type that can report errors more
+    accurately than the default pytest reporting stuff
+
+    At the time of writing this doesn't print the error very nicely, but it
+    should be enough to track down what went wrong
 
     Attributes:
         path: filename that this test came from
@@ -44,20 +81,31 @@ class BaseTavernItem(pytest.Item):
         global_cfg: configuration for test
     """
 
+    # See https://github.com/taverntesting/tavern/issues/825
+    _patched_yaml = False
+
     global_cfg: TestConfig
 
     def __init__(
         self, *, name: str, parent, spec: MutableMapping, path: pathlib.Path, **kwargs
     ) -> None:
-        super().__init__(name, parent, path=path, **kwargs)
+        if "grpc" in spec:
+            logger.warning("Tavern grpc support is in an experimental stage")
+
+        super().__init__(name, parent, **kwargs)
         self.path = path
         self.spec = spec
 
+        if not YamlItem._patched_yaml:
+            yaml.parser.Parser.process_empty_scalar = (  # type:ignore
+                error_on_empty_scalar
+            )
+
+            YamlItem._patched_yaml = True
+
     @classmethod
-    def item_from_parent(cls, name: str, parent: Node, spec: dict, path: pathlib.Path):
-        """Create an item from a parent collector."""
-        # Forward declare because of circular import
-        return cls.from_parent(parent, name=name, spec=spec, path=path)  # type: ignore[arg-type]
+    def yamlitem_from_parent(cls, name, parent: Node, spec, path: pathlib.Path):
+        return cls.from_parent(parent, name=name, spec=spec, path=path)
 
     def initialise_fixture_attrs(self) -> None:
         """Initialise fixture attributes for this item."""
@@ -80,12 +128,41 @@ class BaseTavernItem(pytest.Item):
         self.fixturenames = fixtureinfo.names_closure
         self._request = _TavernFixtureRequest(self, _ispytest=True)
 
+    @property
+    def location(self):
+        """get location in file"""
+        location = super().location
+        location = (location[0], start_mark(self.spec).line, location[2])
+        return location
+
     #     Hack to stop issue with pytest-rerunfailures
     _initrequest = initialise_fixture_attrs
 
     def setup(self) -> None:
         super().setup()
         self._request._fillfixtures()
+
+    @property
+    def obj(self):
+        stages = []
+        for i, stage in enumerate(self.spec.get("stages", ())):
+            name = "<unknown>"
+            if "name" in stage:
+                name = stage["name"]
+            elif "id" in stage:
+                name = stage["id"]
+            stages.append(f"{i + 1:d}: {name:s}")
+
+        # This needs to be a function or skipif breaks
+        def fakefun():
+            pass
+
+        fakefun.__doc__ = self.name + ":\n" + "\n".join(stages)
+        return fakefun
+
+    @property
+    def _obj(self):
+        return self.obj
 
     def add_markers(self, pytest_marks: Iterable[MarkDecorator]) -> None:
         for pm in pytest_marks:
@@ -160,106 +237,6 @@ class BaseTavernItem(pytest.Item):
             values.update(mark_values)
 
         return values
-
-
-class _TavernFixtureRequest(pytest.FixtureRequest):
-    def __init__(self, pyfuncitem: "YamlItem", *, _ispytest: bool = False) -> None:
-        super().__init__(
-            fixturename=None,
-            pyfuncitem=pyfuncitem,
-            arg2fixturedefs=pyfuncitem._fixtureinfo.name2fixturedefs.copy(),
-            fixture_defs={},
-            _ispytest=_ispytest,
-        )
-
-    def _check_scope(
-        self,
-        requested_fixturedef: FixtureDef[object] | PseudoFixtureDef[object],
-        requested_scope: Scope,
-    ) -> None:
-        pass
-
-    @property
-    def node(self):
-        return self._pyfuncitem
-
-    def addfinalizer(self, finalizer: Callable[[], object]) -> None:
-        self.node.addfinalizer(finalizer)
-
-    @property
-    def _scope(self) -> Scope:
-        return Scope.Function
-
-    def _fillfixtures(self) -> None:
-        item = self._pyfuncitem
-        for argname in item.fixturenames:
-            if argname not in item.funcargs:
-                item.funcargs[argname] = self.getfixturevalue(argname)
-
-
-class YamlItem(BaseTavernItem):
-    """Simple wrapper around new test type that can report errors more
-    accurately than the default pytest reporting stuff
-
-    At the time of writing this doesn't print the error very nicely, but it
-    should be enough to track down what went wrong
-
-    Attributes:
-        path: filename that this test came from
-        spec: The whole dictionary of the test
-        global_cfg: configuration for test
-    """
-
-    # See https://github.com/taverntesting/tavern/issues/825
-    _patched_yaml = False
-
-    @classmethod
-    def yamlitem_from_parent(cls, name, parent: Node, spec, path: pathlib.Path):
-        return cls.from_parent(parent, name=name, spec=spec, path=path)
-
-    def __init__(
-        self, *, name: str, parent, spec: MutableMapping, path: pathlib.Path, **kwargs
-    ) -> None:
-        if "grpc" in spec:
-            logger.warning("Tavern grpc support is in an experimental stage")
-
-        super().__init__(name=name, parent=parent, spec=spec, path=path, **kwargs)
-
-        if not YamlItem._patched_yaml:
-            yaml.parser.Parser.process_empty_scalar = (  # type:ignore
-                error_on_empty_scalar
-            )
-
-            YamlItem._patched_yaml = True
-
-    @property
-    def location(self):
-        """get location in file"""
-        location = super().location
-        location = (location[0], start_mark(self.spec).line, location[2])
-        return location
-
-    @property
-    def obj(self):
-        stages = []
-        for i, stage in enumerate(self.spec.get("stages", [])):
-            name = "<unknown>"
-            if "name" in stage:
-                name = stage["name"]
-            elif "id" in stage:
-                name = stage["id"]
-            stages.append(f"{i + 1:d}: {name:s}")
-
-        # This needs to be a function or skipif breaks
-        def fakefun():
-            pass
-
-        fakefun.__doc__ = self.name + ":\n" + "\n".join(stages)
-        return fakefun
-
-    @property
-    def _obj(self):
-        return self.obj
 
     def runtest(self) -> None:
         self.global_cfg = load_global_cfg(self.config)
