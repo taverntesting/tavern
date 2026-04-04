@@ -112,6 +112,8 @@ stages:
     request:
       url: "{host}/expected_text"
       method: POST
+      headers:
+        Content-Type: text/plain
       data: "test data to echo"
     response:
       status_code: 200
