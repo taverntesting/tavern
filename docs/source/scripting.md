@@ -3,7 +3,45 @@
 Tavern supports advanced test orchestration through Starlark scripting, enabling complex control flow, dynamic test
 logic, and multi-stage workflows beyond simple sequential YAML tests.
 
-## Overview
+## What problem is this trying to solve?
+
+In GitHub actions, stage execution is sequential (like Tavern) but stages can be conditionally executed based on
+previous stage results using magic string substitutions, eg:
+
+```yaml
+name: basic test
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  simple-checks:
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Do something
+        id: do-something
+        uses: do-something-action@v1
+
+      - name: Do something else
+        if: ${{ steps.do-something.outputs.success == 'true' }}
+        uses: do-something-else-action@v2
+```
+
+Tavern emulates some of this behaviour already, with
+the ['skip' key](./core_concepts/marks.md#skipping-stages-with-simpleeval-expressions), and has some limited support for
+retries with the ['max_retries' key](./core_concepts/flow.md#retrying-tests). There are other control flow features like
+[adding a delay](./core_concepts/flow.md#adding-a-delay-between-tests), each of which have their own specific syntax for
+use.
+
+To try and combine all of these into one unified test execution model, we need a way to express complex logic
+declaratively, in a format that is more readable than interpolated strings in YAML.
+
+## Starlark Overview
 
 Starlark is a Python-like language designed for configuration and build systems. It provides:
 
@@ -95,8 +133,12 @@ load("@tavern_helpers.star", "run_stage")
 # Basic usage
 resp = run_stage("stage_id")
 
-# Continue even if stage fails
-resp = run_stage("polling", continue_on_fail=True)
+# Continue even if stage fails, fall back to login if necessary
+resp = run_stage("try_get_user_data", continue_on_fail=True)
+if resp.failed:
+    log("Login failed")
+    run_stage("login")
+    run_stage("try_get_user_data")
 
 # Pass variables to the stage
 resp = run_stage("verify_data", extra_vars={
@@ -371,3 +413,11 @@ Key differences from Python:
 
 See the integration test files in `tests/integration/starlark/` for complete working examples sof basic control flow,
 includes, regex extraction, retry patterns
+
+## Possible future improvements
+
+- Add more library functions. Currently only `re` is available, starlark-go
+  has [starlib](https://github.com/qri-io/starlib) which exposes a lot of useful functions (math, hashing, base64,
+  etc).
+- Support MQTT, gRPC, GraphQL.
+- Make error messages more helpful.
