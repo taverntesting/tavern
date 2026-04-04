@@ -3,6 +3,8 @@
 Tavern supports advanced test orchestration through Starlark scripting, enabling complex control flow, dynamic test
 logic, and multi-stage workflows beyond simple sequential YAML tests.
 
+**This should be considered an experimental feature and some functionality may change without a major version bump.**
+
 ## What problem is this trying to solve?
 
 In GitHub actions, stage execution is sequential (like Tavern) but stages can be conditionally executed based on
@@ -108,6 +110,12 @@ control_flow: |
 ```
 
 This key being present will _override_ the default sequential test execution.
+
+Notes about the execution model:
+
+- All existing Tavern functionality remains the same. Pytest fixtures and marks are applied (including `parametrize`),
+  tinctures are run between stages, Tavern hooks are called.
+- [`finally` stages](./core_concepts/flow.md#finalising-stages) are _not_ run.
 
 ### Stage Requirements
 
@@ -419,5 +427,7 @@ includes, regex extraction, retry patterns
 - Add more library functions. Currently only `re` is available, starlark-go
   has [starlib](https://github.com/qri-io/starlib) which exposes a lot of useful functions (math, hashing, base64,
   etc).
-- Support MQTT, gRPC, GraphQL.
+- Support MQTT, gRPC, GraphQL. This becomes a bit more complicated with the new custom backend functionality.
 - Make error messages more helpful.
+- Add more helper functions (ensure JWT is valid, sleeping (time module?), etc).
+    - Let users import their own functions into starlark?
