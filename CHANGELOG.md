@@ -1,5 +1,9 @@
 # Changelog
 
+# v3.3.0          Convert backends to be fully generic (2026-03-28)
+
+# 3.2.0           Added support for default document merge-down, allowing users to define an is_defaults: true section at the top of a Tavern YAML file to automatically merge configuration into subsequent tests within the same file. (2026-02-18)
+
 # 3.1.0           graphql support (2026-01-10)
 
 ## 3.0.2           fix pytest 9 warning (2025-11-21)
