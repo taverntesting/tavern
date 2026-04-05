@@ -102,8 +102,6 @@ response:
 
 #### Validating with pykwalify
 
-[//]: # (Remove this?)
-
 `validate_pykwalify` takes a
 [pykwalify](http://pykwalify.readthedocs.io/en/master/) schema and verifies the
 body of the response against it.
@@ -174,9 +172,9 @@ response:
 
 #### Checking a JMESPath match
 
-`check_jmespath_match` asserts that a JMESPath `query` resolves to a value in the response. Optionally, an `expected`
-value can be provided to assert the result matches it exactly. Without `expected`, it simply asserts the path resolves
-to something non-null.
+`check_jmespath_match` asserts that a JMESPath `query` resolves to a truthy value in the response. Optionally, an `expected`
+value can be provided to assert the result matches it exactly. Without `expected`, it asserts the path resolves to a
+truthy (non-falsy) value—falsy values like `[]`, `""`, `0`, and `False` will be treated as failures.
 
 ```yaml
 response:

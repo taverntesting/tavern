@@ -225,13 +225,16 @@ def check_jmespath_match(parsed_response, query: str, expected: str | None = Non
     return actual
 
 
-def validate_pydantic(response: requests.Response, model_location: str) -> None:
+def validate_pydantic(
+    response: requests.Response, model_location: str, **kwargs
+) -> None:
     """Validate response JSON against a pydantic model
 
     Args:
         response: requests.Response object
         model_location: Entry point style location of pydantic model
             (e.g., 'myapp.models:UserModel')
+        **kwargs: Additional keyword arguments passed to model_class.model_validate()
 
     Raises:
         BadSchemaError: If response is not valid JSON or fails model validation
@@ -242,7 +245,7 @@ def validate_pydantic(response: requests.Response, model_location: str) -> None:
 
     try:
         data = response.json()
-    except TypeError as e:
+    except (TypeError, ValueError, json.JSONDecodeError) as e:
         raise exceptions.BadSchemaError(
             "Tried to validate against a pydantic model but response is not JSON"
         ) from e
@@ -253,7 +256,7 @@ def validate_pydantic(response: requests.Response, model_location: str) -> None:
     model_class = getattr(module, model_name)
 
     try:
-        model_class.model_validate(data)
+        model_class.model_validate(data, **kwargs)
     except ValidationError as e:
         raise exceptions.BadSchemaError(
             f"Response failed pydantic validation: {e}"
