@@ -165,7 +165,8 @@ resp = run_stage("verify_data", extra_vars={
 
 - `name` (string, required): Stage ID to execute
 - `continue_on_fail` (bool, optional): If `True`, return a failed response instead of raising an exception. Default:
-  `False`- `extra_vars` (dict, optional): Additional variables to merge into the stage's configuration
+  `False`
+- `extra_vars` (dict, optional): Additional variables to merge into the stage's configuration
 
 **Return value:** A response struct with properties:
 
@@ -429,7 +430,7 @@ Key differences from Python:
 
 ## Examples
 
-See the integration test files in `tests/integration/starlark/` for complete working examples sof basic control flow,
+See the integration test files in `tests/integration/starlark/` for complete working examples of basic control flow,
 includes, regex extraction, retry patterns
 
 ## Possible future improvements
@@ -440,6 +441,6 @@ includes, regex extraction, retry patterns
 - Support MQTT, gRPC, GraphQL. This becomes a bit more complicated with the new custom backend functionality.
 - Make error messages more helpful.
 - Add more helper functions (ensure JWT is valid, sleeping (time module?), etc).
-    - Make this auto-export functions into either this document or a with mkdocstrings
+    - Make this auto-export functions into either this document with mkdocstrings into
     - Let users import their own functions into starlark?
 - Add a new CLI/ini flag to say "run 'finally' stages when using starlark script"
