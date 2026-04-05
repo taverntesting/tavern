@@ -70,10 +70,14 @@ check multiple things:
             should_say: hello
 ```
 
+If an external function you are using raises any exception, the test will be
+considered failed. The return value from these functions is ignored.
+
 ### Built-in validators
 
-There are two external functions built in to Tavern: `validate_jwt` and
-`validate_pykwalify`.
+There are some external functions built in to Tavern to help assert common expectations
+
+#### Validating JWT
 
 `validate_jwt` takes the key of the returned JWT in the body as `jwt_key`, and
 additional arguments that are passed directly to the `decode` method in the
@@ -95,6 +99,8 @@ response:
         verify_signature: true
         verify_aud: false
 ```
+
+#### Validating with pykwalify
 
 `validate_pykwalify` takes a
 [pykwalify](http://pykwalify.readthedocs.io/en/master/) schema and verifies the
@@ -121,8 +127,84 @@ response:
                 required: True
 ```
 
-If an external function you are using raises any exception, the test will be
-considered failed. The return value from these functions is ignored.
+#### Validating with a regex
+
+`validate_regex` checks that the response body (or a specific header) matches the given regular expression. Optionally,
+a `jmespath` expression can be used to extract a string from the JSON body before matching. Named capture groups are
+returned and can be used in later requests.
+
+```yaml
+response:
+  verify_response_with:
+    function: tavern.helpers:validate_regex
+    extra_kwargs:
+      expression: "^Bearer (?P<token>.+)$"
+      header: "Authorization"
+```
+
+```yaml
+response:
+  verify_response_with:
+    function: tavern.helpers:validate_regex
+    extra_kwargs:
+      expression: "(?P<uuid>[0-9a-f\\-]{36})"
+      in_jmespath: "data.id"
+```
+
+#### Validating content with JMESPath
+
+`validate_content` checks values extracted from the response body using [JMESPath](https://jmespath.org/) expressions.
+Pass a list of comparisons, each specifying a `jmespath`, an `operator`, and an `expected` value.
+
+```yaml
+response:
+  verify_response_with:
+    function: tavern.helpers:validate_content
+    extra_kwargs:
+      comparisons:
+        - jmespath: "users[0].name"
+          operator: "eq"
+          expected: "Bob"
+        - jmespath: "users | length(@)"
+          operator: "gt"
+          expected: 0
+```
+
+#### Checking a JMESPath match
+
+`check_jmespath_match` asserts that a JMESPath `query` resolves to a truthy value in the response. Optionally, an
+`expected`
+value can be provided to assert the result matches it exactly. Without `expected`, it asserts the path resolves to a
+truthy (non-falsy) value—falsy values like `[]`, `""`, `0`, and `False` will be treated as failures.
+
+```yaml
+response:
+  verify_response_with:
+    function: tavern.helpers:check_jmespath_match
+    extra_kwargs:
+      query: "items[?status == 'active']"
+      expected:
+        - name: "widget"
+          status: "active"
+```
+
+#### Validating with a pydantic model
+
+`validate_pydantic` validates the JSON response body against a [Pydantic](https://docs.pydantic.dev/) model. Pass the
+entry-point-style location of the model class as `model_location`.
+
+Any extra can keyword arguments via `extra_kwargs` are passed to `model_validate` to control how the model is validated.
+
+```yaml
+response:
+  verify_response_with:
+    function: tavern.helpers:validate_pydantic
+    extra_kwargs:
+      model_location: "myapp.models:UserResponse"
+      extra: allow
+```
+
+To use this helper, Pydantic must be installed separately as it is an optional dependency.
 
 ### Using external functions for other things
 

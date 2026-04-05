@@ -223,3 +223,41 @@ def check_jmespath_match(parsed_response, query: str, expected: str | None = Non
         raise exceptions.JMESError(msg)
 
     return actual
+
+
+def validate_pydantic(
+    response: requests.Response, model_location: str, **kwargs
+) -> None:
+    """Validate response JSON against a pydantic model
+
+    Args:
+        response: requests.Response object
+        model_location: Entry point style location of pydantic model
+            (e.g., 'myapp.models:UserModel')
+        **kwargs: Additional keyword arguments passed to model_class.model_validate()
+
+    Raises:
+        BadSchemaError: If response is not valid JSON or fails model validation
+        ImportError: If pydantic is not installed or model cannot be imported
+    """
+    # Local import to make pydantic optional
+    from pydantic import ValidationError
+
+    try:
+        data = response.json()
+    except (TypeError, ValueError, json.JSONDecodeError) as e:
+        raise exceptions.BadSchemaError(
+            "Tried to validate against a pydantic model but response is not JSON"
+        ) from e
+
+    # Import the model class dynamically
+    module_name, model_name = model_location.split(":")
+    module = importlib.import_module(module_name)
+    model_class = getattr(module, model_name)
+
+    try:
+        model_class.model_validate(data, **kwargs)
+    except ValidationError as e:
+        raise exceptions.BadSchemaError(
+            f"Response failed pydantic validation: {e}"
+        ) from e

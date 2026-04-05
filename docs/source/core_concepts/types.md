@@ -8,7 +8,7 @@ an error. With it disabled, Extra keys in the response will be ignored as long
 as the ones in your response block are present.
 
 Strict key checking can be controlled individually for the response for the JSON
-body,the redirect query parameter, or the headers.
+body, the redirect query parameter, [text](../http.md#matching-plain-text-responses), or the headers.
 
 By default, strict key checking is _disabled_ for headers and redirect query
 parameters in the response, but _enabled_ for JSON (as well as when checking for

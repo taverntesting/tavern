@@ -13,11 +13,13 @@ uv lock --check || true
 $PRE_COMMIT_CMD run ruff-check --all-files || true
 $PRE_COMMIT_CMD run ruff-format --all-files || true
 
-tox --parallel -c tox.ini        \
+TOX_CMD="uv run tox"
+
+$TOX_CMD --parallel -c tox.ini        \
   -e py3check
 
-tox --parallel -c tox.ini        \
+$TOX_CMD --parallel -c tox.ini        \
   -e py3
 
-tox -c tox-integration.ini  \
+$TOX_CMD -c tox-integration.ini  \
   -e py3-graphql,py3-generic,py3-http,py3-grpc,py3-mqtt
