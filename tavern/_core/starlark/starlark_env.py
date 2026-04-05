@@ -272,6 +272,8 @@ class StarlarkPipelineRunner:
     def _create_response_struct(self, stage_response: StageResponse) -> dict[str, Any]:
         """Convert StageResponse to dict that starlark converts to struct."""
         base_dict: dict[str, Any] = {
+            # Add "failed" so people don't have to do "if not resp.success" when people will almost certainly
+            # want to do "if resp.failed" most of the time
             "failed": not stage_response.success,
             "success": stage_response.success,
             "request_vars": stage_response.request_vars,
