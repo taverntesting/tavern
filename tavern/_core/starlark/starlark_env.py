@@ -1,5 +1,6 @@
 """Starlark environment setup for Tavern pipelines."""
 
+import copy
 import dataclasses
 import functools
 import logging
@@ -235,7 +236,7 @@ class StarlarkPipelineRunner:
 
         self.stage_run = True
 
-        stage = dict(stage)  # Make a copy to avoid mutating the original
+        stage = copy.deepcopy(stage)  # Make a deep copy to avoid mutating nested dicts
         stage_name = stage.get("name", "unnamed-stage")
 
         default_strictness = StrictLevel.all_on()
