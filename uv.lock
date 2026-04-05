@@ -2751,6 +2751,7 @@ source = { editable = "example/http" }
 dependencies = [
     { name = "flask" },
     { name = "gunicorn" },
+    { name = "pydantic" },
     { name = "pyjwt" },
     { name = "tavern" },
 ]
@@ -2759,6 +2760,7 @@ dependencies = [
 requires-dist = [
     { name = "flask" },
     { name = "gunicorn" },
+    { name = "pydantic" },
     { name = "pyjwt" },
     { name = "tavern", editable = "." },
 ]
