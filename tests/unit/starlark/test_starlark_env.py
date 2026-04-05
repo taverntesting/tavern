@@ -159,27 +159,29 @@ class TestRunStageBinding:
         basic_runner._stage_registry = StageRegistry([sample_stage])
         tinctures = Tinctures([])
 
-        with patch(
-            "tavern._core.starlark.starlark_env._TestRunner",
-            return_value=mock_test_runner,
-        ):
-            with patch(
+        with (
+            patch(
+                "tavern._core.starlark.starlark_env._TestRunner",
+                return_value=mock_test_runner,
+            ),
+            patch(
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
                 return_value=tinctures,
-            ):
-                result = basic_runner._create_response_struct(
-                    StageResponse(
-                        success=True,
-                        response=Mock(
-                            spec=requests.Response,
-                            status_code=200,
-                            headers={},
-                            cookies={},
-                        ),
-                        request_vars={},
-                        stage_name="test_stage",
-                    )
+            ),
+        ):
+            result = basic_runner._create_response_struct(
+                StageResponse(
+                    success=True,
+                    response=Mock(
+                        spec=requests.Response,
+                        status_code=200,
+                        headers={},
+                        cookies={},
+                    ),
+                    request_vars={},
+                    stage_name="test_stage",
                 )
+            )
 
         assert result["success"] is True
         assert result["failed"] is False
@@ -366,15 +368,17 @@ load("@tavern_helpers.star", "run_stage")
 resp = run_stage("get_cookie")
 """
 
-        with patch(
-            "tavern._core.starlark.starlark_env._TestRunner",
-            return_value=mock_test_runner,
-        ):
-            with patch(
+        with (
+            patch(
+                "tavern._core.starlark.starlark_env._TestRunner",
+                return_value=mock_test_runner,
+            ),
+            patch(
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
                 return_value=tinctures,
-            ):
-                runner.load_and_run(script)
+            ),
+        ):
+            runner.load_and_run(script)
 
         # Verify wrapped_run_stage was called
         mock_test_runner.wrapped_run_stage.assert_called_once()
@@ -398,15 +402,18 @@ resp = run_stage("get_cookie")
             sessions={},
         )
 
-        with patch(
-            "tavern._core.starlark.starlark_env._TestRunner", return_value=mock_runner
-        ):
-            with patch(
+        with (
+            patch(
+                "tavern._core.starlark.starlark_env._TestRunner",
+                return_value=mock_runner,
+            ),
+            patch(
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
                 return_value=tinctures,
-            ):
-                with pytest.raises(exceptions.TavernException):
-                    runner._run_stage(sample_stage, continue_on_fail=False)
+            ),
+        ):
+            with pytest.raises(exceptions.TavernException):
+                runner._run_stage(sample_stage, continue_on_fail=False)
 
     def test_run_stage_tavern_exception_returns_failed(
         self,
@@ -427,14 +434,17 @@ resp = run_stage("get_cookie")
             sessions={},
         )
 
-        with patch(
-            "tavern._core.starlark.starlark_env._TestRunner", return_value=mock_runner
-        ):
-            with patch(
+        with (
+            patch(
+                "tavern._core.starlark.starlark_env._TestRunner",
+                return_value=mock_runner,
+            ),
+            patch(
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
                 return_value=tinctures,
-            ):
-                response = runner._run_stage(sample_stage, continue_on_fail=True)
+            ),
+        ):
+            response = runner._run_stage(sample_stage, continue_on_fail=True)
 
         assert response.success is False
         assert response.stage_name == sample_stage["name"]
@@ -459,15 +469,17 @@ load("@tavern_helpers.star", "run_stage")
 resp = run_stage("get_cookie", extra_vars={"custom_var": "custom_value"})
 """
 
-        with patch(
-            "tavern._core.starlark.starlark_env._TestRunner",
-            return_value=mock_test_runner,
-        ):
-            with patch(
+        with (
+            patch(
+                "tavern._core.starlark.starlark_env._TestRunner",
+                return_value=mock_test_runner,
+            ),
+            patch(
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
                 return_value=tinctures,
-            ):
-                runner.load_and_run(script)
+            ),
+        ):
+            runner.load_and_run(script)
 
         # Verify extra_vars were passed to stage_config (positional arg at index 1)
         call_args = mock_test_runner.wrapped_run_stage.call_args
@@ -502,15 +514,18 @@ resp = run_stage("get_cookie", continue_on_fail=True)
 # Script should continue without raising
 """
 
-        with patch(
-            "tavern._core.starlark.starlark_env._TestRunner", return_value=mock_runner
-        ):
-            with patch(
+        with (
+            patch(
+                "tavern._core.starlark.starlark_env._TestRunner",
+                return_value=mock_runner,
+            ),
+            patch(
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
                 return_value=tinctures,
-            ):
-                # Should not raise
-                runner.load_and_run(script)
+            ),
+        ):
+            # Should not raise
+            runner.load_and_run(script)
 
     def test_run_stage_failure_propagates(
         self,
@@ -537,15 +552,16 @@ load("@tavern_helpers.star", "run_stage")
 resp = run_stage("get_cookie")
 """
 
-        with patch(
-            "tavern._core.starlark.starlark_env._TestRunner", return_value=mock_runner
-        ):
-            with patch(
+        with (
+            patch(
+                "tavern._core.starlark.starlark_env._TestRunner",
+                return_value=mock_runner,
+            ),
+            patch(
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
                 return_value=tinctures,
-            ):
-                # Should raise StarlarkError (wrapping TavernException)
-                with pytest.raises(
-                    (exceptions.StarlarkError, exceptions.TavernException)
-                ):
-                    runner.load_and_run(script)
+            ),
+        ):
+            # Should raise StarlarkError (wrapping TavernException)
+            with pytest.raises((exceptions.StarlarkError, exceptions.TavernException)):
+                runner.load_and_run(script)
