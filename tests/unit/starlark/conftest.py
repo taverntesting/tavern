@@ -9,7 +9,7 @@ from tavern._core.strict_util import StrictLevel
 
 
 @pytest.fixture
-def mock_test_config():
+def fix_test_config():
     """Create a real TestConfig object for starlark tests."""
     config = TestConfig(
         variables={"base_url": "http://test.example.com", "tavern": Mock()},
@@ -33,10 +33,10 @@ def mock_response():
 
 
 @pytest.fixture
-def basic_runner(mock_test_config):
+def basic_runner(fix_test_config):
     return StarlarkPipelineRunner(
         test_path="/test/path.tavern.star",
         stages=[],
-        test_config=mock_test_config,
+        test_config=fix_test_config,
         sessions={},
     )

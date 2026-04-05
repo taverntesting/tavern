@@ -201,7 +201,7 @@ class TestRunStageBinding:
 
     def test_run_stage_binding_stage_not_found(
         self,
-        mock_test_config,
+        fix_test_config,
         sample_stages,
     ):
         """Test that requesting nonexistent stage raises StarlarkError."""
@@ -210,7 +210,7 @@ class TestRunStageBinding:
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
             stages=[],  # Empty registry - no stages
-            test_config=mock_test_config,
+            test_config=fix_test_config,
             sessions={},
         )
 
@@ -224,7 +224,7 @@ resp = run_stage("nonexistent_stage")
 
     def test_run_stage_binding_with_requests_response(
         self,
-        mock_test_config,
+        fix_test_config,
         mock_response,
     ):
         """Test that requests.Response is properly converted in response struct."""
@@ -237,7 +237,7 @@ resp = run_stage("nonexistent_stage")
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
             stages=[],
-            test_config=mock_test_config,
+            test_config=fix_test_config,
             sessions={},
         )
         result = runner._create_response_struct(response)
@@ -256,7 +256,7 @@ resp = run_stage("nonexistent_stage")
 class TestCreateResponseStruct:
     """Tests for the _create_response_struct method."""
 
-    def test_create_response_struct_with_success(self, mock_test_config):
+    def test_create_response_struct_with_success(self, fix_test_config):
         """Test response struct creation with successful response."""
         mock_response = Mock(spec=requests.Response)
         mock_response.status_code = 200
@@ -274,7 +274,7 @@ class TestCreateResponseStruct:
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
             stages=[],
-            test_config=mock_test_config,
+            test_config=fix_test_config,
             sessions={},
         )
 
@@ -287,7 +287,7 @@ class TestCreateResponseStruct:
         assert result["request_vars"] == {"key": "value"}
         assert result["stage_name"] == "success_stage"
 
-    def test_create_response_struct_with_failure(self, mock_test_config):
+    def test_create_response_struct_with_failure(self, fix_test_config):
         """Test response struct creation with failed response."""
         stage_response = StageResponse(
             success=False,
@@ -299,7 +299,7 @@ class TestCreateResponseStruct:
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
             stages=[],
-            test_config=mock_test_config,
+            test_config=fix_test_config,
             sessions={},
         )
 
@@ -309,7 +309,7 @@ class TestCreateResponseStruct:
         assert result["failed"] is True
         assert "stage_name" in result
 
-    def test_create_response_struct_none_response(self, mock_test_config):
+    def test_create_response_struct_none_response(self, fix_test_config):
         """Test response struct creation when response is None."""
         stage_response = StageResponse(
             success=True,
@@ -321,7 +321,7 @@ class TestCreateResponseStruct:
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
             stages=[],
-            test_config=mock_test_config,
+            test_config=fix_test_config,
             sessions={},
         )
 
@@ -332,7 +332,7 @@ class TestCreateResponseStruct:
         # When response is None, status_code should not be in result
         assert "status_code" not in result
 
-    def test_create_response_struct_unsupported_type_raises(self, mock_test_config):
+    def test_create_response_struct_unsupported_type_raises(self, fix_test_config):
         """Test that unsupported response types raise NotImplementedError."""
         # Use an object that's not requests.Response
         unsupported_response = {"type": "grpc"}
@@ -347,7 +347,7 @@ class TestCreateResponseStruct:
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
             stages=[],
-            test_config=mock_test_config,
+            test_config=fix_test_config,
             sessions={},
         )
 
@@ -398,7 +398,7 @@ log("Hello from starlark")
 
     def test_run_stage_in_script(
         self,
-        mock_test_config,
+        fix_test_config,
         sample_stages,
         mock_test_runner,
     ):
@@ -406,7 +406,7 @@ log("Hello from starlark")
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
             stages=sample_stages,
-            test_config=mock_test_config,
+            test_config=fix_test_config,
             sessions={},
         )
         tinctures = Tinctures([])
@@ -431,7 +431,7 @@ resp = run_stage("get_cookie")
 
     def test_run_stage_tavern_exception_raises(
         self,
-        mock_test_config,
+        fix_test_config,
         sample_stage,
     ):
         """Test that TavernException is re-raised when continue_on_fail=False."""
@@ -444,7 +444,7 @@ resp = run_stage("get_cookie")
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
             stages=[sample_stage],
-            test_config=mock_test_config,
+            test_config=fix_test_config,
             sessions={},
         )
 
@@ -460,7 +460,7 @@ resp = run_stage("get_cookie")
 
     def test_run_stage_tavern_exception_returns_failed(
         self,
-        mock_test_config,
+        fix_test_config,
         sample_stage,
     ):
         """Test that TavernException returns failed response when continue_on_fail=True."""
@@ -473,7 +473,7 @@ resp = run_stage("get_cookie")
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
             stages=[sample_stage],
-            test_config=mock_test_config,
+            test_config=fix_test_config,
             sessions={},
         )
 
@@ -491,7 +491,7 @@ resp = run_stage("get_cookie")
 
     def test_run_stage_with_extra_vars(
         self,
-        mock_test_config,
+        fix_test_config,
         sample_stages,
         mock_test_runner,
     ):
@@ -499,7 +499,7 @@ resp = run_stage("get_cookie")
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
             stages=sample_stages,
-            test_config=mock_test_config,
+            test_config=fix_test_config,
             sessions={},
         )
         tinctures = Tinctures([])
@@ -528,7 +528,7 @@ resp = run_stage("get_cookie", extra_vars={"custom_var": "custom_value"})
 
     def test_run_stage_continue_on_fail(
         self,
-        mock_test_config,
+        fix_test_config,
         sample_stages,
     ):
         """Test that continue_on_fail parameter prevents exception propagation."""
@@ -541,7 +541,7 @@ resp = run_stage("get_cookie", extra_vars={"custom_var": "custom_value"})
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
             stages=sample_stages,
-            test_config=mock_test_config,
+            test_config=fix_test_config,
             sessions={},
         )
 
@@ -564,7 +564,7 @@ resp = run_stage("get_cookie", continue_on_fail=True)
 
     def test_run_stage_failure_propagates(
         self,
-        mock_test_config,
+        fix_test_config,
         sample_stages,
     ):
         """Test that failed stage propagates exception when continue_on_fail=False."""
@@ -577,7 +577,7 @@ resp = run_stage("get_cookie", continue_on_fail=True)
         runner = StarlarkPipelineRunner(
             test_path="/test/path.tavern.star",
             stages=sample_stages,
-            test_config=mock_test_config,
+            test_config=fix_test_config,
             sessions={},
         )
 
