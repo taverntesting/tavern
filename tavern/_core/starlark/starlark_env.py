@@ -296,12 +296,19 @@ class StarlarkPipelineRunner:
             rest_response = stage_response.response
             content_type = rest_response.headers.get("Content-Type", "")
 
+            # Try to parse JSON body, fall back to raw content
+            if "application/json" in content_type:
+                try:
+                    body = rest_response.json()
+                except Exception:
+                    body = rest_response.content
+            else:
+                body = rest_response.content
+
             base_dict.update(
                 {
                     "status_code": rest_response.status_code,
-                    "body": rest_response.json()
-                    if "application/json" in content_type
-                    else rest_response.content,
+                    "body": body,
                     "headers": rest_response.headers,
                     "cookies": rest_response.cookies,
                 }
