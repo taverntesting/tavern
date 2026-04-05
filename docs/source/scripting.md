@@ -365,13 +365,16 @@ stages:
 control_flow: |
   load("@tavern_helpers.star", "run_stage", "time")
 
+  succeeded = False
   for i in range(0, 3):
       resp = run_stage("polling", continue_on_fail=True)
-      if resp.failed:
-          log("polling attempt " + str(i) + " failed")
-          time.sleep(1)
+      if not resp.failed:
+          succeeded = True
+          break
+      log("polling attempt " + str(i) + " failed")
+      time.sleep(1)
 
-  if i >= 3:
+  if not succeeded:
       fail("polling did not succeed after 3 attempts")
 ```
 
