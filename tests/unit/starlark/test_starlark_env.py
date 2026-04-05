@@ -207,31 +207,6 @@ resp = run_stage("nonexistent_stage")
         with pytest.raises(exceptions.StarlarkError):
             runner.load_and_run(script)
 
-    def test_run_stage_binding_with_requests_response(
-        self,
-        fix_test_config,
-        mock_response,
-    ):
-        """Test that requests.Response is properly converted in response struct."""
-        response = StageResponse(
-            success=True,
-            response=mock_response,
-            request_vars={"token": "abc"},
-            stage_name="http_stage",
-        )
-        runner = StarlarkPipelineRunner(
-            test_path="/test/path.tavern.star",
-            stages=[],
-            test_config=fix_test_config,
-            sessions={},
-        )
-        result = runner._create_response_struct(response)
-
-        assert "status_code" in result
-        assert result["status_code"] == 200
-        assert "body" in result
-        assert result["body"] == {"result": "success"}
-
 
 class TestCreateResponseStruct:
     """Tests for the _create_response_struct method."""
