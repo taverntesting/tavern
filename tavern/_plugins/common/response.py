@@ -129,6 +129,24 @@ class CommonResponse(BaseResponse):
 
         self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
 
+    def _validate_text(self, response_text: str) -> None:
+        """Validate response body as plain text
+
+        Args:
+            response_text: The actual response text (response.text)
+        """
+        expected_text = self.expected.get("text")
+        if expected_text is None:
+            return
+
+        logger.debug("Validating response text against expected text")
+        test_strictness = self.test_block_config.strict
+        block_strictness = test_strictness.option_for("text")
+
+        self.recurse_check_key_match(
+            expected_text, response_text, "text", block_strictness
+        )
+
     def _common_verify_save(
         self,
         body: Any,

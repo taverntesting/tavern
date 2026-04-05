@@ -7,7 +7,11 @@ from textwrap import indent
 from typing import Any
 
 from tavern._core import exceptions
-from tavern._core.dict_util import check_keys_match_recursive, recurse_access_key
+from tavern._core.dict_util import (
+    Checked,
+    check_keys_match_recursive,
+    recurse_access_key,
+)
 from tavern._core.extfunctions import get_wrapped_response_function
 from tavern._core.pytest.config import TestConfig
 from tavern._core.strict_util import StrictOption
@@ -71,8 +75,8 @@ class BaseResponse:
 
     def recurse_check_key_match(
         self,
-        expected_block: Mapping | None,
-        block: Mapping,
+        expected_block: Checked | None,
+        block: Checked | None,
         blockname: str,
         strict: StrictOption,
     ) -> None:
@@ -115,7 +119,7 @@ class BaseResponse:
             return
 
         if isinstance(block, Mapping):
-            block = dict(block)
+            block = dict(block)  # type:ignore[assignment]
 
         logger.debug("expected = %s, actual = %s", expected_block, block)
 

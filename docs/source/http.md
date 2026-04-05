@@ -502,7 +502,75 @@ stages:
       status_code: 200
       json:
         status: successful redirect
-``` 
+```
 
 Specifying `follow_redirects` on a stage will override any global setting, so if
 you just want to change the behaviour for one stage then use this flag.
+
+## Matching plain text responses
+
+If your API returns plain text (non-JSON) responses, you can use the `text` key
+to validate the response body:
+
+```yaml
+---
+
+test_name: Test plain text response
+
+stages:
+  - name: Get plain text response
+    request:
+      url: "{host}/text_response"
+      method: GET
+    response:
+      status_code: 200
+      text: "Hello, World!"
+```
+
+This also works with multiline text:
+
+```yaml
+---
+
+test_name: Test ASCII table response
+
+stages:
+  - name: Get ASCII table
+    request:
+      url: "{host}/ascii_table"
+      method: GET
+    response:
+      status_code: 200
+      text: |
+        +----+----------+-------+
+        | id | name     | score |
+        +----+----------+-------+
+        |  1 | Alice    |    95 |
+        |  2 | Bob      |    87 |
+        |  3 | Charlie  |    92 |
+        +----+----------+-------+
+```
+
+### Matching text response body from a file
+
+If you have a large expected response body, you can store it in a file and use
+`!include_raw` inside the `text` block to validate the response against the file contents:
+
+```yaml
+---
+
+test_name: Test response against file content
+
+stages:
+  - name: Match response against file
+    request:
+      url: "{host}/ascii_table"
+      method: GET
+    response:
+      status_code: 200
+      text: !include_raw expected_table.txt
+```
+
+The `!include_raw` tag, similar to the `!include` tag, is a special tag that will read the file contents and
+include them in the test. This will include the file 'as-is' without loading as
+JSON like the `!include` tag does.

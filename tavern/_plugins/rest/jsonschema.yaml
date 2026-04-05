@@ -142,6 +142,10 @@ definitions:
         items:
           type: string
 
+      text:
+        description: Expected plain text response body
+        type: string
+
       json:
         description: Expected JSON response
         $ref: "#/definitions/any_json"
