@@ -158,7 +158,7 @@ def find_include(loader, node) -> str:
     )
 
 
-def construct_include(loader, node):
+def construct_include(loader, node: yaml.ScalarNode):
     """Include file referenced at node."""
 
     filename = find_include(loader, node)
