@@ -183,6 +183,7 @@ class StarlarkPipelineRunner:
             raise ValueError("Failed to parse starlark script") from e
 
         def load(filename: str) -> starlark.FrozenModule:
+            """Implements the 'load' function in starlark. Currently only supports loading tavern helpers."""
             if filename == "@tavern_helpers.star":
                 ast = starlark.parse(filename, _STARLARK_BUILTINS, dialect=dialect)
                 mod = starlark.Module()
