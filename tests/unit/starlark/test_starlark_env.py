@@ -243,6 +243,8 @@ class TestCreateResponseStruct:
         assert result["body"] == {"data": "test"}
         assert result["request_vars"] == {"key": "value"}
         assert result["stage_name"] == "success_stage"
+        # Verify json() was called
+        mock_response.json.assert_called_once()
 
     def test_create_response_struct_with_failure(self, fix_test_config):
         """Test response struct creation with failed response."""
