@@ -1,0 +1,166 @@
+---
+
+test_name: Test pydantic validation on /ping endpoint
+
+includes:
+  - !include common.yaml
+  - !include components/auth_stage.yaml
+
+stages:
+  - name: Unauthenticated /ping
+    request:
+      url: "{service}/ping"
+      method: GET
+    response:
+      status_code: 401
+
+  - type: ref
+    id: login_get_token
+  - name: Authenticated /ping with pydantic validation
+    request:
+      url: "{service}/ping"
+      method: GET
+      headers:
+        Content-Type: application/json
+        Authorization: "Bearer {test_login_token}"
+    response:
+      status_code: 200
+      headers:
+        content-type: application/json
+      verify_response_with:
+        function: tavern.helpers:validate_pydantic
+        extra_kwargs:
+          model_location: "tavern_http_example.models:PingResponse"
+
+---
+
+test_name: Test pydantic validation on /hello endpoint
+
+includes:
+  - !include common.yaml
+  - !include components/auth_stage.yaml
+
+stages:
+  - type: ref
+    id: login_get_token
+  - name: Authenticated /hello with pydantic validation
+    request:
+      url: "{service}/hello/World"
+      method: GET
+      headers:
+        Content-Type: application/json
+        Authorization: "Bearer {test_login_token}"
+    response:
+      status_code: 200
+      headers:
+        content-type: application/json
+      verify_response_with:
+        function: tavern.helpers:validate_pydantic
+        extra_kwargs:
+          model_location: "tavern_http_example.models:HelloResponse"
+
+---
+
+test_name: Test pydantic validation on /numbers endpoint
+
+includes:
+  - !include common.yaml
+  - !include components/auth_stage.yaml
+
+stages:
+  - name: reset database for test
+    request:
+      url: "{service}/reset"
+      method: POST
+    response:
+      status_code: 204
+
+  - type: ref
+    id: login_get_token
+  - name: post a number
+    request:
+      url: "{service}/numbers"
+      json:
+        name: testnumber
+        number: 42
+      method: POST
+      headers:
+        content-type: application/json
+        Authorization: "bearer {test_login_token:s}"
+    response:
+      status_code: 201
+      headers:
+        content-type: application/json
+
+  - name: get number with pydantic validation
+    request:
+      url: "{service}/numbers"
+      params:
+        name: testnumber
+      method: GET
+      headers:
+        content-type: application/json
+        Authorization: "bearer {test_login_token:s}"
+    response:
+      status_code: 200
+      headers:
+        content-type: application/json
+      verify_response_with:
+        function: tavern.helpers:validate_pydantic
+        extra_kwargs:
+          model_location: "tavern_http_example.models:NumberResponse"
+
+---
+
+test_name: Test pydantic validation on /login endpoint
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: login with pydantic validation
+    request:
+      url: "{service}/login"
+      json:
+        user: test-user
+        password: correct-password
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      headers:
+        content-type: application/json
+      verify_response_with:
+        function: tavern.helpers:validate_pydantic
+        extra_kwargs:
+          model_location: "tavern_http_example.models:LoginResponse"
+
+---
+
+test_name: Test pydantic validation fails on malformed response
+
+includes:
+  - !include common.yaml
+  - !include components/auth_stage.yaml
+
+_xfail: run
+
+stages:
+  - type: ref
+    id: login_get_token
+  - name: Malformed response should fail pydantic validation
+    request:
+      url: "{service}/malformed"
+      method: GET
+      headers:
+        Content-Type: application/json
+        Authorization: "Bearer {test_login_token}"
+    response:
+      status_code: 200
+      headers:
+        content-type: application/json
+      verify_response_with:
+        function: tavern.helpers:validate_pydantic
+        extra_kwargs:
+          model_location: "tavern_http_example.models:StrictPingResponse"
