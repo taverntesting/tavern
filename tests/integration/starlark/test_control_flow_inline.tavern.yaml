@@ -157,13 +157,16 @@ stages:
 control_flow: |
   load("@tavern_helpers.star", "run_stage")
 
+  succeeded = False
   for i in range(0, 3):
       resp = run_stage("polling", continue_on_fail=True)
-      if resp.failed:
-          log("polling stage failed")
+      if not resp.failed:
+          succeeded = True
+          break
+      log("polling stage failed")
 
-  if i >= 3:
-      fail("polling stage failed")
+  if not succeeded:
+      fail("polling stage failed after 3 attempts")
 
 ---
 test_name: Test including a generic script
