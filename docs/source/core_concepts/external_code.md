@@ -172,7 +172,8 @@ response:
 
 #### Checking a JMESPath match
 
-`check_jmespath_match` asserts that a JMESPath `query` resolves to a truthy value in the response. Optionally, an `expected`
+`check_jmespath_match` asserts that a JMESPath `query` resolves to a truthy value in the response. Optionally, an
+`expected`
 value can be provided to assert the result matches it exactly. Without `expected`, it asserts the path resolves to a
 truthy (non-falsy) value—falsy values like `[]`, `""`, `0`, and `False` will be treated as failures.
 
@@ -190,8 +191,9 @@ response:
 #### Validating with a pydantic model
 
 `validate_pydantic` validates the JSON response body against a [Pydantic](https://docs.pydantic.dev/) model. Pass the
-entry-point-style location of the model class as `model_location`. Pydantic must be installed separately as it is an
-optional dependency.
+entry-point-style location of the model class as `model_location`.
+
+Any extra can keyword arguments via `extra_kwargs` are passed to `model_validate` to control how the model is validated.
 
 ```yaml
 response:
@@ -199,7 +201,10 @@ response:
     function: tavern.helpers:validate_pydantic
     extra_kwargs:
       model_location: "myapp.models:UserResponse"
+      extra: allow
 ```
+
+To use this helper, Pydantic must be installed separately as it is an optional dependency.
 
 ### Using external functions for other things
 
