@@ -80,8 +80,8 @@ def _run_with_starlark_control_flow(
     test_block_config.variables["tavern"] = get_tavern_box()["tavern"]
 
     # These can never be used from starlark so just get rid of them
-    test_block_config.variables.pop("event_loop_policy")
-    test_block_config.variables.pop("_session_faker")
+    test_block_config.variables.pop("event_loop_policy", None)
+    test_block_config.variables.pop("_session_faker", None)
 
     control_flow_script = test_spec["control_flow"]
     test_block_name = test_spec["test_name"]
