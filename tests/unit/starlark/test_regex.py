@@ -155,21 +155,6 @@ if result != "-a-b-c-":
 """
         basic_runner.load_and_run(script)
 
-
-class TestReModuleStruct:
-    """Tests for the re module struct behavior."""
-
-    def test_re_module_has_match_and_sub(self, basic_runner):
-        """Test that re module exposes match and sub functions."""
-
-        script = """
-load("@tavern_helpers.star", "re")
-# Just check we can call both functions
-r1 = re.match("test", "test")
-r2 = re.sub("a", "b", "aaa")
-"""
-        basic_runner.load_and_run(script)
-
     def test_match_result_is_truthy(self, basic_runner):
         """Test that successful match result is truthy."""
 
