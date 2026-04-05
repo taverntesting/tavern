@@ -12,8 +12,8 @@ This folder contains integration tests for the scriptable pipelines feature usin
 To run the starlark integration tests, you need to enable the experimental flag:
 
 ```bash
-# Start the test server (from tests/integration directory)
-docker-compose up -d server
+# Start the test server (from tavern root directory)
+cd tests/integration && docker-compose up -d server
 
 # Run the starlark tests with the experimental flag
 tox -q -c tox-integration.ini -e py311 -- --tavern-experimental-starlark-pipeline tests/integration/starlark/
@@ -22,14 +22,14 @@ tox -q -c tox-integration.ini -e py311 -- --tavern-experimental-starlark-pipelin
 Or using pytest directly:
 
 ```bash
-# Starting server in background
-cd tests/integration && docker-compose up -d
+# Starting server (from tavern root directory)
+docker-compose -f tests/integration/docker-compose.yml up -d server
 
-# Run tests
+# Run tests (from tavern root directory)
 pytest --tavern-experimental-starlark-pipeline tests/integration/starlark/ -v
 
 # Cleanup
-docker-compose down
+docker-compose -f tests/integration/docker-compose.yml down
 ```
 
 ## Test Files
