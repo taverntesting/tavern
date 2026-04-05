@@ -1,9 +1,13 @@
-# Scripting Tavern Tests with Starlark
+# Scripting Tavern execution with Starlark
 
 Tavern supports advanced test orchestration through Starlark scripting, enabling complex control flow, dynamic test
 logic, and multi-stage workflows beyond simple sequential YAML tests.
 
-**This should be considered an experimental feature and some functionality may change without a major version bump.**
+**This should be considered an experimental work in progress feature and some functionality may change without a major
+version bump.**
+
+**This should also only be used when other control flow options are not suitable. Using scripting can make tests harder
+to debug, but can be useful for more complex test scenarios.**
 
 ## What problem is this trying to solve?
 
