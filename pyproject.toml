@@ -168,7 +168,7 @@ addopts = [
     "--strict-markers",
     "--tb=short",
     "--color=yes",
-    "-m", "not do_not_run"
+    "-m", "(not do_not_run) and (not starlark_control_flow)"
 ]
 norecursedirs = [
     ".git",
@@ -184,6 +184,7 @@ markers = [
     "slow: A test marker to check if markers work with custom markers",
     "xdist_group('group1'): A test marker to check if markers work with args",
     "do_not_run: Test marker for tests that should not be run",
+    "starlark_control_flow: starlark control flow tests",
 ]
 
 [tool.ruff]

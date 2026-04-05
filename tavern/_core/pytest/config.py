@@ -27,12 +27,14 @@ class TestConfig:
         variables: variables available for use in the stage
         strict: Strictness for test/stage
         stages: Any extra stages imported from other config files
+        experimental_starlark_pipeline: Whether experimental starlark pipeline support is enabled
     """
 
     variables: dict
     strict: StrictLevel
     follow_redirects: bool
     stages: list
+    experimental_starlark_pipeline: bool | None
 
     tavern_internal: TavernInternalConfig
 
@@ -78,6 +80,7 @@ class TestConfig:
             "stages": self.stages,
             "strict": starlark.OpaquePythonObject(self.strict),
             "tavern_internal": starlark.OpaquePythonObject(self.tavern_internal),
+            "experimental_starlark_pipeline": self.experimental_starlark_pipeline,
         }
         return dumped
 
@@ -88,9 +91,12 @@ class TestConfig:
         return cls(
             variables=from_starlark(starlark_dict["variables"]),
             follow_redirects=starlark_dict["follow_redirects"],
-            stages=starlark_dict["stages"],
+            stages=from_starlark(starlark_dict["stages"]),
             strict=from_starlark(starlark_dict["strict"]),
             tavern_internal=from_starlark(starlark_dict["tavern_internal"]),
+            experimental_starlark_pipeline=starlark_dict[
+                "experimental_starlark_pipeline"
+            ],
         )
 
 

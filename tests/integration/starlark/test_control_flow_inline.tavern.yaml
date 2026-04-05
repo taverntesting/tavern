@@ -1,3 +1,7 @@
+is_defaults: True
+marks:
+  - starlark_control_flow
+
 ---
 # Test for inline control_flow Starlark script
 # This test demonstrates the new YAML+control_flow format

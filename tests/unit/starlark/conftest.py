@@ -17,6 +17,7 @@ def fix_test_config():
         follow_redirects=False,
         stages=[],
         tavern_internal=TavernInternalConfig(pytest_hook_caller=Mock(), backends={}),
+        experimental_starlark_pipeline=True,
     )
     return config
 

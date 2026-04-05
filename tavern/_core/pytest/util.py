@@ -207,6 +207,9 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
         variables=variables,
         strict=_load_global_strictness(pytest_config),
         follow_redirects=_load_global_follow_redirects(pytest_config),
+        experimental_starlark_pipeline=get_option_generic(
+            pytest_config, "tavern-experimental-starlark-pipeline", False
+        ),
         tavern_internal=TavernInternalConfig(
             pytest_hook_caller=pytest_config.hook,
             backends=_load_global_backends(pytest_config),

@@ -265,13 +265,20 @@ def run_test(
             stack.enter_context(session)
 
         if "control_flow" in test_spec:
-            return _run_with_starlark_control_flow(
+            if not test_block_config.experimental_starlark_pipeline:
+                # If not enabled, raise an error
+                raise exceptions.UnexpectedKeysError(
+                    "control_flow requires --tavern-experimental-starlark-pipeline flag to be enabled"
+                )
+
+            _run_with_starlark_control_flow(
                 in_file,
                 test_spec,
                 test_block_config,
                 sessions,
                 available_stages + included_stages,
             )
+            return
 
         def getonly(stage):
             o = stage.get("only")
