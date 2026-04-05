@@ -437,5 +437,6 @@ includes, regex extraction, retry patterns
 - Support MQTT, gRPC, GraphQL. This becomes a bit more complicated with the new custom backend functionality.
 - Make error messages more helpful.
 - Add more helper functions (ensure JWT is valid, sleeping (time module?), etc).
+    - Make this auto-export functions into either this document or a with mkdocstrings
     - Let users import their own functions into starlark?
 - Add a new CLI/ini flag to say "run 'finally' stages when using starlark script"
