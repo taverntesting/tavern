@@ -32,7 +32,7 @@ class TestStageRegistry:
         assert registry.get_stage("stage_with_id") is not None
         assert registry.get_stage("Stage without ID") is None
 
-    def test_registry_raises_on_invalid_id(self):
+    def test_registry_returns_none_for_nonexistent_id(self):
         stages = [
             {
                 "id": "stage1",
