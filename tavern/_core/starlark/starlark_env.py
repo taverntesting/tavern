@@ -86,6 +86,7 @@ class StageResponse:
         )
 
 
+# language=starlark
 _STARLARK_BUILTINS = """
 def run_stage(name, *, continue_on_fail=False, extra_vars=None):
     resp = __run_stage(name, continue_on_fail, extra_vars)
