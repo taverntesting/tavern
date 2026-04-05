@@ -4,6 +4,7 @@ import dataclasses
 import functools
 import logging
 import re
+import time
 from typing import Any, TypedDict
 
 import requests
@@ -120,6 +121,13 @@ def _re_sub(pattern, repl, s):
 
 
 re = struct(match=_re_match, search=_re_search, sub=_re_sub)
+
+
+def _time_sleep(seconds):
+    __time_sleep(seconds)
+
+
+time = struct(sleep=_time_sleep)
 """
 
 
@@ -429,3 +437,9 @@ class StarlarkPipelineRunner:
             return re.sub(pattern, repl, string)
 
         module.add_callable("__re_sub", re_sub)
+
+        @_wrap_callable
+        def time_sleep(seconds: float) -> None:
+            time.sleep(seconds)
+
+        module.add_callable("__time_sleep", time_sleep)

@@ -348,6 +348,21 @@ log("Hello from starlark")
 
         assert "Hello from starlark" in caplog.text
 
+    def test_time_sleep_function_executes(self, basic_runner):
+        """Test that time.sleep can be called from Starlark script."""
+        import time
+
+        script = """
+load("@tavern_helpers.star", "time")
+time.sleep(0.01)
+"""
+        start = time.monotonic()
+        basic_runner.load_and_run(script)
+        elapsed = time.monotonic() - start
+
+        # Verify that sleep was actually called (should take at least 0.01s)
+        assert elapsed >= 0.01
+
     def test_run_stage_in_script(
         self,
         fix_test_config,
