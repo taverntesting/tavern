@@ -83,12 +83,14 @@ class TestConfig:
 
     @classmethod
     def from_starlark(cls, starlark_dict: dict) -> "TestConfig":
+        from tavern._core.starlark.types import from_starlark
+
         return cls(
-            variables=starlark_dict["variables"],
+            variables=from_starlark(starlark_dict["variables"]),
             follow_redirects=starlark_dict["follow_redirects"],
             stages=starlark_dict["stages"],
-            strict=starlark_dict["strict"],
-            tavern_internal=starlark_dict["tavern_internal"],
+            strict=from_starlark(starlark_dict["strict"]),
+            tavern_internal=from_starlark(starlark_dict["tavern_internal"]),
         )
 
 
