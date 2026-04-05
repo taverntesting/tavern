@@ -108,7 +108,6 @@ dev = [
     "tox-uv>=1.28.0",
     "pytest-asyncio>=1.3.0",
     "hypothesis>=6,<7",
-    # for validate_pydantic tests
     "pydantic",
 ]
 
