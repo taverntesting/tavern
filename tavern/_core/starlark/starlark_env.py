@@ -434,7 +434,7 @@ class StarlarkPipelineRunner:
         @_wrap_callable
         def re_sub(pattern: str, repl: str, string: str | bytes) -> str:
             if isinstance(string, bytes):
-                string = string.decode("utf-8")
+                return re.sub(pattern, repl, string.decode("utf-8"))
             return re.sub(pattern, repl, string)
 
         module.add_callable("__re_sub", re_sub)
