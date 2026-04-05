@@ -2,6 +2,8 @@ from typing import Any, Optional
 
 
 class StageRegistry:
+    """Stores all stages which are accessible from starlark (ie, which have an id)"""
+
     def __init__(self, stages: list[dict[str, Any]]):
         self._stages: dict[str, dict] = {}
         for stage in stages:
