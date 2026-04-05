@@ -67,6 +67,8 @@ def _run_with_starlark_control_flow(
 
     from tavern._core.starlark.starlark_env import StarlarkPipelineRunner
 
+    # This is parsed here because it could be done at script load time, but this immediately
+    # fails the entire test run. This lets Tavern raise an exception specific to this test
     dialect = starlark.Dialect.extended()
     dialect.enable_keyword_only_arguments = True
     try:
