@@ -56,11 +56,6 @@ def sample_stages():
     ]
 
 
-# ==============================================================================
-# Test _wrap_callable
-# ==============================================================================
-
-
 class TestWrapCallable:
     """Tests for the _wrap_callable decorator."""
 
@@ -109,11 +104,6 @@ class TestWrapCallable:
         assert isinstance(result, starlark.OpaquePythonObject)
 
 
-# ==============================================================================
-# Test StageResponse
-# ==============================================================================
-
-
 class TestStageResponseToStarlark:
     """Tests for StageResponse.to_starlark method."""
 
@@ -154,11 +144,6 @@ class TestStageResponseToStarlark:
         assert reconstructed.success == original.success
         assert reconstructed.request_vars == original.request_vars
         assert reconstructed.stage_name == original.stage_name
-
-
-# ==============================================================================
-# Test run_stage binding (Starlark callable)
-# ==============================================================================
 
 
 class TestRunStageBinding:
@@ -246,11 +231,6 @@ resp = run_stage("nonexistent_stage")
         assert result["status_code"] == 200
         assert "body" in result
         assert result["body"] == {"result": "success"}
-
-
-# ==============================================================================
-# Test _create_response_struct
-# ==============================================================================
 
 
 class TestCreateResponseStruct:
@@ -353,11 +333,6 @@ class TestCreateResponseStruct:
 
         with pytest.raises(NotImplementedError, match="gRPC, MQTT"):
             runner._create_response_struct(stage_response)
-
-
-# ==============================================================================
-# Integration-style tests with actual Starlark execution
-# ==============================================================================
 
 
 class TestStarlarkExecution:
