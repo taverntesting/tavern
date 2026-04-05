@@ -380,7 +380,7 @@ class StarlarkPipelineRunner:
             stage = self._stage_registry.get_stage(stage_id)
             if stage is None:
                 raise exceptions.StarlarkError(
-                    f"Stage with id '{stage_id}' not found (had {list(self._stage_registry.get_all_stages().keys())})"
+                    f"Stage with id '{stage_id}' not found (had {list(self._stage_registry.get_all_stages().keys())}"
                 )
 
             stage_response = self._run_stage(stage, continue_on_fail, extra_vars)
