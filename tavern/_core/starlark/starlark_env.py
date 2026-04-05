@@ -298,10 +298,7 @@ class StarlarkPipelineRunner:
 
             # Try to parse JSON body, fall back to raw content
             if "application/json" in content_type:
-                try:
-                    body = rest_response.json()
-                except Exception:
-                    body = rest_response.content
+                body = rest_response.json()
             else:
                 body = rest_response.content
 
