@@ -1,5 +1,7 @@
 # Changelog
 
+## 3.3.1           pydantic helper function (2026-04-05)
+
 # 3.3.0           generic backends (2026-04-04)
 
 # v3.3.0          Convert backends to be fully generic (2026-03-28)
