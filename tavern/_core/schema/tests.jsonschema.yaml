@@ -221,7 +221,7 @@ properties:
 
   control_flow:
     type: string
-    desc: |
+    description: |
       Starlark script that controls the execution order of stages.
       When present, stages are NOT executed sequentially - instead,
       the Starlark script calls run_stage(stage_id) to execute stages.
