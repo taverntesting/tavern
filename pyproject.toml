@@ -178,6 +178,7 @@ norecursedirs = [
     "node_modules",
     "dist",
     "docs",
+    ".hypothesis"
 ]
 markers = [
     "slow: A test marker to check if markers work with custom markers",
