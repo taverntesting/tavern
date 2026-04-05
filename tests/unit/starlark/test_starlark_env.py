@@ -10,7 +10,7 @@ import pytest
 import requests
 import starlark
 
-from tavern._core.exceptions import TavernException
+from tavern._core import exceptions
 from tavern._core.run import _TestRunner
 from tavern._core.starlark.stage_registry import StageRegistry
 from tavern._core.starlark.starlark_env import (
@@ -436,7 +436,7 @@ resp = run_stage("get_cookie")
     ):
         """Test that TavernException is re-raised when continue_on_fail=False."""
         mock_runner = Mock()
-        exc = TavernException("Stage failed")
+        exc = exceptions.TavernException("Stage failed")
         exc.stage = sample_stage
         mock_runner.wrapped_run_stage = Mock(side_effect=exc)
         tinctures = Tinctures([])
@@ -455,7 +455,7 @@ resp = run_stage("get_cookie")
                 "tavern._core.starlark.starlark_env.get_stage_tinctures",
                 return_value=tinctures,
             ):
-                with pytest.raises(TavernException):
+                with pytest.raises(exceptions.TavernException):
                     runner._run_stage(sample_stage, continue_on_fail=False)
 
     def test_run_stage_tavern_exception_returns_failed(
@@ -465,7 +465,7 @@ resp = run_stage("get_cookie")
     ):
         """Test that TavernException returns failed response when continue_on_fail=True."""
         mock_runner = Mock()
-        exc = TavernException("Stage failed")
+        exc = exceptions.TavernException("Stage failed")
         exc.stage = sample_stage
         mock_runner.wrapped_run_stage = Mock(side_effect=exc)
         tinctures = Tinctures([])
@@ -533,7 +533,7 @@ resp = run_stage("get_cookie", extra_vars={"custom_var": "custom_value"})
     ):
         """Test that continue_on_fail parameter prevents exception propagation."""
         mock_runner = Mock()
-        exc = TavernException("Stage failed")
+        exc = exceptions.TavernException("Stage failed")
         exc.stage = sample_stages[0]
         mock_runner.wrapped_run_stage = Mock(side_effect=exc)
         tinctures = Tinctures([])
@@ -569,7 +569,7 @@ resp = run_stage("get_cookie", continue_on_fail=True)
     ):
         """Test that failed stage propagates exception when continue_on_fail=False."""
         mock_runner = Mock()
-        exc = TavernException("Stage failed")
+        exc = exceptions.TavernException("Stage failed")
         exc.stage = sample_stages[0]
         mock_runner.wrapped_run_stage = Mock(side_effect=exc)
         tinctures = Tinctures([])
@@ -587,8 +587,6 @@ load("@tavern_helpers.star", "run_stage")
 resp = run_stage("get_cookie")
 """
 
-        from tavern._core import exceptions
-
         with patch(
             "tavern._core.starlark.starlark_env._TestRunner", return_value=mock_runner
         ):
@@ -597,5 +595,7 @@ resp = run_stage("get_cookie")
                 return_value=tinctures,
             ):
                 # Should raise StarlarkError (wrapping TavernException)
-                with pytest.raises((exceptions.StarlarkError, TavernException)):
+                with pytest.raises(
+                    (exceptions.StarlarkError, exceptions.TavernException)
+                ):
                     runner.load_and_run(script)
