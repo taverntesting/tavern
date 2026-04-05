@@ -54,11 +54,6 @@ def from_starlark(obj: Any) -> Any:
     """
     if isinstance(obj, _STARLARK_PRIMITIVES):
         return obj
-    if isinstance(obj, starlark.OpaquePythonObject):
-        inner = obj  # unwrap: the original object reappears
-        if isinstance(inner, StarlarkConvertible):
-            return inner.from_starlark(inner)
-        return inner
     if isinstance(obj, dict):
         return {k: from_starlark(v) for k, v in obj.items()}
     if isinstance(obj, (list, tuple)):
