@@ -437,3 +437,4 @@ includes, regex extraction, retry patterns
 - Make error messages more helpful.
 - Add more helper functions (ensure JWT is valid, sleeping (time module?), etc).
     - Let users import their own functions into starlark?
+- Add a new CLI/ini flag to say "run 'finally' stages when using starlark script"
