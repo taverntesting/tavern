@@ -9,6 +9,7 @@ dependencies = [
     "gunicorn",
     "flask",
     "pyjwt",
+    "pydantic",
 ]
 
 [project.entry-points.tavern_http]

@@ -165,3 +165,12 @@ def hello(name: str):
 @requires_jwt
 def ping():
     return jsonify({"data": "pong"}), 200
+
+
+@app.route("/malformed", methods=["GET"])
+@requires_jwt
+def malformed():
+    """Returns a response with extra fields that won't match strict pydantic models."""
+    return jsonify(
+        {"data": "test", "extra_field": "unexpected", "another_extra": 123}
+    ), 200
