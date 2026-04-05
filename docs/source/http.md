@@ -574,7 +574,3 @@ stages:
 The `!include_raw` tag, similar to the `!include` tag, is a special tag that will read the file contents and
 include them in the test. This will include the file 'as-is' without loading as
 JSON like the `!include` tag does.
-
-The file path is relative to the test file location. This is useful for testing
-APIs that return large text content, binary data, or when you want to keep your
-test files clean by storing expected content separately. 
