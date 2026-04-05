@@ -146,10 +146,6 @@ definitions:
         description: Expected plain text response body
         type: string
 
-      file_body_response:
-        description: Path to a file containing the expected response body
-        type: string
-
       json:
         description: Expected JSON response
         $ref: "#/definitions/any_json"

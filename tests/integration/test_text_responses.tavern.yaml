@@ -70,7 +70,7 @@ stages:
       text: "Goodbye, World!"
 
 ---
-test_name: Test file_body_response matching
+test_name: Test text response matching from file
 
 includes:
   - !include common.yaml
@@ -82,10 +82,10 @@ stages:
       method: GET
     response:
       status_code: 200
-      file_body_response: "expected_table.txt"
+      text: !include_raw expected_table.txt
 
 ---
-test_name: Test file_body_response mismatch fails
+test_name: Test text response mismatch from file fails
 
 _xfail: run
 
@@ -99,7 +99,7 @@ stages:
       method: GET
     response:
       status_code: 200
-      file_body_response: "expected_wrong.txt"
+      text: !include_raw expected_wrong.txt
 
 ---
 test_name: Test echo plain text with POST

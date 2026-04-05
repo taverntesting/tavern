@@ -175,7 +175,22 @@ def construct_include(loader, node: yaml.ScalarNode):
     )
 
 
+def construct_include_raw(loader, node: yaml.ScalarNode):
+    """Include any file as raw text.
+
+    This is useful for including text files for response body validation.
+    """
+    filename = find_include(loader, node)
+    resolved_path = pathlib.Path(filename)
+
+    if not resolved_path.exists():
+        raise BadSchemaError(f"Include file not found: '{filename}'")
+
+    return resolved_path.read_text(encoding="utf-8")
+
+
 IncludeLoader.add_constructor("!include", construct_include)
+IncludeLoader.add_constructor("!include_raw", construct_include_raw)
 IncludeLoader.add_constructor("!uuid", makeuuid)
 
 

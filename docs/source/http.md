@@ -554,7 +554,7 @@ stages:
 ### Matching text response body from a file
 
 If you have a large expected response body, you can store it in a file and use
-`file_body_response` to validate the response against the file contents:
+`!include_raw` inside the `text` block to validate the response against the file contents:
 
 ```yaml
 ---
@@ -568,8 +568,12 @@ stages:
       method: GET
     response:
       status_code: 200
-      file_body_response: "expected_table.txt"
+      text: !include_raw expected_table.txt
 ```
+
+The `!include_raw` tag, similar to the `!include` tag, is a special tag that will read the file contents and
+include them in the test. This will include the file 'as-is' without loading as
+JSON like the `!include` tag does.
 
 The file path is relative to the test file location. This is useful for testing
 APIs that return large text content, binary data, or when you want to keep your
