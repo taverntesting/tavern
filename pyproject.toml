@@ -9,9 +9,9 @@ classifiers = [
     "Intended Audience :: Developers",
     "Framework :: Pytest",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
     "Topic :: Utilities",
     "Topic :: Software Development :: Testing",
     "License :: OSI Approved :: MIT License",
@@ -36,7 +36,7 @@ dependencies = [
     "stevedore>=4,<5",
 ]
 
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 
 [[project.authors]]
 name = "Michael Boulton"
@@ -130,7 +130,7 @@ tavern = "tavern._core.pytest"
 requests = "tavern._plugins.rest.tavernhook:TavernRestPlugin"
 
 [tool.mypy]
-python_version = "3.11"
+python_version = "3.12"
 
 # See https://mypy.readthedocs.io/en/stable/running_mypy.html#mapping-file-paths-to-modules
 explicit_package_bases = true
@@ -155,8 +155,8 @@ source = ["tavern"]
 [tool.coverage.paths]
 tavern = [
     "tavern/",
-    ".tox/py312-generic/lib/python3.11/site-packages/tavern/",
-    ".tox/py312-mqtt/lib/python3.11/site-packages/tavern",
+    ".tox/py312-generic/lib/python3.12/site-packages/tavern/",
+    ".tox/py312-mqtt/lib/python3.12/site-packages/tavern",
 ]
 
 [tool.pytest.ini_options]
@@ -259,7 +259,7 @@ cmd = "uv lock"
 runner = "uv-venv-lock-runner"
 skip_missing_interpreters = true
 isolated_build = true
-base_python = "3.11"
+base_python = "3.12"
 
 [tool.uv]
 constraint-dependencies = ["ruamel-yaml<0.19.0"]
