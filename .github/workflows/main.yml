@@ -26,6 +26,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v7
+
       - uses: pre-commit/action@v3.0.0
 
   unit-tests:
@@ -153,7 +156,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
 
       - name: Run tests
         env:
