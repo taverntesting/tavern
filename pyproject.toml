@@ -155,8 +155,8 @@ source = ["tavern"]
 [tool.coverage.paths]
 tavern = [
     "tavern/",
-    ".tox/py311-generic/lib/python3.11/site-packages/tavern/",
-    ".tox/py311-mqtt/lib/python3.11/site-packages/tavern",
+    ".tox/py312-generic/lib/python3.11/site-packages/tavern/",
+    ".tox/py312-mqtt/lib/python3.11/site-packages/tavern",
 ]
 
 [tool.pytest.ini_options]
@@ -188,7 +188,7 @@ markers = [
 ]
 
 [tool.ruff]
-target-version = "py311"
+target-version = "py312"
 extend-exclude = [
     "tests/unit/tavern_grpc/test_services_pb2*",
     "example/grpc/helloworld_v1_precompiled_pb2*"

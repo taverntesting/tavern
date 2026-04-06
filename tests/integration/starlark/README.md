@@ -16,7 +16,7 @@ To run the starlark integration tests, you need to enable the experimental flag:
 cd tests/integration && docker-compose up -d server
 
 # Run the starlark tests with the experimental flag
-tox -q -c tox-integration.ini -e py311 -- --tavern-experimental-starlark-pipeline tests/integration/starlark/
+tox -q -c tox-integration.ini -e py312 -- --tavern-experimental-starlark-pipeline tests/integration/starlark/
 ```
 
 Or using pytest directly:
