@@ -128,10 +128,7 @@ def _attempt_find_include(to_format: str, box_vars: box.Box) -> str | None:
     return formatter.convert_field(would_replace, conversion)
 
 
-T = typing.TypeVar("T", str, dict, list, tuple)
-
-
-def format_keys(
+def format_keys[T: (str, dict, list, tuple)](
     val: T,
     variables: Mapping | Box,
     *,
@@ -326,7 +323,7 @@ def yield_keyvals(block: Union[list, dict]) -> Iterator[tuple[list, str, str]]:
 Checked = typing.TypeVar("Checked", dict, Collection, str)
 
 
-def check_keys_match_recursive(
+def check_keys_match_recursive[Checked: (dict, Collection, str)](
     expected_val: Checked,
     actual_val: Checked,
     keys: list[Union[str, int]],

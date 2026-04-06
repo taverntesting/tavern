@@ -1,0 +1,206 @@
+is_defaults: True
+marks:
+  - starlark_control_flow
+
+---
+# Test for inline control_flow Starlark script
+# This test demonstrates the new YAML+control_flow format
+
+test_name: Test control_flow with inline Starlark - basic sequential
+
+stages:
+  - name: Get cookie
+    id: get_cookie
+    request:
+      url: "{global_host}/get_cookie"
+      method: POST
+      json:
+        cookie_name: test-cookie
+    response:
+      status_code: 200
+      cookies:
+        - test-cookie
+
+  - name: Echo a value
+    id: echo_value
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "hello"
+    response:
+      status_code: 200
+      json:
+        value: "hello"
+
+# Inline Starlark script that controls execution order
+control_flow: |
+  # Load the stage runner
+  load("@tavern_helpers.star", "run_stage")
+
+  # First run the get_cookie stage
+  resp = run_stage("get_cookie")
+
+  # Then run the echo_value stage
+  resp = run_stage("echo_value")
+
+  # success
+  if resp.failed:
+    fail("echoing did not succeed")
+
+---
+test_name: Test control_flow with inline Starlark - included stages
+
+includes:
+  # Contains stages with an 'id'
+  - !include stages.yaml
+
+# Inline Starlark script that controls execution order
+control_flow: |
+  # Load the stage runner
+  load("@tavern_helpers.star", "run_stage")
+
+  # First run the get_cookie stage
+  resp = run_stage("get-cookie-included")
+
+  # Then run the echo_value stage
+  resp = run_stage("echo-value-included")
+
+  # success
+  if resp.failed:
+    fail("echoing did not succeed")
+
+---
+test_name: Test control_flow with inline Starlark - globally included stages
+
+# Inline Starlark script that controls execution order
+control_flow: |
+  # Load the stage runner
+  load("@tavern_helpers.star", "run_stage")
+
+  # run a stage defined in the global_cfg.yaml file
+  run_stage("finally-nothing-check")
+
+---
+test_name: Test regex functions with inline Starlark
+
+stages:
+  - name: Get regex test data
+    id: get_regex_data
+    request:
+      url: "{global_host}/regex_data"
+      method: GET
+    response:
+      status_code: 200
+      # Don't check the exact value of the response body, just that it matches the regex below
+
+  - name: Verify extracted values
+    id: verify_extracted
+    request:
+      url: "{global_host}/verify_extracted"
+      method: POST
+      json:
+        # These variables will be extracted from the response body using regex
+        major_version: "{major_version}"
+        token_id: "{token_id}"
+        server_name: "{server_name}"
+    response:
+      status_code: 200
+      json:
+        status: "verified"
+
+control_flow: |
+  load("@tavern_helpers.star", "run_stage", "re")
+
+  # Get regex test data
+  resp = run_stage("get_regex_data")
+  if resp.failed:
+    fail("get_regex_data stage failed")
+
+  # Extract version number using regex: v2.5.1 -> capture major version
+  version_match = re.search("v(\\d+)\\.", resp.body)
+  if version_match == None:
+    fail("Failed to match version pattern")
+  major_version = version_match.groups[0]
+
+  # Extract token ID: TKN-a1b2c3d4e5f6 -> capture the ID part
+  token_match = re.search("\"TKN-(.+)\"", resp.body)
+  if token_match == None:
+    fail("Failed to match token pattern TKN-+ from " + resp.body)
+  token_id = token_match.groups[0]
+
+  # Extract server name from message: Server-PROD-01 -> capture PROD-01
+  server_match = re.search("Server-(\\w+-\\w+)\\s", resp.body)
+  if server_match == None:
+    fail("Failed to match server pattern")
+  server_name = server_match.groups[0]
+
+  # Use extracted values in next stage via extra_vars
+  resp = run_stage("verify_extracted", extra_vars={
+    "major_version": major_version,
+    "token_id": token_id,
+    "server_name": server_name
+  })
+  if resp.failed:
+    fail("verify_extracted stage failed")
+
+---
+test_name: test for loop with retry
+
+stages:
+  - name: polling
+    id: polling
+    request:
+      url: "{global_host}/poll"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: ready
+
+control_flow: |
+  load("@tavern_helpers.star", "run_stage")
+
+  succeeded = False
+  for i in range(0, 3):
+      resp = run_stage("polling", continue_on_fail=True)
+      if not resp.failed:
+          succeeded = True
+          break
+      log("polling stage failed")
+
+  if not succeeded:
+      fail("polling stage failed after 3 attempts")
+
+---
+test_name: Test including a generic script
+
+control_flow: !include correct.star
+
+---
+test_name: Test including a empty script (or one which runs no stages) fails
+
+_xfail: run
+
+control_flow: !include nothingrun.star
+
+---
+test_name: Test including a script that will fail at runtime
+
+_xfail: run
+
+control_flow: !include fail.star
+
+---
+test_name: Test including YAML
+
+_xfail: verify
+
+control_flow: !include stages.yaml
+
+---
+test_name: Test including a completely invalid script
+
+_xfail: verify
+
+control_flow: !include badsyntax.star

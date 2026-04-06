@@ -1,7 +1,7 @@
 import logging
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Optional, TypeVar, Union
+from typing import Any, Optional, Union
 
 import pytest
 
@@ -84,6 +84,12 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
         type=str,
         action="store",
     )
+    parser_addoption(
+        "--tavern-experimental-starlark-pipeline",
+        action="store_true",
+        default=False,
+        help="Enable experimental starlark pipeline support (*.tavern.star files)",
+    )
 
 
 def add_ini_options(parser: pytest.Parser) -> None:
@@ -153,6 +159,12 @@ def add_ini_options(parser: pytest.Parser) -> None:
         type="args",
         default=[],
     )
+    parser.addini(
+        "tavern-experimental-starlark-pipeline",
+        help="Enable experimental starlark pipeline support (*.tavern.star files)",
+        type="bool",
+        default=False,
+    )
 
 
 def load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
@@ -195,6 +207,9 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
         variables=variables,
         strict=_load_global_strictness(pytest_config),
         follow_redirects=_load_global_follow_redirects(pytest_config),
+        experimental_starlark_pipeline=get_option_generic(
+            pytest_config, "tavern-experimental-starlark-pipeline", False
+        ),
         tavern_internal=TavernInternalConfig(
             pytest_hook_caller=pytest_config.hook,
             backends=_load_global_backends(pytest_config),
@@ -253,10 +268,7 @@ def _load_global_follow_redirects(pytest_config: pytest.Config) -> bool:
     return get_option_generic(pytest_config, "tavern-always-follow-redirects", False)
 
 
-T = TypeVar("T", bound=Optional[Union[str, list, list[Path], list[str], bool]])
-
-
-def get_option_generic(
+def get_option_generic[T: Optional[Union[str, list, list[Path], list[str], bool]]](
     pytest_config: pytest.Config,
     flag: str,
     default: T,

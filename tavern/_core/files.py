@@ -64,7 +64,14 @@ def _parse_filespec(filespec: str | dict) -> _Filespec:
 
 
 class FileSendSpec(NamedTuple):
-    """A description of a file to send as part of a multipart/form-data upload to requests"""
+    """A description of a file to send as part of a multipart/form-data upload to requests
+
+    Attributes:
+        filename: The name of the file to send
+        file_obj: The file object to send
+        content_type: The content type of the file
+        content_encoding: The content encoding, or the content encoding _headers_ for the file
+    """
 
     filename: str
     file_obj: IOBase
@@ -83,13 +90,13 @@ def guess_filespec(
         stack: exit stack to add open files context to
 
     Returns:
-        A tuple of either length 2 (filename and file object), 3 (as before, with content type),
+        A tuple of:
+         1. Either length 2 (filename and file object), 3 (as before, with content type),
             or 4 (as before, with with content encoding). If a group name for the multipart upload
-            was specified, this is also returned.
-
-    Notes:
-        If a 4-tuple is returned, the last element is a dictionary of headers to send to requests,
-            _not_ the raw encoding value.
+            was specified, this is also returned. The last element is a dictionary of headers to
+            pass directly to the requests 'files' argument, _not_ the raw encoding value.
+        2. The form field name for the file
+        3. The absolute path to the file
     """
     if not mimetypes.inited:
         mimetypes.init()

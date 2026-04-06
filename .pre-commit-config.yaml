@@ -1,11 +1,11 @@
 repos:
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.7.9
+    rev: v1.7.12
     hooks:
       - id: actionlint
         args: ["-shellcheck="]
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.14.7
+    rev: v0.15.9
     hooks:
       - id: ruff-format
       - id: ruff-check
@@ -16,7 +16,7 @@ repos:
       - id: prettier
         types_or: [yaml]
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.19.0
+    rev: v1.20.0
     hooks:
       - id: mypy
         additional_dependencies:
@@ -27,8 +27,22 @@ repos:
         exclude: tests
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.9.13
+    rev: 0.11.3
     hooks:
       - id: uv-lock
+  - repo: local
+    hooks:
+      - id: starlark-docstring-markdown
+        name: starlark-docstring-markdown
+        entry: uv
+        args:
+          - tool
+          - run
+          - git+https://github.com/michaelboulton/starlark-docstring-markdown@df06acc9307e9ad8bd83fe618f012072f288d3d1
+          - tavern/tavern/_core/starlark/
+          - tavern/docs/source/scripting-api.md
+        language: system
+        pass_filenames: false
+        files: \.star$
 
 exclude: (docs/|example/)
