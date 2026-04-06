@@ -40,7 +40,7 @@ def to_starlark(obj: Any) -> Any:
         return to_starlark(dataclasses.asdict(obj))  # type:ignore
     if isinstance(obj, dict):
         return {k: to_starlark(v) for k, v in obj.items()}
-    if isinstance(obj, (list, tuple)):
+    if isinstance(obj, list | tuple):
         return [to_starlark(item) for item in obj]
     return starlark.OpaquePythonObject(obj)
 
@@ -55,6 +55,6 @@ def from_starlark(obj: Any) -> Any:
         return obj
     if isinstance(obj, dict):
         return {k: from_starlark(v) for k, v in obj.items()}
-    if isinstance(obj, (list, tuple)):
+    if isinstance(obj, list | tuple):
         return [from_starlark(item) for item in obj]
     return obj
