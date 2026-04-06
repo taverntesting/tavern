@@ -3,12 +3,6 @@
 This module provides built-in functions for controlling test execution
 in Tavern's Starlark pipeline feature.
 
-Available functions:
-    run_stage: Execute a test stage by its ID
-    re: Regex utilities (match, search, sub)
-    time: Time utilities (sleep)
-    log: Log messages to stdout
-
 Usage:
     load("@tavern_helpers.star", "run_stage", "re", "time", "log")
 """
