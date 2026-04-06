@@ -1,13 +1,14 @@
 """Test that control_flow requires experimental flag"""
 
 import pathlib
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 
-from tavern._core.exceptions import BadSchemaError
+from tavern._core import exceptions
 from tavern._core.pytest.config import TavernInternalConfig, TestConfig
 from tavern._core.run import run_test
+from tavern._core.starlark import StarlarkPipelineRunner
 from tavern._core.strict_util import StrictLevel
 
 
@@ -34,7 +35,7 @@ def test_control_flow_requires_experimental_flag():
     )
 
     # Should raise BadSchemaError when control_flow is used without the flag
-    with pytest.raises(BadSchemaError) as exc_info:
+    with pytest.raises(exceptions.UnexpectedKeysError) as exc_info:
         run_test(
             pathlib.Path("/fake/path.tavern.yaml"),
             test_spec,
@@ -69,17 +70,12 @@ def test_control_flow_works_with_experimental_flag():
     )
 
     # Should not raise an error about the flag
-    # It will fail with a different error (ImportError for starlark module)
-    # but that's expected since we're not testing the actual starlark execution
-    with pytest.raises(Exception) as exc_info:
+    with patch(
+        "tavern._core.starlark.starlark_env.StarlarkPipelineRunner",
+        Mock(spec=StarlarkPipelineRunner),
+    ):
         run_test(
             pathlib.Path("/fake/path.tavern.yaml"),
             test_spec,
             global_cfg,
         )
-
-    # Should NOT be a BadSchemaError about the flag
-    # It should be an ImportError or starlark-related error
-    assert not isinstance(exc_info.value, BadSchemaError) or "experimental" not in str(
-        exc_info.value
-    )
