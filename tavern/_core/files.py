@@ -83,13 +83,13 @@ def guess_filespec(
         stack: exit stack to add open files context to
 
     Returns:
-        A tuple of either length 2 (filename and file object), 3 (as before, with content type),
+        A tuple of:
+         1. Either length 2 (filename and file object), 3 (as before, with content type),
             or 4 (as before, with with content encoding). If a group name for the multipart upload
-            was specified, this is also returned.
-
-    Notes:
-        If a 4-tuple is returned, the last element is a dictionary of headers to send to requests,
-            _not_ the raw encoding value.
+            was specified, this is also returned. The last element is a dictionary of headers to
+            pass directly to the requests 'files' argument, _not_ the raw encoding value.
+        2. The form field name for the file
+        3. The absolute path to the file
     """
     if not mimetypes.inited:
         mimetypes.init()
