@@ -7,8 +7,9 @@ import string
 import subprocess
 import sys
 import tempfile
-from distutils.spawn import find_executable
 from importlib.machinery import ModuleSpec
+
+from distutils.spawn import find_executable
 
 from tavern._core import exceptions
 
