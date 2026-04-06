@@ -64,7 +64,14 @@ def _parse_filespec(filespec: str | dict) -> _Filespec:
 
 
 class FileSendSpec(NamedTuple):
-    """A description of a file to send as part of a multipart/form-data upload to requests"""
+    """A description of a file to send as part of a multipart/form-data upload to requests
+
+    Attributes:
+        filename: The name of the file to send
+        file_obj: The file object to send
+        content_type: The content type of the file
+        content_encoding: The content encoding, or the content encoding _headers_ for the file
+    """
 
     filename: str
     file_obj: IOBase
