@@ -3,6 +3,7 @@
 import copy
 import dataclasses
 import functools
+import importlib.resources
 import logging
 import re
 import time
@@ -88,48 +89,17 @@ class StageResponse:
         )
 
 
-# language=starlark
-_STARLARK_BUILTINS = """
-def run_stage(name, *, continue_on_fail=False, extra_vars=None):
-    resp = __run_stage(name, continue_on_fail, extra_vars)
+def _get_starlark_builtins() -> str:
+    """Load the Starlark builtins from the tavern_helpers.star file.
 
-    # Convert the dict to a starlark object
-    return struct(
-        # status_code=resp["status_code"],
-        # Any other fields that should be exposed to starlark, which would be useful for testing. Possibly:
-        # - response body loaded as json (could be a dict, or list, or string)
-        # - variables (some may be opaque and unusable!)
-        **resp
+    Returns:
+        The Starlark code for built-in helper functions
+    """
+    return (
+        importlib.resources.files(__package__)
+        .joinpath("tavern_helpers.star")
+        .read_text()
     )
-
-
-def _re_match(pattern, s):
-    m = __re_match(pattern, s)
-    if m == None:
-        return None
-    return struct(group0=m["group0"], groups=m["groups"], start=m["start"], end=m["end"])
-
-
-def _re_search(pattern, s):
-    m = __re_search(pattern, s)
-    if m == None:
-        return None
-    return struct(group0=m["group0"], groups=m["groups"], start=m["start"], end=m["end"])
-
-
-def _re_sub(pattern, repl, s):
-    return __re_sub(pattern, repl, s)
-
-
-re = struct(match=_re_match, search=_re_search, sub=_re_sub)
-
-
-def _time_sleep(seconds):
-    __time_sleep(seconds)
-
-
-time = struct(sleep=_time_sleep)
-"""
 
 
 class StarlarkPipelineRunner:
@@ -194,7 +164,9 @@ class StarlarkPipelineRunner:
         def load(filename: str) -> starlark.FrozenModule:
             """Implements the 'load' function in starlark. Currently only supports loading tavern helpers."""
             if filename == "@tavern_helpers.star":
-                ast = starlark.parse(filename, _STARLARK_BUILTINS, dialect=dialect)
+                ast = starlark.parse(
+                    filename, _get_starlark_builtins(), dialect=dialect
+                )
                 mod = starlark.Module()
                 self._setup_builtins(mod)
                 starlark.eval(mod, ast, self.globals)
