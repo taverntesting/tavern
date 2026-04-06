@@ -93,7 +93,11 @@ def _parse_func_mark(fmt_vars: Mapping, m: str) -> pytest.Mark:
             posargs = [_ast_node_to_literal(arg) for arg in call.args]
 
             # Extract keyword arguments as literals
-            kwargs = {kw.arg: _ast_node_to_literal(kw.value) for kw in call.keywords}
+            kwargs: dict = {
+                kw.arg: _ast_node_to_literal(kw.value)
+                for kw in call.keywords
+                if kw.arg is not None
+            }
 
             # Create the mark with parsed arguments
             mark = getattr(pytest.mark, mark_name)
