@@ -1,5 +1,7 @@
 # Changelog
 
+## 3.3.2           allow 'text' response checking with raw include tag for files (2026-04-05)
+
 ## 3.3.1           pydantic helper function (2026-04-05)
 
 # 3.3.0           generic backends (2026-04-04)
