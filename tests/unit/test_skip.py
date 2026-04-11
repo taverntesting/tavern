@@ -80,9 +80,9 @@ class TestSkipStage:
         """Don't skip stage when using a variable that evaluates to False"""
 
         stage["skip"] = "'{some_var}' == 'value'"
-        test_block_config.variables.update({"some_var": "value"})
+        test_block_config.variables.update({"some_var": "not_value"})
 
-        assert _run_test(stage, test_block_config, run_mock) is False
+        assert _run_test(stage, test_block_config, run_mock) is True
 
     def test_skip_invalid_var_types(self, stage, test_block_config, run_mock):
         """Error when cel types are wrong"""
