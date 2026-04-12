@@ -116,7 +116,7 @@ def _check_and_update_common_tls_args(
             "if this a valid option.".format(tls_args["tls_version"])
         ) from e
     except KeyError:
-        pass
+        logger.debug("No tls_version specified in TLS arguments")
 
 
 class MQTTClient:
@@ -227,16 +227,14 @@ class MQTTClient:
         if self._ssl_context_args:
             # Create SSLContext object
             tls_version = self._ssl_context_args.get("tls_version")
-            if tls_version is None:
-                # If the python version supports it, use highest TLS version automatically
-                if hasattr(ssl, "PROTOCOL_TLS_CLIENT"):
-                    tls_version = ssl.PROTOCOL_TLS_CLIENT
-                elif hasattr(ssl, "PROTOCOL_TLS"):
-                    tls_version = ssl.PROTOCOL_TLS
-                else:
-                    tls_version = ssl.PROTOCOL_TLSv1_2
-            ca_certs = self._ssl_context_args.get("cert_reqs")
-            context = ssl.create_default_context(cafile=ca_certs)
+            user_specified_tls_version = "tls_version" in self._ssl_context_args
+
+            if user_specified_tls_version:
+                # User explicitly specified tls_version, use it
+                context = ssl.SSLContext(tls_version)
+            else:
+                # Use create_default_context which handles protocol selection
+                context = ssl.create_default_context()
 
             certfile = self._ssl_context_args.get("certfile")
             keyfile = self._ssl_context_args.get("keyfile")
@@ -252,6 +250,7 @@ class MQTTClient:
 
             context.verify_mode = ssl.CERT_REQUIRED if cert_reqs is None else cert_reqs
 
+            ca_certs = self._ssl_context_args.get("ca_certs")
             if ca_certs is not None:
                 context.load_verify_locations(ca_certs)
             else:

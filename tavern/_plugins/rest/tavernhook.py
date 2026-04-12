@@ -1,4 +1,3 @@
-import logging
 from os.path import abspath, dirname, join
 
 import requests
@@ -11,8 +10,6 @@ from tavern._core.pytest.config import TestConfig
 
 from .request import RestRequest
 from .response import RestResponse
-
-logger: logging.Logger = logging.getLogger(__name__)
 
 
 class TavernRestPlugin(PluginHelperBase):

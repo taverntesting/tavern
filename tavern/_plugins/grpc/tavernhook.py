@@ -1,4 +1,3 @@
-import logging
 from os.path import abspath, dirname, join
 
 import yaml
@@ -9,9 +8,6 @@ from tavern._core.pytest.config import TestConfig
 from .client import GRPCClient
 from .request import GRPCRequest
 from .response import GRPCResponse
-
-logger: logging.Logger = logging.getLogger(__name__)
-
 
 session_type = GRPCClient
 
