@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any, Optional, TypedDict, Union
 import grpc
 import proto.message
 from google.protobuf import json_format
-from grpc import StatusCode
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys
@@ -97,7 +96,7 @@ class GRPCResponse(BaseResponse):
         logger.debug(f"grpc status code: {grpc_response.code()}")
         logger.debug(f"grpc details: {grpc_response.details()}")
 
-        verify_status = [StatusCode.OK.name]
+        verify_status = [grpc.StatusCode.OK.name]
         if status := self.expected.get("status", None):
             verify_status = _to_grpc_name(status)  # type: ignore
             if not isinstance(verify_status, list):
