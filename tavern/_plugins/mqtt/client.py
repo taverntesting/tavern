@@ -116,7 +116,7 @@ def _check_and_update_common_tls_args(
             "if this a valid option.".format(tls_args["tls_version"])
         ) from e
     except KeyError:
-        pass
+        logger.debug("No tls_version specified in TLS arguments")
 
 
 class MQTTClient:
