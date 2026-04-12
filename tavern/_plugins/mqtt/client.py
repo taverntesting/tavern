@@ -250,7 +250,8 @@ class MQTTClient:
 
             context.verify_mode = ssl.CERT_REQUIRED if cert_reqs is None else cert_reqs
 
-            if ca_certs := self._ssl_context_args.get("ca_certs"):
+            ca_certs = self._ssl_context_args.get("ca_certs")
+            if ca_certs is not None:
                 context.load_verify_locations(ca_certs)
             else:
                 context.load_default_certs()
