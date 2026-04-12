@@ -61,9 +61,6 @@ def create_node_class(cls):
             self.start_mark = start_mark
             self.end_mark = end_mark
 
-        # def __new__(self, x, start_mark, end_mark):
-        #     return cls.__new__(self, x)
-
     node_class.__name__ = f"{cls.__name__}_node"
     return node_class
 
