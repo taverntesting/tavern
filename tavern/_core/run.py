@@ -218,7 +218,10 @@ def run_test(
                         if strtobool(content):
                             continue
                     except ValueError:
-                        pass
+                        logger.debug(
+                            "Not a literal boolean: %s, checking if it can be evaluated",
+                            content,
+                        )
 
                     if eval_skip(content, test_block_config):
                         continue

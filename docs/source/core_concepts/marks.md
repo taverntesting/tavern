@@ -377,7 +377,7 @@ This will result in 6 tests:
 
 Since 1.19.0 you can now also parametrize generic blocks of data instead of only strings. This can
 also be mixed and matched with items which _are_ strings. If you do this, remember to use the
-[force_format_include](#Including raw JSON data) tag so it doesn't come out as a string:
+[force_format_include](./config.md#including-raw-json-data) tag so it doesn't come out as a string:
 
 ```yaml
 test_name: Test sending a list of list of keys where one is not a string

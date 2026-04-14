@@ -58,7 +58,6 @@ class Response(BaseResponse):
         super().__init__(name, expected, test_block_config)
 
 
-logger: logging.Logger = logging.getLogger(__name__)
 
 session_type = Session
 

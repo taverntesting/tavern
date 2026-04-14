@@ -1,4 +1,3 @@
-import logging
 from collections.abc import Iterable
 from os.path import abspath, dirname, join
 from typing import Optional, Union
@@ -11,8 +10,6 @@ from tavern._core.pytest.config import TestConfig
 from .client import MQTTClient
 from .request import MQTTRequest
 from .response import MQTTResponse
-
-logger: logging.Logger = logging.getLogger(__name__)
 
 session_type = MQTTClient
 
