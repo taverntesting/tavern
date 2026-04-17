@@ -1,0 +1,6 @@
+---
+name: test includes
+description: used for grpc-web example server
+
+variables:
+  grpc_web_base_url: "http://localhost:50053"

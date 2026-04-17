@@ -1,0 +1,27 @@
+[project]
+name = "tavern_grpc_web_example"
+version = "0.1.0"
+description = "Tavern gRPC-Web example project"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "tavern[grpc_web]",
+    "flask",
+]
+
+[project.entry-points.tavern_grpc_web]
+grpc_web = "tavern._plugins.grpc_web.tavernhook"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--tavern-extra-backends=grpc_web",
+    "-r", "xs",
+    "-vv",
+    "--strict-markers",
+    "-p", "no:logging",
+    "--tb=short",
+    "--color=yes",
+]
+
+[tool.uv]
+constraint-dependencies = ["ruamel-yaml<0.19.0"]

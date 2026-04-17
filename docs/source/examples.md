@@ -9,6 +9,7 @@ pyproject.toml files, project layout, and more.
 - MQTT examples: https://github.com/taverntesting/tavern/tree/master/example/mqtt
 - GraphQL examples: https://github.com/taverntesting/tavern/tree/master/example/graphql
 - gRPC examples: https://github.com/taverntesting/tavern/tree/master/example/grpc
+- gRPC-Web examples: https://github.com/taverntesting/tavern/tree/master/example/grpc_web
 
 For a deeper dive, there is also the
 Tavern [integration tests](https://github.com/taverntesting/tavern/tree/master/tests/integration).

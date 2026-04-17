@@ -1,0 +1,63 @@
+---
+test_name: Test grpc-web message echo
+
+includes:
+  - !include common.yaml
+
+grpc_web:
+  connect:
+    base_url: "{grpc_web_base_url}"
+    path_prefix: rpc
+    timeout: 3
+  proto:
+    module: helloworld_v1_precompiled_pb2
+
+stages:
+  - name: Echo text
+    grpc_web_request:
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_web_response:
+      status: "OK"
+      http_status_code: 200
+      body:
+        message: "Hello, John!"
+
+---
+test_name: Test grpc-web saving
+
+includes:
+  - !include common.yaml
+
+grpc_web:
+  connect:
+    base_url: "{grpc_web_base_url}"
+    path_prefix: rpc
+    timeout: 3
+  proto:
+    module: helloworld_v1_precompiled_pb2
+
+stages:
+  - name: Echo text and save
+    grpc_web_request:
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_web_response:
+      status: "OK"
+      body:
+        message: "Hello, John!"
+      save:
+        body:
+          received_message: message
+
+  - name: Echo text with saved message
+    grpc_web_request:
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: "{received_message}"
+    grpc_web_response:
+      status: "OK"
+      body:
+        message: "Hello, Hello, John!!"

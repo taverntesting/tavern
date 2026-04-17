@@ -1,0 +1,139 @@
+$schema: "http://json-schema.org/draft-07/schema#"
+
+title: grpc-web schema
+description: Schema for gRPC-Web connection and request/response blocks
+
+definitions:
+  verify_block:
+    type: object
+    additionalProperties: false
+    required:
+      - function
+    properties:
+      function:
+        type: string
+        description: Dotted path to an external verification function
+      extra_args:
+        type: array
+        description: Positional arguments passed to the verification function
+      extra_kwargs:
+        type: object
+        description: Keyword arguments passed to the verification function
+
+  grpc_web_request:
+    type: object
+    additionalProperties: false
+    required:
+      - service
+    properties:
+      service:
+        type: string
+        description: RPC method in package.Service/Method format
+
+      body:
+        type: object
+        description: Request payload encoded as protobuf fields
+
+      json:
+        type: object
+        description: Alias for body in JSON form
+
+      timeout:
+        type: number
+        description: Per-request timeout in seconds
+
+      headers:
+        type: object
+        description: Extra HTTP headers for this gRPC-Web call
+
+  grpc_web_response:
+    type: object
+    additionalProperties: false
+    properties:
+      status:
+        oneOf:
+          - type: string
+          - type: integer
+          - type: array
+            items:
+              oneOf:
+                - type: string
+                - type: integer
+        description: Expected gRPC status code or status name
+
+      details:
+        type: string
+        description: Expected grpc-message/details value
+
+      http_status_code:
+        type: integer
+        description: Expected HTTP status code
+
+      body:
+        type: object
+        description: Expected protobuf response body represented as JSON fields
+
+      save:
+        type: object
+        description: Save values from the response body to Tavern variables
+
+      verify_response_with:
+        oneOf:
+          - $ref: "#/definitions/verify_block"
+          - type: array
+            items:
+              $ref: "#/definitions/verify_block"
+        description: External response validation function(s)
+
+  stage:
+    properties:
+      grpc_web_request:
+        $ref: "#/definitions/grpc_web_request"
+
+      grpc_web_response:
+        $ref: "#/definitions/grpc_web_response"
+
+properties:
+  grpc_web:
+    type: object
+    additionalProperties: false
+    description: gRPC-Web backend configuration
+    properties:
+      connect:
+        type: object
+        additionalProperties: false
+        description: HTTP transport settings for gRPC-Web requests
+        properties:
+          base_url:
+            type: string
+            description: Base URL of the gRPC-Web endpoint
+
+          path_prefix:
+            type: string
+            description: Path prefix prepended before package.Service/Method
+
+          timeout:
+            type: number
+            description: Default request timeout in seconds
+
+          verify:
+            description: TLS verification setting (bool or CA bundle path)
+            oneOf:
+              - type: boolean
+              - type: string
+
+          headers:
+            type: object
+            description: Default HTTP headers sent with every request
+
+      proto:
+        type: object
+        additionalProperties: false
+        description: How protobuf types should be loaded
+        properties:
+          source:
+            description: Path to .proto file or directory to compile at runtime
+            type: string
+          module:
+            description: Python module path with generated protobuf definitions
+            type: string
