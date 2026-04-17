@@ -25,6 +25,10 @@ definitions:
     additionalProperties: false
     required:
       - service
+    not:
+      required:
+        - body
+        - json
     properties:
       service:
         type: string
@@ -102,6 +106,8 @@ properties:
       connect:
         type: object
         additionalProperties: false
+        required:
+          - base_url
         description: HTTP transport settings for gRPC-Web requests
         properties:
           base_url:
@@ -129,6 +135,11 @@ properties:
       proto:
         type: object
         additionalProperties: false
+        anyOf:
+          - required:
+              - source
+          - required:
+              - module
         description: How protobuf types should be loaded
         properties:
           source:

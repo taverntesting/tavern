@@ -202,7 +202,8 @@ markers = [
 target-version = "py311"
 extend-exclude = [
     "tests/unit/tavern_grpc/test_services_pb2*",
-    "example/grpc/helloworld_v1_precompiled_pb2*"
+    "example/grpc/helloworld_v1_precompiled_pb2*",
+    "example/grpc_web/helloworld_v1_precompiled_pb2*",
 ]
 
 [tool.ruff.lint]

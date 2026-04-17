@@ -62,6 +62,8 @@ class TestConfig:
             for module in ("grpc_status", "grpc_reflection", "grpc", "google.protobuf")
         ):
             available_backends.append("grpc")
+        if all(has_module(module) for module in ("requests", "google.protobuf")):
+            available_backends.append("grpc_web")
         if has_module("gql"):
             available_backends.append("graphql")
 

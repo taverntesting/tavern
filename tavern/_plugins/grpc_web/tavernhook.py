@@ -16,7 +16,12 @@ request_type = GRPCWebRequest
 request_block_name = "grpc_web_request"
 
 
-def get_expected_from_request(response_block: dict, test_block_config: TestConfig, session: GRPCWebSession):
+def get_expected_from_request(
+    response_block: dict,
+    test_block_config: TestConfig,
+    _session: GRPCWebSession
+):
+    # The hook signature requires session even though this backend does not need it to compute expected response.
     return format_keys(response_block, test_block_config.variables)
 
 

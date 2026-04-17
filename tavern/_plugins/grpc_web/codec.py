@@ -32,11 +32,8 @@ def decode_grpc_web_body(data: bytes) -> tuple[bytes | None, dict[str, str]]:
 
         chunk = data[offset: offset + length]
         offset += length
-        if flag == FLAG_DATA:
-            if message_bytes is None:
-                message_bytes = chunk
-
-        elif flag == FLAG_TRAILER:
+        # gRPC-Web uses the MSB of the frame flag: 1=trailers, 0=data
+        if flag & FLAG_TRAILER:
             for line in chunk.decode("utf-8", errors="replace").split("\r\n"):
                 if not line or ":" not in line:
                     continue
@@ -44,6 +41,8 @@ def decode_grpc_web_body(data: bytes) -> tuple[bytes | None, dict[str, str]]:
                 key, _, value = line.partition(":")
                 trailers[key.strip().lower()] = value.strip()
         else:
-            logger.debug("Skipping frame with flag 0x%02x", flag)
+            # Unary calls are expected here, so we keep the first data frame
+            if message_bytes is None:
+                message_bytes = chunk
 
     return message_bytes, trailers

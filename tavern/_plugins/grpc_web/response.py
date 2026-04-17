@@ -47,6 +47,11 @@ def _normalize_status_list(spec: StatusSpec | None) -> list[str]:
     items: Sequence[str | int] = spec if isinstance(spec, list) else [spec]
     out: list[str] = []
     for item in items:
+        # bool is an int subclass in Python, reject it explicitly to avoid interpreting YAML `true` as gRPC status code 1 (CANCELLED)
+        if isinstance(item, bool):
+            raise exceptions.GRPCServiceException(
+                f"Unknown gRPC status code: {item!r}"
+            )
         if isinstance(item, int):
             out.append(str(item))
         elif isinstance(item, str) and item.isdigit():
@@ -85,7 +90,8 @@ class GRPCWebResponse(BaseResponse):
             expected_block = {}
 
         if isinstance(expected_block, dict):
-            if expected_block.pop("$ext", None):
+            # Keep backward compatibility warning without mutating expected body
+            if expected_block.get("$ext"):
                 logger.warning(
                     "In %s block, $ext is deprecated; use verify_response_with",
                     blockname,
@@ -132,7 +138,7 @@ class GRPCWebResponse(BaseResponse):
                     r.grpc_message,
                 )
 
-        saved = self._handle_body(r, verify_status) or {}
+        saved = self._handle_body(r) or {}
 
         if self.errors:
             raise TestFailError(
@@ -142,7 +148,7 @@ class GRPCWebResponse(BaseResponse):
 
         return saved
 
-    def _handle_body(self, r: Any, verify_status: list[str]) -> dict[str, Any] | None:
+    def _handle_body(self, r: Any) -> dict[str, Any] | None:
         if r.grpc_status != "0":
             if "body" in self.expected:
                 self._adderr("body field is set, but grpc-status is not OK (0)")
@@ -157,6 +163,7 @@ class GRPCWebResponse(BaseResponse):
 
         json_result = json_format.MessageToDict(
             r.message,
+            # Keep output stable for Tavern matching/saving semantics
             always_print_fields_with_no_presence=True,
             preserving_proto_field_name=True,
         )

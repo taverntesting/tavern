@@ -9,6 +9,7 @@ from urllib.parse import unquote, urljoin
 import requests
 from google.protobuf import json_format
 from google.protobuf.json_format import ParseError
+from google.protobuf.message import DecodeError
 from google.protobuf.message_factory import GetMessageClass
 from google.protobuf.symbol_database import Default
 from tavern._core import exceptions
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 def _split_service_method(full: str) -> tuple[str, str]:
+    # gRPC-Web still targets canonical gRPC paths: package.Service/Method
     if "/" not in full:
         raise exceptions.GRPCRequestException(
             f"The service field must be in package.Service/Method format, got: {full!r}"
@@ -65,7 +67,11 @@ class GRPCWebSession:
                 "Please provide grpc_web.connect.base_url"
             )
 
-        self.path_prefix = (connect.get("path_prefix") or "rpc").strip("/")
+        path_prefix = connect.get("path_prefix")
+        if path_prefix is None:
+            path_prefix = "rpc"
+        # Empty string is valid and means "mount RPC methods at root"
+        self.path_prefix = str(path_prefix).strip("/")
         self.timeout = float(connect.get("timeout", 30))
         self.verify = connect.get("verify", True)
         raw_headers = dict(connect.get("headers") or {})
@@ -95,6 +101,7 @@ class GRPCWebSession:
                 ) from e
 
         self._session = requests.Session()
+        # gRPC-Web requests are regular HTTP POST calls with these required headers
         self._session.headers.update(
             {
                 "Content-Type": "application/grpc-web+proto",
@@ -103,8 +110,7 @@ class GRPCWebSession:
         )
         self._session.headers.update(self.default_headers)
 
-    def get_method_types(self, full_method_name: str):
-        service, method = full_method_name.split("/")
+    def get_method_types(self, service: str, method: str):
         pool = self.sym_db.pool
         grpc_service = pool.FindServiceByName(service)
         m = grpc_service.FindMethodByName(method)
@@ -120,14 +126,15 @@ class GRPCWebSession:
             timeout: float | None = None,
             headers: Mapping[str, str] | None = None,
     ) -> "GRPCWebResult":
-        input_type, output_type = self.get_method_types(service)
         svc, meth = _split_service_method(service)
+        input_type, output_type = self.get_method_types(svc, meth)
         path = f"{self.path_prefix}/{svc}/{meth}"
         url = urljoin(self.base_url + "/", path)
 
         req = input_type()
         if body is not None:
             try:
+                # ParseDict validates payload fields against the protobuf schema
                 json_format.ParseDict(dict(body), req)
             except ParseError as e:
                 raise exceptions.GRPCRequestException(
@@ -164,6 +171,7 @@ class GRPCWebSession:
 
         grpc_status, grpc_message = _grpc_status_from_http_response(http_resp)
         msg_bytes, body_trailers = decode_grpc_web_body(http_resp.content or b"")
+        # Some servers put grpc-status only in trailer frames (not HTTP headers)
         if grpc_status is None and "grpc-status" in body_trailers:
             grpc_status = body_trailers["grpc-status"]
             grpc_message = body_trailers.get("grpc-message")
@@ -188,7 +196,7 @@ class GRPCWebSession:
             parsed = output_type()
             try:
                 parsed.ParseFromString(msg_bytes)
-            except Exception as e:
+            except DecodeError as e:
                 logger.exception(
                     "Failed to parse response as %s", output_type.__name__
                 )

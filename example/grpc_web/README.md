@@ -21,3 +21,6 @@ docker compose up --build
 ```bash
 uv run pytest -v
 ```
+
+`example/grpc_web/pyproject.toml` already injects `--tavern-extra-backends=grpc_web` via `addopts`. 
+If you run these tests  outside this workspace config, pass that flag explicitly.

@@ -1,6 +1,4 @@
 from __future__ import annotations
-
-import copy
 import dataclasses
 import functools
 import logging
@@ -23,7 +21,8 @@ def _format_request_spec(rspec: dict, test_block_config: TestConfig) -> dict:
             raise exceptions.BadSchemaError(
                 "grpc_web_request can contain only one of: body or json"
             )
-        fspec["body"] = copy.deepcopy(fspec.pop("json"))
+        # Keep parity with HTTP-style tests where users may prefer `json`
+        fspec["body"] = fspec.pop("json")
 
     return fspec
 
@@ -64,7 +63,10 @@ class GRPCWebRequest(BaseRequest):
                 result.grpc_status,
             )
             return GRPCWebWrappedResult(result=result)
-        except ValueError as e:
+        except exceptions.TavernException:
+            # Preserve Tavern-native exceptions to keep original context/messages
+            raise
+        except Exception as e:
             logger.exception("Error while executing request")
             raise exceptions.GRPCRequestException from e
 

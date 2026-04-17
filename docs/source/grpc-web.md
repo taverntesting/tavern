@@ -116,8 +116,10 @@ stages:
 
 Supported keys:
 
-- `status`: Expected gRPC status (`"OK"`, `"NOT_FOUND"`, `0`, or list)
-- `details`: Expected `grpc-message` value
+- `status`: Accepts canonical names (for example `"OK"`) and numeric codes
+  (for example `0`); either form is valid.
+- `details`: Expected value for the `grpc-message` trailer/header (mapped from
+  gRPC error details)
 - `http_status_code`: Expected HTTP status code
 - `body`: Expected protobuf response body represented as JSON fields
 - `save`: Save values from response body for later stages

@@ -1,4 +1,5 @@
 import logging
+import os
 
 from flask import Flask, Response, request
 from google.protobuf.message import DecodeError
@@ -43,7 +44,7 @@ def grpc_web_handler(rpc_path: str) -> Response:
         return _grpc_web_response(status="12", details="method not implemented")
 
     message_bytes, _ = decode_grpc_web_body(request.get_data() or b"")
-    if not message_bytes:
+    if message_bytes is None:
         return _grpc_web_response(status="3", details="empty request body")
 
     req = helloworld_pb2.HelloRequest()
@@ -58,4 +59,4 @@ def grpc_web_handler(rpc_path: str) -> Response:
 
 if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
-    app.run(host="0.0.0.0", port=50053)
+    app.run(host=os.getenv("FLASK_HOST", "127.0.0.1"), port=50053)
