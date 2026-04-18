@@ -4,7 +4,7 @@ import threading
 from unittest.mock import Mock, patch
 
 import pytest
-pytest.importorskip("paho.mttq.client", reason="paho is not installed")
+pytest.importorskip("paho.mqtt.client", reason="paho is not installed")
 pytest.importorskip("hypothesis", reason="hypothesis is not installed")
 import hypothesis
 from hypothesis import given, settings
