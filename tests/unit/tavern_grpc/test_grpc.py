@@ -6,8 +6,9 @@ from collections.abc import Mapping
 from concurrent import futures
 from typing import Any
 
-import grpc
 import pytest
+pytest.importorskip("grpc", reason="grpc is not installed")
+import grpc
 from google.protobuf import json_format
 from google.protobuf.empty_pb2 import Empty
 from grpc_reflection.v1alpha import reflection

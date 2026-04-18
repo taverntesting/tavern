@@ -4,9 +4,15 @@ import warnings
 from collections.abc import Mapping
 from typing import Any
 
-import grpc
-import grpc_reflection
-import proto.message
+try:
+    import grpc
+    import grpc_reflection
+    import proto.message
+    from grpc_reflection.v1alpha import reflection_pb2, reflection_pb2_grpc
+    from grpc_status import rpc_status
+except ImportError: # pragma: no cover
+    grpc = grpc_reflection = proto = reflection_pb2 = reflection_pb2_grpc = rpc_status = None
+
 from google._upb._message import DescriptorPool
 from google.protobuf import (
     descriptor_pb2,
@@ -15,8 +21,7 @@ from google.protobuf import (
     symbol_database,
 )
 from google.protobuf.json_format import ParseError
-from grpc_reflection.v1alpha import reflection_pb2, reflection_pb2_grpc
-from grpc_status import rpc_status
+
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys
@@ -28,12 +33,12 @@ with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     warnings.warn("deprecated", DeprecationWarning)  # noqa: B028
 
-_ProtoMessageType = type[proto.message.Message]
+_ProtoMessageType = type[proto.message.Message] if proto else type[object]
 
 
 @dataclasses.dataclass
 class _ChannelVals:
-    channel: grpc.UnaryUnaryMultiCallable
+    channel: "grpc.UnaryUnaryMultiCallable"
     input_type: _ProtoMessageType
     output_type: _ProtoMessageType
 
@@ -98,7 +103,7 @@ class GRPCClient:
 
     def _register_file_descriptor(
         self,
-        service_proto: grpc_reflection.v1alpha.reflection_pb2.FileDescriptorResponse,
+        service_proto: "grpc_reflection.v1alpha.reflection_pb2.FileDescriptorResponse",
     ) -> None:
         for file_descriptor_proto in service_proto.file_descriptor_proto:
             descriptor = descriptor_pb2.FileDescriptorProto()
@@ -122,7 +127,7 @@ class GRPCClient:
             self._register_file_descriptor(response.file_descriptor_response)
 
     def _get_grpc_service(
-        self, channel: grpc.Channel, service: str, method: str
+        self, channel: "grpc.Channel", service: str, method: str
     ) -> _ChannelVals | None:
         full_service_name = f"{service}/{method}"
         try:
@@ -247,7 +252,7 @@ class GRPCClient:
         host: str | None = None,
         body: Mapping | None = None,
         timeout: int | None = None,
-    ) -> grpc.Future:
+    ) -> "grpc.Future":
         """Makes the request and returns a future with the response."""
         if host is None:
             if getattr(self, "default_host", None) is None:

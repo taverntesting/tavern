@@ -2,8 +2,11 @@ import logging
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, Optional, TypedDict, Union
 
-import grpc
-import proto.message
+try:
+    import grpc
+    import proto.message
+except ImportError:  # pragma: no cover
+    grpc = proto = None
 from google.protobuf import json_format
 
 from tavern._core import exceptions
@@ -130,7 +133,7 @@ class GRPCResponse(BaseResponse):
 
     def _handle_grpc_response(
         self,
-        grpc_response: grpc.Call | grpc.Future,
+        grpc_response: "grpc.Call | grpc.Future",
         response: "WrappedFuture",
         verify_status: list[str],
     ) -> Optional[dict[str, Any]]:

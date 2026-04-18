@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
+pytest.importorskip("gql", reason="gql is not installed")
 from gql import FileVar
 
 from tavern._core import exceptions

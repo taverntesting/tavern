@@ -1,8 +1,9 @@
 import time
 from unittest.mock import MagicMock, Mock, patch
 
-import paho.mqtt.client as paho
 import pytest
+pytest.importorskip("paho", reason="paho is not installed")
+import paho.mqtt.client as paho
 
 from tavern._core import exceptions
 from tavern._plugins.mqtt.client import MQTTClient, _handle_tls_args, _Subscription

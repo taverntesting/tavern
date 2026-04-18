@@ -157,19 +157,56 @@ def validate_grpc_status_is_valid_or_list_of_names(
 
 
 def to_grpc_status(value: str | int):
-    from grpc import StatusCode
+    try:
+        from grpc import StatusCode
+    except ImportError:  # pragma: no cover
+        StatusCode = None
 
     if isinstance(value, str):
         value = value.upper()
-        for status in StatusCode:
-            if status.name == value:
-                return status.name
-    elif isinstance(value, int):
-        for status in StatusCode:
-            if status.value[0] == value:
-                return status.name
 
-    return None
+    # If grpc is available → use it
+    if StatusCode is not None:
+        if isinstance(value, str):
+            try:
+                return StatusCode[value]
+            except KeyError:
+                return None
+        elif isinstance(value, int):
+            try:
+                return StatusCode(value)
+            except ValueError:
+                return None
+
+    # Fallback: basic validation when grpc not installed
+    # accept known grpc status names
+    VALID_STATUSES = {
+        "OK",
+        "CANCELLED",
+        "UNKNOWN",
+        "INVALID_ARGUMENT",
+        "DEADLINE_EXCEEDED",
+        "NOT_FOUND",
+        "ALREADY_EXISTS",
+        "PERMISSION_DENIED",
+        "RESOURCE_EXHAUSTED",
+        "FAILED_PRECONDITION",
+        "ABORTED",
+        "OUT_OF_RANGE",
+        "UNIMPLEMENTED",
+        "INTERNAL",
+        "UNAVAILABLE",
+        "DATA_LOSS",
+        "UNAUTHENTICATED",
+    }
+
+    VALID_STATUS_CODES = set(range(17))  # 0–16
+
+    if isinstance(value, str):
+        return True if value in VALID_STATUSES else None
+
+    if isinstance(value, int):
+        return True if value in VALID_STATUS_CODES else None
 
 
 def verify_oneof_id_name(value: Mapping, rule_obj, path) -> bool:

@@ -3,8 +3,13 @@ from contextlib import ExitStack
 from functools import cached_property
 
 import box
-import gql.transport.exceptions
-from gql import FileVar
+try:
+    import gql.transport.exceptions
+    from gql import FileVar
+except ImportError: # pragma: no cover
+    # dummy objects for the static analysis
+    FileVar = None
+
 
 from tavern._core import exceptions
 from tavern._core.dict_util import deep_dict_merge, format_keys

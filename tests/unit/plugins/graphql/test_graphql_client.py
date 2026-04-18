@@ -1,8 +1,9 @@
 import asyncio
 from unittest.mock import AsyncMock, Mock, patch
 
-import gql
 import pytest
+pytest.importorskip("gql", reason="gql is not installed")
+import gql
 from gql.transport.aiohttp import AIOHTTPTransport
 
 from tavern._plugins.graphql.client import ClientCacheKey, GraphQLClient

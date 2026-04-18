@@ -5,11 +5,16 @@ from collections.abc import AsyncGenerator
 from dataclasses import dataclass, field
 from typing import Any, Optional, Union
 
-from gql import Client, gql
-from gql.transport.aiohttp import AIOHTTPTransport
-from gql.transport.exceptions import TransportQueryError, TransportServerError
-from gql.transport.websockets import WebsocketsTransport
-from graphql import ExecutionResult
+try:
+    from gql import Client, gql
+    from gql.transport.aiohttp import AIOHTTPTransport
+    from gql.transport.exceptions import TransportQueryError, TransportServerError
+    from gql.transport.websockets import WebsocketsTransport
+    from graphql import ExecutionResult
+except ImportError: # pragma: no cover
+    # dummy objects for the static analysis
+    Client = gql = AIOHTTPTransport = TransportQueryError = TransportServerError = WebsocketsTransport = ExecutionResult = None
+
 
 from tavern._core.asyncio import ThreadedAsyncLoop
 from tavern._plugins.common.response import ResponseLike

@@ -8,8 +8,11 @@ from collections.abc import Mapping, MutableMapping
 from queue import Empty, Full, Queue
 from typing import Any
 
-import paho.mqtt.client as paho
-from paho.mqtt.client import MQTTMessageInfo
+try:
+    import paho.mqtt.client as paho
+    from paho.mqtt.client import MQTTMessageInfo
+except ImportError: # pragma: no cover
+    paho = MQTTMessageInfo = None
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys
@@ -291,7 +294,7 @@ class MQTTClient:
 
     @staticmethod
     def _on_message(
-        client, userdata: Mapping[str, Any], message: paho.MQTTMessage
+        client, userdata: Mapping[str, Any], message: "paho.MQTTMessage"
     ) -> None:
         """Add any messages received to the queue
 
@@ -352,7 +355,7 @@ class MQTTClient:
 
     def message_received(
         self, topic: str, timeout: float | int = 1
-    ) -> paho.MQTTMessage | None:
+    ) -> "paho.MQTTMessage | None":
         """Check that a message is in the message queue
 
         Args:

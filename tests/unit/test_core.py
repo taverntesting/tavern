@@ -6,8 +6,9 @@ import uuid
 from copy import deepcopy
 from unittest.mock import MagicMock, Mock, patch
 
-import paho.mqtt.client as paho
 import pytest
+pytest.importorskip("paho", reason="paho is not installed")
+import paho.mqtt.client as paho
 import requests
 
 from tavern._core import exceptions

@@ -1,5 +1,7 @@
 from unittest.mock import Mock
 
+import pytest
+pytest.importorskip("gql", reason="gql is not installed")
 import requests
 
 from tavern._plugins.graphql.client import GraphQLClient

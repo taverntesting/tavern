@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from unittest.mock import Mock, patch
 
 import pytest
+pytest.importorskip("faker", reason="faker is not installed")
 from faker import Faker
 
 from tavern._core import exceptions

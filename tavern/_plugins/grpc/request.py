@@ -3,8 +3,12 @@ import functools
 import json
 import logging
 
-import grpc
 from box import Box
+
+try:
+    import grpc
+except ImportError:  # pragma: no cover
+    grpc = None
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys, format_keys
@@ -35,7 +39,7 @@ def get_grpc_args(rspec: dict, test_block_config: TestConfig) -> dict:
 
 @dataclasses.dataclass
 class WrappedFuture:
-    response: grpc.Call | grpc.Future
+    response: "grpc.Call | grpc.Future"
     service_name: str
 
 

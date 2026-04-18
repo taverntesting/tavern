@@ -8,7 +8,10 @@ from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Optional, Union
 
-from paho.mqtt.client import MQTTMessage
+try:
+    from paho.mqtt.client import MQTTMessage
+except ImportError: # pragma: no cover
+    MQTTMessage = None
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive
@@ -27,7 +30,7 @@ _default_timeout = 1
 
 
 class MQTTResponse(BaseResponse):
-    response: MQTTMessage
+    response: "MQTTMessage"
 
     def __init__(
         self,
@@ -53,7 +56,7 @@ class MQTTResponse(BaseResponse):
         else:
             return "<Not run yet>"
 
-    def verify(self, response: MQTTMessage) -> Mapping:
+    def verify(self, response: "MQTTMessage") -> Mapping:
         """Ensure mqtt message has arrived
 
         Args:
@@ -243,7 +246,7 @@ class _ReturnedMessage:
     """An actual message returned from the API and it's matching 'expected' block."""
 
     expected: Mapping
-    msg: MQTTMessage
+    msg: "MQTTMessage"
 
 
 class _MessageVerifier:
@@ -262,7 +265,7 @@ class _MessageVerifier:
         # eg, if a message was received but it didn't match, message had payload, etc.
         self.warnings: list[str] = []
 
-    def is_valid(self, msg: MQTTMessage) -> bool:
+    def is_valid(self, msg: "MQTTMessage") -> bool:
         if time.time() > self.expires:
             return False
 

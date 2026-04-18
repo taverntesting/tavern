@@ -1,5 +1,7 @@
 import dataclasses
 
+import pytest
+pytest.importorskip("gql", reason="gql is not installed")
 from tavern._plugins.graphql import tavernhook
 from tavern._plugins.graphql.client import GraphQLClient
 
