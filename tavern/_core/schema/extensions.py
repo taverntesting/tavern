@@ -156,7 +156,16 @@ def validate_grpc_status_is_valid_or_list_of_names(
     return True
 
 
-def to_grpc_status(value: str | int):
+# Module-level constant — outside the function
+_GRPC_STATUS_NAMES = [
+    "OK", "CANCELLED", "UNKNOWN", "INVALID_ARGUMENT", "DEADLINE_EXCEEDED",
+    "NOT_FOUND", "ALREADY_EXISTS", "PERMISSION_DENIED", "RESOURCE_EXHAUSTED",
+    "FAILED_PRECONDITION", "ABORTED", "OUT_OF_RANGE", "UNIMPLEMENTED",
+    "INTERNAL", "UNAVAILABLE", "DATA_LOSS", "UNAUTHENTICATED",
+]  # order matters — index == status code integer value
+
+
+def to_grpc_status(value: str | int) -> str | None:
     try:
         from grpc import StatusCode
     except ImportError:  # pragma: no cover
@@ -165,49 +174,27 @@ def to_grpc_status(value: str | int):
     if isinstance(value, str):
         value = value.upper()
 
-    # If grpc is available → use it
     if StatusCode is not None:
+        # grpc installed — use it as the source of truth
         if isinstance(value, str):
-            try:
-                return StatusCode[value]
-            except KeyError:
-                return None
+            for status in StatusCode:
+                if status.name == value:
+                    return status.name
         elif isinstance(value, int):
-            try:
-                return StatusCode(value)
-            except ValueError:
-                return None
+            for status in StatusCode:
+                if status.value[0] == value:
+                    return status.name
+        return None
 
-    # Fallback: basic validation when grpc not installed
-    # accept known grpc status names
-    VALID_STATUSES = {
-        "OK",
-        "CANCELLED",
-        "UNKNOWN",
-        "INVALID_ARGUMENT",
-        "DEADLINE_EXCEEDED",
-        "NOT_FOUND",
-        "ALREADY_EXISTS",
-        "PERMISSION_DENIED",
-        "RESOURCE_EXHAUSTED",
-        "FAILED_PRECONDITION",
-        "ABORTED",
-        "OUT_OF_RANGE",
-        "UNIMPLEMENTED",
-        "INTERNAL",
-        "UNAVAILABLE",
-        "DATA_LOSS",
-        "UNAUTHENTICATED",
-    }
-
-    VALID_STATUS_CODES = set(range(17))  # 0–16
-
+    # grpc not installed — validate against known names
     if isinstance(value, str):
-        return True if value in VALID_STATUSES else None
-
+        return value if value in _GRPC_STATUS_NAMES else None
     if isinstance(value, int):
-        return True if value in VALID_STATUS_CODES else None
+        if 0 <= value < len(_GRPC_STATUS_NAMES):
+            return _GRPC_STATUS_NAMES[value]
+        return None
 
+    return None
 
 def verify_oneof_id_name(value: Mapping, rule_obj, path) -> bool:
     """Checks that if 'name' is not present, 'id' is"""
