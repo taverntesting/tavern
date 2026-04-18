@@ -5,9 +5,10 @@ from typing import TYPE_CHECKING, Any, Optional, TypedDict, Union
 try:
     import grpc
     import proto.message
+    from google.protobuf import json_format
 except ImportError:  # pragma: no cover
     grpc = proto = None
-from google.protobuf import json_format
+
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys
