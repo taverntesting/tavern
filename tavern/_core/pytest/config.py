@@ -27,14 +27,16 @@ class TestConfig:
         variables: variables available for use in the stage
         strict: Strictness for test/stage
         stages: Any extra stages imported from other config files
+        tavern_internal: Internal config that should be used only by tavern
+        tinctures: Global tinctures to apply to all test stages
     """
 
     variables: dict
     strict: StrictLevel
     follow_redirects: bool
     stages: list
-
     tavern_internal: TavernInternalConfig
+    tinctures: list | dict | None = None
 
     def copy(self) -> "TestConfig":
         """Returns a shallow copy of self"""

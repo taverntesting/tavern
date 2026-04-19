@@ -339,7 +339,7 @@ class _TestRunner:
     test_spec: Mapping
 
     def run_stage(self, idx: int, stage, *, is_final: bool = False) -> None:
-        tinctures = get_stage_tinctures(stage, self.test_spec)
+        tinctures = get_stage_tinctures(stage, self.test_spec, self.test_block_config)
 
         stage_config = self.test_block_config.with_strictness(
             self.default_global_strictness

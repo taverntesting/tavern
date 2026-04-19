@@ -111,3 +111,168 @@ class TestTinctures:
             t.end_tinctures(stage["response"], None)
 
             assert call_mock.call_count == len(tinctures)
+
+
+class TestGlobalTinctures:
+    """Tests for global tinctures feature (issue #969)"""
+
+    @pytest.mark.parametrize(
+        "global_tinctures",
+        (
+            {"function": "global_func"},
+            [{"function": "global_func"}],
+            [{"function": "global_func1"}, {"function": "global_func2"}],
+        ),
+    )
+    def test_global_tinctures_only(self, example, global_tinctures):
+        """Test that global tinctures are applied when no test/stage tinctures exist"""
+        stage = example["stages"][0]
+        global_cfg = {"tinctures": global_tinctures}
+
+        with patch(
+            "tavern._core.tincture.get_wrapped_response_function",
+            return_value=lambda _: None,
+        ) as call_mock:
+            t = get_stage_tinctures(stage, example, global_cfg)
+
+        t.start_tinctures(stage)
+        t.end_tinctures(stage, None)
+
+        expected_count = (
+            1 if isinstance(global_tinctures, dict) else len(global_tinctures)
+        )
+        assert call_mock.call_count == expected_count
+
+    def test_global_tinctures_combined_with_test_tinctures(self, example):
+        """Test that global tinctures are combined with test-level tinctures"""
+        stage = example["stages"][0]
+        example["tinctures"] = [{"function": "test_func"}]
+        global_cfg = {"tinctures": [{"function": "global_func"}]}
+
+        with patch(
+            "tavern._core.tincture.get_wrapped_response_function",
+            return_value=lambda _: None,
+        ) as call_mock:
+            t = get_stage_tinctures(stage, example, global_cfg)
+
+        t.start_tinctures(stage)
+        t.end_tinctures(stage, None)
+
+        # 1 test tincture + 1 global tincture = 2 total
+        assert call_mock.call_count == 2
+
+    def test_global_tinctures_combined_with_stage_tinctures(self, example):
+        """Test that global tinctures are combined with stage-level tinctures"""
+        stage = example["stages"][0]
+        stage["tinctures"] = [{"function": "stage_func"}]
+        global_cfg = {"tinctures": [{"function": "global_func"}]}
+
+        with patch(
+            "tavern._core.tincture.get_wrapped_response_function",
+            return_value=lambda _: None,
+        ) as call_mock:
+            t = get_stage_tinctures(stage, example, global_cfg)
+
+        t.start_tinctures(stage)
+        t.end_tinctures(stage, None)
+
+        # 1 stage tincture + 1 global tincture = 2 total
+        assert call_mock.call_count == 2
+
+    def test_global_tinctures_combined_with_all_levels(self, example):
+        """Test that global tinctures are combined with both test and stage tinctures"""
+        stage = example["stages"][0]
+        example["tinctures"] = [{"function": "test_func"}]
+        stage["tinctures"] = [{"function": "stage_func"}]
+        global_cfg = {"tinctures": [{"function": "global_func"}]}
+
+        with patch(
+            "tavern._core.tincture.get_wrapped_response_function",
+            return_value=lambda _: None,
+        ) as call_mock:
+            t = get_stage_tinctures(stage, example, global_cfg)
+
+        t.start_tinctures(stage)
+        t.end_tinctures(stage, None)
+
+        # 1 test + 1 stage + 1 global = 3 total
+        assert call_mock.call_count == 3
+
+    def test_global_tinctures_none(self, example):
+        """Test that passing None for global_cfg works (no global tinctures)"""
+        stage = example["stages"][0]
+        example["tinctures"] = [{"function": "test_func"}]
+
+        with patch(
+            "tavern._core.tincture.get_wrapped_response_function",
+            return_value=lambda _: None,
+        ) as call_mock:
+            t = get_stage_tinctures(stage, example, None)
+
+        t.start_tinctures(stage)
+        t.end_tinctures(stage, None)
+
+        assert call_mock.call_count == 1
+
+    def test_global_tinctures_empty_dict(self, example):
+        """Test that passing empty dict for global_cfg works (no global tinctures)"""
+        stage = example["stages"][0]
+        example["tinctures"] = [{"function": "test_func"}]
+        global_cfg = {}
+
+        with patch(
+            "tavern._core.tincture.get_wrapped_response_function",
+            return_value=lambda _: None,
+        ) as call_mock:
+            t = get_stage_tinctures(stage, example, global_cfg)
+
+        t.start_tinctures(stage)
+        t.end_tinctures(stage, None)
+
+        assert call_mock.call_count == 1
+
+    def test_global_tinctures_none_value(self, example):
+        """Test that global_cfg with tinctures: None works (no global tinctures)"""
+        stage = example["stages"][0]
+        example["tinctures"] = [{"function": "test_func"}]
+        global_cfg = {"tinctures": None}
+
+        with patch(
+            "tavern._core.tincture.get_wrapped_response_function",
+            return_value=lambda _: None,
+        ) as call_mock:
+            t = get_stage_tinctures(stage, example, global_cfg)
+
+        t.start_tinctures(stage)
+        t.end_tinctures(stage, None)
+
+        assert call_mock.call_count == 1
+
+    def test_tincture_execution_order(self, example):
+        """Test that tinctures are executed in order: test → stage → global"""
+        stage = example["stages"][0]
+        example["tinctures"] = [{"function": "test_func"}]
+        stage["tinctures"] = [{"function": "stage_func"}]
+        global_cfg = {"tinctures": [{"function": "global_func"}]}
+
+        call_order = []
+
+        def mock_wrapper(func_spec):
+            name = func_spec["function"]
+
+            def wrapper(stage):
+                call_order.append(name)
+
+            return wrapper
+
+        with patch(
+            "tavern._core.tincture.get_wrapped_response_function",
+            side_effect=mock_wrapper,
+        ):
+            t = get_stage_tinctures(stage, example, global_cfg)
+
+        t.start_tinctures(stage)
+        t.end_tinctures(stage, None)
+
+        # Verify order: test, stage, global
+        assert call_order == ["test_func", "stage_func", "global_func"]
