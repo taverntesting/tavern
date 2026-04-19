@@ -7,8 +7,11 @@ from copy import deepcopy
 from unittest.mock import MagicMock, Mock, patch
 
 import pytest
-pytest.importorskip("paho", reason="paho is not installed")
-import paho.mqtt.client as paho
+try:
+    import paho.mqtt.client as paho
+except ImportError:
+    paho = None
+
 import requests
 
 from tavern._core import exceptions
@@ -417,6 +420,7 @@ class TestFormatRequestVars:
         assert pmock.called
 
 
+@pytest.mark.skipif(paho is None, reason="paho is not installed")
 class TestFormatMQTTVarsJson:
     """Test that formatting request vars from mqtt works as well, with json payload"""
 
@@ -474,6 +478,7 @@ class TestFormatMQTTVarsJson:
         assert pmock.called
 
 
+@pytest.mark.skipif(paho is None, reason="paho is not installed")
 class TestFormatMQTTVarsPlain:
     """Test that formatting request vars from mqtt works as well, with normal payload"""
 
