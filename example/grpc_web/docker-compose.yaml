@@ -1,0 +1,10 @@
+---
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      FLASK_HOST: 0.0.0.0
+    ports:
+      - "50053:50053"

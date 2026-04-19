@@ -87,6 +87,8 @@ jobs:
             TOXCFG: tox-integration.ini
           - TOXENV: py3-grpc
             TOXCFG: tox-integration.ini
+          - TOXENV: py3-grpc_web
+            TOXCFG: tox-integration.ini
           - TOXENV: py3-graphql
             TOXCFG: tox-integration.ini
 

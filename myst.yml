@@ -3,8 +3,8 @@ version: 1
 project:
   id: 639d0ba7-28e9-427a-9d98-0446cee46405
   title: Tavern
-  description: Easily test REST, gRPC, GraphQL, and MQTT services
-  keywords: [pytest, rest, grpc, mqtt, graphql, testing]
+  description: Easily test REST, gRPC, gRPC-Web, GraphQL, and MQTT services
+  keywords: [pytest, rest, grpc, grpc-web, mqtt, graphql, testing]
   #  authors: [michaelboulton@gmail.com]
   github: https://github.com/taverntesting/tavern
   # To autogenerate a Table of Contents, run "myst init --write-toc"
@@ -27,6 +27,7 @@ project:
         - file: docs/source/http.md
         - file: docs/source/graphql.md
         - file: docs/source/grpc.md
+        - file: docs/source/grpc-web.md
         - file: docs/source/mqtt.md
     - file: docs/source/plugins.md
       children:

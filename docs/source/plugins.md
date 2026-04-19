@@ -6,6 +6,7 @@ requests are made. By default, backends are handled by:
 - HTTP: [requests](http://docs.python-requests.org/en/master/)
 - MQTT: [paho-mqtt](https://www.eclipse.org/paho/clients/python/docs/)
 - gRPC: [grpcio](https://grpc.github.io/grpc/python/)
+- gRPC-Web: built-in [`grpc_web` backend](./grpc-web.md)
 - GraphQL: [gql](https://github.com/graphql-python/gql)
 
 However, there are some situations where you might not want to run tests against

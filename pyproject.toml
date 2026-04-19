@@ -73,6 +73,10 @@ graphql = [
     "gql>=4.0.0",
 ]
 
+grpc_web = [
+    "protobuf>=5,<6",
+]
+
 [dependency-groups]
 dev = [
     "Faker",
@@ -133,6 +137,9 @@ grpc = "tavern._plugins.grpc.tavernhook"
 
 [project.entry-points.tavern_graphql]
 gql = "tavern._plugins.graphql.tavernhook"
+
+[project.entry-points.tavern_grpc_web]
+grpc_web = "tavern._plugins.grpc_web.tavernhook"
 
 [tool.mypy]
 python_version = "3.11"
@@ -195,7 +202,8 @@ markers = [
 target-version = "py311"
 extend-exclude = [
     "tests/unit/tavern_grpc/test_services_pb2*",
-    "example/grpc/helloworld_v1_precompiled_pb2*"
+    "example/grpc/helloworld_v1_precompiled_pb2*",
+    "example/grpc_web/helloworld_v1_precompiled_pb2*",
 ]
 
 [tool.ruff.lint]
@@ -272,6 +280,7 @@ constraint-dependencies = ["ruamel-yaml<0.19.0"]
 members = [
     "example/mqtt",
     "example/grpc",
+    "example/grpc_web",
     "example/http",
     "example/graphql",
 ]
@@ -279,5 +288,6 @@ members = [
 tavern = { workspace = true }
 tavern_mqtt_example = { workspace = true }
 tavern_grpc_example = { workspace = true }
+tavern_grpc_web_example = { workspace = true }
 tavern_http_example = { workspace = true }
 tavern_graphql_example = { workspace = true }

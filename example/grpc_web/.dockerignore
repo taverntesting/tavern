@@ -1,0 +1,6 @@
+*
+!tavern_grpc_web_example
+!tests
+!helloworld_v1_precompiled.proto
+!helloworld_v1_precompiled_pb2.py
+!pyproject.toml
