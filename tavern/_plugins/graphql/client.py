@@ -13,7 +13,12 @@ try:
     from graphql import ExecutionResult
 except ImportError: # pragma: no cover
     # dummy objects for the static analysis
-    Client = gql = AIOHTTPTransport = TransportQueryError = TransportServerError = WebsocketsTransport = ExecutionResult = None
+    Client = gql = AIOHTTPTransport = WebsocketsTransport = ExecutionResult = None
+    
+    class _MissingGqlError(Exception):
+        pass
+
+    TransportQueryError = TransportServerError = _MissingGqlError
 
 
 from tavern._core.asyncio import ThreadedAsyncLoop
