@@ -109,9 +109,13 @@ class Query:
 
         matching_users = []
         for name in first_column_values:
-            user = global_db_session.execute(
-                select(models.User).where(models.User.name == name)
-            ).scalars().first()
+            user = (
+                global_db_session.execute(
+                    select(models.User).where(models.User.name == name)
+                )
+                .scalars()
+                .first()
+            )
             if user:
                 matching_users.append(user)
 

@@ -100,7 +100,7 @@ class TestSkipStage:
 
         with patch("tavern._core.skip.logger.warning") as mock_warning:
             _run_test(stage, test_block_config, run_mock)
-        
+
         mock_warning.assert_called_once()
         assert "unable to parse as simpleeval" in mock_warning.call_args[0][0]
 

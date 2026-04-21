@@ -15,6 +15,7 @@ from tavern.response import BaseResponse
 
 class Session:
     """No-op session, but must implement the context manager protocol"""
+
     def __enter__(self):
         pass
 
@@ -24,6 +25,7 @@ class Session:
 
 class Request(BaseRequest):
     """Touches a file when the 'request' is made"""
+
     def __init__(
         self, session: Any, rspec: dict, test_block_config: TestConfig
     ) -> None:
@@ -56,7 +58,6 @@ class Response(BaseResponse):
         test_block_config: TestConfig,
     ) -> None:
         super().__init__(name, expected, test_block_config)
-
 
 
 session_type = Session
