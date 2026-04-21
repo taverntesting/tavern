@@ -1,5 +1,4 @@
 import dataclasses
-import logging
 import unittest.mock
 from collections.abc import Mapping
 from unittest.mock import patch
