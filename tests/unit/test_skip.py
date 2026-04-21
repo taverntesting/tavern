@@ -93,18 +93,16 @@ class TestSkipStage:
         with pytest.raises(exceptions.EvalError):
             _run_test(stage, test_block_config, run_mock)
 
-    @pytest.mark.xfail(
-        reason="'KeyError: <_pytest.stash.StashKey object at 0x7fa6ac4852c0' ?????"
-    )
-    def test_skip_invalid_simpleeval(self, stage, test_block_config, caplog, run_mock):
+    def test_skip_invalid_simpleeval(self, stage, test_block_config, run_mock):
         """Handle invalid simpleeval expressions gracefully"""
-
+ 
         stage["skip"] = "hello i am a test <<<"
-
-        with caplog.at_level(logging.WARNING):
+ 
+        with patch("tavern._core.skip.logger.warning") as mock_warning:
             _run_test(stage, test_block_config, run_mock)
-
-        assert "unable to parse as simpleeval" in caplog.text
+ 
+        mock_warning.assert_called_once()
+        assert "unable to parse as simpleeval" in mock_warning.call_args[0][0]
 
     def test_error_valid_simpleeval_missing_var(
         self, stage, test_block_config, run_mock
