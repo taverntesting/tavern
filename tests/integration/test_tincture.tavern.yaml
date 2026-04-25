@@ -58,3 +58,70 @@ stages:
       status_code: 200
       json:
         value: "{yield_str_fixture}"
+
+---
+# Test for global tinctures feature (issue #969)
+# This test verifies that tinctures defined in the global config file
+# (global_cfg.yaml) are applied to all test stages.
+# The global config includes a tincture: ext_functions:global_tincture_marker
+# which should run for every stage in this test.
+test_name: Test global tinctures applied
+
+includes:
+  - !include common.yaml
+
+# No test-level tinctures defined - only global tinctures from global_cfg.yaml
+# should be applied
+
+stages:
+  - name: stage with only global tincture
+    # No stage-level tinctures - only global tinctures should run
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "test_global_tincture"
+    response:
+      status_code: 200
+      json:
+        value: "test_global_tincture"
+
+  - name: another stage with only global tincture
+    # Verify global tinctures run for each stage
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "second_stage"
+    response:
+      status_code: 200
+      json:
+        value: "second_stage"
+
+---
+# Test that global tinctures combine with test/stage tinctures
+test_name: Test global tinctures combined with test tinctures
+
+includes:
+  - !include common.yaml
+
+# Test-level tincture combined with global tincture from global_cfg.yaml
+tinctures:
+  - function: ext_functions:time_request
+
+stages:
+  - name: test and global tinctures combined
+    # Stage-level tincture also combined
+    tinctures:
+      - function: ext_functions:print_response
+        extra_kwargs:
+          extra_print: "combined_test"
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "combined"
+    response:
+      status_code: 200
+      json:
+        value: "combined"

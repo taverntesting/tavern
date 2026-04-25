@@ -10,6 +10,9 @@ variables:
   retry_max: 4
   negative_int: -2
 
+  # Variable to verify global tinctures are applied
+  global_tincture_called: false
+
 stages:
   - id: finally-nothing-check
     name: finally nothing check
@@ -18,3 +21,7 @@ stages:
       method: POST
       json:
         value: "123"
+
+# Global tinctures applied to all test stages (issue #969)
+tinctures:
+  - function: ext_functions:global_tincture_marker

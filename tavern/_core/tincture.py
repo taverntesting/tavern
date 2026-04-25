@@ -87,7 +87,6 @@ def get_stage_tinctures(
     add_tinctures_from_block(stage.get("tinctures"), "stage")
 
     if global_cfg is not None:
-        # Handle both TestConfig objects and Mapping types
         add_tinctures_from_block(global_cfg.tinctures, "global")
 
     logger.debug("%d tinctures for stage %s", len(stage_tinctures), stage["name"])

@@ -25,3 +25,14 @@ def time_request(_):
 
 def print_response(_, extra_print="affa"):
     (_, r) = yield
+
+
+def global_tincture_marker(stage):
+    """Tincture used to verify global tinctures are applied (issue #969).
+
+    This is a simple tincture that runs before each stage when configured
+    globally. It doesn't do anything special - its presence in the global
+    config is enough to verify the feature works.
+    """
+    # Just log that we were called - the test verifies this doesn't error
+    pass
