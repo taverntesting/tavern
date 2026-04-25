@@ -37,6 +37,9 @@ class Tinctures:
         Args:
             expected: 'expected' from initial test - type varies depending on backend
             response: The response from 'run' for the stage - type varies depending on backend
+
+        Raises:
+            exceptions.TinctureError: If a tincture yields more than once
         """
         if self.needs_response is None:
             raise RuntimeError(
@@ -49,7 +52,7 @@ class Tinctures:
             except StopIteration:
                 pass
             else:
-                raise RuntimeError("Tincture had more than one yield")
+                raise exceptions.TinctureError("Tincture had more than one yield")
 
 
 def get_stage_tinctures(
@@ -63,6 +66,9 @@ def get_stage_tinctures(
         stage: Stage
         test_spec: Whole test spec
         global_cfg: Global configuration (optional)
+
+    Returns:
+        Tinctures: List of tinctures for the stage
     """
     stage_tinctures = []
 
