@@ -45,7 +45,15 @@ def _check_and_format_values(to_format: str, box_vars: Box) -> str:
         Formatted string with variables replaced by their values
     """
     formatter = string.Formatter()
-    would_format = formatter.parse(to_format)
+    try:
+        would_format = list(formatter.parse(to_format))
+    except ValueError:
+        logger.warning(
+            "Could not parse format string '%s' - string contains invalid format syntax "
+            "(e.g. unmatched '{' or '}'). Returning string unformatted.",
+            to_format,
+        )
+        return to_format
 
     for _, field_name, _, _ in would_format:
         if field_name is None:
