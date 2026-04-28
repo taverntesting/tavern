@@ -393,10 +393,12 @@ formats the `file_body` key can be used:
     request:
       url: "{host}/data_blob"
       method: POST
-      file_body: "/path/to/blobfile
+      file_body: "/path/to/blobfile"
     response:
       status_code: 200
 ```
+
+The path can be absolute or relative to the directory of the test file.
 
 Like the `files` key, this is mutually exclusive with the `json` key.
 
