@@ -100,7 +100,15 @@ def _attempt_find_include(to_format: str, box_vars: box.Box) -> str | None:
         The retrieved value after applying any conversion, or None if not found
     """
     formatter = string.Formatter()
-    would_format = list(formatter.parse(to_format))
+    try:
+        would_format = list(formatter.parse(to_format))
+    except ValueError:
+        logger.warning(
+            "Could not parse format string '%s' - string contains invalid format syntax "
+            "(e.g. unmatched '{' or '}'). Returning string unformatted.",
+            to_format,
+        )
+        return None
 
     yaml_tag = ForceIncludeToken.yaml_tag
 
