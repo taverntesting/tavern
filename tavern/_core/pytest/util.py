@@ -200,6 +200,7 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
             backends=_load_global_backends(pytest_config),
         ),
         stages=global_cfg_dict.get("stages", []),
+    tinctures=global_cfg_dict.get("tinctures", []),
     )
 
     return global_cfg
