@@ -257,8 +257,8 @@ This can be used as so:
 ```
 
 By default, using the `$ext` key will replace anything already present in that block.
-Input from external functions can be merged into a request instead by specifying the
-`tavern-merge-ext-function-values` option in your pytest.ini or on the command line:
+Input from external functions are always merged into a request by default.
+merged into the request by default. The `--tavern-merge-ext-function-values` flag has been removed - this is now the default behaviour:
 
 ```python
 # ext_functions.py
