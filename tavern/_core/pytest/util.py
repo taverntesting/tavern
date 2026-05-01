@@ -159,6 +159,34 @@ def load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     return _load_global_cfg(pytest_config).with_new_variables()
 
 
+def _normalize_tinctures(value: object) -> list:
+    """Normalize tinctures config value to a list of dicts.
+
+    Args:
+        value: Raw value from global config (None, dict, or list of dicts).
+
+    Returns:
+        A list of tincture dicts.
+
+    Raises:
+        TypeError: If value is not None, a dict, or a list of dicts.
+    """
+    if value is None:
+        return []
+    if isinstance(value, dict):
+        return [value]
+    if isinstance(value, list):
+        for item in value:
+            if not isinstance(item, dict):
+                raise TypeError(
+                    f"Each tincture must be a mapping/dict, got {type(item).__name__!r}"
+                )
+        return value
+    raise TypeError(
+        f"tinctures must be a list of mappings, got {type(value).__name__!r}"
+    )
+
+
 @lru_cache
 def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
     """Load globally included config files from cmdline/cfg file arguments
