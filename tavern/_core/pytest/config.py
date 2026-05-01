@@ -33,6 +33,7 @@ class TestConfig:
     strict: StrictLevel
     follow_redirects: bool
     stages: list
+    tinctures: list = dataclasses.field(default_factory=list)
 
     tavern_internal: TavernInternalConfig
 
