@@ -38,8 +38,7 @@ def eval_skip(content: str, test_block_config: TestConfig) -> bool:
     except simpleeval.NameNotDefined as e:
         raise exceptions.EvalError("Undefined variable used in program") from e
     except SyntaxError as e:
-        logger.warning("unable to parse as simpleeval: %s", e)
-        return False
+        raise exceptions.EvalError("Error evaluating program") from e
     except TypeError as e:
         raise exceptions.EvalError("Error running program") from e
 
