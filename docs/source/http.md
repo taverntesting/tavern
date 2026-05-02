@@ -233,6 +233,63 @@ stages:
         content-type: application/json
 ```
 
+### Custom auth via `$ext`
+
+For authentication schemes beyond HTTP Basic Auth (such as HTTP Digest Auth or
+custom token-based auth), use the `$ext` key with the `auth` field. The
+`$ext` function should return an instance of
+[`requests.auth.AuthBase`](https://docs.python-requests.org/en/latest/api/#requests.auth.AuthBase)
+(or any callable that accepts a `PreparedRequest` and returns it).
+
+This is useful for HTTP Digest Auth, OAuth, custom header-based auth, or any
+custom authentication flow.
+
+```yaml
+---
+
+test_name: Test digest auth via external function
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send with digest auth
+    request:
+      url: "{host}/digest-endpoint"
+      method: GET
+      auth:
+        $ext:
+          function: ext_functions:get_digest_auth
+    response:
+      status_code: 200
+```
+
+Your external module would return an `AuthBase` instance:
+
+```python
+from requests.auth import HTTPDigestAuth
+
+def get_digest_auth():
+    return HTTPDigestAuth("myuser", "mypassword")
+```
+
+You can also use custom auth classes for non-standard schemes:
+
+```python
+from requests.auth import AuthBase
+
+class TokenAuth(AuthBase):
+    def __init__(self, token):
+        self.token = token
+
+    def __call__(self, r):
+        r.headers["Authorization"] = f"Token {self.token}"
+        return r
+
+def get_token_auth():
+    return TokenAuth("abc123")
+```
+
 ### Custom auth header
 
 If you're using a form of authorisation not covered by the above two examples to
