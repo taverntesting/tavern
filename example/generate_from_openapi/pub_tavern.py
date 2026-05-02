@@ -70,7 +70,7 @@ def display_help():
     sys.stdout.write(
         "eg: pub_tavern.py https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-simple.json\n"
     )
-    sys.exit(0)
+    sys.exit(2)
 
 
 if __name__ == "__main__":

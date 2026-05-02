@@ -1,4 +1,4 @@
-# componenets/stage_auth.yaml
+# components/stage_auth.yaml
 ---
 name: Authentication stage
 description: Reusable test stage for authentication
