@@ -290,9 +290,12 @@ def get_token_auth():
     return TokenAuth("abc123")
 ```
 
+See [the requests documentation](https://requests.readthedocs.io/en/latest/user/advanced/#custom-authentication) for
+how this works.
+
 ### Custom auth header
 
-If you're using a form of authorisation not covered by the above two examples to
+If you're using a form of authorisation not covered by the above examples to
 authorise against your test server (for example, a JWT-based system), specify a
 custom `Authorization` header. If you are using a JWT, you can use the built in
 `validate_jwt` external function as defined above to check that the claims are
