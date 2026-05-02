@@ -202,10 +202,7 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
     add_request_args(RestRequest.optional_in_file, True)
 
     if "auth" in fspec:
-        if isinstance(fspec["auth"], dict) and "$ext" in fspec["auth"]:
-            # $ext will be processed by update_from_ext
-            request_args["auth"] = fspec["auth"]
-        else:
+        if not isinstance(fspec["auth"], dict):
             request_args["auth"] = tuple(fspec["auth"])
 
     if "cert" in fspec:
