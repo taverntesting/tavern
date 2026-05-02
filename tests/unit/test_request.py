@@ -515,3 +515,28 @@ class TestGetFiles:
             }
 
         assert parsed_into == parsed
+
+
+class TestPreparedRequest:
+    def test_headers_passed_to_session_are_strings(self, req, includes):
+        """All header keys and values should be strings when passed to session.request"""
+
+        req["headers"] = {"Content-Type": "application/json", "X-Int-Val": 123}
+
+        mock_session = Mock(spec=requests.Session, cookies=RequestsCookieJar())
+
+        rr = RestRequest(mock_session, req, includes)
+
+        # Inject a non-string key to verify key stringification as well
+        rr._request_args["headers"][100] = "non-string-key-value"
+
+        rr.run()
+
+        call_kwargs = mock_session.request.call_args.kwargs
+        headers = call_kwargs["headers"]
+
+        for k, v in headers.items():
+            assert isinstance(k, str), f"Header key {k!r} is not a string"
+            assert isinstance(v, str), (
+                f"Header value {v!r} for key {k!r} is not a string"
+            )
