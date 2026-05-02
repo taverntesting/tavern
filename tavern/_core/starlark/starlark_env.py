@@ -340,7 +340,7 @@ class StarlarkPipelineRunner:
                 fail("No match found")
         """
         for stage_id, stage in self._stage_registry.get_all_stages().items():
-            module[stage_id] = stage
+            module[stage_id] = to_starlark(stage)
 
         @_wrap_callable
         def run_stage_binding(
