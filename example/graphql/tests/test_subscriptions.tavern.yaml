@@ -74,7 +74,6 @@ stages:
             email: "alice.j@example.com"
 
 ---
-
 test_name: test user subscription update on authenticated endpoint
 
 includes:
@@ -199,7 +198,7 @@ includes:
   - !include graphql_config.yaml
 
 marks:
-  - skip  # FIXME: Not sure why this is failin but the second subscription seems to be delayed so never received any updated
+  - skip # FIXME: Not sure why this is failin but the second subscription seems to be delayed so never received any updated
 
 stages:
   - name: Create first user
@@ -357,7 +356,6 @@ stages:
         }
       variables:
         id: "invalid_id_format"
-
 
 ---
 test_name: test invalid subscription scenarios - empty ID
