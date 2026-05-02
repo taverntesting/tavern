@@ -253,6 +253,9 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                 RuntimeWarning,
             )
 
+    if not request_args["headers"]:
+        request_args.pop("headers")
+
     return request_args
 
 
