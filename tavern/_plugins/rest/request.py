@@ -202,7 +202,11 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
     add_request_args(RestRequest.optional_in_file, True)
 
     if "auth" in fspec:
-        request_args["auth"] = tuple(fspec["auth"])
+        if isinstance(fspec["auth"], dict) and "$ext" in fspec["auth"]:
+            # $ext will be processed by update_from_ext
+            request_args["auth"] = fspec["auth"]
+        else:
+            request_args["auth"] = tuple(fspec["auth"])
 
     if "cert" in fspec:
         if isinstance(fspec["cert"], list):
@@ -385,10 +389,7 @@ class RestRequest(BaseRequest):
         "files",
         "timeout",
         "cert",
-        # Ideally this would just be passed through but requests seems to error
-        # if we pass a list instead of a tuple, so we have to manually convert
-        # it further down
-        # "auth"
+        "auth",
     ]
 
     _request_args: Box

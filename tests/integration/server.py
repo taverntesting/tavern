@@ -391,6 +391,49 @@ def expect_basic_auth():
         return jsonify({"error": "unrecognised auth type"}), 403
 
 
+@app.route("/authtest/digest", methods=["GET"])
+def expect_digest_auth():
+    auth = request.authorization
+
+    if auth is None:
+        return jsonify({"status": "No authorisation"}), 403
+
+    if auth.type == "digest":
+        if auth.username == "fakeuser" and auth.password == "fakepass":
+            return (
+                jsonify(
+                    {
+                        "auth_type": auth.type,
+                        "auth_user": auth.username,
+                        "auth_pass": auth.password,
+                    }
+                ),
+                200,
+            )
+        else:
+            return jsonify({"error": "Wrong username/password"}), 401
+    else:
+        return jsonify({"error": "unrecognised auth type"}), 403
+
+
+@app.route("/authtest/custom_header", methods=["GET"])
+def expect_custom_header_auth():
+    pizza_header = request.headers.get("X-Pizza")
+
+    if pizza_header is None:
+        return jsonify({"error": "No X-Pizza header"}), 403
+
+    return (
+        jsonify(
+            {
+                "auth_type": "custom_header",
+                "pizza_user": pizza_header,
+            }
+        ),
+        200,
+    )
+
+
 @app.route("/jmes/return_empty_paged", methods=["GET"])
 def return_empty_paged():
     return jsonify({"pages": 0, "data": []}), 200
