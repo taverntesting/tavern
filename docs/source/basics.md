@@ -204,14 +204,16 @@ request:
     graphql_query: "{%raw%}{{ user(id: 123) {{ first_name }} }}{%endraw%}"
 ```
 
-**NOTE**: This is a toy example, if you want to use GraphQL with tavern then 
+**NOTE**: This is a toy example, if you want to use GraphQL with tavern then
 head over to the [GraphQL docs](./graphql.md).
 
 **NOTE**: If a string value contains an unmatched `{` that is not a valid
-format placeholder (for example, an MQTT payload value like `{Explanation 1`),
-Tavern will log a warning and pass the string through unformatted rather than
-raising an error. To avoid unexpected behaviour, always escape literal curly
-braces as described above.
+format placeholder, Tavern will log a warning and pass the string through
+unformatted rather than raising an error. For example, an MQTT payload value
+like `{Explanation 1` would be passed through unchanged (logged as a warning),
+whereas `{{Explanation 1}}` would be formatted to the literal string
+`{Explanation 1}`. To avoid unexpected behaviour, always escape literal curly
+braces as `{{` and `}}` as described above.
 
 Since `0.5.0`, Tavern also has some 'magic' variables available in the `tavern`
 key for formatting.
