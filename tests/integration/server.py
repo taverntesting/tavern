@@ -14,10 +14,20 @@ from urllib.parse import unquote_plus, urlencode
 import jwt
 from box import Box
 from flask import Flask, Response, jsonify, make_response, redirect, request, session
+from flask_httpauth import HTTPDigestAuth
 from itsdangerous import URLSafeTimedSerializer
 
 app = Flask(__name__)
 app.config.update(SECRET_KEY="secret")
+
+digest_auth = HTTPDigestAuth()
+
+
+@digest_auth.get_password
+def get_digest_password(username):
+    if username == "fakeuser":
+        return "fakepass"
+    return None
 
 
 @app.route("/token", methods=["GET"])
@@ -392,28 +402,18 @@ def expect_basic_auth():
 
 
 @app.route("/authtest/digest", methods=["GET"])
+@digest_auth.login_required
 def expect_digest_auth():
-    auth = request.authorization
-
-    if auth is None:
-        return jsonify({"status": "No authorisation"}), 403
-
-    if auth.type == "digest":
-        if auth.username == "fakeuser" and auth.password == "fakepass":
-            return (
-                jsonify(
-                    {
-                        "auth_type": auth.type,
-                        "auth_user": auth.username,
-                        "auth_pass": auth.password,
-                    }
-                ),
-                200,
-            )
-        else:
-            return jsonify({"error": "Wrong username/password"}), 401
-    else:
-        return jsonify({"error": "unrecognised auth type"}), 403
+    return (
+        jsonify(
+            {
+                "auth_type": "digest",
+                "auth_user": digest_auth.current_user(),
+                "auth_pass": "fakepass",
+            }
+        ),
+        200,
+    )
 
 
 @app.route("/authtest/custom_header", methods=["GET"])

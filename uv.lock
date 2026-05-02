@@ -733,6 +733,18 @@ wheels = [
 ]
 
 [[package]]
+name = "flask-httpauth"
+version = "4.8.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "flask" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/ec/f4/6957215e827021eeb7d8de9f59b1864d73933b04851e59272708cb6e5d2b/flask_httpauth-4.8.1.tar.gz", hash = "sha256:88499b22f1353893743c3cd68f2ca561c4ad9ef75cd6bcc7f621161cd0e80744", size = 38993, upload-time = "2026-03-28T19:45:24.254Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/72/da/624c87bf6c13107ceab8ee23815d9468e47d89c7480c1dc9af39b08eb290/flask_httpauth-4.8.1-py3-none-any.whl", hash = "sha256:0080393d70e12327781f7509115175ec5e47209816489a620d4fd39e20cea2e8", size = 9651, upload-time = "2026-03-28T19:45:23.155Z" },
+]
+
+[[package]]
 name = "flit"
 version = "3.12.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2616,6 +2628,7 @@ dev = [
     { name = "exceptiongroup" },
     { name = "faker" },
     { name = "flask" },
+    { name = "flask-httpauth" },
     { name = "flit" },
     { name = "fluent-logger" },
     { name = "grpc-interceptor" },
@@ -2677,6 +2690,7 @@ dev = [
     { name = "exceptiongroup" },
     { name = "faker" },
     { name = "flask", specifier = ">=3,<4" },
+    { name = "flask-httpauth", specifier = ">=4.8.1,<6" },
     { name = "flit", specifier = ">=3.2,<4" },
     { name = "fluent-logger" },
     { name = "grpc-interceptor" },
