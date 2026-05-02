@@ -204,3 +204,56 @@ test_name: Test including a completely invalid script
 _xfail: verify
 
 control_flow: !include badsyntax.star
+
+---
+test_name: Test for loop with entities - create and delete multiple
+
+stages:
+  - name: Create entities stage
+    id: create_entities
+    request:
+      url: "{global_host}/entities"
+      method: POST
+      json:
+        name: "entity-{index}"
+    response:
+      status_code: 201
+      json:
+        id: !anyint
+
+  - name: Delete entity by id
+    id: delete_entity
+    request:
+      url: "{global_host}/entities/{entity_id}"
+      method: DELETE
+    response:
+      status_code: 204
+
+  - name: Verify entity deleted
+    id: verify_deleted
+    request:
+      url: "{global_host}/entities/{entity_id}"
+      method: GET
+    response:
+      status_code: 404
+
+control_flow: |
+  load("@tavern_helpers.star", "run_stage")
+
+  # Create 3 entities using a for loop
+  entity_ids = []
+  for i in range(3):
+      resp = run_stage("create_entities", extra_vars={"index": str(i)})
+      # Extract the id from the response
+      entity_ids.append(resp.body["id"])
+      log("Created entity with id: " + str(resp.body["id"]))
+
+  # Delete all entities using a for loop
+  for entity_id in entity_ids:
+      resp = run_stage("delete_entity", extra_vars={"entity_id": str(entity_id)})
+      log("Deleted entity with id: " + str(entity_id))
+
+  # Verify all entities are deleted using a for loop
+  for entity_id in entity_ids:
+      resp = run_stage("verify_deleted", extra_vars={"entity_id": str(entity_id)})
+      log("Verified entity " + str(entity_id) + " is deleted")

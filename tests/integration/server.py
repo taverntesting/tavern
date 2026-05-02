@@ -1,10 +1,12 @@
 import base64
+import contextlib
 import gzip
 import itertools
 import json
 import math
 import mimetypes
 import os
+import sqlite3
 import time
 import uuid
 from datetime import datetime, timedelta
@@ -13,11 +15,34 @@ from urllib.parse import unquote_plus, urlencode
 
 import jwt
 from box import Box
-from flask import Flask, Response, jsonify, make_response, redirect, request, session
+from flask import Flask, Response, g, jsonify, make_response, redirect, request, session
 from itsdangerous import URLSafeTimedSerializer
 
 app = Flask(__name__)
 app.config.update(SECRET_KEY="secret")
+
+DATABASE = "/tmp/tavern_test.db"
+
+
+def get_db():
+    db = getattr(g, "_database", None)
+    if db is None:
+        db = g._database = sqlite3.connect(DATABASE)
+
+        with db:
+            with contextlib.suppress(Exception):
+                db.execute(
+                    "CREATE TABLE entities (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL)"
+                )
+
+    return db
+
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, "_database", None)
+    if db is not None:
+        db.close()
 
 
 @app.route("/token", methods=["GET"])
@@ -583,3 +608,36 @@ def verify_extracted():
         return jsonify({"errors": errors}), 400
 
     return jsonify({"status": "verified"}), 200
+
+
+@app.route("/entities", methods=["POST"])
+def create_entity():
+    body = request.get_json()
+    name = body.get("name")
+
+    db = get_db()
+    cursor = db.execute("INSERT INTO entities (name) VALUES (?)", (name,))
+    db.commit()
+
+    return jsonify({"id": cursor.lastrowid}), 201
+
+
+@app.route("/entities/<int:entity_id>", methods=["DELETE"])
+def delete_entity(entity_id):
+    db = get_db()
+    db.execute("DELETE FROM entities WHERE id = ?", (entity_id,))
+    db.commit()
+
+    return "", 204
+
+
+@app.route("/entities/<int:entity_id>", methods=["GET"])
+def get_entity(entity_id):
+    db = get_db()
+    cursor = db.execute("SELECT id FROM entities WHERE id = ?", (entity_id,))
+    row = cursor.fetchone()
+
+    if row is None:
+        return "", 404
+
+    return "", 200
