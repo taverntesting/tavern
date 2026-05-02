@@ -70,7 +70,15 @@ def _check_and_format_values(to_format: str, box_vars: Box) -> str:
                     type(would_replace),
                 )
 
-    return to_format.format(**box_vars)
+    try:
+        return to_format.format(**box_vars)
+    except ValueError as e:
+        logger.warning(
+            "Failed to format string '%s': %s - passing through unformatted",
+            to_format,
+            e,
+        )
+        return to_format
 
 
 def _attempt_find_include(to_format: str, box_vars: box.Box) -> str | None:
