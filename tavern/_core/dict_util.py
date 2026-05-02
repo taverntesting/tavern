@@ -26,30 +26,6 @@ from .strict_util import StrictSetting, StrictSettingKinds, extract_strict_setti
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-def _safe_parse_format_string(
-    formatter: string.Formatter, to_format: str
-) -> list | None:
-    """Safely parse a format string, returning None if it contains invalid syntax.
-
-    Args:
-        formatter: The string.Formatter instance to use
-        to_format: The format string to parse
-
-    Returns:
-        A list of parse results, or None if the string has invalid syntax
-        (e.g. unmatched '{' or '}')
-    """
-    try:
-        return list(formatter.parse(to_format))
-    except ValueError:
-        logger.warning(
-            "Could not parse format string '%s' - string contains invalid format syntax "
-            "(e.g. unmatched '{' or '}'). Returning string unformatted.",
-            to_format,
-        )
-        return None
-
-
 def _check_and_format_values(to_format: str, box_vars: Box) -> str:
     """Checks and formats a string with the given variables.
 
@@ -69,9 +45,13 @@ def _check_and_format_values(to_format: str, box_vars: Box) -> str:
         Formatted string with variables replaced by their values
     """
     formatter = string.Formatter()
-    would_format = _safe_parse_format_string(formatter, to_format)
-    if would_format is None:
-        return to_format
+    try:
+        would_format = list(formatter.parse(to_format))
+    except ValueError as e:
+        raise exceptions.BadSchemaError(
+            f"Format string '{to_format}' contains invalid syntax (unmatched '{{' or '}}')."
+            " Escape literal braces as '{{{{' and '}}}}' if they are not format placeholders."
+        ) from e
 
     for _, field_name, _, _ in would_format:
         if field_name is None:
@@ -118,9 +98,13 @@ def _attempt_find_include(to_format: str, box_vars: box.Box) -> str | None:
         The retrieved value after applying any conversion, or None if not found
     """
     formatter = string.Formatter()
-    would_format = _safe_parse_format_string(formatter, to_format)
-    if would_format is None:
-        return None
+    try:
+        would_format = list(formatter.parse(to_format))
+    except ValueError as e:
+        raise exceptions.BadSchemaError(
+            f"Format string '{to_format}' contains invalid syntax (unmatched '{{' or '}}')."
+            " Escape literal braces as '{{{{' and '}}}}' if they are not format placeholders."
+        ) from e
 
     yaml_tag = ForceIncludeToken.yaml_tag
 
