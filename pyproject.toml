@@ -109,6 +109,7 @@ dev = [
     "pytest-asyncio>=1.3.0",
     "hypothesis>=6,<7",
     "pydantic",
+    "flask-httpauth>=4.8.1,<6",
 ]
 
 # When this is fixed, enable this https://github.com/jupyter-book/mystmd/issues/2082
@@ -171,7 +172,6 @@ addopts = [
     "-r", "xs",
     "-vv",
     "--strict-markers",
-    "-p", "no:logging",
     "--tb=short",
     "--color=yes",
     "-m", "not do_not_run"
