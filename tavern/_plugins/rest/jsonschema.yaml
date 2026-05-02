@@ -43,7 +43,9 @@ definitions:
             items:
               type: string
           - type: object
-            additionalProperties: true
+            properties:
+              "$ext":
+                $ref: "#/definitions/verify_block"
 
       verify:
         description: Whether to verify the server's certificates
