@@ -24,11 +24,11 @@ repos:
           - "types-protobuf>=5,<6"
           - types-PyYAML
           - mypy-extensions
-        exclude: tests
+        exclude: (tests|example/)
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
     rev: 0.9.13
     hooks:
       - id: uv-lock
 
-exclude: (docs/|example/)
+exclude: (docs/)
