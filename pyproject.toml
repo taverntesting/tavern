@@ -89,7 +89,7 @@ dev = [
     "pytest-xdist",
     "py",
     "tox>4.20,<5",
-    "ruff~=0.9.10",
+    "ruff",
     "uv>=0.9.2",
     "types-PyYAML",
     # See https://pypi.org/project/protobuf/#history for compatability between these two
@@ -212,7 +212,7 @@ ignore = [
 select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL", "U"]
 
 [tool.ruff.lint.per-file-ignores]
-"example/*" = ["S", "RUF", "T", "E", "PLW", "B"]
+"example/*" = ["S"]
 "tests/*" = ["S", "RUF"]
 "scripts/*" = ["S603", "S607"]
 "tests/unit/tavern_grpc/test_grpc.py" = ["E402"]

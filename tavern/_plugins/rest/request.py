@@ -171,8 +171,8 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                         filename,
                         encoding_header,
                     )
-                else:
-                    fspec["headers"].update(**inferred_content_encoding)
+                elif isinstance(inferred_content_encoding, dict):
+                    fspec["headers"].update(inferred_content_encoding)
             else:
                 logger.debug(
                     "No encoding inferred from file_body for %s",
