@@ -20,6 +20,11 @@ class Tinctures:
     needs_response: list[Generator[None, tuple[Any, Any], None]] = dataclasses.field(
         default_factory=list
     )
+    # Global tinctures that persist across stages (initialized once per test)
+    global_tinctures: list[Any] = dataclasses.field(default_factory=list)
+    global_needs_response: list[Generator[None, tuple[Any, Any], None]] = (
+        dataclasses.field(default_factory=list)
+    )
 
     def start_tinctures(self, stage: collections.abc.Mapping) -> None:
         results = [t(stage) for t in self.tinctures]
@@ -54,6 +59,70 @@ class Tinctures:
             else:
                 raise exceptions.TinctureError("Tincture had more than one yield")
 
+    def start_global_tinctures(self, stage: collections.abc.Mapping) -> None:
+        """Start global tinctures that persist across stages.
+
+        This is called once at the start of the test to initialize global tinctures.
+        For generator-based global tinctures, they are started and stored for later use.
+
+        Args:
+            stage: Stage dictionary (passed to each global tincture)
+        """
+        results = [t(stage) for t in self.global_tinctures]
+
+        for r in results:
+            if inspect.isgenerator(r):
+                # Store generator and start it
+                self.global_needs_response.append(r)
+                next(r)
+
+    def call_global_tinctures(self, stage: collections.abc.Mapping) -> None:
+        """Call global tinctures before each stage.
+
+        This is called at the start of each stage to run global tinctures.
+        For non-generator global tinctures, they are called directly.
+        For generator-based global tinctures that were started in start_global_tinctures,
+        they receive the stage via send().
+
+        Args:
+            stage: Stage dictionary (passed to each global tincture)
+        """
+        # Call non-generator global tinctures directly
+        for t in self.global_tinctures:
+            if not inspect.isgenerator(t):
+                # Regular function - call it with stage
+                t(stage)
+
+        # Send stage to generator-based global tinctures that were already started
+        for g in self.global_needs_response:
+            try:
+                g.send(stage)
+            except StopIteration:
+                pass
+
+    def end_global_tinctures(self, expected: collections.abc.Mapping, response) -> None:
+        """Send response to global tinctures that need it.
+
+        This is called at the end of each stage to send the response to
+        generator-based global tinctures.
+
+        Args:
+            expected: 'expected' from initial test - type varies depending on backend
+            response: The response from 'run' for the stage - type varies depending on backend
+
+        Raises:
+            exceptions.TinctureError: If a tincture yields more than once
+        """
+        for n in self.global_needs_response:
+            try:
+                n.send((expected, response))
+            except StopIteration:
+                pass
+            else:
+                raise exceptions.TinctureError(
+                    "Global tincture had more than one yield"
+                )
+
 
 def get_stage_tinctures(
     stage: collections.abc.Mapping,
@@ -62,10 +131,13 @@ def get_stage_tinctures(
 ) -> Tinctures:
     """Get tinctures for stage
 
+    Note: Global tinctures are now handled separately via get_global_tinctures().
+    This function only returns test-level and stage-level tinctures.
+
     Args:
         stage: Stage
         test_spec: Whole test spec
-        global_cfg: Global configuration (optional)
+        global_cfg: Global configuration (optional, deprecated - use get_global_tinctures)
 
     Returns:
         Tinctures: List of tinctures for the stage
@@ -92,9 +164,50 @@ def get_stage_tinctures(
     add_tinctures_from_block(test_spec.get("tinctures"), "test")
     add_tinctures_from_block(stage.get("tinctures"), "stage")
 
-    if global_cfg is not None:
-        add_tinctures_from_block(global_cfg.tinctures, "global")
+    # Note: Global tinctures are now handled separately via get_global_tinctures()
+    # to allow them to persist across stages
 
     logger.debug("%d tinctures for stage %s", len(stage_tinctures), stage["name"])
 
     return Tinctures(stage_tinctures)
+
+
+def get_global_tinctures(global_cfg: "TestConfig | None") -> Tinctures:
+    """Get global tinctures that persist across stages.
+
+    Global tinctures are initialized once at the start of a test and are
+    called before/after each stage. This allows them to track state across
+    the entire test execution.
+
+    Args:
+        global_cfg: Global configuration containing global tinctures
+
+    Returns:
+        Tinctures: Tinctures object with only global tinctures initialized
+    """
+    global_tinctures_list = []
+
+    if global_cfg is not None and global_cfg.tinctures is not None:
+        maybe_tinctures = global_cfg.tinctures
+        logger.debug("Loading global tinctures from global config")
+
+        def inner_yield():
+            if maybe_tinctures is not None:
+                if isinstance(maybe_tinctures, list):
+                    for vf in maybe_tinctures:
+                        yield get_wrapped_response_function(vf)
+                elif isinstance(maybe_tinctures, dict):
+                    yield get_wrapped_response_function(maybe_tinctures)
+                elif maybe_tinctures is not None:
+                    raise exceptions.BadSchemaError(
+                        "Badly formatted 'tinctures' block in global config"
+                    )
+
+        global_tinctures_list.extend(inner_yield())
+
+    logger.debug(
+        "%d global tinctures loaded",
+        len(global_tinctures_list),
+    )
+
+    return Tinctures(tinctures=[], global_tinctures=global_tinctures_list)

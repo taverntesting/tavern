@@ -69,6 +69,7 @@ test_name: Test global tinctures applied
 
 includes:
   - !include common.yaml
+  - !include global_cfg.yaml
 
 # No test-level tinctures defined - only global tinctures from global_cfg.yaml
 # should be applied
@@ -97,6 +98,25 @@ stages:
       status_code: 200
       json:
         value: "second_stage"
+
+  - name: verify global tincture call count
+    # Verify that global tincture was called for every stage
+    # The global tincture is called once in start_global_tinctures (initialization)
+    # and once per stage in call_global_tinctures
+    # So for 2 stages, it should be called 3 times total (1 init + 2 stages)
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value: "{ext_functions:get_global_tincture_call_count}"
+    response:
+      status_code: 200
+      json:
+        # The tincture should have been called 3 times total:
+        # 1. Once in start_global_tinctures (initialization)
+        # 2. Once in call_global_tinctures before stage 1
+        # 3. Once in call_global_tinctures before stage 2
+        value: 3
 
 ---
 # Test that global tinctures combine with test/stage tinctures
