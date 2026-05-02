@@ -283,7 +283,7 @@ class TokenAuth(AuthBase):
         self.token = token
 
     def __call__(self, r):
-        r.headers["Authorization"] = f"Token {self.token}"
+        r.headers["X-api-token"] = f"Token {self.token}"
         return r
 
 def get_token_auth():
