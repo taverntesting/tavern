@@ -202,6 +202,7 @@ stages:
       json:
         value: "klskdfiogj4iji34o"
 
+
 #This is now a validation error
 #---
 #
@@ -399,6 +400,7 @@ stages:
       status_code: 200
       json:
         value: "{fruit}-{edible}_{first_half}-{second_half}"
+
 
 # Now fails at collection time
 #---
@@ -745,6 +747,7 @@ stages:
       json:
         hello: "there"
         and: this
+
 
 #---
 #

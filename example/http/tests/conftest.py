@@ -4,6 +4,7 @@ import logging.config
 import pytest
 import yaml
 
+
 @pytest.fixture(autouse=True)
 def setup_logging():
     log_cfg = """

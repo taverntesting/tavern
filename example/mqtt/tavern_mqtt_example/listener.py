@@ -68,8 +68,8 @@ def assert_device_exists(device_id):
 
     try:
         next(row)
-    except:
-        raise Exception(f"Device {device_id} is not registered")
+    except StopIteration:
+        raise Exception(f"Device {device_id} is not registered") from None
 
 
 def handle_lights_topic(message):
