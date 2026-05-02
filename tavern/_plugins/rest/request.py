@@ -485,10 +485,6 @@ class RestRequest(BaseRequest):
                         logger.debug("Sending %d files in request", len(files["files"]))
                         self._request_args.update(files)
 
-                headers = self._request_args.get("headers", {})
-                for k, v in headers.items():
-                    headers[str(k)] = str(v)
-
                 return session.request(**self._request_args)
 
         self._prepared: Callable[[], requests.Response] = prepared_request
