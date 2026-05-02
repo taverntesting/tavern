@@ -44,6 +44,14 @@ def prepare_yaml(val: Union[dict, set, list, tuple, str]) -> Union[dict, list, s
     elif isinstance(val, FormattedString):
         return str(val)
 
+    try:
+        # Check if it's a basic type that yaml can handle
+        yaml.safe_dump(val)
+    except yaml.representer.RepresenterError:
+        # For objects that can't be yaml dumped (e.g. custom auth classes),
+        # return their repr so we can still see what they are
+        return repr(val)
+
     return val
 
 

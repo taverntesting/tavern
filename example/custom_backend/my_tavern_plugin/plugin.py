@@ -1,4 +1,3 @@
-import logging
 import pathlib
 from collections.abc import Iterable
 from os.path import abspath, dirname, join
