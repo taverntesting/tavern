@@ -342,6 +342,7 @@ class _TestRunner:
         tinctures = get_stage_tinctures(stage, self.test_spec)
         # Merge global tinctures from test config (fixes #969)
         from tavern._core.extfunctions import get_wrapped_response_function
+
         for gt in self.test_block_config.tinctures:
             tinctures.tinctures.append(get_wrapped_response_function(gt))
 
