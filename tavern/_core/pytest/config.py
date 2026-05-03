@@ -34,13 +34,13 @@ class TestConfig:
     follow_redirects: bool
     stages: list
 
-
     tavern_internal: TavernInternalConfig
     tinctures: list = dataclasses.field(default_factory=list)
 
     def copy(self) -> "TestConfig":
         """Returns a shallow copy of self"""
         return copy.copy(self)
+
     def with_new_variables(self) -> "TestConfig":
         """Returns a shallow copy of self but with the variables copied. This stops things being
         copied between tests. Can't use deepcopy because the variables might contain things that
