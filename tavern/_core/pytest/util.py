@@ -219,6 +219,18 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
         tavern_box = get_tavern_box()
         variables = format_keys(loaded_variables, tavern_box)
 
+    raw_tinctures = global_cfg_dict.get("tinctures", [])
+    if raw_tinctures is None:
+        tinctures = []
+    elif isinstance(raw_tinctures, list):
+        tinctures = raw_tinctures
+    elif isinstance(raw_tinctures, dict):
+        tinctures = [raw_tinctures]
+    else:
+        raise exceptions.BadSchemaError(
+            f"Badly formatted 'tinctures' block in global config: {type(raw_tinctures)}"
+        )
+
     global_cfg = TestConfig(
         variables=variables,
         strict=_load_global_strictness(pytest_config),
@@ -228,7 +240,7 @@ def _load_global_cfg(pytest_config: pytest.Config) -> TestConfig:
             backends=_load_global_backends(pytest_config),
         ),
         stages=global_cfg_dict.get("stages", []),
-    tinctures=global_cfg_dict.get("tinctures", []),
+        tinctures=tinctures,
     )
 
     return global_cfg
