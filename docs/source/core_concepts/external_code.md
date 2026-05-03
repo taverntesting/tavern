@@ -5,17 +5,17 @@ strengths and is suited to different scenarios.
 
 | **Approach**                       | **Benefits**                                                                                                                                                                                                                 | **Downsides**                                                                                                                    | **Best Used When**                                                                                                                                                                                            |
 |------------------------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| **External Functions** (`$ext`)    | • Flexible placement (request, response, save blocks)<br>• Can inject dynamic data or save custom data for validation in Python<br>• Can express complex logic specific to one test<br>• No special decorators needed        | • Functions must be in Python path                                                                                               | • Need dynamic data injection (e.g., calculated auth tokens)<br>• Custom response validation beyond key checking<br>• Extracting/transforming specific data from responses<br>• One-off test-specific logic   |
-| **Pytest Fixtures**                | • Integrates with pytest ecosystem<br>• Automatic discovery via conftest.py<br>• Can use `autouse` for implicit availability<br>• Session-scoped fixtures compute once and reuse<br>• Return values available for formatting | • Limited to function/session scope fixtures (not per-stage)                                                                     | • Sharing setup data across entire test<br>• Loading configuration/credentials once<br>• Timing/logging entire test execution<br>• Leveraging existing pytest fixtures<br>• Need session-wide computed values |
-| **Tinctures**                      | • **Can run per-stage or per-test**<br>• Can introspect both request and response<br>• Access to stage dictionary                                                                                                            | • Less powerful than fixtures                                                                                                    | • Wrapping stage execution with setup/teardown<br>• Per-stage validation or logging<br>• Need access to both expected and actual response<br>• Reusable stage-level logic                                     |
-| **Hooks** (`pytest_tavern_beta_*`) | • Suite-wide automatic execution<br>• Multiple hook points (before test, after response, etc.)<br>• No explicit test modification needed<br>• Good for cross-cutting concerns                                                | • **'Beta'/unstable API** (names may change in future)<br>• Runs for ALL tests (less granular)<br>• Can't be turned off per-test | • Suite-wide logging/monitoring<br>• Global cleanup operations<br>• Recording all responses for debugging<br>• Adding test-wide configuration                                                                 |
+| **External Functions** (`$ext`)    | â¢ Flexible placement (request, response, save blocks)<br>â¢ Can inject dynamic data or save custom data for validation in Python<br>â¢ Can express complex logic specific to one test<br>â¢ No special decorators needed        | â¢ Functions must be in Python path                                                                                               | â¢ Need dynamic data injection (e.g., calculated auth tokens)<br>â¢ Custom response validation beyond key checking<br>â¢ Extracting/transforming specific data from responses<br>â¢ One-off test-specific logic   |
+| **Pytest Fixtures**                | â¢ Integrates with pytest ecosystem<br>â¢ Automatic discovery via conftest.py<br>â¢ Can use `autouse` for implicit availability<br>â¢ Session-scoped fixtures compute once and reuse<br>â¢ Return values available for formatting | â¢ Limited to function/session scope fixtures (not per-stage)                                                                     | â¢ Sharing setup data across entire test<br>â¢ Loading configuration/credentials once<br>â¢ Timing/logging entire test execution<br>â¢ Leveraging existing pytest fixtures<br>â¢ Need session-wide computed values |
+| **Tinctures**                      | â¢ **Can run per-stage or per-test**<br>â¢ Can introspect both request and response<br>â¢ Access to stage dictionary                                                                                                            | â¢ Less powerful than fixtures                                                                                                    | â¢ Wrapping stage execution with setup/teardown<br>â¢ Per-stage validation or logging<br>â¢ Need access to both expected and actual response<br>â¢ Reusable stage-level logic                                     |
+| **Hooks** (`pytest_tavern_beta_*`) | â¢ Suite-wide automatic execution<br>â¢ Multiple hook points (before test, after response, etc.)<br>â¢ No explicit test modification needed<br>â¢ Good for cross-cutting concerns                                                | â¢ **'Beta'/unstable API** (names may change in future)<br>â¢ Runs for ALL tests (less granular)<br>â¢ Can't be turned off per-test | â¢ Suite-wide logging/monitoring<br>â¢ Global cleanup operations<br>â¢ Recording all responses for debugging<br>â¢ Adding test-wide configuration                                                                 |
 
 **Quick Selection Guide:**
 
-- **Need it for just one test?** → External Functions or Tinctures
-- **Need pytest integration or session-wide data?** → Fixtures
-- **Need per-stage execution with timing/wrapping?** → Tinctures or Hooks
-- **Need it automatically for every test?** → Hooks or Fixtures
+- **Need it for just one test?** â External Functions or Tinctures
+- **Need pytest integration or session-wide data?** â Fixtures
+- **Need per-stage execution with timing/wrapping?** â Tinctures or Hooks
+- **Need it automatically for every test?** â Hooks or Fixtures
 
 ## Calling external functions
 
@@ -175,7 +175,7 @@ response:
 `check_jmespath_match` asserts that a JMESPath `query` resolves to a truthy value in the response. Optionally, an
 `expected`
 value can be provided to assert the result matches it exactly. Without `expected`, it asserts the path resolves to a
-truthy (non-falsy) value—falsy values like `[]`, `""`, `0`, and `False` will be treated as failures.
+truthy (non-falsy) valueâfalsy values like `[]`, `""`, `0`, and `False` will be treated as failures.
 
 ```yaml
 response:
@@ -545,6 +545,31 @@ response object will be different for MQTT and HTTP tests!
 
 If you need to run something before _every_ stage or after _every_ response in your test suite, look at using
 the [hooks](#hooks) instead.
+
+### Global tinctures
+
+Tinctures can also be applied globally to **all tests** in your test suite by specifying them in a
+[global configuration file](../config.md) (passed via `tavern-global-cfg`):
+
+```yaml
+# global_config.yaml
+tinctures:
+  - function: package.helpers:time_request
+```
+
+```ini
+# pytest.ini
+[pytest]
+tavern-global-cfg = global_config.yaml
+```
+
+Global tinctures are merged with any stage- or test-level tinctures, so you can combine them freely.
+A single tincture dict may also be specified directly instead of a list:
+
+```yaml
+tinctures:
+  function: package.helpers:time_request
+```
 
 ## Pytest fixtures
 
