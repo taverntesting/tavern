@@ -319,6 +319,20 @@ class TestPykwalifyExtension:
             )
 
 
+class TestValidatePykwalify:
+    def test_non_json_response_raises_bad_schema_error(self):
+        schema = yaml.load("type: map", Loader=yaml.SafeLoader)
+
+        class NonJsonResponse:
+            def json(self):
+                raise ValueError("not json")
+
+        with pytest.raises(exceptions.BadSchemaError) as exc_info:
+            validate_pykwalify(NonJsonResponse(), schema)
+
+        assert "non-json response" in str(exc_info.value)
+
+
 class TestCheckParseValues:
     @pytest.mark.parametrize("item", [yaml, yaml.load, yaml.SafeLoader])
     def test_warns_bad_type(self, item):

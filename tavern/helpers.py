@@ -107,7 +107,7 @@ def validate_pykwalify(response: requests.Response, schema: dict) -> None:
     """
     try:
         to_verify = response.json()
-    except TypeError as e:
+    except (TypeError, ValueError, json.JSONDecodeError) as e:
         raise exceptions.BadSchemaError(
             "Tried to match a pykwalify schema against a non-json response"
         ) from e
