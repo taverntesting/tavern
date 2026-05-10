@@ -66,7 +66,7 @@ def _find_file_in_include_path(
         The absolute path to the file if found
 
     Raises:
-        exceptions.BadSchemaError: If the file cannot be found in any search path
+        exceptions.IncludedFileNotFoundError: If the file cannot be found in any search path
     """
     include_dirs = _get_include_dirs(test_file_path)
 
@@ -75,7 +75,7 @@ def _find_file_in_include_path(
         if os.access(full_path, os.R_OK):
             return full_path
 
-    raise exceptions.BadSchemaError(
+    raise exceptions.IncludedFileNotFoundError(
         f"File '{filename}' not found in include path: {[str(d) for d in include_dirs]}"
     )
 

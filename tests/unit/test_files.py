@@ -190,7 +190,7 @@ class TestFindFileInIncludePath:
     def test_not_found(self, monkeypatch, tmp_path):
         monkeypatch.delenv("TAVERN_INCLUDE", raising=False)
         monkeypatch.chdir(tmp_path)
-        with pytest.raises(exceptions.BadSchemaError):
+        with pytest.raises(exceptions.IncludedFileNotFoundError):
             _find_file_in_include_path("nonexistent.txt")
 
     def test_test_file_dir_priority(self, tmp_path, monkeypatch):

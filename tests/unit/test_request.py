@@ -441,7 +441,7 @@ class TestFileBody:
         monkeypatch.chdir(tmp_path)
         req["file_body"] = "nonexistent_file.txt"
 
-        with pytest.raises(exceptions.BadSchemaError):
+        with pytest.raises(exceptions.IncludedFileNotFoundError):
             get_request_args(req, includes)
 
     def test_file_body_absolute_path(self, req, includes, tmp_path):
