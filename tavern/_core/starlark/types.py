@@ -15,12 +15,12 @@ class StarlarkConvertible(Protocol):
 
     def to_starlark(self) -> Any:
         """Convert this object to a Starlark-safe value."""
-        ...
+        raise NotImplementedError
 
     @classmethod
     def from_starlark(cls, obj: Any) -> "StarlarkConvertible":
         """Reconstruct an instance from a Starlark value."""
-        ...
+        raise NotImplementedError
 
 
 def to_starlark(obj: Any) -> Any:
