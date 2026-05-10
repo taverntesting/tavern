@@ -11,7 +11,6 @@ from typing import Any, TypedDict
 
 import requests
 import starlark
-from starlark import Dialect, Globals, Module
 
 from tavern._core import exceptions
 from tavern._core.exceptions import TavernException
@@ -125,7 +124,7 @@ class StarlarkPipelineRunner:
             stages: Optional list of stage dictionaries to register
         """
         self.test_path = test_path
-        self.globals = Globals.standard().extended_by(
+        self.globals = starlark.Globals.standard().extended_by(
             [
                 starlark.LibraryExtension.StructType,
             ]
@@ -146,13 +145,13 @@ class StarlarkPipelineRunner:
             The return value of the script, if any
         """
         # Create the starlark module
-        module = Module()
+        module = starlark.Module()
 
         # Add built-in functions to module
         self._setup_builtins(module)
 
         # Parse the script
-        dialect = Dialect.extended()
+        dialect = starlark.Dialect.extended()
         dialect.enable_keyword_only_arguments = True
 
         try:
@@ -178,10 +177,11 @@ class StarlarkPipelineRunner:
             starlark.eval(module, ast, self.globals, starlark.FileLoader(load))  # type: ignore[arg-type]
         except starlark.StarlarkError as e:
             logger.error("Error evaluating starlark script: %s", e)
-            if self._python_error is not None:
+            python_error = self._python_error
+            if python_error is not None:
                 exc = exceptions.StarlarkError("Error evaluating starlark script")
-                exc.stage = self._python_error.stage  # type:ignore
-                raise self._python_error from exc
+                exc.stage = python_error.stage  # type:ignore
+                raise python_error from exc
             else:
                 exc = exceptions.StarlarkError("Error evaluating starlark script")  # type:ignore
                 raise exc from e
@@ -288,7 +288,7 @@ class StarlarkPipelineRunner:
             f"gRPC, MQTT, etc. are not supported yet. Got {type(stage_response.response)}"
         )
 
-    def _setup_builtins(self, module: Module) -> None:
+    def _setup_builtins(self, module: "starlark.Module") -> None:
         """Set up built-in functions available in starlark scripts.
 
         Only a basic subset of types can be passed into starlark (anything that can be dumped to json).
