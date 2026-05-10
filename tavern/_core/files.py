@@ -29,8 +29,12 @@ def _get_include_dirs(test_file_path: Optional[str] = None) -> list:
         try:
             root = os.path.split(test_file_path)[0]
             dirs.append(root)
-        except (TypeError, AttributeError):
-            pass
+        except (TypeError, AttributeError) as e:
+            logger.warning(
+                "Invalid test_file_path '%s', skipping test directory: %s",
+                test_file_path,
+                e,
+            )
 
     dirs.append(os.path.curdir)
 
