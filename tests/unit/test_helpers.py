@@ -272,7 +272,6 @@ class TestContent:
             validate_content(nested_response, comparisons)
 
 
-@pytest.mark.xfail
 class TestPykwalifyExtension:
     def test_validate_schema_correct(self, nested_response):
         correct_schema = dedent(
@@ -317,6 +316,20 @@ class TestPykwalifyExtension:
             validate_pykwalify(
                 nested_response, yaml.load(correct_schema, Loader=yaml.SafeLoader)
             )
+
+
+class TestValidatePykwalify:
+    def test_non_json_response_raises_bad_schema_error(self):
+        schema = yaml.load("type: map", Loader=yaml.SafeLoader)
+
+        class NonJsonResponse:
+            def json(self):
+                raise ValueError("not json")
+
+        with pytest.raises(exceptions.BadSchemaError) as exc_info:
+            validate_pykwalify(NonJsonResponse(), schema)
+
+        assert "non-json response" in str(exc_info.value)
 
 
 class TestCheckParseValues:

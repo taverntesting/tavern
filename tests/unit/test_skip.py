@@ -1,5 +1,4 @@
 import dataclasses
-import logging
 import unittest.mock
 from collections.abc import Mapping
 from unittest.mock import patch
@@ -93,18 +92,13 @@ class TestSkipStage:
         with pytest.raises(exceptions.EvalError):
             _run_test(stage, test_block_config, run_mock)
 
-    @pytest.mark.xfail(
-        reason="'KeyError: <_pytest.stash.StashKey object at 0x7fa6ac4852c0' ?????"
-    )
-    def test_skip_invalid_simpleeval(self, stage, test_block_config, caplog, run_mock):
+    def test_skip_invalid_simpleeval(self, stage, test_block_config, run_mock):
         """Handle invalid simpleeval expressions gracefully"""
 
         stage["skip"] = "hello i am a test <<<"
 
-        with caplog.at_level(logging.WARNING):
+        with pytest.raises(exceptions.EvalError):
             _run_test(stage, test_block_config, run_mock)
-
-        assert "unable to parse as simpleeval" in caplog.text
 
     def test_error_valid_simpleeval_missing_var(
         self, stage, test_block_config, run_mock

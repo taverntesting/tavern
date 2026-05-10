@@ -171,8 +171,8 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                         filename,
                         encoding_header,
                     )
-                else:
-                    fspec["headers"].update(**inferred_content_encoding)
+                elif isinstance(inferred_content_encoding, dict):
+                    fspec["headers"].update(inferred_content_encoding)
             else:
                 logger.debug(
                     "No encoding inferred from file_body for %s",
@@ -202,7 +202,8 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
     add_request_args(RestRequest.optional_in_file, True)
 
     if "auth" in fspec:
-        request_args["auth"] = tuple(fspec["auth"])
+        if not isinstance(fspec["auth"], dict):
+            request_args["auth"] = tuple(fspec["auth"])
 
     if "cert" in fspec:
         if isinstance(fspec["cert"], list):
@@ -248,6 +249,9 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                 "You are trying to send a body with a HTTP verb that has no semantic use for it",
                 RuntimeWarning,
             )
+
+    if not request_args["headers"]:
+        request_args.pop("headers")
 
     return request_args
 
@@ -385,10 +389,7 @@ class RestRequest(BaseRequest):
         "files",
         "timeout",
         "cert",
-        # Ideally this would just be passed through but requests seems to error
-        # if we pass a list instead of a tuple, so we have to manually convert
-        # it further down
-        # "auth"
+        "auth",
     ]
 
     _request_args: Box
@@ -482,8 +483,9 @@ class RestRequest(BaseRequest):
                         self._request_args.update(files)
 
                 headers = self._request_args.get("headers", {})
-                for k, v in headers.items():
-                    headers[str(k)] = str(v)
+                self._request_args["headers"] = {
+                    str(k): str(v) for k, v in headers.items()
+                }
 
                 return session.request(**self._request_args)
 

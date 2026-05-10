@@ -35,12 +35,17 @@ definitions:
               type: string
 
       auth:
-        description: Authorisation to use for request - a list containing username and password
-        type: array
-        minItems: 2
-        maxItems: 2
-        items:
-          type: string
+        description: Authorisation to use for request - a list containing username and password, or a $ext block
+        oneOf:
+          - type: array
+            minItems: 2
+            maxItems: 2
+            items:
+              type: string
+          - type: object
+            properties:
+              "$ext":
+                $ref: "#/definitions/verify_block"
 
       verify:
         description: Whether to verify the server's certificates

@@ -21,7 +21,7 @@ keywords = ["testing", "pytest"]
 
 name = "tavern"
 description = "Simple testing of RESTful APIs"
-version = "3.3.3"
+version = "3.4.0"
 
 dependencies = [
     "PyYAML>=6.0.1,<7",
@@ -89,7 +89,7 @@ dev = [
     "pytest-xdist",
     "py",
     "tox>4.20,<5",
-    "ruff~=0.9.10",
+    "ruff",
     "uv>=0.9.2",
     "types-PyYAML",
     # See https://pypi.org/project/protobuf/#history for compatability between these two
@@ -109,6 +109,7 @@ dev = [
     "pytest-asyncio>=1.3.0",
     "hypothesis>=6,<7",
     "pydantic",
+    "flask-httpauth>=4.8.1,<6",
 ]
 
 # When this is fixed, enable this https://github.com/jupyter-book/mystmd/issues/2082
@@ -171,7 +172,6 @@ addopts = [
     "-r", "xs",
     "-vv",
     "--strict-markers",
-    "-p", "no:logging",
     "--tb=short",
     "--color=yes",
     "-m", "not do_not_run"
@@ -212,7 +212,7 @@ ignore = [
 select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL", "U"]
 
 [tool.ruff.lint.per-file-ignores]
-"example/*" = ["S", "RUF", "T", "E", "PLW", "B"]
+"example/*" = ["S"]
 "tests/*" = ["S", "RUF"]
 "scripts/*" = ["S603", "S607"]
 "tests/unit/tavern_grpc/test_grpc.py" = ["E402"]
@@ -225,7 +225,7 @@ exclude = ["*_pb2.py", "*_pb2_grpc.py", "*_pb2.pyi"]
 docstring-code-format = true
 
 [tool.tbump.version]
-current = "3.3.3"
+current = "3.4.0"
 
 regex = '''
   (?P<major>\d+)
