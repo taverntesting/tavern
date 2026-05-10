@@ -458,7 +458,9 @@ formats the `file_body` key can be used:
       status_code: 200
 ```
 
-The path can be absolute or relative to the directory of the test file.
+The path can be absolute or relative to:
+- the directory of the test file (like `!include` does)
+- any path in the `TAVERN_INCLUDE` environment variable (colon-separated list of paths)
 
 Like the `files` key, this is mutually exclusive with the `json` key.
 

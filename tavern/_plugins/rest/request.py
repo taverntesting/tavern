@@ -17,6 +17,7 @@ from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys, deep_dict_merge, format_keys
 from tavern._core.extfunctions import update_from_ext
 from tavern._core.files import (
+    _find_file_in_include_path,
     _parse_file_list,
     _parse_file_mapping,
     guess_filespec,
@@ -132,9 +133,14 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
     # If the user is using the file_body key, try to guess what type of file/encoding it is.
     filename = fspec.get("file_body")
     if filename:
+        # Resolve filename using include path logic (same as !include)
+        resolved_filename = _find_file_in_include_path(
+            filename, test_block_config.test_file_path
+        )
+
         with ExitStack() as stack:
             file_spec, group_name, _ = guess_filespec(
-                filename, stack, test_block_config
+                resolved_filename, stack, test_block_config
             )
 
             # Group name doesn't matter here as it's a single file
@@ -143,7 +149,7 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                     f"'group_name' for the 'file_body' key was specified as '{group_name}' but this will be ignored "
                 )
 
-            fspec["file_body"] = filename
+            fspec["file_body"] = resolved_filename
 
             if file_spec.content_type:
                 inferred_content_type = file_spec.content_type
