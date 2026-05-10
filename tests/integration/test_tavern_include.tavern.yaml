@@ -1,0 +1,39 @@
+---
+test_name: Test file_body resolved via TAVERN_INCLUDE environment variable
+
+includes:
+  - !include common.yaml
+
+marks:
+  - usefixtures:
+      - tavern_include_env
+
+stages:
+  - name: Send file body found via TAVERN_INCLUDE include path
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      file_body: tavern_include_data.txt
+    response:
+      status_code: 200
+      json:
+        status: ok
+---
+test_name: Test file_body not resolved without fixture (also file does not exist)
+
+includes:
+  - !include common.yaml
+
+_xfail:
+  verify: File 'tavern_include_data.txt' not found in include path
+
+stages:
+  - name: Send file body found via TAVERN_INCLUDE include path
+    request:
+      url: "{host}/expect_raw_data"
+      method: POST
+      file_body: tavern_include_data.txt
+    response:
+      status_code: 500
+      json:
+        status: ok
