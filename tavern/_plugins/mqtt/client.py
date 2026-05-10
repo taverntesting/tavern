@@ -296,7 +296,7 @@ class MQTTClient:
         """Add any messages received to the queue
 
         Todo:
-            If the queue is faull trigger an error in main thread somehow
+            If the queue is full trigger an error in main thread somehow
         """
 
         logger.info("Received mqtt message on %s", message.topic)
