@@ -127,7 +127,7 @@ class TestGetIncludeDirs:
         monkeypatch.delenv("TAVERN_INCLUDE", raising=False)
         test_file = str(tmp_path / "test.tavern.yaml")
         dirs = _get_include_dirs(test_file)
-        assert dirs[0] == str(tmp_path)
+        assert dirs == [str(tmp_path), os.path.curdir]
 
     def test_env_var_paths(self, tmp_path, monkeypatch):
         monkeypatch.delenv("TAVERN_INCLUDE", raising=False)

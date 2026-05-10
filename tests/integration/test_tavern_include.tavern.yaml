@@ -28,7 +28,7 @@ _xfail:
   run: File 'tavern_include_data.txt' not found in include path
 
 stages:
-  - name: Send file body found via TAVERN_INCLUDE include path
+  - name: "Send file body (xfail: file not in include path)"
     request:
       url: "{host}/expect_raw_data"
       method: POST

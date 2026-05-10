@@ -2,7 +2,6 @@ import dataclasses
 import logging
 import mimetypes
 import os
-import os.path
 from contextlib import ExitStack
 from io import IOBase
 from typing import Any, NamedTuple, Optional, Union
@@ -29,12 +28,11 @@ def _get_include_dirs(test_file_path: Optional[str] = None) -> list:
     if test_file_path:
         try:
             root = os.path.split(test_file_path)[0]
+            dirs.append(root)
         except (TypeError, AttributeError):
-            root = os.path.curdir
-    else:
-        root = os.path.curdir
+            pass
 
-    dirs.append(root)
+    dirs.append(os.path.curdir)
 
     # Check for TAVERN_INCLUDE environment variable
     env_var_name = "TAVERN_INCLUDE"
@@ -76,7 +74,7 @@ def _find_file_in_include_path(
             return full_path
 
     raise exceptions.IncludedFileNotFoundError(
-        f"File '{filename}' not found in include path: {[str(d) for d in include_dirs]}"
+        f"File '{filename}' not found in include path: {include_dirs}"
     )
 
 
