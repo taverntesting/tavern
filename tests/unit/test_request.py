@@ -186,7 +186,6 @@ class TestCookies:
     def test_cookies_restored_after_request_exception(self, req, includes):
         """Cookies must be restored even if the request raises an exception"""
         from requests.utils import dict_from_cookiejar
-        from requests.cookies import cookiejar_from_dict
 
         cookiejar = RequestsCookieJar()
         cookiejar.set("a", "1")
