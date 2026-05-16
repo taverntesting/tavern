@@ -17,6 +17,7 @@ from tavern._plugins.rest.request import (
     RestRequest,
     _check_allow_redirects,
     _read_expected_cookies,
+    _set_cookies_for_request,
     get_file_arguments,
     get_request_args,
 )
@@ -181,6 +182,24 @@ class TestCookies:
 
         with pytest.raises(exceptions.DuplicateCookieError):
             _read_expected_cookies(mock_session, req, includes)
+
+    def test_cookies_restored_after_request_exception(self, req, includes):
+        """Cookies must be restored even if the request raises an exception"""
+        from requests.utils import dict_from_cookiejar
+        from requests.cookies import cookiejar_from_dict
+
+        cookiejar = RequestsCookieJar()
+        cookiejar.set("a", "1")
+
+        mock_session = Mock(spec=requests.Session, cookies=cookiejar)
+
+        req["cookies"] = ["b"]
+
+        with pytest.raises(RuntimeError):
+            with _set_cookies_for_request(mock_session, req):
+                raise RuntimeError("request failed")
+
+        assert dict_from_cookiejar(mock_session.cookies) == {"a": "1"}
 
 
 class TestRequestArgs:

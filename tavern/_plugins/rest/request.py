@@ -272,8 +272,10 @@ def _set_cookies_for_request(session: requests.Session, request_args: Mapping):
     if "cookies" in request_args:
         old_cookies = dict_from_cookiejar(session.cookies)
         session.cookies = cookiejar_from_dict({})
-        yield
-        session.cookies = cookiejar_from_dict(old_cookies)
+        try:
+            yield
+        finally:
+            session.cookies = cookiejar_from_dict(old_cookies)
     else:
         yield
 
