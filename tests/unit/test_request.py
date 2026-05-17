@@ -109,7 +109,7 @@ class TestCookies:
         """some available but not set"""
 
         cookiejar = RequestsCookieJar()
-        cookiejar.set("a", 2)
+        cookiejar.set("a", "2")
         mock_session = Mock(spec=requests.Session, cookies=cookiejar)
 
         assert _read_expected_cookies(mock_session, req, includes) is None
@@ -118,7 +118,7 @@ class TestCookies:
         """explicitly ask fo rno cookies"""
 
         cookiejar = RequestsCookieJar()
-        cookiejar.set("a", 2)
+        cookiejar.set("a", "2")
         mock_session = Mock(spec=requests.Session, cookies=cookiejar)
 
         req["cookies"] = []
@@ -137,32 +137,32 @@ class TestCookies:
         """some available and wanted"""
 
         cookiejar = RequestsCookieJar()
-        cookiejar.set("a", 2)
+        cookiejar.set("a", "2")
 
         req["cookies"] = ["a"]
 
         mock_session = Mock(spec=requests.Session, cookies=cookiejar)
 
-        assert _read_expected_cookies(mock_session, req, includes) == {"a": 2}
+        assert _read_expected_cookies(mock_session, req, includes) == {"a": "2"}
 
     def test_format_cookies(self, req, includes):
         """cookies in request should be formatted"""
 
         cookiejar = RequestsCookieJar()
-        cookiejar.set("a", 2)
+        cookiejar.set("a", "2")
 
         req["cookies"] = ["{cookiename}"]
         includes.variables["cookiename"] = "a"
 
         mock_session = Mock(spec=requests.Session, cookies=cookiejar)
 
-        assert _read_expected_cookies(mock_session, req, includes) == {"a": 2}
+        assert _read_expected_cookies(mock_session, req, includes) == {"a": "2"}
 
     def test_no_overwrite_cookie(self, req, includes):
         """cant redefine a cookie from previous request"""
 
         cookiejar = RequestsCookieJar()
-        cookiejar.set("a", 2)
+        cookiejar.set("a", "2")
 
         req["cookies"] = ["a", {"a": "sjidfsd"}]
 
