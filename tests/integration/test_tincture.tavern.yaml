@@ -69,7 +69,6 @@ test_name: Test global tinctures applied
 
 includes:
   - !include common.yaml
-  - !include global_cfg.yaml
 
 # No test-level tinctures defined - only global tinctures from global_cfg.yaml
 # should be applied
@@ -108,7 +107,8 @@ stages:
       url: "{host}/echo"
       method: POST
       json:
-        value: "{ext_functions:get_global_tincture_call_count}"
+        $ext:
+          function: ext_functions:get_global_tincture_call_count
     response:
       status_code: 200
       json:

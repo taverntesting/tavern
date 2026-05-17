@@ -45,6 +45,12 @@ definitions:
     additionalProperties: false
 
     properties:
+      tinctures:
+        type: array
+        description: Tinctures for stage
+        items:
+          $ref: "#/definitions/verify_block"
+
       name:
         type: string
         description: Name for this included file

@@ -28,7 +28,7 @@ from .report import attach_stage_content, wrap_step
 from .skip import eval_skip
 from .strtobool import strtobool
 from .testhelpers import delay, retry
-from .tincture import Tinctures, get_global_tinctures, get_stage_tinctures
+from .tincture import Tinctures, get_stage_tinctures
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -342,19 +342,6 @@ class _TestRunner:
     sessions: dict[str, PluginHelperBase]
     test_block_config: TestConfig
     test_spec: Mapping
-    # Global tinctures that persist across stages (initialized once per test)
-    global_tinctures: Tinctures = dataclasses.field(
-        default_factory=lambda: get_global_tinctures(None)
-    )
-    # Track whether global tinctures have been initialized
-    _global_tinctures_initialized: bool = dataclasses.field(default=False)
-
-    def __post_init__(self):
-        """Initialize global tinctures from test_block_config."""
-        # Re-initialize with actual global config
-        object.__setattr__(
-            self, "global_tinctures", get_global_tinctures(self.test_block_config)
-        )
 
     def run_stage(self, idx: int, stage, *, is_final: bool = False) -> None:
         tinctures = get_stage_tinctures(stage, self.test_spec, self.test_block_config)
@@ -396,15 +383,6 @@ class _TestRunner:
         stage = copy.deepcopy(stage)
         name = stage["name"]
 
-        # Initialize global tinctures on first stage (if there are any)
-        if self.global_tinctures.global_tinctures:
-            # Start global tinctures (initialize generators) if not already done
-            if not self.global_tinctures.global_needs_response:
-                self.global_tinctures.start_global_tinctures(stage)
-
-            # Call global tinctures before each stage
-            self.global_tinctures.call_global_tinctures(stage)
-
         attach_stage_content(stage)
 
         r = get_request_type(stage, stage_config, self.sessions)
@@ -431,10 +409,6 @@ class _TestRunner:
         response = r.run()
 
         tinctures.end_tinctures(expected, response)
-
-        # Send response to global tinctures after each stage
-        if self.global_tinctures.global_tinctures:
-            self.global_tinctures.end_global_tinctures(expected, response)
 
         for response_type, response_verifiers in verifiers.items():
             logger.debug("Running verifiers for %s", response_type)

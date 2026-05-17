@@ -51,13 +51,16 @@ def print_response(_, extra_print="affa"):
 
 @dataclasses.dataclass
 class _TinctureCounter:
-    count: int = 0
+    count: dict[str, int] = dataclasses.field(default_factory=dict)
 
-    def increment(self):
-        self.count += 1
+    def increment(self, stage: str):
+        try:
+            self.count[stage] += 1
+        except KeyError:
+            self.count[stage] =1
 
     def reset(self):
-        self.count = 0
+        self.count = {}
 
 
 _counter = _TinctureCounter()
@@ -70,7 +73,10 @@ def global_tincture_marker(stage):
     globally. It tracks the number of times it's called to verify it's
     invoked for every stage.
     """
-    _counter.increment()
+    def inner(self, **kwargs):
+        _counter.increment(stage["name"])
+
+    return inner
 
 
 def get_global_tincture_call_count():
