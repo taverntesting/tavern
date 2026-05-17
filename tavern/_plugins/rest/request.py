@@ -262,17 +262,24 @@ def _set_cookies_for_request(session: requests.Session, request_args: Mapping):
     Possibly reset session cookies for a single request then set them back.
     If no cookies were present in the request arguments, do nothing.
 
+    This uses try/finally to ensure that session cookies are restored even
+    if the request fails.
+
     Args:
         session: Current session
         request_args: current request arguments
     """
     if "cookies" in request_args:
-        old_cookies = dict_from_cookiejar(session.cookies)
-        session.cookies = cookiejar_from_dict({})
+        # Save a copy of the current cookies
+        old_cookies = session.cookies.copy()
+        # Clear the session cookies for this request
+        session.cookies.clear()
         try:
             yield
         finally:
-            session.cookies = cookiejar_from_dict(old_cookies)
+            # Restore the old cookies
+            session.cookies.clear()
+            session.cookies.update(old_cookies)
     else:
         yield
 
