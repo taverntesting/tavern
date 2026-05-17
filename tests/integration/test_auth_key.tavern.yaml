@@ -31,3 +31,38 @@ stages:
       status_code: 401
       json:
         "error": "Wrong username/password"
+
+---
+test_name: Test auth with $ext using digest auth
+
+stages:
+  - name: Send with auth from external function
+    request:
+      url: "{global_host}/authtest/digest"
+      method: GET
+      auth:
+        $ext:
+          function: ext_functions:get_digest_auth
+    response:
+      status_code: 200
+      json:
+        auth_type: digest
+        auth_user: fakeuser
+        auth_pass: fakepass
+
+---
+test_name: Test auth with $ext using class-based custom auth (PizzaAuth)
+
+stages:
+  - name: Send with custom auth from class
+    request:
+      url: "{global_host}/authtest/custom_header"
+      method: GET
+      auth:
+        $ext:
+          function: ext_functions:get_pizza_auth
+    response:
+      status_code: 200
+      json:
+        auth_type: custom_header
+        pizza_user: pizza_user

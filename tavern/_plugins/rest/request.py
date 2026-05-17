@@ -17,6 +17,7 @@ from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys, deep_dict_merge, format_keys
 from tavern._core.extfunctions import update_from_ext
 from tavern._core.files import (
+    _find_file_in_include_path,
     _parse_file_list,
     _parse_file_mapping,
     guess_filespec,
@@ -132,9 +133,14 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
     # If the user is using the file_body key, try to guess what type of file/encoding it is.
     filename = fspec.get("file_body")
     if filename:
+        # Resolve filename using include path logic (same as !include)
+        resolved_filename = _find_file_in_include_path(
+            filename, test_block_config.test_file_path
+        )
+
         with ExitStack() as stack:
             file_spec, group_name, _ = guess_filespec(
-                filename, stack, test_block_config
+                resolved_filename, stack, test_block_config
             )
 
             # Group name doesn't matter here as it's a single file
@@ -143,7 +149,7 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                     f"'group_name' for the 'file_body' key was specified as '{group_name}' but this will be ignored "
                 )
 
-            fspec["file_body"] = filename
+            fspec["file_body"] = resolved_filename
 
             if file_spec.content_type:
                 inferred_content_type = file_spec.content_type
@@ -171,8 +177,8 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                         filename,
                         encoding_header,
                     )
-                else:
-                    fspec["headers"].update(**inferred_content_encoding)
+                elif isinstance(inferred_content_encoding, dict):
+                    fspec["headers"].update(inferred_content_encoding)
             else:
                 logger.debug(
                     "No encoding inferred from file_body for %s",
@@ -202,7 +208,8 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
     add_request_args(RestRequest.optional_in_file, True)
 
     if "auth" in fspec:
-        request_args["auth"] = tuple(fspec["auth"])
+        if not isinstance(fspec["auth"], dict):
+            request_args["auth"] = tuple(fspec["auth"])
 
     if "cert" in fspec:
         if isinstance(fspec["cert"], list):
@@ -248,6 +255,9 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                 "You are trying to send a body with a HTTP verb that has no semantic use for it",
                 RuntimeWarning,
             )
+
+    if not request_args["headers"]:
+        request_args.pop("headers")
 
     return request_args
 
@@ -385,10 +395,7 @@ class RestRequest(BaseRequest):
         "files",
         "timeout",
         "cert",
-        # Ideally this would just be passed through but requests seems to error
-        # if we pass a list instead of a tuple, so we have to manually convert
-        # it further down
-        # "auth"
+        "auth",
     ]
 
     _request_args: Box
@@ -482,8 +489,9 @@ class RestRequest(BaseRequest):
                         self._request_args.update(files)
 
                 headers = self._request_args.get("headers", {})
-                for k, v in headers.items():
-                    headers[str(k)] = str(v)
+                self._request_args["headers"] = {
+                    str(k): str(v) for k, v in headers.items()
+                }
 
                 return session.request(**self._request_args)
 

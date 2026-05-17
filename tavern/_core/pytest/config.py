@@ -27,6 +27,7 @@ class TestConfig:
         variables: variables available for use in the stage
         strict: Strictness for test/stage
         stages: Any extra stages imported from other config files
+        test_file_path: Optional path to the test file being run (used for resolving relative paths)
         tavern_internal: Internal config that should be used only by tavern
         tinctures: Global tinctures to apply to all test stages
     """
@@ -37,6 +38,7 @@ class TestConfig:
     stages: list
     tavern_internal: TavernInternalConfig
     tinctures: list | dict | None = None
+    test_file_path: str | None = None
 
     def copy(self) -> "TestConfig":
         """Returns a shallow copy of self"""

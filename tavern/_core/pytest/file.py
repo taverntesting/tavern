@@ -78,7 +78,7 @@ def _parse_func_mark(fmt_vars: Mapping, m: str) -> pytest.Mark:
     """
     try:
         # Extract mark name and arguments string
-        mark_name = m.split("(")[0]
+        mark_name = m.split("(", maxsplit=1)[0]
         args_str = m[len(mark_name) + 1 : -1]
 
         # Format the arguments string
@@ -93,7 +93,11 @@ def _parse_func_mark(fmt_vars: Mapping, m: str) -> pytest.Mark:
             posargs = [_ast_node_to_literal(arg) for arg in call.args]
 
             # Extract keyword arguments as literals
-            kwargs = {kw.arg: _ast_node_to_literal(kw.value) for kw in call.keywords}
+            kwargs = {
+                kw.arg: _ast_node_to_literal(kw.value)
+                for kw in call.keywords
+                if kw.arg is not None
+            }
 
             # Create the mark with parsed arguments
             mark = getattr(pytest.mark, mark_name)

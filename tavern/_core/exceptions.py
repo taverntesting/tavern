@@ -173,6 +173,12 @@ class ConcurrentError(TavernException):
     """Error while processing concurrent future"""
 
 
+class IncludedFileNotFoundError(TavernException, FileNotFoundError):
+    """A file referenced via file_body or include could not be found in the
+    include path (test file directory, current working directory, or
+    TAVERN_INCLUDE paths)"""
+
+
 class UnexpectedExceptionError(TavernException):
     """We expected a certain kind of exception in check_exception_raised but it was something
     else"""
