@@ -108,7 +108,7 @@ class TestCookies:
         """some available but not set"""
 
         cookiejar = RequestsCookieJar()
-        cookiejar.set("a", 2)
+        cookiejar.set("a", "2")
         mock_session = Mock(spec=requests.Session, cookies=cookiejar)
 
         assert _read_expected_cookies(mock_session, req, includes) is None
@@ -117,7 +117,7 @@ class TestCookies:
         """explicitly ask fo rno cookies"""
 
         cookiejar = RequestsCookieJar()
-        cookiejar.set("a", 2)
+        cookiejar.set("a", "2")
         mock_session = Mock(spec=requests.Session, cookies=cookiejar)
 
         req["cookies"] = []
@@ -136,32 +136,32 @@ class TestCookies:
         """some available and wanted"""
 
         cookiejar = RequestsCookieJar()
-        cookiejar.set("a", 2)
+        cookiejar.set("a", "2")
 
         req["cookies"] = ["a"]
 
         mock_session = Mock(spec=requests.Session, cookies=cookiejar)
 
-        assert _read_expected_cookies(mock_session, req, includes) == {"a": 2}
+        assert _read_expected_cookies(mock_session, req, includes) == {"a": "2"}
 
     def test_format_cookies(self, req, includes):
         """cookies in request should be formatted"""
 
         cookiejar = RequestsCookieJar()
-        cookiejar.set("a", 2)
+        cookiejar.set("a", "2")
 
         req["cookies"] = ["{cookiename}"]
         includes.variables["cookiename"] = "a"
 
         mock_session = Mock(spec=requests.Session, cookies=cookiejar)
 
-        assert _read_expected_cookies(mock_session, req, includes) == {"a": 2}
+        assert _read_expected_cookies(mock_session, req, includes) == {"a": "2"}
 
     def test_no_overwrite_cookie(self, req, includes):
         """cant redefine a cookie from previous request"""
 
         cookiejar = RequestsCookieJar()
-        cookiejar.set("a", 2)
+        cookiejar.set("a", "2")
 
         req["cookies"] = ["a", {"a": "sjidfsd"}]
 
@@ -391,6 +391,71 @@ class TestFileBody:
         assert args["file_body"] == tmpin.name
         assert args["headers"]["content-type"] == "application/x-tar"
         assert args["headers"]["Content-Encoding"] == "gzip"
+
+    def test_file_body_relative_path(self, req, includes, tmp_path):
+        """Test resolving a relative file_body path from the test file directory"""
+        req.pop("data")
+        req.pop("headers")
+
+        test_dir = tmp_path / "tests"
+        test_dir.mkdir()
+        test_file = test_dir / "test.yaml"
+        test_file.write_text("test")
+
+        f = test_dir / "body.json"
+        f.write_text('{"ok": true}')
+
+        includes = dataclasses.replace(includes, test_file_path=str(test_file))
+        req["file_body"] = "body.json"
+
+        args = get_request_args(req, includes)
+
+        assert args["file_body"] == str(f)
+
+    def test_file_body_relative_path_from_env(
+        self, req, includes, tmp_path, monkeypatch
+    ):
+        """Test resolving a relative file_body path from TAVERN_INCLUDE"""
+        req.pop("data")
+        req.pop("headers")
+
+        include_dir = tmp_path / "includes"
+        include_dir.mkdir()
+        f = include_dir / "body.json"
+        f.write_text('{"ok": true}')
+
+        # Change to an empty dir so the file isn't found in cwd
+        monkeypatch.chdir(tmp_path)
+        monkeypatch.setenv("TAVERN_INCLUDE", str(include_dir))
+        req["file_body"] = "body.json"
+
+        args = get_request_args(req, includes)
+
+        assert args["file_body"] == str(f)
+
+    def test_file_body_not_found(self, req, includes, tmp_path, monkeypatch):
+        """Test that a missing relative file_body raises an error"""
+        req.pop("data")
+        req.pop("headers")
+
+        monkeypatch.chdir(tmp_path)
+        req["file_body"] = "nonexistent_file.txt"
+
+        with pytest.raises(exceptions.IncludedFileNotFoundError):
+            get_request_args(req, includes)
+
+    def test_file_body_absolute_path(self, req, includes, tmp_path):
+        """Test that an absolute file_body path passes through unchanged"""
+        req.pop("data")
+        req.pop("headers")
+
+        f = tmp_path / "body.json"
+        f.write_text('{"ok": true}')
+        req["file_body"] = str(f)
+
+        args = get_request_args(req, includes)
+
+        assert args["file_body"] == str(f)
 
 
 class TestGetFiles:
