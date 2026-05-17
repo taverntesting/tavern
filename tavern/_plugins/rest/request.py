@@ -262,9 +262,6 @@ def _set_cookies_for_request(session: requests.Session, request_args: Mapping):
     Possibly reset session cookies for a single request then set them back.
     If no cookies were present in the request arguments, do nothing.
 
-    This does not use try/finally because if it fails then we don't care about
-    the cookies anyway
-
     Args:
         session: Current session
         request_args: current request arguments
