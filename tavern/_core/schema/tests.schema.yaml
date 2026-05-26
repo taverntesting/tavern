@@ -79,6 +79,17 @@ schema;stage:
           required: false
         json:
           include: any_json_with_ext
+          mapping:
+            with_openapi:
+              type: map
+              required: false
+              mapping:
+                path:
+                  type: str
+                  required: true
+                schema:
+                  type: str
+                  required: true
         qos:
           type: any
           func: int_variable
@@ -103,6 +114,17 @@ schema;stage:
           required: false
         json:
           include: any_json_with_ext
+          mapping:
+            with_openapi:
+              type: map
+              required: false
+              mapping:
+                path:
+                  type: str
+                  required: true
+                schema:
+                  type: str
+                  required: true
         timeout:
           type: any
           func: float_variable
@@ -157,6 +179,17 @@ schema;stage:
           required: false
         json:
           include: any_json_with_ext
+          mapping:
+            with_openapi:
+              type: map
+              required: false
+              mapping:
+                path:
+                  type: str
+                  required: true
+                schema:
+                  type: str
+                  required: true
           required: false
         timeout:
           type: any
@@ -216,6 +249,17 @@ schema;stage:
 
         json:
           include: any_json_with_ext
+          mapping:
+            with_openapi:
+              type: map
+              required: false
+              mapping:
+                path:
+                  type: str
+                  required: true
+                schema:
+                  type: str
+                  required: true
 
         body:
           type: any
@@ -281,6 +325,17 @@ schema;stage:
 
         json:
           include: any_json_with_ext
+          mapping:
+            with_openapi:
+              type: map
+              required: false
+              mapping:
+                path:
+                  type: str
+                  required: true
+                schema:
+                  type: str
+                  required: true
 
         save:
           include: any_json_with_ext

@@ -40,6 +40,24 @@ definitions:
       - type: string
       - type: boolean
 
+
+  openapi_schema_ref:
+    type: object
+    additionalProperties: false
+    description: Reference to an OpenAPI schema for response validation
+
+    required:
+      - path
+      - schema
+    properties:
+      path:
+        type: string
+        description: Path to the OpenAPI schema file (YAML or JSON)
+
+      schema:
+        type: string
+        description: JSON reference to the schema within the OpenAPI file (e.g., "#/components/schemas/User")
+
   included_file:
     type: object
     additionalProperties: false
@@ -399,8 +417,10 @@ definitions:
           type: string
 
       json:
-        description: Expected JSON response
-        $ref: "#/definitions/any_json"
+        description: Expected JSON response or OpenAPI schema reference
+        oneOf:
+          - $ref: "#/definitions/any_json"
+          - $ref: "#/definitions/openapi_schema_ref"
 
       redirect_query_params:
         description: Query parameters parsed from the 'location' of a redirect
