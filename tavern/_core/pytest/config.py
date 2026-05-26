@@ -19,6 +19,8 @@ class TavernInternalConfig:
 
 @dataclasses.dataclass(frozen=True)
 class TestConfig:
+    __test__ = False
+
     """Tavern configuration - there is a global config, then test-specific config, and
     finally stage-specific config, but they all use this structure
 
