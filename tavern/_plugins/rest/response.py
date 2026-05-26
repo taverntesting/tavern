@@ -1,4 +1,6 @@
 import json
+import yaml
+from jsonschema import Draft7Validator, RefResolver, ValidationError
 import logging
 from typing import Any, Union
 from urllib.parse import parse_qs, urlparse
@@ -96,7 +98,12 @@ class RestResponse(CommonResponse):
         # Run validation on response
         self._check_status_code(response.status_code, body)
 
-        self._validate_block("json", body)  # type:ignore[arg-type]
+        # Support OpenAPI based validation via a special "with_openapi" key.
+        json_expectation = self.expected.get("json")
+        if isinstance(json_expectation, dict) and "with_openapi" in json_expectation:
+            self._validate_with_openapi(json_expectation["with_openapi"], body)
+        else:
+            self._validate_block("json", body)  # type:ignore[arg-type]
         self._validate_block("headers", response.headers)
 
         self._validate_block("redirect_query_params", redirect_query_params)
@@ -136,3 +143,37 @@ class RestResponse(CommonResponse):
             )
 
         return saved
+
+    def _validate_with_openapi(self, cfg: dict, body: Any) -> None:
+        """Validate a response body against an OpenAPI component schema.
+
+        cfg is expected to contain a "path" to the OpenAPI file and a "schema" JSON pointer (e.g. "#/components/schemas/User").
+        """
+        path = cfg.get("path")
+        schema_ref = cfg.get("schema")
+
+        if not path or not schema_ref:
+            self._adderr("with_openapi requires both path and schema keys")
+            return
+
+        try:
+            with open(path, "r") as f:
+                spec = yaml.safe_load(f)
+        except Exception as e:
+            self._adderr(f"Failed to load OpenAPI file {path}: {e}")
+            return
+
+        ref_parts = schema_ref.lstrip("#/ ").split("/")
+        schema = spec
+        for part in ref_parts:
+            if isinstance(schema, dict) and part in schema:
+                schema = schema[part]
+            else:
+                self._adderr(f"Could not resolve schema reference {schema_ref} in {path}")
+                return
+
+        try:
+            validator = Draft7Validator(schema, resolver=RefResolver(base_uri="", referrer=spec))
+            validator.validate(body)
+        except ValidationError as e:
+            self._adderr(f"OpenAPI schema validation error: {e.message}")
