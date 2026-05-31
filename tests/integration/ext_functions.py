@@ -79,7 +79,7 @@ def global_tincture_marker(stage):
 
 def get_global_tincture_call_count():
     """Return the number of times global_tincture_marker was called."""
-    return {"call_count": sum(1 for _ in _counter.count)}
+    return {"call_count": sum(_counter.count.values())}
 
 
 def reset_global_tincture_call_count():
