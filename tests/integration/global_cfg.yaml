@@ -18,7 +18,3 @@ stages:
       method: POST
       json:
         value: "123"
-
-# Global tinctures applied to all test stages (issue #969)
-tinctures:
-  - function: ext_functions:global_tincture_marker

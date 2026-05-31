@@ -57,7 +57,7 @@ class _TinctureCounter:
         try:
             self.count[stage] += 1
         except KeyError:
-            self.count[stage] =1
+            self.count[stage] = 1
 
     def reset(self):
         self.count = {}
@@ -73,15 +73,13 @@ def global_tincture_marker(stage):
     globally. It tracks the number of times it's called to verify it's
     invoked for every stage.
     """
-    def inner(self, **kwargs):
-        _counter.increment(stage["name"])
 
-    return inner
+    _counter.increment(stage["name"])
 
 
 def get_global_tincture_call_count():
     """Return the number of times global_tincture_marker was called."""
-    return _counter.count
+    return {"call_count": sum(1 for _ in _counter.count)}
 
 
 def reset_global_tincture_call_count():

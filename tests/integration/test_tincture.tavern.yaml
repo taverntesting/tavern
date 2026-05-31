@@ -1,4 +1,11 @@
 ---
+is_defaults: true
+
+# Global tinctures applied to all test stages (issue #969)
+tinctures:
+  - function: ext_functions:global_tincture_marker
+
+---
 test_name: Test tincture + fixtures
 
 includes:
@@ -113,10 +120,9 @@ stages:
       status_code: 200
       json:
         # The tincture should have been called 3 times total:
-        # 1. Once in start_global_tinctures (initialization)
-        # 2. Once in call_global_tinctures before stage 1
-        # 3. Once in call_global_tinctures before stage 2
-        value: 3
+        # 2. Once in first stage
+        # 3. Once in second stage
+        call_count: 2
 
 ---
 # Test that global tinctures combine with test/stage tinctures
