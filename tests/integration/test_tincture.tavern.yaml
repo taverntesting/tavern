@@ -107,9 +107,8 @@ stages:
 
   - name: verify global tincture call count
     # Verify that global tincture was called for every stage
-    # The global tincture is called once in start_global_tinctures (initialization)
-    # and once per stage in call_global_tinctures
-    # So for 2 stages, it should be called 3 times total (1 init + 2 stages)
+    # The global tincture runs once per stage
+    # So for 2 stages, it should be called 2 times total
     request:
       url: "{host}/echo"
       method: POST
@@ -119,9 +118,9 @@ stages:
     response:
       status_code: 200
       json:
-        # The tincture should have been called 3 times total:
-        # 2. Once in first stage
-        # 3. Once in second stage
+        # The tincture should have been called 2 times total:
+        # 1. Once in first stage
+        # 2. Once in second stage
         call_count: 2
 
 ---
