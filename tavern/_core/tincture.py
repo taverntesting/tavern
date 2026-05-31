@@ -84,7 +84,7 @@ def get_stage_tinctures(
                         yield get_wrapped_response_function(vf)
                 elif isinstance(maybe_tinctures, dict):
                     yield get_wrapped_response_function(maybe_tinctures)
-                elif maybe_tinctures is not None:
+                else:
                     raise exceptions.BadSchemaError(
                         f"Badly formatted 'tinctures' block in {blockname}"
                     )
