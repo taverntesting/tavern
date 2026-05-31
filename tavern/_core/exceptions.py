@@ -182,3 +182,7 @@ class IncludedFileNotFoundError(TavernException, FileNotFoundError):
 class UnexpectedExceptionError(TavernException):
     """We expected a certain kind of exception in check_exception_raised but it was something
     else"""
+
+
+class TinctureError(TavernException):
+    """Badly specified tincture."""
