@@ -10,9 +10,6 @@ variables:
   retry_max: 4
   negative_int: -2
 
-  # Variable to verify global tinctures are applied
-  global_tincture_called: false
-
 stages:
   - id: finally-nothing-check
     name: finally nothing check
