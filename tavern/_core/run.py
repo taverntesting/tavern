@@ -157,6 +157,11 @@ def run_test(
     test_block_config = global_cfg.copy()
     default_global_strictness = global_cfg.strict
 
+    # Store the test file path for relative path resolution (e.g., file_body)
+    test_block_config = dataclasses.replace(
+        test_block_config, test_file_path=str(in_file)
+    )
+
     tavern_box = get_tavern_box()
 
     if not test_spec:
@@ -339,7 +344,7 @@ class _TestRunner:
     test_spec: Mapping
 
     def run_stage(self, idx: int, stage, *, is_final: bool = False) -> None:
-        tinctures = get_stage_tinctures(stage, self.test_spec)
+        tinctures = get_stage_tinctures(stage, self.test_spec, self.test_block_config)
 
         stage_config = self.test_block_config.with_strictness(
             self.default_global_strictness

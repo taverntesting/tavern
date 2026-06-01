@@ -1,5 +1,9 @@
 # Changelog
 
+# 3.5.0           Allow using TAVERN_INCLUDE in files (2026-05-17)
+
+# 3.4.0           Add custom authentication via ext functions (2026-05-02)
+
 ## 3.3.3           fix default entry points (2026-04-08)
 
 ## 3.3.2           allow 'text' response checking with raw include tag for files (2026-04-05)

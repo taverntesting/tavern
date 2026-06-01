@@ -269,8 +269,18 @@ class YamlItem(pytest.Item):
 
             run_test(self.path, self.spec, self.global_cfg)
 
-        except exceptions.BadSchemaError:
-            if xfail == "verify":
+        except exceptions.BadSchemaError as e:
+            if isinstance(xfail, dict):
+                if msg := xfail.get("verify"):
+                    if msg not in str(e):
+                        raise Exception(
+                            f"error message did not match: expected '{msg}', got '{e!s}'"
+                        ) from e
+                    logger.info("xfailing test while verifying schema")
+                    self.add_marker(pytest.mark.xfail, True)
+                else:
+                    logger.warning("internal error checking 'xfail'")
+            elif xfail == "verify":
                 logger.info("xfailing test while verifying schema")
                 self.add_marker(pytest.mark.xfail, True)
             raise

@@ -13,6 +13,75 @@ from tavern._core.pytest.config import TestConfig
 logger: logging.Logger = logging.getLogger(__name__)
 
 
+def _get_include_dirs(test_file_path: Optional[str] = None) -> list:
+    """Get directories to search for included files.
+
+    Args:
+        test_file_path: Optional path to the test file. If provided, the directory
+            containing this file will be used as the first search location.
+
+    Returns:
+        List of directories to search, in order of priority.
+    """
+    dirs = []
+
+    if test_file_path:
+        try:
+            root = os.path.split(test_file_path)[0]
+            dirs.append(root)
+        except (TypeError, AttributeError) as e:
+            logger.warning(
+                "Invalid test_file_path '%s', skipping test directory: %s",
+                test_file_path,
+                e,
+            )
+
+    dirs.append(os.path.curdir)
+
+    # Check for TAVERN_INCLUDE environment variable
+    env_var_name = "TAVERN_INCLUDE"
+    if env_var_name in os.environ:
+        env_paths = [
+            os.path.expandvars(path_part)
+            for path_part in os.environ[env_var_name].split(":")
+        ]
+        dirs.extend(env_paths)
+
+    return dirs
+
+
+def _find_file_in_include_path(
+    filename: str, test_file_path: Optional[str] = None
+) -> str:
+    """Locate a file using the include path logic (similar to !include).
+
+    This searches in the following order:
+    1. Directory containing the test file (if test_file_path is provided)
+    2. Current working directory
+    3. Paths listed in TAVERN_INCLUDE environment variable (colon-separated)
+
+    Args:
+        filename: The filename or relative path to search for
+        test_file_path: Optional path to the test file being processed
+
+    Returns:
+        The absolute path to the file if found
+
+    Raises:
+        exceptions.IncludedFileNotFoundError: If the file cannot be found in any search path
+    """
+    include_dirs = _get_include_dirs(test_file_path)
+
+    for directory in include_dirs:
+        full_path = os.path.abspath(os.path.join(directory, filename))
+        if os.access(full_path, os.R_OK):
+            return full_path
+
+    raise exceptions.IncludedFileNotFoundError(
+        f"File '{filename}' not found in include path: {include_dirs}"
+    )
+
+
 @dataclasses.dataclass
 class _Filespec:
     """A description of a file for a file upload, possibly as part of a multi part upload"""
