@@ -1,6 +1,5 @@
 import contextlib
 import json
-import sys
 import tempfile
 from textwrap import dedent
 from unittest.mock import Mock, patch
@@ -183,7 +182,8 @@ class TestTavernRepr:
         except TypeError:
             # Fallback for exceptions that require a message/args
             with pytest.raises(exc_type) as excinfo:
-                raise exc_type("test")
+                # Chain from None to avoid confusion with the previous TypeError (ruff B904)
+                raise exc_type("test") from None
 
         return excinfo
 
