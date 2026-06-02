@@ -370,15 +370,15 @@ at the command line using the `--tavern-global-cfg` flag. The variables in
 `common.yaml` will then be available for formatting in *all* tests during that
 test run.
 
-**NOTE**: `tavern-ci` is just an alias for `py.test` and
+**NOTE**: `tavern-ci` is just an alias for `pytest` and
 will take the same options.
 
 ```
 # These will all work
 $ tavern-ci --tavern-global-cfg=integration_tests/local_urls.yaml
 $ tavern-ci --tavern-global-cfg integration_tests/local_urls.yaml
-$ py.test --tavern-global-cfg=integration_tests/local_urls.yaml
-$ py.test --tavern-global-cfg integration_tests/local_urls.yaml
+$ pytest --tavern-global-cfg=integration_tests/local_urls.yaml
+$ pytest --tavern-global-cfg integration_tests/local_urls.yaml
 ```
 
 It might be tempting to put this in the 'addopts' section of the pytest.ini file
@@ -417,7 +417,7 @@ every test:
 # Note the '--' after all global configuration files are passed, indicating that
 # arguments after this are not global config files
 $ tavern-ci --tavern-global-cfg common.yaml test_urls.yaml -- test_server.tavern.yaml
-$ py.test --tavern-global-cfg common.yaml local_docker_urls.yaml -- test_server.tavern.yaml
+$ pytest --tavern-global-cfg common.yaml local_docker_urls.yaml -- test_server.tavern.yaml
 ```
 
 ```ini
