@@ -53,13 +53,13 @@ of backend processing so we don't want to run it on every test run. This can be
 selected like this:
 
 ```shell
-$ py.test -m "not slow"
+$ pytest -m "not slow"
 ```
 
 Conversely, if we just want to run all tests marked as 'fast', we can do this:
 
 ```shell
-$ py.test -m "fast"
+$ pytest -m "fast"
 ```
 
 Marks can only be applied to a whole test, not to individual stages (with the
