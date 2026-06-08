@@ -1,11 +1,9 @@
 import contextlib
 import json
-import sys
 import tempfile
 from textwrap import dedent
 from unittest.mock import Mock, patch
 
-import _pytest
 import pytest
 import yaml
 from box import Box
@@ -175,14 +173,17 @@ class TestTavernRepr:
             pytest_addoption(pytestconfig._parser)
 
     def _make_fake_exc_info(self, exc_type):
-        # Copied from pytest tests
-        class FakeExcinfo(_pytest._code.ExceptionInfo):  # type:ignore
-            pass
-
+        """Create a pytest.ExceptionInfo using the public API"""
+        # Prefer constructing ExceptionInfo via the public context manager
         try:
-            raise exc_type
-        except exc_type:
-            excinfo = FakeExcinfo(sys.exc_info())
+            with pytest.raises(exc_type) as excinfo:
+                # Raise without args where possible
+                raise exc_type
+        except TypeError:
+            # Fallback for exceptions that require a message/args
+            with pytest.raises(exc_type) as excinfo:
+                # Chain from None to avoid confusion with the previous TypeError (ruff B904)
+                raise exc_type("test") from None
 
         return excinfo
 
