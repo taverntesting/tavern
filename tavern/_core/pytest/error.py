@@ -8,7 +8,12 @@ from io import StringIO
 from typing import Any
 
 import yaml
-from _pytest._code.code import FormattedExcinfo, TerminalRepr
+from _pytest._code.code import TerminalRepr
+
+try:
+    from _pytest._code.code import FormattedExcinfo
+except ImportError:
+    from _pytest._code.code import ExceptionInfoFormatter as FormattedExcinfo
 from _pytest._io import TerminalWriter
 
 from tavern._core import exceptions
