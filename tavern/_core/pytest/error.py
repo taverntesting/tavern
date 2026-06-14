@@ -13,7 +13,7 @@ from _pytest._code.code import TerminalRepr
 try:
     from _pytest._code.code import FormattedExcinfo
 except ImportError:
-    from pytest import ExceptionInfo as FormattedExcinfo
+    from _pytest._code.code import ExceptionInfoFormatter as FormattedExcinfo
 from _pytest._io import TerminalWriter
 
 from tavern._core import exceptions
