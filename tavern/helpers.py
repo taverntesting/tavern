@@ -44,8 +44,8 @@ def check_exception_raised(
                 ) from e
 
     actual_description = dumped.get("description", dumped.get("error_description"))
-    expected_description = getattr(
-        exception, "error_description", exception.description
+    expected_description = getattr(exception, "error_description", None) or getattr(
+        exception, "description", None
     )
 
     try:
@@ -55,7 +55,9 @@ def check_exception_raised(
         # format things in the validator, especially if it's a set/dict which is
         # unordered
         # TODO: improve logic? Use a regex like '{.+?}' instead?
-        if not any(i in expected_description for i in "{}"):
+        if expected_description is not None and not any(
+            i in expected_description for i in "{}"
+        ):
             raise exceptions.UnexpectedExceptionError(
                 "exception description did not match"
             ) from e
