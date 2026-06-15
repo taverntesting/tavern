@@ -1,5 +1,7 @@
 # Changelog
 
+# 3.6.0           Allow global tinctures (2026-05-31)
+
 # 3.5.0           Allow using TAVERN_INCLUDE in files (2026-05-17)
 
 # 3.4.0           Add custom authentication via ext functions (2026-05-02)

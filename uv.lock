@@ -2620,7 +2620,7 @@ wheels = [
 
 [[package]]
 name = "tavern"
-version = "3.6.0"
+version = "3.6.1"
 source = { editable = "." }
 dependencies = [
     { name = "jmespath" },
