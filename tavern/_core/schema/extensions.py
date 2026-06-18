@@ -460,7 +460,7 @@ def validate_http_method(value: str, rule_obj, path) -> bool:
     if value not in valid_http_methods:
         logger = get_pykwalify_logger("tavern.schemas.extensions")
         logger.debug(
-            "Givern HTTP method '%s' was not one of %s - assuming it will be templated",
+            "Given HTTP method '%s' was not one of %s - assuming it will be templated",
             value,
             valid_http_methods,
         )
