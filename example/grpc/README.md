@@ -26,7 +26,7 @@ The server runs two gRPC endpoints:
 
 2. In another terminal, run the tests:
    ```bash
-   py.test -v
+   pytest -v
    ```
 
 The test file (`tests/test_grpc.tavern.yaml`) demonstrates:
