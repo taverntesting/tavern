@@ -1,3 +1,4 @@
+# noinspection PyProtectedMember
 import copy
 import dataclasses
 import json
@@ -128,7 +129,7 @@ class ReprdError(TerminalRepr):
 
         If we couldn't get the stage for some reason, print the entire test out.
 
-        If there are any lines which have missing format variables, higlight
+        If there are any lines which have missing format variables, highlight
         them in red.
 
         Args:
