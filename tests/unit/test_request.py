@@ -45,7 +45,7 @@ def fix_example_request():
 
 class TestRequests:
     def test_unknown_fields(self, req, includes):
-        """Unkown args should raise an error"""
+        """Unknown args should raise an error"""
         req["fodokfowe"] = "Hello"
 
         with pytest.raises(exceptions.UnexpectedKeysError):
@@ -70,7 +70,7 @@ class TestRequests:
 
 class TestHttpRedirects:
     def test_session_called_no_redirects(self, req, includes):
-        """Always disable redirects by defauly"""
+        """Always disable redirects by default"""
 
         assert _check_allow_redirects(req, includes) is False
 
@@ -115,7 +115,7 @@ class TestCookies:
         assert _read_expected_cookies(mock_session, req, includes) is None
 
     def test_ask_for_nothing(self, req, includes):
-        """explicitly ask fo rno cookies"""
+        """explicitly ask for no cookies"""
 
         cookiejar = RequestsCookieJar()
         cookiejar.set("a", "2")
@@ -159,7 +159,7 @@ class TestCookies:
         assert _read_expected_cookies(mock_session, req, includes) == {"a": "2"}
 
     def test_no_overwrite_cookie(self, req, includes):
-        """cant redefine a cookie from previous request"""
+        """cannot redefine a cookie from previous request"""
 
         cookiejar = RequestsCookieJar()
         cookiejar.set("a", "2")
@@ -172,7 +172,7 @@ class TestCookies:
             _read_expected_cookies(mock_session, req, includes)
 
     def test_no_duplicate_cookie(self, req, includes):
-        """Can't override a cookiev alue twice"""
+        """Can't override a cookie value twice"""
 
         cookiejar = RequestsCookieJar()
 

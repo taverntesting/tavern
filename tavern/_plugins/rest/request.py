@@ -356,7 +356,7 @@ def _read_expected_cookies(
         t1, t2 = tee(iterable)
         return list(filterfalse(pred, t1)), list(filter(pred, t2))
 
-    # Cookies are either a single list item, specitying which cookie to send, or
+    # Cookies are either a single list item, specifying which cookie to send, or
     # a mapping, specifying cookies to override
     expected, extra = partition(lambda x: isinstance(x, dict), cookies_to_use)
 

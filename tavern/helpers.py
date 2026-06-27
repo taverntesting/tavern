@@ -104,7 +104,7 @@ def validate_pykwalify(response: requests.Response, schema: dict) -> None:
     """Make sure the response matches a given schema
 
     Args:
-        response: reqeusts Response object
+        response: requests Response object
         schema: Schema for response
     """
     try:
@@ -177,7 +177,7 @@ def validate_content(response: requests.Response, comparisons: Iterable[dict]) -
     """Asserts expected value with actual value using JMES path expression
 
     Args:
-        response: reqeusts.Response object.
+        response: requests.Response object.
         comparisons:
             A list of dict containing the following keys:
                 1. jmespath : JMES path expression to extract data from.
@@ -190,11 +190,13 @@ def validate_content(response: requests.Response, comparisons: Iterable[dict]) -
 
         actual = jmespath.search(path, response.json())
 
-        expession = " ".join([str(path), str(_operator), str(expected)])
-        parsed_expession = " ".join([str(actual), str(_operator), str(expected)])
+        expression = " ".join([str(path), str(_operator), str(expected)])
+        parsed_expression = " ".join([str(actual), str(_operator), str(expected)])
 
         try:
-            actual_validation(_operator, actual, expected, parsed_expession, expession)
+            actual_validation(
+                _operator, actual, expected, parsed_expression, expression
+            )
         except AssertionError as e:
             raise exceptions.JMESError("Error validating JMES") from e
 
