@@ -26,7 +26,7 @@ def get_pykwalify_logger(module: str | None) -> logging.Logger:
     """Get logger for this module
 
     Have to do it like this because the way that pykwalify load extension
-    modules means that getting the logger the normal way just result sin it
+    modules means that getting the logger the normal way just results in it
     trying to get the root logger which won't log correctly
 
     Args:

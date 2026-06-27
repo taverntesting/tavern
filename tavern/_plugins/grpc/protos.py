@@ -3,11 +3,11 @@ import hashlib
 import importlib.util
 import logging
 import os
+import shutil
 import string
 import subprocess
 import sys
 import tempfile
-from distutils.spawn import find_executable
 from importlib.machinery import ModuleSpec
 
 from tavern._core import exceptions
@@ -21,7 +21,7 @@ def find_protoc() -> str:
     if "PROTOC" in os.environ and os.path.exists(os.environ["PROTOC"]):
         return os.environ["PROTOC"]
 
-    if protoc := find_executable("protoc"):
+    if protoc := shutil.which("protoc"):
         return protoc
 
     raise exceptions.ProtoCompilerException(

@@ -64,7 +64,7 @@ def get_file_arguments(
 
 
 def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
-    """Format the test spec given values inthe global config
+    """Format the test spec given values in the global config
 
     Todo:
         Add similar functionality to validate/save $ext functions so input
