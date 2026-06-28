@@ -5,8 +5,9 @@ import logging
 from box.box import Box
 
 from tavern._core import exceptions
-from tavern._core.dict_util import check_expected_keys, format_keys
+from tavern._core.dict_util import format_keys
 from tavern._core.extfunctions import update_from_ext
+from tavern._core.pydantic_models import MQTTRequestSpec
 from tavern._core.pytest.config import TestConfig
 from tavern._core.report import attach_yaml
 from tavern._plugins.mqtt.client import MQTTClient
@@ -42,9 +43,7 @@ class MQTTRequest(BaseRequest):
     def __init__(
         self, client: MQTTClient, rspec: dict, test_block_config: TestConfig
     ) -> None:
-        expected = {"topic", "payload", "json", "qos", "retain"}
-
-        check_expected_keys(expected, rspec)
+        MQTTRequestSpec.validate_keys(rspec)
 
         publish_args = get_publish_args(rspec, test_block_config)
 

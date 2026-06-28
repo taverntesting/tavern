@@ -14,7 +14,7 @@ from requests.cookies import cookiejar_from_dict
 from requests.utils import dict_from_cookiejar
 
 from tavern._core import exceptions
-from tavern._core.dict_util import check_expected_keys, deep_dict_merge, format_keys
+from tavern._core.dict_util import deep_dict_merge, format_keys
 from tavern._core.extfunctions import update_from_ext
 from tavern._core.files import (
     _find_file_in_include_path,
@@ -23,6 +23,7 @@ from tavern._core.files import (
     guess_filespec,
 )
 from tavern._core.general import valid_http_methods
+from tavern._core.pydantic_models import RestRequestSpec
 from tavern._core.pytest.config import TestConfig
 from tavern._core.report import attach_yaml
 from tavern.request import BaseRequest
@@ -419,26 +420,7 @@ class RestRequest(BaseRequest):
         if rspec.pop("clear_session_cookies", False):
             session.cookies.clear_session_cookies()
 
-        expected = {
-            "method",
-            "url",
-            "headers",
-            "data",
-            "params",
-            "auth",
-            "json",
-            "verify",
-            "files",
-            "file_body",
-            "stream",
-            "timeout",
-            "cookies",
-            "cert",
-            # "hooks",
-            "follow_redirects",
-        }
-
-        check_expected_keys(expected, rspec)
+        RestRequestSpec.validate_keys(rspec)
 
         request_args = get_request_args(rspec, test_block_config)
         update_from_ext(
