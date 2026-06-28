@@ -10,8 +10,6 @@ from urllib.parse import quote_plus
 
 import requests
 from box.box import Box
-from requests.cookies import cookiejar_from_dict
-from requests.utils import dict_from_cookiejar
 
 from tavern._core import exceptions
 from tavern._core.dict_util import deep_dict_merge, format_keys
@@ -67,7 +65,7 @@ def get_file_arguments(
 
 
 def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
-    """Format the test spec given values inthe global config
+    """Format the test spec given values in the global config
 
     Todo:
         Add similar functionality to validate/save $ext functions so input
@@ -269,18 +267,24 @@ def _set_cookies_for_request(session: requests.Session, request_args: Mapping):
     Possibly reset session cookies for a single request then set them back.
     If no cookies were present in the request arguments, do nothing.
 
-    This does not use try/finally because if it fails then we don't care about
-    the cookies anyway
+    This uses try/finally to ensure that session cookies are restored even
+    if the request fails.
 
     Args:
         session: Current session
         request_args: current request arguments
     """
     if "cookies" in request_args:
-        old_cookies = dict_from_cookiejar(session.cookies)
-        session.cookies = cookiejar_from_dict({})
-        yield
-        session.cookies = cookiejar_from_dict(old_cookies)
+        # Save a copy of the current cookies
+        old_cookies = session.cookies.copy()
+        # Clear the session cookies for this request
+        session.cookies.clear()
+        try:
+            yield
+        finally:
+            # Restore the old cookies
+            session.cookies.clear()
+            session.cookies.update(old_cookies)
     else:
         yield
 
@@ -353,7 +357,7 @@ def _read_expected_cookies(
         t1, t2 = tee(iterable)
         return list(filterfalse(pred, t1)), list(filter(pred, t2))
 
-    # Cookies are either a single list item, specitying which cookie to send, or
+    # Cookies are either a single list item, specifying which cookie to send, or
     # a mapping, specifying cookies to override
     expected, extra = partition(lambda x: isinstance(x, dict), cookies_to_use)
 
