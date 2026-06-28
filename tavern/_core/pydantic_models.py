@@ -5,6 +5,7 @@ that use ``extra="forbid"`` to reject unexpected keys, providing the same
 validation with better error messages and type safety.
 """
 
+from collections.abc import Mapping
 from typing import Any, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
@@ -20,7 +21,7 @@ class _BaseKeyValidator(BaseModel):
     )
 
     @classmethod
-    def validate_keys(cls, data: dict) -> dict:
+    def validate_keys(cls, data: Mapping) -> dict:
         """Validate that ``data`` contains only expected keys.
 
         Args:
@@ -33,7 +34,7 @@ class _BaseKeyValidator(BaseModel):
             exceptions.UnexpectedKeysError: If unexpected keys are present.
         """
         try:
-            return cls(**data).model_dump(exclude_unset=True, by_alias=True)
+            return cls(**dict(data)).model_dump(exclude_unset=True, by_alias=True)
         except ValidationError as e:
             # Extract unexpected field names from the error
             unexpected = set()
