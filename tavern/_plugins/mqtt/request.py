@@ -64,7 +64,7 @@ class MQTTRequest(BaseRequest):
     def run(self):
         attach_yaml(
             self._original_publish_args,
-            name="rest_request",
+            name="mqtt_request",
         )
 
         try:
