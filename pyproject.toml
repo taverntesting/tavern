@@ -21,7 +21,7 @@ keywords = ["testing", "pytest"]
 
 name = "tavern"
 description = "Simple testing of RESTful APIs"
-version = "3.6.1"
+dynamic = ["version"]
 
 dependencies = [
     "PyYAML>=6.0.1,<7",
@@ -242,10 +242,6 @@ tag_template = "{new_version}"
 
 [[tool.tbump.file]]
 src = "tavern/__init__.py"
-
-[[tool.tbump.file]]
-src = "pyproject.toml"
-
 
 [[tool.tbump.before_commit]]
 name = "Update changelog"
