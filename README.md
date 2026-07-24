@@ -207,3 +207,9 @@ Tavern is currently maintained by
 ## Acknowledgements
 
 [pytest](https://docs.pytest.org/en/latest/): the testing framework Tavern integrates with
+
+<a href="https://github.com/taverntesting/tavern/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=taverntesting/tavern" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
