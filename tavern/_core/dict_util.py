@@ -45,7 +45,13 @@ def _check_and_format_values(to_format: str, box_vars: Box) -> str:
         Formatted string with variables replaced by their values
     """
     formatter = string.Formatter()
-    would_format = formatter.parse(to_format)
+    try:
+        would_format = list(formatter.parse(to_format))
+    except ValueError as e:
+        raise exceptions.BadSchemaError(
+            f"Format string '{to_format}' contains invalid syntax (unmatched '{{' or '}}')."
+            " Escape literal braces as '{{{{' and '}}}}' if they are not format placeholders."
+        ) from e
 
     for _, field_name, _, _ in would_format:
         if field_name is None:
@@ -92,7 +98,13 @@ def _attempt_find_include(to_format: str, box_vars: box.Box) -> str | None:
         The retrieved value after applying any conversion, or None if not found
     """
     formatter = string.Formatter()
-    would_format = list(formatter.parse(to_format))
+    try:
+        would_format = list(formatter.parse(to_format))
+    except ValueError as e:
+        raise exceptions.BadSchemaError(
+            f"Format string '{to_format}' contains invalid syntax (unmatched '{{' or '}}')."
+            " Escape literal braces as '{{{{' and '}}}}' if they are not format placeholders."
+        ) from e
 
     yaml_tag = ForceIncludeToken.yaml_tag
 

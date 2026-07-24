@@ -1,4 +1,18 @@
+import dataclasses
 import time
+
+from requests.auth import AuthBase, HTTPDigestAuth
+
+
+class PizzaAuth(AuthBase):
+    """Attaches HTTP Pizza Authentication to the given Request object."""
+
+    def __init__(self, username):
+        self.username = username
+
+    def __call__(self, r):
+        r.headers["X-Pizza"] = self.username
+        return r
 
 
 def return_hello():
@@ -17,6 +31,14 @@ def gen_echo_url(host):
     return f"{host}/echo"
 
 
+def get_digest_auth():
+    return HTTPDigestAuth("fakeuser", "fakepass")
+
+
+def get_pizza_auth():
+    return PizzaAuth("pizza_user")
+
+
 def time_request(_):
     time.time()
     yield
@@ -25,3 +47,36 @@ def time_request(_):
 
 def print_response(_, extra_print="affa"):
     (_, r) = yield
+
+
+@dataclasses.dataclass
+class _TinctureCounter:
+    count: dict[str, int] = dataclasses.field(default_factory=dict)
+
+    def increment(self, stage: str):
+        try:
+            self.count[stage] += 1
+        except KeyError:
+            self.count[stage] = 1
+
+    def reset(self):
+        self.count = {}
+
+
+_counter = _TinctureCounter()
+
+
+def global_tincture_marker(stage):
+    """Tincture used to verify global tinctures are applied (issue #969).
+
+    This is a simple tincture that runs before each stage when configured
+    globally. It tracks the number of times it's called to verify it's
+    invoked for every stage.
+    """
+
+    _counter.increment(stage["name"])
+
+
+def get_global_tincture_call_count():
+    """Return the number of times global_tincture_marker was called."""
+    return {"call_count": sum(_counter.count.values())}

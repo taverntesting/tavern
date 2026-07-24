@@ -267,18 +267,6 @@ def validate_data_key(value, rule_obj, path: str) -> bool:
         pass
     elif isinstance(value, list):
         raise BadSchemaError(f"Error at {path} - expected a dict, str, or !!binary")
-
-        # invalid = []
-
-        # # Check they're all a list of 2-tuples
-        # for p in value:
-        #     if not isinstance(p, list):
-        #         invalid += p
-        #     elif len(p) != 2:
-        #         invalid += p
-
-        # if invalid:
-        #     raise BadSchemaError("Error at {} - when passing a list to the 'data' key, all items must be 2-tuples (invalid values: {})".format(path, invalid))
     else:
         raise BadSchemaError(f"Error at {path} - expected a dict, str, or !!binary")
 
@@ -472,7 +460,7 @@ def validate_http_method(value: str, rule_obj, path) -> bool:
     if value not in valid_http_methods:
         logger = get_pykwalify_logger("tavern.schemas.extensions")
         logger.debug(
-            "Givern HTTP method '%s' was not one of %s - assuming it will be templated",
+            "Given HTTP method '%s' was not one of %s - assuming it will be templated",
             value,
             valid_http_methods,
         )

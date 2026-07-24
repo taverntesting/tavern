@@ -120,3 +120,16 @@ In the above example, if "stage 2" fails then the execution order would be:
 - stage 1
 - stage 2 (fails)
 - clean up
+
+Note:
+
+- Finally stages run using the same persistent HTTP session as the rest of the test. If a test fails mid-way, any
+  cookies accumulated up to the failing stage are preserved and will be sent with requests made in the `finally`
+  block. For example:
+
+  - stage 1 (sets login/auth cookies)
+  - stage 2 (fails)
+  - finally (cleanup) — runs with cookies from stage 1
+
+  This allows clean-up steps that require authentication established earlier in the test to continue to work even if a
+  prior stage failed.

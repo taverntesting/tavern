@@ -38,8 +38,9 @@ def output_yaml(links, prefix=""):
         inner_dict = {"name": default_name, "request": request, "response": response}
 
         test_dict["stages"] = [inner_dict]
-        # print(test_dict)
-        print(yaml.dump(test_dict, explicit_start=True, default_flow_style=False))
+        sys.stdout.write(
+            yaml.dump(test_dict, explicit_start=True, default_flow_style=False)
+        )
 
 
 def get_request_placeholders(fields):
@@ -65,11 +66,11 @@ def get_name(prefix, test_name, action, url):
 
 
 def display_help():
-    print("pub_tavern.py <url to openapi.json>")
-    print(
-        "eg: pub_tavern.py https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-simple.json"
+    sys.stdout.write("pub_tavern.py <url to openapi.json>\n")
+    sys.stdout.write(
+        "eg: pub_tavern.py https://raw.githubusercontent.com/OAI/OpenAPI-Specification/master/examples/v2.0/json/petstore-simple.json\n"
     )
-    sys.exit(-1)
+    sys.exit(2)
 
 
 if __name__ == "__main__":

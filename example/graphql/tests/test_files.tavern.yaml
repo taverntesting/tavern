@@ -1,5 +1,4 @@
 ---
-
 test_name: GraphQL files - query with a file
 
 includes:
@@ -51,7 +50,6 @@ stages:
             email: "alice@example.com"
 
 ---
-
 test_name: GraphQL files - mutation with a file
 
 includes:

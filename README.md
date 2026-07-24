@@ -1,8 +1,8 @@
 # Easier API testing with Tavern
 
 [![pypi](https://img.shields.io/pypi/v/tavern.svg)](https://pypi.org/project/tavern/)
-[![docs](https://readthedocs.org/projects/pip/badge/?version=latest&style=flat)](https://tavern.readthedocs.io/en/latest/)
-![workflow](https://github.com/taverntesting/tavern/actions/workflows/main.yml/badge.svg?branch=master)
+[![docs](https://readthedocs.org/projects/tavern/badge/?version=latest&style=flat)](https://tavern.readthedocs.io/en/latest/)
+[![workflow](https://github.com/taverntesting/tavern/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/taverntesting/tavern)
 
 Tavern is a pytest plugin, command-line tool, and Python library for
 automated testing of APIs, with a simple, concise, and flexible
@@ -207,3 +207,9 @@ Tavern is currently maintained by
 ## Acknowledgements
 
 [pytest](https://docs.pytest.org/en/latest/): the testing framework Tavern integrates with
+
+<a href="https://github.com/taverntesting/tavern/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=taverntesting/tavern" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).

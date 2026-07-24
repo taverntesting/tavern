@@ -199,7 +199,7 @@ class MQTTResponse(BaseResponse):
                     "payload": msg.payload,
                     "timestamp": msg.timestamp,
                 },
-                name="rest_response",
+                name="mqtt_response",
             )
 
             found: list[int] = []

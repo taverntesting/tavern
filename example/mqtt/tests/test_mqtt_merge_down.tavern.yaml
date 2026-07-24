@@ -30,7 +30,6 @@ includes:
           status_code: 201
 
 ---
-
 test_name: Test mqtt message echo json
 
 stages:

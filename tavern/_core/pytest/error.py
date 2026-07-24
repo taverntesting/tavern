@@ -1,3 +1,4 @@
+# noinspection PyProtectedMember
 import copy
 import dataclasses
 import json
@@ -8,7 +9,12 @@ from io import StringIO
 from typing import Any
 
 import yaml
-from _pytest._code.code import FormattedExcinfo, TerminalRepr
+from _pytest._code.code import TerminalRepr
+
+try:
+    from _pytest._code.code import FormattedExcinfo
+except ImportError:
+    from _pytest._code.code import ExceptionInfoFormatter as FormattedExcinfo
 from _pytest._io import TerminalWriter
 
 from tavern._core import exceptions
@@ -129,7 +135,7 @@ class ReprdError(TerminalRepr):
 
         If we couldn't get the stage for some reason, print the entire test out.
 
-        If there are any lines which have missing format variables, higlight
+        If there are any lines which have missing format variables, highlight
         them in red.
 
         Args:

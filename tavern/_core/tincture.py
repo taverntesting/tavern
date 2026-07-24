@@ -3,10 +3,13 @@ import dataclasses
 import inspect
 import logging
 from collections.abc import Generator
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from tavern._core import exceptions
 from tavern._core.extfunctions import get_wrapped_response_function
+
+if TYPE_CHECKING:
+    from tavern._core.pytest.config import TestConfig
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -34,6 +37,9 @@ class Tinctures:
         Args:
             expected: 'expected' from initial test - type varies depending on backend
             response: The response from 'run' for the stage - type varies depending on backend
+
+        Raises:
+            exceptions.TinctureError: If a tincture yields more than once
         """
         if self.needs_response is None:
             raise RuntimeError(
@@ -46,17 +52,25 @@ class Tinctures:
             except StopIteration:
                 pass
             else:
-                raise RuntimeError("Tincture had more than one yield")
+                raise exceptions.TinctureError("Tincture had more than one yield")
 
 
 def get_stage_tinctures(
-    stage: collections.abc.Mapping, test_spec: collections.abc.Mapping
+    stage: collections.abc.Mapping,
+    test_spec: collections.abc.Mapping,
+    global_cfg: "TestConfig | None" = None,
 ) -> Tinctures:
-    """Get tinctures for stage
+    """Get all tinctures for a stage, including global tinctures.
+
+    Tinctures are collected and run in order: test-level, stage-level, global.
 
     Args:
         stage: Stage
         test_spec: Whole test spec
+        global_cfg: Global configuration (optional)
+
+    Returns:
+        Tinctures: All tinctures for the stage, including global tinctures
     """
     stage_tinctures = []
 
@@ -70,7 +84,7 @@ def get_stage_tinctures(
                         yield get_wrapped_response_function(vf)
                 elif isinstance(maybe_tinctures, dict):
                     yield get_wrapped_response_function(maybe_tinctures)
-                elif maybe_tinctures is not None:
+                else:
                     raise exceptions.BadSchemaError(
                         f"Badly formatted 'tinctures' block in {blockname}"
                     )
@@ -79,6 +93,9 @@ def get_stage_tinctures(
 
     add_tinctures_from_block(test_spec.get("tinctures"), "test")
     add_tinctures_from_block(stage.get("tinctures"), "stage")
+
+    if global_cfg is not None:
+        add_tinctures_from_block(global_cfg.tinctures, "global")
 
     logger.debug("%d tinctures for stage %s", len(stage_tinctures), stage["name"])
 

@@ -44,8 +44,8 @@ def check_exception_raised(
                 ) from e
 
     actual_description = dumped.get("description", dumped.get("error_description"))
-    expected_description = getattr(
-        exception, "error_description", exception.description
+    expected_description = getattr(exception, "error_description", None) or getattr(
+        exception, "description", None
     )
 
     try:
@@ -55,7 +55,9 @@ def check_exception_raised(
         # format things in the validator, especially if it's a set/dict which is
         # unordered
         # TODO: improve logic? Use a regex like '{.+?}' instead?
-        if not any(i in expected_description for i in "{}"):
+        if expected_description is not None and not any(
+            i in expected_description for i in "{}"
+        ):
             raise exceptions.UnexpectedExceptionError(
                 "exception description did not match"
             ) from e
@@ -102,12 +104,12 @@ def validate_pykwalify(response: requests.Response, schema: dict) -> None:
     """Make sure the response matches a given schema
 
     Args:
-        response: reqeusts Response object
+        response: requests Response object
         schema: Schema for response
     """
     try:
         to_verify = response.json()
-    except TypeError as e:
+    except (TypeError, ValueError, json.JSONDecodeError) as e:
         raise exceptions.BadSchemaError(
             "Tried to match a pykwalify schema against a non-json response"
         ) from e
@@ -175,7 +177,7 @@ def validate_content(response: requests.Response, comparisons: Iterable[dict]) -
     """Asserts expected value with actual value using JMES path expression
 
     Args:
-        response: reqeusts.Response object.
+        response: requests.Response object.
         comparisons:
             A list of dict containing the following keys:
                 1. jmespath : JMES path expression to extract data from.
@@ -188,11 +190,13 @@ def validate_content(response: requests.Response, comparisons: Iterable[dict]) -
 
         actual = jmespath.search(path, response.json())
 
-        expession = " ".join([str(path), str(_operator), str(expected)])
-        parsed_expession = " ".join([str(actual), str(_operator), str(expected)])
+        expression = " ".join([str(path), str(_operator), str(expected)])
+        parsed_expression = " ".join([str(actual), str(_operator), str(expected)])
 
         try:
-            actual_validation(_operator, actual, expected, parsed_expession, expession)
+            actual_validation(
+                _operator, actual, expected, parsed_expression, expression
+            )
         except AssertionError as e:
             raise exceptions.JMESError("Error validating JMES") from e
 

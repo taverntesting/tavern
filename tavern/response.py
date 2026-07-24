@@ -1,7 +1,7 @@
+import abc
 import dataclasses
 import logging
 import traceback
-from abc import abstractmethod
 from collections.abc import Mapping
 from textwrap import indent
 from typing import Any
@@ -26,7 +26,7 @@ def indent_err_text(err: str) -> str:
 
 
 @dataclasses.dataclass
-class BaseResponse:
+class BaseResponse(metaclass=abc.ABCMeta):
     """Base for all response verifiers.
 
     Subclasses must have an __init__ method like:
@@ -64,7 +64,7 @@ class BaseResponse:
             logger.error(msg, *args)
         self.errors += [(msg % args)]
 
-    @abstractmethod
+    @abc.abstractmethod
     def verify(self, response) -> Mapping:
         """Verify response against expected values and returns any values that
         we wanted to save for use in future requests

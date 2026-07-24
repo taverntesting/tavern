@@ -19,6 +19,8 @@ class TavernInternalConfig:
 
 @dataclasses.dataclass(frozen=True)
 class TestConfig:
+    __test__ = False
+
     """Tavern configuration - there is a global config, then test-specific config, and
     finally stage-specific config, but they all use this structure
 
@@ -28,6 +30,9 @@ class TestConfig:
         strict: Strictness for test/stage
         stages: Any extra stages imported from other config files
         experimental_starlark_pipeline: Whether experimental starlark pipeline support is enabled
+        test_file_path: Optional path to the test file being run (used for resolving relative paths)
+        tavern_internal: Internal config that should be used only by tavern
+        tinctures: Global tinctures to apply to all test stages
     """
 
     variables: dict
@@ -35,8 +40,9 @@ class TestConfig:
     follow_redirects: bool
     stages: list
     experimental_starlark_pipeline: bool | None
-
     tavern_internal: TavernInternalConfig
+    tinctures: list | dict | None = None
+    test_file_path: str | None = None
 
     def copy(self) -> "TestConfig":
         """Returns a shallow copy of self"""

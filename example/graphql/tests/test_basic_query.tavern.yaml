@@ -121,7 +121,6 @@ stages:
             email: "jane@example.com"
 
 ---
-
 test_name: GraphQL basic query - Get posts for a user
 
 includes:

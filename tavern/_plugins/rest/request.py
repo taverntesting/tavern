@@ -10,13 +10,12 @@ from urllib.parse import quote_plus
 
 import requests
 from box.box import Box
-from requests.cookies import cookiejar_from_dict
-from requests.utils import dict_from_cookiejar
 
 from tavern._core import exceptions
 from tavern._core.dict_util import check_expected_keys, deep_dict_merge, format_keys
 from tavern._core.extfunctions import update_from_ext
 from tavern._core.files import (
+    _find_file_in_include_path,
     _parse_file_list,
     _parse_file_mapping,
     guess_filespec,
@@ -65,7 +64,7 @@ def get_file_arguments(
 
 
 def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
-    """Format the test spec given values inthe global config
+    """Format the test spec given values in the global config
 
     Todo:
         Add similar functionality to validate/save $ext functions so input
@@ -132,9 +131,14 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
     # If the user is using the file_body key, try to guess what type of file/encoding it is.
     filename = fspec.get("file_body")
     if filename:
+        # Resolve filename using include path logic (same as !include)
+        resolved_filename = _find_file_in_include_path(
+            filename, test_block_config.test_file_path
+        )
+
         with ExitStack() as stack:
             file_spec, group_name, _ = guess_filespec(
-                filename, stack, test_block_config
+                resolved_filename, stack, test_block_config
             )
 
             # Group name doesn't matter here as it's a single file
@@ -143,7 +147,7 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                     f"'group_name' for the 'file_body' key was specified as '{group_name}' but this will be ignored "
                 )
 
-            fspec["file_body"] = filename
+            fspec["file_body"] = resolved_filename
 
             if file_spec.content_type:
                 inferred_content_type = file_spec.content_type
@@ -172,7 +176,7 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                         encoding_header,
                     )
                 elif isinstance(inferred_content_encoding, dict):
-                    fspec["headers"].update(**inferred_content_encoding)
+                    fspec["headers"].update(inferred_content_encoding)
                 else:
                     fspec["headers"]["content-encoding"] = inferred_content_encoding
             else:
@@ -204,7 +208,8 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
     add_request_args(RestRequest.optional_in_file, True)
 
     if "auth" in fspec:
-        request_args["auth"] = tuple(fspec["auth"])
+        if not isinstance(fspec["auth"], dict):
+            request_args["auth"] = tuple(fspec["auth"])
 
     if "cert" in fspec:
         if isinstance(fspec["cert"], list):
@@ -251,6 +256,9 @@ def get_request_args(rspec: dict, test_block_config: TestConfig) -> dict:
                 RuntimeWarning,
             )
 
+    if not request_args["headers"]:
+        request_args.pop("headers")
+
     return request_args
 
 
@@ -260,18 +268,24 @@ def _set_cookies_for_request(session: requests.Session, request_args: Mapping):
     Possibly reset session cookies for a single request then set them back.
     If no cookies were present in the request arguments, do nothing.
 
-    This does not use try/finally because if it fails then we don't care about
-    the cookies anyway
+    This uses try/finally to ensure that session cookies are restored even
+    if the request fails.
 
     Args:
         session: Current session
         request_args: current request arguments
     """
     if "cookies" in request_args:
-        old_cookies = dict_from_cookiejar(session.cookies)
-        session.cookies = cookiejar_from_dict({})
-        yield
-        session.cookies = cookiejar_from_dict(old_cookies)
+        # Save a copy of the current cookies
+        old_cookies = session.cookies.copy()
+        # Clear the session cookies for this request
+        session.cookies.clear()
+        try:
+            yield
+        finally:
+            # Restore the old cookies
+            session.cookies.clear()
+            session.cookies.update(old_cookies)
     else:
         yield
 
@@ -344,7 +358,7 @@ def _read_expected_cookies(
         t1, t2 = tee(iterable)
         return list(filterfalse(pred, t1)), list(filter(pred, t2))
 
-    # Cookies are either a single list item, specitying which cookie to send, or
+    # Cookies are either a single list item, specifying which cookie to send, or
     # a mapping, specifying cookies to override
     expected, extra = partition(lambda x: isinstance(x, dict), cookies_to_use)
 
@@ -387,10 +401,7 @@ class RestRequest(BaseRequest):
         "files",
         "timeout",
         "cert",
-        # Ideally this would just be passed through but requests seems to error
-        # if we pass a list instead of a tuple, so we have to manually convert
-        # it further down
-        # "auth"
+        "auth",
     ]
 
     _request_args: Box
@@ -484,8 +495,9 @@ class RestRequest(BaseRequest):
                         self._request_args.update(files)
 
                 headers = self._request_args.get("headers", {})
-                for k, v in headers.items():
-                    headers[str(k)] = str(v)
+                self._request_args["headers"] = {
+                    str(k): str(v) for k, v in headers.items()
+                }
 
                 return session.request(**self._request_args)
 

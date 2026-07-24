@@ -153,7 +153,7 @@ class TestAstNodeToLiteral:
         """Test converting ast.Dict nodes"""
 
         # Empty dict
-        node = ast.Dict(keys=[], values=[], ctx=ast.Load())
+        node = ast.Dict(keys=[], values=[])
         result = _ast_node_to_literal(node)
         assert result == {}
 
@@ -167,7 +167,6 @@ class TestAstNodeToLiteral:
                 ast.Constant(value="value1"),
                 ast.Constant(value=2),
             ],
-            ctx=ast.Load(),
         )
         result = _ast_node_to_literal(node)
         assert result == {"key1": "value1", "key2": 2}
@@ -176,7 +175,6 @@ class TestAstNodeToLiteral:
         inner_dict = ast.Dict(
             keys=[ast.Constant(value="inner_key")],
             values=[ast.Constant(value="inner_value")],
-            ctx=ast.Load(),
         )
         node = ast.Dict(
             keys=[
@@ -187,7 +185,6 @@ class TestAstNodeToLiteral:
                 ast.Constant(value="outer_value"),
                 inner_dict,
             ],
-            ctx=ast.Load(),
         )
         result = _ast_node_to_literal(node)
         assert result == {

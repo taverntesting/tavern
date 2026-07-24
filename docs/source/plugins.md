@@ -20,6 +20,12 @@ local flask server called [tavern_flask](https://github.com/taverntesting/tavern
 There is another plugin used to run tests against FastAPI/Starlette `TestClient`
 called [tavern_fastapi](https://github.com/zaghaghi/tavern-fastapi) which may also be of interest.
 
+## Community plugins
+
+The following plugins are maintained outside the core Tavern repository:
+
+- [tavern-grpc-web](https://github.com/magomedcoder/tavern-grpc-web): gRPC-Web backend plugin for calling unary RPC methods over HTTP.
+
 ## The entry point
 
 Plugins are loaded using two setuptools entry points, namely `tavern_http` for

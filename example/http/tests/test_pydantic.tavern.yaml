@@ -1,5 +1,4 @@
 ---
-
 test_name: Test pydantic validation on /ping endpoint
 
 includes:
@@ -33,7 +32,6 @@ stages:
           model_location: "tavern_http_example.models:PingResponse"
 
 ---
-
 test_name: Test pydantic validation on /hello endpoint
 
 includes:
@@ -60,7 +58,6 @@ stages:
           model_location: "tavern_http_example.models:HelloResponse"
 
 ---
-
 test_name: Test pydantic validation on /numbers endpoint
 
 includes:
@@ -111,7 +108,6 @@ stages:
           model_location: "tavern_http_example.models:NumberResponse"
 
 ---
-
 test_name: Test pydantic validation on /login endpoint
 
 includes:
@@ -137,7 +133,6 @@ stages:
           model_location: "tavern_http_example.models:LoginResponse"
 
 ---
-
 test_name: Test pydantic validation fails on malformed response
 
 includes:

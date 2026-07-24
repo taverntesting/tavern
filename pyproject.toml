@@ -21,7 +21,7 @@ keywords = ["testing", "pytest"]
 
 name = "tavern"
 description = "Simple testing of RESTful APIs"
-version = "3.4.0a1"
+dynamic = ["version"]
 
 dependencies = [
     "PyYAML>=6.0.1,<7",
@@ -113,6 +113,7 @@ dev = [
     "pytest-asyncio>=1.3.0",
     "hypothesis>=6,<7",
     "pydantic",
+    "flask-httpauth>=4.8.1,<6",
 ]
 
 # When this is fixed, enable this https://github.com/jupyter-book/mystmd/issues/2082
@@ -128,6 +129,15 @@ tavern = "tavern._core.pytest"
 
 [project.entry-points.tavern_http]
 requests = "tavern._plugins.rest.tavernhook:TavernRestPlugin"
+
+[project.entry-points.tavern_mqtt]
+paho-mqtt = "tavern._plugins.mqtt.tavernhook"
+
+[project.entry-points.tavern_grpc]
+grpc = "tavern._plugins.grpc.tavernhook"
+
+[project.entry-points.tavern_graphql]
+gql = "tavern._plugins.graphql.tavernhook"
 
 [tool.mypy]
 python_version = "3.12"
@@ -208,7 +218,7 @@ ignore = [
 select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL", "U"]
 
 [tool.ruff.lint.per-file-ignores]
-"example/*" = ["S", "RUF", "T", "E", "PLW", "B"]
+"example/*" = ["S"]
 "tests/*" = ["S", "RUF"]
 "scripts/*" = ["S603", "S607"]
 "tests/unit/tavern_grpc/test_grpc.py" = ["E402"]
@@ -221,7 +231,7 @@ exclude = ["*_pb2.py", "*_pb2_grpc.py", "*_pb2.pyi"]
 docstring-code-format = true
 
 [tool.tbump.version]
-current = "3.4.0a1"
+current = "3.6.1"
 
 regex = '''
   (?P<major>\d+)
@@ -238,10 +248,6 @@ tag_template = "{new_version}"
 
 [[tool.tbump.file]]
 src = "tavern/__init__.py"
-
-[[tool.tbump.file]]
-src = "pyproject.toml"
-
 
 [[tool.tbump.before_commit]]
 name = "Update changelog"

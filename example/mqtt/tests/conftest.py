@@ -70,7 +70,7 @@ loggers:
 
     logging.info("Logging set up")
 
-    global logging_initialised
+    global logging_initialised  # noqa
     logging_initialised = True
 
 
