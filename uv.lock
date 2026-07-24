@@ -2663,7 +2663,6 @@ wheels = [
 
 [[package]]
 name = "tavern"
-version = "3.6.1"
 source = { editable = "." }
 dependencies = [
     { name = "jmespath" },
@@ -2756,7 +2755,7 @@ requires-dist = [
     { name = "stevedore", specifier = ">=4,<5" },
     { name = "websockets", marker = "extra == 'graphql'" },
 ]
-provides-extras = ["grpc", "mqtt", "graphql"]
+provides-extras = ["graphql", "grpc", "mqtt"]
 
 [package.metadata.requires-dev]
 dev = [
