@@ -120,7 +120,7 @@ class StarlarkPipelineRunner:
         Args:
             test_config: The test configuration with variables
             sessions: session contexts to use for the pipeline
-            test_path: Path to the .tavern.star file being run
+            test_path: Path to the test file being run (used for error reporting in starlark parsing)
             stages: Optional list of stage dictionaries to register
         """
         self.test_path = test_path

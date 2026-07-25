@@ -88,7 +88,7 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
         "--tavern-experimental-starlark-pipeline",
         action="store_true",
         default=False,
-        help="Enable experimental starlark pipeline support (*.tavern.star files)",
+        help="Enable experimental starlark control_flow support (inline 'control_flow' block in test files)",
     )
 
 
@@ -161,7 +161,7 @@ def add_ini_options(parser: pytest.Parser) -> None:
     )
     parser.addini(
         "tavern-experimental-starlark-pipeline",
-        help="Enable experimental starlark pipeline support (*.tavern.star files)",
+        help="Enable experimental starlark control_flow support (inline 'control_flow' block in test files)",
         type="bool",
         default=False,
     )
