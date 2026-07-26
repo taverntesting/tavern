@@ -140,9 +140,9 @@ class GRPCRequestSpec(_BaseKeyValidator):
 # --- gRPC response spec ---
 class GRPCResponseSpec(_BaseKeyValidator):
     body: Optional[Union[dict, TypeConvertToken]] = None
-    status: Optional[
-        Union[str, int, list[str], list[int], dict, TypeConvertToken]
-    ] = None
+    status: Optional[Union[str, int, list[str], list[int], dict, TypeConvertToken]] = (
+        None
+    )
     details: Optional[Union[str, dict, TypeConvertToken]] = None
     save: Optional[Union[dict, TypeConvertToken]] = None
 
