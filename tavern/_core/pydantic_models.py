@@ -69,7 +69,7 @@ class RestRequestSpec(_BaseKeyValidator):
     file_body: Optional[Union[str, dict, TypeConvertToken]] = None
     stream: Optional[Union[bool, dict, TypeConvertToken]] = None
     timeout: Optional[Union[float, int, list, str, dict, TypeConvertToken]] = None
-    cookies: Optional[Union[dict, TypeConvertToken]] = None
+    cookies: Optional[Union[dict, list, TypeConvertToken]] = None
     cert: Optional[Union[str, list, int, dict, TypeConvertToken]] = None
     follow_redirects: Optional[Union[bool, dict, TypeConvertToken]] = None
 
