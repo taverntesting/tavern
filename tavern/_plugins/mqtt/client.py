@@ -12,7 +12,14 @@ import paho.mqtt.client as paho
 from paho.mqtt.client import MQTTMessageInfo
 
 from tavern._core import exceptions
-from tavern._core.dict_util import check_expected_keys
+from tavern._core.pydantic_models import (
+    MQTTAuthArgs,
+    MQTTClientArgs,
+    MQTTClientTopLevel,
+    MQTTConnectArgs,
+    MQTTSSLContextArgs,
+    MQTTTLSArgs,
+)
 
 # MQTT error values
 _err_vals = {
@@ -121,38 +128,6 @@ def _check_and_update_common_tls_args(
 
 class MQTTClient:
     def __init__(self, **kwargs) -> None:
-        expected_blocks = {
-            "client": {
-                "client_id",
-                "clean_session",
-                # Can't really use this easily...
-                # "userdata",
-                # Force mqttv311 - fix if this becomes an issue
-                # "protocol",
-                "transport",
-            },
-            "connect": {"host", "port", "keepalive", "timeout"},
-            "tls": {
-                "enable",
-                "ca_certs",
-                "cert_reqs",
-                "certfile",
-                "keyfile",
-                "tls_version",
-                "ciphers",
-            },
-            "auth": {"username", "password"},
-            "ssl_context": {
-                "ca_certs",
-                "certfile",
-                "keyfile",
-                "password",
-                "tls_version",
-                "ciphers",
-                "alpn_protocols",
-            },
-        }
-
         sanitised_kwargs = copy.deepcopy(kwargs)
         if auth := kwargs.get("auth"):
             if "password" in auth:
@@ -161,17 +136,17 @@ class MQTTClient:
         logger.debug("Initialising MQTT client with %s", sanitised_kwargs)
 
         # check main block first
-        check_expected_keys(expected_blocks.keys(), kwargs)
+        MQTTClientTopLevel.validate_keys(kwargs)
 
         # then check constructor/connect/tls_set args
         self._client_args = kwargs.pop("client", {})
-        check_expected_keys(expected_blocks["client"], self._client_args)
+        MQTTClientArgs.validate_keys(self._client_args)
 
         self._connect_args = kwargs.pop("connect", {})
-        check_expected_keys(expected_blocks["connect"], self._connect_args)
+        MQTTConnectArgs.validate_keys(self._connect_args)
 
         self._auth_args = kwargs.pop("auth", {})
-        check_expected_keys(expected_blocks["auth"], self._auth_args)
+        MQTTAuthArgs.validate_keys(self._auth_args)
 
         if "host" not in self._connect_args:
             msg = "Need 'host' in 'connect' block for mqtt"
@@ -189,12 +164,12 @@ class MQTTClient:
             )
             raise exceptions.MQTTTLSError(msg)
 
-        check_expected_keys(expected_blocks["tls"], file_tls_args)
+        MQTTTLSArgs.validate_keys(file_tls_args)
         self._tls_args = _handle_tls_args(file_tls_args)
         logger.debug("TLS is %s", "enabled" if self._tls_args else "disabled")
 
         # If there is any SSL kwarg, enable tls through the SSL context
-        check_expected_keys(expected_blocks["ssl_context"], file_ssl_context_args)
+        MQTTSSLContextArgs.validate_keys(file_ssl_context_args)
         self._ssl_context_args = _handle_ssl_context_args(file_ssl_context_args)
 
         logger.debug("Paho client args: %s", self._client_args)
