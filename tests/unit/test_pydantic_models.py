@@ -298,12 +298,20 @@ class TestTypeValidation:
             GRPCRequestSpec.validate_keys(data)
 
     def test_grpc_request_body_can_be_dict(self):
-        data = {"host": "localhost:50051", "service": "MyService/Method", "body": {"key": "value"}}
+        data = {
+            "host": "localhost:50051",
+            "service": "MyService/Method",
+            "body": {"key": "value"},
+        }
         result = GRPCRequestSpec.validate_keys(data)
         assert result["body"] == {"key": "value"}
 
     def test_grpc_request_body_can_be_string(self):
-        data = {"host": "localhost:50051", "service": "MyService/Method", "body": "raw string"}
+        data = {
+            "host": "localhost:50051",
+            "service": "MyService/Method",
+            "body": "raw string",
+        }
         result = GRPCRequestSpec.validate_keys(data)
         assert result["body"] == "raw string"
 
