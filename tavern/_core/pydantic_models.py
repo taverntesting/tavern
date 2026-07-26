@@ -11,9 +11,12 @@ from typing import Optional, Union
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from tavern._core import exceptions
+from tavern._core.loader import TypeConvertToken
 
-# Type alias for JSON-compatible values (any valid JSON type)
-JSONType = Union[dict, list, str, int, float, bool, None]
+# Type alias for JSON-compatible values (any valid JSON type), plus
+# TypeConvertToken for pre-resolution YAML tags like !force_format_include
+# and dict for pre-resolution $ext function calls.
+JSONType = Union[dict, list, str, int, float, bool, None, TypeConvertToken]
 
 
 class _BaseKeyValidator(BaseModel):
@@ -54,110 +57,112 @@ class _BaseKeyValidator(BaseModel):
 
 # --- REST request spec ---
 class RestRequestSpec(_BaseKeyValidator):
-    method: Optional[str] = None
-    url: Optional[str] = None
-    headers: Optional[dict] = None
-    data: Optional[Union[dict, list, str, bytes]] = None
-    params: Optional[dict] = None
-    auth: Optional[Union[list, str]] = None
+    method: Optional[Union[str, dict, TypeConvertToken]] = None
+    url: Optional[Union[str, dict, TypeConvertToken]] = None
+    headers: Optional[Union[dict, TypeConvertToken]] = None
+    data: Optional[Union[dict, list, str, bytes, int, float, TypeConvertToken]] = None
+    params: Optional[Union[dict, TypeConvertToken]] = None
+    auth: Optional[Union[list, str, dict, TypeConvertToken]] = None
     json_body: Optional[JSONType] = Field(default=None, alias="json")
-    verify: Optional[Union[bool, str]] = None
-    files: Optional[Union[dict, list]] = None
-    file_body: Optional[str] = None
-    stream: Optional[bool] = None
-    timeout: Optional[Union[float, list]] = None
-    cookies: Optional[dict] = None
-    cert: Optional[Union[str, list]] = None
-    follow_redirects: Optional[bool] = None
+    verify: Optional[Union[bool, str, dict, TypeConvertToken]] = None
+    files: Optional[Union[dict, list, TypeConvertToken]] = None
+    file_body: Optional[Union[str, dict, TypeConvertToken]] = None
+    stream: Optional[Union[bool, dict, TypeConvertToken]] = None
+    timeout: Optional[Union[float, int, list, str, dict, TypeConvertToken]] = None
+    cookies: Optional[Union[dict, TypeConvertToken]] = None
+    cert: Optional[Union[str, list, int, dict, TypeConvertToken]] = None
+    follow_redirects: Optional[Union[bool, dict, TypeConvertToken]] = None
 
 
 # --- MQTT request spec ---
 class MQTTRequestSpec(_BaseKeyValidator):
-    topic: Optional[str] = None
-    payload: Optional[Union[str, bytes, int, float]] = None
+    topic: Optional[Union[str, dict, TypeConvertToken]] = None
+    payload: Optional[Union[str, bytes, int, float, dict, TypeConvertToken]] = None
     json_body: Optional[JSONType] = Field(default=None, alias="json")
-    qos: Optional[int] = None
-    retain: Optional[bool] = None
+    qos: Optional[Union[int, dict, TypeConvertToken]] = None
+    retain: Optional[Union[bool, dict, TypeConvertToken]] = None
 
 
 # --- MQTT client config blocks ---
 class MQTTClientArgs(_BaseKeyValidator):
-    client_id: Optional[str] = None
-    clean_session: Optional[bool] = None
-    transport: Optional[str] = None
+    client_id: Optional[Union[str, dict, TypeConvertToken]] = None
+    clean_session: Optional[Union[bool, dict, TypeConvertToken]] = None
+    transport: Optional[Union[str, dict, TypeConvertToken]] = None
 
 
 class MQTTConnectArgs(_BaseKeyValidator):
-    host: Optional[str] = None
-    port: Optional[int] = None
-    keepalive: Optional[int] = None
-    timeout: Optional[Union[int, float]] = None
+    host: Optional[Union[str, dict, TypeConvertToken]] = None
+    port: Optional[Union[int, dict, TypeConvertToken]] = None
+    keepalive: Optional[Union[int, dict, TypeConvertToken]] = None
+    timeout: Optional[Union[int, float, dict, TypeConvertToken]] = None
 
 
 class MQTTAuthArgs(_BaseKeyValidator):
-    username: Optional[str] = None
-    password: Optional[str] = None
+    username: Optional[Union[str, dict, TypeConvertToken]] = None
+    password: Optional[Union[str, dict, TypeConvertToken]] = None
 
 
 class MQTTTLSArgs(_BaseKeyValidator):
-    enable: Optional[bool] = None
-    ca_certs: Optional[str] = None
-    cert_reqs: Optional[str] = None
-    certfile: Optional[str] = None
-    keyfile: Optional[str] = None
-    tls_version: Optional[str] = None
-    ciphers: Optional[str] = None
+    enable: Optional[Union[bool, dict, TypeConvertToken]] = None
+    ca_certs: Optional[Union[str, dict, TypeConvertToken]] = None
+    cert_reqs: Optional[Union[str, dict, TypeConvertToken]] = None
+    certfile: Optional[Union[str, dict, TypeConvertToken]] = None
+    keyfile: Optional[Union[str, dict, TypeConvertToken]] = None
+    tls_version: Optional[Union[str, dict, TypeConvertToken]] = None
+    ciphers: Optional[Union[str, dict, TypeConvertToken]] = None
 
 
 class MQTTSSLContextArgs(_BaseKeyValidator):
-    ca_certs: Optional[str] = None
-    certfile: Optional[str] = None
-    keyfile: Optional[str] = None
-    password: Optional[str] = None
-    tls_version: Optional[str] = None
-    ciphers: Optional[str] = None
-    alpn_protocols: Optional[list[str]] = None
+    ca_certs: Optional[Union[str, dict, TypeConvertToken]] = None
+    certfile: Optional[Union[str, dict, TypeConvertToken]] = None
+    keyfile: Optional[Union[str, dict, TypeConvertToken]] = None
+    password: Optional[Union[str, dict, TypeConvertToken]] = None
+    tls_version: Optional[Union[str, dict, TypeConvertToken]] = None
+    ciphers: Optional[Union[str, dict, TypeConvertToken]] = None
+    alpn_protocols: Optional[Union[list[str], dict, TypeConvertToken]] = None
 
 
 class MQTTClientTopLevel(_BaseKeyValidator):
-    client: Optional[dict] = None
-    connect: Optional[dict] = None
-    tls: Optional[dict] = None
-    auth: Optional[dict] = None
-    ssl_context: Optional[dict] = None
+    client: Optional[Union[dict, TypeConvertToken]] = None
+    connect: Optional[Union[dict, TypeConvertToken]] = None
+    tls: Optional[Union[dict, TypeConvertToken]] = None
+    auth: Optional[Union[dict, TypeConvertToken]] = None
+    ssl_context: Optional[Union[dict, TypeConvertToken]] = None
 
 
 # --- gRPC request spec ---
 class GRPCRequestSpec(_BaseKeyValidator):
-    host: Optional[str] = None
-    service: Optional[str] = None
-    body: Optional[Union[dict, str]] = None
+    host: Optional[Union[str, dict, TypeConvertToken]] = None
+    service: Optional[Union[str, dict, TypeConvertToken]] = None
+    body: Optional[Union[dict, str, TypeConvertToken]] = None
 
 
 # --- gRPC response spec ---
 class GRPCResponseSpec(_BaseKeyValidator):
-    body: Optional[dict] = None
-    status: Optional[Union[str, int, list[str], list[int]]] = None
-    details: Optional[str] = None
-    save: Optional[dict] = None
+    body: Optional[Union[dict, TypeConvertToken]] = None
+    status: Optional[
+        Union[str, int, list[str], list[int], dict, TypeConvertToken]
+    ] = None
+    details: Optional[Union[str, dict, TypeConvertToken]] = None
+    save: Optional[Union[dict, TypeConvertToken]] = None
 
 
 # --- gRPC client config blocks ---
 class GRPCConnectArgs(_BaseKeyValidator):
-    host: Optional[str] = None
-    port: Optional[int] = None
-    options: Optional[dict] = None
-    timeout: Optional[int] = None
-    secure: Optional[bool] = None
+    host: Optional[Union[str, dict, TypeConvertToken]] = None
+    port: Optional[Union[int, dict, TypeConvertToken]] = None
+    options: Optional[Union[dict, TypeConvertToken]] = None
+    timeout: Optional[Union[int, dict, TypeConvertToken]] = None
+    secure: Optional[Union[bool, dict, TypeConvertToken]] = None
 
 
 class GRPCProtoArgs(_BaseKeyValidator):
-    source: Optional[str] = None
-    module: Optional[str] = None
+    source: Optional[Union[str, dict, TypeConvertToken]] = None
+    module: Optional[Union[str, dict, TypeConvertToken]] = None
 
 
 class GRPCClientTopLevel(_BaseKeyValidator):
-    connect: Optional[dict] = None
-    proto: Optional[dict] = None
-    metadata: Optional[dict] = None
-    attempt_reflection: Optional[bool] = None
+    connect: Optional[Union[dict, TypeConvertToken]] = None
+    proto: Optional[Union[dict, TypeConvertToken]] = None
+    metadata: Optional[Union[dict, TypeConvertToken]] = None
+    attempt_reflection: Optional[Union[bool, dict, TypeConvertToken]] = None
