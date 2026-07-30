@@ -86,6 +86,9 @@ MQTT tests can be retried as well, but you should think whether this
 is what you want - you could also try increasing the timeout on an expected MQTT
 response to achieve something similar.
 
+If the request itself succeeds but you want to keep retrying until something about the response is true, see the
+experimental [`retry_until` key](../scripting.md#polling-with-retry_until).
+
 ## Finalising stages
 
 If you need a stage to run after a test runs, whether it passes or fails (for example, to log out of a service or
