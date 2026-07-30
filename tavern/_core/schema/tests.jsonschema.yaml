@@ -140,8 +140,9 @@ definitions:
       retry_until:
         type: string
         description:
-          Starlark expression evaluated after each attempt at this stage - the stage is
-          retried until it evaluates to True, up to max_retries times
+          Starlark expression evaluated after each *failed* attempt at this stage - the
+          stage is retried until it evaluates to True, up to max_retries times. Not
+          evaluated if the stage passes.
 
       only:
         type: boolean

@@ -124,8 +124,18 @@ always run.
 
 ### Polling with `retry_until`
 
-`retry_until` is evaluated after each successful attempt at a stage. If it is `False`, the stage is run again, up to
-`max_retries` times, sleeping for `delay_after` in between. If it is never `True`, the test fails.
+`retry_until` is a second opinion on a stage that **failed**. It works like `max_retries`, except that instead of
+blindly retrying it lets you say when to stop:
+
+- If the stage **passes**, it is finished. **`retry_until` is not evaluated at all** - a passing stage is never retried,
+  even if the expression would have been `False`.
+- If the stage **fails**, `retry_until` is evaluated against the response that came back. If it is `True` the stage is
+  treated as finished and the test carries on to the next stage, even though the response block did not match. If it is
+  `False` the stage is retried, up to `max_retries` times, sleeping for `delay_after` in between.
+- If the stage never passes and `retry_until` is never `True`, the test fails.
+
+In other words, adding `retry_until` gives the stage something like the `continue_on_fail` behaviour of
+[`run_stage()`](#run_stage), with the expression deciding when to give up retrying and call it a success.
 
 ```yaml
 stages:
@@ -135,9 +145,8 @@ stages:
       method: GET
     response:
       status_code: 200
-      save:
-        json:
-          job_id: id
+      json:
+        status: ready
     max_retries: 20
     delay_after: 1
     retry_until: response.body["status"] == "ready"
@@ -153,10 +162,13 @@ response.status_code == 200 and response.body["status"] == expected_status
 Note that:
 
 - `max_retries` is required - `retry_until` without it is a schema error.
-- The `response` block still has to verify successfully. An attempt which fails verification is retried as normal (this
-  is the existing `max_retries` behaviour) and `retry_until` is not evaluated for it, so `retry_until` is an _extra_
-  condition on top of the response block rather than a replacement for it.
-- Variables from the `save` block of the attempt that finally succeeded are kept and are available to later stages.
+- Because `retry_until` is only consulted on failure, an expression which is already implied by the `response` block
+  will never be evaluated. Write the `response` block for what you expect once the polling has finished, as in the
+  example above.
+- If the request itself failed and no response was received at all (a connection error, say) there is nothing to
+  evaluate the expression against, so the stage is just retried.
+- Values in the `save` block of an attempt which failed verification are **not** saved, so if a stage finishes because
+  `retry_until` was `True` rather than because it passed, later stages will not see them.
 - `retry_until` does not apply inside a `control_flow` script, which bypasses the retry machinery - use
   `run_stage(..., continue_on_fail=True)` in a `for` loop instead, as shown in [Retry and Polling](#retry-and-polling).
 

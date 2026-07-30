@@ -35,16 +35,16 @@ def _check_retry_until(
     test_block_config: TestConfig,
     response: Any,
 ) -> bool:
-    """Evaluate the 'retry_until' expression against the response from a stage
+    """Evaluate the 'retry_until' expression against the response from a failed stage
 
     Args:
         retry_until: Starlark expression from the 'retry_until' key
         stage: test stage
         test_block_config: Configuration for current test
-        response: the response returned from running the stage
+        response: the response from the attempt that just failed
 
     Returns:
-        Whether the stage should be considered finished
+        Whether the stage should be considered finished anyway
     """
     # Local import to avoid a circular dependency, and to keep starlark optional
     from tavern._core.starlark.expressions import eval_stage_expression
@@ -52,7 +52,7 @@ def _check_retry_until(
 
     response_values = create_response_struct(
         response,
-        success=True,
+        success=False,
         request_vars=dict(test_block_config.variables),
         stage_name=stage["name"],
     )
@@ -112,6 +112,24 @@ def retry(stage: Mapping, test_block_config: TestConfig) -> Callable:
                     except exceptions.BadSchemaError:
                         raise
                     except exceptions.TavernException as e:
+                        # The stage failed, so if there's a 'retry_until' expression see
+                        # whether it considers the stage finished anyway
+                        if retry_until and e.response is not None:
+                            if _check_retry_until(
+                                retry_until, stage, test_block_config, e.response
+                            ):
+                                logger.info(
+                                    "Stage '%s' failed but 'retry_until' was true, continuing.",
+                                    stage["name"],
+                                )
+                                res = e.response
+                                break
+                        elif retry_until:
+                            logger.debug(
+                                "No response from stage '%s' so 'retry_until' could not be evaluated",
+                                stage["name"],
+                            )
+
                         if i < max_retries:
                             logger.info(
                                 "Stage '%s' failed for %i time. Retrying.",
@@ -126,7 +144,13 @@ def retry(stage: Mapping, test_block_config: TestConfig) -> Callable:
                                 max_retries,
                             )
 
-                            if isinstance(e, exceptions.TestFailError):
+                            if retry_until:
+                                raise exceptions.TestFailError(
+                                    "Test '{}' failed: stage did not succeed and 'retry_until' was never true in {} retries: {}".format(
+                                        stage["name"], max_retries, retry_until
+                                    )
+                                ) from e
+                            elif isinstance(e, exceptions.TestFailError):
                                 raise
                             else:
                                 raise exceptions.TestFailError(
@@ -135,27 +159,7 @@ def retry(stage: Mapping, test_block_config: TestConfig) -> Callable:
                                     )
                                 ) from e
                     else:
-                        if not retry_until:
-                            break
-
-                        if _check_retry_until(
-                            retry_until, stage, test_block_config, res
-                        ):
-                            break
-
-                        if i < max_retries:
-                            logger.info(
-                                "Stage '%s' ran successfully but 'retry_until' was false for %i time. Retrying.",
-                                stage["name"],
-                                i + 1,
-                            )
-                            delay(stage, "after", test_block_config.variables)
-                        else:
-                            raise exceptions.TestFailError(
-                                "Test '{}' failed: 'retry_until' expression was never true in {} retries: {}".format(
-                                    stage["name"], max_retries, retry_until
-                                )
-                            )
+                        break
 
                 logger.debug("Stage '%s' succeed after %i retries.", stage["name"], i)
                 return res

@@ -550,11 +550,17 @@ class _TestRunner:
 
         tinctures.end_tinctures(expected, response)
 
-        for response_type, response_verifiers in verifiers.items():
-            logger.debug("Running verifiers for %s", response_type)
-            for v in response_verifiers:
-                saved = v.verify(response)
-                stage_config.variables.update(saved)
+        try:
+            for response_type, response_verifiers in verifiers.items():
+                logger.debug("Running verifiers for %s", response_type)
+                for v in response_verifiers:
+                    saved = v.verify(response)
+                    stage_config.variables.update(saved)
+        except exceptions.TavernException as e:
+            # Attach the response so that things like 'retry_until' can still inspect it
+            # even though the stage failed verification
+            e.response = response
+            raise
 
         tavern_box.pop("request_vars")
         delay(stage, "after", stage_config.variables)

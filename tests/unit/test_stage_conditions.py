@@ -93,14 +93,21 @@ class TestIfStage:
             _run_test(stage, test_block_config, run_mock)
 
 
-def _mock_response(body):
+def _mock_response(body, status_code=200):
     response = Mock(spec=requests.Response)
-    response.status_code = 200
+    response.status_code = status_code
     response.headers = {"Content-Type": "application/json"}
     response.json.return_value = body
     response.cookies = {}
     response.content = b"{}"
     return response
+
+
+def _stage_failure(body, status_code=200):
+    """A stage which failed verification, but which did get a response back"""
+    error = exceptions.TestFailError("stage did not verify")
+    error.response = _mock_response(body, status_code)
+    return error
 
 
 class TestRetryUntil:
@@ -120,26 +127,39 @@ class TestRetryUntil:
             "retry_until": "response.body['status'] == 'ready'",
         }
 
-    def test_succeeds_on_later_attempt(self, stage, test_block_config):
-        responses = [
-            _mock_response({"status": "pending"}),
-            _mock_response({"status": "pending"}),
-            _mock_response({"status": "ready"}),
-        ]
-        inner = Mock(side_effect=responses)
+    def test_not_evaluated_when_stage_passes(self, stage, test_block_config):
+        """A stage which passes is finished - retry_until is not consulted at all,
+        even though it would have been false"""
+        response = _mock_response({"status": "pending"})
+        inner = Mock(return_value=response)
 
-        wrapped = retry(stage, test_block_config)(inner)
-        assert wrapped() is responses[-1]
+        assert retry(stage, test_block_config)(inner)() is response
+        assert inner.call_count == 1
+
+    def test_stops_when_retry_until_is_true(self, stage, test_block_config):
+        """The stage keeps failing, but retry_until eventually becomes true"""
+        failures = [
+            _stage_failure({"status": "pending"}),
+            _stage_failure({"status": "pending"}),
+            _stage_failure({"status": "ready"}),
+        ]
+        inner = Mock(side_effect=failures)
+
+        assert retry(stage, test_block_config)(inner)() is failures[-1].response
         assert inner.call_count == 3
 
-    def test_succeeds_immediately(self, stage, test_block_config):
-        inner = Mock(return_value=_mock_response({"status": "ready"}))
+    def test_stops_immediately_when_retry_until_is_true(self, stage, test_block_config):
+        inner = Mock(side_effect=_stage_failure({"status": "ready"}))
 
         retry(stage, test_block_config)(inner)()
         assert inner.call_count == 1
 
     def test_fails_after_exhausting_retries(self, stage, test_block_config):
-        inner = Mock(return_value=_mock_response({"status": "pending"}))
+        inner = Mock(
+            side_effect=lambda: (_ for _ in ()).throw(
+                _stage_failure({"status": "pending"})
+            )
+        )
 
         with pytest.raises(exceptions.TestFailError) as exc_info:
             retry(stage, test_block_config)(inner)()
@@ -148,12 +168,12 @@ class TestRetryUntil:
         assert inner.call_count == 4
         assert "retry_until" in str(exc_info.value)
 
-    def test_not_evaluated_when_stage_raised(self, stage, test_block_config):
-        """If the response block didn't verify, retry as normal without evaluating"""
+    def test_not_evaluated_without_a_response(self, stage, test_block_config):
+        """If the request itself failed there is no response to inspect, so just retry"""
         inner = Mock(
             side_effect=[
-                exceptions.TestFailError("nope"),
-                _mock_response({"status": "ready"}),
+                exceptions.TestFailError("no response at all"),
+                _mock_response({"status": "pending"}),
             ]
         )
 
@@ -164,8 +184,8 @@ class TestRetryUntil:
         stage["delay_after"] = 0.01
         inner = Mock(
             side_effect=[
-                _mock_response({"status": "pending"}),
-                _mock_response({"status": "ready"}),
+                _stage_failure({"status": "pending"}),
+                _stage_failure({"status": "ready"}),
             ]
         )
 
@@ -177,10 +197,22 @@ class TestRetryUntil:
     def test_uses_test_variables(self, stage, test_block_config):
         stage["retry_until"] = "response.body['status'] == expected_status"
         test_block_config.variables["expected_status"] = "ready"
-        inner = Mock(return_value=_mock_response({"status": "ready"}))
+        inner = Mock(side_effect=_stage_failure({"status": "ready"}))
 
         retry(stage, test_block_config)(inner)()
         assert inner.call_count == 1
+
+    def test_uses_status_code(self, stage, test_block_config):
+        stage["retry_until"] = "response.status_code == 201"
+        inner = Mock(
+            side_effect=[
+                _stage_failure({}, status_code=503),
+                _stage_failure({}, status_code=201),
+            ]
+        )
+
+        retry(stage, test_block_config)(inner)()
+        assert inner.call_count == 2
 
     def test_without_max_retries_is_an_error(self, stage, test_block_config):
         del stage["max_retries"]
@@ -192,7 +224,7 @@ class TestRetryUntil:
         test_block_config = dataclasses.replace(
             test_block_config, experimental_starlark_pipeline=False
         )
-        inner = Mock(return_value=_mock_response({"status": "ready"}))
+        inner = Mock(side_effect=_stage_failure({"status": "ready"}))
 
         with pytest.raises(exceptions.UnexpectedKeysError):
             retry(stage, test_block_config)(inner)()
