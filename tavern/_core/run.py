@@ -4,6 +4,7 @@ import functools
 import logging
 import os
 import pathlib
+import warnings
 from collections.abc import Mapping, MutableMapping
 from contextlib import ExitStack
 from copy import deepcopy
@@ -303,6 +304,15 @@ def run_test(
         try:
             # Run tests in a path in order
             for idx, stage in enumerate(test_spec["stages"]):
+                if "skip" in stage:
+                    warnings.warn(  # noqa
+                        f"Stage '{stage['name']}' uses the 'skip' key, which is deprecated - "
+                        "use the 'if' key instead (note that the logic is inverted, and it uses "
+                        "Starlark rather than simpleeval). See 'Running a stage conditionally "
+                        "with if' in the scripting documentation.",
+                        DeprecationWarning,
+                    )
+
                 if content := stage.get("skip"):
                     if content is True:
                         # If it's a literal boolean true or false

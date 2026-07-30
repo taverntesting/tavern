@@ -91,9 +91,9 @@ are bound directly as Starlark globals.
 
 ### Running a stage conditionally with `if`
 
-The stage only runs if the expression evaluates to `True`. This is the Starlark counterpart of
-the ['skip' key](./core_concepts/marks.md#skipping-stages-with-simpleeval-expressions), inverted - a stage cannot use
-both.
+The stage only runs if the expression evaluates to `True`. This replaces the now deprecated
+['skip' key](./core_concepts/marks.md#skipping-stages-with-simpleeval-expressions) - `if` is the same thing with the
+logic inverted, and a stage cannot use both.
 
 ```yaml
 stages:
