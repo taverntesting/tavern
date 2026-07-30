@@ -1,0 +1,155 @@
+is_defaults: True
+marks:
+  - starlark_control_flow
+
+---
+# Tests for the per-stage 'if' and 'retry_until' starlark expressions. These do not
+# need a 'control_flow' script, but do need the same experimental flag.
+
+test_name: Test per-stage 'if' with a saved variable
+
+stages:
+  - name: Echo a number to save
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: 5
+    response:
+      status_code: 200
+      save:
+        json:
+          var_x: value
+
+  - name: This stage should run
+    if: var_x > 2
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "ran"
+    response:
+      status_code: 200
+      json:
+        value: "ran"
+
+  - name: This stage should not run
+    if: var_x > 100
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "should not have run"
+    response:
+      # If this stage is ever actually run it will fail here
+      status_code: 999
+
+---
+test_name: Test per-stage 'if' using a nested value
+
+stages:
+  - name: Echo a dict to save
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value:
+          status: ready
+    response:
+      status_code: 200
+      save:
+        json:
+          echoed: value
+
+  - name: This stage should run
+    if: echoed["status"] == "ready"
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "ran"
+    response:
+      status_code: 200
+      json:
+        value: "ran"
+
+---
+test_name: Test per-stage 'if' referring to a variable that was never saved
+
+_xfail: run
+
+stages:
+  - name: This stage errors because the variable is not defined
+    if: never_saved == 1
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "hello"
+    response:
+      status_code: 200
+
+---
+test_name: Test 'retry_until' polling until the response body is ready
+
+stages:
+  - name: Poll until ready
+    request:
+      url: "{global_host}/poll"
+      method: GET
+    response:
+      status_code: 200
+      save:
+        json:
+          polled_status: status
+    max_retries: 5
+    delay_after: 0.1
+    retry_until: response.body["status"] == "ready"
+
+  - name: Check the value saved from the successful attempt was kept
+    if: polled_status == "ready"
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "{polled_status}"
+    response:
+      status_code: 200
+      json:
+        value: "ready"
+
+---
+test_name: Test 'retry_until' which is never true fails the test
+
+_xfail: run
+
+stages:
+  - name: Poll for something that never happens
+    request:
+      url: "{global_host}/poll"
+      method: GET
+    response:
+      status_code: 200
+    max_retries: 2
+    delay_after: 0.1
+    retry_until: response.body["status"] == "never-going-to-happen"
+
+---
+test_name: Test 'retry_until' can use the status code and test variables
+
+includes:
+  - name: retry_until_vars
+    description: variables used in the retry_until expression
+    variables:
+      expected_status: ready
+
+stages:
+  - name: Poll until ready
+    request:
+      url: "{global_host}/poll"
+      method: GET
+    response:
+      status_code: 200
+    max_retries: 5
+    delay_after: 0.1
+    retry_until: response.status_code == 200 and response.body["status"] == expected_status

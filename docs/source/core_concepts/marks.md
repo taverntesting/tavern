@@ -140,6 +140,9 @@ stages:
 
 In this example, the stage will be skipped if `v_int` is greater than 50. Any valid simpleeval expression can be used.
 
+There is also an experimental [`if` key](../scripting.md#running-a-stage-conditionally-with-if) which does the same
+thing but inverted, using Starlark instead of simpleeval. `skip` and `if` cannot both be used on the same stage.
+
 #### skipif
 
 Sometimes you just want to skip some tests, perhaps based on which server you're
