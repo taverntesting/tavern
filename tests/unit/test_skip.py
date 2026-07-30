@@ -1,5 +1,6 @@
 import dataclasses
 import unittest.mock
+import warnings
 from collections.abc import Mapping
 from unittest.mock import patch
 
@@ -122,3 +123,21 @@ class TestSkipStage:
 
         stage["skip"] = ""
         assert _run_test(stage, test_block_config, run_mock) is True
+
+    @pytest.mark.parametrize("skip_value", [True, False, "False", ""])
+    def test_skip_is_deprecated(
+        self, stage, test_block_config, run_mock, skip_value
+    ) -> None:
+        """Using the 'skip' key at all should tell people to use 'if' instead"""
+
+        stage["skip"] = skip_value
+
+        with pytest.warns(DeprecationWarning, match="use the 'if' key instead"):
+            _run_test(stage, test_block_config, run_mock)
+
+    def test_no_deprecation_warning_without_skip(
+        self, stage, test_block_config, run_mock
+    ) -> None:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", DeprecationWarning)
+            _run_test(stage, test_block_config, run_mock)
