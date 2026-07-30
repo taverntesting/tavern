@@ -159,6 +159,29 @@ returned by [`run_stage()`](#run_stage):
 response.status_code == 200 and response.body["status"] == expected_status
 ```
 
+Because it is an arbitrary expression it can also stop on more than one outcome, which is the usual shape for polling a
+long running job that might end up in any one of several terminal states:
+
+```yaml
+stages:
+  - name: Poll until the job finishes
+    request:
+      url: "{global_host}/job/{job_id}"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 20
+    delay_after: 1
+    retry_until: response.body["status"] == "SUCCESS" or response.body["status"] == "FAILED"
+```
+
+Here the `response` block says what the happy path looks like, and `retry_until` says when there is no point polling any
+more. A job which ends up as `FAILED` stops the retries immediately rather than waiting out all 20 of them - but note
+that, as above, a stage which finished because `retry_until` was `True` does not fail the test even though its response
+block did not match. If you need to assert on how the job actually ended, do it in a following stage.
+
 Note that:
 
 - `max_retries` is required - `retry_until` without it is a schema error.
