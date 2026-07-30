@@ -1,4 +1,9 @@
-from .hooks import pytest_addhooks, pytest_addoption, pytest_collect_file
+from .hooks import (
+    pytest_addhooks,
+    pytest_addoption,
+    pytest_collect_file,
+    pytest_terminal_summary,
+)
 from .newhooks import call_hook
 from .util import add_parser_options
 
@@ -8,4 +13,5 @@ __all__ = [
     "pytest_addhooks",
     "pytest_addoption",
     "pytest_collect_file",
+    "pytest_terminal_summary",
 ]

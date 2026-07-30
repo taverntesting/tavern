@@ -381,6 +381,84 @@ control_flow: |
       fail("polling did not succeed after 3 attempts")
 ```
 
+## Visualising a script ("what would happen")
+
+Because a `control_flow` script replaces the normal sequential execution, the order stages actually run in isn't
+visible from the YAML. To see it without running anything, pass `--tavern-what-would-happen`:
+
+```bash
+pytest --tavern-what-would-happen tests/
+```
+
+Tests are collected as normal, but instead of being run they are skipped and a
+[mermaid](https://mermaid.js.org/) flowchart is printed for each test with a `control_flow` block. Tests without a
+`control_flow` block are just skipped. No requests are made and no sessions are opened, so this is safe to run against
+a test suite pointing at a real environment.
+
+For the retry example above, the output is:
+
+````text
+### tests/example.tavern.yaml::test for loop with retry
+
+```mermaid
+flowchart TD
+  start(["start"])
+  l1{"for i in range(0, 3)"}
+  start --> l1
+  s2["polling<br/>GET {global_host}/poll<br/>(continue_on_fail)"]
+  l1 -->|each| s2
+  c3{"not resp.failed"}
+  s2 --> c3
+  c3 -->|no| l1
+  c4{"not succeeded"}
+  l1 -->|done| c4
+  c3 -->|yes| c4
+  f5[["fail: polling did not succeed after 3 attempts"]]
+  c4 -->|yes| f5
+  finish(["end"])
+  c4 -->|no| finish
+```
+````
+
+The output is a fenced mermaid block, so it can be pasted straight into a GitHub comment or a markdown document.
+To write the diagrams to disk instead of (as well as) reading them in the terminal, pass a directory - one `.mmd` file
+is written per test:
+
+```bash
+pytest --tavern-what-would-happen --tavern-what-would-happen-dir=./diagrams tests/
+```
+
+Both options can also be set in `pytest.ini`/`pyproject.toml` as `tavern-what-would-happen` and
+`tavern-what-would-happen-dir`.
+
+### What the shapes mean
+
+| Shape                | Meaning                                                                   |
+|----------------------|---------------------------------------------------------------------------|
+| `(["start"])`        | Start/end of the script                                                   |
+| `["stage name..."]`  | A `run_stage()` call, labelled with the stage name and its method and URL |
+| `{"condition"}`      | An `if`/`elif` branch, or the head of a `for`/`while` loop                 |
+| `[["fail: ..."]]`    | A `fail()` call - the test stops here                                     |
+| `("sleep 1")`        | A `time.sleep()` call                                                     |
+| `[/"helper()"/]`     | A call to a function defined in the script, linked to its own subgraph    |
+
+Nodes are highlighted in red if `run_stage()` refers to a stage id that doesn't exist, and in yellow if the stage id is
+computed at runtime and so can't be checked. This makes the flag a useful static check on its own, as a typo'd stage id
+is otherwise only found when that branch is actually taken.
+
+### Limitations
+
+This is a static analysis of the script - it never runs it - so:
+
+- Every branch is shown, including ones that could never be taken.
+- Stage ids that aren't string literals can't be resolved, and are shown as-is.
+- `run_stage()` calls inside comprehensions aren't rendered.
+- Variables are not interpolated, so URLs are shown as written (`{global_host}/poll`).
+- Stages from `--tavern-global-cfg` are only resolved if that flag is also passed.
+
+`--tavern-what-would-happen` does *not* require `--tavern-experimental-starlark-pipeline`, and works without the
+`scriptable` extra installed.
+
 ## Current Limitations
 
 ### HTTP-Only Support
@@ -400,10 +478,12 @@ Starlark error messages can be unhelpful when debugging failures. Error context 
 
 **Tips for debugging:**
 
-1. Use `log()` statements to trace execution flow
-2. Check stage IDs match exactly (case-sensitive)
-3. Verify `control_flow` indentation (YAML multi-line strings)
-4. Test regex patterns separately before using in scripts
+1. Run with [`--tavern-what-would-happen`](#visualising-a-script-what-would-happen) to see the shape of the script and
+   to check every stage id exists
+2. Use `log()` statements to trace execution flow
+3. Check stage IDs match exactly (case-sensitive)
+4. Verify `control_flow` indentation (YAML multi-line strings)
+5. Test regex patterns separately before using in scripts
 
 ### Type Restrictions
 

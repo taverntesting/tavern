@@ -269,6 +269,17 @@ class YamlItem(pytest.Item):
 
                     stage["name"] = stage["id"]
 
+            # Local import - this pulls in the starlark package, which imports
+            # run.py, which imports this package
+            from . import what_would_happen
+
+            if what_would_happen.enabled(self.config):
+                if "control_flow" not in self.spec:
+                    pytest.skip("what-would-happen: test has no 'control_flow' block")
+
+                what_would_happen.record(self)
+                pytest.skip("what-would-happen: not running test")
+
             run_test(self.path, self.spec, self.global_cfg)
 
         except exceptions.BadSchemaError as e:

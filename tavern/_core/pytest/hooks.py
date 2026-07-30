@@ -102,6 +102,15 @@ def _pytest_collect_file(parent, file_path: pathlib.Path) -> Optional["YamlFile"
     return None
 
 
+def pytest_terminal_summary(
+    terminalreporter, exitstatus, config: pytest.Config
+) -> None:
+    """Print any 'what would happen' diagrams collected during the run"""
+    from . import what_would_happen
+
+    what_would_happen.print_summary(config, terminalreporter)
+
+
 def pytest_addhooks(pluginmanager) -> None:
     """Add our custom tavern hooks"""
     from . import newhooks

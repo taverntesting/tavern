@@ -90,6 +90,19 @@ def add_parser_options(parser_addoption, with_defaults: bool = True) -> None:
         default=False,
         help="Enable experimental starlark control_flow support (inline 'control_flow' block in test files)",
     )
+    parser_addoption(
+        "--tavern-what-would-happen",
+        action="store_true",
+        default=False,
+        help="Don't run any tests, instead print a mermaid flowchart of what each 'control_flow' script would do",
+    )
+    parser_addoption(
+        "--tavern-what-would-happen-dir",
+        default=None,
+        action="store",
+        type=str,
+        help="With --tavern-what-would-happen, also write one .mmd file per test into this directory",
+    )
 
 
 def add_ini_options(parser: pytest.Parser) -> None:
@@ -164,6 +177,17 @@ def add_ini_options(parser: pytest.Parser) -> None:
         help="Enable experimental starlark control_flow support (inline 'control_flow' block in test files)",
         type="bool",
         default=False,
+    )
+    parser.addini(
+        "tavern-what-would-happen",
+        help="Don't run any tests, instead print a mermaid flowchart of what each 'control_flow' script would do",
+        type="bool",
+        default=False,
+    )
+    parser.addini(
+        "tavern-what-would-happen-dir",
+        help="With --tavern-what-would-happen, also write one .mmd file per test into this directory",
+        default=None,
     )
 
 
