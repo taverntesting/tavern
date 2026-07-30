@@ -168,6 +168,46 @@ class TestRetryUntil:
         assert inner.call_count == 4
         assert "retry_until" in str(exc_info.value)
 
+    @pytest.mark.parametrize("terminal_status", ["SUCCESS", "FAILED"])
+    def test_stops_on_any_terminal_state(
+        self, stage, test_block_config, terminal_status
+    ):
+        """Poll a long running job until it finishes, whether it succeeded or not
+
+        https://github.com/taverntesting/tavern/issues/751
+        """
+        stage["retry_until"] = (
+            "response.body['status'] == 'SUCCESS'"
+            " or response.body['status'] == 'FAILED'"
+        )
+        stage["max_retries"] = 5
+        failures = [
+            _stage_failure({"status": "IN_PROGRESS"}),
+            _stage_failure({"status": "IN_PROGRESS"}),
+            _stage_failure({"status": terminal_status}),
+        ]
+        inner = Mock(side_effect=failures)
+
+        assert retry(stage, test_block_config)(inner)() is failures[-1].response
+        assert inner.call_count == 3
+
+    def test_never_reaching_a_terminal_state_fails(self, stage, test_block_config):
+        stage["retry_until"] = (
+            "response.body['status'] == 'SUCCESS'"
+            " or response.body['status'] == 'FAILED'"
+        )
+        stage["max_retries"] = 2
+        inner = Mock(
+            side_effect=lambda: (_ for _ in ()).throw(
+                _stage_failure({"status": "IN_PROGRESS"})
+            )
+        )
+
+        with pytest.raises(exceptions.TestFailError):
+            retry(stage, test_block_config)(inner)()
+
+        assert inner.call_count == 3
+
     def test_not_evaluated_without_a_response(self, stage, test_block_config):
         """If the request itself failed there is no response to inspect, so just retry"""
         inner = Mock(
