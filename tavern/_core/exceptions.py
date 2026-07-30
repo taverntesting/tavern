@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Any, Optional
 
 if TYPE_CHECKING:
     from tavern._core.pytest.config import TestConfig
@@ -13,11 +13,13 @@ class TavernException(Exception):
         is_final: whether this exception came from a 'finally' block
         stage: stage that caused this issue
         test_block_config: config for stage
+        response: the response from the stage, if one was received before the failure
     """
 
     stage: Optional[dict]
     test_block_config: Optional["TestConfig"]
     is_final: bool = False
+    response: Optional[Any] = None
 
 
 class BadSchemaError(TavernException):
