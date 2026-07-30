@@ -141,6 +141,53 @@ stages:
     retry_until: response.body["status"] == "never-going-to-happen"
 
 ---
+# https://github.com/taverntesting/tavern/issues/751 - poll a long running job until it
+# reaches _any_ terminal state, rather than guessing how many retries it will need
+test_name: Test 'retry_until' stopping on any terminal state
+
+stages:
+  - name: Poll until the job finishes
+    request:
+      url: "{global_host}/job/works"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 5
+    delay_after: 0.1
+    retry_until: response.body["status"] == "SUCCESS" or response.body["status"] == "FAILED"
+
+---
+test_name: Test 'retry_until' stopping on a terminal state which is a failure
+
+stages:
+  # The job reaches 'FAILED', which is still finished as far as the polling is
+  # concerned, so 'retry_until' stops the retries even though this stage fails
+  - name: Poll until the job finishes
+    request:
+      url: "{global_host}/job/doomed-to-fail"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 5
+    delay_after: 0.1
+    retry_until: response.body["status"] == "SUCCESS" or response.body["status"] == "FAILED"
+
+  # Because a stage which finished via 'retry_until' does not save anything, check what
+  # the job actually ended up as in a separate stage
+  - name: Check the job failed
+    request:
+      url: "{global_host}/job/doomed-to-fail"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: FAILED
+
+---
 test_name: Test 'retry_until' can use the status code and test variables
 
 includes:

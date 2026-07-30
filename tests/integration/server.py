@@ -344,6 +344,28 @@ def poll():
     return jsonify(response)
 
 
+job_polls: dict = {}
+
+
+@app.route("/job/<job_name>", methods=["GET"])
+def job_status(job_name):
+    """A long running job which is in progress for the first couple of polls and then
+    reaches a terminal state, which is 'FAILED' if the job name ends with 'fail'.
+
+    Once a job has finished it stays finished, so it can be polled again afterwards.
+    """
+    polls = job_polls[job_name] = job_polls.get(job_name, 0) + 1
+
+    if polls < 3:
+        status = "IN_PROGRESS"
+    elif job_name.endswith("fail"):
+        status = "FAILED"
+    else:
+        status = "SUCCESS"
+
+    return jsonify({"status": status})
+
+
 def _maybe_get_cookie_name():
     return (request.get_json(silent=True) or {}).get("cookie_name", "tavern-cookie")
 
