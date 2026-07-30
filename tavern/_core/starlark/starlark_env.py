@@ -9,7 +9,6 @@ import re
 import time
 from typing import Any, TypedDict
 
-import requests
 import starlark
 
 from tavern._core import exceptions
@@ -19,6 +18,7 @@ from tavern._core.run import _TestRunner
 from tavern._core.strict_util import StrictLevel
 from tavern._core.tincture import get_stage_tinctures
 
+from .response_struct import create_response_struct
 from .stage_registry import StageRegistry
 from .types import from_starlark, to_starlark
 
@@ -254,38 +254,11 @@ class StarlarkPipelineRunner:
 
     def _create_response_struct(self, stage_response: StageResponse) -> dict[str, Any]:
         """Convert StageResponse to dict that starlark converts to struct."""
-        base_dict: dict[str, Any] = {
-            # Add "failed" so people don't have to do "if not resp.success" when people will almost certainly
-            # want to do "if resp.failed" most of the time
-            "failed": not stage_response.success,
-            "success": stage_response.success,
-            "request_vars": stage_response.request_vars,
-            "stage_name": stage_response.stage_name,
-        }
-        if stage_response.response is None:
-            return base_dict
-        elif isinstance(stage_response.response, requests.Response):
-            rest_response = stage_response.response
-            content_type = rest_response.headers.get("Content-Type", "")
-
-            # Try to parse JSON body, fall back to raw content
-            if "application/json" in content_type:
-                body = rest_response.json()
-            else:
-                body = rest_response.content
-
-            base_dict.update(
-                {
-                    "status_code": rest_response.status_code,
-                    "body": body,
-                    "headers": rest_response.headers,
-                    "cookies": rest_response.cookies,
-                }
-            )
-            return base_dict
-
-        raise NotImplementedError(
-            f"gRPC, MQTT, etc. are not supported yet. Got {type(stage_response.response)}"
+        return create_response_struct(
+            stage_response.response,
+            success=stage_response.success,
+            request_vars=stage_response.request_vars,
+            stage_name=stage_response.stage_name,
         )
 
     def _setup_builtins(self, module: "starlark.Module") -> None:

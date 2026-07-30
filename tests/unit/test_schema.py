@@ -133,6 +133,39 @@ class TestVerify:
             verify_tests(test_dict)
 
 
+class TestStageConditions:
+    """The per-stage starlark 'if'/'retry_until' keys"""
+
+    def test_if_alone(self, test_dict):
+        test_dict["stages"][0]["if"] = "var_x > 2"
+        verify_tests(test_dict)
+
+    def test_if_and_skip_together(self, test_dict):
+        """'if' is the starlark equivalent of 'skip' so using both is nonsense"""
+        test_dict["stages"][0]["if"] = "var_x > 2"
+        test_dict["stages"][0]["skip"] = "True"
+
+        with pytest.raises(BadSchemaError):
+            verify_tests(test_dict)
+
+    def test_retry_until_with_max_retries(self, test_dict):
+        test_dict["stages"][0]["retry_until"] = "response.status_code == 200"
+        test_dict["stages"][0]["max_retries"] = 3
+        verify_tests(test_dict)
+
+    def test_retry_until_without_max_retries(self, test_dict):
+        test_dict["stages"][0]["retry_until"] = "response.status_code == 200"
+
+        with pytest.raises(BadSchemaError):
+            verify_tests(test_dict)
+
+    def test_if_must_be_a_string(self, test_dict):
+        test_dict["stages"][0]["if"] = True
+
+        with pytest.raises(BadSchemaError):
+            verify_tests(test_dict)
+
+
 class TestBadSchemaAtCollect:
     """Some errors happen at collection time - harder to test"""
 

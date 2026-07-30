@@ -62,7 +62,7 @@ def _run_with_starlark_control_flow(
         import starlark
     except ImportError as e:
         raise exceptions.DependencyMissingError(
-            "starlark", "pip install tavern[starlark]"
+            "starlark", "pip install tavern[scriptable]"
         ) from e
 
     from tavern._core.starlark.starlark_env import StarlarkPipelineRunner
@@ -326,6 +326,14 @@ def run_test(
                     if eval_skip(content, test_block_config):
                         continue
 
+                if (condition := stage.get("if")) is not None:
+                    if not _eval_stage_condition(condition, stage, test_block_config):
+                        logger.info(
+                            "Skipping stage '%s' as 'if' condition was false",
+                            stage["name"],
+                        )
+                        continue
+
                 if has_only and not getonly(stage):
                     continue
 
@@ -350,6 +358,30 @@ def run_test(
                     runner.run_stage(idx, stage, is_final=True)
             else:
                 logger.debug("no 'finally' stages to run")
+
+
+def _eval_stage_condition(
+    condition: str, stage: Mapping, test_block_config: TestConfig
+) -> bool:
+    """Evaluate the 'if' key on a stage to see whether it should be run
+
+    Args:
+        condition: Starlark expression from the 'if' key
+        stage: the stage it came from
+        test_block_config: current test config
+
+    Returns:
+        Whether the stage should be run
+    """
+    # Local import to avoid a circular dependency, and to keep starlark optional
+    from tavern._core.starlark.expressions import eval_stage_expression
+
+    if not isinstance(condition, str):
+        raise exceptions.BadSchemaError(
+            f"Unexpected '{type(condition)}' in if key - should be a string"
+        )
+
+    return eval_stage_expression("if", condition, stage, test_block_config)
 
 
 def _calculate_stage_strictness(

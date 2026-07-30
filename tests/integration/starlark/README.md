@@ -35,3 +35,4 @@ docker-compose -f tests/integration/docker-compose.yml down
 ## Test Files
 
 - `test_control_flow_inline.tavern.yaml` - Basic pipeline test
+- `test_stage_conditions.tavern.yaml` - Per-stage `if`/`retry_until` expressions (no `control_flow` script)
