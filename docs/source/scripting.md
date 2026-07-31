@@ -49,7 +49,7 @@ declaratively, in a format that is more readable than interpolated strings in YA
 
 There are two levels to this:
 
-- [Per-stage expressions](#per-stage-expressions) (`if` and `retry_until`) - keep the normal sequential stage list and
+- [Per-stage expressions](#per-stage-expressions) (`if`, `retry_until` and `fail_if`) - keep the normal sequential stage list and
   just annotate individual stages. This is the closest thing to the GitHub Actions example above and is where you
   should start.
 - A full [`control_flow` script](#basic-usage) - replaces sequential execution entirely, for things which can't be
@@ -194,6 +194,62 @@ Note that:
   `retry_until` was `True` rather than because it passed, later stages will not see them.
 - `retry_until` does not apply inside a `control_flow` script, which bypasses the retry machinery - use
   `run_stage(..., continue_on_fail=True)` in a `for` loop instead, as shown in [Retry and Polling](#retry-and-polling).
+
+### Failing fast with `fail_if`
+
+`fail_if` is the mirror image of `retry_until` - a negative assertion which fails the stage as soon as it is `True`:
+
+- It is evaluated after **every** attempt at the stage, whether that attempt passed or failed.
+- If it is `True` the test fails immediately. The stage is **not** retried, no matter what `max_retries` or
+  `retry_until` say.
+- If it is `False` nothing changes - a stage which passed carries on to the next stage, and a stage which failed is
+  retried as normal.
+
+It has the same `response` struct in scope as `retry_until`, which includes `response.failed` if you want to
+distinguish an attempt which passed its response block from one which did not.
+
+The main use for this is polling something which can end up in a state it will never recover from. `retry_until` alone
+can only say "stop polling", which counts as a pass; `fail_if` says "stop polling, and this is a failure":
+
+```yaml
+stages:
+  - name: Poll until the job succeeds
+    request:
+      url: "{global_host}/job/{job_id}"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 60
+    delay_after: 10
+    retry_until: response.body["status"] == "SUCCESS"
+    fail_if: response.body["status"] == "FAILED"
+```
+
+A job which goes to `FAILED` fails the test on the next poll instead of spending ten minutes retrying something which
+was never going to succeed.
+
+It is also useful on its own, with no retries at all, as an assertion which is easier to express as an expression than
+as a `response` block:
+
+```yaml
+- name: Check the response does not leak internal errors
+  request:
+    url: "{global_host}/search"
+    method: GET
+  response:
+    status_code: 200
+  fail_if: 'response.body["message"] != None and "traceback" in response.body["message"]'
+```
+
+Note that:
+
+- Unlike `retry_until`, `fail_if` does not need `max_retries`.
+- If the request itself failed and no response was received at all, `fail_if` is not evaluated and the stage fails or
+  retries as it normally would.
+- Like `retry_until`, it does not apply inside a `control_flow` script - check the struct returned by `run_stage()`
+  instead.
 
 ## Basic Usage
 
@@ -517,8 +573,8 @@ control_flow: |
 **Important:** Starlark control flow currently only works with HTTP/REST tests. Other protocol backends (MQTT, gRPC,
 GraphQL) are not yet supported.
 
-Attempting to use `run_stage()` - or `retry_until` - with non-HTTP stages will raise a `NotImplementedError`. The `if`
-key works with any backend, as it only sees test variables.
+Attempting to use `run_stage()` - or `retry_until`/`fail_if` - with non-HTTP stages will raise a `NotImplementedError`.
+The `if` key works with any backend, as it only sees test variables.
 
 ### Error Messages
 

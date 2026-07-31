@@ -38,6 +38,13 @@ class TestFailError(TavernException):
         self.failures = failures or []
 
 
+class FailIfError(TestFailError):
+    """A stage's 'fail_if' expression was true
+
+    This is separate from a normal test failure because it should never be retried
+    """
+
+
 class KeyMismatchError(TavernException):
     """Mismatch found while validating keys in response"""
 

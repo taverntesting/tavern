@@ -1,17 +1,21 @@
-"""Tests for the per-stage 'if' and 'retry_until' starlark expressions"""
+"""Tests for the per-stage 'if', 'retry_until' and 'fail_if' starlark expressions"""
 
 import dataclasses
 import unittest.mock
 from collections.abc import Mapping
-from unittest.mock import Mock, patch
+from unittest.mock import Mock, create_autospec, patch
 
 import pytest
 import requests
 
 from tavern._core import exceptions
 from tavern._core.pytest.config import TestConfig
-from tavern._core.run import run_test
+from tavern._core.run import _TestRunner, run_test
+from tavern._core.strict_util import StrictLevel
 from tavern._core.testhelpers import retry
+from tavern._core.tincture import Tinctures
+from tavern.request import BaseRequest
+from tavern.response import BaseResponse
 
 
 def _run_test(
@@ -268,3 +272,184 @@ class TestRetryUntil:
 
         with pytest.raises(exceptions.UnexpectedKeysError):
             retry(stage, test_block_config)(inner)()
+
+
+def _stage_callable():
+    """The signature of the function that 'retry' wraps, used as a Mock spec"""
+
+
+def _mock_stage_callable(**kwargs) -> Mock:
+    """A mock of the function that 'retry' wraps
+
+    This is autospecced rather than a plain Mock because the retry wrapper calls
+    functools.wraps on it, which needs the real function attributes.
+    """
+    return create_autospec(_stage_callable, **kwargs)
+
+
+def _run_stage(stage, test_block_config, response, *, verify_error=None):
+    """Run a single stage, mocking out everything to do with actually making a request
+
+    Args:
+        stage: the stage to run
+        test_block_config: config for the test
+        response: what the 'request' should return
+        verify_error: if given, an exception raised when verifying the response
+    """
+
+    verifier = Mock(spec=BaseResponse)
+    if verify_error is not None:
+        verifier.verify.side_effect = verify_error
+    else:
+        verifier.verify.return_value = {}
+
+    request = Mock(spec=BaseRequest)
+    request.request_vars = {}
+    request.run.return_value = response
+
+    runner = _TestRunner(
+        default_global_strictness=StrictLevel.all_on(),
+        sessions={},
+        test_block_config=test_block_config,
+        test_spec={"test_name": "a test", "stages": [stage]},
+    )
+
+    with (
+        patch("tavern._core.run.attach_stage_content"),
+        patch("tavern._core.run.call_hook"),
+        patch("tavern._core.run.get_request_type", return_value=request),
+        patch("tavern._core.run.get_expected", return_value={}),
+        patch("tavern._core.run.get_verifiers", return_value={"response": [verifier]}),
+    ):
+        return runner.wrapped_run_stage(stage, test_block_config, Mock(spec=Tinctures))
+
+
+class TestFailIf:
+    @pytest.fixture
+    def test_block_config(self, includes):
+        return dataclasses.replace(
+            includes,
+            variables={"env_vars": {}, "tavern": {}},
+            experimental_starlark_pipeline=True,
+        )
+
+    @pytest.fixture
+    def stage(self):
+        return {
+            "name": "test stage",
+            "request": {"url": "https://example.com", "method": "GET"},
+            "response": {"status_code": 200},
+            "fail_if": "response.body['status'] == 'FAILED'",
+        }
+
+    def test_passing_stage_with_false_expression(self, stage, test_block_config):
+        response = _mock_response({"status": "SUCCESS"})
+
+        assert _run_stage(stage, test_block_config, response) is response
+
+    def test_passing_stage_with_true_expression(self, stage, test_block_config):
+        """The response block matched, but the stage is a failure anyway"""
+        response = _mock_response({"status": "FAILED"})
+
+        with pytest.raises(exceptions.FailIfError) as exc_info:
+            _run_stage(stage, test_block_config, response)
+
+        assert "fail_if" in str(exc_info.value)
+
+    def test_failing_stage_with_true_expression(self, stage, test_block_config):
+        response = _mock_response({"status": "FAILED"})
+
+        with pytest.raises(exceptions.FailIfError):
+            _run_stage(
+                stage,
+                test_block_config,
+                response,
+                verify_error=exceptions.TestFailError("stage did not verify"),
+            )
+
+    def test_failing_stage_with_false_expression(self, stage, test_block_config):
+        """The normal failure is unaffected by a 'fail_if' which was false"""
+        response = _mock_response({"status": "IN_PROGRESS"})
+
+        with pytest.raises(exceptions.TestFailError) as exc_info:
+            _run_stage(
+                stage,
+                test_block_config,
+                response,
+                verify_error=exceptions.TestFailError("stage did not verify"),
+            )
+
+        assert not isinstance(exc_info.value, exceptions.FailIfError)
+
+    def test_uses_test_variables(self, stage, test_block_config):
+        stage["fail_if"] = "response.body['status'] == bad_status"
+        test_block_config.variables["bad_status"] = "FAILED"
+
+        with pytest.raises(exceptions.FailIfError):
+            _run_stage(stage, test_block_config, _mock_response({"status": "FAILED"}))
+
+    def test_knows_the_stage_failed(self, stage, test_block_config):
+        stage["fail_if"] = "response.failed"
+
+        with pytest.raises(exceptions.FailIfError):
+            _run_stage(
+                stage,
+                test_block_config,
+                _mock_response({"status": "SUCCESS"}),
+                verify_error=exceptions.TestFailError("stage did not verify"),
+            )
+
+    def test_knows_the_stage_passed(self, stage, test_block_config):
+        stage["fail_if"] = "response.failed"
+        response = _mock_response({"status": "SUCCESS"})
+
+        assert _run_stage(stage, test_block_config, response) is response
+
+    def test_non_bool_result(self, stage, test_block_config):
+        stage["fail_if"] = "response.body['status']"
+
+        with pytest.raises(exceptions.EvalError):
+            _run_stage(stage, test_block_config, _mock_response({"status": "FAILED"}))
+
+    def test_must_be_a_string(self, stage, test_block_config):
+        stage["fail_if"] = True
+
+        with pytest.raises(exceptions.BadSchemaError):
+            _run_stage(stage, test_block_config, _mock_response({"status": "FAILED"}))
+
+    def test_requires_experimental_flag(self, stage, test_block_config):
+        test_block_config = dataclasses.replace(
+            test_block_config, experimental_starlark_pipeline=False
+        )
+
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            _run_stage(stage, test_block_config, _mock_response({"status": "FAILED"}))
+
+    def test_is_not_retried(self, stage, test_block_config):
+        """A stage which hit its 'fail_if' is in a terminal state, so don't retry it
+
+        https://github.com/taverntesting/tavern/issues/751
+        """
+        stage["max_retries"] = 5
+        inner = _mock_stage_callable(
+            side_effect=exceptions.FailIfError("fail_if was true")
+        )
+
+        with pytest.raises(exceptions.FailIfError):
+            retry(stage, test_block_config)(inner)()
+
+        assert inner.call_count == 1
+
+    def test_takes_priority_over_retry_until(self, stage, test_block_config):
+        """Both keys are evaluated, but 'fail_if' is checked while running the stage so
+        it never reaches the 'retry_until' handling in the retry wrapper"""
+        stage["max_retries"] = 5
+        stage["retry_until"] = "True"
+        inner = _mock_stage_callable(
+            side_effect=exceptions.FailIfError("fail_if was true")
+        )
+
+        with pytest.raises(exceptions.FailIfError):
+            retry(stage, test_block_config)(inner)()
+
+        assert inner.call_count == 1
