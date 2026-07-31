@@ -47,22 +47,16 @@ def _check_retry_until(
         Whether the stage should be considered finished anyway
     """
     # Local import to avoid a circular dependency, and to keep starlark optional
-    from tavern._core.starlark.expressions import eval_stage_expression
-    from tavern._core.starlark.response_struct import create_response_struct
+    from tavern._core.starlark.expressions import eval_response_expression
 
-    response_values = create_response_struct(
-        response,
-        success=False,
-        request_vars=dict(test_block_config.variables),
-        stage_name=stage["name"],
-    )
-
-    return eval_stage_expression(
+    return eval_response_expression(
         "retry_until",
         retry_until,
         stage,
         test_block_config,
-        response=response_values,
+        response=response,
+        success=False,
+        request_vars=test_block_config.variables,
     )
 
 
@@ -110,6 +104,13 @@ def retry(stage: Mapping, test_block_config: TestConfig) -> Callable:
                     try:
                         res = fn(*args, **kwargs)
                     except exceptions.BadSchemaError:
+                        raise
+                    except exceptions.FailIfError:
+                        # 'fail_if' is a terminal state, there is no point retrying
+                        logger.error(
+                            "Stage '%s' matched its 'fail_if' expression, not retrying.",
+                            stage["name"],
+                        )
                         raise
                     except exceptions.TavernException as e:
                         # The stage failed, so if there's a 'retry_until' expression see

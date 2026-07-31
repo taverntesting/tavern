@@ -144,6 +144,12 @@ definitions:
           stage is retried until it evaluates to True, up to max_retries times. Not
           evaluated if the stage passes.
 
+      fail_if:
+        type: string
+        description:
+          Starlark expression evaluated after every attempt at this stage - if it
+          evaluates to True the test fails immediately, without any further retries.
+
       only:
         type: boolean
         description: Only run this stage

@@ -165,6 +165,23 @@ class TestStageConditions:
         with pytest.raises(BadSchemaError):
             verify_tests(test_dict)
 
+    def test_fail_if_alone(self, test_dict):
+        """Unlike 'retry_until', 'fail_if' does not need any retries to be useful"""
+        test_dict["stages"][0]["fail_if"] = "response.status_code == 500"
+        verify_tests(test_dict)
+
+    def test_fail_if_with_retry_until(self, test_dict):
+        test_dict["stages"][0]["fail_if"] = "response.body['status'] == 'FAILED'"
+        test_dict["stages"][0]["retry_until"] = "response.body['status'] == 'SUCCESS'"
+        test_dict["stages"][0]["max_retries"] = 3
+        verify_tests(test_dict)
+
+    def test_fail_if_must_be_a_string(self, test_dict):
+        test_dict["stages"][0]["fail_if"] = True
+
+        with pytest.raises(BadSchemaError):
+            verify_tests(test_dict)
+
 
 class TestBadSchemaAtCollect:
     """Some errors happen at collection time - harder to test"""

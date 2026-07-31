@@ -158,6 +158,59 @@ def eval_stage_expression(
     )
 
 
+def eval_response_expression(
+    key: str,
+    expr: str,
+    stage: Mapping[str, Any],
+    test_block_config: "TestConfig",
+    *,
+    response: Any,
+    success: bool,
+    request_vars: Mapping[str, Any],
+) -> bool:
+    """Evaluate a stage expression which can also inspect the response from the stage
+
+    This is used for the 'retry_until' and 'fail_if' keys, which both get a 'response'
+    struct bound in the expression.
+
+    Args:
+        key: name of the stage key the expression came from
+        expr: the Starlark expression
+        stage: the stage it came from
+        test_block_config: current test config
+        response: the response from running the stage, if any
+        success: whether the stage passed all of its verifications
+        request_vars: any variables captured during the request
+
+    Returns:
+        the result of the expression
+
+    Raises:
+        exceptions.BadSchemaError: if the expression was not a string
+    """
+    from .response_struct import create_response_struct
+
+    if not isinstance(expr, str):
+        raise exceptions.BadSchemaError(
+            f"Unexpected '{type(expr)}' in {key} key - should be a string"
+        )
+
+    response_values = create_response_struct(
+        response,
+        success=success,
+        request_vars=dict(request_vars),
+        stage_name=stage.get("name", "unnamed-stage"),
+    )
+
+    return eval_stage_expression(
+        key,
+        expr,
+        stage,
+        test_block_config,
+        response=response_values,
+    )
+
+
 def eval_expression(
     expr: str,
     variables: Mapping[str, Any],
