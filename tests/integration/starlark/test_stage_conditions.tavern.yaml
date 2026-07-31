@@ -206,3 +206,74 @@ stages:
     max_retries: 5
     delay_after: 0.1
     retry_until: response.status_code == 200 and response.body["status"] == expected_status
+
+---
+test_name: Test 'fail_if' as a negative assertion on a stage which otherwise passes
+
+_xfail: run
+
+stages:
+  # The response block matches, but 'fail_if' says this is a failure anyway
+  - name: Echo something which should never come back
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "a bad value"
+    response:
+      status_code: 200
+    fail_if: response.body["value"] == "a bad value"
+
+---
+test_name: Test 'fail_if' which is false does not affect the stage
+
+stages:
+  - name: Echo something fine
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "a good value"
+    response:
+      status_code: 200
+      json:
+        value: "a good value"
+    fail_if: response.body["value"] == "a bad value"
+
+---
+# https://github.com/taverntesting/tavern/issues/751 - stop polling as soon as the job
+# is in a state it can never recover from, rather than waiting out all the retries
+test_name: Test 'fail_if' stops polling at a terminal failure
+
+_xfail: run
+
+stages:
+  - name: Poll until the job succeeds
+    request:
+      url: "{global_host}/job/fail-if-doomed-to-fail"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 20
+    delay_after: 0.1
+    retry_until: response.body["status"] == "SUCCESS"
+    fail_if: response.body["status"] == "FAILED"
+
+---
+test_name: Test 'fail_if' does not trigger for a job which succeeds
+
+stages:
+  - name: Poll until the job succeeds
+    request:
+      url: "{global_host}/job/fail-if-works"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 20
+    delay_after: 0.1
+    retry_until: response.body["status"] == "SUCCESS"
+    fail_if: response.body["status"] == "FAILED"
