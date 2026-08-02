@@ -5,6 +5,10 @@ much lighter-weight alternative to writing a whole ``control_flow`` script. Like
 simpleeval based ``skip`` key, expressions here are format-string interpolated before
 being evaluated, so ``if: "{var_x} > 2"`` is the way to refer to a test variable.
 
+An 'expression' can also be several statements long, in which case the value of the last
+one is what decides the result. The helper modules can be loaded as in a ``control_flow``
+script, but ``run_stage`` is not available - there is already a stage being run.
+
 This module must not import anything from tavern._core.run, and must not import
 starlark at the top level, so that it can be imported (lazily) from the normal
 non-starlark test path.
@@ -56,6 +60,51 @@ def _get_globals() -> "starlark.Globals":
             starlark.LibraryExtension.StructType,
         ]
     )
+
+
+def _get_file_loader(
+    module_globals: "starlark.Globals", dialect: "starlark.Dialect"
+) -> "starlark.FileLoader":
+    """Get a loader which makes the tavern helper modules available to an expression
+
+    This is the same set of helpers as in a 'control_flow' script, except that
+    'run_stage' can't do anything - the stage the expression is attached to is already
+    being run.
+
+    Args:
+        module_globals: globals to evaluate the helpers with
+        dialect: dialect to parse the helpers with
+
+    Returns:
+        a loader which handles '@tavern_helpers.star'
+    """
+    starlark = _import_starlark()
+
+    from .builtins import (
+        add_library_callables,
+        add_unavailable_run_stage,
+        get_starlark_builtins,
+    )
+
+    # The return type is a starlark.FrozenModule, but the name is shadowed by the
+    # local import above
+    def load(filename: str) -> Any:
+        if filename != "@tavern_helpers.star":
+            raise FileNotFoundError(filename)
+
+        helpers = starlark.Module()
+        add_library_callables(helpers)
+        add_unavailable_run_stage(
+            helpers,
+            "'run_stage' is not available in a per-stage expression - use a "
+            "'control_flow' script if you need to run another stage",
+        )
+        ast = starlark.parse(filename, get_starlark_builtins(), dialect=dialect)
+        starlark.eval(helpers, ast, module_globals)
+
+        return helpers.freeze()
+
+    return starlark.FileLoader(load)
 
 
 def eval_stage_expression(
@@ -213,7 +262,9 @@ def eval_expression(
     )
 
     try:
-        result = starlark.eval(module, ast, module_globals)
+        result = starlark.eval(
+            module, ast, module_globals, _get_file_loader(module_globals, dialect)
+        )
     except starlark.StarlarkError as e:
         raise exceptions.EvalError(
             f"Error evaluating Starlark expression for {description}: {formatted} "
