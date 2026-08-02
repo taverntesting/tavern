@@ -98,6 +98,76 @@ stages:
         value: "ran"
 
 ---
+# An 'expression' can be several statements long, with the value of the last one
+# deciding the result. The helper modules still have to be loaded, as in a
+# 'control_flow' script
+test_name: Test per-stage 'if' using a multiline script
+
+stages:
+  - name: Echo a version string to save
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "server v2.5.1"
+    response:
+      status_code: 200
+      save:
+        json:
+          saved_version: value
+
+  - name: This stage should run because the major version is 2
+    if: |
+      load("@tavern_helpers.star", "re")
+
+      match = re.search("v(\\d+)\\.", "{saved_version}")
+      match != None and int(match.groups[0]) == 2
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "ran"
+    response:
+      status_code: 200
+      json:
+        value: "ran"
+
+  - name: This stage should not run because the major version is not 3
+    if: |
+      load("@tavern_helpers.star", "re")
+
+      match = re.search("v(\\d+)\\.", "{saved_version}")
+      match != None and int(match.groups[0]) == 3
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "should not have run"
+    response:
+      # If this stage is ever actually run it will fail here
+      status_code: 999
+
+---
+test_name: Test 'retry_until' using a multiline script
+
+stages:
+  - name: Poll until the job reaches a state matching a regex
+    request:
+      url: "{global_host}/job/multiline-works"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 5
+    delay_after: 0.1
+    retry_until: |
+      load("@tavern_helpers.star", "re")
+
+      terminal = re.match("(SUCCESS|FAILED)", response.body["status"])
+      terminal != None
+
+---
 test_name: Test per-stage 'if' referring to a variable that was never saved
 
 _xfail: run
