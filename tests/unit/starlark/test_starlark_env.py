@@ -12,11 +12,11 @@ import starlark
 
 from tavern._core import exceptions
 from tavern._core.run import _TestRunner
-from tavern._core.starlark.builtins import wrap_callable
 from tavern._core.starlark.stage_registry import StageRegistry
 from tavern._core.starlark.starlark_env import (
     StageResponse,
     StarlarkPipelineRunner,
+    _wrap_callable,
 )
 from tavern._core.tincture import Tinctures
 
@@ -57,12 +57,12 @@ def sample_stages():
 
 
 class TestWrapCallable:
-    """Tests for the wrap_callable decorator."""
+    """Tests for the _wrap_callable decorator."""
 
     def test_wrap_callable_converts_args_to_starlark(self):
-        """Test that wrap_callable converts Python args to starlark format."""
+        """Test that _wrap_callable converts Python args to starlark format."""
 
-        @wrap_callable
+        @_wrap_callable
         def add(a, b):
             return a + b
 
@@ -71,9 +71,9 @@ class TestWrapCallable:
         assert result == 3
 
     def test_wrap_callable_converts_kwargs_to_starlark(self):
-        """Test that wrap_callable converts Python kwargs to starlark format."""
+        """Test that _wrap_callable converts Python kwargs to starlark format."""
 
-        @wrap_callable
+        @_wrap_callable
         def format_url(base, path=""):
             return f"{base}{path}"
 
@@ -81,9 +81,9 @@ class TestWrapCallable:
         assert result == "http://example.com/api"
 
     def test_wrap_callable_converts_return_to_starlark(self):
-        """Test that wrap_callable converts return value to starlark format."""
+        """Test that _wrap_callable converts return value to starlark format."""
 
-        @wrap_callable
+        @_wrap_callable
         def get_dict():
             return {"key": "value"}
 
@@ -91,12 +91,12 @@ class TestWrapCallable:
         assert result == {"key": "value"}
 
     def test_wrap_callable_converts_opaque_return_to_starlark(self):
-        """Test that wrap_callable converts opaque return value to starlark format."""
+        """Test that _wrap_callable converts opaque return value to starlark format."""
 
         class _boobllb:
             pass
 
-        @wrap_callable
+        @_wrap_callable
         def get_dict():
             return _boobllb
 
