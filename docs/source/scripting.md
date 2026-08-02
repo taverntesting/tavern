@@ -77,8 +77,8 @@ pytest --tavern-experimental-starlark-pipeline
 ## Per-stage expressions
 
 Rewriting a whole test as a `control_flow` script is a lot of ceremony if all you want is "only run this stage if the
-last one returned something". For that, stages support two keys which are single Starlark _expressions_, evaluated by
-the same embedded interpreter. There is no script, no `load()`, and stages do not need an `id`. These need the same
+last one returned something". For that, stages support three keys which are Starlark _expressions_, evaluated by the
+same embedded interpreter. There is no separate script and stages do not need an `id`. These need the same
 `--tavern-experimental-starlark-pipeline` flag as `control_flow`.
 
 Test variables - anything from `save`, `includes`, global config, fixtures, parametrisation, and the `tavern` box - are
@@ -98,6 +98,46 @@ Two things follow from this which are worth being aware of:
 
 Because interpolation happens before evaluation, variable names which are not valid Starlark identifiers - anything
 with a dash in it, or a Starlark reserved word - work fine.
+
+### Multiline expressions
+
+An 'expression' does not have to be one line. Using a YAML block scalar, any of these keys can be a short script, and
+the value of its **last statement** is what decides the result - it still has to be `True` or `False`. Helper modules
+have to be `load()`ed just like in a `control_flow` script, so this is the way to use `re` in a condition:
+
+```yaml
+stages:
+  - name: Only upgrade if the server is on a v2 release
+    if: |
+      load("@tavern_helpers.star", "re")
+
+      match = re.search("v(\\d+)\\.", "{server_banner}")
+      match != None and int(match.groups[0]) == 2
+    request:
+      url: "{global_host}/upgrade"
+      method: POST
+    response:
+      status_code: 200
+```
+
+The same works for `retry_until` and `fail_if`, which additionally have `response` in scope:
+
+```yaml
+    retry_until: |
+      load("@tavern_helpers.star", "re")
+
+      terminal = re.match("(SUCCESS|FAILED)", response.body["status"])
+      terminal != None
+```
+
+> **Be careful with this.** A condition which needs several statements to express is a sign the test is doing quite a
+> lot of thinking, and it is easy to end up with something which is hard to read, hard to debug (Starlark errors are
+> not very helpful, see [Error Messages](#error-messages)), and effectively untested. Prefer a single expression, or a
+> stage which asserts on the response in its `response` block, and only reach for a script when there is no reasonable
+> alternative. If it is getting long, it probably wants to be a [`control_flow` script](#basic-usage) instead.
+
+`run_stage()` is deliberately **not** available - there is already a stage being run - and loading anything other than
+`@tavern_helpers.star` is an error.
 
 ### Running a stage conditionally with `if`
 
@@ -643,5 +683,3 @@ includes, regex extraction, retry patterns, and the per-stage `if`/`retry_until`
     - Let users import their own functions into starlark?
 - Add a new CLI/ini flag to say "run 'finally' stages when using starlark script"
 - Allow `if` on `finally` stages, and give it access to the previous stage's response.
-- Make `re`/`time` and any other helper modules available in per-stage `if`/`retry_until` expressions - currently only
-  the Starlark builtins and `struct` are in scope.

@@ -134,6 +134,64 @@ class TestEvalExpression:
             )
 
 
+class TestMultilineExpression:
+    """An 'expression' can be several statements, the last of which is the result"""
+
+    def test_last_statement_is_the_result(self):
+        script = """
+x = {var_x} * 2
+y = x + 1
+y == 7
+"""
+        assert eval_expression(script, {"var_x": 3}, description="test") is True
+
+    def test_last_statement_must_be_a_boolean(self):
+        script = """
+x = 1
+x
+"""
+        with pytest.raises(exceptions.EvalError) as exc_info:
+            eval_expression(script, {}, description="test")
+
+        assert "did not evaluate to True/False" in str(exc_info.value)
+
+    def test_can_load_the_regex_helpers(self):
+        script = r"""
+load("@tavern_helpers.star", "re")
+
+match = re.search("v(\\d+)\\.", response.body["version"])
+match != None and match.groups[0] == "{expected_major}"
+"""
+        assert (
+            eval_expression(
+                script,
+                {"expected_major": 25},
+                response={"body": {"version": "v25.3.1"}},
+                description="test",
+            )
+            is True
+        )
+
+    def test_load_of_something_else_is_an_error(self):
+        with pytest.raises(exceptions.EvalError):
+            eval_expression(
+                'load("@not_a_module.star", "thing")\nTrue',
+                {},
+                description="test",
+            )
+
+    def test_run_stage_is_not_available(self):
+        script = """
+load("@tavern_helpers.star", "run_stage")
+
+run_stage("some_stage").failed
+"""
+        with pytest.raises(exceptions.EvalError) as exc_info:
+            eval_expression(script, {}, description="test")
+
+        assert "control_flow" in str(exc_info.value)
+
+
 class TestStageExpressionGuard:
     def test_requires_experimental_flag(self, fix_test_config):
         config = dataclasses.replace(
