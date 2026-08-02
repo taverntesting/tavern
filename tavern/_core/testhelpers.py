@@ -115,21 +115,22 @@ def retry(stage: Mapping, test_block_config: TestConfig) -> Callable:
                     except exceptions.TavernException as e:
                         # The stage failed, so if there's a 'retry_until' expression see
                         # whether it considers the stage finished anyway
-                        if retry_until and e.response is not None:
-                            if _check_retry_until(
-                                retry_until, stage, test_block_config, e.response
-                            ):
-                                logger.info(
-                                    "Stage '%s' failed but 'retry_until' was true, continuing.",
+                        if retry_until:
+                            if e.response is not None:
+                                if _check_retry_until(
+                                    retry_until, stage, test_block_config, e.response
+                                ):
+                                    logger.info(
+                                        "Stage '%s' failed but 'retry_until' was true, continuing.",
+                                        stage["name"],
+                                    )
+                                    res = e.response
+                                    break
+                            else:
+                                logger.debug(
+                                    "No response from stage '%s' so 'retry_until' could not be evaluated",
                                     stage["name"],
                                 )
-                                res = e.response
-                                break
-                        elif retry_until:
-                            logger.debug(
-                                "No response from stage '%s' so 'retry_until' could not be evaluated",
-                                stage["name"],
-                            )
 
                         if i < max_retries:
                             logger.info(
