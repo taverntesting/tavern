@@ -124,6 +124,8 @@ stages:
 The [`if` key](../scripting.md#running-a-stage-conditionally-with-if) does the same thing, but the logic is inverted
 and it uses Starlark rather than simpleeval. The two cannot both be used on the same stage.
 
+In future, `skip` may be removed in favour of `if`.
+
 ##### Skipping stages with simpleeval expressions
 
 Stages can be skipped by using a `skip` key that contains a [simpleeval](https://pypi.org/project/simpleeval/) expression. 
