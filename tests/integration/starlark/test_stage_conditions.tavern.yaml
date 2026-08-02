@@ -22,7 +22,7 @@ stages:
           var_x: value
 
   - name: This stage should run
-    if: var_x > 2
+    if: "{var_x} > 2"
     request:
       url: "{global_host}/echo"
       method: POST
@@ -34,7 +34,7 @@ stages:
         value: "ran"
 
   - name: This stage should not run
-    if: var_x > 100
+    if: "{var_x} > 100"
     request:
       url: "{global_host}/echo"
       method: POST
@@ -62,7 +62,31 @@ stages:
           echoed: value
 
   - name: This stage should run
-    if: echoed["status"] == "ready"
+    if: "'{echoed.status}' == 'ready'"
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "ran"
+    response:
+      status_code: 200
+      json:
+        value: "ran"
+
+---
+# Because expressions are format-string interpolated rather than bound as starlark
+# names, variables which aren't valid starlark identifiers work just as well
+test_name: Test per-stage 'if' using a variable with a dash in the name
+
+includes:
+  - name: dashed_vars
+    description: a variable which is not a valid starlark identifier
+    variables:
+      my-thing: 5
+
+stages:
+  - name: This stage should run
+    if: "{my-thing} > 4"
     request:
       url: "{global_host}/echo"
       method: POST
@@ -80,7 +104,7 @@ _xfail: run
 
 stages:
   - name: This stage errors because the variable is not defined
-    if: never_saved == 1
+    if: "{never_saved} == 1"
     request:
       url: "{global_host}/echo"
       method: POST
@@ -205,7 +229,7 @@ stages:
       status_code: 418
     max_retries: 5
     delay_after: 0.1
-    retry_until: response.status_code == 200 and response.body["status"] == expected_status
+    retry_until: response.status_code == 200 and response.body["status"] == "{expected_status}"
 
 ---
 test_name: Test 'fail_if' as a negative assertion on a stage which otherwise passes

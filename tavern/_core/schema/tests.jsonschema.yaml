@@ -122,16 +122,13 @@ definitions:
         default: 0
 
       skip:
-        deprecated: true
         oneOf:
           - type: boolean
-            description: Deprecated, use 'if' - whether to skip this stage
+            description: Whether to skip this stage
             default: false
 
           - type: string
-            description:
-              Deprecated, use 'if' - simpleeval expression saying whether to skip this
-              stage
+            description: simpleeval expression saying whether to skip this stage
 
       if:
         type: string

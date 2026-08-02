@@ -64,19 +64,19 @@ class TestIfStage:
         assert _run_test(stage, test_block_config, run_mock) is False
 
     def test_if_uses_saved_variable(self, stage, test_block_config, run_mock):
-        stage["if"] = "var_x > 2"
+        stage["if"] = "{var_x} > 2"
         test_block_config.variables.update({"var_x": 3})
 
         assert _run_test(stage, test_block_config, run_mock) is True
 
     def test_if_uses_saved_variable_false(self, stage, test_block_config, run_mock):
-        stage["if"] = "var_x > 2"
+        stage["if"] = "{var_x} > 2"
         test_block_config.variables.update({"var_x": 1})
 
         assert _run_test(stage, test_block_config, run_mock) is False
 
     def test_if_undefined_variable(self, stage, test_block_config, run_mock):
-        stage["if"] = "not_saved_yet == 1"
+        stage["if"] = "{not_saved_yet} == 1"
 
         with pytest.raises(exceptions.EvalError):
             _run_test(stage, test_block_config, run_mock)
@@ -239,7 +239,7 @@ class TestRetryUntil:
         sleep_mock.assert_called_once_with(0.01)
 
     def test_uses_test_variables(self, stage, test_block_config):
-        stage["retry_until"] = "response.body['status'] == expected_status"
+        stage["retry_until"] = "response.body['status'] == '{expected_status}'"
         test_block_config.variables["expected_status"] = "ready"
         inner = Mock(side_effect=_stage_failure({"status": "ready"}))
 
@@ -382,7 +382,7 @@ class TestFailIf:
         assert not isinstance(exc_info.value, exceptions.FailIfError)
 
     def test_uses_test_variables(self, stage, test_block_config):
-        stage["fail_if"] = "response.body['status'] == bad_status"
+        stage["fail_if"] = "response.body['status'] == '{bad_status}'"
         test_block_config.variables["bad_status"] = "FAILED"
 
         with pytest.raises(exceptions.FailIfError):
