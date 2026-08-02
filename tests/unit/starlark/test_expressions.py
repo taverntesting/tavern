@@ -98,6 +98,38 @@ class TestEvalExpression:
     def test_literal_braces_must_be_escaped(self):
         assert eval_expression("{{'a': 1}}['a'] == 1", {}, description="test") is True
 
+    def test_multiline_script(self):
+        """An expression can be a whole script - the last statement is the result"""
+        expr = """
+n_big = len([i for i in {numbers} if i > 2])
+n_big == 2
+"""
+
+        assert (
+            eval_expression(expr, {"numbers": [1, 2, 3, 4]}, description="test") is True
+        )
+
+    def test_multiline_script_using_regex(self):
+        """The 're' helper module is available, as in a control_flow script"""
+        expr = """
+match = re.search("v(\\\\d+)\\\\.(\\\\d+)", "{version}")
+match != None and all([int(g) > 0 for g in match.groups])
+"""
+
+        assert eval_expression(expr, {"version": "v2.5"}, description="test") is True
+        assert eval_expression(expr, {"version": "v0.5"}, description="test") is False
+
+    def test_regex_which_does_not_match(self):
+        expr = 're.search("v(\\\\d+)", "{version}") != None'
+
+        assert eval_expression(expr, {"version": "banana"}, description="test") is False
+
+    def test_run_stage_is_not_available(self):
+        with pytest.raises(exceptions.EvalError) as exc_info:
+            eval_expression('run_stage("a_stage").failed', {}, description="test")
+
+        assert "only available in a 'control_flow' script" in str(exc_info.value)
+
     def test_response_struct_attribute_access(self):
         response = {"status_code": 200, "body": {"status": "ready"}, "failed": False}
 
