@@ -10,4 +10,8 @@ COPY server.py /
 
 ENV FLASK_APP=/server.py
 
+
+# Run as a non-root user for container security
+RUN groupadd --system app && useradd --system --uid 1001 --gid app --create-home app
+USER 1001
 CMD ["flask", "run", "--host=0.0.0.0"]
