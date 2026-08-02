@@ -102,8 +102,10 @@ with a dash in it, or a Starlark reserved word - work fine.
 ### Multiline expressions
 
 An 'expression' does not have to be one line. Using a YAML block scalar, any of these keys can be a short script, and
-the value of its **last statement** is what decides the result - it still has to be `True` or `False`. Helper modules
-have to be `load()`ed just like in a `control_flow` script, so this is the way to use `re` in a condition:
+the value of its **last statement** is what decides the result - it still has to be `True` or `False`. Note that only
+an expression has a value, so a script which ends on an assignment (`result = x == 1`) fails rather than using what was
+assigned. Helper modules have to be `load()`ed just like in a `control_flow` script, so this is the way to use `re` in
+a condition:
 
 ```yaml
 stages:

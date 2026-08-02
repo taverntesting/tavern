@@ -155,6 +155,18 @@ x
 
         assert "did not evaluate to True/False" in str(exc_info.value)
 
+    def test_ending_with_an_assignment_is_an_error(self):
+        """Only an expression statement has a value - anything else is None, which is
+        not a useful answer to 'should this stage run'"""
+        script = """
+x = 1
+result = x == 1
+"""
+        with pytest.raises(exceptions.EvalError) as exc_info:
+            eval_expression(script, {}, description="test")
+
+        assert "did not evaluate to True/False" in str(exc_info.value)
+
     def test_can_load_the_regex_helpers(self):
         script = r"""
 load("@tavern_helpers.star", "re")
