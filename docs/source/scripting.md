@@ -81,17 +81,27 @@ last one returned something". For that, stages support two keys which are single
 the same embedded interpreter. There is no script, no `load()`, and stages do not need an `id`. These need the same
 `--tavern-experimental-starlark-pipeline` flag as `control_flow`.
 
-All test variables - anything from `save`, `includes`, global config, fixtures, parametrisation, and the `tavern` box -
-are bound directly as Starlark globals.
+Test variables - anything from `save`, `includes`, global config, fixtures, parametrisation, and the `tavern` box - are
+referred to with the same `{format_string}` syntax as everywhere else in Tavern. The expression is interpolated first
+and the result is what gets evaluated, so `if: "{var_x} > 2"` with `var_x` saved as `3` evaluates `3 > 2`. Referring to
+a variable which does not exist is an error, and error messages include both the original expression and the
+interpolated one.
 
-> **Important:** unlike almost everywhere else in Tavern, these expressions are **not** format-string interpolated.
-> Write `if: var_x > 2`, not `if: "{var_x} > 2"` - the latter compares the literal string `"{var_x}"` and will silently
-> do the wrong thing. Any variable whose name is not a valid Starlark identifier (for example one containing a dash) is
-> not bound.
+Two things follow from this which are worth being aware of:
+
+> **Quote your strings.** A string variable is interpolated in as-is, not as a Starlark string literal, so write
+> `if: "'{name}' == 'bob'"` rather than `if: "{name} == 'bob'"` - the latter evaluates `bob == 'bob'` and fails with an
+> undefined name.
+>
+> **Escape literal braces.** A Starlark dict or set literal in an expression needs doubled braces, as in
+> `if: "{{'a': 1}}['a'] == 1"`.
+
+Because interpolation happens before evaluation, variable names which are not valid Starlark identifiers - anything
+with a dash in it, or a Starlark reserved word - work fine.
 
 ### Running a stage conditionally with `if`
 
-The stage only runs if the expression evaluates to `True`. This replaces the now deprecated
+The stage only runs if the expression evaluates to `True`. This is an alternative to the
 ['skip' key](./core_concepts/marks.md#skipping-stages-with-simpleeval-expressions) - `if` is the same thing with the
 logic inverted, and a stage cannot use both.
 
@@ -108,7 +118,7 @@ stages:
           n_existing: existing_count
 
   - name: Only tidy up if there was something there already
-    if: n_existing > 0
+    if: "{n_existing} > 0"
     request:
       url: "{global_host}/users/cleanup"
       method: POST
@@ -156,7 +166,7 @@ As well as the test variables, the expression has a `response` struct in scope w
 returned by [`run_stage()`](#run_stage):
 
 ```starlark
-response.status_code == 200 and response.body["status"] == expected_status
+response.status_code == 200 and response.body["status"] == "{expected_status}"
 ```
 
 Because it is an arbitrary expression it can also stop on more than one outcome, which is the usual shape for polling a

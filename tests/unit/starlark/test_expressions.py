@@ -13,15 +13,15 @@ class TestEvalExpression:
     def test_simple_false(self):
         assert eval_expression("1 > 2", {}, description="test") is False
 
-    def test_variable_bound_directly(self):
-        """Variables are bound as real values, not format-string interpolated"""
-        assert eval_expression("var_x > 2", {"var_x": 3}, description="test") is True
-        assert eval_expression("var_x > 2", {"var_x": 1}, description="test") is False
+    def test_variable_interpolated(self):
+        """Variables are interpolated into the expression before it is evaluated"""
+        assert eval_expression("{var_x} > 2", {"var_x": 3}, description="test") is True
+        assert eval_expression("{var_x} > 2", {"var_x": 1}, description="test") is False
 
     def test_string_variable(self):
         assert (
             eval_expression(
-                "some_var == 'value'", {"some_var": "value"}, description="test"
+                "'{some_var}' == 'value'", {"some_var": "value"}, description="test"
             )
             is True
         )
@@ -29,24 +29,36 @@ class TestEvalExpression:
     def test_nested_variable(self):
         assert (
             eval_expression(
-                "thing['a']['b'] == 1",
+                "{thing.a.b} == 1",
                 {"thing": {"a": {"b": 1}}},
                 description="test",
             )
             is True
         )
 
-    def test_format_syntax_is_not_supported(self):
-        """'{var}' style formatting is deliberately not done - the string is just a
-        literal string, so this quietly compares '{some_var}' to 'value'"""
+    def test_variable_with_a_dash(self):
+        """Names which aren't valid starlark identifiers work fine when interpolated"""
+        assert (
+            eval_expression("{with-a-dash} > 4", {"with-a-dash": 5}, description="test")
+            is True
+        )
+
+    def test_format_spec(self):
         assert (
             eval_expression(
-                "'{some_var}' == 'value'", {"some_var": "value"}, description="test"
+                "'{my_float:.2f}' == '1.50'", {"my_float": 1.5}, description="test"
             )
-            is False
+            is True
         )
 
     def test_undefined_variable(self):
+        with pytest.raises(exceptions.EvalError) as exc_info:
+            eval_expression("{not_a_variable} > 1", {}, description="test")
+
+        assert "not_a_variable" in str(exc_info.value)
+
+    def test_undefined_bare_name(self):
+        """A bare name which isn't interpolated is just undefined in starlark"""
         with pytest.raises(exceptions.EvalError) as exc_info:
             eval_expression("not_a_variable", {}, description="test")
 
@@ -62,27 +74,29 @@ class TestEvalExpression:
 
         assert "did not evaluate to True/False" in str(exc_info.value)
 
-    def test_non_identifier_variables_are_ignored(self):
-        """Variables which can't be used as starlark names shouldn't break everything"""
-        variables = {"with-a-dash": 1, "1_starts_with_number": 2, "fine": 3}
-
-        assert eval_expression("fine == 3", variables, description="test") is True
-
-    def test_reserved_word_variables_are_ignored(self):
+    def test_reserved_word_variables(self):
+        """Names which are reserved words in starlark are fine when interpolated"""
         assert (
-            eval_expression("fine == 3", {"load": 1, "fine": 3}, description="test")
+            eval_expression("{load} == 1", {"load": 1, "fine": 3}, description="test")
             is True
         )
 
-    def test_opaque_variables_can_be_bound(self):
-        """Objects which can't be represented in starlark shouldn't break binding"""
+    def test_unreferenced_variables_are_ignored(self):
+        """Variables which aren't referenced shouldn't break anything, whatever they are"""
 
         class Something:
             pass
 
-        variables = {"opaque": Something(), "fine": 3}
+        variables = {
+            "opaque": Something(),
+            "1_starts_with_number": 2,
+            "fine": 3,
+        }
 
-        assert eval_expression("fine == 3", variables, description="test") is True
+        assert eval_expression("{fine} == 3", variables, description="test") is True
+
+    def test_literal_braces_must_be_escaped(self):
+        assert eval_expression("{{'a': 1}}['a'] == 1", {}, description="test") is True
 
     def test_response_struct_attribute_access(self):
         response = {"status_code": 200, "body": {"status": "ready"}, "failed": False}
@@ -102,7 +116,7 @@ class TestEvalExpression:
 
         assert (
             eval_expression(
-                "response.status_code == expected_code",
+                "response.status_code == {expected_code}",
                 {"expected_code": 500},
                 response=response,
                 description="test",
