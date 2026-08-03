@@ -517,9 +517,7 @@ class MQTTClient:
             "Could not connect to broker after %s seconds", self._connect_timeout
         )
         raise exceptions.MQTTError(
-            "Could not connect to broker after {} seconds".format(
-                self._connect_timeout
-            )
+            f"Could not connect to broker after {self._connect_timeout} seconds"
         )
 
     def __exit__(self, *args) -> None:
