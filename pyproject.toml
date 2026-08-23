@@ -93,8 +93,8 @@ dev = [
     "uv>=0.9.2",
     "types-PyYAML",
     # See https://pypi.org/project/protobuf/#history for compatability between these two
-    "types-protobuf>=5,<8",
-    "protobuf-protoc-bin==35.1",
+    "types-protobuf",
+    "protobuf-protoc-bin==29.5",
     "grpcio-tools",
     "types-requests",
     "types-jsonschema",
