@@ -30,10 +30,10 @@ dependencies = [
     "pyjwt>=2.5.0,<3",
     "pykwalify>=1.8.0,<2",
     "pytest>=8,<10",
-    "python-box>=6,<7",
+    "python-box>=6,<8",
     "requests>=2.22.0,<3",
     "simpleeval>=1.0.3",
-    "stevedore>=4,<5",
+    "stevedore>=4,<6",
 ]
 
 requires-python = ">=3.11"
@@ -59,7 +59,7 @@ grpc = [
     "grpcio-reflection",
     "grpcio-status",
     "google-api-python-client",
-    "protobuf>=5,<6",
+    "protobuf>=5,<8",
     "proto-plus",
 ]
 
