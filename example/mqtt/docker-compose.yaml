@@ -27,7 +27,7 @@ services:
       - fluent
 
   broker:
-    image: eclipse-mosquitto:2.0.15
+    image: eclipse-mosquitto:2.0.22
     ports:
       - "9001:9001"
       - "1883:1883"
@@ -42,7 +42,7 @@ services:
         read_only: true
 
   fluent:
-    image: fluent/fluentd:v1.16
+    image: fluent/fluentd:v1.17
     ports:
       - "24224:24224"
     volumes:
