@@ -3,7 +3,7 @@ import dataclasses
 import inspect
 import logging
 from collections.abc import Generator
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from tavern._core import exceptions
 from tavern._core.extfunctions import get_wrapped_response_function
@@ -27,7 +27,9 @@ class Tinctures:
         for r in results:
             if inspect.isgenerator(r):
                 # Store generator and start it
-                self.needs_response.append(r)
+                self.needs_response.append(
+                    cast(Generator[None, tuple[Any, Any], None], r)
+                )
                 next(r)
 
     def end_tinctures(self, expected: collections.abc.Mapping, response) -> None:

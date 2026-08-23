@@ -7,13 +7,13 @@ from typing import Any
 import grpc
 import grpc_reflection
 import proto.message
-from google._upb._message import DescriptorPool
 from google.protobuf import (
     descriptor_pb2,
+    descriptor_pool,
     json_format,
     message_factory,
-    symbol_database,
 )
+from google.protobuf.descriptor_pool import DescriptorPool
 from google.protobuf.json_format import ParseError
 from grpc_reflection.v1alpha import reflection_pb2, reflection_pb2_grpc
 from grpc_status import rpc_status
@@ -78,11 +78,11 @@ class GRPCClient:
             self._options.append((key, value))
 
         self.channels: dict[str, grpc.Channel] = {}
-        # Using the default symbol database is a bit undesirable because it means that things being imported from
+        # Using the default descriptor pool is a bit undesirable because it means that things being imported from
         # previous tests will affect later ones which can mask bugs. But there isn't a nice way to have a
-        # self-contained symbol database, because then you need to transitively import all dependencies of protos and
-        # add them to the database.
-        self.sym_db = symbol_database.Default()
+        # self-contained pool, because then you need to transitively import all dependencies of protos and
+        # add them to the pool.
+        self.pool: DescriptorPool = descriptor_pool.Default()
 
         if proto_source := _proto_args.get("source"):
             _generate_proto_import(proto_source)
@@ -103,7 +103,7 @@ class GRPCClient:
         for file_descriptor_proto in service_proto.file_descriptor_proto:
             descriptor = descriptor_pb2.FileDescriptorProto()
             descriptor.ParseFromString(file_descriptor_proto)
-            self.sym_db.pool.Add(descriptor)
+            self.pool.Add(descriptor)
 
     def _get_reflection_info(
         self, channel, service_name: str | None = None, file_by_filename=None
@@ -157,13 +157,12 @@ class GRPCClient:
         """
         logger.debug(f"looking up types for {full_method_name}")
 
-        service, method = full_method_name.split("/")
+        service, method_name = full_method_name.split("/")
 
-        pool: DescriptorPool = self.sym_db.pool
-        grpc_service = pool.FindServiceByName(service)
-        method = grpc_service.FindMethodByName(method)
-        input_type = message_factory.GetMessageClass(method.input_type)  # type: ignore
-        output_type = message_factory.GetMessageClass(method.output_type)  # type: ignore
+        grpc_service = self.pool.FindServiceByName(service)
+        method = grpc_service.FindMethodByName(method_name)
+        input_type = message_factory.GetMessageClass(method.input_type)
+        output_type = message_factory.GetMessageClass(method.output_type)
 
         return input_type, output_type
 
@@ -269,7 +268,7 @@ class GRPCClient:
         request = channel_vals.input_type()
         if body is not None:
             try:
-                request = json_format.ParseDict(body, request)
+                request = json_format.ParseDict(dict(body), request)
             except ParseError as e:
                 raise exceptions.GRPCRequestException(
                     "error creating request from json body"

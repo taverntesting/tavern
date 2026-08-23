@@ -384,7 +384,7 @@ class MQTTClient:
     def publish(
         self,
         topic: str,
-        payload: None | bytearray | bytes | float | str = None,
+        payload: bytearray | bytes | float | str | None = None,
         qos: int | None = None,
         retain: bool | None = None,
     ) -> MQTTMessageInfo:

@@ -149,6 +149,7 @@ class GraphQLClient:
         self,
         url: str,
         query: str,
+        *,
         variables: Optional[dict[str, Any]] = None,
         operation_name: Optional[str] = None,
         headers: Optional[dict] = None,

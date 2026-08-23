@@ -33,6 +33,7 @@ class CommonResponse(BaseResponse):
         name: str,
         expected: dict[str, Any],
         test_block_config: TestConfig,
+        *,
         default_status_code: int = 200,
         multiple_responses_block: str | None = None,
     ) -> None:

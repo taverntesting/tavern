@@ -40,7 +40,7 @@ def _get_or_wrap_global_cfg(stack: ExitStack, tavern_global_cfg: dict | str) -> 
     return global_filename
 
 
-def run(  # type:ignore
+def run(  # type:ignore  # noqa: PLR0917  # public API - keep args positional
     in_file: str,
     tavern_global_cfg: dict | str | None = None,
     tavern_mqtt_backend: str | None = None,
