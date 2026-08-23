@@ -85,10 +85,10 @@ pre-commit run --all-files
 
 ## Building the documentation
 
-Run this standalone for now: https://github.com/jupyter-book/mystmd/issues/2082
+After syncing the venv as above (which installs the `docs` dependency group):
 
 ```bash
-uv tool run --from mystmd myst build --html
+uv run myst build --html
 ```
 
 ### Watching for changes
@@ -96,5 +96,5 @@ uv tool run --from mystmd myst build --html
 To automatically rebuild when files in the `docs/` folder change:
 
 ```bash
-uv tool run watchfiles "uv tool run --from mystmd myst build --html" --filter all docs myst.yml
+uv tool run watchfiles "uv run myst build --html" --filter all docs myst.yml
 ```
