@@ -112,8 +112,7 @@ dev = [
     "flask-httpauth>=4.8.1,<6",
 ]
 
-# When this is fixed, enable this https://github.com/jupyter-book/mystmd/issues/2082
-# docs = ["mystmd"]
+docs = ["mystmd"]
 
 [project.scripts]
 
