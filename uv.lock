@@ -861,7 +861,7 @@ wheels = [
 
 [[package]]
 name = "flit"
-version = "3.12.0"
+version = "4.0.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "docutils" },
@@ -870,9 +870,9 @@ dependencies = [
     { name = "requests" },
     { name = "tomli-w" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/50/9c/0608c91a5b6c013c63548515ae31cff6399cd9ce891bd9daee8c103da09b/flit-3.12.0.tar.gz", hash = "sha256:1c80f34dd96992e7758b40423d2809f48f640ca285d0b7821825e50745ec3740", size = 155038, upload-time = "2025-03-25T08:03:22.505Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e2/ad/752f9df74127268a587da848d6d561ff56c1508f38ab052caa48bbc130ac/flit-4.0.2.tar.gz", hash = "sha256:232bc4317279e8952eca9fb3f5e000d8395d693b39c105b99f619ce461e1da85", size = 154725, upload-time = "2026-08-04T20:15:40.83Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/f5/82/ce1d3bb380b227e26e517655d1de7b32a72aad61fa21ff9bd91a2e2db6ee/flit-3.12.0-py3-none-any.whl", hash = "sha256:2b4e7171dc22881fa6adc2dbf083e5ecc72520be3cd7587d2a803da94d6ef431", size = 50657, upload-time = "2025-03-25T08:03:19.031Z" },
+    { url = "https://files.pythonhosted.org/packages/15/49/c4887e024482fd95d301047e98158e530d5539db72afe742b9427e025eb4/flit-4.0.2-py3-none-any.whl", hash = "sha256:7b0b0038cd91a7f04e2e287d958dc5f25e68ffeed0b93e613bd50aec99a0d9ca", size = 52055, upload-time = "2026-08-04T20:15:38.052Z" },
 ]
 
 [[package]]
@@ -2935,7 +2935,7 @@ dev = [
     { name = "faker" },
     { name = "flask", specifier = ">=3,<4" },
     { name = "flask-httpauth", specifier = ">=4.8.1,<6" },
-    { name = "flit", specifier = ">=3.2,<4" },
+    { name = "flit", specifier = ">=3.2,<5" },
     { name = "fluent-logger" },
     { name = "grpc-interceptor" },
     { name = "grpcio-tools" },
@@ -2956,7 +2956,7 @@ dev = [
     { name = "types-jmespath" },
     { name = "types-jsonschema" },
     { name = "types-paho-mqtt" },
-    { name = "types-protobuf", specifier = ">=5,<6" },
+    { name = "types-protobuf" },
     { name = "types-pyyaml" },
     { name = "types-requests" },
     { name = "uv", specifier = ">=0.9.2" },
@@ -3213,11 +3213,11 @@ wheels = [
 
 [[package]]
 name = "types-protobuf"
-version = "5.29.1.20250403"
+version = "7.34.1.20260816"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/78/6d/62a2e73b966c77609560800004dd49a926920dd4976a9fdd86cf998e7048/types_protobuf-5.29.1.20250403.tar.gz", hash = "sha256:7ff44f15022119c9d7558ce16e78b2d485bf7040b4fadced4dd069bb5faf77a2", size = 59413, upload-time = "2025-04-02T10:07:17.138Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e0/86/f592845ff8410583687e6dbf985a028e6ec6d378d0bdf548817aa39937b9/types_protobuf-7.34.1.20260816.tar.gz", hash = "sha256:6f43846e7a3cc2621abfa79e2bb03461e6769a74cdae7462efaddf84580fd5c1", size = 69170, upload-time = "2026-08-16T02:50:00.998Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/69/e3/b74dcc2797b21b39d5a4f08a8b08e20369b4ca250d718df7af41a60dd9f0/types_protobuf-5.29.1.20250403-py3-none-any.whl", hash = "sha256:c71de04106a2d54e5b2173d0a422058fae0ef2d058d70cf369fb797bf61ffa59", size = 73874, upload-time = "2025-04-02T10:07:15.755Z" },
+    { url = "https://files.pythonhosted.org/packages/14/cc/909e791f11de77c2073007dbcce8b502865ef12c7881bdf36b0ccb206ab4/types_protobuf-7.34.1.20260816-py3-none-any.whl", hash = "sha256:2e3a225b3c21f0022daa34cec155f03858bb9aff9792947b8e71f0e9f1791fdb", size = 86036, upload-time = "2026-08-16T02:49:59.807Z" },
 ]
 
 [[package]]
