@@ -277,6 +277,11 @@ class TestTypeValidation:
         result = MQTTTLSArgs.validate_keys(data)
         assert result["enable"] is True
 
+    def test_mqtt_tls_enable_rejects_dict(self):
+        data = {"enable": {"$ext": {"function": "some_func"}}}
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            MQTTTLSArgs.validate_keys(data)
+
     def test_mqtt_ssl_alpn_protocols_must_be_list(self):
         data = {"alpn_protocols": "h2"}
         with pytest.raises(exceptions.UnexpectedKeysError):

@@ -67,11 +67,11 @@ class RestRequestSpec(_BaseKeyValidator):
     verify: Optional[Union[bool, str, dict, TypeConvertToken]] = None
     files: Optional[Union[dict, list, TypeConvertToken]] = None
     file_body: Optional[Union[str, dict, TypeConvertToken]] = None
-    stream: Optional[Union[bool, dict, TypeConvertToken]] = None
+    stream: Optional[Union[bool, TypeConvertToken]] = None
     timeout: Optional[Union[float, int, list, str, dict, TypeConvertToken]] = None
     cookies: Optional[Union[dict, list, TypeConvertToken]] = None
     cert: Optional[Union[str, list, int, dict, TypeConvertToken]] = None
-    follow_redirects: Optional[Union[bool, dict, TypeConvertToken]] = None
+    follow_redirects: Optional[Union[bool, TypeConvertToken]] = None
 
 
 # --- MQTT request spec ---
@@ -80,13 +80,13 @@ class MQTTRequestSpec(_BaseKeyValidator):
     payload: Optional[Union[str, bytes, int, float, dict, TypeConvertToken]] = None
     json_body: Optional[JSONType] = Field(default=None, alias="json")
     qos: Optional[Union[int, dict, TypeConvertToken]] = None
-    retain: Optional[Union[bool, dict, TypeConvertToken]] = None
+    retain: Optional[Union[bool, TypeConvertToken]] = None
 
 
 # --- MQTT client config blocks ---
 class MQTTClientArgs(_BaseKeyValidator):
     client_id: Optional[Union[str, dict, TypeConvertToken]] = None
-    clean_session: Optional[Union[bool, dict, TypeConvertToken]] = None
+    clean_session: Optional[Union[bool, TypeConvertToken]] = None
     transport: Optional[Union[str, dict, TypeConvertToken]] = None
 
 
@@ -103,7 +103,7 @@ class MQTTAuthArgs(_BaseKeyValidator):
 
 
 class MQTTTLSArgs(_BaseKeyValidator):
-    enable: Optional[Union[bool, dict, TypeConvertToken]] = None
+    enable: Optional[Union[bool, TypeConvertToken]] = None
     ca_certs: Optional[Union[str, dict, TypeConvertToken]] = None
     cert_reqs: Optional[Union[str, dict, TypeConvertToken]] = None
     certfile: Optional[Union[str, dict, TypeConvertToken]] = None
@@ -153,7 +153,7 @@ class GRPCConnectArgs(_BaseKeyValidator):
     port: Optional[Union[int, dict, TypeConvertToken]] = None
     options: Optional[Union[dict, TypeConvertToken]] = None
     timeout: Optional[Union[int, dict, TypeConvertToken]] = None
-    secure: Optional[Union[bool, dict, TypeConvertToken]] = None
+    secure: Optional[Union[bool, TypeConvertToken]] = None
 
 
 class GRPCProtoArgs(_BaseKeyValidator):
@@ -165,4 +165,4 @@ class GRPCClientTopLevel(_BaseKeyValidator):
     connect: Optional[Union[dict, TypeConvertToken]] = None
     proto: Optional[Union[dict, TypeConvertToken]] = None
     metadata: Optional[Union[dict, TypeConvertToken]] = None
-    attempt_reflection: Optional[Union[bool, dict, TypeConvertToken]] = None
+    attempt_reflection: Optional[Union[bool, TypeConvertToken]] = None
