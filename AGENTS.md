@@ -4,7 +4,8 @@ Tavern is a pytest plugin / CLI / library for testing APIs (HTTP, MQTT, gRPC, Gr
 
 ## Environment and commands
 
-All project configuration lives in `pyproject.toml` (see CONTRIBUTING.md).
+Project configuration lives in `pyproject.toml` (see CONTRIBUTING.md), apart from tox
+(`tox.ini`, `tox-integration.ini`) and the hooks in `.pre-commit-config.yaml`.
 
 ```bash
 uv venv
@@ -35,7 +36,8 @@ uv run tox -c tox-integration.ini -e py3-generic     # tests/integration
 uv run tox -c tox-integration.ini -e py3-http        # example/http, likewise mqtt/grpc/graphql
 ```
 
-`./scripts/smoke.bash` runs the whole set (lint + unit + all integration envs) and is the pre-PR check.
+`./scripts/smoke.bash` runs lint, unit tests and the integration envs except `py3-noextra`, and is the
+pre-PR check.
 `example/custom_backend` has its own bats-based `run_tests.sh` exercising third-party plugin loading.
 
 Releases: `tbump <new-tag>` (bumps `tavern/__init__.py`, regenerates CHANGELOG, re-locks) then `flit publish`.
@@ -111,4 +113,4 @@ merged in (`_core/schema/files.py`). `tests.schema.yaml` is the older pykwalify 
   `test_*.tavern.yaml` beside it.
 - Generated protobuf files (`*_pb2.py`, `*_pb2.pyi`, `*_pb2_grpc.py`) are checked in and excluded from
   ruff/mypy; regenerate with `example/grpc/regenerate.sh` rather than editing them.
-- New config belongs in `pyproject.toml`, not new dotfiles.
+- New config belongs in `pyproject.toml` or the existing file for that tool, not in new dotfiles.
