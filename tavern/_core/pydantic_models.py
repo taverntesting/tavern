@@ -23,10 +23,10 @@ class _BaseKeyValidator(BaseModel):
     """Base model that forbids extra keys and raises UnexpectedKeysError on validation failure."""
 
     model_config = ConfigDict(
-        extra="forbid", arbitrary_types_allowed=True, populate_by_name=True
+        extra="forbid", arbitrary_types_allowed=True, populate_by_name=True, hide_input_in_errors=True
     )
 
-    @classmethod
+    `@classmethod`
     def validate_keys(cls, data: Mapping) -> dict:
         """Validate that ``data`` contains only expected keys and types.
 
