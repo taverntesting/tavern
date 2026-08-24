@@ -1,0 +1,11 @@
+rules:
+  artipacked:
+    # actions/checkout only leaked credentials into artifacts in versions
+    # predating the ones used here
+    ignore:
+      - main.yml
+  cache-poisoning:
+    # main.yml runs on tag pushes but doesn't publish anything - releases are
+    # done manually with flit
+    ignore:
+      - main.yml

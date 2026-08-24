@@ -21,7 +21,8 @@ uv run pytest tests/unit/test_core.py::TestFoo::test_bar
 uv run tox -c tox.ini -e py3                        # as CI runs it
 ```
 
-Lint/format/typecheck all go through pre-commit hooks (ruff, mypy, prettier, actionlint, uv-lock).
+Lint/format/typecheck all go through pre-commit hooks (ruff, mypy, prettier, actionlint, zizmor,
+uv-lock).
 Use `prek` rather than `pre-commit` when it is installed — `scripts/smoke.bash` picks it automatically:
 
 ```bash
