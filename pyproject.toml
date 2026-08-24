@@ -224,7 +224,7 @@ exclude = ["*_pb2.py", "*_pb2_grpc.py", "*_pb2.pyi"]
 docstring-code-format = true
 
 [tool.tbump.version]
-current = "3.6.1"
+current = "3.6.2"
 
 regex = '''
   (?P<major>\d+)
