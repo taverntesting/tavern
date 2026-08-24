@@ -4,8 +4,12 @@ repos:
     hooks:
       - id: actionlint
         args: ["-shellcheck="]
+  - repo: https://github.com/zizmorcore/zizmor-pre-commit
+    rev: v1.29.0
+    hooks:
+      - id: zizmor
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.16.3
+    rev: v0.16.4
     hooks:
       - id: ruff-format
       - id: ruff-check
