@@ -332,6 +332,7 @@ def _get_parametrized_items(
             spec_new["test_name"], parent, spec_new, parent.path
         )
         item_new.add_markers(pytest_marks)
+        item_new.parametrize_vars = variables
 
         yield item_new
 
