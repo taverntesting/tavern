@@ -47,22 +47,11 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/cache@v6
-        env:
-          cache-name: cache-${TOXENV}
-        with:
-          path: .tox
-          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml') }}-${{ matrix.python-version }}
-
-      - uses: actions/cache@v6
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}-${{ matrix.python-version }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
       - name: run tests
         run: |
