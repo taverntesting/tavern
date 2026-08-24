@@ -78,6 +78,8 @@ jobs:
             TOXCFG: tox-integration.ini
           - TOXENV: py3-graphql
             TOXCFG: tox-integration.ini
+          - TOXENV: py3-allure
+            TOXCFG: tox-integration.ini
 
     env:
       TOXENV: ${{ matrix.TOXENV }}
@@ -115,6 +117,14 @@ jobs:
         run: |
           uv sync --all-extras --all-packages
           uvx tox -c ${TOXCFG} -e ${TOXENV}
+
+      - name: Upload allure report
+        if: ${{ always() && matrix.TOXENV == 'py3-allure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: allure-report
+          path: example/allure/allure-report/index.html
+          if-no-files-found: error
 
   custom-backend-tests:
     name: Custom Backend Tests

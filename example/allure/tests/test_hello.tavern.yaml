@@ -1,0 +1,29 @@
+---
+# Each of these should show up as a separate test case in the allure report
+test_name: Say hello
+
+includes:
+  - !include common.yaml
+
+marks:
+  - parametrize:
+      key: name
+      vals:
+        - Jim
+        - Bob
+        - Alice
+
+stages:
+  - type: ref
+    id: login_get_token
+
+  - name: Say hello to {name}
+    request:
+      url: "{service:s}/hello/{name}"
+      method: GET
+      headers:
+        Authorization: "Bearer {test_login_token}"
+    response:
+      status_code: 200
+      json:
+        data: "Hello, {name}"

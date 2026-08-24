@@ -35,6 +35,7 @@ Integration tests need Docker; they spin up example servers via `docker compose`
 ```bash
 uv run tox -c tox-integration.ini -e py3-generic     # tests/integration
 uv run tox -c tox-integration.ini -e py3-http        # example/http, likewise mqtt/grpc/graphql
+uv run tox -c tox-integration.ini -e py3-allure      # example/allure, generates an allure report
 ```
 
 `./scripts/smoke.bash` runs lint, unit tests and the integration envs except `py3-noextra`, and is the
