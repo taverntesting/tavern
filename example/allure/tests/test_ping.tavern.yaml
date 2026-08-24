@@ -1,0 +1,27 @@
+---
+test_name: Ping the server
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Unauthenticated ping
+    request:
+      url: "{service:s}/ping"
+      method: GET
+    response:
+      status_code: 401
+
+  - type: ref
+    id: login_get_token
+
+  - name: Authenticated ping
+    request:
+      url: "{service:s}/ping"
+      method: GET
+      headers:
+        Authorization: "Bearer {test_login_token}"
+    response:
+      status_code: 200
+      json:
+        data: pong

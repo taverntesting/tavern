@@ -78,6 +78,8 @@ jobs:
             TOXCFG: tox-integration.ini
           - TOXENV: py3-graphql
             TOXCFG: tox-integration.ini
+          - TOXENV: py3-allure
+            TOXCFG: tox-integration.ini
 
     env:
       TOXENV: ${{ matrix.TOXENV }}
@@ -116,6 +118,14 @@ jobs:
           uv sync --all-extras --all-packages
           uvx tox -c ${TOXCFG} -e ${TOXENV}
 
+      - name: Upload allure report
+        if: ${{ always() && matrix.TOXENV == 'py3-allure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: allure-report
+          path: example/allure/allure-report/index.html
+          if-no-files-found: error
+
   custom-backend-tests:
     name: Custom Backend Tests
     needs: unit-tests
@@ -127,14 +137,6 @@ jobs:
       - name: Setup Bats and bats libs
         id: setup-bats
         uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # v4.0.0
-        with:
-          # The libraries have to live somewhere the runner user owns, otherwise
-          # they get installed with sudo and actions/cache can't untar them back.
-          # See https://github.com/bats-core/bats-action#about-caching
-          support-path: "${{ github.workspace }}/.bats-libs/bats-support"
-          assert-path: "${{ github.workspace }}/.bats-libs/bats-assert"
-          detik-path: "${{ github.workspace }}/.bats-libs/bats-detik"
-          file-path: "${{ github.workspace }}/.bats-libs/bats-file"
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0

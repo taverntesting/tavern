@@ -1,0 +1,22 @@
+---
+services:
+  server:
+    build:
+      context: ../http
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+
+  # Only used to turn the results written by allure-pytest into a report - not
+  # started by 'docker compose up', run it with 'docker compose run --rm allure'
+  allure:
+    image: frankescobar/allure-docker-service:2.35.1
+    profiles:
+      - report
+    entrypoint: ["allure"]
+    # The image runs as its own 'allure' user which has no way of writing to the
+    # mounted folders
+    user: "0:0"
+    volumes:
+      - ./allure-results:/allure-results
+      - ./allure-report:/allure-report

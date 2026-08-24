@@ -1,14 +1,17 @@
 import logging
+from collections.abc import Mapping
 from textwrap import dedent
-from typing import Union
+from typing import Any, Union
 
 import yaml
 
 try:
-    from allure import attach, step
+    from allure import attach, dynamic, step
     from allure import attachment_type as at
 
     yaml_type = at.YAML
+
+    _report_parameter = dynamic.parameter
 except ImportError:
     yaml_type = None
 
@@ -20,6 +23,9 @@ except ImportError:
             return step_func
 
         return call
+
+    def _report_parameter(*args, **kwargs) -> None:
+        logger.debug("Not reporting parameter as allure is not installed")
 
 
 from tavern._core.formatted_str import FormattedString
@@ -71,6 +77,17 @@ def attach_yaml(payload, name: str) -> None:
 
 def attach_text(payload, name: str, attachment_type=None) -> None:
     return attach(payload, name=name, attachment_type=attachment_type)
+
+
+def attach_parameters(parameters: Mapping[str, Any]) -> None:
+    """Report the values a test was parametrized with
+
+    Tavern generates a separate item per parametrize combination instead of using
+    pytest's parametrisation, so there is no 'callspec' for allure to read the
+    parameters from - without this, every generated test gets the same history id.
+    """
+    for name, value in parameters.items():
+        _report_parameter(name, value)
 
 
 def wrap_step(allure_name: str, partial):

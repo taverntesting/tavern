@@ -1,0 +1,26 @@
+---
+name: Allure example includes
+description: variables and the login stage used by the tests in this folder
+
+variables:
+  service: http://localhost:5000
+  user:
+    user: test-user
+    pass: correct-password
+
+stages:
+  - id: login_get_token
+    name: Login and acquire token
+    request:
+      url: "{service:s}/login"
+      json:
+        user: "{user.user:s}"
+        password: "{user.pass:s}"
+      method: POST
+      headers:
+        content-type: application/json
+    response:
+      status_code: 200
+      save:
+        json:
+          test_login_token: token
