@@ -39,6 +39,7 @@ def test_parametrized_items_have_unique_allure_history_ids(pytester):
     reported = [json.loads(f.read_text()) for f in allure_dir.glob("*-result.json")]
     assert len(reported) == 2
     assert len({r["historyId"] for r in reported}) == 2
-    assert {
-        (p["name"], p["value"]) for r in reported for p in r["parameters"]
-    } == {("wallet_address", "'aaaaaaaa'"), ("wallet_address", "'bbbbbbbb'")}
+    assert {(p["name"], p["value"]) for r in reported for p in r["parameters"]} == {
+        ("wallet_address", "'aaaaaaaa'"),
+        ("wallet_address", "'bbbbbbbb'"),
+    }
