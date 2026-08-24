@@ -84,7 +84,7 @@ jobs:
       TOXCFG: ${{ matrix.TOXCFG }}
 
     steps:
-      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3.12.0
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
         continue-on-error: true
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -111,12 +111,6 @@ jobs:
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
 
-      - name: Install Protoc
-        if: ${{ contains(matrix.TOXENV, 'grpc') }}
-        uses: arduino/setup-protoc@c65c819552d16ad3c9b72d9dfd5ba5237b9c906b # v3.0.0
-        with:
-          version: "23.x"
-
       - name: Run tests
         run: |
           uv sync --all-extras --all-packages
@@ -133,6 +127,14 @@ jobs:
       - name: Setup Bats and bats libs
         id: setup-bats
         uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # v4.0.0
+        with:
+          # The libraries have to live somewhere the runner user owns, otherwise
+          # they get installed with sudo and actions/cache can't untar them back.
+          # See https://github.com/bats-core/bats-action#about-caching
+          support-path: "${{ github.workspace }}/.bats-libs/bats-support"
+          assert-path: "${{ github.workspace }}/.bats-libs/bats-assert"
+          detik-path: "${{ github.workspace }}/.bats-libs/bats-detik"
+          file-path: "${{ github.workspace }}/.bats-libs/bats-file"
 
       - name: Set up Python
         uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
