@@ -3,4 +3,6 @@
 Stop pytest warning about module already imported: PYTEST_DONT_REWRITE
 """
 
-__version__ = "3.6.2"
+import importlib.metadata
+
+__version__ = importlib.metadata.version("tavern")

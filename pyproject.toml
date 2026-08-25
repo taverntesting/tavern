@@ -21,7 +21,7 @@ keywords = ["testing", "pytest"]
 
 name = "tavern"
 description = "Simple testing of RESTful APIs"
-dynamic = ["version"]
+version = "4.0.0rc1"
 
 dependencies = [
     "PyYAML>=6.0.1,<7",
@@ -108,7 +108,6 @@ dev = [
     # for pytest
     "exceptiongroup",
     "tomli",
-    "tbump>=6.10.0",
     "tox-uv>=1.28.0",
     "pytest-asyncio>=1.3.0",
     "hypothesis>=6,<7",
@@ -228,37 +227,6 @@ known-first-party = ["tavern"]
 [tool.ruff.format]
 exclude = ["*_pb2.py", "*_pb2_grpc.py", "*_pb2.pyi"]
 docstring-code-format = true
-
-[tool.tbump.version]
-current = "3.6.2"
-
-regex = '''
-  (?P<major>\d+)
-  \.
-  (?P<minor>\d+)
-  \.
-  (?P<patch>\d+)
-  ((?P<release>[a-zA-Z]+)(?P<build>\d+))?
-  '''
-
-[tool.tbump.git]
-message_template = "Bump to {new_version}"
-tag_template = "{new_version}"
-
-[[tool.tbump.file]]
-src = "tavern/__init__.py"
-
-[[tool.tbump.before_commit]]
-name = "Update changelog"
-cmd = "./scripts/update_changelog.py"
-[[tool.tbump.before_commit]]
-name = "Update lock"
-cmd = "uv lock"
-
-# TODO: enable
-# [[tool.tbump.after_push]]
-# name = "publish"
-# cmd = "./scripts/release.sh"
 
 [tool.tox]
 runner = "uv-venv-lock-runner"

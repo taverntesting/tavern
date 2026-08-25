@@ -466,20 +466,6 @@ wheels = [
 ]
 
 [[package]]
-name = "cli-ui"
-version = "0.19.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "colorama" },
-    { name = "tabulate" },
-    { name = "unidecode" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/21/63/70d8fefa7b4140367c45287b94fb5df535b6ba6f77464087b18fdae2bb47/cli_ui-0.19.0.tar.gz", hash = "sha256:59cdab0c6a2a6703c61b31cb75a1943076888907f015fffe15c5a8eb41a933aa", size = 12808, upload-time = "2025-03-29T20:24:37.486Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c6/a9/09591cff626f71bd11f88d8eedb81619c17422b4a5e778614a91e83c4b6a/cli_ui-0.19.0-py3-none-any.whl", hash = "sha256:1cf1b93328f7377730db29507e10bcb29ccc1427ceef45714b522d1f2055e7cd", size = 13492, upload-time = "2025-03-29T20:24:35.841Z" },
-]
-
-[[package]]
 name = "click"
 version = "8.4.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2379,15 +2365,6 @@ wheels = [
 ]
 
 [[package]]
-name = "schema"
-version = "0.7.8"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/fb/2e/8da627b65577a8f130fe9dfa88ce94fcb24b1f8b59e0fc763ee61abef8b8/schema-0.7.8.tar.gz", hash = "sha256:e86cc08edd6fe6e2522648f4e47e3a31920a76e82cce8937535422e310862ab5", size = 45540, upload-time = "2025-10-11T13:15:40.281Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/c9/75/aad85817266ac5285c93391711d231ca63e9ae7d42cd3ca37549e24ebe52/schema-0.7.8-py2.py3-none-any.whl", hash = "sha256:00bd977fadc7d9521bf289850cd8a8aa5f4948f575476b8daaa5c1b57af2dce1", size = 19108, upload-time = "2025-10-11T17:13:07.323Z" },
-]
-
-[[package]]
 name = "sentinel"
 version = "1.0.0"
 source = { registry = "https://pypi.org/simple" }
@@ -2573,16 +2550,8 @@ wheels = [
 ]
 
 [[package]]
-name = "tabulate"
-version = "0.9.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/ec/fe/802052aecb21e3797b8f7902564ab6ea0d60ff8ca23952079064155d1ae1/tabulate-0.9.0.tar.gz", hash = "sha256:0095b12bf5966de529c0feb1fa08671671b3368eec77d7ef7ab114be2c068b3c", size = 81090, upload-time = "2022-10-06T17:21:48.54Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/40/44/4a5f08c96eb108af5cb50b41f76142f0afa346dfa99d5296fe7202a11854/tabulate-0.9.0-py3-none-any.whl", hash = "sha256:024ca478df22e9340661486f85298cff5f6dcdba14f3813e8830015b9ed1948f", size = 35252, upload-time = "2022-10-06T17:21:44.262Z" },
-]
-
-[[package]]
 name = "tavern"
+version = "4.0.0rc1"
 source = { editable = "." }
 dependencies = [
     { name = "jmespath" },
@@ -2641,7 +2610,6 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytest-xdist" },
     { name = "ruff" },
-    { name = "tbump" },
     { name = "tomli" },
     { name = "tox" },
     { name = "tox-uv" },
@@ -2682,7 +2650,7 @@ requires-dist = [
     { name = "stevedore", specifier = ">=4,<6" },
     { name = "websockets", marker = "extra == 'graphql'" },
 ]
-provides-extras = ["graphql", "grpc", "mqtt", "scriptable"]
+provides-extras = ["grpc", "mqtt", "scriptable", "graphql"]
 
 [package.metadata.requires-dev]
 dev = [
@@ -2707,7 +2675,6 @@ dev = [
     { name = "pytest-cov" },
     { name = "pytest-xdist" },
     { name = "ruff", specifier = ">=0.15.9" },
-    { name = "tbump", specifier = ">=6.10.0" },
     { name = "tomli" },
     { name = "tox", specifier = ">4.20,<5" },
     { name = "tox-uv", specifier = ">=1.28.0" },
@@ -2807,21 +2774,6 @@ requires-dist = [
 ]
 
 [[package]]
-name = "tbump"
-version = "6.11.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "cli-ui" },
-    { name = "docopt" },
-    { name = "schema" },
-    { name = "tomlkit" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/ab/1f/d02379532311192521a20b3597dc0f01bd37596e950a6cb40795ae9acb94/tbump-6.11.0.tar.gz", hash = "sha256:385e710eedf0a8a6ff959cf1e9f3cfd17c873617132fc0ec5f629af0c355c870", size = 28642, upload-time = "2023-09-09T11:22:59.039Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/48/41/c21994a64efe86ed81c1a0935aeec840548839a37a7f3716f74a75e54fc2/tbump-6.11.0-py3-none-any.whl", hash = "sha256:6b181fe6f3ae84ce0b9af8cc2009a8bca41ded34e73f623a7413b9684f1b4526", size = 35607, upload-time = "2023-09-09T11:22:56.581Z" },
-]
-
-[[package]]
 name = "tomli"
 version = "2.4.1"
 source = { registry = "https://pypi.org/simple" }
@@ -2873,15 +2825,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/19/75/241269d1da26b624c0d5e110e8149093c759b7a286138f4efd61a60e75fe/tomli_w-1.2.0.tar.gz", hash = "sha256:2dd14fac5a47c27be9cd4c976af5a12d87fb1f0b4512f81d69cce3b35ae25021", size = 7184, upload-time = "2025-01-15T12:07:24.262Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/18/c86eb8e0202e32dd3df50d43d7ff9854f8e0603945ff398974c1d91ac1ef/tomli_w-1.2.0-py3-none-any.whl", hash = "sha256:188306098d013b691fcadc011abd66727d3c414c571bb01b1a174ba8c983cf90", size = 6675, upload-time = "2025-01-15T12:07:22.074Z" },
-]
-
-[[package]]
-name = "tomlkit"
-version = "0.11.8"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/10/37/dd53019ccb72ef7d73fff0bee9e20b16faff9658b47913a35d79e89978af/tomlkit-0.11.8.tar.gz", hash = "sha256:9330fc7faa1db67b541b28e62018c17d20be733177d290a13b24c62d1614e0c3", size = 188825, upload-time = "2023-04-27T10:39:21.201Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/ef/a8/b1c193be753c02e2a94af6e37ee45d3378a74d44fe778c2434a63af92731/tomlkit-0.11.8-py3-none-any.whl", hash = "sha256:8c726c4c202bdb148667835f68d68780b9a003a9ec34167b6c673b38eff2a171", size = 35807, upload-time = "2023-04-27T10:39:19.629Z" },
 ]
 
 [[package]]
@@ -3019,15 +2962,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/92/ff/5a28bdfd8c3ebec42564ac7d0e54ca3db65044a9314a97f9564fa7a1e926/tzdata-2026.3.tar.gz", hash = "sha256:4a1518b8993086a7982523e071643f3c0e5f213e75b21318e78bcabfff9d1415", size = 198674, upload-time = "2026-07-10T08:50:37.887Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e5/6d/b53b99a9f2766d095985947a5782f1702cabb129a34f7a802d7197af832f/tzdata-2026.3-py2.py3-none-any.whl", hash = "sha256:dc096730c87af6cab1b171c9d532be840741ff5d459015e7f6947bd7d7e54931", size = 348168, upload-time = "2026-07-10T08:50:36.46Z" },
-]
-
-[[package]]
-name = "unidecode"
-version = "1.4.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/94/7d/a8a765761bbc0c836e397a2e48d498305a865b70a8600fd7a942e85dcf63/Unidecode-1.4.0.tar.gz", hash = "sha256:ce35985008338b676573023acc382d62c264f307c8f7963733405add37ea2b23", size = 200149, upload-time = "2025-04-24T08:45:03.798Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/8f/b7/559f59d57d18b44c6d1250d2eeaa676e028b9c527431f5d0736478a73ba1/Unidecode-1.4.0-py3-none-any.whl", hash = "sha256:c3c7606c27503ad8d501270406e345ddb480a7b5f38827eafe4fa82a137f0021", size = 235837, upload-time = "2025-04-24T08:45:01.609Z" },
 ]
 
 [[package]]
