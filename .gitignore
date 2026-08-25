@@ -114,7 +114,9 @@ pytype_output
 out/
 **/*.iml
 
-allure/
+/allure/
+allure-results/
+allure-report/
 
 .ijwb/
 .pants.d/

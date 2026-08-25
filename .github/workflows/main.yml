@@ -23,16 +23,16 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
 
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@v7
 
-      - uses: pre-commit/action@v3.0.0
+      - uses: j178/prek-action@4e14d07f9231acabce116ccfca13b13dd9755ece # v3.0.1
 
   unit-tests:
     runs-on: ubuntu-24.04
@@ -49,24 +49,13 @@ jobs:
         python-version: ["3.12", "3.13", "3.14"]
 
     steps:
-      - uses: actions/checkout@v6
-
-      - uses: actions/cache@v5
-        env:
-          cache-name: cache-${TOXENV}
-        with:
-          path: .tox
-          key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml') }}-${{ matrix.python-version }}
-
-      - uses: actions/cache@v5
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}-${{ matrix.python-version }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+        with:
+          enable-cache: true
+          cache-dependency-glob: "uv.lock"
 
       - name: run tests
         run: |
@@ -93,29 +82,27 @@ jobs:
             TOXCFG: tox-integration.ini
           - TOXENV: py3-graphql
             TOXCFG: tox-integration.ini
-
-    services:
-      docker:
-        image: docker
+          - TOXENV: py3-allure
+            TOXCFG: tox-integration.ini
 
     env:
       TOXENV: ${{ matrix.TOXENV }}
       TOXCFG: ${{ matrix.TOXCFG }}
 
     steps:
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
         continue-on-error: true
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - uses: actions/cache@v5
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         env:
           cache-name: cache-${{ matrix.TOXENV }}
         with:
           path: .tox
           key: ${{ runner.os }}-tox-${{ env.cache-name }}-${{ hashFiles('pyproject.toml') }}
 
-      - uses: actions/cache@v5
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
@@ -123,23 +110,25 @@ jobs:
             ${{ runner.os }}-pip-
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v7
-
-      - name: Install Protoc
-        if: ${{ contains(matrix.TOXENV, 'grpc') }}
-        uses: arduino/setup-protoc@v3
-        with:
-          version: "23.x"
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
 
       - name: Run tests
         run: |
           uv sync --all-extras --all-packages
           uvx tox -c ${TOXCFG} -e ${TOXENV}
+
+      - name: Upload allure report
+        if: ${{ always() && matrix.TOXENV == 'py3-allure' }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: allure-report
+          path: example/allure/allure-report/index.html
+          if-no-files-found: error
 
   custom-backend-tests:
     name: Custom Backend Tests
@@ -148,18 +137,18 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Setup Bats and bats libs
         id: setup-bats
-        uses: bats-core/bats-action@3.0.1
+        uses: bats-core/bats-action@77d6fb60505b4d0d1d73e48bd035b55074bbfb43 # v4.0.0
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
 
       - name: Run tests
         env:

@@ -384,7 +384,7 @@ class MQTTClient:
     def publish(
         self,
         topic: str,
-        payload: None | bytearray | bytes | float | str = None,
+        payload: bytearray | bytes | float | str | None = None,
         qos: int | None = None,
         retain: bool | None = None,
     ) -> MQTTMessageInfo:
@@ -516,7 +516,9 @@ class MQTTClient:
         logger.error(
             "Could not connect to broker after %s seconds", self._connect_timeout
         )
-        raise exceptions.MQTTError
+        raise exceptions.MQTTError(
+            f"Could not connect to broker after {self._connect_timeout} seconds"
+        )
 
     def __exit__(self, *args) -> None:
         self._disconnect()
