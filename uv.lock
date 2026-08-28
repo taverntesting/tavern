@@ -2026,13 +2026,15 @@ wheels = [
 
 [[package]]
 name = "protobuf-protoc-bin"
-version = "29.5"
+version = "35.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/25/95/3564e08e56ed0eb8827c06a9b1e98574e692c0c0707bbdcde450db85cf81/protobuf_protoc_bin-29.5.tar.gz", hash = "sha256:7d3f6b1e2af58dcb9c1bfbb47c89c9d3d9ecc02262b8f0f165d274b2306ba4bf", size = 8510, upload-time = "2025-05-29T05:55:26.096Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/99/3e/0240ded6927dd09b523ceb68168ca9ea00cc3ecca0e4b3fb525f8d23903a/protobuf_protoc_bin-35.1.tar.gz", hash = "sha256:565630d5b5666c97d3e161b9c4f3fcebdb913a32b2cb05977bd4684ee4396295", size = 10670, upload-time = "2026-06-12T09:48:44.413Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/80/02/d10e7b4344a80c3d391c893cb2df27c4f93198b7797b0b067e195e9c71e1/protobuf_protoc_bin-29.5-py2.py3-none-macosx_10_13_universal2.whl", hash = "sha256:013c006e7f54988916f57497a18f7af8dd8bb4587d69884e92e739c96212a982", size = 2380190, upload-time = "2025-05-29T05:55:21.069Z" },
-    { url = "https://files.pythonhosted.org/packages/4d/d6/d21a9a91630f023095de21449bb0520ec6a8304cf965e7bf069929f3a7e1/protobuf_protoc_bin-29.5-py2.py3-none-manylinux_2_24_x86_64.whl", hash = "sha256:4066fbb0f7aac868ecd4aedd9c2a8e7bf5643c18e886797f28e7616a19114e84", size = 3292846, upload-time = "2025-05-29T05:55:22.933Z" },
-    { url = "https://files.pythonhosted.org/packages/81/1d/ccd670cdf55a4d49ae97c20035fb19e5c359a535998373e5c69a1c964f10/protobuf_protoc_bin-29.5-py2.py3-none-win_amd64.whl", hash = "sha256:7f8f26e63dc1cf56fe2ab339f0c7533b07b6f010b822c45135b543785562ca78", size = 3193605, upload-time = "2025-05-29T05:55:24.511Z" },
+    { url = "https://files.pythonhosted.org/packages/49/61/e87e831b94957b8e68b6f2ea2780e5ad010365b381e9a6b86bebff9f7f07/protobuf_protoc_bin-35.1-py2.py3-none-macosx_10_13_universal2.whl", hash = "sha256:b64d3a9877075405cf749ee99e14bcaed4d1d19430e7e4af29a1e7d44e72f026", size = 2718598, upload-time = "2026-06-12T09:48:36.355Z" },
+    { url = "https://files.pythonhosted.org/packages/46/26/1e0c899fa56d706854be37b8a34c9008eebaaefaa857868ed733ae85863b/protobuf_protoc_bin-35.1-py2.py3-none-manylinux_2_24_aarch64.whl", hash = "sha256:907e874d3a1c1f9f79194a8f785819c639a99c1e75326a24536c7c0434b8dcd4", size = 3589219, upload-time = "2026-06-12T09:48:38.104Z" },
+    { url = "https://files.pythonhosted.org/packages/fd/df/e8a9bc9f227545c6c3d928f6f76904f9e19da364d372c7c796f5fb33d355/protobuf_protoc_bin-35.1-py2.py3-none-manylinux_2_24_x86_64.whl", hash = "sha256:3fd4ff06d9a0a59495b080913ea9fc93a46c22ef36883cb44fd2d92aa12c63ea", size = 3639860, upload-time = "2026-06-12T09:48:39.998Z" },
+    { url = "https://files.pythonhosted.org/packages/0c/39/30d1950c4d83c717dacf7586c637d9a1a371518d12703b42f7af463dd7e4/protobuf_protoc_bin-35.1-py2.py3-none-win_amd64.whl", hash = "sha256:c0af14f9f28d5ac7790188d1331b712fb225350d594344b7b5fa325d2a82cab3", size = 3524478, upload-time = "2026-06-12T09:48:41.44Z" },
+    { url = "https://files.pythonhosted.org/packages/dd/0c/ba95c6f80d5a9da383b3817d0b28fce13df10a52267aac2d0f7ceeda1d70/protobuf_protoc_bin-35.1-py2.py3-none-win_arm64.whl", hash = "sha256:5fc01aacaec32820530719d7840117df3dcd4a71c84a906601fa6377bac8c138", size = 3524478, upload-time = "2026-06-12T09:48:43.029Z" },
 ]
 
 [[package]]
@@ -2954,7 +2956,7 @@ dev = [
     { name = "hypothesis", specifier = ">=6,<7" },
     { name = "itsdangerous" },
     { name = "pre-commit" },
-    { name = "protobuf-protoc-bin", specifier = "==29.5" },
+    { name = "protobuf-protoc-bin", specifier = "==35.1" },
     { name = "py" },
     { name = "pydantic" },
     { name = "pytest-asyncio", specifier = ">=1.3.0" },
@@ -3226,11 +3228,11 @@ wheels = [
 
 [[package]]
 name = "types-protobuf"
-version = "7.34.1.20260816"
+version = "7.35.1.20260821"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/e0/86/f592845ff8410583687e6dbf985a028e6ec6d378d0bdf548817aa39937b9/types_protobuf-7.34.1.20260816.tar.gz", hash = "sha256:6f43846e7a3cc2621abfa79e2bb03461e6769a74cdae7462efaddf84580fd5c1", size = 69170, upload-time = "2026-08-16T02:50:00.998Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/14/58/8013cfe1a9665ad36a000897054bfd499f56e89a56b7542838c2f4e6c737/types_protobuf-7.35.1.20260821.tar.gz", hash = "sha256:abc85e9271f9774f4899201dbfb731ef4a453f302454fdb66091a557b2adb2ac", size = 69632, upload-time = "2026-08-21T02:52:33.913Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/14/cc/909e791f11de77c2073007dbcce8b502865ef12c7881bdf36b0ccb206ab4/types_protobuf-7.34.1.20260816-py3-none-any.whl", hash = "sha256:2e3a225b3c21f0022daa34cec155f03858bb9aff9792947b8e71f0e9f1791fdb", size = 86036, upload-time = "2026-08-16T02:49:59.807Z" },
+    { url = "https://files.pythonhosted.org/packages/b8/e7/18a03d8e31f3d90af5bf6c622fef3cd7b246773b11fdebb6c801c7a9fdd9/types_protobuf-7.35.1.20260821-py3-none-any.whl", hash = "sha256:a99b71356e153e53cc7bc3c8c0e22d8aa54d92f02bf02486f7a19a3a947caf03", size = 86413, upload-time = "2026-08-21T02:52:33.016Z" },
 ]
 
 [[package]]
