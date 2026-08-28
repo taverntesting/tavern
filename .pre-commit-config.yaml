@@ -27,7 +27,7 @@ repos:
         additional_dependencies:
           - types-requests
           # Keep in sync with the protobuf/types-protobuf pins in pyproject.toml
-          - "types-protobuf>=5,<6"
+          - "types-protobuf>=7.35.1.20260821,<8"
           - types-PyYAML
           - mypy-extensions
         exclude: (tests|example/)
