@@ -1,4 +1,4 @@
-FROM python:3.11-slim-trixie
+FROM python:3.14-slim-trixie
 
 RUN python3 -m pip install uv
 
