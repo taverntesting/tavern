@@ -5,7 +5,7 @@ services:
       context: ../http
       dockerfile: Dockerfile
     ports:
-      - "5000:5000"
+      - "5004:5000"
 
   # Only used to turn the results written by allure-pytest into a report - not
   # started by 'docker compose up', run it with 'docker compose run --rm allure'
