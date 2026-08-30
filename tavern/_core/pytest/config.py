@@ -90,21 +90,6 @@ class TestConfig:
         }
         return dumped
 
-    @classmethod
-    def from_starlark(cls, starlark_dict: dict) -> "TestConfig":
-        from tavern._core.starlark.types import from_starlark
-
-        return cls(
-            variables=from_starlark(starlark_dict["variables"]),
-            follow_redirects=starlark_dict["follow_redirects"],
-            stages=from_starlark(starlark_dict["stages"]),
-            strict=from_starlark(starlark_dict["strict"]),
-            tavern_internal=from_starlark(starlark_dict["tavern_internal"]),
-            experimental_starlark_pipeline=starlark_dict[
-                "experimental_starlark_pipeline"
-            ],
-        )
-
 
 def has_module(module: str) -> bool:
     try:

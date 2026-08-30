@@ -11,20 +11,20 @@ logger = logging.getLogger(__name__)
 
 @runtime_checkable
 class StarlarkConvertible(Protocol):
-    """Protocol for objects that know how to convert themselves to/from Starlark."""
+    """Protocol for objects that know how to convert themselves to Starlark.
+
+    Implemented by anything which requires special handling of values
+    """
 
     def to_starlark(self) -> Any:
         """Convert this object to a Starlark-safe value."""
         raise NotImplementedError
 
-    @classmethod
-    def from_starlark(cls, obj: Any) -> "StarlarkConvertible":
-        """Reconstruct an instance from a Starlark value."""
-        raise NotImplementedError
-
 
 def to_starlark(obj: Any) -> Any:
     """Recursively convert an arbitrary Python object to a Starlark-safe value.
+
+    If it's a StarlarkConvertible then use the specific implementation.
 
     Primitives, dicts (with string keys) and lists are kept as-is (recursed).
     Everything else is wrapped in an ``OpaquePythonObject`` so it can be passed
@@ -48,8 +48,9 @@ def to_starlark(obj: Any) -> Any:
 def from_starlark(obj: Any) -> Any:
     """Recursively convert a Starlark value back to a plain Python object.
 
-    ``OpaquePythonObject`` instances are unwrapped; primitives, dicts and lists
-    are recursed into.
+    Primitives, dicts and lists are recursed into; anything else is returned
+    as-is. Values wrapped in an ``OpaquePythonObject`` on the way in are already
+    unwrapped by the time they arrive back here, so there is nothing to undo.
     """
     if isinstance(obj, _STARLARK_PRIMITIVES):
         return obj

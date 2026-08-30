@@ -131,20 +131,6 @@ class TestStageResponseToStarlark:
         result = response.to_starlark()
         assert result["success"] is False
 
-    def test_from_starlark_roundtrip(self):
-        """Test from_starlark creates equivalent object."""
-        original = StageResponse(
-            success=True,
-            response={"status_code": 200},
-            request_vars={"token": "abc"},
-            stage_name="test",
-        )
-        starlark_dict = original.to_starlark()
-        reconstructed = StageResponse.from_starlark(starlark_dict)
-        assert reconstructed.success == original.success
-        assert reconstructed.request_vars == original.request_vars
-        assert reconstructed.stage_name == original.stage_name
-
 
 class TestRunStageBinding:
     """Tests for the run_stage function exposed to Starlark."""

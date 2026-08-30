@@ -78,15 +78,6 @@ class StageResponse:
             "stage_name": self.stage_name,
         }
 
-    @classmethod
-    def from_starlark(cls, obj: dict) -> "StageResponse":
-        return cls(
-            success=obj["success"],
-            response=from_starlark(obj["response"]),
-            request_vars=from_starlark(obj["request_vars"]),
-            stage_name=obj["stage_name"],
-        )
-
 
 def _get_starlark_builtins() -> str:
     """Load the Starlark builtins from the tavern_helpers.star file.
