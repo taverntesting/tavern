@@ -18,6 +18,17 @@ updates:
       interval: weekly
     cooldown:
       default-days: 7
+    ignore:
+      # These have deliberate upper bounds in pyproject.toml
+      # eg protobuf will break if its updated
+      - dependency-name: protobuf
+        update-types: ["version-update:semver-major"]
+      - dependency-name: protobuf-protoc-bin
+        update-types: ["version-update:semver-major"]
+      - dependency-name: typed-protobuf
+        update-types: ["version-update:semver-major"]
+      - dependency-name: paho-mqtt
+        update-types: ["version-update:semver-major"]
     groups:
       python-dev:
         dependency-type: development
