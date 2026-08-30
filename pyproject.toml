@@ -68,7 +68,7 @@ mqtt = [
 ]
 
 scriptable = [
-    "starlark-pyo3>=2025.2.5",
+    "starlark-pyo3",
 ]
 
 graphql = [
@@ -91,7 +91,6 @@ dev = [
     "pre-commit",
     "pytest-cov",
     "pytest-xdist",
-    "py",
     "tox>4.20,<5",
     "ruff>=0.15.9",
     "uv>=0.9.2",
