@@ -148,6 +148,11 @@ exclude = [
 
 [tool.coverage.run]
 branch = false
+# Measure python subprocesses too (e.g. the pytester-spawned pytest runs in
+# tests/integration/test_run_integration_suite.py); parallel data files are
+# combined by pytest-cov / 'coverage combine'
+parallel = true
+patch = ["subprocess"]
 omit = [
     "tests/*",
     ".eggs/*",
