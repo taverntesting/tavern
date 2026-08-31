@@ -45,6 +45,24 @@ def test_integration_yaml_file(pytester, yaml_file, monkeypatch):
         str(GLOBAL_CFG),
         "-m",
         "not do_not_run",
+        # Plugin loading dominates the subprocess startup time, so disable
+        # everything the yaml tests don't use (cov is kept for coverage)
+        "-p",
+        "no:hypothesispytest",
+        "-p",
+        "no:xdist",
+        "-p",
+        "no:xdist.looponfail",
+        "-p",
+        "no:allure_pytest",
+        "-p",
+        "no:asyncio",
+        "-p",
+        "no:anyio",
+        "-p",
+        "no:faker",
+        "-p",
+        "no:random_order",
     )
 
     # NO_TESTS_COLLECTED is legitimate for a file whose every test is
