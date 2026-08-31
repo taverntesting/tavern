@@ -2,9 +2,6 @@
 
 set -ex
 
-tox -c tox-integration.ini -e py311-generic
-tox -c tox-integration.ini -e py311-mqtt
-tox -e py311
-
-coverage combine --append .coverage tests/integration/.coverage example/mqtt/.coverage
-coverage report -m
+# Runs the unit tests and the tests/integration suite in one top-level pytest
+# run and reports combined coverage for tavern.
+uv run pytest --cov tavern --cov-report=term-missing "$@"

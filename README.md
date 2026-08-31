@@ -165,8 +165,11 @@ environment ([this
 page](http://docs.python-guide.org/en/latest/dev/virtualenvs/) has a
 good primer for working with development environments with Python).
 After you've created your development environment, just
-`pip install tox` and run `tox` to run the unit tests. If you want
-to run the integration tests, make sure you have
+`pip install tox` and run `tox` to run the unit tests — this also runs
+the HTTP integration tests in `tests/integration/`, which start their own
+server in a background thread and need no extra setup. If you want
+to run the full example suites (mqtt/grpc/graphql/etc.) and the
+`tavern-ci`/library entrypoint checks, make sure you have
 [docker](https://www.docker.com/) installed and run
 `tox -c tox-integration.ini` (bear in mind this might take a while.)
 It's that simple!

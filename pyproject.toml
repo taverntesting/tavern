@@ -148,6 +148,11 @@ exclude = [
 
 [tool.coverage.run]
 branch = false
+# Measure python subprocesses too (e.g. the pytester-spawned pytest runs in
+# tests/integration/test_run_integration_suite.py); parallel data files are
+# combined by pytest-cov / 'coverage combine'
+parallel = true
+patch = ["subprocess"]
 omit = [
     "tests/*",
     ".eggs/*",
@@ -165,9 +170,12 @@ tavern = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tavern", "tests/unit"]
+testpaths = ["tavern", "tests/unit", "tests/integration"]
 addopts = [
     "--doctest-modules",
+    # Stop --doctest-modules importing every conftest.py as a module: with
+    # multiple non-package conftest.py files the basenames clash in sys.modules
+    "--ignore-glob=*/conftest.py",
     "-r", "xs",
     "-vv",
     "--strict-markers",
@@ -176,12 +184,18 @@ addopts = [
     "-m", "not do_not_run"
 ]
 norecursedirs = [
-    ".git",
-    ".tox",
-    ".venv",
-    "example",
-    "node_modules",
+    # pytest's defaults - setting this key replaces rather than extends them
+    "*.egg",
+    ".*",
+    "_darcs",
+    "build",
+    "CVS",
     "dist",
+    "node_modules",
+    "venv",
+    "{arch}",
+    # ours
+    "example",
     "docs",
 ]
 markers = [

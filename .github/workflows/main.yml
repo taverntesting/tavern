@@ -56,7 +56,7 @@ jobs:
       - name: run tests
         run: |
           uv sync --all-extras
-          uvx --python ${{ matrix.python-version }} tox -c ${TOXCFG} -e ${TOXENV}
+          uvx --python ${{ matrix.python-version }} tox -c ${TOXCFG} -e ${TOXENV} -- -n 3
 
   integration-tests:
     runs-on: ubuntu-24.04
