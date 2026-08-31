@@ -92,7 +92,31 @@ def grpc_client(service: int) -> GRPCClient:
 
 
 @dataclasses.dataclass
+class GRPCRequestSpec:
+    """A request which is invalid, so it fails before anything is sent to the server"""
+
+    test_name: str
+    method: str
+    req: Any
+
+    expected_exception: type[Exception] = exceptions.GRPCRequestException
+    service: str = "tavern.tests.v1.DummyService"
+
+    def service_method(self) -> str:
+        return f"{self.service}/{self.method}"
+
+    def request(self) -> Mapping:
+        return json_format.MessageToDict(
+            self.req,
+            always_print_fields_with_no_presence=True,
+            preserving_proto_field_name=True,
+        )
+
+
+@dataclasses.dataclass
 class GRPCTestSpec:
+    """A request which is sent to the server, and the response checked against 'expected'"""
+
     test_name: str
     method: str
     req: Any
@@ -103,23 +127,11 @@ class GRPCTestSpec:
     # Expected error details attached to the response
     details: Any | None = None
     expected_exception: type[Exception] | None = None
-    # Substring which should be in the error raised, to check the test failed for the
-    # reason it was supposed to
-    expected_error: str | None = None
+    # Substring which should be in the exception raised, to check the test failed for
+    # the reason it was supposed to
+    expected_exception_message: str | None = None
     code: GRPCCode = grpc.StatusCode.OK.value[0]
-    # The status the server is actually expected to return - only needs setting
-    # for tests which deliberately expect the 'wrong' status in 'code'
-    actual_code: GRPCCode | None = None
     service: str = "tavern.tests.v1.DummyService"
-
-    def actual_status_name(self) -> str:
-        """Name of the grpc status the server should respond with"""
-        name = _to_grpc_name(
-            self.code if self.actual_code is None else self.actual_code
-        )
-        if not isinstance(name, str):
-            raise ValueError("can only check a single expected status code")
-        return name
 
     def service_method(self):
         return f"{self.service}/{self.method}"
@@ -139,7 +151,22 @@ class GRPCTestSpec:
         )
 
 
+def test_grpc_bad_request(
+    grpc_client: GRPCClient, includes: TestConfig, request_spec: GRPCRequestSpec
+):
+    """A request which doesn't match the service definition never reaches the server"""
+    request = GRPCRequest(
+        grpc_client,
+        {"service": request_spec.service_method(), "body": request_spec.request()},
+        includes,
+    )
+
+    with pytest.raises(request_spec.expected_exception):
+        request.run()
+
+
 def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTestSpec):
+    """The response from the server is checked against the expected response block"""
     request = GRPCRequest(
         grpc_client,
         {"service": test_spec.service_method(), "body": test_spec.request()},
@@ -156,38 +183,46 @@ def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTest
 
     resp = GRPCResponse(grpc_client, "test", expected, includes)
 
+    future = request.run()
+
     if not test_spec.expected_exception:
-        future = request.run()
-        assert future.response.code().name == test_spec.actual_status_name()
+        assert future.response.code().name == _to_grpc_name(test_spec.code)
         resp.verify(future)
         return
 
-    # Some specs are expected to fail before the request is even sent, in which
-    # case there is no status code to check
-    try:
-        future = request.run()
-    except test_spec.expected_exception:
-        return
-
-    assert future.response.code().name == test_spec.actual_status_name()
-
-    match = re.escape(test_spec.expected_error) if test_spec.expected_error else None
+    match = (
+        re.escape(test_spec.expected_exception_message)
+        if test_spec.expected_exception_message
+        else None
+    )
     with pytest.raises(test_spec.expected_exception, match=match):
         resp.verify(future)
 
 
 def pytest_generate_tests(metafunc: MarkGenerator):
+    if "request_spec" in metafunc.fixturenames:
+        requests = [
+            GRPCRequestSpec(
+                test_name="nonexistent method",
+                method="Wek",
+                req=Empty(),
+                expected_exception=exceptions.GRPCServiceException,
+            ),
+            GRPCRequestSpec(
+                test_name="the wrong request type",
+                method="Empty",
+                req=test_services_pb2.DummyRequest(),
+            ),
+        ]
+
+        metafunc.parametrize(
+            "request_spec", requests, ids=[t.test_name for t in requests]
+        )
+
     if "test_spec" in metafunc.fixturenames:
         tests = [
             GRPCTestSpec(
                 test_name="basic empty", method="Empty", req=Empty(), resp=Empty()
-            ),
-            GRPCTestSpec(
-                test_name="nonexistent method",
-                method="Wek",
-                req=Empty(),
-                resp=Empty(),
-                expected_exception=exceptions.GRPCServiceException,
             ),
             GRPCTestSpec(
                 test_name="empty with numeric status code",
@@ -202,16 +237,7 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                 req=Empty(),
                 resp=Empty(),
                 code="ABORTED",
-                actual_code="OK",
                 expected_exception=exceptions.TestFailError,
-            ),
-            GRPCTestSpec(
-                test_name="empty with the wrong request type",
-                method="Empty",
-                req=test_services_pb2.DummyRequest(),
-                resp=Empty(),
-                code=0,
-                expected_exception=exceptions.GRPCRequestException,
             ),
             GRPCTestSpec(
                 test_name="empty with the wrong response type",
@@ -254,7 +280,6 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                 code="FAILED_PRECONDITION",
                 error_message="number too small!",
                 expected_exception=exceptions.TestFailError,
-                expected_error="expected[\"error_message\"] = 'number too small!'",
             ),
             GRPCTestSpec(
                 test_name="Simple service with error and matching details",
@@ -284,7 +309,7 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                     }
                 ],
                 expected_exception=exceptions.TestFailError,
-                expected_error='expected["details"]["0"]["field_violations"]["0"]["description"] = \'number too small!\'',
+                error_message="number too small!",
             ),
             GRPCTestSpec(
                 test_name="Simple service expecting details but there are none",
@@ -295,7 +320,7 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                     {"@type": "type.googleapis.com/google.rpc.BadRequest"},
                 ],
                 expected_exception=exceptions.TestFailError,
-                expected_error="expected error details",
+                expected_exception_message="expected error details",
             ),
             GRPCTestSpec(
                 test_name="Simple service with error code but also a response",
@@ -310,7 +335,6 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                 method="SimpleTest",
                 req=test_services_pb2.DummyRequest(request_id=10000),
                 resp=test_services_pb2.DummyResponse(response_id=3),
-                actual_code="FAILED_PRECONDITION",
                 expected_exception=exceptions.TestFailError,
             ),
             GRPCTestSpec(
