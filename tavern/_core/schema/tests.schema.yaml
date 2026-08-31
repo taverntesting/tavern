@@ -149,6 +149,9 @@ schema;stage:
         status:
           type: any
           func: validate_grpc_status_is_valid_or_list_of_names
+        error_message:
+          type: any
+          required: false
         details:
           type: any
           required: false

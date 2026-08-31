@@ -38,10 +38,23 @@ definitions:
           - type: string
           - type: integer
 
-      details:
-        type: object
+      error_message:
+        description: |
+          Expected error message on the response - the string passed to set_details/abort by the
+          server. As well as a plain string this can be a sentinel matching one, like !re_search.
+        oneOf:
+          - type: string
+          - type: object
 
-      proto_body:
+      details:
+        description: |
+          Expected error details attached to the response - the messages packed into the
+          google.rpc.Status, each one including the '@type' identifying it.
+        oneOf:
+          - type: array
+          - type: object
+
+      body:
         type: object
 
       timeout:

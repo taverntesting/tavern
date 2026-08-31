@@ -11,23 +11,60 @@ import helloworld_v2_compiled_pb2 as helloworld_pb2_v2
 import helloworld_v2_compiled_pb2_grpc as helloworld_pb2_grpc_v2
 import helloworld_v3_reflected_pb2 as helloworld_pb2_v3
 import helloworld_v3_reflected_pb2_grpc as helloworld_pb2_grpc_v3
+from google.protobuf import any_pb2
+from google.rpc import code_pb2, error_details_pb2, status_pb2
 from grpc_interceptor import ServerInterceptor
 from grpc_interceptor.exceptions import GrpcException
 from grpc_reflection.v1alpha import reflection
+from grpc_status import rpc_status
+
+
+def abort_with_rich_details(context: grpc.ServicerContext) -> None:
+    """Abort the request with a google.rpc.Status
+
+    As well as the 'details' string this attaches the 'rich' error details to the response,
+    which are the arbitrary messages packed into the status.
+    """
+    packed = any_pb2.Any()
+    packed.Pack(
+        error_details_pb2.BadRequest(
+            field_violations=[
+                error_details_pb2.BadRequest.FieldViolation(
+                    field="name", description="name must not be empty"
+                )
+            ]
+        )
+    )
+
+    context.abort_with_status(
+        rpc_status.to_status(
+            status_pb2.Status(
+                code=code_pb2.INVALID_ARGUMENT,
+                message="no name given",
+                details=[packed],
+            )
+        )
+    )
 
 
 class GreeterV1(helloworld_pb2_grpc_v1.GreeterServicer):
     def SayHello(self, request, context):
+        if not request.name:
+            abort_with_rich_details(context)
         return helloworld_pb2_v1.HelloReply(message=f"Hello, {request.name}!")
 
 
 class GreeterV2(helloworld_pb2_grpc_v2.GreeterServicer):
     def SayHello(self, request, context):
+        if not request.name:
+            abort_with_rich_details(context)
         return helloworld_pb2_v2.HelloReply(message=f"Hello, {request.name}!")
 
 
 class GreeterV3(helloworld_pb2_grpc_v3.GreeterServicer):
     def SayHello(self, request, context):
+        if not request.name:
+            abort_with_rich_details(context)
         return helloworld_pb2_v3.HelloReply(message=f"Hello, {request.name}!")
 
 
