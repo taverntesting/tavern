@@ -94,7 +94,7 @@ This can then be run like so:
 
 ```bash
 $ pip install tavern[pytest]
-$ py.test test_minimal.tavern.yaml  -v
+$ pytest test_minimal.tavern.yaml  -v
 =================================== test session starts ===================================
 platform linux -- Python 3.5.2, pytest-3.4.2, py-1.5.2, pluggy-0.6.0 -- /home/taverntester/.virtualenvs/tavernexample/bin/python3
 cachedir: .pytest_cache

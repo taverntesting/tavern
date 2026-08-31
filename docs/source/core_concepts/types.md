@@ -107,7 +107,7 @@ global strictness setting.
 
 ```shell
 # Enable strict checking for body and headers only
-py.test --tavern-strict json:on headers:on redirect_query_params:off -- my_test_folder/
+pytest --tavern-strict json:on headers:on redirect_query_params:off -- my_test_folder/
 ```
 
 #### In the Pytest config file
