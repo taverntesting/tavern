@@ -441,3 +441,26 @@ stages:
       status: "GREETINGS"
       body:
         message: "Hello, Jim!"
+
+---
+
+test_name: Test cannot expect a body along with a non-OK status
+
+includes:
+  - !include common.yaml
+
+grpc: *grpc_spec
+
+_xfail:
+  run: "'body' was specified in response, but expected status code was not 'OK'"
+
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: "Jim"
+    grpc_response:
+      status: "ABORTED"
+      body:
+        message: "Hello, Jim!"

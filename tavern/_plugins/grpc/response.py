@@ -134,13 +134,6 @@ class GRPCResponse(BaseResponse):
         response: "WrappedFuture",
         verify_status: list[str],
     ) -> Optional[dict[str, Any]]:
-        if grpc_response.code().name != "OK":
-            # TODO: Should allow checking grpc RPC error details etc.
-            logger.info(
-                f"skipping body checking due to {grpc_response.code()} response"
-            )
-            return None
-
         if "body" in self.expected and verify_status != ["OK"]:
             self._adderr(
                 "'body' was specified in response, but expected status code was not 'OK'"
@@ -148,7 +141,25 @@ class GRPCResponse(BaseResponse):
             return None
 
         _, output_type = self._client.get_method_types(response.service_name)
-        result: proto.message.Message = grpc_response.result()
+
+        try:
+            result: proto.message.Message = grpc_response.result()
+        except grpc.RpcError as e:
+            # A non-OK response has no message attached to it, so there is
+            # nothing to check an expected body against
+            # TODO: Should allow checking grpc RPC error details etc.
+            if "body" in self.expected:
+                self._adderr(
+                    "expected a response body, but the request failed with status '%s' (%s)",
+                    grpc_response.code().name,
+                    grpc_response.details(),
+                    e=e,
+                )
+            else:
+                logger.info(
+                    f"no response body to check due to {grpc_response.code()} response"
+                )
+            return None
 
         if not isinstance(result, output_type):
             # Note: This is probably unexpected in some cases

@@ -2,7 +2,7 @@ import dataclasses
 import os.path
 import random
 import sys
-from collections.abc import Mapping
+from collections.abc import Generator, Mapping
 from concurrent import futures
 from typing import Any
 
@@ -13,10 +13,11 @@ from google.protobuf.empty_pb2 import Empty
 from grpc_reflection.v1alpha import reflection
 from pytest import MarkGenerator
 
+from tavern._core import exceptions
 from tavern._core.pytest.config import TestConfig
 from tavern._plugins.grpc.client import GRPCClient
 from tavern._plugins.grpc.request import GRPCRequest
-from tavern._plugins.grpc.response import GRPCCode, GRPCResponse
+from tavern._plugins.grpc.response import GRPCCode, GRPCResponse, _to_grpc_name
 
 sys.path.append(os.path.dirname(__file__))
 
@@ -36,7 +37,7 @@ class ServiceImpl(test_services_pb2_grpc.DummyServiceServicer):
 
 
 @pytest.fixture(scope="session")
-def service() -> int:
+def service() -> Generator[int, Any, None]:
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
     service_impl = ServiceImpl()
     test_services_pb2_grpc.add_DummyServiceServicer_to_server(service_impl, server)
@@ -73,9 +74,21 @@ class GRPCTestSpec:
     req: Any
 
     resp: Any | None = None
-    xfail: bool = False
+    expected_exception: type[Exception] | None = None
     code: GRPCCode = grpc.StatusCode.OK.value[0]
+    # The status the server is actually expected to return - only needs setting
+    # for tests which deliberately expect the 'wrong' status in 'code'
+    actual_code: GRPCCode | None = None
     service: str = "tavern.tests.v1.DummyService"
+
+    def actual_status_name(self) -> str:
+        """Name of the grpc status the server should respond with"""
+        name = _to_grpc_name(
+            self.code if self.actual_code is None else self.actual_code
+        )
+        if not isinstance(name, str):
+            raise ValueError("can only check a single expected status code")
+        return name
 
     def service_method(self):
         return f"{self.service}/{self.method}"
@@ -108,12 +121,23 @@ def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTest
 
     resp = GRPCResponse(grpc_client, "test", expected, includes)
 
-    if test_spec.xfail:
-        pytest.xfail()
+    if not test_spec.expected_exception:
+        future = request.run()
+        assert future.response.code().name == test_spec.actual_status_name()
+        resp.verify(future)
+        return
 
-    future = request.run()
+    # Some specs are expected to fail before the request is even sent, in which
+    # case there is no status code to check
+    try:
+        future = request.run()
+    except test_spec.expected_exception:
+        return
 
-    resp.verify(future)
+    assert future.response.code().name == test_spec.actual_status_name()
+
+    with pytest.raises(test_spec.expected_exception):
+        resp.verify(future)
 
 
 def pytest_generate_tests(metafunc: MarkGenerator):
@@ -127,7 +151,7 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                 method="Wek",
                 req=Empty(),
                 resp=Empty(),
-                xfail=True,
+                expected_exception=exceptions.GRPCServiceException,
             ),
             GRPCTestSpec(
                 test_name="empty with numeric status code",
@@ -142,7 +166,8 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                 req=Empty(),
                 resp=Empty(),
                 code="ABORTED",
-                xfail=True,
+                actual_code="OK",
+                expected_exception=exceptions.TestFailError,
             ),
             GRPCTestSpec(
                 test_name="empty with the wrong request type",
@@ -150,7 +175,7 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                 req=test_services_pb2.DummyRequest(),
                 resp=Empty(),
                 code=0,
-                xfail=True,
+                expected_exception=exceptions.GRPCRequestException,
             ),
             GRPCTestSpec(
                 test_name="empty with the wrong response type",
@@ -158,7 +183,7 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                 req=Empty(),
                 resp=test_services_pb2.DummyResponse(),
                 code=0,
-                xfail=True,
+                expected_exception=exceptions.TestFailError,
             ),
             GRPCTestSpec(
                 test_name="Simple service",
@@ -178,22 +203,30 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                 req=test_services_pb2.DummyRequest(request_id=10000),
                 resp=test_services_pb2.DummyResponse(response_id=3),
                 code="FAILED_PRECONDITION",
-                xfail=True,
+                expected_exception=exceptions.TestFailError,
+            ),
+            GRPCTestSpec(
+                test_name="Simple service expecting a body but the request errors",
+                method="SimpleTest",
+                req=test_services_pb2.DummyRequest(request_id=10000),
+                resp=test_services_pb2.DummyResponse(response_id=3),
+                actual_code="FAILED_PRECONDITION",
+                expected_exception=exceptions.TestFailError,
             ),
             GRPCTestSpec(
                 test_name="Simple service with wrong request type",
                 method="SimpleTest",
                 req=Empty(),
                 resp=test_services_pb2.DummyResponse(response_id=3),
-                xfail=True,
+                expected_exception=exceptions.TestFailError,
             ),
             GRPCTestSpec(
                 test_name="Simple service with wrong response type",
                 method="SimpleTest",
                 req=test_services_pb2.DummyRequest(request_id=2),
                 resp=Empty(),
-                xfail=True,
+                expected_exception=exceptions.TestFailError,
             ),
         ]
 
-        metafunc.parametrize("test_spec", tests, ids=[g.test_name for g in tests])
+        metafunc.parametrize("test_spec", tests, ids=[t.test_name for t in tests])
