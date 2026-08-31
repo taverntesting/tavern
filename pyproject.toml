@@ -165,9 +165,12 @@ tavern = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tavern", "tests/unit"]
+testpaths = ["tavern", "tests/unit", "tests/integration"]
 addopts = [
     "--doctest-modules",
+    # Stop --doctest-modules importing every conftest.py as a module: with
+    # multiple non-package conftest.py files the basenames clash in sys.modules
+    "--ignore-glob=*/conftest.py",
     "-r", "xs",
     "-vv",
     "--strict-markers",
