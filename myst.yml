@@ -33,6 +33,8 @@ project:
         - file: docs/source/plugins/custom.md
     - file: docs/source/debugging.md
     - file: docs/source/cookbook.md
+      children:
+        - file: docs/source/scripting.md
     - file: CONTRIBUTING.md
     - file: CHANGELOG.md
 

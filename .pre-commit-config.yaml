@@ -36,5 +36,19 @@ repos:
     rev: 0.12.5
     hooks:
       - id: uv-lock
+  - repo: local
+    hooks:
+      - id: starlark-docstring-markdown
+        name: starlark-docstring-markdown
+        entry: uv
+        args:
+          - tool
+          - run
+          - git+https://github.com/michaelboulton/starlark-docstring-markdown@df06acc9307e9ad8bd83fe618f012072f288d3d1
+          - tavern/tavern/_core/starlark/
+          - tavern/docs/source/scripting-api.md
+        language: system
+        pass_filenames: false
+        files: \.star$
 
 exclude: (docs/)

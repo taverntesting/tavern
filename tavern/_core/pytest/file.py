@@ -93,7 +93,7 @@ def _parse_func_mark(fmt_vars: Mapping, m: str) -> pytest.Mark:
             posargs = [_ast_node_to_literal(arg) for arg in call.args]
 
             # Extract keyword arguments as literals
-            kwargs = {
+            kwargs: dict = {
                 kw.arg: _ast_node_to_literal(kw.value)
                 for kw in call.keywords
                 if kw.arg is not None
@@ -490,7 +490,7 @@ class YamlFile(pytest.File):
                         f"If this is meant to be defaults for the file, add 'is_defaults: true'. "
                         f"If this is meant to be a test, add both 'test_name' and 'stages'."
                     )
-                else:
+                elif "control_flow" not in test_spec:
                     raise exceptions.BadSchemaError(
                         f"Document {document_idx + 1} in '{self.path}' is missing 'test_name' or 'stages'"
                     )

@@ -29,6 +29,7 @@ class TestConfig:
         variables: variables available for use in the stage
         strict: Strictness for test/stage
         stages: Any extra stages imported from other config files
+        experimental_starlark_pipeline: Whether experimental starlark control_flow support is enabled (inline 'control_flow' block in test files)
         test_file_path: Optional path to the test file being run (used for resolving relative paths)
         tavern_internal: Internal config that should be used only by tavern
         tinctures: Global tinctures to apply to all test stages
@@ -38,6 +39,7 @@ class TestConfig:
     strict: StrictLevel
     follow_redirects: bool
     stages: list
+    experimental_starlark_pipeline: bool | None
     tavern_internal: TavernInternalConfig
     tinctures: list | dict | None = None
     test_file_path: str | None = None
@@ -74,6 +76,19 @@ class TestConfig:
         logger.debug(f"available request backends: {available_backends}")
 
         return available_backends
+
+    def to_starlark(self) -> dict[str, Any]:
+        import starlark
+
+        dumped = {
+            "variables": starlark.OpaquePythonObject(self.variables),
+            "follow_redirects": self.follow_redirects,
+            "stages": self.stages,
+            "strict": starlark.OpaquePythonObject(self.strict),
+            "tavern_internal": starlark.OpaquePythonObject(self.tavern_internal),
+            "experimental_starlark_pipeline": self.experimental_starlark_pipeline,
+        }
+        return dumped
 
 
 def has_module(module: str) -> bool:

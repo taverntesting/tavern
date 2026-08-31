@@ -22,6 +22,7 @@ _includes = TestConfig(
     ),
     follow_redirects=False,
     stages=[],
+    experimental_starlark_pipeline=False,
 )
 
 

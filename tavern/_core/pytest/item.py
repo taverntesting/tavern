@@ -111,6 +111,7 @@ class YamlItem(pytest.Item):
         return cls.from_parent(parent, name=name, spec=spec, path=path)
 
     def initialise_fixture_attrs(self) -> None:
+        """Initialise fixture attributes for this item."""
         # Prevent pytest from inspecting this item to try and find arguments,
         # which doesn't work because this isn't a Python function
         self.funcargs = {}  # type: ignore
@@ -147,7 +148,7 @@ class YamlItem(pytest.Item):
     @property
     def obj(self):
         stages = []
-        for i, stage in enumerate(self.spec["stages"]):
+        for i, stage in enumerate(self.spec.get("stages", ())):
             name = "<unknown>"
             if "name" in stage:
                 name = stage["name"]
@@ -202,7 +203,8 @@ class YamlItem(pytest.Item):
 
             self.add_marker(pm)
 
-    def _load_fixture_values(self):
+    def _load_fixture_values(self) -> dict:
+        """Load fixture values from usefixtures and autouse fixtures."""
         fixture_markers = self.iter_markers("usefixtures")
 
         values = {}
@@ -262,7 +264,7 @@ class YamlItem(pytest.Item):
 
             verify_tests(self.spec)
 
-            for stage in self.spec["stages"]:
+            for stage in self.spec.get("stages", []):
                 if not stage.get("name"):
                     if not stage.get("id"):
                         # Should never actually reach here, should be caught at schema check time
