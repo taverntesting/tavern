@@ -184,12 +184,18 @@ addopts = [
     "-m", "not do_not_run"
 ]
 norecursedirs = [
-    ".git",
-    ".tox",
-    ".venv",
-    "example",
-    "node_modules",
+    # pytest's defaults - setting this key replaces rather than extends them
+    "*.egg",
+    ".*",
+    "_darcs",
+    "build",
+    "CVS",
     "dist",
+    "node_modules",
+    "venv",
+    "{arch}",
+    # ours
+    "example",
     "docs",
 ]
 markers = [
