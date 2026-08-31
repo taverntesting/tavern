@@ -7,7 +7,7 @@ import pytest
 import yaml
 
 from tavern._core.exceptions import BadSchemaError
-from tavern._core.loader import load_single_document_yaml
+from tavern._core.loader import error_on_empty_scalar, load_single_document_yaml
 from tavern._core.schema.files import verify_tests
 
 
@@ -135,6 +135,16 @@ class TestVerify:
 
 class TestBadSchemaAtCollect:
     """Some errors happen at collection time - harder to test"""
+
+    @pytest.fixture(autouse=True)
+    def patch_yaml_parser(self, monkeypatch):
+        """Empty values only raise BadSchemaError once YamlItem has patched the
+        yaml parser globally (see item.py); apply the patch deterministically
+        instead of relying on an earlier test having constructed a YamlItem,
+        which is not guaranteed when the tests are distributed with xdist"""
+        monkeypatch.setattr(
+            yaml.parser.Parser, "process_empty_scalar", error_on_empty_scalar
+        )
 
     @staticmethod
     @contextlib.contextmanager
