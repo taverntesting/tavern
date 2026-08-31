@@ -1,5 +1,7 @@
 # Changelog
 
+## 3.6.2           fix allure parametrization (2026-08-24)
+
 ## 3.6.1           fix for pytest>9.1.0 (2026-06-14)
 
 # 3.6.0           Allow global tinctures (2026-05-31)
