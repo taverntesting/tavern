@@ -464,3 +464,146 @@ stages:
       status: "ABORTED"
       body:
         message: "Hello, Jim!"
+
+---
+
+test_name: Test checking the error message of an error response
+
+includes:
+  - !include common.yaml
+
+grpc: *grpc_spec
+
+stages:
+  - name: Say hello to nobody
+    grpc_request:
+      service: helloworld.v2.Greeter/SayHello
+      body:
+        name: ""
+    grpc_response:
+      status: "INVALID_ARGUMENT"
+      error_message: "no name given"
+
+  - name: The error message can be matched with a regex as well
+    grpc_request:
+      service: helloworld.v2.Greeter/SayHello
+      body:
+        name: ""
+    grpc_response:
+      status: "INVALID_ARGUMENT"
+      error_message: !re_search "no name"
+
+---
+
+test_name: Test checking the error details of an error response
+
+includes:
+  - !include common.yaml
+
+grpc: *grpc_spec
+
+stages:
+  - name: Say hello to nobody
+    grpc_request:
+      service: helloworld.v2.Greeter/SayHello
+      body:
+        name: ""
+    grpc_response:
+      status: "INVALID_ARGUMENT"
+      details:
+        - "@type": type.googleapis.com/google.rpc.BadRequest
+          field_violations:
+            - field: name
+              description: "name must not be empty"
+
+---
+
+test_name: Test the error message of an error response not matching
+
+includes:
+  - !include common.yaml
+
+grpc: *grpc_spec
+
+_xfail:
+  run: "expected[\"error_message\"] = 'a completely different message'"
+
+stages:
+  - name: Say hello to nobody
+    grpc_request:
+      service: helloworld.v2.Greeter/SayHello
+      body:
+        name: ""
+    grpc_response:
+      status: "INVALID_ARGUMENT"
+      error_message: "a completely different message"
+
+---
+
+test_name: Test the error details of an error response not matching
+
+includes:
+  - !include common.yaml
+
+grpc: *grpc_spec
+
+_xfail:
+  run: "expected[\"details\"][\"0\"][\"field_violations\"][\"0\"][\"field\"] = 'greeting'"
+
+stages:
+  - name: Say hello to nobody
+    grpc_request:
+      service: helloworld.v2.Greeter/SayHello
+      body:
+        name: ""
+    grpc_response:
+      status: "INVALID_ARGUMENT"
+      details:
+        - "@type": type.googleapis.com/google.rpc.BadRequest
+          field_violations:
+            - field: greeting
+              description: "name must not be empty"
+
+---
+
+test_name: Test expecting error details when the response has none
+
+includes:
+  - !include common.yaml
+
+grpc: *grpc_spec
+
+_xfail:
+  run: "expected error details"
+
+stages:
+  - name: Echo text
+    grpc_request:
+      service: helloworld.v2.Greeter/SayHello
+      body:
+        name: "John"
+    grpc_response:
+      status: "OK"
+      details:
+        - "@type": type.googleapis.com/google.rpc.BadRequest
+
+---
+
+test_name: Test the error details cannot be a plain string
+
+includes:
+  - !include common.yaml
+
+grpc: *grpc_spec
+
+_xfail: verify
+
+stages:
+  - name: Say hello to nobody
+    grpc_request:
+      service: helloworld.v2.Greeter/SayHello
+      body:
+        name: ""
+    grpc_response:
+      status: "INVALID_ARGUMENT"
+      details: "no name given"

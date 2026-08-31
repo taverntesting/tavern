@@ -1,7 +1,7 @@
 import contextlib
 import os
 import tempfile
-from textwrap import dedent
+from textwrap import dedent, indent
 
 import pytest
 import yaml
@@ -131,6 +131,80 @@ class TestVerify:
         test_dict["stages"][0]["request"]["verify"] = incorrect_value
         with pytest.raises(BadSchemaError):
             verify_tests(test_dict)
+
+
+class TestGRPCErrors:
+    """The error message of a grpc response is a string, but the details are the messages from
+    the google.rpc.Status attached to it"""
+
+    @staticmethod
+    def verify_with_response_keys(keys: str):
+        """Verify a grpc test with the given yaml block in the grpc_response"""
+        text = dedent(
+            """
+            ---
+            test_name: Test grpc errors
+
+            grpc:
+              connect:
+                host: localhost
+                port: 50051
+              proto:
+                module: helloworld_pb2_grpc
+
+            stages:
+              - name: Say hello
+                grpc_request:
+                  service: helloworld.v1.Greeter/SayHello
+                  body:
+                    name: John
+                grpc_response:
+                  status: "INVALID_ARGUMENT"
+            """
+        ) + indent(dedent(keys), " " * 6)
+
+        # The file has to still exist while the test is verified, because the source lines are
+        # read to give some context if it fails
+        with TestBadSchemaAtCollect.wrapfile_nondict(text) as filename:
+            verify_tests(load_single_document_yaml(filename))
+
+    @pytest.mark.parametrize(
+        "keys",
+        (
+            'error_message: "no name given"',
+            "error_message: !re_search 'no name'",
+            "error_message: !anystr",
+            "error_message: !anything",
+            "details: !anything",
+            dedent(
+                """
+                details:
+                  - "@type": type.googleapis.com/google.rpc.BadRequest
+                    field_violations:
+                      - field: name
+                        description: "name must not be empty"
+                """
+            ),
+        ),
+        ids=("string", "regex", "anystr", "anything", "any_details", "details"),
+    )
+    def test_valid(self, keys):
+        TestGRPCErrors.verify_with_response_keys(keys)
+
+    @pytest.mark.parametrize(
+        "keys",
+        (
+            "error_message: 1",
+            "error_message: True",
+            # The details are the messages in the status, not the error message
+            'details: "no name given"',
+            "details: 1",
+        ),
+        ids=str,
+    )
+    def test_invalid(self, keys):
+        with pytest.raises(BadSchemaError):
+            TestGRPCErrors.verify_with_response_keys(keys)
 
 
 class TestBadSchemaAtCollect:

@@ -1,6 +1,7 @@
 import dataclasses
 import os.path
 import random
+import re
 import sys
 from collections.abc import Generator, Mapping
 from concurrent import futures
@@ -8,12 +9,15 @@ from typing import Any
 
 import grpc
 import pytest
-from google.protobuf import json_format
+from google.protobuf import any_pb2, json_format
 from google.protobuf.empty_pb2 import Empty
+from google.rpc import code_pb2, error_details_pb2, status_pb2
 from grpc_reflection.v1alpha import reflection
+from grpc_status import rpc_status
 from pytest import MarkGenerator
 
 from tavern._core import exceptions
+from tavern._core.loader import _RegexSearchSentinel
 from tavern._core.pytest.config import TestConfig
 from tavern._plugins.grpc.client import GRPCClient
 from tavern._plugins.grpc.request import GRPCRequest
@@ -32,7 +36,27 @@ class ServiceImpl(test_services_pb2_grpc.DummyServiceServicer):
         self, request: test_services_pb2.DummyRequest, context: grpc.ServicerContext
     ) -> test_services_pb2.DummyResponse:
         if request.request_id > 1000:
-            context.abort(grpc.StatusCode.FAILED_PRECONDITION, "number too big!")
+            # Aborting with a google.rpc.Status attaches 'rich' error details to the response as
+            # well as the plain details string
+            packed = any_pb2.Any()
+            packed.Pack(
+                error_details_pb2.BadRequest(
+                    field_violations=[
+                        error_details_pb2.BadRequest.FieldViolation(
+                            field="request_id", description="number too big!"
+                        )
+                    ]
+                )
+            )
+            context.abort_with_status(
+                rpc_status.to_status(
+                    status_pb2.Status(
+                        code=code_pb2.FAILED_PRECONDITION,
+                        message="number too big!",
+                        details=[packed],
+                    )
+                )
+            )
         return test_services_pb2.DummyResponse(response_id=request.request_id + 1)
 
 
@@ -74,7 +98,14 @@ class GRPCTestSpec:
     req: Any
 
     resp: Any | None = None
+    # Expected error message on the response - a string, or a sentinel matching one
+    error_message: Any | None = None
+    # Expected error details attached to the response
+    details: Any | None = None
     expected_exception: type[Exception] | None = None
+    # Substring which should be in the error raised, to check the test failed for the
+    # reason it was supposed to
+    expected_error: str | None = None
     code: GRPCCode = grpc.StatusCode.OK.value[0]
     # The status the server is actually expected to return - only needs setting
     # for tests which deliberately expect the 'wrong' status in 'code'
@@ -115,9 +146,13 @@ def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTest
         includes,
     )
 
-    expected = {"status": test_spec.code}
+    expected: dict[str, Any] = {"status": test_spec.code}
     if test_spec.resp:
         expected["body"] = test_spec.body()
+    if test_spec.error_message is not None:
+        expected["error_message"] = test_spec.error_message
+    if test_spec.details is not None:
+        expected["details"] = test_spec.details
 
     resp = GRPCResponse(grpc_client, "test", expected, includes)
 
@@ -136,7 +171,8 @@ def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTest
 
     assert future.response.code().name == test_spec.actual_status_name()
 
-    with pytest.raises(test_spec.expected_exception):
+    match = re.escape(test_spec.expected_error) if test_spec.expected_error else None
+    with pytest.raises(test_spec.expected_exception, match=match):
         resp.verify(future)
 
 
@@ -196,6 +232,70 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                 method="SimpleTest",
                 req=test_services_pb2.DummyRequest(request_id=10000),
                 code="FAILED_PRECONDITION",
+            ),
+            GRPCTestSpec(
+                test_name="Simple service with error and matching error message",
+                method="SimpleTest",
+                req=test_services_pb2.DummyRequest(request_id=10000),
+                code="FAILED_PRECONDITION",
+                error_message="number too big!",
+            ),
+            GRPCTestSpec(
+                test_name="Simple service with error message matching a regex",
+                method="SimpleTest",
+                req=test_services_pb2.DummyRequest(request_id=10000),
+                code="FAILED_PRECONDITION",
+                error_message=_RegexSearchSentinel(re.compile("too big")),
+            ),
+            GRPCTestSpec(
+                test_name="Simple service with error and the wrong error message",
+                method="SimpleTest",
+                req=test_services_pb2.DummyRequest(request_id=10000),
+                code="FAILED_PRECONDITION",
+                error_message="number too small!",
+                expected_exception=exceptions.TestFailError,
+                expected_error="expected[\"error_message\"] = 'number too small!'",
+            ),
+            GRPCTestSpec(
+                test_name="Simple service with error and matching details",
+                method="SimpleTest",
+                req=test_services_pb2.DummyRequest(request_id=10000),
+                code="FAILED_PRECONDITION",
+                details=[
+                    {
+                        "@type": "type.googleapis.com/google.rpc.BadRequest",
+                        "field_violations": [
+                            {"field": "request_id", "description": "number too big!"}
+                        ],
+                    }
+                ],
+            ),
+            GRPCTestSpec(
+                test_name="Simple service with error and the wrong details",
+                method="SimpleTest",
+                req=test_services_pb2.DummyRequest(request_id=10000),
+                code="FAILED_PRECONDITION",
+                details=[
+                    {
+                        "@type": "type.googleapis.com/google.rpc.BadRequest",
+                        "field_violations": [
+                            {"field": "request_id", "description": "number too small!"}
+                        ],
+                    }
+                ],
+                expected_exception=exceptions.TestFailError,
+                expected_error='expected["details"]["0"]["field_violations"]["0"]["description"] = \'number too small!\'',
+            ),
+            GRPCTestSpec(
+                test_name="Simple service expecting details but there are none",
+                method="SimpleTest",
+                req=test_services_pb2.DummyRequest(request_id=2),
+                resp=test_services_pb2.DummyResponse(response_id=3),
+                details=[
+                    {"@type": "type.googleapis.com/google.rpc.BadRequest"},
+                ],
+                expected_exception=exceptions.TestFailError,
+                expected_error="expected error details",
             ),
             GRPCTestSpec(
                 test_name="Simple service with error code but also a response",
