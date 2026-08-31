@@ -93,13 +93,12 @@ def grpc_client(service: int) -> GRPCClient:
 
 @dataclasses.dataclass
 class GRPCRequestSpec:
-    """A request which is invalid, so it fails before anything is sent to the server"""
+    """A request to send to the dummy service"""
 
     test_name: str
     method: str
     req: Any
 
-    expected_exception: type[Exception] = exceptions.GRPCRequestException
     service: str = "tavern.tests.v1.DummyService"
 
     def service_method(self) -> str:
@@ -111,6 +110,34 @@ class GRPCRequestSpec:
             always_print_fields_with_no_presence=True,
             preserving_proto_field_name=True,
         )
+
+
+def _run(
+    grpc_client: GRPCClient, includes: TestConfig, spec: GRPCRequestSpec
+) -> WrappedFuture:
+    """Send the request from the spec to the server"""
+    request = GRPCRequest(
+        grpc_client,
+        {"service": spec.service_method(), "body": spec.request()},
+        includes,
+    )
+
+    return request.run()
+
+
+@dataclasses.dataclass
+class GRPCBadRequestSpec(GRPCRequestSpec):
+    """A request which is invalid, so it fails before anything is sent to the server"""
+
+    expected_exception: type[Exception] = exceptions.GRPCRequestException
+
+
+def test_grpc_bad_request(
+    grpc_client: GRPCClient, includes: TestConfig, request_spec: GRPCBadRequestSpec
+):
+    """A request which doesn't match the service definition never reaches the server"""
+    with pytest.raises(request_spec.expected_exception):
+        _run(grpc_client, includes, request_spec)
 
 
 @dataclasses.dataclass
@@ -141,37 +168,6 @@ class GRPCTestSpec(GRPCRequestSpec):
         return expected
 
 
-@dataclasses.dataclass
-class GRPCFailureSpec(GRPCTestSpec):
-    """A request which is sent to the server, but where the expected response is wrong"""
-
-    expected_exception: type[Exception] = exceptions.TestFailError
-    # Substring which should be in the exception raised, to check the test failed for
-    # the reason it was supposed to
-    expected_exception_message: str | None = None
-
-
-def _run(
-    grpc_client: GRPCClient, includes: TestConfig, spec: GRPCRequestSpec
-) -> WrappedFuture:
-    """Send the request from the spec to the server"""
-    request = GRPCRequest(
-        grpc_client,
-        {"service": spec.service_method(), "body": spec.request()},
-        includes,
-    )
-
-    return request.run()
-
-
-def test_grpc_bad_request(
-    grpc_client: GRPCClient, includes: TestConfig, request_spec: GRPCRequestSpec
-):
-    """A request which doesn't match the service definition never reaches the server"""
-    with pytest.raises(request_spec.expected_exception):
-        _run(grpc_client, includes, request_spec)
-
-
 def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTestSpec):
     """The status, error message and details of the response are as expected"""
     resp = GRPCResponse(grpc_client, "test", test_spec.expected_response(), includes)
@@ -182,10 +178,20 @@ def test_grpc(grpc_client: GRPCClient, includes: TestConfig, test_spec: GRPCTest
     resp.verify(future)
 
 
+@dataclasses.dataclass
+class GRPCFailureSpec(GRPCTestSpec):
+    """A request which is sent to the server, but where the expected response is wrong"""
+
+    expected_exception: type[Exception] = exceptions.TestFailError
+    # Substring which should be in the exception raised, to check the test failed for
+    # the reason it was supposed to
+    expected_exception_message: str | None = None
+
+
 def test_grpc_bad_response(
     grpc_client: GRPCClient, includes: TestConfig, failure_spec: GRPCFailureSpec
 ):
-    """The request runs, but the response does not match what the test expects"""
+    """The request runs, but the response does not match the 'expected' response"""
     resp = GRPCResponse(grpc_client, "test", failure_spec.expected_response(), includes)
 
     future = _run(grpc_client, includes, failure_spec)
@@ -202,13 +208,13 @@ def test_grpc_bad_response(
 def pytest_generate_tests(metafunc: MarkGenerator):
     if "request_spec" in metafunc.fixturenames:
         requests = [
-            GRPCRequestSpec(
+            GRPCBadRequestSpec(
                 test_name="nonexistent method",
                 method="Wek",
                 req=Empty(),
                 expected_exception=exceptions.GRPCServiceException,
             ),
-            GRPCRequestSpec(
+            GRPCBadRequestSpec(
                 test_name="the wrong request type",
                 method="Empty",
                 req=test_services_pb2.DummyRequest(),
