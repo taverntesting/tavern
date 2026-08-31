@@ -65,9 +65,6 @@ def test_integration_yaml_file(pytester, yaml_file, monkeypatch):
         "no:random_order",
     )
 
-    # NO_TESTS_COLLECTED is legitimate for a file whose every test is
-    # deselected by the marker filter; anything else nonzero is a real failure.
-    assert result.ret in (
-        pytest.ExitCode.OK,
-        pytest.ExitCode.NO_TESTS_COLLECTED,
-    ), "\n".join(result.outlines[-200:] + result.errlines[-200:])
+    assert result.ret in (pytest.ExitCode.OK,), "\n".join(
+        result.outlines[-200:] + result.errlines[-200:]
+    )
