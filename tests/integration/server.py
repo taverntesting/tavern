@@ -1,17 +1,22 @@
 import base64
+import contextlib
 import gzip
 import itertools
 import json
 import math
 import mimetypes
 import os
+import threading
 import time
+import urllib.error
+import urllib.request
 import uuid
 from datetime import datetime, timedelta
 from hashlib import sha512
 from urllib.parse import unquote_plus, urlencode
 
 import jwt
+import werkzeug.serving
 from box import Box
 from flask import Flask, Response, jsonify, make_response, redirect, request, session
 from flask_httpauth import HTTPDigestAuth
@@ -33,7 +38,7 @@ def get_digest_password(username):
 @app.route("/token", methods=["GET"])
 def token():
     return (
-        '<div><a src="http://127.0.0.1:5003/verify?token=c9bb34ba-131b-11e8-b642-0ed5f89f718b">Link</a></div>',
+        f'<div><a src="{request.host_url}verify?token=c9bb34ba-131b-11e8-b642-0ed5f89f718b">Link</a></div>',
         200,
     )
 
@@ -575,3 +580,33 @@ def ascii_table():
 def expected_text():
     """Echoes back plain text from request body"""
     return Response(request.get_data(as_text=True), content_type="text/plain")
+
+
+def _wait_until_ready(url: str, timeout: float = 10.0) -> None:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        try:
+            urllib.request.urlopen(url, timeout=0.5)
+        except (urllib.error.URLError, OSError):
+            time.sleep(0.05)
+        else:
+            return
+    raise RuntimeError(f"server not ready at {url} within {timeout}s")
+
+
+@contextlib.contextmanager
+def run_in_background():
+    """Run the app in a daemon thread on an OS-assigned free port for the
+    duration of the with block, yielding the port. Using a random port means
+    concurrent runs (e.g. pytest-xdist workers) never clash."""
+    httpd = werkzeug.serving.make_server("127.0.0.1", 0, app, threaded=True)
+    port = httpd.server_port
+
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    try:
+        _wait_until_ready(f"http://localhost:{port}/headers")
+        yield port
+    finally:
+        httpd.shutdown()
+        thread.join(timeout=5)

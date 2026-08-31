@@ -4,8 +4,28 @@ from collections.abc import Iterable
 
 import pytest
 from box import Box
+from server import run_in_background
 
 from tavern._core import exceptions
+
+if not os.environ.get("TAVERN_INTEGRATION_ALLOW_COLLECT"):
+    # Plain top-level pytest: run the yaml suite only via the pytester runner
+    # (subprocess), never in-process — tavern patches the yaml parser globally
+    # and the suite needs --tavern-global-cfg and a running server.
+    collect_ignore_glob = ["test_*.tavern.yaml"]
+else:
+    # tox-integration generic/noextra (docker server on port 5003) or the
+    # pytester subprocess: yaml files run directly, so the runner must not also
+    # run (it would run the whole suite a second time).
+    collect_ignore = ["test_run_integration_suite.py"]
+
+
+@pytest.fixture(scope="session")
+def integration_server():
+    """Base URL of the flask server from server.py, running in a background
+    thread on a random port (one server per pytest-xdist worker)."""
+    with run_in_background() as port:
+        yield f"http://localhost:{port}"
 
 
 @pytest.fixture
@@ -32,7 +52,7 @@ def autouse_thing():
 
 @pytest.fixture(scope="session", autouse=True)
 def fixture_echo_url():
-    return "http://localhost:5003/echo"
+    return os.environ.get("TEST_HOST", "http://localhost:5003") + "/echo"
 
 
 @pytest.fixture(scope="session", autouse=True, name="autouse_thing_named")
