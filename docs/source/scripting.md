@@ -47,6 +47,14 @@ use.
 To try and combine all of these into one unified test execution model, we need a way to express complex logic
 declaratively, in a format that is more readable than interpolated strings in YAML.
 
+There are two levels to this:
+
+- [Per-stage expressions](#per-stage-expressions) (`if`, `retry_until` and `fail_if`) - keep the normal sequential stage list and
+  just annotate individual stages. This is the closest thing to the GitHub Actions example above and is where you
+  should start.
+- A full [`control_flow` script](#basic-usage) - replaces sequential execution entirely, for things which can't be
+  expressed as a per-stage condition (loops over entities, fallback paths, extracting values with regexes, etc).
+
 ## Starlark Overview
 
 Starlark is a Python-like language designed for configuration and build systems. It provides:
@@ -65,6 +73,235 @@ Starlark control flow is an experimental feature. Enable it with the pytest flag
 ```bash
 pytest --tavern-experimental-starlark-pipeline
 ```
+
+## Per-stage expressions
+
+Rewriting a whole test as a `control_flow` script is a lot of ceremony if all you want is "only run this stage if the
+last one returned something". For that, stages support three keys which are Starlark _expressions_, evaluated by the
+same embedded interpreter. There is no separate script and stages do not need an `id`. These need the same
+`--tavern-experimental-starlark-pipeline` flag as `control_flow`.
+
+Test variables - anything from `save`, `includes`, global config, fixtures, parametrisation, and the `tavern` box - are
+referred to with the same `{format_string}` syntax as everywhere else in Tavern. The expression is interpolated first
+and the result is what gets evaluated, so `if: "{var_x} > 2"` with `var_x` saved as `3` evaluates `3 > 2`. Referring to
+a variable which does not exist is an error, and error messages include both the original expression and the
+interpolated one.
+
+Two things follow from this which are worth being aware of:
+
+> **Quote your strings.** A string variable is interpolated in as-is, not as a Starlark string literal, so write
+> `if: "'{name}' == 'bob'"` rather than `if: "{name} == 'bob'"` - the latter evaluates `bob == 'bob'` and fails with an
+> undefined name.
+>
+> **Escape literal braces.** A Starlark dict or set literal in an expression needs doubled braces, as in
+> `if: "{{'a': 1}}['a'] == 1"`.
+
+Because interpolation happens before evaluation, variable names which are not valid Starlark identifiers - anything
+with a dash in it, or a Starlark reserved word - work fine.
+
+### Multiline expressions
+
+An 'expression' does not have to be one line. Using a YAML block scalar, any of these keys can be a short script, and
+the value of its **last statement** is what decides the result - it still has to be `True` or `False`. Note that only
+an expression has a value, so a script which ends on an assignment (`result = x == 1`) fails rather than using what was
+assigned. Helper modules have to be `load()`ed just like in a `control_flow` script, so this is the way to use `re` in
+a condition:
+
+```yaml
+stages:
+  - name: Only upgrade if the server is on a v2 release
+    if: |
+      load("@tavern_helpers.star", "re")
+
+      match = re.search("v(\\d+)\\.", "{server_banner}")
+      match != None and int(match.groups[0]) == 2
+    request:
+      url: "{global_host}/upgrade"
+      method: POST
+    response:
+      status_code: 200
+```
+
+The same works for `retry_until` and `fail_if`, which additionally have `response` in scope:
+
+```yaml
+    retry_until: |
+      load("@tavern_helpers.star", "re")
+
+      terminal = re.match("(SUCCESS|FAILED)", response.body["status"])
+      terminal != None
+```
+
+> **Be careful with this.** A condition which needs several statements to express is a sign the test is doing quite a
+> lot of thinking, and it is easy to end up with something which is hard to read, hard to debug (Starlark errors are
+> not very helpful, see [Error Messages](#error-messages)), and effectively untested. Prefer a single expression, or a
+> stage which asserts on the response in its `response` block, and only reach for a script when there is no reasonable
+> alternative. If it is getting long, it probably wants to be a [`control_flow` script](#basic-usage) instead.
+
+`run_stage()` is deliberately **not** available - there is already a stage being run - and loading anything other than
+`@tavern_helpers.star` is an error.
+
+### Running a stage conditionally with `if`
+
+The stage only runs if the expression evaluates to `True`. This is an alternative to the
+['skip' key](./core_concepts/marks.md#skipping-stages-with-simpleeval-expressions) - `if` is the same thing with the
+logic inverted, and a stage cannot use both.
+
+```yaml
+stages:
+  - name: Create a user
+    request:
+      url: "{global_host}/users"
+      method: POST
+    response:
+      status_code: 201
+      save:
+        json:
+          n_existing: existing_count
+
+  - name: Only tidy up if there was something there already
+    if: "{n_existing} > 0"
+    request:
+      url: "{global_host}/users/cleanup"
+      method: POST
+    response:
+      status_code: 200
+```
+
+The expression must evaluate to a boolean, and referring to a variable which has not been saved yet is an error rather
+than being treated as false.
+
+`if` is only evaluated for normal stages - stages in a [`finally` block](./core_concepts/flow.md#finalising-stages)
+always run.
+
+### Polling with `retry_until`
+
+`retry_until` is a second opinion on a stage that **failed**. It works like `max_retries`, except that instead of
+blindly retrying it lets you say when to stop:
+
+- If the stage **passes**, it is finished. **`retry_until` is not evaluated at all** - a passing stage is never retried,
+  even if the expression would have been `False`.
+- If the stage **fails**, `retry_until` is evaluated against the response that came back. If it is `True` the stage is
+  treated as finished and the test carries on to the next stage, even though the response block did not match. If it is
+  `False` the stage is retried, up to `max_retries` times, sleeping for `delay_after` in between.
+- If the stage never passes and `retry_until` is never `True`, the test fails.
+
+In other words, adding `retry_until` gives the stage something like the `continue_on_fail` behaviour of
+[`run_stage()`](#run_stage), with the expression deciding when to give up retrying and call it a success.
+
+```yaml
+stages:
+  - name: Poll until the job is ready
+    request:
+      url: "{global_host}/poll"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: ready
+    max_retries: 20
+    delay_after: 1
+    retry_until: response.body["status"] == "ready"
+```
+
+As well as the test variables, the expression has a `response` struct in scope with the same properties as the one
+returned by [`run_stage()`](#run_stage):
+
+```starlark
+response.status_code == 200 and response.body["status"] == "{expected_status}"
+```
+
+Because it is an arbitrary expression it can also stop on more than one outcome, which is the usual shape for polling a
+long running job that might end up in any one of several terminal states:
+
+```yaml
+stages:
+  - name: Poll until the job finishes
+    request:
+      url: "{global_host}/job/{job_id}"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 20
+    delay_after: 1
+    retry_until: response.body["status"] == "SUCCESS" or response.body["status"] == "FAILED"
+```
+
+Here the `response` block says what the happy path looks like, and `retry_until` says when there is no point polling any
+more. A job which ends up as `FAILED` stops the retries immediately rather than waiting out all 20 of them - but note
+that, as above, a stage which finished because `retry_until` was `True` does not fail the test even though its response
+block did not match. If you need to assert on how the job actually ended, do it in a following stage.
+
+Note that:
+
+- `max_retries` is required - `retry_until` without it is a schema error.
+- Because `retry_until` is only consulted on failure, an expression which is already implied by the `response` block
+  will never be evaluated. Write the `response` block for what you expect once the polling has finished, as in the
+  example above.
+- If the request itself failed and no response was received at all (a connection error, say) there is nothing to
+  evaluate the expression against, so the stage is just retried.
+- Values in the `save` block of an attempt which failed verification are **not** saved, so if a stage finishes because
+  `retry_until` was `True` rather than because it passed, later stages will not see them.
+- `retry_until` does not apply inside a `control_flow` script, which bypasses the retry machinery - use
+  `run_stage(..., continue_on_fail=True)` in a `for` loop instead, as shown in [Retry and Polling](#retry-and-polling).
+
+### Failing fast with `fail_if`
+
+`fail_if` is the mirror image of `retry_until` - a negative assertion which fails the stage as soon as it is `True`:
+
+- It is evaluated after **every** attempt at the stage, whether that attempt passed or failed.
+- If it is `True` the test fails immediately. The stage is **not** retried, no matter what `max_retries` or
+  `retry_until` say.
+- If it is `False` nothing changes - a stage which passed carries on to the next stage, and a stage which failed is
+  retried as normal.
+
+It has the same `response` struct in scope as `retry_until`, which includes `response.failed` if you want to
+distinguish an attempt which passed its response block from one which did not.
+
+The main use for this is polling something which can end up in a state it will never recover from. `retry_until` alone
+can only say "stop polling", which counts as a pass; `fail_if` says "stop polling, and this is a failure":
+
+```yaml
+stages:
+  - name: Poll until the job succeeds
+    request:
+      url: "{global_host}/job/{job_id}"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 60
+    delay_after: 10
+    retry_until: response.body["status"] == "SUCCESS"
+    fail_if: response.body["status"] == "FAILED"
+```
+
+A job which goes to `FAILED` fails the test on the next poll instead of spending ten minutes retrying something which
+was never going to succeed.
+
+It is also useful on its own, with no retries at all, as an assertion which is easier to express as an expression than
+as a `response` block:
+
+```yaml
+- name: Check the response does not leak internal errors
+  request:
+    url: "{global_host}/search"
+    method: GET
+  response:
+    status_code: 200
+  fail_if: 'response.body["message"] != None and "traceback" in response.body["message"]'
+```
+
+Note that:
+
+- Unlike `retry_until`, `fail_if` does not need `max_retries`.
+- If the request itself failed and no response was received at all, `fail_if` is not evaluated and the stage fails or
+  retries as it normally would.
+- Like `retry_until`, it does not apply inside a `control_flow` script - check the struct returned by `run_stage()`
+  instead.
 
 ## Basic Usage
 
@@ -388,7 +625,8 @@ control_flow: |
 **Important:** Starlark control flow currently only works with HTTP/REST tests. Other protocol backends (MQTT, gRPC,
 GraphQL) are not yet supported.
 
-Attempting to use `run_stage()` with non-HTTP stages will raise a `NotImplementedError`.
+Attempting to use `run_stage()` - or `retry_until`/`fail_if` - with non-HTTP stages will raise a `NotImplementedError`.
+The `if` key works with any backend, as it only sees test variables.
 
 ### Error Messages
 
@@ -433,7 +671,7 @@ Key differences from Python:
 ## Examples
 
 See the integration test files in `tests/integration/starlark/` for complete working examples of basic control flow,
-includes, regex extraction, retry patterns
+includes, regex extraction, retry patterns, and the per-stage `if`/`retry_until` keys.
 
 ## Possible future improvements
 
@@ -446,3 +684,4 @@ includes, regex extraction, retry patterns
     - Make this auto-export functions into either this document with mkdocstrings into
     - Let users import their own functions into starlark?
 - Add a new CLI/ini flag to say "run 'finally' stages when using starlark script"
+- Allow `if` on `finally` stages, and give it access to the previous stage's response.

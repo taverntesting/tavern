@@ -62,7 +62,7 @@ def _run_with_starlark_control_flow(
         import starlark
     except ImportError as e:
         raise exceptions.DependencyMissingError(
-            "starlark", "pip install tavern[starlark]"
+            "starlark", "pip install tavern[scriptable]"
         ) from e
 
     from tavern._core.starlark.starlark_env import StarlarkPipelineRunner
@@ -326,6 +326,14 @@ def run_test(
                     if eval_skip(content, test_block_config):
                         continue
 
+                if (condition := stage.get("if")) is not None:
+                    if not _eval_stage_condition(condition, stage, test_block_config):
+                        logger.info(
+                            "Skipping stage '%s' as 'if' condition was false",
+                            stage["name"],
+                        )
+                        continue
+
                 if has_only and not getonly(stage):
                     continue
 
@@ -350,6 +358,73 @@ def run_test(
                     runner.run_stage(idx, stage, is_final=True)
             else:
                 logger.debug("no 'finally' stages to run")
+
+
+def _eval_stage_condition(
+    condition: str, stage: Mapping, test_block_config: TestConfig
+) -> bool:
+    """Evaluate the 'if' key on a stage to see whether it should be run
+
+    Args:
+        condition: Starlark expression from the 'if' key
+        stage: the stage it came from
+        test_block_config: current test config
+
+    Returns:
+        Whether the stage should be run
+    """
+    # Local import to avoid a circular dependency, and to keep starlark optional
+    from tavern._core.starlark.expressions import eval_stage_expression
+
+    if not isinstance(condition, str):
+        raise exceptions.BadSchemaError(
+            f"Unexpected '{type(condition)}' in if key - should be a string"
+        )
+
+    return eval_stage_expression("if", condition, stage, test_block_config)
+
+
+def _check_fail_if(
+    fail_if: str,
+    stage: Mapping,
+    test_block_config: TestConfig,
+    response: Any,
+    *,
+    success: bool,
+) -> None:
+    """Evaluate the 'fail_if' key on a stage against the response it got back
+
+    Args:
+        fail_if: Starlark expression from the 'fail_if' key
+        stage: the stage it came from
+        test_block_config: current test config
+        response: the response from running the stage
+        success: whether the stage passed all of its verifications
+
+    Raises:
+        exceptions.FailIfError: if the expression was true
+    """
+    # Local import to avoid a circular dependency, and to keep starlark optional
+    from tavern._core.starlark.expressions import eval_response_expression
+
+    if not eval_response_expression(
+        "fail_if",
+        fail_if,
+        stage,
+        test_block_config,
+        response=response,
+        success=success,
+        request_vars=test_block_config.variables,
+    ):
+        return
+
+    error = exceptions.FailIfError(
+        "Test '{}' failed: 'fail_if' expression was true: {}".format(
+            stage["name"], fail_if
+        )
+    )
+    error.response = response
+    raise error
 
 
 def _calculate_stage_strictness(
@@ -508,11 +583,27 @@ class _TestRunner:
 
         tinctures.end_tinctures(expected, response)
 
-        for response_type, response_verifiers in verifiers.items():
-            logger.debug("Running verifiers for %s", response_type)
-            for v in response_verifiers:
-                saved = v.verify(response)
-                stage_config.variables.update(saved)
+        fail_if = stage.get("fail_if", None)
+
+        try:
+            for response_type, response_verifiers in verifiers.items():
+                logger.debug("Running verifiers for %s", response_type)
+                for v in response_verifiers:
+                    saved = v.verify(response)
+                    stage_config.variables.update(saved)
+        except exceptions.TavernException as e:
+            # Attach the response so that things like 'retry_until' can still inspect it
+            # even though the stage failed verification
+            e.response = response
+
+            # A stage which failed can still be in a state which should not be retried
+            if fail_if is not None:
+                _check_fail_if(fail_if, stage, stage_config, response, success=False)
+
+            raise
+
+        if fail_if is not None:
+            _check_fail_if(fail_if, stage, stage_config, response, success=True)
 
         tavern_box.pop("request_vars")
         delay(stage, "after", stage_config.variables)

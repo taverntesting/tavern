@@ -94,6 +94,17 @@ definitions:
     required:
       - name
 
+    # 'retry_until' is meaningless without something to bound the number of retries
+    dependencies:
+      retry_until:
+        - max_retries
+
+    # 'if' is the starlark equivalent of the older simpleeval 'skip' key
+    not:
+      required:
+        - skip
+        - if
+
     properties:
       tinctures:
         type: array
@@ -117,7 +128,24 @@ definitions:
             default: false
 
           - type: string
-            description: CEL expression saying whether to skip this stage
+            description: simpleeval expression saying whether to skip this stage
+
+      if:
+        type: string
+        description: Starlark expression - this stage is only run if it evaluates to True
+
+      retry_until:
+        type: string
+        description:
+          Starlark expression evaluated after each *failed* attempt at this stage - the
+          stage is retried until it evaluates to True, up to max_retries times. Not
+          evaluated if the stage passes.
+
+      fail_if:
+        type: string
+        description:
+          Starlark expression evaluated after every attempt at this stage - if it
+          evaluates to True the test fails immediately, without any further retries.
 
       only:
         type: boolean
