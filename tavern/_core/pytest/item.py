@@ -1,7 +1,8 @@
 import dataclasses
 import logging
 import pathlib
-from collections.abc import Callable, Iterable, MutableMapping
+from collections.abc import Callable, Iterable, Mapping, MutableMapping
+from typing import Any
 
 import pytest
 import yaml
@@ -22,7 +23,7 @@ from tavern._core.loader import error_on_empty_scalar
 from tavern._core.plugins import load_plugins
 from tavern._core.pytest import call_hook
 from tavern._core.pytest.error import ReprdError
-from tavern._core.report import attach_text
+from tavern._core.report import attach_parameters, attach_text
 from tavern._core.run import run_test
 from tavern._core.schema.files import verify_tests
 from tavern._core.stage_lines import start_mark
@@ -79,12 +80,14 @@ class YamlItem(pytest.Item):
         path: filename that this test came from
         spec: The whole dictionary of the test
         global_cfg: configuration for test
+        parametrize_vars: values this test was parametrized with, if any
     """
 
     # See https://github.com/taverntesting/tavern/issues/825
     _patched_yaml = False
 
     global_cfg: TestConfig
+    parametrize_vars: Mapping[str, Any] = {}
 
     def __init__(
         self, *, name: str, parent, spec: MutableMapping, path: pathlib.Path, **kwargs
@@ -237,6 +240,8 @@ class YamlItem(pytest.Item):
         return values
 
     def runtest(self) -> None:
+        attach_parameters(self.parametrize_vars)
+
         self.global_cfg = load_global_cfg(self.config)
 
         load_plugins(self.global_cfg)

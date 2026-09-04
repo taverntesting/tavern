@@ -1,0 +1,83 @@
+version: 2
+
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    ignore:
+      # These have deliberate upper bounds in pyproject.toml
+      # eg protobuf will break if its updated
+      - dependency-name: protobuf
+        update-types: ["version-update:semver-major"]
+      - dependency-name: protobuf-protoc-bin
+        update-types: ["version-update:semver-major"]
+      - dependency-name: typed-protobuf
+        update-types: ["version-update:semver-major"]
+      - dependency-name: paho-mqtt
+        update-types: ["version-update:semver-major"]
+    groups:
+      python-dev:
+        dependency-type: development
+        patterns:
+          - "*"
+      python-prod:
+        dependency-type: production
+        patterns:
+          - "*"
+
+  - package-ecosystem: pre-commit
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      pre-commit:
+        patterns:
+          - "*"
+
+  - package-ecosystem: docker
+    directories:
+      - /tests/integration
+      - /example/graphql
+      - /example/grpc
+      - /example/http
+      - /example/mqtt
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      docker:
+        patterns:
+          - "*"
+
+  - package-ecosystem: docker-compose
+    directories:
+      - /tests/integration
+      - /example/graphql
+      - /example/grpc
+      - /example/http
+      - /example/mqtt
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    groups:
+      docker-compose:
+        patterns:
+          - "*"

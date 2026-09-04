@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.6.2           fix allure parametrization (2026-08-24)
+
+## 3.6.1           fix for pytest>9.1.0 (2026-06-14)
+
 # 3.6.0           Allow global tinctures (2026-05-31)
 
 # 3.5.0           Allow using TAVERN_INCLUDE in files (2026-05-17)
@@ -176,14 +180,14 @@ This locks pytest to <=7.2 to avoid having to fix imports every time a new versi
 
 ## 1.7.1           Bump max version of paho-mqtt (2020-11-07)
 
+# 1.11.0          523 add request hook (#615) (2020-11-07)
+
+# 1.10.0          Format filenames (#612) (2020-11-07)
+
 # 1.9.0           219 response function calls (#614) (2020-11-06)
 
 
 Also log the result from 'response' ext functions
-
-# 1.11.0          523 add request hook (#615) (2020-11-07)
-
-# 1.10.0          Format filenames (#612) (2020-11-07)
 
 # 1.8.0           Move parametrize functions out of main class as they are specific behaviour (2020-10-09)
 
