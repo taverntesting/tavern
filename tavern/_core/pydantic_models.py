@@ -91,14 +91,14 @@ class RestRequestSpec(_BaseKeyValidator):
     params: Optional[dict] = None  # dict for pre-resolution $ext
     auth: Optional[Union[list, str, dict]] = None  # dict for pre-resolution $ext
     json_body: Optional[JSONType] = Field(default=None, alias="json")
-    verify: Optional[Union[bool, str]] = None
+    verify: Optional[Union[bool, BoolToken, str]] = None
     files: Optional[Union[dict, list]] = None  # dict for pre-resolution $ext
     file_body: Optional[str] = None
-    stream: Optional[bool] = None
+    stream: Optional[Union[bool, BoolToken]] = None
     timeout: Optional[Union[float, int, list, str, dict]] = None  # dict for $ext
     cookies: Optional[Union[dict, list]] = None
     cert: Optional[Union[str, list, int, dict]] = None  # dict for $ext
-    follow_redirects: Optional[bool] = None
+    follow_redirects: Optional[Union[bool, BoolToken]] = None
 
 
 # --- MQTT request spec ---
