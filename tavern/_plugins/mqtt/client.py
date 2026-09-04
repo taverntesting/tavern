@@ -146,7 +146,8 @@ class MQTTClient:
         MQTTConnectArgs.validate_keys(self._connect_args)
 
         self._auth_args = kwargs.pop("auth", {})
-        MQTTAuthArgs.validate_keys(self._auth_args)
+        if self._auth_args:
+            MQTTAuthArgs.validate_keys(self._auth_args)
 
         if "host" not in self._connect_args:
             msg = "Need 'host' in 'connect' block for mqtt"

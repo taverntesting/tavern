@@ -34,8 +34,9 @@ class TestRestRequestSpec:
             RestRequestSpec.validate_keys(data)
 
     def test_empty_dict(self):
-        result = RestRequestSpec.validate_keys({})
-        assert result == {}
+        """url is required, so an empty dict should fail"""
+        with pytest.raises(exceptions.MissingKeysError):
+            RestRequestSpec.validate_keys({})
 
 
 class TestMQTTRequestSpec:
@@ -168,7 +169,7 @@ class TestTypeValidation:
     """Tests verifying that pydantic models enforce type checking, not just key validation."""
 
     def test_rest_method_must_be_string(self):
-        data = {"method": 123}
+        data = {"url": "http://example.com", "method": 123}
         with pytest.raises(exceptions.UnexpectedKeysError):
             RestRequestSpec.validate_keys(data)
 
@@ -298,7 +299,7 @@ class TestTypeValidation:
             MQTTClientTopLevel.validate_keys(data)
 
     def test_grpc_request_host_must_be_string(self):
-        data = {"host": 123}
+        data = {"service": "MyService/Method", "host": 123}
         with pytest.raises(exceptions.UnexpectedKeysError):
             GRPCRequestSpec.validate_keys(data)
 
@@ -371,3 +372,104 @@ class TestTypeValidation:
         data = {"attempt_reflection": True}
         result = GRPCClientTopLevel.validate_keys(data)
         assert result["attempt_reflection"] is True
+
+
+class TestRequiredFields:
+    """Tests verifying that required fields are enforced."""
+
+    def test_rest_url_is_required(self):
+        data = {"method": "GET"}
+        with pytest.raises(exceptions.MissingKeysError):
+            RestRequestSpec.validate_keys(data)
+
+    def test_mqtt_connect_host_is_required(self):
+        data = {"port": 1883}
+        with pytest.raises(exceptions.MissingKeysError):
+            MQTTConnectArgs.validate_keys(data)
+
+    def test_mqtt_auth_username_is_required(self):
+        data = {"password": "pass"}
+        with pytest.raises(exceptions.MissingKeysError):
+            MQTTAuthArgs.validate_keys(data)
+
+    def test_grpc_request_service_is_required(self):
+        data = {"host": "localhost:50051"}
+        with pytest.raises(exceptions.MissingKeysError):
+            GRPCRequestSpec.validate_keys(data)
+
+
+class TestSpecificTokenTypes:
+    """Tests verifying that conversion tokens are type-specific."""
+
+    def test_mqtt_qos_accepts_int_token(self):
+        from tavern._core.loader import IntToken
+
+        data = {"topic": "test/topic", "qos": IntToken("{qos:d}")}
+        result = MQTTRequestSpec.validate_keys(data)
+        assert "qos" in result
+
+    def test_mqtt_qos_rejects_bool_token(self):
+        from tavern._core.loader import BoolToken
+
+        data = {"topic": "test/topic", "qos": BoolToken("{qos:d}")}
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            MQTTRequestSpec.validate_keys(data)
+
+    def test_mqtt_retain_accepts_bool_token(self):
+        from tavern._core.loader import BoolToken
+
+        data = {"topic": "test/topic", "retain": BoolToken("{retain:d}")}
+        result = MQTTRequestSpec.validate_keys(data)
+        assert "retain" in result
+
+    def test_mqtt_retain_rejects_int_token(self):
+        from tavern._core.loader import IntToken
+
+        data = {"topic": "test/topic", "retain": IntToken("{retain:d}")}
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            MQTTRequestSpec.validate_keys(data)
+
+    def test_mqtt_connect_port_accepts_int_token(self):
+        from tavern._core.loader import IntToken
+
+        data = {"host": "localhost", "port": IntToken("{port:d}")}
+        result = MQTTConnectArgs.validate_keys(data)
+        assert "port" in result
+
+    def test_grpc_connect_port_rejects_bool_token(self):
+        from tavern._core.loader import BoolToken
+
+        data = {"host": "localhost", "port": BoolToken("{port:d}")}
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            GRPCConnectArgs.validate_keys(data)
+
+    def test_rest_method_rejects_dict(self):
+        data = {
+            "url": "http://example.com",
+            "method": {"$ext": {"function": "mod:func"}},
+        }
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            RestRequestSpec.validate_keys(data)
+
+    def test_rest_verify_rejects_dict(self):
+        data = {
+            "url": "http://example.com",
+            "verify": {"$ext": {"function": "mod:func"}},
+        }
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            RestRequestSpec.validate_keys(data)
+
+    def test_mqtt_topic_rejects_dict(self):
+        data = {"topic": {"$ext": {"function": "mod:func"}}}
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            MQTTRequestSpec.validate_keys(data)
+
+    def test_mqtt_payload_rejects_dict(self):
+        data = {"topic": "test/topic", "payload": {"key": "value"}}
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            MQTTRequestSpec.validate_keys(data)
+
+    def test_grpc_response_status_rejects_dict(self):
+        data = {"status": {"key": "value"}}
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            GRPCResponseSpec.validate_keys(data)
