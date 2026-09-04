@@ -9,7 +9,7 @@ repos:
     hooks:
       - id: zizmor
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.16.4
+    rev: v0.16.5
     hooks:
       - id: ruff-format
       - id: ruff-check
@@ -27,13 +27,13 @@ repos:
         additional_dependencies:
           - types-requests
           # Keep in sync with the protobuf/types-protobuf pins in pyproject.toml
-          - "types-protobuf>=5,<6"
+          - "types-protobuf>=7.35.1.20260827,<8"
           - types-PyYAML
           - mypy-extensions
         exclude: (tests|example/)
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.12.5
+    rev: 0.12.7
     hooks:
       - id: uv-lock
 
