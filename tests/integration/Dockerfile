@@ -1,4 +1,4 @@
-FROM python:3.11-slim-trixie
+FROM python:3.14-slim-trixie
 
 RUN pip3 install 'pyjwt>=2.4.0,<3' 'flask>=2.2.3' "python-box>=6,<7" 'flask-httpauth>=4.8.1,<6'
 
