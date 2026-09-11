@@ -187,7 +187,7 @@ class GRPCProtoArgs(_BaseKeyValidator):
 
 
 class GRPCClientTopLevel(_BaseKeyValidator):
-    connect: Optional[dict] = None
-    proto: Optional[dict] = None
+    connect: Optional[GRPCConnectArgs] = None
+    proto: Optional[GRPCProtoArgs] = None
     metadata: Optional[dict] = None
     attempt_reflection: Optional[Union[bool, BoolToken]] = None
