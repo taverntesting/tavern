@@ -50,22 +50,6 @@ updates:
         patterns:
           - "*"
 
-  - package-ecosystem: docker
-    directories:
-      - /tests/integration
-      - /example/graphql
-      - /example/grpc
-      - /example/http
-      - /example/mqtt
-    schedule:
-      interval: weekly
-    cooldown:
-      default-days: 7
-    groups:
-      docker:
-        patterns:
-          - "*"
-
   - package-ecosystem: docker-compose
     directories:
       - /tests/integration
