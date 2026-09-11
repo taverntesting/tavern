@@ -500,6 +500,7 @@ In the `read_uuid` fixture:
 import pytest
 import json
 
+
 @pytest.fixture
 def read_uuid(request):  # 'request' is a built in pytest fixture
     marks = request.node.own_markers
