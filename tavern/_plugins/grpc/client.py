@@ -19,7 +19,11 @@ from grpc_reflection.v1alpha import reflection_pb2, reflection_pb2_grpc
 from grpc_status import rpc_status
 
 from tavern._core import exceptions
-from tavern._core.dict_util import check_expected_keys
+from tavern._core.pydantic_models import (
+    GRPCClientTopLevel,
+    GRPCConnectArgs,
+    GRPCProtoArgs,
+)
 from tavern._plugins.grpc.protos import _generate_proto_import, _import_grpc_module
 
 logger: logging.Logger = logging.getLogger(__name__)
@@ -41,23 +45,17 @@ class _ChannelVals:
 class GRPCClient:
     def __init__(self, **kwargs) -> None:
         logger.debug("Initialising GRPC client with %s", kwargs)
-        expected_blocks = {
-            "connect": {"host", "port", "options", "timeout", "secure"},
-            "proto": {"source", "module"},
-            "metadata": {},
-            "attempt_reflection": {},
-        }
         # check main block first
-        check_expected_keys(expected_blocks.keys(), kwargs)
+        GRPCClientTopLevel.validate_keys(kwargs)
 
         _connect_args = kwargs.pop("connect", {})
-        check_expected_keys(expected_blocks["connect"], _connect_args)
+        GRPCConnectArgs.validate_keys(_connect_args)
 
         metadata = kwargs.pop("metadata", {})
         self._metadata = list(metadata.items())
 
         _proto_args = kwargs.pop("proto", {})
-        check_expected_keys(expected_blocks["proto"], _proto_args)
+        GRPCProtoArgs.validate_keys(_proto_args)
 
         self._attempt_reflection = bool(kwargs.pop("attempt_reflection", False))
 

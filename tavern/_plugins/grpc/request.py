@@ -7,7 +7,8 @@ import grpc
 from box import Box
 
 from tavern._core import exceptions
-from tavern._core.dict_util import check_expected_keys, format_keys
+from tavern._core.dict_util import format_keys
+from tavern._core.pydantic_models import GRPCRequestSpec
 from tavern._core.pytest.config import TestConfig
 from tavern._plugins.grpc.client import GRPCClient
 from tavern.request import BaseRequest
@@ -48,9 +49,7 @@ class GRPCRequest(BaseRequest):
     def __init__(
         self, client: GRPCClient, request_spec: dict, test_block_config: TestConfig
     ) -> None:
-        expected = {"host", "service", "body"}
-
-        check_expected_keys(expected, request_spec)
+        GRPCRequestSpec.validate_keys(request_spec)
 
         grpc_args = get_grpc_args(request_spec, test_block_config)
 
