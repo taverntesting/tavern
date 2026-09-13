@@ -486,37 +486,69 @@ def check_keys_match_recursive(
 
                 if strict_setting == StrictSetting.LIST_ANY_ORDER:
                     # Each response item can only be used to satisfy one expected
-                    # item - remove it from the pool of remaining candidates once
-                    # matched so duplicate expected values aren't matched against
-                    # the same response item more than once.
-                    remaining = list(actual_val)
+                    # item. Use backtracking to find a complete assignment so
+                    # that a broad matcher (e.g. !anything) doesn't greedily
+                    # consume an actual item needed by a later, more specific
+                    # expected item.
 
-                    for i, e_val in enumerate(expected_val):
-                        for idx, current_response_val in enumerate(remaining):
-                            logger.debug(
-                                "Got '%s' from response to check against '%s' from expected",
-                                current_response_val,
-                                e_val,
-                            )
+                    # Track which expected items were matched in the best
+                    # partial assignment so the error only reports unmatched
+                    # items.
+                    best_matched: set[int] = set()
 
+                    def _find_assignment(
+                        expected_items: list,
+                        actual_items: list,
+                        start_idx: int,
+                        matched: set[int],
+                    ) -> bool:
+                        """Try to match each expected item to a unique actual item.
+
+                        Returns True if a complete assignment exists, False otherwise.
+                        Updates best_matched with the largest set of matched
+                        indices seen during the search.
+                        """
+                        if not expected_items:
+                            return True
+
+                        e_val = expected_items[0]
+                        rest_expected = expected_items[1:]
+                        nonlocal best_matched
+
+                        for idx, a_val in enumerate(actual_items):
                             try:
                                 check_keys_match_recursive(
-                                    e_val, current_response_val, keys + [i], strict
+                                    e_val, a_val, keys + [start_idx], strict
                                 )
                             except exceptions.KeyMismatchError:
-                                # Doesn't match what we're looking for
-                                logger.debug(
-                                    "%s did not match response value %s",
-                                    e_val,
-                                    current_response_val,
-                                )
-                            else:
-                                logger.debug("'%s' present in response", e_val)
-                                del remaining[idx]
-                                break
-                        else:
-                            logger.debug("Ran out of list response items to check")
-                            missing.append(e_val)
+                                continue
+
+                            # This match works - try to assign the rest
+                            remaining = actual_items[:idx] + actual_items[idx + 1 :]
+                            new_matched = matched | {start_idx}
+                            if len(new_matched) > len(best_matched):
+                                best_matched = new_matched
+                            if _find_assignment(
+                                rest_expected, remaining, start_idx + 1, new_matched
+                            ):
+                                return True
+
+                        # No match for this item - try skipping it to find the
+                        # best partial assignment for error reporting.
+                        _find_assignment(
+                            rest_expected, actual_items, start_idx + 1, matched
+                        )
+
+                        return False
+
+                    if not _find_assignment(
+                        list(expected_val), list(actual_val), 0, set()
+                    ):
+                        missing = [
+                            v
+                            for i, v in enumerate(expected_val)
+                            if i not in best_matched
+                        ]
                 else:
                     actual_iter = iter(actual_val)
 

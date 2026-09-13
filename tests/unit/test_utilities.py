@@ -329,6 +329,17 @@ class TestListAnyOrderMatching:
         with pytest.raises(exceptions.KeyMismatchError):
             check_keys_match_recursive(a, b, [], strict=self.strict())
 
+    def test_broad_matcher_does_not_consume_specific_item(self):
+        """A broad matcher (e.g. !anything) should not greedily consume an
+        actual item that a later, more specific expected item needs.
+
+        Regression test for https://github.com/taverntesting/tavern/issues/1102
+        """
+        a = [ANYTHING, {"id": 1}]
+        b = [{"id": 1}, {"id": 2}]
+
+        check_keys_match_recursive(a, b, [], strict=self.strict())
+
 
 @pytest.fixture(name="test_yaml")
 def fix_test_yaml():
