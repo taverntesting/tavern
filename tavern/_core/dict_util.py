@@ -486,37 +486,44 @@ def check_keys_match_recursive(
 
                 if strict_setting == StrictSetting.LIST_ANY_ORDER:
                     # Each response item can only be used to satisfy one expected
-                    # item - remove it from the pool of remaining candidates once
-                    # matched so duplicate expected values aren't matched against
-                    # the same response item more than once.
-                    remaining = list(actual_val)
+                    # item. Use backtracking to find a complete assignment so
+                    # that a broad matcher (e.g. !anything) doesn't greedily
+                    # consume an actual item needed by a later, more specific
+                    # expected item.
+                    def _find_assignment(
+                        expected_items: list,
+                        actual_items: list,
+                        start_idx: int,
+                    ) -> bool:
+                        """Try to match each expected item to a unique actual item.
 
-                    for i, e_val in enumerate(expected_val):
-                        for idx, current_response_val in enumerate(remaining):
-                            logger.debug(
-                                "Got '%s' from response to check against '%s' from expected",
-                                current_response_val,
-                                e_val,
-                            )
+                        Returns True if a complete assignment exists, False otherwise.
+                        """
+                        if not expected_items:
+                            return True
 
+                        e_val = expected_items[0]
+                        rest_expected = expected_items[1:]
+
+                        for idx, a_val in enumerate(actual_items):
                             try:
                                 check_keys_match_recursive(
-                                    e_val, current_response_val, keys + [i], strict
+                                    e_val, a_val, keys + [start_idx], strict
                                 )
                             except exceptions.KeyMismatchError:
-                                # Doesn't match what we're looking for
-                                logger.debug(
-                                    "%s did not match response value %s",
-                                    e_val,
-                                    current_response_val,
-                                )
-                            else:
-                                logger.debug("'%s' present in response", e_val)
-                                del remaining[idx]
-                                break
-                        else:
-                            logger.debug("Ran out of list response items to check")
-                            missing.append(e_val)
+                                continue
+
+                            # This match works - try to assign the rest
+                            remaining = actual_items[:idx] + actual_items[idx + 1 :]
+                            if _find_assignment(
+                                rest_expected, remaining, start_idx + 1
+                            ):
+                                return True
+
+                        return False
+
+                    if not _find_assignment(list(expected_val), list(actual_val), 0):
+                        missing = list(expected_val)
                 else:
                     actual_iter = iter(actual_val)
 

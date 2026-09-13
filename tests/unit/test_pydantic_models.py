@@ -53,7 +53,11 @@ class TestMQTTRequestSpec:
 
 class TestMQTTClientSpecs:
     def test_top_level_valid(self):
-        data = {"client": {}, "connect": {"host": "localhost"}, "auth": {}}
+        data = {
+            "client": {},
+            "connect": {"host": "localhost"},
+            "auth": {"username": "user"},
+        }
         result = MQTTClientTopLevel.validate_keys(data)
         assert "client" in result
 
