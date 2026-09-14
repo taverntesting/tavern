@@ -30,7 +30,7 @@ it is in the Python path. For example, if `utils.py` is in the 'tests' folder,
 you will need to run your tests something like (on Linux):
 
 ```shell
-$ PYTHONPATH=$PYTHONPATH:tests py.test tests/
+$ PYTHONPATH=$PYTHONPATH:tests pytest tests/
 ```
 
 ### Checking the response using external functions

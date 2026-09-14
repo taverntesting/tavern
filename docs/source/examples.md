@@ -160,7 +160,7 @@ tests. Otherwise, you will need to point it to the folder containing the integra
 `setup.cfg/tox.ini/etc` so that Pytest's collection mechanism knows where to look.
 
 ```bash
-$ py.test
+$ pytest
 ============================= test session starts ==============================
 platform linux -- Python 3.5.2, pytest-3.2.0, py-1.4.34, pluggy-0.4.0
 rootdir: /home/developer/project/tests, inifile: setup.cfg

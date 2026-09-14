@@ -34,7 +34,7 @@ recommended) it is also possible to specify a custom regular expression to match
 filenames. For example, if you want to call all of your files
 `tavern_test_x.yaml`, `tavern_test_y.yaml`, etc. then use the
 `tavern-file-path-regex` option in the configuration file or on the command
-line. For example, `py.test --tavern-file-path-regex "tavern_test_.*.yaml"`
+line. For example, `pytest --tavern-file-path-regex "tavern_test_.*.yaml"`
 
 **test_name** is, as expected, the name of that test. If the pytest plugin is
 being used to run integration tests, this is what the test will show up as in

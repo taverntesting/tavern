@@ -117,7 +117,7 @@ from Tavern but we have an error in the yaml:
 Having full debug output can be a bit too much information, so we set up logging
 as above but at the `INFO` level rather than `DEBUG`.
 
-We run this by doing `py.test --tb=short -p no:logging` and get the following
+We run this by doing `pytest --tb=short -p no:logging` and get the following
 output:
 
 ```
