@@ -521,7 +521,7 @@ to send to a server and we don't want hundreds of lines in the test:
     "guid": "ef3f8c42-522a-4d6b-84ec-79a07009460d",
     "isActive": false,
     "balance": "$3,103.47",
-    "picture": "http://placehold.it/32x32",
+    "picture": "https://placeholder.photo/32x32",
     "age": 26,
     "eyeColor": "green",
     "name": "Cannon Wood",
