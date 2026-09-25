@@ -269,6 +269,7 @@ Your external module would return an `AuthBase` instance:
 ```python
 from requests.auth import HTTPDigestAuth
 
+
 def get_digest_auth():
     return HTTPDigestAuth("myuser", "mypassword")
 ```
@@ -278,6 +279,7 @@ You can also use custom auth classes for non-standard schemes:
 ```python
 from requests.auth import AuthBase
 
+
 class TokenAuth(AuthBase):
     def __init__(self, token):
         self.token = token
@@ -285,6 +287,7 @@ class TokenAuth(AuthBase):
     def __call__(self, r):
         r.headers["X-api-token"] = f"Token {self.token}"
         return r
+
 
 def get_token_auth():
     return TokenAuth("abc123")
