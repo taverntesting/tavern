@@ -125,6 +125,60 @@ stages:
       status: "OK"  # Also the default
 ```
 
+If the status is not `OK` then there is no response message to check, so specifying a `body` as
+well as a non-`OK` `status` is an error.
+
+### Checking errors
+
+The error message which the server returned along with the status - the string passed to
+`set_details`/`abort` on the server - is checked with the `error_message` key. As well as a plain
+string this can be one of the [type sentinels](./core_concepts/types.md) which match a string,
+such as `!re_search`:
+
+```yaml
+stages:
+  - name: Say hello to nobody
+    grpc_request:
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: ""
+    grpc_response:
+      status: "INVALID_ARGUMENT"
+      error_message: !re_search "no name"
+```
+
+A server can also attach structured error details to the response. This is not part of gRPC
+itself - as described in the [gRPC error handling
+documentation](https://grpc.io/docs/guides/error/), it is a Google convention for using gRPC with
+protobuf, where the server puts a `google.rpc.Status` containing arbitrary messages into the
+`grpc-status-details-bin` trailing metadata. Tavern only officially supports protobuf, so this is
+how the `details` key is checked.
+
+Each message in the status is converted to a mapping including the `@type` key identifying it,
+and the list of them is matched like any other response body. Fields which the server did not set
+are left out, so only the fields actually returned need to be specified even with strict key
+checking turned on:
+
+```yaml
+stages:
+  - name: Say hello to nobody
+    grpc_request:
+      service: helloworld.v1.Greeter/SayHello
+      body:
+        name: ""
+    grpc_response:
+      status: "INVALID_ARGUMENT"
+      details:
+        - "@type": type.googleapis.com/google.rpc.BadRequest
+          field_violations:
+            - field: name
+              description: "name must not be empty"
+```
+
+The protobuf definition of each message in the details has to have been loaded (see below) for it
+to be checked - the `google.rpc` messages such as `BadRequest` and `ErrorInfo` are available
+already because Tavern depends on them.
+
 ## Loading protobuf definitions
 
 There are 3 different ways Tavern will try to load the appropriate proto definitions:
