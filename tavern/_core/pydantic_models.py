@@ -154,7 +154,7 @@ class MQTTClientTopLevel(_BaseKeyValidator):
     connect: Optional[MQTTConnectArgs] = None
     tls: Optional[MQTTTLSArgs] = None
     auth: Optional[MQTTAuthArgs] = None
-    ssl_context: Optional[MQTTAuthArgs] = None
+    ssl_context: Optional[MQTTSSLContextArgs] = None
 
 
 # --- gRPC request spec ---
