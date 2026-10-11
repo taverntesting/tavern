@@ -19,6 +19,10 @@ else:
     # run (it would run the whole suite a second time).
     collect_ignore = ["test_run_integration_suite.py"]
 
+    @pytest.fixture(scope="session", autouse=True)
+    def fixture_echo_url():
+        return os.environ["TEST_HOST"] + "/echo"
+
 
 @pytest.fixture(scope="session")
 def integration_server():
@@ -48,11 +52,6 @@ def bluerhug(request):
 @pytest.fixture(scope="session", autouse=True)
 def autouse_thing():
     return "abc"
-
-
-@pytest.fixture(scope="session", autouse=True)
-def fixture_echo_url():
-    return os.environ.get("TEST_HOST", "http://localhost:5003") + "/echo"
 
 
 @pytest.fixture(scope="session", autouse=True, name="autouse_thing_named")

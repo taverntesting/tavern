@@ -82,7 +82,7 @@ dev = [
     "flask>=3,<4",
     "fluent-logger",
     "itsdangerous",
-    "coverage[toml]",
+    "coverage[toml]>=7.10",
     "flit>=3.2,<5",
     "wheel",
     "pre-commit",

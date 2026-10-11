@@ -6,10 +6,9 @@ import json
 import math
 import mimetypes
 import os
+import tempfile
 import threading
 import time
-import urllib.error
-import urllib.request
 import uuid
 from datetime import datetime, timedelta
 from hashlib import sha512
@@ -21,6 +20,7 @@ from box import Box
 from flask import Flask, Response, jsonify, make_response, redirect, request, session
 from flask_httpauth import HTTPDigestAuth
 from itsdangerous import URLSafeTimedSerializer
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config.update(SECRET_KEY="secret")
@@ -110,12 +110,11 @@ def _handle_files():
             if filetype in mimetypes.suffix_map:
                 if not item.content_type:
                     return "", 400
-    # Try to download each of the files downloaded to /tmp and
-    # then remove them
-    for key in request.files:
-        file_to_save = request.files[key]
-        path = os.path.join("/tmp", file_to_save.filename)
-        file_to_save.save(path)
+    # Try to save each of the uploaded files, then remove them
+    with tempfile.TemporaryDirectory() as tmpdir:
+        for file_to_save in request.files.values():
+            path = os.path.join(tmpdir, secure_filename(file_to_save.filename))
+            file_to_save.save(path)
     return "", 200
 
 
@@ -582,31 +581,18 @@ def expected_text():
     return Response(request.get_data(as_text=True), content_type="text/plain")
 
 
-def _wait_until_ready(url: str, timeout: float = 10.0) -> None:
-    deadline = time.monotonic() + timeout
-    while time.monotonic() < deadline:
-        try:
-            urllib.request.urlopen(url, timeout=0.5)
-        except (urllib.error.URLError, OSError):
-            time.sleep(0.05)
-        else:
-            return
-    raise RuntimeError(f"server not ready at {url} within {timeout}s")
-
-
 @contextlib.contextmanager
 def run_in_background():
     """Run the app in a daemon thread on an OS-assigned free port for the
     duration of the with block, yielding the port. Using a random port means
     concurrent runs (e.g. pytest-xdist workers) never clash."""
+    # make_server binds and listens, so requests queue until serve_forever runs
     httpd = werkzeug.serving.make_server("127.0.0.1", 0, app, threaded=True)
-    port = httpd.server_port
 
     thread = threading.Thread(target=httpd.serve_forever, daemon=True)
     thread.start()
     try:
-        _wait_until_ready(f"http://localhost:{port}/headers")
-        yield port
+        yield httpd.server_port
     finally:
         httpd.shutdown()
         thread.join(timeout=5)

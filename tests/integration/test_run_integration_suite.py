@@ -56,11 +56,9 @@ def test_integration_yaml_file(pytester, yaml_file, monkeypatch):
         str(yaml_file),
         "--tavern-global-cfg",
         str(GLOBAL_CFG),
-        "-m",
-        "not do_not_run",
         *[arg for plugin in DISABLED_PLUGINS for arg in ("-p", f"no:{plugin}")],
     )
 
-    assert result.ret in (pytest.ExitCode.OK,), "\n".join(
+    assert result.ret == pytest.ExitCode.OK, "\n".join(
         result.outlines[-200:] + result.errlines[-200:]
     )
