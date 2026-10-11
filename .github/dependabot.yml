@@ -38,6 +38,16 @@ updates:
         dependency-type: production
         patterns:
           - "*"
+      python-dev-security:
+        applies-to: security-updates
+        dependency-type: development
+        patterns:
+          - "*"
+      python-prod-security:
+        applies-to: security-updates
+        dependency-type: production
+        patterns:
+          - "*"
 
   - package-ecosystem: pre-commit
     directory: /
