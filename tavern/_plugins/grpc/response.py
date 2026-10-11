@@ -124,7 +124,8 @@ class GRPCResponse(BaseResponse):
             status = rpc_status.from_call(grpc_response)  # type:ignore[arg-type]
         except ValueError as e:
             self._adderr(
-                "response contained rich error details, but they did not match the status of the response itself",
+                "the google.rpc.Status in the 'grpc-status-details-bin' trailing metadata does not match the status of the response, so the error details cannot be trusted: %s",
+                e,
                 e=e,
             )
             return
