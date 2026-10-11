@@ -21,6 +21,19 @@ GLOBAL_CFG = INTEGRATION_DIR / "global_cfg.yaml"
 YAML_FILES = sorted(INTEGRATION_DIR.glob("test_*.tavern.yaml"))
 assert YAML_FILES, f"no test_*.tavern.yaml files found in {INTEGRATION_DIR}"
 
+# Plugin loading dominates the subprocess startup time, so disable everything
+# the yaml tests don't use (cov is kept for coverage)
+DISABLED_PLUGINS = [
+    "hypothesispytest",
+    "xdist",
+    "xdist.looponfail",
+    "allure_pytest",
+    "asyncio",
+    "anyio",
+    "faker",
+    "random_order",
+]
+
 
 @pytest.fixture(autouse=True)
 def _subprocess_env(monkeypatch, integration_server):
@@ -45,24 +58,7 @@ def test_integration_yaml_file(pytester, yaml_file, monkeypatch):
         str(GLOBAL_CFG),
         "-m",
         "not do_not_run",
-        # Plugin loading dominates the subprocess startup time, so disable
-        # everything the yaml tests don't use (cov is kept for coverage)
-        "-p",
-        "no:hypothesispytest",
-        "-p",
-        "no:xdist",
-        "-p",
-        "no:xdist.looponfail",
-        "-p",
-        "no:allure_pytest",
-        "-p",
-        "no:asyncio",
-        "-p",
-        "no:anyio",
-        "-p",
-        "no:faker",
-        "-p",
-        "no:random_order",
+        *[arg for plugin in DISABLED_PLUGINS for arg in ("-p", f"no:{plugin}")],
     )
 
     assert result.ret in (pytest.ExitCode.OK,), "\n".join(
