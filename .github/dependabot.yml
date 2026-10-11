@@ -38,6 +38,16 @@ updates:
         dependency-type: production
         patterns:
           - "*"
+      python-dev-security:
+        applies-to: security-updates
+        dependency-type: development
+        patterns:
+          - "*"
+      python-prod-security:
+        applies-to: security-updates
+        dependency-type: production
+        patterns:
+          - "*"
 
   - package-ecosystem: pre-commit
     directory: /
@@ -47,22 +57,6 @@ updates:
       default-days: 7
     groups:
       pre-commit:
-        patterns:
-          - "*"
-
-  - package-ecosystem: docker
-    directories:
-      - /tests/integration
-      - /example/graphql
-      - /example/grpc
-      - /example/http
-      - /example/mqtt
-    schedule:
-      interval: weekly
-    cooldown:
-      default-days: 7
-    groups:
-      docker:
         patterns:
           - "*"
 

@@ -486,34 +486,66 @@ def check_keys_match_recursive(
 
                 if strict_setting == StrictSetting.LIST_ANY_ORDER:
                     # Each response item can only be used to satisfy one expected
-                    # item - remove it from the pool of remaining candidates once
-                    # matched so duplicate expected values aren't matched against
-                    # the same response item more than once.
-                    remaining = list(actual_val)
+                    # item. Build a compatibility matrix once so each
+                    # expected/actual pair is only compared once, then use
+                    # bipartite maximum matching to find the largest set of
+                    # expected items satisfied by unique actual items. This
+                    # keeps matching polynomial even when broad matchers (e.g.
+                    # !anything) can consume many different response items.
+                    n_expected = len(expected_val)
+                    n_actual = len(actual_val)
 
-                    for i, e_val in enumerate(expected_val):
-                        for idx, current_response_val in enumerate(remaining):
-                            logger.debug(
-                                "Got '%s' from response to check against '%s' from expected",
-                                current_response_val,
-                                e_val,
+                    def _is_compatible(e_val, a_val, e_idx) -> bool:
+                        """Check if a single expected item matches a single
+                        response item without consuming it."""
+                        logger.debug(
+                            "Got '%s' from response to check against '%s' from expected",
+                            a_val,
+                            e_val,
+                        )
+                        try:
+                            check_keys_match_recursive(
+                                e_val, a_val, keys + [e_idx], strict
                             )
+                        except exceptions.KeyMismatchError:
+                            logger.debug(
+                                "%s did not match response value %s",
+                                e_val,
+                                a_val,
+                            )
+                            return False
+                        return True
 
-                            try:
-                                check_keys_match_recursive(
-                                    e_val, current_response_val, keys + [i], strict
-                                )
-                            except exceptions.KeyMismatchError:
-                                # Doesn't match what we're looking for
-                                logger.debug(
-                                    "%s did not match response value %s",
-                                    e_val,
-                                    current_response_val,
-                                )
-                            else:
-                                logger.debug("'%s' present in response", e_val)
-                                del remaining[idx]
-                                break
+                    compatible = [
+                        [_is_compatible(e_val, a_val, i) for a_val in actual_val]
+                        for i, e_val in enumerate(expected_val)
+                    ]
+
+                    # match_to_actual[j] = index of the expected item assigned
+                    # to actual item j (-1 = unassigned)
+                    match_to_actual = [-1] * n_actual
+
+                    def _augment(e_idx: int, seen: set[int]) -> bool:
+                        """Find an augmenting path from expected item e_idx to a
+                        free actual item, rematching along the way."""
+                        for j in range(n_actual):
+                            if not compatible[e_idx][j] or j in seen:
+                                continue
+                            seen.add(j)
+                            if match_to_actual[j] == -1 or _augment(
+                                match_to_actual[j], seen
+                            ):
+                                match_to_actual[j] = e_idx
+                                return True
+                        return False
+
+                    for i in range(n_expected):
+                        _augment(i, set())
+
+                    matched_expected = {e for e in match_to_actual if e != -1}
+                    for i, e_val in enumerate(expected_val):
+                        if i in matched_expected:
+                            logger.debug("'%s' present in response", e_val)
                         else:
                             logger.debug("Ran out of list response items to check")
                             missing.append(e_val)
