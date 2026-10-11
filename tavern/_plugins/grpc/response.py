@@ -111,19 +111,47 @@ class GRPCResponse(BaseResponse):
         )
 
     def _verify_details(self, grpc_response: grpc.Call | grpc.Future) -> None:
-        """Check the expected error details against the ones attached to the response"""
+        """Check the expected error details against the ones attached to the response
+
+        These are the messages (google.rpc.BadRequest, google.rpc.ErrorInfo, etc.) packed into
+        the google.rpc.Status which the server put into the 'grpc-status-details-bin' trailing
+        metadata, as described in https://grpc.io/docs/guides/error/. Each one is converted to a
+        dict including the '@type' key identifying it.
+        """
         expected_details = self.expected["details"]
 
-        actual_details = self._get_rich_details(grpc_response)
-
-        if actual_details is None and expected_details is not ANYTHING:
+        try:
+            status = rpc_status.from_call(grpc_response)  # type:ignore[arg-type]
+        except ValueError as e:
             self._adderr(
-                "expected error details '%s' in the response, but there were none",
-                expected_details,
+                "response contained rich error details, but they did not match the status of the response itself",
+                e=e,
             )
             return
 
-        self._check_match(expected_details, actual_details, "details")
+        if status is None:
+            if expected_details is not ANYTHING:
+                self._adderr(
+                    "expected error details '%s' in the response, but there were none",
+                    expected_details,
+                )
+            return
+
+        try:
+            # Unlike the response body, fields which were not set are left out - the details are
+            # a bag of arbitrary messages, so making the user spell out every unset field of
+            # every one of them would be unusable with strict key checking turned on
+            as_dict = json_format.MessageToDict(
+                status,
+                preserving_proto_field_name=True,
+            )
+        except (json_format.Error, TypeError) as e:
+            # Happens if one of the packed messages is not in the descriptor pool, ie the proto
+            # defining it was never loaded
+            self._adderr("unable to parse rich error details from response: %s", e, e=e)
+            return
+
+        self._check_match(expected_details, as_dict.get("details", []), "details")
 
     def _check_match(self, expected: Any, actual: Any, blockname: str) -> None:
         """Compare part of the response, adding an error if it does not match
@@ -140,45 +168,6 @@ class GRPCResponse(BaseResponse):
             )
         except exceptions.KeyMismatchError as e:
             self._adderr(e.args[0], e=e)
-
-    def _get_rich_details(
-        self, grpc_response: grpc.Call | grpc.Future
-    ) -> list[Any] | None:
-        """Get the rich error details attached to the response, as json
-
-        These are the messages (google.rpc.BadRequest, google.rpc.ErrorInfo, etc.) packed into
-        the google.rpc.Status which the server put into the 'grpc-status-details-bin' trailing
-        metadata, as described in https://grpc.io/docs/guides/error/. Each one is converted to a
-        dict including the '@type' key identifying it.
-        """
-        try:
-            status = rpc_status.from_call(grpc_response)  # type:ignore[arg-type]
-        except ValueError as e:
-            self._adderr(
-                "response contained rich error details, but they did not match the status of the response itself",
-                e=e,
-            )
-            return None
-
-        if status is None:
-            logger.debug("no rich error details on response")
-            return None
-
-        try:
-            # Unlike the response body, fields which were not set are left out - the details are
-            # a bag of arbitrary messages, so making the user spell out every unset field of
-            # every one of them would be unusable with strict key checking turned on
-            as_dict = json_format.MessageToDict(
-                status,
-                preserving_proto_field_name=True,
-            )
-        except (json_format.Error, TypeError) as e:
-            # Happens if one of the packed messages is not in the descriptor pool, ie the proto
-            # defining it was never loaded
-            self._adderr("unable to parse rich error details from response: %s", e, e=e)
-            return None
-
-        return as_dict.get("details", [])
 
     def verify(self, response: "WrappedFuture") -> Mapping:
         grpc_response = response.response
@@ -234,7 +223,6 @@ class GRPCResponse(BaseResponse):
         except grpc.RpcError as e:
             # A non-OK response has no message attached to it, so there is
             # nothing to check an expected body against
-            # TODO: Should allow checking grpc RPC error details etc.
             if "body" in self.expected:
                 self._adderr(
                     "expected a response body, but the request failed with status '%s' (%s)",

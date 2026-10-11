@@ -129,7 +129,13 @@ class TestGRPCSpecs:
             GRPCRequestSpec.validate_keys(data)
 
     def test_response_spec_valid(self):
-        data = {"body": {}, "status": 0, "details": "ok", "save": {}}
+        data = {
+            "body": {},
+            "status": 0,
+            "error_message": "ok",
+            "details": [],
+            "save": {},
+        }
         result = GRPCResponseSpec.validate_keys(data)
         assert "body" in result
 

@@ -35,6 +35,21 @@ class ServiceImpl(test_services_pb2_grpc.DummyServiceServicer):
     def SimpleTest(
         self, request: test_services_pb2.DummyRequest, context: grpc.ServicerContext
     ) -> test_services_pb2.DummyResponse:
+        if request.request_id == 999:
+            # A detail whose type is not in the descriptor pool, so the client cannot decode it
+            context.abort_with_status(
+                rpc_status.to_status(
+                    status_pb2.Status(
+                        code=code_pb2.INTERNAL,
+                        message="unknown detail",
+                        details=[
+                            any_pb2.Any(
+                                type_url="type.googleapis.com/tavern.tests.v1.NotARealMessage"
+                            )
+                        ],
+                    )
+                )
+            )
         if request.request_id > 1000:
             # Aborting with a google.rpc.Status attaches 'rich' error details to the response as
             # well as the plain details string
@@ -331,6 +346,14 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                     {"@type": "type.googleapis.com/google.rpc.BadRequest"},
                 ],
                 expected_exception_message="expected error details",
+            ),
+            GRPCFailureSpec(
+                test_name="Simple service with details which cannot be decoded",
+                method="SimpleTest",
+                req=test_services_pb2.DummyRequest(request_id=999),
+                code="INTERNAL",
+                details=[],
+                expected_exception_message="unable to parse rich error details from response",
             ),
             GRPCFailureSpec(
                 test_name="Simple service with error code but also a response",
