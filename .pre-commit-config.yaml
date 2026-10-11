@@ -9,7 +9,7 @@ repos:
     hooks:
       - id: zizmor
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.16.9
+    rev: v0.16.10
     hooks:
       - id: ruff-format
       - id: ruff-check
@@ -21,7 +21,7 @@ repos:
         types_or: [yaml]
         exclude: (example/)
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.3.1
+    rev: v2.4.0
     hooks:
       - id: mypy
         additional_dependencies:
@@ -33,7 +33,7 @@ repos:
         exclude: (tests|example/)
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.12.19
+    rev: 0.12.23
     hooks:
       - id: uv-lock
 
