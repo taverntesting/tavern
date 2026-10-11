@@ -111,7 +111,6 @@ requirements:
 
 ```python
 class MySession:
-
     def __enter__(self):
         pass
 
