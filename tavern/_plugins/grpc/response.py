@@ -12,9 +12,10 @@ from google.rpc import error_details_pb2  # noqa: F401
 from grpc_status import rpc_status
 
 from tavern._core import exceptions
-from tavern._core.dict_util import check_expected_keys, check_keys_match_recursive
+from tavern._core.dict_util import check_keys_match_recursive
 from tavern._core.exceptions import TestFailError
 from tavern._core.loader import ANYTHING
+from tavern._core.pydantic_models import GRPCResponseSpec
 from tavern._core.pytest.config import TestConfig
 from tavern._core.schema.extensions import to_grpc_status
 from tavern._plugins.grpc.client import GRPCClient
@@ -57,9 +58,7 @@ class GRPCResponse(BaseResponse):
         expected: _GRPCExpected | Mapping,
         test_block_config: TestConfig,
     ) -> None:
-        check_expected_keys(
-            {"body", "status", "error_message", "details", "save"}, expected
-        )
+        GRPCResponseSpec.validate_keys(expected)
         super().__init__(
             name,
             expected,
