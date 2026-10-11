@@ -7,8 +7,8 @@ import proto.message
 from google.protobuf import json_format
 
 from tavern._core import exceptions
-from tavern._core.dict_util import check_expected_keys
 from tavern._core.exceptions import TestFailError
+from tavern._core.pydantic_models import GRPCResponseSpec
 from tavern._core.pytest.config import TestConfig
 from tavern._core.schema.extensions import to_grpc_status
 from tavern._plugins.grpc.client import GRPCClient
@@ -50,7 +50,7 @@ class GRPCResponse(BaseResponse):
         expected: _GRPCExpected | Mapping,
         test_block_config: TestConfig,
     ) -> None:
-        check_expected_keys({"body", "status", "details", "save"}, expected)
+        GRPCResponseSpec.validate_keys(expected)
         super().__init__(
             name,
             expected,
