@@ -92,7 +92,8 @@ library (after preprocessing) - at the moment the only supported keys are:
   itself (with no content-type).
 - `headers` - a mapping of key: value pairs that will go into the headers. Defaults
   to adding a `content-type: application/json` header.
-- `method` - one of GET, POST, PUT, DELETE, PATCH, OPTIONS, or HEAD. Defaults to
+- `method` - one of GET, POST, PUT, DELETE, PATCH, OPTIONS, HEAD, or the WebDAV
+  methods COPY, LOCK, MKCOL, MOVE, PROPFIND, PROPPATCH, and UNLOCK. Defaults to
   GET if not defined
 
 For more information, refer to the [requests
