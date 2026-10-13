@@ -13,6 +13,7 @@ from paho.mqtt.client import MQTTMessage
 from tavern._core import exceptions
 from tavern._core.dict_util import check_keys_match_recursive
 from tavern._core.loader import ANYTHING
+from tavern._core.pydantic_models import MQTTResponseSpec
 from tavern._core.pytest.config import TestConfig
 from tavern._core.pytest.newhooks import call_hook
 from tavern._core.report import attach_yaml
@@ -33,9 +34,11 @@ class MQTTResponse(BaseResponse):
         self,
         client: MQTTClient,
         name: str,
-        expected: TestConfig,
+        expected: Mapping,
         test_block_config: TestConfig,
     ) -> None:
+        MQTTResponseSpec.validate_keys(expected)
+
         super().__init__(
             name,
             expected,
