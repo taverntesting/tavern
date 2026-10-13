@@ -23,6 +23,7 @@ from tavern._core.loader import (
     FloatToken,
     ForceIncludeToken,
     IntToken,
+    RawStrToken,
     TypeSentinel,
 )
 
@@ -41,8 +42,13 @@ JSONType = Union[
 ]
 
 # A field annotated with one of these types also accepts the matching
-# !bool/!int/!float token, which is converted after formatting.
-_TOKEN_TARGETS: dict[type, type] = {BoolToken: bool, IntToken: int, FloatToken: float}
+# !bool/!int/!float/!raw token, which is converted after formatting.
+_TOKEN_TARGETS: dict[type, type] = {
+    BoolToken: bool,
+    IntToken: int,
+    FloatToken: float,
+    RawStrToken: str,
+}
 
 # 'json' fields shadow the deprecated BaseModel.json(); only model_dump() is used
 warnings.filterwarnings(

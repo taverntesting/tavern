@@ -469,6 +469,19 @@ class TestSpecificTokenTypes:
         with pytest.raises(exceptions.UnexpectedKeysError):
             MQTTRequestSpec.validate_keys(data)
 
+    def test_mqtt_topic_accepts_raw_str_token(self):
+        from tavern._core.loader import RawStrToken
+
+        data = {"topic": RawStrToken("a/{b}")}
+        MQTTRequestSpec.validate_keys(data)
+
+    def test_mqtt_qos_rejects_raw_str_token(self):
+        from tavern._core.loader import RawStrToken
+
+        data = {"topic": "test/topic", "qos": RawStrToken("{qos}")}
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            MQTTRequestSpec.validate_keys(data)
+
     def test_grpc_connect_port_rejects_bool_token(self):
         from tavern._core.loader import BoolToken
 
