@@ -1,6 +1,6 @@
 import logging
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, Optional, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import grpc
 import proto.message
@@ -41,21 +41,12 @@ def _to_grpc_name(status: GRPCCode) -> Union[str, list[str]]:
     raise exceptions.GRPCServiceException(f"unknown status code '{status}'")
 
 
-class _GRPCExpected(TypedDict):
-    """What the 'expected' block for a grpc response should contain"""
-
-    status: GRPCCode
-    error_message: Any
-    details: Any
-    body: Mapping
-
-
 class GRPCResponse(BaseResponse):
     def __init__(
         self,
         client: GRPCClient,
         name: str,
-        expected: _GRPCExpected | Mapping,
+        expected: Mapping | None,
         test_block_config: TestConfig,
     ) -> None:
         GRPCResponseSpec.validate_keys(expected)
