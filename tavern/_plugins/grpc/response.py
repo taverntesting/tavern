@@ -46,7 +46,7 @@ class GRPCResponse(BaseResponse):
         self,
         client: GRPCClient,
         name: str,
-        expected: Mapping | None,
+        expected: Mapping,
         test_block_config: TestConfig,
     ) -> None:
         GRPCResponseSpec.validate_keys(expected)
