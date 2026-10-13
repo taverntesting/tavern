@@ -5,10 +5,11 @@ that use ``extra="forbid"`` to reject unexpected keys, providing the same
 validation with better error messages and type safety.
 """
 
+import warnings
 from collections.abc import Mapping
 from typing import Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, ValidationError
 
 from tavern._core import exceptions
 from tavern._core.loader import (
@@ -16,6 +17,7 @@ from tavern._core.loader import (
     FloatToken,
     ForceIncludeToken,
     IntToken,
+    TypeSentinel,
 )
 
 # Type alias for JSON-compatible values (any valid JSON type), plus
@@ -35,6 +37,13 @@ JSONType = Union[
     ForceIncludeToken,
 ]
 
+# 'json' fields shadow the deprecated BaseModel.json(); only model_dump() is used
+warnings.filterwarnings(
+    "ignore",
+    message=r'Field name "json" in ".*" shadows an attribute',
+    category=UserWarning,
+)
+
 
 class _BaseKeyValidator(BaseModel):
     """Base model that forbids extra keys and raises UnexpectedKeysError on validation failure."""
@@ -42,7 +51,6 @@ class _BaseKeyValidator(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
         arbitrary_types_allowed=True,
-        populate_by_name=True,
         hide_input_in_errors=True,
     )
 
@@ -61,7 +69,7 @@ class _BaseKeyValidator(BaseModel):
                 a value has an invalid type.
         """
         try:
-            return cls(**dict(data)).model_dump(exclude_unset=True, by_alias=True)
+            return cls(**dict(data)).model_dump(exclude_unset=True)
         except ValidationError as e:
             # Extract unexpected field names from the error
             unexpected = set()
@@ -90,7 +98,7 @@ class RestRequestSpec(_BaseKeyValidator):
     data: Optional[Union[dict, list, str, bytes, int, float]] = None
     params: Optional[dict] = None  # dict for pre-resolution $ext
     auth: Optional[Union[list, str, dict]] = None  # dict for pre-resolution $ext
-    json_body: Optional[JSONType] = Field(default=None, alias="json")
+    json: Optional[JSONType] = None
     verify: Optional[Union[bool, BoolToken, str]] = None
     files: Optional[Union[dict, list]] = None  # dict for pre-resolution $ext
     file_body: Optional[str] = None
@@ -105,9 +113,25 @@ class RestRequestSpec(_BaseKeyValidator):
 class MQTTRequestSpec(_BaseKeyValidator):
     topic: Optional[str] = None
     payload: Optional[Union[str, bytes, int, float]] = None
-    json_body: Optional[JSONType] = Field(default=None, alias="json")
+    json: Optional[JSONType] = None
     qos: Optional[Union[int, IntToken]] = None
     retain: Optional[Union[bool, BoolToken]] = None
+
+
+# --- MQTT response spec ---
+class MQTTResponseItemSpec(_BaseKeyValidator):
+    topic: str  # required
+    unexpected: Optional[Union[bool, BoolToken]] = None
+    payload: Optional[Union[str, int, float, bool, TypeSentinel]] = None
+    json: Optional[JSONType] = None
+    timeout: Optional[Union[int, float, IntToken, FloatToken]] = None
+    qos: Optional[Union[int, IntToken]] = None
+    verify_response_with: Optional[Union[dict, list]] = None
+    save: Optional[dict] = None
+
+
+class MQTTResponseSpec(_BaseKeyValidator):
+    mqtt_responses: list[MQTTResponseItemSpec]
 
 
 # --- MQTT client config blocks ---

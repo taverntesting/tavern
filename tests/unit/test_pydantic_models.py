@@ -3,6 +3,7 @@
 import pytest
 
 from tavern._core import exceptions
+from tavern._core.loader import ANYTHING
 from tavern._core.pydantic_models import (
     GRPCClientTopLevel,
     GRPCConnectArgs,
@@ -14,6 +15,7 @@ from tavern._core.pydantic_models import (
     MQTTClientTopLevel,
     MQTTConnectArgs,
     MQTTRequestSpec,
+    MQTTResponseSpec,
     MQTTSSLContextArgs,
     MQTTTLSArgs,
     RestRequestSpec,
@@ -49,6 +51,27 @@ class TestMQTTRequestSpec:
         data = {"topic": "test/topic", "bad_key": "value"}
         with pytest.raises(exceptions.UnexpectedKeysError):
             MQTTRequestSpec.validate_keys(data)
+
+
+class TestMQTTResponseSpec:
+    def test_valid_keys(self):
+        data = {"mqtt_responses": [{"topic": "a", "json": {"x": 1}, "timeout": 2}]}
+        result = MQTTResponseSpec.validate_keys(data)
+        assert result["mqtt_responses"][0]["json"] == {"x": 1}
+
+    def test_anything_payload(self):
+        data = {"mqtt_responses": [{"topic": "a", "payload": ANYTHING}]}
+        MQTTResponseSpec.validate_keys(data)
+
+    def test_unexpected_key(self):
+        data = {"mqtt_responses": [{"topic": "a", "bad_key": "value"}]}
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            MQTTResponseSpec.validate_keys(data)
+
+    def test_missing_topic(self):
+        data = {"mqtt_responses": [{"payload": "hello"}]}
+        with pytest.raises(exceptions.MissingKeysError):
+            MQTTResponseSpec.validate_keys(data)
 
 
 class TestMQTTClientSpecs:
