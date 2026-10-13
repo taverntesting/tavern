@@ -212,15 +212,14 @@ class GRPCResponse(BaseResponse):
 
         try:
             result: proto.message.Message = grpc_response.result()
-        except grpc.RpcError as e:
+        except grpc.RpcError:
             # A non-OK response has no message attached to it, so there is
             # nothing to check an expected body against
             if "body" in self.expected:
-                self._adderr(
+                logger.warning(
                     "expected a response body, but the request failed with status '%s' (%s)",
                     grpc_response.code().name,
                     grpc_response.details(),
-                    e=e,
                 )
             else:
                 logger.info(

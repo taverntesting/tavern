@@ -368,7 +368,7 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                 method="SimpleTest",
                 req=test_services_pb2.DummyRequest(request_id=10000),
                 resp=test_services_pb2.DummyResponse(response_id=3),
-                expected_exception_message="expected a response body, but the request failed with status 'FAILED_PRECONDITION' (number too big!)",
+                expected_exception_message="expected status ['OK'], but the actual response 'FAILED_PRECONDITION'",
             ),
             GRPCFailureSpec(
                 test_name="Simple service with wrong request type",
