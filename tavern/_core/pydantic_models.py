@@ -7,9 +7,15 @@ validation with better error messages and type safety.
 
 import warnings
 from collections.abc import Mapping
-from typing import Optional, Union
+from typing import Optional, Union, get_args
 
-from pydantic import BaseModel, ConfigDict, ValidationError
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    ValidationError,
+    ValidationInfo,
+    field_validator,
+)
 
 from tavern._core import exceptions
 from tavern._core.loader import (
@@ -21,8 +27,8 @@ from tavern._core.loader import (
 )
 
 # Type alias for JSON-compatible values (any valid JSON type), plus
-# conversion tokens for pre-resolution YAML tags like !force_format_include
-# and !int/!float/!bool, and dict for pre-resolution $ext function calls.
+# the pre-resolution !force_format_include token, and dict for
+# pre-resolution $ext function calls.
 JSONType = Union[
     dict,
     list,
@@ -31,11 +37,12 @@ JSONType = Union[
     float,
     bool,
     None,
-    IntToken,
-    FloatToken,
-    BoolToken,
     ForceIncludeToken,
 ]
+
+# A field annotated with one of these types also accepts the matching
+# !bool/!int/!float token, which is converted after formatting.
+_TOKEN_TARGETS: dict[type, type] = {BoolToken: bool, IntToken: int, FloatToken: float}
 
 # 'json' fields shadow the deprecated BaseModel.json(); only model_dump() is used
 warnings.filterwarnings(
@@ -54,6 +61,17 @@ class _BaseKeyValidator(BaseModel):
         hide_input_in_errors=True,
     )
 
+    @field_validator("*", mode="wrap")
+    @classmethod
+    def _accept_conversion_tokens(cls, value, handler, info: ValidationInfo):
+        target = _TOKEN_TARGETS.get(type(value))
+        annotation = cls.model_fields[info.field_name].annotation  # type:ignore[index]
+        if target is not None and (
+            annotation is target or target in get_args(annotation)
+        ):
+            return value
+        return handler(value)
+
     @classmethod
     def validate_keys(cls, data: Mapping) -> dict:
         """Validate that ``data`` contains only expected keys and types.
@@ -69,7 +87,8 @@ class _BaseKeyValidator(BaseModel):
                 a value has an invalid type.
         """
         try:
-            return cls(**dict(data)).model_dump(exclude_unset=True)
+            # warnings=False: token values do not match their field's serializer
+            return cls(**dict(data)).model_dump(exclude_unset=True, warnings=False)
         except ValidationError as e:
             # Extract unexpected field names from the error
             unexpected = set()
@@ -99,14 +118,14 @@ class RestRequestSpec(_BaseKeyValidator):
     params: Optional[dict] = None  # dict for pre-resolution $ext
     auth: Optional[Union[list, str, dict]] = None  # dict for pre-resolution $ext
     json: Optional[JSONType] = None
-    verify: Optional[Union[bool, BoolToken, str]] = None
+    verify: Optional[Union[bool, str]] = None
     files: Optional[Union[dict, list]] = None  # dict for pre-resolution $ext
     file_body: Optional[str] = None
-    stream: Optional[Union[bool, BoolToken]] = None
+    stream: Optional[bool] = None
     timeout: Optional[Union[float, int, list, str, dict]] = None  # dict for $ext
     cookies: Optional[Union[dict, list]] = None
     cert: Optional[Union[str, list, int, dict]] = None  # dict for $ext
-    follow_redirects: Optional[Union[bool, BoolToken]] = None
+    follow_redirects: Optional[bool] = None
 
 
 # --- MQTT request spec ---
@@ -114,18 +133,18 @@ class MQTTRequestSpec(_BaseKeyValidator):
     topic: Optional[str] = None
     payload: Optional[Union[str, bytes, int, float]] = None
     json: Optional[JSONType] = None
-    qos: Optional[Union[int, IntToken]] = None
-    retain: Optional[Union[bool, BoolToken]] = None
+    qos: Optional[int] = None
+    retain: Optional[bool] = None
 
 
 # --- MQTT response spec ---
 class MQTTResponseItemSpec(_BaseKeyValidator):
     topic: str  # required
-    unexpected: Optional[Union[bool, BoolToken]] = None
+    unexpected: Optional[bool] = None
     payload: Optional[Union[str, int, float, bool, TypeSentinel]] = None
     json: Optional[JSONType] = None
-    timeout: Optional[Union[int, float, IntToken, FloatToken]] = None
-    qos: Optional[Union[int, IntToken]] = None
+    timeout: Optional[Union[int, float]] = None
+    qos: Optional[int] = None
     verify_response_with: Optional[Union[dict, list]] = None
     save: Optional[dict] = None
 
@@ -137,15 +156,15 @@ class MQTTResponseSpec(_BaseKeyValidator):
 # --- MQTT client config blocks ---
 class MQTTClientArgs(_BaseKeyValidator):
     client_id: Optional[str] = None
-    clean_session: Optional[Union[bool, BoolToken]] = None
+    clean_session: Optional[bool] = None
     transport: Optional[str] = None
 
 
 class MQTTConnectArgs(_BaseKeyValidator):
     host: str  # required
-    port: Optional[Union[int, IntToken]] = None
-    keepalive: Optional[Union[int, IntToken]] = None
-    timeout: Optional[Union[int, float, IntToken, FloatToken]] = None
+    port: Optional[int] = None
+    keepalive: Optional[int] = None
+    timeout: Optional[Union[int, float]] = None
 
 
 class MQTTAuthArgs(_BaseKeyValidator):
@@ -154,7 +173,7 @@ class MQTTAuthArgs(_BaseKeyValidator):
 
 
 class MQTTTLSArgs(_BaseKeyValidator):
-    enable: Optional[Union[bool, BoolToken]] = None
+    enable: Optional[bool] = None
     ca_certs: Optional[str] = None
     cert_reqs: Optional[str] = None
     certfile: Optional[str] = None
@@ -199,10 +218,10 @@ class GRPCResponseSpec(_BaseKeyValidator):
 # --- gRPC client config blocks ---
 class GRPCConnectArgs(_BaseKeyValidator):
     host: Optional[str] = None
-    port: Optional[Union[int, IntToken]] = None
+    port: Optional[int] = None
     options: Optional[dict] = None
-    timeout: Optional[Union[int, IntToken]] = None
-    secure: Optional[Union[bool, BoolToken]] = None
+    timeout: Optional[int] = None
+    secure: Optional[bool] = None
 
 
 class GRPCProtoArgs(_BaseKeyValidator):
@@ -214,4 +233,4 @@ class GRPCClientTopLevel(_BaseKeyValidator):
     connect: Optional[GRPCConnectArgs] = None
     proto: Optional[GRPCProtoArgs] = None
     metadata: Optional[dict] = None
-    attempt_reflection: Optional[Union[bool, BoolToken]] = None
+    attempt_reflection: Optional[bool] = None

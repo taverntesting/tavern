@@ -424,9 +424,9 @@ class TestSpecificTokenTypes:
     def test_mqtt_qos_accepts_int_token(self):
         from tavern._core.loader import IntToken
 
-        data = {"topic": "test/topic", "qos": IntToken("{qos:d}")}
-        result = MQTTRequestSpec.validate_keys(data)
-        assert "qos" in result
+        token = IntToken("{qos:d}")
+        result = MQTTRequestSpec.validate_keys({"topic": "test/topic", "qos": token})
+        assert result["qos"] is token
 
     def test_mqtt_qos_rejects_bool_token(self):
         from tavern._core.loader import BoolToken
@@ -455,6 +455,19 @@ class TestSpecificTokenTypes:
         data = {"host": "localhost", "port": IntToken("{port:d}")}
         result = MQTTConnectArgs.validate_keys(data)
         assert "port" in result
+
+    def test_mqtt_response_timeout_accepts_float_token(self):
+        from tavern._core.loader import FloatToken
+
+        data = {"mqtt_responses": [{"topic": "a", "timeout": FloatToken("{t}")}]}
+        MQTTResponseSpec.validate_keys(data)
+
+    def test_mqtt_qos_rejects_float_token(self):
+        from tavern._core.loader import FloatToken
+
+        data = {"topic": "test/topic", "qos": FloatToken("{qos}")}
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            MQTTRequestSpec.validate_keys(data)
 
     def test_grpc_connect_port_rejects_bool_token(self):
         from tavern._core.loader import BoolToken
