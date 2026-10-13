@@ -43,6 +43,8 @@ definitions:
     type: object
     additionalProperties: false
     description: Expected MQTT response
+    required:
+      - topic
 
     properties:
       unexpected:
