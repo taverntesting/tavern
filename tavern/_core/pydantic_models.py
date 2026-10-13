@@ -6,16 +6,20 @@ validation with better error messages and type safety.
 """
 
 from collections.abc import Mapping
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
-from pydantic import BaseModel, ConfigDict, Field, ValidationError
+from pydantic import BaseModel, ConfigDict, Field, InstanceOf, ValidationError
 
 from tavern._core import exceptions
 from tavern._core.loader import (
+    AnythingSentinel,
     BoolToken,
     FloatToken,
     ForceIncludeToken,
     IntToken,
+    ListSentinel,
+    RegexSentinel,
+    StrSentinel,
 )
 
 # Type alias for JSON-compatible values (any valid JSON type), plus
@@ -168,9 +172,10 @@ class GRPCRequestSpec(_BaseKeyValidator):
 class GRPCResponseSpec(_BaseKeyValidator):
     body: Optional[dict] = None
     status: Optional[Union[str, int, list[str], list[int]]] = None
-    # Any, because these can also be loader sentinels such as !anything or !re_search
-    error_message: Any = None
-    details: Any = None
+    error_message: Optional[
+        Union[str, StrSentinel, InstanceOf[RegexSentinel], AnythingSentinel]
+    ] = None
+    details: Optional[Union[list, ListSentinel, AnythingSentinel]] = None
     save: Optional[dict] = None
 
 

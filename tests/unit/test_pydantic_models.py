@@ -1,8 +1,11 @@
 """Tests for pydantic-based key validation models."""
 
+import re
+
 import pytest
 
 from tavern._core import exceptions
+from tavern._core.loader import ANYTHING, _RegexSearchSentinel
 from tavern._core.pydantic_models import (
     GRPCClientTopLevel,
     GRPCConnectArgs,
@@ -474,5 +477,22 @@ class TestSpecificTokenTypes:
 
     def test_grpc_response_status_rejects_dict(self):
         data = {"status": {"key": "value"}}
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            GRPCResponseSpec.validate_keys(data)
+
+    def test_grpc_response_error_message_and_details_can_be_sentinels(self):
+        data = {
+            "error_message": _RegexSearchSentinel(re.compile("x")),
+            "details": ANYTHING,
+        }
+        GRPCResponseSpec.validate_keys(data)
+
+    def test_grpc_response_error_message_rejects_dict(self):
+        data = {"error_message": {"key": "value"}}
+        with pytest.raises(exceptions.UnexpectedKeysError):
+            GRPCResponseSpec.validate_keys(data)
+
+    def test_grpc_response_details_rejects_string(self):
+        data = {"details": "no name given"}
         with pytest.raises(exceptions.UnexpectedKeysError):
             GRPCResponseSpec.validate_keys(data)
