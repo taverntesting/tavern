@@ -50,7 +50,8 @@ _TOKEN_TARGETS: dict[type, type] = {
     RawStrToken: str,
 }
 
-# 'json' fields shadow the deprecated BaseModel.json(); only model_dump() is used
+# 'json' fields shadow the deprecated BaseModel.json(); only model_dump() is used.
+# The 'json' method is deprecated anyway
 warnings.filterwarnings(
     "ignore",
     message=r'Field name "json" in ".*" shadows an attribute',
