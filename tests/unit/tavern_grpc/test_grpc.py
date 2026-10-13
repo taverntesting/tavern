@@ -50,6 +50,19 @@ class ServiceImpl(test_services_pb2_grpc.DummyServiceServicer):
                     )
                 )
             )
+        if request.request_id == 998:
+            # A google.rpc.Status whose message differs from the one the call is aborted with
+            context.set_trailing_metadata(
+                [
+                    (
+                        "grpc-status-details-bin",
+                        status_pb2.Status(
+                            code=code_pb2.INTERNAL, message="trailer message"
+                        ).SerializeToString(),
+                    )
+                ]
+            )
+            context.abort(grpc.StatusCode.INTERNAL, "call message")
         if request.request_id > 1000:
             # Aborting with a google.rpc.Status attaches 'rich' error details to the response as
             # well as the plain details string
@@ -354,6 +367,14 @@ def pytest_generate_tests(metafunc: MarkGenerator):
                 code="INTERNAL",
                 details=[],
                 expected_exception_message="unable to parse rich error details from response",
+            ),
+            GRPCFailureSpec(
+                test_name="Simple service with details which do not match the call",
+                method="SimpleTest",
+                req=test_services_pb2.DummyRequest(request_id=998),
+                code="INTERNAL",
+                details=[],
+                expected_exception_message="does not match the status of the response",
             ),
             GRPCFailureSpec(
                 test_name="Simple service with error code but also a response",
