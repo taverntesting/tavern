@@ -35,7 +35,7 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      - uses: j178/prek-action@4e14d07f9231acabce116ccfca13b13dd9755ece # v3.0.1
+      - uses: j178/prek-action@1382ad72dea72f9d53832f2bcb65b3e87a947204 # v3.0.1
 
   unit-tests:
     runs-on: ubuntu-24.04
@@ -55,7 +55,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
@@ -63,7 +63,7 @@ jobs:
       - name: run tests
         run: |
           uv sync --all-extras
-          uvx --python ${{ matrix.python-version }} tox -c ${TOXCFG} -e ${TOXENV}
+          uvx --python ${{ matrix.python-version }} tox -c ${TOXCFG} -e ${TOXENV} -- -n 3
 
   integration-tests:
     runs-on: ubuntu-24.04
@@ -93,7 +93,7 @@ jobs:
       TOXCFG: ${{ matrix.TOXCFG }}
 
     steps:
-      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
         continue-on-error: true
 
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -118,7 +118,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
 
       - name: Run tests
         run: |
@@ -127,7 +127,7 @@ jobs:
 
       - name: Upload allure report
         if: ${{ always() && matrix.TOXENV == 'py3-allure' }}
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: allure-report
           path: example/allure/allure-report/index.html
@@ -151,7 +151,7 @@ jobs:
           python-version: "3.12"
 
       - name: Install the latest version of uv
-        uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7.6.0
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
 
       - name: Run tests
         env:

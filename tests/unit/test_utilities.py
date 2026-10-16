@@ -30,6 +30,7 @@ from tavern._core.loader import (
 )
 from tavern._core.schema.extensions import validate_extensions
 from tavern._core.schema.files import wrapfile
+from tavern._core.strict_util import StrictOption, StrictSetting
 
 
 class TestValidateFunctions:
@@ -288,6 +289,57 @@ class TestNonStrictListMatching:
 
         with pytest.raises(exceptions.KeyMismatchError):
             check_keys_match_recursive(a, b, [], strict=False)
+
+
+class TestListAnyOrderMatching:
+    """https://github.com/taverntesting/tavern - 'list_any_order' should match a
+    response list against the expected list disregarding order, but each response
+    item should still only be able to satisfy one expected item"""
+
+    def strict(self):
+        """Strictness setting for list_any_order tests."""
+        return StrictOption("json", StrictSetting.LIST_ANY_ORDER)
+
+    def test_match_any_order(self):
+        """Matches even though the order is different"""
+        a = ["a", "b"]
+        b = ["b", "a"]
+
+        check_keys_match_recursive(a, b, [], strict=self.strict())
+
+    def test_match_duplicates(self):
+        """Duplicated expected items match duplicated response items"""
+        a = ["a", "a"]
+        b = ["a", "a"]
+
+        check_keys_match_recursive(a, b, [], strict=self.strict())
+
+    def test_does_not_match_when_response_has_fewer_duplicates(self):
+        """A single response item can't be reused to satisfy more than one
+        expected item"""
+        a = ["a", "a"]
+        b = ["a"]
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [], strict=self.strict())
+
+    def test_does_not_match_missing_item(self):
+        a = ["a", "b"]
+        b = ["a"]
+
+        with pytest.raises(exceptions.KeyMismatchError):
+            check_keys_match_recursive(a, b, [], strict=self.strict())
+
+    def test_broad_matcher_does_not_consume_specific_item(self):
+        """A broad matcher (e.g. !anything) should not greedily consume an
+        actual item that a later, more specific expected item needs.
+
+        Regression test for https://github.com/taverntesting/tavern/issues/1102
+        """
+        a = [ANYTHING, {"id": 1}]
+        b = [{"id": 1}, {"id": 2}]
+
+        check_keys_match_recursive(a, b, [], strict=self.strict())
 
 
 @pytest.fixture(name="test_yaml")

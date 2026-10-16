@@ -7,6 +7,8 @@ import math
 import mimetypes
 import os
 import sqlite3
+import tempfile
+import threading
 import time
 import uuid
 from datetime import datetime, timedelta
@@ -14,10 +16,12 @@ from hashlib import sha512
 from urllib.parse import unquote_plus, urlencode
 
 import jwt
+import werkzeug.serving
 from box import Box
 from flask import Flask, Response, g, jsonify, make_response, redirect, request, session
 from flask_httpauth import HTTPDigestAuth
 from itsdangerous import URLSafeTimedSerializer
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 app.config.update(SECRET_KEY="secret")
@@ -59,7 +63,7 @@ def get_digest_password(username):
 @app.route("/token", methods=["GET"])
 def token():
     return (
-        '<div><a src="http://127.0.0.1:5003/verify?token=c9bb34ba-131b-11e8-b642-0ed5f89f718b">Link</a></div>',
+        f'<div><a src="{request.host_url}verify?token=c9bb34ba-131b-11e8-b642-0ed5f89f718b">Link</a></div>',
         200,
     )
 
@@ -131,12 +135,11 @@ def _handle_files():
             if filetype in mimetypes.suffix_map:
                 if not item.content_type:
                     return "", 400
-    # Try to download each of the files downloaded to /tmp and
-    # then remove them
-    for key in request.files:
-        file_to_save = request.files[key]
-        path = os.path.join("/tmp", file_to_save.filename)
-        file_to_save.save(path)
+    # Try to save each of the uploaded files, then remove them
+    with tempfile.TemporaryDirectory() as tmpdir:
+        for file_to_save in request.files.values():
+            path = os.path.join(tmpdir, secure_filename(file_to_save.filename))
+            file_to_save.save(path)
     return "", 200
 
 
@@ -685,3 +688,20 @@ def get_entity(entity_id):
         return "", 404
 
     return "", 200
+
+
+@contextlib.contextmanager
+def run_in_background():
+    """Run the app in a daemon thread on an OS-assigned free port for the
+    duration of the with block, yielding the port. Using a random port means
+    concurrent runs (e.g. pytest-xdist workers) never clash."""
+    # make_server binds and listens, so requests queue until serve_forever runs
+    httpd = werkzeug.serving.make_server("127.0.0.1", 0, app, threaded=True)
+
+    thread = threading.Thread(target=httpd.serve_forever, daemon=True)
+    thread.start()
+    try:
+        yield httpd.server_port
+    finally:
+        httpd.shutdown()
+        thread.join(timeout=5)

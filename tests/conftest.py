@@ -41,4 +41,16 @@ def set_plugins():
             )
         )
 
+    try:
+        import tavern._plugins.grpc.tavernhook as grpc_plugin
+    except ImportError:
+        pass
+    else:
+        plugins.append(
+            extension(
+                "grpc",
+                grpc_plugin,
+            )
+        )
+
     tavern._core.plugins.load_plugins.plugins = plugins

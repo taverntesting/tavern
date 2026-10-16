@@ -481,42 +481,106 @@ def check_keys_match_recursive[Checked: (dict, Collection, str)](
             if not strict_bool:
                 missing = []
 
-                actual_iter = iter(actual_val)
+                if strict_setting == StrictSetting.LIST_ANY_ORDER:
+                    # Each response item can only be used to satisfy one expected
+                    # item. Build a compatibility matrix once so each
+                    # expected/actual pair is only compared once, then use
+                    # bipartite maximum matching to find the largest set of
+                    # expected items satisfied by unique actual items. This
+                    # keeps matching polynomial even when broad matchers (e.g.
+                    # !anything) can consume many different response items.
+                    n_expected = len(expected_val)
+                    n_actual = len(actual_val)
 
-                # Iterate over list items to see if any of them match _IN ORDER_
-                for i, e_val in enumerate(expected_val):
-                    while 1:
-                        try:
-                            current_response_val = next(actual_iter)
-                        except StopIteration:
-                            # Still iterating checking for a value, but ran out of response values
-                            logger.debug("Ran out of list response items to check")
-                            missing.append(e_val)
-                            break
-                        else:
-                            logger.debug(
-                                "Got '%s' from response to check against '%s' from expected",
-                                current_response_val,
-                                e_val,
-                            )
-
-                        # Found one - check if it matches
+                    def _is_compatible(e_val, a_val, e_idx) -> bool:
+                        """Check if a single expected item matches a single
+                        response item without consuming it."""
+                        logger.debug(
+                            "Got '%s' from response to check against '%s' from expected",
+                            a_val,
+                            e_val,
+                        )
                         try:
                             check_keys_match_recursive(
-                                e_val, current_response_val, keys + [i], strict
+                                e_val, a_val, keys + [e_idx], strict
                             )
                         except exceptions.KeyMismatchError:
-                            # Doesn't match what we're looking for
                             logger.debug(
-                                "%s did not match next response value %s",
+                                "%s did not match response value %s",
                                 e_val,
-                                current_response_val,
+                                a_val,
                             )
-                        else:
+                            return False
+                        return True
+
+                    compatible = [
+                        [_is_compatible(e_val, a_val, i) for a_val in actual_val]
+                        for i, e_val in enumerate(expected_val)
+                    ]
+
+                    # match_to_actual[j] = index of the expected item assigned
+                    # to actual item j (-1 = unassigned)
+                    match_to_actual = [-1] * n_actual
+
+                    def _augment(e_idx: int, seen: set[int]) -> bool:
+                        """Find an augmenting path from expected item e_idx to a
+                        free actual item, rematching along the way."""
+                        for j in range(n_actual):
+                            if not compatible[e_idx][j] or j in seen:
+                                continue
+                            seen.add(j)
+                            if match_to_actual[j] == -1 or _augment(
+                                match_to_actual[j], seen
+                            ):
+                                match_to_actual[j] = e_idx
+                                return True
+                        return False
+
+                    for i in range(n_expected):
+                        _augment(i, set())
+
+                    matched_expected = {e for e in match_to_actual if e != -1}
+                    for i, e_val in enumerate(expected_val):
+                        if i in matched_expected:
                             logger.debug("'%s' present in response", e_val)
-                            if strict_setting == StrictSetting.LIST_ANY_ORDER:
-                                actual_iter = iter(actual_val)
-                            break
+                        else:
+                            logger.debug("Ran out of list response items to check")
+                            missing.append(e_val)
+                else:
+                    actual_iter = iter(actual_val)
+
+                    # Iterate over list items to see if any of them match _IN ORDER_
+                    for i, e_val in enumerate(expected_val):
+                        while 1:
+                            try:
+                                current_response_val = next(actual_iter)
+                            except StopIteration:
+                                # Still iterating checking for a value, but ran out of response values
+                                logger.debug("Ran out of list response items to check")
+                                missing.append(e_val)
+                                break
+                            else:
+                                logger.debug(
+                                    "Got '%s' from response to check against '%s' from expected",
+                                    current_response_val,
+                                    e_val,
+                                )
+
+                            # Found one - check if it matches
+                            try:
+                                check_keys_match_recursive(
+                                    e_val, current_response_val, keys + [i], strict
+                                )
+                            except exceptions.KeyMismatchError:
+                                # Doesn't match what we're looking for
+                                logger.debug(
+                                    "%s did not match next response value %s",
+                                    e_val,
+                                    current_response_val,
+                                )
+                            else:
+                                logger.debug("'%s' present in response", e_val)
+                                break
 
                 if missing:
                     msg = f"List item(s) not present in response: {missing}"
