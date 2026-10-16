@@ -49,9 +49,11 @@ definitions:
       details:
         description: |
           Expected error details attached to the response - the messages packed into the
-          google.rpc.Status, each one including the '@type' identifying it.
+          google.rpc.Status, each one including the '@type' identifying it. A string is deprecated
+          and is checked against the error message instead.
         oneOf:
           - type: array
+          - type: string
           - type: object
 
       body:

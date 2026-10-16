@@ -540,7 +540,7 @@ class TestSpecificTokenTypes:
         with pytest.raises(exceptions.UnexpectedKeysError):
             GRPCResponseSpec.validate_keys(data)
 
-    def test_grpc_response_details_rejects_string(self):
-        data = {"details": "no name given"}
+    def test_grpc_response_details_rejects_int(self):
+        data = {"details": 1}
         with pytest.raises(exceptions.UnexpectedKeysError):
             GRPCResponseSpec.validate_keys(data)

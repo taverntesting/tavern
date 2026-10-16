@@ -233,6 +233,30 @@ def test_grpc_bad_response(
         resp.verify(future)
 
 
+@pytest.mark.parametrize("matches", (True, False))
+def test_grpc_string_details_is_error_message(
+    grpc_client: GRPCClient, includes: TestConfig, matches: bool
+):
+    """A string 'details' is the old way of checking the error message, and still works"""
+    spec = GRPCTestSpec(
+        test_name="Simple service with string details",
+        method="SimpleTest",
+        req=test_services_pb2.DummyRequest(request_id=10000),
+        code="FAILED_PRECONDITION",
+        details="number too big!" if matches else "number too small!",
+    )
+    resp = GRPCResponse(grpc_client, "test", spec.expected_response(), includes)
+
+    future = _run(grpc_client, includes, spec)
+
+    with pytest.warns(FutureWarning, match="use 'error_message' instead"):
+        if matches:
+            resp.verify(future)
+        else:
+            with pytest.raises(exceptions.TestFailError, match="number too small!"):
+                resp.verify(future)
+
+
 def pytest_generate_tests(metafunc: MarkGenerator):
     if "request_spec" in metafunc.fixturenames:
         requests = [

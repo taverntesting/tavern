@@ -179,6 +179,10 @@ The protobuf definition of each message in the details has to have been loaded (
 to be checked - the `google.rpc` messages such as `BadRequest` and `ErrorInfo` are available
 already because Tavern depends on them.
 
+In earlier versions of Tavern, `details` was a string that Tavern compared with the error message.
+A string `details` still works, but it gives a warning. The next major version will remove it.
+Use `error_message` instead.
+
 ## Loading protobuf definitions
 
 There are 3 different ways Tavern will try to load the appropriate proto definitions:

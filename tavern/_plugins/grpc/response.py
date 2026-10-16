@@ -1,4 +1,5 @@
 import logging
+import warnings
 from collections.abc import Mapping
 from typing import TYPE_CHECKING, Any, Optional, Union
 
@@ -110,6 +111,17 @@ class GRPCResponse(BaseResponse):
         dict including the '@type' key identifying it.
         """
         expected_details = self.expected["details"]
+
+        if isinstance(expected_details, str):
+            warnings.warn(
+                "'details' as a string is checked against the error message of the response - this will be removed in the next major version, use 'error_message' instead",
+                FutureWarning,
+                stacklevel=2,
+            )
+            self._check_match(
+                expected_details, grpc_response.details() or "", "details"
+            )
+            return
 
         try:
             status = rpc_status.from_call(grpc_response)  # type:ignore[arg-type]

@@ -226,7 +226,7 @@ class GRPCResponseSpec(_BaseKeyValidator):
     error_message: Optional[
         Union[str, StrSentinel, InstanceOf[RegexSentinel], AnythingSentinel]
     ] = None
-    details: Optional[Union[list, ListSentinel, AnythingSentinel]] = None
+    details: Optional[Union[list, str, ListSentinel, AnythingSentinel]] = None
     save: Optional[dict] = None
 
 

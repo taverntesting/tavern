@@ -176,6 +176,8 @@ class TestGRPCErrors:
             "error_message: !anystr",
             "error_message: !anything",
             "details: !anything",
+            # Deprecated, checked against the error message
+            'details: "no name given"',
             dedent(
                 """
                 details:
@@ -186,7 +188,15 @@ class TestGRPCErrors:
                 """
             ),
         ),
-        ids=("string", "regex", "anystr", "anything", "any_details", "details"),
+        ids=(
+            "string",
+            "regex",
+            "anystr",
+            "anything",
+            "any_details",
+            "string_details",
+            "details",
+        ),
     )
     def test_valid(self, keys):
         TestGRPCErrors.verify_with_response_keys(keys)
@@ -196,8 +206,6 @@ class TestGRPCErrors:
         (
             "error_message: 1",
             "error_message: True",
-            # The details are the messages in the status, not the error message
-            'details: "no name given"',
             "details: 1",
         ),
         ids=str,

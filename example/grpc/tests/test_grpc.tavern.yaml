@@ -589,14 +589,15 @@ stages:
 
 ---
 
-test_name: Test the error details cannot be a plain string
+test_name: Test plain string error details are checked against the error message
 
 includes:
   - !include common.yaml
 
 grpc: *grpc_spec
 
-_xfail: verify
+# TODO: re-enable once 'details' is changed
+# _xfail: verify
 
 stages:
   - name: Say hello to nobody
