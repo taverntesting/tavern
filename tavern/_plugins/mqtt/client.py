@@ -304,7 +304,7 @@ class MQTTClient:
         try:
             for sub_topic, sub_id in userdata["_subscription_mappings"].items():
                 if paho.topic_matches_sub(sub_topic, message.topic):
-                    userdata["_subscribed"][sub_id].queue.put_nowait(message)
+                    userdata["_subscribed"][sub_id].queue.put(message, timeout=1)
                     break
             else:
                 raise exceptions.MQTTTopicException(
