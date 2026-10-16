@@ -52,8 +52,7 @@ response (HTTP or MQTT):
 ```python
 # testing_utils.py
 def message_says_hello(response):
-    """Make sure that the response was friendly
-    """
+    """Make sure that the response was friendly"""
     assert response.json().get("message") == "hello world"
 ```
 
@@ -233,9 +232,7 @@ from box import Box
 
 def generate_bearer_token():
     token = sign_a_jwt()
-    auth_header = {
-        "Authorization": "Bearer {}".format(token)
-    }
+    auth_header = {"Authorization": "Bearer {}".format(token)}
     return Box(auth_header)
 ```
 
@@ -261,6 +258,7 @@ The `--tavern-merge-ext-function-values` flag has been removed because this is n
 
 ```python
 # ext_functions.py
+
 
 def return_hello():
     return {"hello": "there"}

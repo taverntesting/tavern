@@ -1,14 +1,22 @@
 import logging
+import warnings
 from collections.abc import Mapping
-from typing import TYPE_CHECKING, Any, Optional, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Optional, Union
 
 import grpc
 import proto.message
 from google.protobuf import json_format
 
+# Imported for the side effect of registering the standard google.rpc error details (BadRequest,
+# ErrorInfo, etc.) in the descriptor pool, so they can be unpacked from a response
+from google.rpc import error_details_pb2  # noqa: F401
+from grpc_status import rpc_status
+
 from tavern._core import exceptions
-from tavern._core.dict_util import check_expected_keys
+from tavern._core.dict_util import check_keys_match_recursive
 from tavern._core.exceptions import TestFailError
+from tavern._core.loader import ANYTHING
+from tavern._core.pydantic_models import GRPCResponseSpec
 from tavern._core.pytest.config import TestConfig
 from tavern._core.schema.extensions import to_grpc_status
 from tavern._plugins.grpc.client import GRPCClient
@@ -34,23 +42,15 @@ def _to_grpc_name(status: GRPCCode) -> Union[str, list[str]]:
     raise exceptions.GRPCServiceException(f"unknown status code '{status}'")
 
 
-class _GRPCExpected(TypedDict):
-    """What the 'expected' block for a grpc response should contain"""
-
-    status: GRPCCode
-    details: Any
-    body: Mapping
-
-
 class GRPCResponse(BaseResponse):
     def __init__(
         self,
         client: GRPCClient,
         name: str,
-        expected: _GRPCExpected | Mapping,
+        expected: Mapping,
         test_block_config: TestConfig,
     ) -> None:
-        check_expected_keys({"body", "status", "details", "save"}, expected)
+        GRPCResponseSpec.validate_keys(expected)
         super().__init__(
             name,
             expected,
@@ -90,6 +90,89 @@ class GRPCResponse(BaseResponse):
         block_strictness = test_strictness.option_for(blockname)
         self.recurse_check_key_match(expected_block, block, blockname, block_strictness)
 
+    def _verify_error_message(self, grpc_response: grpc.Call | grpc.Future) -> None:
+        """Check the expected error message against the 'details' string of the response
+
+        This is the string passed to set_details/abort on the server - not to be confused with
+        the 'details' of the response block, which are the messages in the google.rpc.Status.
+        """
+        self._check_match(
+            self.expected["error_message"],
+            grpc_response.details() or "",
+            "error_message",
+        )
+
+    def _verify_details(self, grpc_response: grpc.Call | grpc.Future) -> None:
+        """Check the expected error details against the ones attached to the response
+
+        These are the messages (google.rpc.BadRequest, google.rpc.ErrorInfo, etc.) packed into
+        the google.rpc.Status which the server put into the 'grpc-status-details-bin' trailing
+        metadata, as described in https://grpc.io/docs/guides/error/. Each one is converted to a
+        dict including the '@type' key identifying it.
+        """
+        expected_details = self.expected["details"]
+
+        if isinstance(expected_details, str):
+            warnings.warn(
+                "'details' as a string is checked against the error message of the response - this will be removed in the next major version, use 'error_message' instead",
+                FutureWarning,
+                stacklevel=2,
+            )
+            self._check_match(
+                expected_details, grpc_response.details() or "", "details"
+            )
+            return
+
+        try:
+            status = rpc_status.from_call(grpc_response)  # type:ignore[arg-type]
+        except ValueError as e:
+            self._adderr(
+                "the google.rpc.Status in the 'grpc-status-details-bin' trailing metadata does not match the status of the response, so the error details cannot be trusted: %s",
+                e,
+                e=e,
+            )
+            return
+
+        if status is None:
+            if expected_details is not ANYTHING:
+                self._adderr(
+                    "expected error details '%s' in the response, but there were none",
+                    expected_details,
+                )
+            return
+
+        try:
+            # Unlike the response body, fields which were not set are left out - the details are
+            # a bag of arbitrary messages, so making the user spell out every unset field of
+            # every one of them would be unusable with strict key checking turned on
+            as_dict = json_format.MessageToDict(
+                status,
+                preserving_proto_field_name=True,
+            )
+        except (json_format.Error, TypeError) as e:
+            # Happens if one of the packed messages is not in the descriptor pool, ie the proto
+            # defining it was never loaded
+            self._adderr("unable to parse rich error details from response: %s", e, e=e)
+            return
+
+        self._check_match(expected_details, as_dict.get("details", []), "details")
+
+    def _check_match(self, expected: Any, actual: Any, blockname: str) -> None:
+        """Compare part of the response, adding an error if it does not match
+
+        Going through the normal matching rather than just comparing the values means type
+        sentinels like !re_search or !anything can be used.
+        """
+        try:
+            check_keys_match_recursive(
+                expected,
+                actual,
+                [blockname],
+                self.test_block_config.strict.option_for("json"),
+            )
+        except exceptions.KeyMismatchError as e:
+            self._adderr(e.args[0], e=e)
+
     def verify(self, response: "WrappedFuture") -> Mapping:
         grpc_response = response.response
 
@@ -109,14 +192,11 @@ class GRPCResponse(BaseResponse):
                 grpc_response.code().name,
             )
 
+        if "error_message" in self.expected:
+            self._verify_error_message(grpc_response)
+
         if "details" in self.expected:
-            verify_details = self.expected["details"]
-            if verify_details != grpc_response.details():
-                self._adderr(
-                    "expected details '%s', but the actual response '%s'",
-                    verify_details,
-                    grpc_response.details(),
-                )
+            self._verify_details(grpc_response)
 
         saved = self._handle_grpc_response(grpc_response, response, verify_status) or {}
 
@@ -134,13 +214,6 @@ class GRPCResponse(BaseResponse):
         response: "WrappedFuture",
         verify_status: list[str],
     ) -> Optional[dict[str, Any]]:
-        if grpc_response.code().name != "OK":
-            # TODO: Should allow checking grpc RPC error details etc.
-            logger.info(
-                f"skipping body checking due to {grpc_response.code()} response"
-            )
-            return None
-
         if "body" in self.expected and verify_status != ["OK"]:
             self._adderr(
                 "'body' was specified in response, but expected status code was not 'OK'"
@@ -148,7 +221,23 @@ class GRPCResponse(BaseResponse):
             return None
 
         _, output_type = self._client.get_method_types(response.service_name)
-        result: proto.message.Message = grpc_response.result()
+
+        try:
+            result: proto.message.Message = grpc_response.result()
+        except grpc.RpcError:
+            # A non-OK response has no message attached to it, so there is
+            # nothing to check an expected body against
+            if "body" in self.expected:
+                logger.warning(
+                    "expected a response body, but the request failed with status '%s' (%s)",
+                    grpc_response.code().name,
+                    grpc_response.details(),
+                )
+            else:
+                logger.info(
+                    f"no response body to check due to {grpc_response.code()} response"
+                )
+            return None
 
         if not isinstance(result, output_type):
             # Note: This is probably unexpected in some cases

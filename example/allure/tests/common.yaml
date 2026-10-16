@@ -3,7 +3,7 @@ name: Allure example includes
 description: variables and the login stage used by the tests in this folder
 
 variables:
-  service: http://localhost:5000
+  service: http://localhost:5004
   user:
     user: test-user
     pass: correct-password
