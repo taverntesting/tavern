@@ -12,6 +12,7 @@ from typing import Optional, Union, get_args
 from pydantic import (
     BaseModel,
     ConfigDict,
+    InstanceOf,
     ValidationError,
     ValidationInfo,
     field_validator,
@@ -19,11 +20,15 @@ from pydantic import (
 
 from tavern._core import exceptions
 from tavern._core.loader import (
+    AnythingSentinel,
     BoolToken,
     FloatToken,
     ForceIncludeToken,
     IntToken,
+    ListSentinel,
     RawStrToken,
+    RegexSentinel,
+    StrSentinel,
     TypeSentinel,
 )
 
@@ -218,7 +223,10 @@ class GRPCRequestSpec(_BaseKeyValidator):
 class GRPCResponseSpec(_BaseKeyValidator):
     body: Optional[dict] = None
     status: Optional[Union[str, int, list[str], list[int]]] = None
-    details: Optional[Union[str, dict]] = None
+    error_message: Optional[
+        Union[str, StrSentinel, InstanceOf[RegexSentinel], AnythingSentinel]
+    ] = None
+    details: Optional[Union[list, str, ListSentinel, AnythingSentinel]] = None
     save: Optional[dict] = None
 
 
