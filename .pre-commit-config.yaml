@@ -33,7 +33,7 @@ repos:
         exclude: (tests|example/)
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.12.23
+    rev: 0.12.24
     hooks:
       - id: uv-lock
 
