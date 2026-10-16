@@ -283,7 +283,7 @@ class StarlarkPipelineRunner:
         """Set up built-in functions available in starlark scripts.
 
         Only a basic subset of types can be passed into starlark (anything that can be dumped to json).
-        To create a simple wrapper script, define the function in the _STARLARK_BUILTINS string.
+        To create a simple wrapper script, define the function in tavern_helpers.star.
 
             def add(a, b):
                 return a + b
@@ -297,7 +297,7 @@ class StarlarkPipelineRunner:
 
         To create a more advanced wrapper, such as a 'library' module:
 
-        1. create the basic wrapper functions and a global 'struct' in the _STARLARK_BUILTINS string.
+        1. create the basic wrapper functions and a global 'struct' in tavern_helpers.star.
 
             def _re_match(pattern, s):
                 return __re_match(pattern, s)
@@ -327,7 +327,7 @@ class StarlarkPipelineRunner:
 
             resp = run_stage("my_stage")
 
-            if not re.match("(one_thing|another_thing)", resp.json["key"]):
+            if not re.match("(one_thing|another_thing)", resp.body["key"]):
                 fail("No match found")
         """
         for stage_id, stage in self._stage_registry.get_all_stages().items():
