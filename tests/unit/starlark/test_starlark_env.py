@@ -406,6 +406,32 @@ resp = run_stage("get_cookie", extra_vars={"custom_var": "custom_value"})
         # extra_vars only apply to the one stage
         assert "custom_var" not in fix_test_config.variables
 
+    def test_run_stage_with_extra_vars_keeps_saved_values(
+        self,
+        basic_runner,
+        fix_test_config,
+        sample_stage,
+        mock_response,
+    ):
+        """Values saved by a stage run with extra_vars are available to later stages"""
+
+        def make_runner(**kwargs):
+            def save_token(idx, stage):
+                kwargs["test_block_config"].variables["token"] = "abc"
+                return mock_response
+
+            return Mock(run_stage=save_token)
+
+        with patch(
+            "tavern._core.starlark.starlark_env._TestRunner", side_effect=make_runner
+        ):
+            basic_runner._run_stage(
+                sample_stage, continue_on_fail=False, extra_vars={"user": "a"}
+            )
+
+        assert fix_test_config.variables["token"] == "abc"
+        assert "user" not in fix_test_config.variables
+
     def test_run_stage_continue_on_fail(
         self,
         fix_test_config,

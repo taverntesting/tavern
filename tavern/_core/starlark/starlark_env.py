@@ -209,6 +209,12 @@ class StarlarkPipelineRunner:
                 stage_name=stage_name,
             )
 
+        if extra_vars:
+            # Keep values saved by the stage, but not the extra_vars themselves
+            self._test_config.variables.update(
+                {k: v for k, v in test_config.variables.items() if k not in extra_vars}
+            )
+
         return StageResponse(
             success=True,
             response=response,

@@ -280,6 +280,40 @@ control_flow: |
   run_stage("echo_one_header")
 
 ---
+test_name: Test control_flow keeps values saved by a stage run with extra_vars
+
+stages:
+  - name: Echo and save a value
+    id: echo_and_save
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "{to_echo}"
+    response:
+      status_code: 200
+      save:
+        json:
+          saved_value: value
+
+  - name: Use the saved value
+    id: use_saved_value
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "{saved_value}"
+    response:
+      status_code: 200
+      json:
+        value: "saved-me"
+
+control_flow: |
+  load("@tavern_helpers.star", "run_stage")
+  run_stage("echo_and_save", extra_vars={"to_echo": "saved-me"})
+  run_stage("use_saved_value")
+
+---
 test_name: Test control_flow with a ref to a global stage
 
 stages:
