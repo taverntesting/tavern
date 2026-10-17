@@ -13,7 +13,13 @@ from tavern._core.exceptions import TavernException
 from tavern._core.pytest.config import TestConfig
 from tavern._core.run import _TestRunner
 
-from .builtins import add_library_callables, get_starlark_builtins, wrap_callable
+from .builtins import (
+    add_library_callables,
+    get_dialect,
+    get_globals,
+    get_starlark_builtins,
+    wrap_callable,
+)
 from .response_struct import create_response_struct
 from .stage_registry import StageRegistry
 from .types import to_starlark
@@ -64,11 +70,7 @@ class StarlarkPipelineRunner:
         """
         self.test_path = test_path
         self._test_spec = test_spec
-        self.globals = starlark.Globals.standard().extended_by(
-            [
-                starlark.LibraryExtension.StructType,
-            ]
-        )
+        self.globals = get_globals()
         self._stage_registry = StageRegistry(stages) if stages else StageRegistry([])
         self._test_config: TestConfig = test_config
         self._sessions: dict[str, Any] = sessions
@@ -91,8 +93,7 @@ class StarlarkPipelineRunner:
         self._setup_builtins(module)
 
         # Parse the script
-        dialect = starlark.Dialect.extended()
-        dialect.enable_keyword_only_arguments = True
+        dialect = get_dialect()
 
         try:
             ast = starlark.parse(self.test_path, script, dialect=dialect)

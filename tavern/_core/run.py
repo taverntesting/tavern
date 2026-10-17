@@ -62,14 +62,15 @@ def _run_with_starlark_control_flow(
 
     starlark = import_starlark()
 
+    from tavern._core.starlark.builtins import get_dialect
     from tavern._core.starlark.starlark_env import StarlarkPipelineRunner
 
     # This is parsed here because it could be done at script load time, but this immediately
     # fails the entire test run. This lets Tavern raise an exception specific to this test
-    dialect = starlark.Dialect.extended()
-    dialect.enable_keyword_only_arguments = True
     try:
-        starlark.parse(os.fspath(in_file), test_spec["control_flow"], dialect=dialect)
+        starlark.parse(
+            os.fspath(in_file), test_spec["control_flow"], dialect=get_dialect()
+        )
     except starlark.StarlarkError as e:
         raise exceptions.BadSchemaError("Failed to parse starlark script") from e
 
