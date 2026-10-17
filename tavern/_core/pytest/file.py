@@ -467,7 +467,9 @@ class YamlFile(pytest.File):
                 )
 
             # Determine if this document is a test or defaults
-            is_test_doc = "test_name" in test_spec and "stages" in test_spec
+            is_test_doc = "test_name" in test_spec and (
+                "stages" in test_spec or "control_flow" in test_spec
+            )
 
             if document_idx == 0 and is_defaults:
                 if is_test_doc:
@@ -490,7 +492,7 @@ class YamlFile(pytest.File):
                         f"If this is meant to be defaults for the file, add 'is_defaults: true'. "
                         f"If this is meant to be a test, add both 'test_name' and 'stages'."
                     )
-                elif "control_flow" not in test_spec:
+                else:
                     raise exceptions.BadSchemaError(
                         f"Document {document_idx + 1} in '{self.path}' is missing 'test_name' or 'stages'"
                     )
