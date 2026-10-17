@@ -62,7 +62,7 @@ def _run_with_starlark_control_flow(
         import starlark
     except ImportError as e:
         raise exceptions.DependencyMissingError(
-            "starlark", "pip install tavern[starlark]"
+            "control_flow needs the 'scriptable' extra: pip install tavern[scriptable]"
         ) from e
 
     from tavern._core.starlark.starlark_env import StarlarkPipelineRunner
