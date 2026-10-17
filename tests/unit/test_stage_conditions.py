@@ -224,7 +224,10 @@ class TestRetryUntil:
         retry(stage, test_block_config)(inner)()
         assert inner.call_count == 2
 
-    def test_delay_after_between_attempts(self, stage, test_block_config):
+    def test_delay_after_between_attempts_and_after_finishing(
+        self, stage, test_block_config
+    ):
+        """Like a passing stage, a stage finished by retry_until still sleeps afterwards"""
         stage["delay_after"] = 0.01
         inner = Mock(
             side_effect=[
@@ -236,7 +239,8 @@ class TestRetryUntil:
         with patch("tavern._core.testhelpers.time.sleep") as sleep_mock:
             retry(stage, test_block_config)(inner)()
 
-        sleep_mock.assert_called_once_with(0.01)
+        assert sleep_mock.call_count == 2
+        sleep_mock.assert_called_with(0.01)
 
     def test_uses_test_variables(self, stage, test_block_config):
         stage["retry_until"] = "response.body['status'] == '{expected_status}'"
