@@ -76,7 +76,7 @@ pytest --tavern-experimental-starlark-pipeline
 
 ## Per-stage expressions
 
-Rewriting a whole test as a `control_flow` script is a lot of ceremony if all you want is "only run this stage if the
+Rewriting a whole test as a `control_flow` script is a lot of work if all you want is "only run this stage if the
 last one returned something". For that, stages support three keys which are Starlark _expressions_, evaluated by the
 same embedded interpreter. There is no separate script and stages do not need an `id`. These need the same
 `--tavern-experimental-starlark-pipeline` flag as `control_flow`.
@@ -104,7 +104,9 @@ with a dash in it, or a Starlark reserved word - work fine.
 An 'expression' does not have to be one line. Using a YAML block scalar, any of these keys can be a short script, and
 the value of its **last statement** is what decides the result - it still has to be `True` or `False`. Note that only
 an expression has a value, so a script which ends on an assignment (`result = x == 1`) fails rather than using what was
-assigned. Helper modules have to be `load()`ed just like in a `control_flow` script, so this is the way to use `re` in
+assigned (because it evaluates to `None`).
+
+Helper modules have to be `load()`ed just like in a `control_flow` script, so this is the way to use `re` in
 a condition:
 
 ```yaml
@@ -172,7 +174,8 @@ The expression must evaluate to a boolean, and referring to a variable which has
 than being treated as false.
 
 `if` is only evaluated for normal stages - stages in a [`finally` block](./core_concepts/flow.md#finalising-stages)
-always run.
+always run. Like `skip`, it is also ignored for a stage run with `run_stage()` in a `control_flow` script, where the
+script decides what runs.
 
 ### Polling with `retry_until`
 
@@ -244,8 +247,7 @@ Note that:
   evaluate the expression against, so the stage is just retried.
 - Values in the `save` block of an attempt which failed verification are **not** saved, so if a stage finishes because
   `retry_until` was `True` rather than because it passed, later stages will not see them.
-- `retry_until` does not apply inside a `control_flow` script, which bypasses the retry machinery - use
-  `run_stage(..., continue_on_fail=True)` in a `for` loop instead, as shown in [Retry and Polling](#retry-and-polling).
+- `retry_until` also applies to a stage run with `run_stage()` in a `control_flow` script.
 
 ### Failing fast with `fail_if`
 
@@ -300,8 +302,7 @@ Note that:
 - Unlike `retry_until`, `fail_if` does not need `max_retries`.
 - If the request itself failed and no response was received at all, `fail_if` is not evaluated and the stage fails or
   retries as it normally would.
-- Like `retry_until`, it does not apply inside a `control_flow` script - check the struct returned by `run_stage()`
-  instead.
+- Like `retry_until`, it also applies to a stage run with `run_stage()` in a `control_flow` script.
 
 ## Basic Usage
 

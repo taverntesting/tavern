@@ -1,17 +1,8 @@
 """Evaluation of single Starlark expressions embedded in a stage.
 
-This is used for the per-stage ``if``, ``retry_until`` and ``fail_if`` keys, which are a
-much lighter-weight alternative to writing a whole ``control_flow`` script. Like the
+This is used for the per-stage ``if``, ``retry_until`` and ``fail_if`` keys. Like the
 simpleeval based ``skip`` key, expressions here are format-string interpolated before
 being evaluated, so ``if: "{var_x} > 2"`` is the way to refer to a test variable.
-
-An 'expression' can also be several statements long, in which case the value of the last
-one is what decides the result. The helper modules can be loaded as in a ``control_flow``
-script, but ``run_stage`` is not available - there is already a stage being run.
-
-This module must not import anything from tavern._core.run, and must not import
-starlark at the top level, so that it can be imported (lazily) from the normal
-non-starlark test path.
 """
 
 import logging
@@ -121,8 +112,8 @@ def eval_stage_expression(
         key: name of the stage key the expression came from
         expr: the Starlark expression
         stage: the stage it came from, used for error messages
-        test_block_config: current test config, the variables from which are bound as
-            globals in the expression
+        test_block_config: current test config, the variables from which are
+            interpolated into the expression
         response: response values to bind as a 'response' struct, if any
 
     Returns:
