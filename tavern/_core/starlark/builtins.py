@@ -1,12 +1,4 @@
-"""Bindings for the helper 'library' modules loaded from tavern_helpers.star.
-
-These are the parts of the Starlark environment which do not need a pipeline runner -
-'re', 'time' and 'log'. They are shared between a full 'control_flow' script and the
-per-stage expressions, which can also load them but cannot run stages.
-
-This module must not import anything from tavern._core.run, so that it can be imported
-from the per-stage expression path.
-"""
+"""Bindings for the helper 'library' modules loaded from tavern_helpers.star."""
 
 import functools
 import importlib.resources

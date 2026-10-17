@@ -1,8 +1,4 @@
-"""Conversion of a plugin response object into a dict for use in Starlark.
-
-This is used both by the full ``control_flow`` pipeline (where it becomes the struct
-returned by ``run_stage()``) and by per-stage ``retry_until`` expressions.
-"""
+"""Conversion of a plugin response object into a dict for use in Starlark."""
 
 from typing import Any
 
