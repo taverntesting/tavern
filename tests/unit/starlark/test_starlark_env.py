@@ -104,34 +104,6 @@ class TestWrapCallable:
         assert isinstance(result, starlark.OpaquePythonObject)
 
 
-class TestStageResponseToStarlark:
-    """Tests for StageResponse.to_starlark method."""
-
-    def test_to_starlark_success_true(self):
-        """Test to_starlark with success=True."""
-        response = StageResponse(
-            success=True,
-            response=None,
-            request_vars={"key": "value"},
-            stage_name="test_stage",
-        )
-        result = response.to_starlark()
-        assert result["success"] is True
-        assert result["request_vars"] == {"key": "value"}
-        assert result["stage_name"] == "test_stage"
-
-    def test_to_starlark_success_false(self):
-        """Test to_starlark with success=False."""
-        response = StageResponse(
-            success=False,
-            response=None,
-            request_vars={},
-            stage_name="failed_stage",
-        )
-        result = response.to_starlark()
-        assert result["success"] is False
-
-
 class TestRunStageBinding:
     """Tests for the run_stage function exposed to Starlark."""
 

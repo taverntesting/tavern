@@ -7,7 +7,7 @@ import importlib.resources
 import logging
 import re
 import time
-from typing import Any, TypedDict
+from typing import Any
 
 import requests
 import starlark
@@ -39,21 +39,6 @@ def _wrap_callable(fn):
     return wrapper
 
 
-class PipelineContext(TypedDict):
-    """Context object passed between stages in starlark pipelines.
-
-    This object carries the test configuration and sessions from one stage
-    to the next, allowing users to explicitly manage the pipeline state.
-
-    Attributes:
-        test_config: The TestConfig with current variables
-        sessions: Dictionary of session contexts
-    """
-
-    test_config: TestConfig
-    sessions: dict[str, Any]
-
-
 @dataclasses.dataclass
 class StageResponse:
     """Response from running a stage.
@@ -69,14 +54,6 @@ class StageResponse:
     response: Any | None
     request_vars: dict[str, Any]
     stage_name: str
-
-    def to_starlark(self) -> dict:
-        return {
-            "success": self.success,
-            "response": to_starlark(self.response),
-            "request_vars": to_starlark(self.request_vars),
-            "stage_name": self.stage_name,
-        }
 
 
 def _get_starlark_builtins() -> str:

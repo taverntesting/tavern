@@ -413,8 +413,8 @@ Starlark uses a JSON-serializable subset of Python types. Objects passed between
 - Collections: `dict` (with string keys), `list`, `tuple`
 - Dataclasses (automatically converted to dicts)
 
-Non-serializable objects (file handles, database connections, custom classes without `to_starlark()` method) can be
-passed through to Starlark, but will be opaque and unusable.
+Other objects (file handles, database connections, custom classes) can be passed through to Starlark, but will be
+opaque and unusable.
 
 ## Starlark Language Reference
 

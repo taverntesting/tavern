@@ -77,19 +77,6 @@ class TestConfig:
 
         return available_backends
 
-    def to_starlark(self) -> dict[str, Any]:
-        import starlark
-
-        dumped = {
-            "variables": starlark.OpaquePythonObject(self.variables),
-            "follow_redirects": self.follow_redirects,
-            "stages": self.stages,
-            "strict": starlark.OpaquePythonObject(self.strict),
-            "tavern_internal": starlark.OpaquePythonObject(self.tavern_internal),
-            "experimental_starlark_pipeline": self.experimental_starlark_pipeline,
-        }
-        return dumped
-
 
 def has_module(module: str) -> bool:
     try:

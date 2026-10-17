@@ -1,13 +1,9 @@
 """Starlark pipeline support for Tavern."""
 
 from .stage_registry import StageRegistry
-from .starlark_env import (
-    PipelineContext,
-    StarlarkPipelineRunner,
-)
+from .starlark_env import StarlarkPipelineRunner
 
 __all__ = [
-    "PipelineContext",
     "StageRegistry",
     "StarlarkPipelineRunner",
 ]
