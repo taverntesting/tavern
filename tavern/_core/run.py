@@ -42,10 +42,7 @@ def _run_with_starlark_control_flow(
     included_stages: list[dict],
 ) -> None:
     """
-    Executes a test using Starlark-based control flow. This function integrates
-    a control flow script specified in the `test_spec` with the provided
-    configuration, running it against an instance of `StarlarkPipelineRunner`.
-    Logs progress and raises any execution errors encountered.
+    Executes a test using Starlark-based control flow.
 
     Args:
         in_file: The path to the input test file containing test definitions.
