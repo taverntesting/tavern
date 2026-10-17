@@ -257,3 +257,14 @@ control_flow: |
   for entity_id in entity_ids:
       resp = run_stage("verify_deleted", extra_vars={"entity_id": str(entity_id)})
       log("Verified entity " + str(entity_id) + " is deleted")
+
+---
+test_name: Test control_flow with a ref to a global stage
+
+stages:
+  - type: ref
+    id: finally-nothing-check
+
+control_flow: |
+  load("@tavern_helpers.star", "run_stage")
+  run_stage("finally-nothing-check")

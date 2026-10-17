@@ -55,7 +55,7 @@ def _run_with_starlark_control_flow(
             settings and variables used across multiple tests.
         sessions: A dictionary containing session-related data (e.g., session
             state or objects) that may be required during the test execution.
-        included_stages: A list of stages included in the test using !include
+        included_stages: Global stages and stages included in the test using !include
     """
     # Local import to avoid circular dependency
     try:
@@ -88,9 +88,14 @@ def _run_with_starlark_control_flow(
 
     logger.info("Running test with Starlark control_flow: %s", test_block_name)
 
+    # Keyed by id so that a test stage which is a 'ref' to an included stage is not a duplicate
+    stages_by_id = {
+        s["id"]: s for s in included_stages + test_spec["stages"] if "id" in s
+    }
+
     runner = StarlarkPipelineRunner(
         test_path=str(in_file),
-        stages=test_spec.get("stages", []) + included_stages,
+        stages=list(stages_by_id.values()),
         test_config=test_block_config,
         sessions=sessions,
     )
