@@ -1,8 +1,6 @@
 """Evaluation of single Starlark expressions embedded in a stage.
 
-This is used for the per-stage ``if``, ``retry_until`` and ``fail_if`` keys. Like the
-simpleeval based ``skip`` key, expressions here are format-string interpolated before
-being evaluated, so ``if: "{var_x} > 2"`` is the way to refer to a test variable.
+This is used for the per-stage ``if``, ``retry_until`` and ``fail_if`` keys.
 """
 
 import logging
@@ -11,6 +9,12 @@ from typing import TYPE_CHECKING, Any
 
 from tavern._core import exceptions
 from tavern._core.dict_util import format_keys
+
+from .builtins import (
+    add_library_callables,
+    add_unavailable_run_stage,
+    get_starlark_builtins,
+)
 
 if TYPE_CHECKING:
     import starlark
@@ -54,12 +58,6 @@ def _get_file_loader(
         a loader which handles '@tavern_helpers.star'
     """
     starlark = import_starlark()
-
-    from .builtins import (
-        add_library_callables,
-        add_unavailable_run_stage,
-        get_starlark_builtins,
-    )
 
     # The return type is a starlark.FrozenModule, but the name is shadowed by the
     # local import above

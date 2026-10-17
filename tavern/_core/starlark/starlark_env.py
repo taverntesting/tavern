@@ -45,11 +45,7 @@ class StageResponse:
 
 
 class StarlarkPipelineRunner:
-    """Runner for executing starlark pipeline scripts.
-
-    This class handles loading and executing starlark scripts that can
-    control the flow of test execution.
-    """
+    """Runner for executing starlark pipeline scripts."""
 
     def __init__(
         self,
@@ -261,21 +257,21 @@ class StarlarkPipelineRunner:
 
         @wrap_callable
         def run_stage_binding(
-            stage_id: str, continue_on_fail: bool, extra_vars: dict | None
+            stage_id_: str, continue_on_fail: bool, extra_vars: dict | None
         ) -> Any:
-            stage = self._stage_registry.get_stage(stage_id)
-            if stage is None:
+            stage_ = self._stage_registry.get_stage(stage_id_)
+            if stage_ is None:
                 raise exceptions.StarlarkError(
-                    f"Stage with id '{stage_id}' not found (had {list(self._stage_registry.get_all_stages().keys())}"
+                    f"Stage with id '{stage_id_}' not found (had {list(self._stage_registry.get_all_stages().keys())}"
                 )
 
-            stage_response = self._run_stage(stage, continue_on_fail, extra_vars)
+            stage_response = self._run_stage(stage_, continue_on_fail, extra_vars)
             try:
                 return self._create_response_struct(stage_response)
             except Exception as e:
                 logger.exception("Failed to convert stage response to struct")
                 self._python_error = e
-                self._python_error.stage = stage  # type:ignore
+                self._python_error.stage_ = stage_  # type:ignore
                 raise exceptions.StarlarkError(
                     "Failed to convert stage response to struct"
                 ) from e
