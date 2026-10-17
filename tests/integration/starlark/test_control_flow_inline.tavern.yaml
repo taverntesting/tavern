@@ -323,3 +323,26 @@ stages:
 control_flow: |
   load("@tavern_helpers.star", "run_stage")
   run_stage("finally-nothing-check")
+
+---
+test_name: Test control_flow stages use retry_until
+
+stages:
+  - name: Poll a job which fails
+    id: poll_failing_job
+    request:
+      url: "{global_host}/job/control-flow-retry-until-fail"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 5
+    retry_until: response.body["status"] == "SUCCESS" or response.body["status"] == "FAILED"
+
+control_flow: |
+  load("@tavern_helpers.star", "run_stage")
+
+  resp = run_stage("poll_failing_job")
+  if resp.body["status"] != "FAILED":
+      fail("expected retry_until to finish the stage on FAILED, got " + resp.body["status"])

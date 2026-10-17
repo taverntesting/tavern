@@ -121,6 +121,11 @@ stages:
         n_queries: 10000
 ```
 
+The [`if` key](../scripting.md#running-a-stage-conditionally-with-if) does the same thing, but the logic is inverted
+and it uses Starlark rather than simpleeval. The two cannot both be used on the same stage.
+
+In future, `skip` may be removed in favour of `if`.
+
 ##### Skipping stages with simpleeval expressions
 
 Stages can be skipped by using a `skip` key that contains a [simpleeval](https://pypi.org/project/simpleeval/) expression. 
@@ -139,6 +144,19 @@ stages:
 ```
 
 In this example, the stage will be skipped if `v_int` is greater than 50. Any valid simpleeval expression can be used.
+
+The equivalent using the `if` key, which is a Starlark expression rather than a simpleeval one:
+
+```yaml
+stages:
+  - name: Run based on variable value
+    if: "{v_int} <= 50"
+    request:
+      url: "{host}/fake_list"
+      method: GET
+    response:
+      status_code: 200
+```
 
 #### skipif
 

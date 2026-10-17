@@ -42,10 +42,7 @@ def _run_with_starlark_control_flow(
     included_stages: list[dict],
 ) -> None:
     """
-    Executes a test using Starlark-based control flow. This function integrates
-    a control flow script specified in the `test_spec` with the provided
-    configuration, running it against an instance of `StarlarkPipelineRunner`.
-    Logs progress and raises any execution errors encountered.
+    Executes a test using Starlark-based control flow.
 
     Args:
         in_file: The path to the input test file containing test definitions.
@@ -58,21 +55,19 @@ def _run_with_starlark_control_flow(
         included_stages: Global stages and stages included in the test using !include
     """
     # Local import to avoid circular dependency
-    try:
-        import starlark
-    except ImportError as e:
-        raise exceptions.DependencyMissingError(
-            "control_flow needs the 'scriptable' extra: pip install tavern[scriptable]"
-        ) from e
+    from tavern._core.starlark.expressions import import_starlark
 
+    starlark = import_starlark()
+
+    from tavern._core.starlark.builtins import get_dialect
     from tavern._core.starlark.starlark_env import StarlarkPipelineRunner
 
     # This is parsed here because it could be done at script load time, but this immediately
     # fails the entire test run. This lets Tavern raise an exception specific to this test
-    dialect = starlark.Dialect.extended()
-    dialect.enable_keyword_only_arguments = True
     try:
-        starlark.parse(os.fspath(in_file), test_spec["control_flow"], dialect=dialect)
+        starlark.parse(
+            os.fspath(in_file), test_spec["control_flow"], dialect=get_dialect()
+        )
     except starlark.StarlarkError as e:
         raise exceptions.BadSchemaError("Failed to parse starlark script") from e
 
@@ -335,6 +330,14 @@ def run_test(
                 if has_only and not getonly(stage):
                     continue
 
+                if (condition := stage.get("if")) is not None:
+                    if not _eval_stage_condition(condition, stage, test_block_config):
+                        logger.info(
+                            "Skipping stage '%s' as 'if' condition was false",
+                            stage["name"],
+                        )
+                        continue
+
                 runner.run_stage(idx, stage)
 
                 if getonly(stage):
@@ -356,6 +359,73 @@ def run_test(
                     runner.run_stage(idx, stage, is_final=True)
             else:
                 logger.debug("no 'finally' stages to run")
+
+
+def _eval_stage_condition(
+    condition: str, stage: Mapping, test_block_config: TestConfig
+) -> bool:
+    """Evaluate the 'if' key on a stage to see whether it should be run
+
+    Args:
+        condition: Starlark expression from the 'if' key
+        stage: the stage it came from
+        test_block_config: current test config
+
+    Returns:
+        Whether the stage should be run
+    """
+    # Local import to avoid a circular dependency, and to keep starlark optional
+    from tavern._core.starlark.expressions import eval_stage_expression
+
+    if not isinstance(condition, str):
+        raise exceptions.BadSchemaError(
+            f"Unexpected '{type(condition)}' in if key - should be a string"
+        )
+
+    return eval_stage_expression("if", condition, stage, test_block_config)
+
+
+def _check_fail_if(
+    fail_if: str,
+    stage: Mapping,
+    test_block_config: TestConfig,
+    response: Any,
+    *,
+    success: bool,
+) -> None:
+    """Evaluate the 'fail_if' key on a stage against the response it got back
+
+    Args:
+        fail_if: Starlark expression from the 'fail_if' key
+        stage: the stage it came from
+        test_block_config: current test config
+        response: the response from running the stage
+        success: whether the stage passed all of its verifications
+
+    Raises:
+        exceptions.FailIfError: if the expression was true
+    """
+    # Local import to avoid a circular dependency, and to keep starlark optional
+    from tavern._core.starlark.expressions import eval_response_expression
+
+    if not eval_response_expression(
+        "fail_if",
+        fail_if,
+        stage,
+        test_block_config,
+        response=response,
+        success=success,
+        request_vars=test_block_config.variables,
+    ):
+        return
+
+    error = exceptions.FailIfError(
+        "Test '{}' failed: 'fail_if' expression was true: {}".format(
+            stage["name"], fail_if
+        )
+    )
+    error.response = response
+    raise error
 
 
 def _calculate_stage_strictness(
@@ -514,11 +584,27 @@ class _TestRunner:
 
         tinctures.end_tinctures(expected, response)
 
-        for response_type, response_verifiers in verifiers.items():
-            logger.debug("Running verifiers for %s", response_type)
-            for v in response_verifiers:
-                saved = v.verify(response)
-                stage_config.variables.update(saved)
+        fail_if = stage.get("fail_if", None)
+
+        try:
+            for response_type, response_verifiers in verifiers.items():
+                logger.debug("Running verifiers for %s", response_type)
+                for v in response_verifiers:
+                    saved = v.verify(response)
+                    stage_config.variables.update(saved)
+        except exceptions.TavernException as e:
+            # Attach the response so that things like 'retry_until' can still inspect it
+            # even though the stage failed verification
+            e.response = response
+
+            # A stage which failed can still be in a state which should not be retried
+            if fail_if is not None:
+                _check_fail_if(fail_if, stage, stage_config, response, success=False)
+
+            raise
+
+        if fail_if is not None:
+            _check_fail_if(fail_if, stage, stage_config, response, success=True)
 
         tavern_box.pop("request_vars")
         delay(stage, "after", stage_config.variables)
