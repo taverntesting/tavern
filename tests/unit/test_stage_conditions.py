@@ -459,6 +459,23 @@ class TestFailIf:
 
         assert inner.call_count == 1
 
+    @pytest.mark.parametrize(
+        "error",
+        [
+            exceptions.EvalError("could not evaluate 'fail_if'"),
+            exceptions.UnexpectedKeysError("experimental flag not enabled"),
+        ],
+    )
+    def test_broken_expression_is_not_retried(self, stage, test_block_config, error):
+        """Retrying will not fix an expression which can't be evaluated"""
+        stage["max_retries"] = 5
+        inner = _mock_stage_callable(side_effect=error)
+
+        with pytest.raises(type(error)):
+            retry(stage, test_block_config)(inner)()
+
+        assert inner.call_count == 1
+
     def test_takes_priority_over_retry_until(self, stage, test_block_config):
         """Both keys are evaluated, but 'fail_if' is checked while running the stage so
         it never reaches the 'retry_until' handling in the retry wrapper"""

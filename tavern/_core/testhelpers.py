@@ -105,6 +105,9 @@ def retry(stage: Mapping, test_block_config: TestConfig) -> Callable:
                         res = fn(*args, **kwargs)
                     except exceptions.BadSchemaError:
                         raise
+                    except (exceptions.EvalError, exceptions.UnexpectedKeysError):
+                        # A broken or disabled stage expression won't be fixed by a retry
+                        raise
                     except exceptions.FailIfError:
                         # 'fail_if' is a terminal state, there is no point retrying
                         logger.error(
