@@ -25,27 +25,27 @@ _RESPONSE_DICT_NAME = "__tavern_response"
 _RESPONSE_PRELUDE = f"response = struct(**{_RESPONSE_DICT_NAME})"
 
 
-def _import_starlark():
+def import_starlark():
     """Import the starlark module, raising a useful error if it isn't installed"""
     try:
         import starlark
     except ImportError as e:
         raise exceptions.DependencyMissingError(
-            "starlark", "pip install tavern[scriptable]"
+            "Starlark support needs the 'scriptable' extra: pip install tavern[scriptable]"
         ) from e
 
     return starlark
 
 
 def _get_dialect() -> "starlark.Dialect":
-    starlark = _import_starlark()
+    starlark = import_starlark()
     dialect = starlark.Dialect.extended()
     dialect.enable_keyword_only_arguments = True
     return dialect
 
 
 def _get_globals() -> "starlark.Globals":
-    starlark = _import_starlark()
+    starlark = import_starlark()
     return starlark.Globals.standard().extended_by(
         [
             starlark.LibraryExtension.StructType,
@@ -69,7 +69,7 @@ def _get_file_loader(
     Returns:
         a loader which handles '@tavern_helpers.star'
     """
-    starlark = _import_starlark()
+    starlark = import_starlark()
 
     from .builtins import (
         add_library_callables,
@@ -217,7 +217,7 @@ def eval_expression(
         exceptions.EvalError: if the expression could not be formatted or run, or if it
             did not evaluate to a boolean
     """
-    starlark = _import_starlark()
+    starlark = import_starlark()
 
     from .types import from_starlark, to_starlark
 

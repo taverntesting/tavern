@@ -58,12 +58,9 @@ def _run_with_starlark_control_flow(
         included_stages: Global stages and stages included in the test using !include
     """
     # Local import to avoid circular dependency
-    try:
-        import starlark
-    except ImportError as e:
-        raise exceptions.DependencyMissingError(
-            "control_flow needs the 'scriptable' extra: pip install tavern[scriptable]"
-        ) from e
+    from tavern._core.starlark.expressions import import_starlark
+
+    starlark = import_starlark()
 
     from tavern._core.starlark.starlark_env import StarlarkPipelineRunner
 
