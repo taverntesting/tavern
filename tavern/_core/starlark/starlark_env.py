@@ -197,11 +197,12 @@ class StarlarkPipelineRunner:
         try:
             response = runner.run_stage(0, stage)
         except TavernException as e:
-            logger.error("Stage '%s' failed: %s", stage_name, str(e), exc_info=True)
             if not continue_on_fail:
+                logger.error("Stage '%s' failed: %s", stage_name, e, exc_info=True)
                 self._python_error = e
                 self._python_error.stage = stage
                 raise
+            logger.info("Stage '%s' failed, continuing: %s", stage_name, e)
             return StageResponse(
                 success=False,
                 response=None,
