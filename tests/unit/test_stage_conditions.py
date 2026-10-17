@@ -96,6 +96,21 @@ class TestIfStage:
         with pytest.raises(exceptions.UnexpectedKeysError):
             _run_test(stage, test_block_config, run_mock)
 
+    def test_if_not_evaluated_for_stage_excluded_by_only(
+        self, stage, test_block_config, run_mock
+    ):
+        """'{not_saved_yet}' would raise, but the stage is never going to run"""
+        excluded = {**stage, "if": "{not_saved_yet} == 1"}
+        only = {**stage, "only": True}
+
+        run_test(
+            "test_file_name",
+            {"test_name": "A test using only", "stages": [excluded, only]},
+            test_block_config,
+        )
+
+        run_mock.assert_called_once()
+
 
 def _mock_response(body, status_code=200):
     response = Mock(spec=requests.Response)
