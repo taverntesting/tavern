@@ -330,6 +330,9 @@ def run_test(
                     if eval_skip(content, test_block_config):
                         continue
 
+                if has_only and not getonly(stage):
+                    continue
+
                 if (condition := stage.get("if")) is not None:
                     if not _eval_stage_condition(condition, stage, test_block_config):
                         logger.info(
@@ -337,9 +340,6 @@ def run_test(
                             stage["name"],
                         )
                         continue
-
-                if has_only and not getonly(stage):
-                    continue
 
                 runner.run_stage(idx, stage)
 
