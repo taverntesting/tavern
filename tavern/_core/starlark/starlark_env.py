@@ -16,7 +16,7 @@ from tavern._core.run import _TestRunner
 from .builtins import add_library_callables, get_starlark_builtins, wrap_callable
 from .response_struct import create_response_struct
 from .stage_registry import StageRegistry
-from .types import from_starlark, to_starlark
+from .types import to_starlark
 
 logger: logging.Logger = logging.getLogger(__name__)
 
