@@ -124,6 +124,8 @@ def retry(stage: Mapping, test_block_config: TestConfig) -> Callable:
                                         "Stage '%s' failed but 'retry_until' was true, continuing.",
                                         stage["name"],
                                     )
+                                    # The stage raised before its own delay_after
+                                    delay(stage, "after", test_block_config.variables)
                                     res = e.response
                                     break
                             else:
