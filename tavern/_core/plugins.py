@@ -213,12 +213,19 @@ class _PluginCache:
 load_plugins = _PluginCache()
 
 
-def get_extra_sessions(test_spec: Mapping, test_block_config: TestConfig) -> dict:
+def get_extra_sessions(
+    test_spec: Mapping,
+    test_block_config: TestConfig,
+    force_plugins: list[str] | None = None,
+) -> dict:
     """Get extra 'sessions' for any extra test types
 
     Args:
         test_spec: Spec for the test block
         test_block_config: available config for test
+        force_plugins: Optional list of plugin names to always load regardless of
+            whether their request/response blocks are found in stages. This is useful
+            when stages are loaded from external includes (e.g., Starlark control_flow).
 
     Returns:
         mapping of name to session. Session should be a context manager.
@@ -228,11 +235,17 @@ def get_extra_sessions(test_spec: Mapping, test_block_config: TestConfig) -> dic
 
     plugins: list[_Plugin] = load_plugins(test_block_config)
 
+    logger.debug("Available plugins: %s", [p.name for p in plugins])
+
     for p in plugins:
-        if any(
+        # Check if plugin should be loaded based on stages or force_plugins list
+        in_stages = any(
             (p.plugin.request_block_name in i or p.plugin.response_block_name in i)
             for i in test_spec["stages"]
-        ):
+        )
+        is_forced = force_plugins and p.name in force_plugins
+
+        if in_stages or is_forced:
             logger.debug(
                 "Initialising session for %s (%s)", p.name, p.plugin.session_type
             )
@@ -290,7 +303,13 @@ def get_request_type(
         except KeyError:
             pass
         else:
-            session = sessions[p.name]
+            try:
+                session = sessions[p.name]
+            except KeyError as e:
+                raise exceptions.MissingSettingsError(
+                    f"expected session {p.name} but none found"
+                ) from e
+
             request_class = p.plugin.request_type
             logger.debug(
                 "Initialising request class for %s (%s)", p.name, request_class

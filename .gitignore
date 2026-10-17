@@ -130,3 +130,6 @@ example/grpc/proto
 
 # MyST build outputs
 _build
+
+opencode.json
+/.opencode/

@@ -79,7 +79,9 @@ pre-commit run --all-files
 
 1. Setup `~/.pypirc` according to the [official instructions](https://packaging.python.org/en/latest/specifications/pypirc/) 
 
-1. Tag and push to git with `tbump <new-tag> --tag-message "<tag-message>"`
+1. Bump the version, update the changelog and tag with
+   `./scripts/bump.bash <new-version> --tag-message "<tag-message>"`, then push the commit and the
+   tag as instructed (or pass `--push` to have the script do it)
 
 1. Upload to pypi with `flit publish`
 

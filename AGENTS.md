@@ -42,7 +42,10 @@ uv run tox -c tox-integration.ini -e py3-allure      # example/allure, generates
 pre-PR check.
 `example/custom_backend` has its own bats-based `run_tests.sh` exercising third-party plugin loading.
 
-Releases: `tbump <new-tag>` (bumps `tavern/__init__.py`, regenerates CHANGELOG, re-locks) then `flit publish`.
+Releases: `./scripts/bump.bash <new-version> --tag-message "..."` (runs `uv version`, which updates
+`[project] version` in `pyproject.toml` and re-locks, then commits, tags and regenerates CHANGELOG)
+then `flit publish`. The version literal lives only in `pyproject.toml`; `tavern.__version__` reads it
+back from the installed package metadata.
 
 ## Architecture
 
