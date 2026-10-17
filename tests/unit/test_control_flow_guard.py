@@ -8,7 +8,7 @@ import pytest
 from tavern._core import exceptions
 from tavern._core.pytest.config import TavernInternalConfig, TestConfig
 from tavern._core.run import run_test
-from tavern._core.starlark import StarlarkPipelineRunner
+from tavern._core.starlark.starlark_env import StarlarkPipelineRunner
 from tavern._core.strict_util import StrictLevel
 
 

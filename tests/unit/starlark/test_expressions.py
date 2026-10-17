@@ -1,9 +1,23 @@
 import dataclasses
+import sys
 
 import pytest
 
 from tavern._core import exceptions
-from tavern._core.starlark.expressions import eval_expression, eval_stage_expression
+from tavern._core.starlark.expressions import (
+    eval_expression,
+    eval_stage_expression,
+    import_starlark,
+)
+
+
+def test_missing_starlark_names_the_extra(monkeypatch):
+    monkeypatch.setitem(sys.modules, "starlark", None)
+
+    with pytest.raises(exceptions.DependencyMissingError) as exc_info:
+        import_starlark()
+
+    assert "pip install tavern[scriptable]" in str(exc_info.value)
 
 
 class TestEvalExpression:
