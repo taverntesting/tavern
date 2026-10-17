@@ -37,6 +37,26 @@ def wrap_callable(fn):
     return wrapper
 
 
+def get_dialect() -> "starlark.Dialect":
+    """Dialect used to parse both 'control_flow' scripts and per-stage expressions"""
+    import starlark
+
+    dialect = starlark.Dialect.extended()
+    dialect.enable_keyword_only_arguments = True
+    return dialect
+
+
+def get_globals() -> "starlark.Globals":
+    """Globals used to run both 'control_flow' scripts and per-stage expressions"""
+    import starlark
+
+    return starlark.Globals.standard().extended_by(
+        [
+            starlark.LibraryExtension.StructType,
+        ]
+    )
+
+
 def get_starlark_builtins() -> str:
     """Load the Starlark builtins from the tavern_helpers.star file.
 

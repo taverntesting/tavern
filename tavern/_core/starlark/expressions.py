@@ -37,22 +37,6 @@ def import_starlark():
     return starlark
 
 
-def _get_dialect() -> "starlark.Dialect":
-    starlark = import_starlark()
-    dialect = starlark.Dialect.extended()
-    dialect.enable_keyword_only_arguments = True
-    return dialect
-
-
-def _get_globals() -> "starlark.Globals":
-    starlark = import_starlark()
-    return starlark.Globals.standard().extended_by(
-        [
-            starlark.LibraryExtension.StructType,
-        ]
-    )
-
-
 def _get_file_loader(
     module_globals: "starlark.Globals", dialect: "starlark.Dialect"
 ) -> "starlark.FileLoader":
@@ -219,6 +203,7 @@ def eval_expression(
     """
     starlark = import_starlark()
 
+    from .builtins import get_dialect, get_globals
     from .types import from_starlark, to_starlark
 
     try:
@@ -228,9 +213,9 @@ def eval_expression(
             f"Undefined variable used in Starlark expression for {description}: {expr}"
         ) from e
 
-    dialect = _get_dialect()
+    dialect = get_dialect()
     module = starlark.Module()
-    module_globals = _get_globals()
+    module_globals = get_globals()
 
     if response is not None:
         module[_RESPONSE_DICT_NAME] = to_starlark(dict(response))
