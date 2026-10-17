@@ -34,9 +34,15 @@ def mock_response():
 
 
 @pytest.fixture
-def basic_runner(fix_test_config):
+def fix_test_spec():
+    return {"test_name": "starlark unit test", "stages": []}
+
+
+@pytest.fixture
+def basic_runner(fix_test_config, fix_test_spec):
     return StarlarkPipelineRunner(
         test_path="/test/path.tavern.star",
+        test_spec=fix_test_spec,
         stages=[],
         test_config=fix_test_config,
         sessions={},

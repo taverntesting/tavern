@@ -95,6 +95,7 @@ def _run_with_starlark_control_flow(
 
     runner = StarlarkPipelineRunner(
         test_path=str(in_file),
+        test_spec=test_spec,
         stages=list(stages_by_id.values()),
         test_config=test_block_config,
         sessions=sessions,
@@ -443,7 +444,7 @@ class _TestRunner:
     test_block_config: TestConfig
     test_spec: Mapping
 
-    def run_stage(self, idx: int, stage, *, is_final: bool = False) -> None:
+    def run_stage(self, idx: int, stage, *, is_final: bool = False) -> Any:
         tinctures = get_stage_tinctures(stage, self.test_spec, self.test_block_config)
 
         stage_config = self.test_block_config.with_strictness(
@@ -463,7 +464,7 @@ class _TestRunner:
         step = wrap_step(allure_name, partial)
 
         try:
-            step()
+            return step()
         except exceptions.TavernException as e:
             e.stage = stage
             e.test_block_config = stage_config

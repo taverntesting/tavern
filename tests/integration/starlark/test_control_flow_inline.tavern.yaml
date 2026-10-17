@@ -259,6 +259,27 @@ control_flow: |
       log("Verified entity " + str(entity_id) + " is deleted")
 
 ---
+test_name: Test control_flow stages use the normal strictness settings
+
+stages:
+  - name: Echo with a check on one header
+    id: echo_one_header
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "hello"
+    response:
+      status_code: 200
+      # The server sends other headers too, which only fails if header strictness is on
+      headers:
+        content-type: application/json
+
+control_flow: |
+  load("@tavern_helpers.star", "run_stage")
+  run_stage("echo_one_header")
+
+---
 test_name: Test control_flow with a ref to a global stage
 
 stages:

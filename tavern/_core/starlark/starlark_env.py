@@ -7,6 +7,7 @@ import importlib.resources
 import logging
 import re
 import time
+from collections.abc import Mapping
 from typing import Any
 
 import requests
@@ -16,8 +17,6 @@ from tavern._core import exceptions
 from tavern._core.exceptions import TavernException
 from tavern._core.pytest.config import TestConfig
 from tavern._core.run import _TestRunner
-from tavern._core.strict_util import StrictLevel
-from tavern._core.tincture import get_stage_tinctures
 
 from .stage_registry import StageRegistry
 from .types import from_starlark, to_starlark
@@ -79,6 +78,7 @@ class StarlarkPipelineRunner:
     def __init__(
         self,
         test_path: str,
+        test_spec: Mapping,
         stages: list[dict],
         test_config: TestConfig,
         sessions: dict[str, Any],
@@ -89,9 +89,11 @@ class StarlarkPipelineRunner:
             test_config: The test configuration with variables
             sessions: session contexts to use for the pipeline
             test_path: Path to the test file being run (used for error reporting in starlark parsing)
+            test_spec: The test block, for test level settings such as 'strict' and 'tinctures'
             stages: Optional list of stage dictionaries to register
         """
         self.test_path = test_path
+        self._test_spec = test_spec
         self.globals = starlark.Globals.standard().extended_by(
             [
                 starlark.LibraryExtension.StructType,
@@ -179,9 +181,6 @@ class StarlarkPipelineRunner:
         stage = copy.deepcopy(stage)  # Make a deep copy to avoid mutating nested dicts
         stage_name = stage.get("name", "unnamed-stage")
 
-        default_strictness = StrictLevel.all_on()
-        test_spec = {"test_name": "starlark-pipeline", "stages": [stage]}
-
         if extra_vars:
             test_config = self._test_config.with_new_variables()
             test_config.variables.update(extra_vars)
@@ -189,24 +188,14 @@ class StarlarkPipelineRunner:
             test_config = self._test_config
 
         runner = _TestRunner(
-            default_global_strictness=default_strictness,
+            default_global_strictness=self._test_config.strict,
             sessions=self._sessions,
             test_block_config=test_config,
-            test_spec=test_spec,
+            test_spec=self._test_spec,
         )
 
         try:
-            tinctures = get_stage_tinctures(stage, test_spec)
-            stage_config = test_config.with_strictness(default_strictness)
-            response = runner.wrapped_run_stage(stage, stage_config, tinctures)
-
-            return StageResponse(
-                success=True,
-                response=response,
-                request_vars=test_config.variables,
-                stage_name=stage_name,
-            )
-
+            response = runner.run_stage(0, stage)
         except TavernException as e:
             logger.error("Stage '%s' failed: %s", stage_name, str(e), exc_info=True)
             if not continue_on_fail:
@@ -219,6 +208,13 @@ class StarlarkPipelineRunner:
                 request_vars=test_config.variables,
                 stage_name=stage_name,
             )
+
+        return StageResponse(
+            success=True,
+            response=response,
+            request_vars=test_config.variables,
+            stage_name=stage_name,
+        )
 
     def _create_response_struct(self, stage_response: StageResponse) -> dict[str, Any]:
         """Convert StageResponse to dict that starlark converts to struct."""
