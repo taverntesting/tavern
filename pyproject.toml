@@ -221,6 +221,7 @@ ignore = [
     "PLR2004", # 'magic numbers'
     "PLW2901", # Loop variable overridden
     "PLC0415", # import not at top of file
+    "ICN001", # import conventions, e.g. datetime as dt
 ]
 select = ["E", "F", "B", "W", "I", "S", "C4", "ICN", "T20", "PLE", "RUF", "SIM105", "PL", "U"]
 
