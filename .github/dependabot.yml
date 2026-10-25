@@ -30,22 +30,11 @@ updates:
       - dependency-name: paho-mqtt
         update-types: ["version-update:semver-major"]
     groups:
-      python-dev:
-        dependency-type: development
+      python:
         patterns:
           - "*"
-      python-prod:
-        dependency-type: production
-        patterns:
-          - "*"
-      python-dev-security:
+      python-security:
         applies-to: security-updates
-        dependency-type: development
-        patterns:
-          - "*"
-      python-prod-security:
-        applies-to: security-updates
-        dependency-type: production
         patterns:
           - "*"
 
