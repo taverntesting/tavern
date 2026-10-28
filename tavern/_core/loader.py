@@ -12,7 +12,12 @@ from typing import Optional
 
 import pytest
 import yaml
-from _pytest.python_api import ApproxBase
+
+try:
+    from pytest import Approx as ApproxBase
+except ImportError:
+    # pytest < 9.2
+    from _pytest.python_api import ApproxBase
 from yaml.composer import Composer
 from yaml.constructor import SafeConstructor
 from yaml.nodes import Node, ScalarNode
@@ -423,7 +428,7 @@ class DeprecatedForceIncludeToken(ForceIncludeToken):
 ApproxScalar = type(pytest.approx(1.0))
 
 
-class ApproxSentinel(yaml.YAMLObject, ApproxScalar):  # type:ignore
+class ApproxSentinel(yaml.YAMLObject):
     yaml_tag = "!approx"
     yaml_loader = IncludeLoader
 
