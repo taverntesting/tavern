@@ -85,6 +85,39 @@ class TestGenerateFiles:
         for test, expected_name in zip(tests, expected_names):
             assert test.name == expected_name
 
+    @pytest.mark.parametrize("position", (0, 1))
+    def test_control_flow_without_stages(self, tavern_test_content, position):
+        """A control_flow test that only uses included stages has no 'stages' key"""
+        tavern_test_content.insert(
+            position, {"test_name": "Control flow", "control_flow": "run_stage('a')"}
+        )
+
+        def generate_yamlitem(test_spec):
+            mock = Mock(spec=YamlItem)
+            mock.name = test_spec["test_name"]
+            yield mock
+
+        with tavern_test_file(tavern_test_content) as filename:
+            tests = list(
+                YamlFile.collect(
+                    Opener(path=filename, _generate_items=generate_yamlitem)
+                )
+            )
+
+        assert len(tests) == 4
+        assert tests[position].name == "Control flow"
+
+    def test_control_flow_without_test_name(self, tavern_test_content):
+        tavern_test_content.insert(1, {"control_flow": "run_stage('a')"})
+
+        with tavern_test_file(tavern_test_content) as filename:
+            with pytest.raises(exceptions.BadSchemaError):
+                list(
+                    YamlFile.collect(
+                        Opener(path=filename, _generate_items=lambda spec: iter(()))
+                    )
+                )
+
     @pytest.mark.parametrize(
         "content, exception",
         (

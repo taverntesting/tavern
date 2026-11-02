@@ -93,7 +93,7 @@ def _parse_func_mark(fmt_vars: Mapping, m: str) -> pytest.Mark:
             posargs = [_ast_node_to_literal(arg) for arg in call.args]
 
             # Extract keyword arguments as literals
-            kwargs = {
+            kwargs: dict = {
                 kw.arg: _ast_node_to_literal(kw.value)
                 for kw in call.keywords
                 if kw.arg is not None
@@ -467,7 +467,9 @@ class YamlFile(pytest.File):
                 )
 
             # Determine if this document is a test or defaults
-            is_test_doc = "test_name" in test_spec and "stages" in test_spec
+            is_test_doc = "test_name" in test_spec and (
+                "stages" in test_spec or "control_flow" in test_spec
+            )
 
             if document_idx == 0 and is_defaults:
                 if is_test_doc:

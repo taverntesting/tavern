@@ -12,7 +12,7 @@ if not os.environ.get("TAVERN_INTEGRATION_ALLOW_COLLECT"):
     # Plain top-level pytest: run the yaml suite only via the pytester runner
     # (subprocess), never in-process — tavern patches the yaml parser globally
     # and the suite needs --tavern-global-cfg and a running server.
-    collect_ignore_glob = ["test_*.tavern.yaml"]
+    collect_ignore_glob = ["test_*.tavern.yaml", "starlark/test_*.tavern.yaml"]
 else:
     # tox-integration generic/noextra (docker server on port 5003) or the
     # pytester subprocess: yaml files run directly, so the runner must not also
