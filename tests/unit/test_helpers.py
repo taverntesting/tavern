@@ -161,7 +161,10 @@ class TestTavernRepr:
     @pytest.fixture(name="fake_item")
     def fix_fake_item(self, request):
         item = YamlItem.from_parent(
-            name="Fake Test Item", parent=request.node, spec={}, path="/tmp/hello"
+            name="Fake Test Item",
+            parent=request.node.parent,
+            spec={},
+            path="/tmp/hello",
         )
         return item
 

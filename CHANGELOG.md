@@ -1,5 +1,9 @@
 # Changelog
 
+## 3.7.1           Prevent MQTT message being full from blocking the loop (2026-10-17)
+
+# 3.7.0           fix matching list items greedily (2026-09-25)
+
 ## 3.6.3           fix matching list items in any order (2026-08-31)
 
 ## 3.6.2           fix allure parametrization (2026-08-24)
