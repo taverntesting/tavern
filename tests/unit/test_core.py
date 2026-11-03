@@ -416,6 +416,42 @@ class TestFormatRequestVars:
         assert pmock.called
 
 
+class TestSupportedHttpMethods:
+    """All supported HTTP methods, including the WebDAV ones, can be used"""
+
+    @pytest.mark.parametrize(
+        "method",
+        [
+            "GET",
+            "PUT",
+            "POST",
+            "DELETE",
+            "PATCH",
+            "OPTIONS",
+            "HEAD",
+            "COPY",
+            "LOCK",
+            "MKCOL",
+            "MOVE",
+            "PROPFIND",
+            "PROPPATCH",
+            "UNLOCK",
+        ],
+    )
+    def test_supported_method(self, fulltest, mockargs, includes, method):
+        fulltest["stages"][0]["request"]["method"] = method
+
+        mock_response = Mock(**mockargs)
+
+        with patch(
+            "tavern._plugins.rest.request.requests.Session.request",
+            return_value=mock_response,
+        ) as pmock:
+            run_test("heif", fulltest, includes)
+
+        assert pmock.call_args.kwargs["method"] == method
+
+
 class TestFormatMQTTVarsJson:
     """Test that formatting request vars from mqtt works as well, with json payload"""
 

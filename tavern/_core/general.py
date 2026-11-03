@@ -40,4 +40,12 @@ valid_http_methods = [
     "PATCH",
     "OPTIONS",
     "HEAD",
+    # WebDAV methods, see https://www.rfc-editor.org/rfc/rfc4918
+    "COPY",
+    "LOCK",
+    "MKCOL",
+    "MOVE",
+    "PROPFIND",
+    "PROPPATCH",
+    "UNLOCK",
 ]
