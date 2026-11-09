@@ -1,0 +1,373 @@
+is_defaults: True
+marks:
+  - starlark_control_flow
+
+---
+# Tests for the per-stage 'if' and 'retry_until' starlark expressions. These do not
+# need a 'control_flow' script, but do need the same experimental flag.
+
+test_name: Test per-stage 'if' with a saved variable
+
+stages:
+  - name: Echo a number to save
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: 5
+    response:
+      status_code: 200
+      save:
+        json:
+          var_x: value
+
+  - name: This stage should run
+    if: "{var_x} > 2"
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "ran"
+    response:
+      status_code: 200
+      json:
+        value: "ran"
+
+  - name: This stage should not run
+    if: "{var_x} > 100"
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "should not have run"
+    response:
+      # If this stage is ever actually run it will fail here
+      status_code: 999
+
+---
+test_name: Test per-stage 'if' using a nested value
+
+stages:
+  - name: Echo a dict to save
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value:
+          status: ready
+    response:
+      status_code: 200
+      save:
+        json:
+          echoed: value
+
+  - name: This stage should run
+    if: "'{echoed.status}' == 'ready'"
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "ran"
+    response:
+      status_code: 200
+      json:
+        value: "ran"
+
+---
+# Because expressions are format-string interpolated rather than bound as starlark
+# names, variables which aren't valid starlark identifiers work just as well
+test_name: Test per-stage 'if' using a variable with a dash in the name
+
+includes:
+  - name: dashed_vars
+    description: a variable which is not a valid starlark identifier
+    variables:
+      my-thing: 5
+
+stages:
+  - name: This stage should run
+    if: "{my-thing} > 4"
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "ran"
+    response:
+      status_code: 200
+      json:
+        value: "ran"
+
+---
+# An 'expression' can be several statements long, with the value of the last one
+# deciding the result. The helper modules still have to be loaded, as in a
+# 'control_flow' script
+test_name: Test per-stage 'if' using a multiline script
+
+stages:
+  - name: Echo a version string to save
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "server v2.5.1"
+    response:
+      status_code: 200
+      save:
+        json:
+          saved_version: value
+
+  - name: This stage should run because the major version is 2
+    if: |
+      load("@tavern_helpers.star", "re")
+
+      match = re.search("v(\\d+)\\.", "{saved_version}")
+      match != None and int(match.groups[0]) == 2
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "ran"
+    response:
+      status_code: 200
+      json:
+        value: "ran"
+
+  - name: This stage should not run because the major version is not 3
+    if: |
+      load("@tavern_helpers.star", "re")
+
+      match = re.search("v(\\d+)\\.", "{saved_version}")
+      match != None and int(match.groups[0]) == 3
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "should not have run"
+    response:
+      # If this stage is ever actually run it will fail here
+      status_code: 999
+
+---
+test_name: Test 'retry_until' using a multiline script
+
+stages:
+  - name: Poll until the job reaches a state matching a regex
+    request:
+      url: "{global_host}/job/multiline-works"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 5
+    delay_after: 0.1
+    retry_until: |
+      load("@tavern_helpers.star", "re")
+
+      terminal = re.match("(SUCCESS|FAILED)", response.body["status"])
+      terminal != None
+
+---
+test_name: Test per-stage 'if' referring to a variable that was never saved
+
+_xfail: run
+
+stages:
+  - name: This stage errors because the variable is not defined
+    if: "{never_saved} == 1"
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "hello"
+    response:
+      status_code: 200
+
+---
+test_name: Test 'retry_until' polling until the response body is ready
+
+stages:
+  # The response block only matches when the poll endpoint says 'ready'. Until then the
+  # stage fails, and 'retry_until' is consulted to decide whether to keep going.
+  - name: Poll until ready
+    request:
+      url: "{global_host}/poll"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: ready
+    max_retries: 5
+    delay_after: 0.1
+    retry_until: response.body["status"] == "ready"
+
+---
+test_name: Test 'retry_until' is not evaluated when the stage passes
+
+stages:
+  # 'retry_until' can never be true, but the stage itself passes first time, so it is
+  # never evaluated and the stage is not retried
+  - name: Poll once
+    request:
+      url: "{global_host}/poll"
+      method: GET
+    response:
+      status_code: 200
+    max_retries: 2
+    delay_after: 0.1
+    retry_until: response.body["status"] == "never-going-to-happen"
+
+---
+test_name: Test 'retry_until' which is never true fails the test
+
+_xfail: run
+
+stages:
+  - name: Poll for something that never happens
+    request:
+      url: "{global_host}/poll"
+      method: GET
+    response:
+      # Never matches, so the stage always fails and retry_until is always consulted
+      status_code: 418
+    max_retries: 2
+    delay_after: 0.1
+    retry_until: response.body["status"] == "never-going-to-happen"
+
+---
+# https://github.com/taverntesting/tavern/issues/751 - poll a long running job until it
+# reaches _any_ terminal state, rather than guessing how many retries it will need
+test_name: Test 'retry_until' stopping on any terminal state
+
+stages:
+  - name: Poll until the job finishes
+    request:
+      url: "{global_host}/job/works"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 5
+    delay_after: 0.1
+    retry_until: response.body["status"] == "SUCCESS" or response.body["status"] == "FAILED"
+
+---
+test_name: Test 'retry_until' stopping on a terminal state which is a failure
+
+stages:
+  # The job reaches 'FAILED', which is still finished as far as the polling is
+  # concerned, so 'retry_until' stops the retries even though this stage fails
+  - name: Poll until the job finishes
+    request:
+      url: "{global_host}/job/doomed-to-fail"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 5
+    delay_after: 0.1
+    retry_until: response.body["status"] == "SUCCESS" or response.body["status"] == "FAILED"
+
+  # Because a stage which finished via 'retry_until' does not save anything, check what
+  # the job actually ended up as in a separate stage
+  - name: Check the job failed
+    request:
+      url: "{global_host}/job/doomed-to-fail"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: FAILED
+
+---
+test_name: Test 'retry_until' can use the status code and test variables
+
+includes:
+  - name: retry_until_vars
+    description: variables used in the retry_until expression
+    variables:
+      expected_status: ready
+
+stages:
+  - name: Poll until ready
+    request:
+      url: "{global_host}/poll"
+      method: GET
+    response:
+      status_code: 418
+    max_retries: 5
+    delay_after: 0.1
+    retry_until: response.status_code == 200 and response.body["status"] == "{expected_status}"
+
+---
+test_name: Test 'fail_if' as a negative assertion on a stage which otherwise passes
+
+_xfail: run
+
+stages:
+  # The response block matches, but 'fail_if' says this is a failure anyway
+  - name: Echo something which should never come back
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "a bad value"
+    response:
+      status_code: 200
+    fail_if: response.body["value"] == "a bad value"
+
+---
+test_name: Test 'fail_if' which is false does not affect the stage
+
+stages:
+  - name: Echo something fine
+    request:
+      url: "{global_host}/echo"
+      method: POST
+      json:
+        value: "a good value"
+    response:
+      status_code: 200
+      json:
+        value: "a good value"
+    fail_if: response.body["value"] == "a bad value"
+
+---
+# https://github.com/taverntesting/tavern/issues/751 - stop polling as soon as the job
+# is in a state it can never recover from, rather than waiting out all the retries
+test_name: Test 'fail_if' stops polling at a terminal failure
+
+_xfail: run
+
+stages:
+  - name: Poll until the job succeeds
+    request:
+      url: "{global_host}/job/fail-if-doomed-to-fail"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 20
+    delay_after: 0.1
+    retry_until: response.body["status"] == "SUCCESS"
+    fail_if: response.body["status"] == "FAILED"
+
+---
+test_name: Test 'fail_if' does not trigger for a job which succeeds
+
+stages:
+  - name: Poll until the job succeeds
+    request:
+      url: "{global_host}/job/fail-if-works"
+      method: GET
+    response:
+      status_code: 200
+      json:
+        status: SUCCESS
+    max_retries: 20
+    delay_after: 0.1
+    retry_until: response.body["status"] == "SUCCESS"
+    fail_if: response.body["status"] == "FAILED"

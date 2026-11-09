@@ -1,5 +1,5 @@
 version = 1
-revision = 5
+revision = 3
 requires-python = ">=3.12"
 resolution-markers = [
     "python_full_version >= '3.14'",
@@ -2547,7 +2547,7 @@ wheels = [
 
 [[package]]
 name = "tavern"
-version = "4.0.0rc1"
+version = "4.0.0rc2"
 source = { editable = "." }
 dependencies = [
     { name = "jmespath" },
