@@ -48,6 +48,7 @@ def make_test_config(tinctures=None, mock_internal_config=None):
         strict=StrictLevel.all_off(),
         follow_redirects=False,
         stages=[],
+        experimental_starlark_pipeline=False,
         tavern_internal=mock_internal_config,
         tinctures=tinctures,
     )

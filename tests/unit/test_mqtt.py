@@ -1,4 +1,3 @@
-import time
 from unittest.mock import MagicMock, Mock, patch
 
 import paho.mqtt.client as paho
@@ -21,7 +20,7 @@ def test_host_required():
 
 @pytest.fixture(name="fake_client")
 def fix_fake_client():
-    args = {"connect": {"host": "localhost", "timeout": 0.6}}
+    args = {"connect": {"host": "localhost", "timeout": 0.01}}
 
     mqtt_client = MQTTClient(**args)
 
@@ -54,7 +53,7 @@ class TestClient:
     def test_context_connection_failure(self, fake_client):
         """Unable to connect on __enter__ raises MQTTError"""
 
-        fake_client._connect_timeout = 0.3
+        fake_client._connect_timeout = 0.01
 
         with patch.object(fake_client._client, "loop_start"):
             with pytest.raises(exceptions.MQTTError):
@@ -112,7 +111,7 @@ class TestClient:
 
         class FakeMessage(paho.MQTTMessageInfo):
             def wait_for_publish(self, timeout=None):
-                time.sleep(0.5)
+                pass
 
             def is_published(self):
                 return True

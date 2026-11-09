@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Releasing:
-# 1. tbump <new-version> --tag-message "<message>"
+# 1. ./scripts/bump.bash <new-version> --tag-message "<message>"
 # 2. run this script
 
 rm -rf build/ dist/ ./*.egg-info

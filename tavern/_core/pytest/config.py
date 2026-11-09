@@ -29,6 +29,7 @@ class TestConfig:
         variables: variables available for use in the stage
         strict: Strictness for test/stage
         stages: Any extra stages imported from other config files
+        experimental_starlark_pipeline: Whether experimental starlark control_flow support is enabled (inline 'control_flow' block in test files)
         test_file_path: Optional path to the test file being run (used for resolving relative paths)
         tavern_internal: Internal config that should be used only by tavern
         tinctures: Global tinctures to apply to all test stages
@@ -38,6 +39,7 @@ class TestConfig:
     strict: StrictLevel
     follow_redirects: bool
     stages: list
+    experimental_starlark_pipeline: bool | None
     tavern_internal: TavernInternalConfig
     tinctures: list | dict | None = None
     test_file_path: str | None = None
