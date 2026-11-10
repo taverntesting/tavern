@@ -21,6 +21,7 @@ from tavern._core.strict_util import (
 )
 from tavern.core import run
 from tavern.helpers import (
+    check_exception_raised,
     validate_content,
     validate_pydantic,
     validate_pykwalify,
@@ -101,6 +102,16 @@ class TestRegex:
         result = validate_regex(response, expression, in_jmespath=path)
 
         assert result["regex"]["num"] == expected[-1]
+
+
+class TestCheckExceptionRaised:
+    def test_malformed_location_raises_bad_schema_error(self):
+        response = Mock()
+        response.content = b'{"title": "x"}'
+        response.status_code = 400
+
+        with pytest.raises(exceptions.BadSchemaError, match="module:ExceptionClass"):
+            check_exception_raised(response, "no-colon-here")
 
 
 class TestRunAlone:
