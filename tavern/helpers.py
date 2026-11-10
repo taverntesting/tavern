@@ -30,7 +30,14 @@ def check_exception_raised(
 
     dumped = json.loads(response.content.decode("utf8"))
 
-    module_name, exception_name = exception_location.split(":")
+    try:
+        module_name, exception_name = exception_location.split(":")
+    except ValueError as e:
+        raise exceptions.BadSchemaError(
+            "Invalid exception location "
+            f"'{exception_location}': expected format 'module:ExceptionClass' "
+            "(e.g. 'myapp.errors:MyException')"
+        ) from e
     module = importlib.import_module(module_name)
     exception = getattr(module, exception_name)
 
