@@ -5,11 +5,11 @@ repos:
       - id: actionlint
         args: ["-shellcheck="]
   - repo: https://github.com/zizmorcore/zizmor-pre-commit
-    rev: v1.31.1
+    rev: v1.32.0
     hooks:
       - id: zizmor
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.17.2
+    rev: v0.17.4
     hooks:
       - id: ruff-format
       - id: ruff-check
@@ -21,7 +21,7 @@ repos:
         types_or: [yaml]
         exclude: (example/)
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v2.4.0
+    rev: v2.4.1
     hooks:
       - id: mypy
         additional_dependencies:
@@ -33,7 +33,7 @@ repos:
         exclude: (tests|example/)
   - repo: https://github.com/astral-sh/uv-pre-commit
     # uv version.
-    rev: 0.13.5
+    rev: 0.13.7
     hooks:
       - id: uv-lock
 
