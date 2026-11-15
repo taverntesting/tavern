@@ -183,6 +183,29 @@ class TestCookies:
         with pytest.raises(exceptions.DuplicateCookieError):
             _read_expected_cookies(mock_session, req, includes)
 
+    @pytest.mark.parametrize(
+        ("overrides", "expected"),
+        [
+            ([{"a": "first", "b": "second"}], {"a": "first", "b": "second"}),
+            (
+                [{"a": "first"}, {"b": "second", "c": "third"}],
+                {"a": "first", "b": "second", "c": "third"},
+            ),
+        ],
+    )
+    def test_multi_cookie_overrides(
+        self, mock_session, req, includes, overrides, expected
+    ):
+        req["cookies"] = overrides
+
+        assert _read_expected_cookies(mock_session, req, includes) == expected
+
+    def test_duplicate_multi_cookie_overrides(self, mock_session, req, includes):
+        req["cookies"] = [{"a": "first", "b": "second"}, {"a": "replacement"}]
+
+        with pytest.raises(exceptions.DuplicateCookieError):
+            _read_expected_cookies(mock_session, req, includes)
+
     def test_cookies_restored_after_request_exception(self, req, includes):
         """Cookies must be restored even if the request raises an exception"""
         from requests.utils import dict_from_cookiejar

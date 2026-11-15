@@ -372,7 +372,7 @@ def _read_expected_cookies(
     # 'extra' should be a list of dictionaries - merge them into one here
     from_extra = {k: v for mapping in extra for (k, v) in mapping.items()}
 
-    if len(extra) != len(from_extra):
+    if sum(len(mapping) for mapping in extra) != len(from_extra):
         logger.error("Duplicate cookie override values specified")
         raise exceptions.DuplicateCookieError(
             "Tried to override the value of a cookie multiple times in one request"

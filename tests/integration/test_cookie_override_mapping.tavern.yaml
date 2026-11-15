@@ -1,0 +1,34 @@
+---
+test_name: Override multiple cookies in one mapping
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: Send the first cookie from the mapping
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-1
+      cookies:
+        - tavern-cookie-1: first
+          tavern-cookie-2: second
+    response:
+      status_code: 200
+      json:
+        status: ok
+
+  - name: Send the second cookie from the mapping
+    request:
+      url: "{host}/expect_cookie"
+      method: GET
+      json:
+        cookie_name: tavern-cookie-2
+      cookies:
+        - tavern-cookie-1: first
+          tavern-cookie-2: second
+    response:
+      status_code: 200
+      json:
+        status: ok
