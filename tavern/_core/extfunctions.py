@@ -153,10 +153,12 @@ def _resolve_nested_ext(value: Any) -> Any:
     request block: a mapping returned by the function is merged into the
     rest of the dict, and anything else replaces the dict entirely.
 
-    Boxes are not searched. format_keys rebuilds everything written in the
-    test as plain dicts and lists, so a Box here is a value that was pulled
-    in from a variable with !force_format_include. That is data rather than
-    part of the test, and a '$ext' key in it is left alone.
+    Boxes and tuples are not searched. format_keys rebuilds everything
+    written in the test as plain dicts and lists, so a Box here is a value
+    that was pulled in from a variable with !force_format_include. That is
+    data rather than part of the test, and a '$ext' key in it is left alone.
+    A Box does not convert tuples, and YAML cannot produce one, so a tuple
+    is treated as included data as well.
 
     Args:
         value: part of a request block, after formatting
@@ -164,14 +166,11 @@ def _resolve_nested_ext(value: Any) -> Any:
     Returns:
         value with the results of any '$ext' functions applied
     """
-    if isinstance(value, (Box, BoxList)):
+    if isinstance(value, (Box, BoxList, tuple)):
         return value
 
     if isinstance(value, list):
         return [_resolve_nested_ext(item) for item in value]
-
-    if isinstance(value, tuple):
-        return tuple(_resolve_nested_ext(item) for item in value)
 
     if not isinstance(value, dict):
         return value

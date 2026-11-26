@@ -133,13 +133,6 @@ class TestNestedExt:
 
         assert request_args["json"] == {"values": [1, 2], "b": 2}
 
-    def test_inside_tuple(self, calls):
-        request_args = {"json": {"pair": ({"a": 1}, {"$ext": ext("text")})}}
-
-        update_from_ext(request_args, ["json"])
-
-        assert request_args["json"] == {"pair": ({"a": 1}, "http://example.com")}
-
     def test_top_level_and_nested_together(self, calls):
         request_args = {
             "json": {
@@ -201,6 +194,19 @@ class TestNestedExt:
         update_from_ext(request_args, ["json"])
 
         assert request_args["json"] == {"direct": saved, "in_list": [saved]}
+        assert not calls
+
+    def test_included_tuple_is_not_searched(self, calls):
+        """A Box leaves tuples as they are, so these do not come back as Boxes"""
+        saved = ({"$ext": ext("building")}, [{"$ext": "literal"}])
+        request_args = format_keys(
+            {"json": {"direct": ForceIncludeToken("{saved}")}},
+            {"saved": saved},
+        )
+
+        update_from_ext(request_args, ["json"])
+
+        assert request_args["json"] == {"direct": saved}
         assert not calls
 
     @pytest.mark.parametrize(
