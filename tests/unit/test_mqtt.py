@@ -269,6 +269,15 @@ class TestExtFunctions:
         assert "payload" in m._publish_args
         assert m._publish_args["payload"] == "3"
 
+    def test_nested_ext_function(self, fake_client, basic_mqtt_request_args, includes):
+        basic_mqtt_request_args["json"] = {
+            "values": [{"$ext": {"function": "operator:add", "extra_args": (1, 2)}}]
+        }
+
+        m = MQTTRequest(fake_client, basic_mqtt_request_args, includes)
+
+        assert m._publish_args["payload"] == '{"values": [3]}'
+
 
 class TestSSLContext:
     def test_ciphers_set_correctly(self):

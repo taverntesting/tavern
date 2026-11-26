@@ -123,6 +123,48 @@ stages:
         hello: "there"
 
 ---
+test_name: Test merging in input inside a list item
+
+includes:
+  - !include common.yaml
+
+stages:
+  - name: merged into the item it is in
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        - value1: "hi"
+          $ext:
+            function: ext_functions:return_hello
+        - value2: "bye"
+    response:
+      status_code: 200
+      json:
+        - value1: "hi"
+          hello: "there"
+        - value2: "bye"
+
+  - name: non mapping replaces the dictionary it is in
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        value1: "hi"
+        nested:
+          values:
+            $ext:
+              function: ext_functions:return_list_vals
+    response:
+      status_code: 200
+      json:
+        value1: "hi"
+        nested:
+          values:
+            - a_value: b_value
+            - 2
+
+---
 test_name: Test generating query params from ext functions
 
 stages:

@@ -4,6 +4,8 @@ import logging
 from collections.abc import Callable, Iterable, Mapping
 from typing import Any
 
+from box import Box, BoxList
+
 from tavern._core import exceptions
 
 from .dict_util import deep_dict_merge
@@ -144,9 +146,59 @@ def _get_ext_values(ext: Mapping) -> tuple[Callable, Iterable, Mapping]:
     return func, args, kwargs
 
 
+def _resolve_nested_ext(value: Any) -> Any:
+    """Call any '$ext' functions found inside part of a request block
+
+    A dict containing '$ext' is handled the same way as the top level of a
+    request block: a mapping returned by the function is merged into the
+    rest of the dict, and anything else replaces the dict entirely.
+
+    Boxes and tuples are not searched. format_keys rebuilds everything
+    written in the test as plain dicts and lists, so a Box here is a value
+    that was pulled in from a variable with !force_format_include. That is
+    data rather than part of the test, and a '$ext' key in it is left alone.
+    A Box does not convert tuples, and YAML cannot produce one, so a tuple
+    is treated as included data as well.
+
+    Args:
+        value: part of a request block, after formatting
+
+    Returns:
+        value with the results of any '$ext' functions applied
+    """
+    if isinstance(value, (Box, BoxList, tuple)):
+        return value
+
+    if isinstance(value, list):
+        return [_resolve_nested_ext(item) for item in value]
+
+    if not isinstance(value, dict):
+        return value
+
+    result = None
+
+    if "$ext" in value:
+        result = get_wrapped_create_function(value["$ext"])()
+
+        if not isinstance(result, Mapping):
+            return result
+
+    resolved = {
+        key: _resolve_nested_ext(item) for key, item in value.items() if key != "$ext"
+    }
+
+    if result is None:
+        return resolved
+
+    return deep_dict_merge(resolved, result)
+
+
 def update_from_ext(request_args: dict, keys_to_check: list[str]) -> None:
     """
     Updates the request_args dict with any values from external functions
+
+    '$ext' can be used at the top level of a block or anywhere inside it. See
+    _resolve_nested_ext for how nested blocks are handled.
 
     Args:
         request_args: dictionary of request args
@@ -167,10 +219,16 @@ def update_from_ext(request_args: dict, keys_to_check: list[str]) -> None:
             pop = block.pop("$ext")
         except (KeyError, AttributeError, TypeError):
             logger.debug("No ext functions in %s block", key)
-            continue
+        else:
+            func = get_wrapped_create_function(pop)
+            new_args[key] = func()
 
-        func = get_wrapped_create_function(pop)
-        new_args[key] = func()
+            if not isinstance(new_args[key], Mapping):
+                # This replaces the whole block, so there is nothing left in
+                # it to look through
+                continue
+
+        request_args[key] = _resolve_nested_ext(block)
 
     merged_args = deep_dict_merge(request_args, new_args)
 

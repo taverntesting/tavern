@@ -276,6 +276,29 @@ def return_hello():
 
 This will send both "hello" and "goodbye" in the request.
 
+`$ext` can also be used further down inside a request block, such as in an item
+of a list. It works the same way as at the top level: a mapping returned by the
+function is merged into the dictionary that the `$ext` key is in, and any other
+value replaces that dictionary.
+
+```yaml
+    request:
+      url: "{host}/echo"
+      method: POST
+      json:
+        - goodbye: "now"
+          $ext:
+            function: ext_functions:return_hello
+```
+
+This will send `[{"goodbye": "now", "hello": "there"}]`.
+
+Only the request block as written in the test is checked for `$ext`. Values
+returned by an external function, and data included from a variable with
+`!force_format_include`, are sent as they are. A dictionary used as the value
+of a query parameter in `params` is JSON encoded before external functions run,
+so an `$ext` key inside one is not called.
+
 #### Saving data from a response
 
 When using the `$ext` key in the `save` block there is special behaviour - each key in
