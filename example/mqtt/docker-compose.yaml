@@ -27,7 +27,7 @@ services:
       - fluent
 
   broker:
-    image: eclipse-mosquitto:2.0.22
+    image: eclipse-mosquitto:2.0.23
     ports:
       - "9001:9001"
       - "1883:1883"
